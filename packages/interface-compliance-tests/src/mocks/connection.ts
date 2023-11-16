@@ -139,7 +139,9 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     direction,
     onIncomingStream: (muxedStream) => {
       try {
-        mss.handle(muxedStream, registrar.getProtocols())
+        mss.handle(muxedStream, registrar.getProtocols(), {
+          log
+        })
           .then(({ stream, protocol }) => {
             log('%s: incoming stream opened on %s', direction, protocol)
             muxedStream.protocol = protocol

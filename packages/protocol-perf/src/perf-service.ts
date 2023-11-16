@@ -1,4 +1,4 @@
-import { pushable } from 'it-pushable'
+import { byteStream } from 'it-byte-stream'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
 import type { Logger } from '@libp2p/interface'
@@ -64,6 +64,7 @@ export class Perf implements Startable, PerfInterface {
           // downcast 64 to 52 bits to avoid bigint arithmetic performance penalty
           bytesToSendBack = Number(buf.getBigUint64(0, false))
         }
+
         // Ingest all the bufs and wait for the read side to close
       }
 
@@ -95,6 +96,7 @@ export class Perf implements Startable, PerfInterface {
     const uint8Buf = new Uint8Array(this.databuf)
     const writeBlockSize = this.writeBlockSize
 
+    const initialStartTime = Date.now()
     let lastReportedTime = Date.now()
     const connection = await this.components.connectionManager.openConnection(ma, {
       ...options,
@@ -111,8 +113,6 @@ export class Perf implements Startable, PerfInterface {
     lastReportedTime = Date.now()
 
     const stream = await connection.newStream(this.protocol, options)
-
-    let initialStartTime = Date.now()
 
     yield {
       type: 'stream',
@@ -133,59 +133,50 @@ export class Perf implements Startable, PerfInterface {
     this.log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     try {
-      const sendOutput = pushable<PerfOutput>({
-        objectMode: true
-      })
+      const b = byteStream(stream)
+      await b.write(uint8Buf.subarray(0, 8), options)
 
-      void stream.sink(async function * () {
-        // Send the number of bytes to receive
-        yield uint8Buf.subarray(0, 8)
+      while (sendBytes > 0) {
+        let toSend: number = writeBlockSize
 
-        initialStartTime = Date.now()
-
-        while (sendBytes > 0) {
-          options.signal?.throwIfAborted()
-
-          let toSend: number = writeBlockSize
-          if (toSend > sendBytes) {
-            toSend = sendBytes
-          }
-          sendBytes = sendBytes - toSend
-          yield uint8Buf.subarray(0, toSend)
-
-          if (Date.now() - lastReportedTime > 1000) {
-            sendOutput.push({
-              type: 'intermediary',
-              timeSeconds: (Date.now() - lastReportedTime) / 1000,
-              uploadBytes: lastAmountOfBytesSent,
-              downloadBytes: 0
-            })
-
-            // record last reported time after `console.log` because it can
-            // affect benchmark timings
-            lastReportedTime = Date.now()
-            lastAmountOfBytesSent = 0
-          }
-
-          lastAmountOfBytesSent += toSend
-          totalBytesSent += toSend
+        if (toSend > sendBytes) {
+          toSend = sendBytes
         }
 
-        sendOutput.end()
-      }())
-        .catch(err => {
-          sendOutput.end(err)
-        })
+        const chunk = uint8Buf.subarray(0, toSend)
 
-      yield * sendOutput
+        await b.write(chunk, options)
+
+        sendBytes -= toSend
+
+        if (Date.now() - lastReportedTime > 1000) {
+          yield {
+            type: 'intermediary',
+            timeSeconds: (Date.now() - lastReportedTime) / 1000,
+            uploadBytes: lastAmountOfBytesSent,
+            downloadBytes: 0
+          }
+
+          // record last reported time after `console.log` because it can
+          // affect benchmark timings
+          lastReportedTime = Date.now()
+          lastAmountOfBytesSent = 0
+        }
+
+        lastAmountOfBytesSent += toSend
+        totalBytesSent += toSend
+      }
+
+      // sent all the bytes, close the write end of the stream
+      await stream.closeWrite()
 
       // Read the received bytes
       let lastAmountOfBytesReceived = 0
       lastReportedTime = Date.now()
       let totalBytesReceived = 0
 
-      for await (const buf of stream.source) {
-        options.signal?.throwIfAborted()
+      while (totalBytesReceived < receiveBytes) {
+        const buf = await b.read(undefined, options)
 
         if (Date.now() - lastReportedTime > 1000) {
           yield {

@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
@@ -69,8 +69,6 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
 
-  private messageQueue?: Uint8ArrayList
-
   private readonly maxBufferedAmount: number
 
   private readonly bufferedAmountLowEventTimeout: number
@@ -85,6 +83,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
+  private readonly channelOpen: DeferredPromise<void>
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
@@ -122,17 +121,18 @@ export class WebRTCStream extends AbstractStream {
 
     this.channel = init.channel
     this.channel.binaryType = 'arraybuffer'
-    this.incomingData = pushable()
-    this.messageQueue = new Uint8ArrayList()
+    this.incomingData = pushable<Uint8Array>()
     this.bufferedAmountLowEventTimeout = init.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
+    this.channelOpen = pDefer()
 
     // set up initial state
     switch (this.channel.readyState) {
       case 'open':
+        this.channelOpen.resolve()
         break
 
       case 'closed':
@@ -153,19 +153,7 @@ export class WebRTCStream extends AbstractStream {
     // handle RTCDataChannel events
     this.channel.onopen = (_evt) => {
       this.timeline.open = new Date().getTime()
-
-      if (this.messageQueue != null && this.messageQueue.byteLength > 0) {
-        this.log.trace('dataChannel opened, sending queued messages', this.messageQueue.byteLength, this.channel.readyState)
-
-        // send any queued messages
-        this._sendMessage(this.messageQueue)
-          .catch(err => {
-            this.log.error('error sending queued messages', err)
-            this.abort(err)
-          })
-      }
-
-      this.messageQueue = undefined
+      this.channelOpen.resolve()
     }
 
     this.channel.onclose = (_evt) => {
@@ -232,22 +220,12 @@ export class WebRTCStream extends AbstractStream {
       throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
     }
 
-    if (this.channel.readyState === 'open') {
-      // send message without copying data
-      for (const buf of data) {
-        this.channel.send(buf)
-      }
-    } else if (this.channel.readyState === 'connecting') {
-      // queue message for when we are open
-      if (this.messageQueue == null) {
-        this.messageQueue = new Uint8ArrayList()
-      }
-
-      this.messageQueue.append(data)
-    } else {
-      this.log.error('unknown datachannel state %s', this.channel.readyState)
-      throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
+    if (this.channel.readyState !== 'open') {
+      await this.channelOpen.promise
     }
+
+    // send message without copying data
+    this.channel.send(data.subarray())
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {

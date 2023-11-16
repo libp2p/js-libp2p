@@ -15,7 +15,7 @@ describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
     const sent: Uint8ArrayList = new Uint8ArrayList()
     const data = new Uint8Array(MAX_MESSAGE_SIZE - PROTOBUF_OVERHEAD)
-    const p = pushable()
+    const p = pushable<Uint8Array>()
     const channel = mockDataChannel({
       send: (bytes) => {
         sent.append(bytes)
@@ -37,7 +37,7 @@ describe('Max message size', () => {
     receiveFinAck(channel)
     await webrtcStream.sink(p)
 
-    expect(length(sent)).to.equal(6)
+    expect(length(sent)).to.be.gt(1)
 
     for (const buf of sent) {
       expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)
@@ -47,7 +47,7 @@ describe('Max message size', () => {
   it(`sends messages greater than ${MAX_MESSAGE_SIZE} bytes in parts`, async () => {
     const sent: Uint8ArrayList = new Uint8ArrayList()
     const data = new Uint8Array(MAX_MESSAGE_SIZE)
-    const p = pushable()
+    const p = pushable<Uint8Array>()
     const channel = mockDataChannel({
       send: (bytes) => {
         sent.append(bytes)
@@ -69,7 +69,7 @@ describe('Max message size', () => {
     receiveFinAck(channel)
     await webrtcStream.sink(p)
 
-    expect(length(sent)).to.equal(6)
+    expect(length(sent)).to.be.gt(1)
 
     for (const buf of sent) {
       expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)

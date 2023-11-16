@@ -421,7 +421,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
 
     // Partially write to the echo stream
-    const source = pushable()
+    const source = pushable<Uint8Array>()
     void stream.sink(source)
     source.push(uint8ArrayFromString('hello'))
 

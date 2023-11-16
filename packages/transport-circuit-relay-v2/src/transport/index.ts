@@ -229,7 +229,7 @@ class CircuitRelayTransport implements Transport {
     let stream: Stream | undefined
 
     try {
-      stream = await relayConnection.newStream([RELAY_V2_HOP_CODEC])
+      stream = await relayConnection.newStream(RELAY_V2_HOP_CODEC)
 
       return await this.connectV2({
         stream,
@@ -246,7 +246,6 @@ class CircuitRelayTransport implements Transport {
       if (stream != null) {
         stream.abort(err)
       }
-
       disconnectOnFailure && await relayConnection.close()
       throw err
     }
@@ -287,7 +286,7 @@ class CircuitRelayTransport implements Transport {
       return await this.upgrader.upgradeOutbound(maConn, {
         transient: true
       })
-    } catch (err) {
+    } catch (err: any) {
       this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err

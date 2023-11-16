@@ -1,154 +1,112 @@
 /* eslint-env mocha */
 
+import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
-import all from 'it-all'
-import * as Lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
-import { reader } from 'it-reader'
+import drain from 'it-drain'
+import { lpStream } from 'it-length-prefixed-stream'
+import { duplexPair } from 'it-pair/duplex'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as mss from '../src/index.js'
-import * as Multistream from '../src/multistream.js'
-import type { Duplex, Source } from 'it-stream-types'
 
 describe('Listener', () => {
   describe('listener.handle', () => {
     it('should handle a protocol', async () => {
       const protocol = '/echo/1.0.0'
-      const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
-      let output: Uint8ArrayList[] = []
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
-      const duplex: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
-        sink: async source => {
-          const read = reader(source)
-          let msg: string
+      const duplexes = duplexPair<Uint8Array>()
+      const outputStream = lpStream(duplexes[1])
+      void drain(duplexes[1].source)
 
-          // First message will be multistream-select header
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(mss.PROTOCOL_ID)
+      void outputStream.writeV([
+        uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),
+        uint8ArrayFromString(protocol + '\n'),
+        ...input
+      ])
 
-          // Second message will be protocol
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(protocol)
-
-          // Rest is data
-          output = await all(read)
-        },
-        source: (async function * () {
-          yield Multistream.encode(uint8ArrayFromString(mss.PROTOCOL_ID))
-          yield Multistream.encode(uint8ArrayFromString(protocol))
-          yield * input
-        })()
-      }
-
-      const selection = await mss.handle(duplex, protocol)
+      const selection = await mss.handle(duplexes[0], protocol, {
+        log: logger('test')
+      })
       expect(selection.protocol).to.equal(protocol)
 
-      await pipe(selection.stream, selection.stream)
-
-      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+      const inputStream = lpStream(selection.stream)
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[0]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[1]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[2]))
     })
 
     it('should reject unhandled protocols', async () => {
-      const protocols = ['/echo/2.0.0', '/echo/1.0.0']
-      const handledProtocols = ['/test/1.0.0', protocols[protocols.length - 1]]
-      const handledProtocol = protocols[protocols.length - 1]
-      const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
-      let output: Uint8ArrayList[] = []
+      const protocol = '/echo/1.0.0'
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
-      const duplex: Duplex<Generator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
-        sink: async source => {
-          const read = reader(source)
-          let msg: string
+      const duplexes = duplexPair<Uint8Array>()
+      const outputStream = lpStream(duplexes[1])
+      void drain(duplexes[1].source)
 
-          // First message will be multistream-select header
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(mss.PROTOCOL_ID)
+      void outputStream.writeV([
+        uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),
+        uint8ArrayFromString('/not/supported/1.0.0\n'),
+        uint8ArrayFromString('/also/not/supported/1.0.0\n'),
+        uint8ArrayFromString(protocol + '\n'),
+        ...input
+      ])
 
-          // Second message will be na
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal('na')
+      const selection = await mss.handle(duplexes[0], protocol, {
+        log: logger('test')
+      })
+      expect(selection.protocol).to.equal(protocol)
 
-          // Third message will be handledProtocol
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(handledProtocol)
+      const inputStream = lpStream(selection.stream)
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[0]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[1]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[2]))
+    })
 
-          // Rest is data
-          output = await all(read)
-        },
-        source: (function * () {
-          yield Multistream.encode(uint8ArrayFromString(mss.PROTOCOL_ID))
-          for (const protocol of protocols) {
-            yield Multistream.encode(uint8ArrayFromString(protocol))
-          }
-          yield * input
-        })()
-      }
+    it('should reject when unsupported protocols are ignored', async () => {
+      const protocol = '/echo/1.0.0'
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
-      const selection = await mss.handle(duplex, handledProtocols)
-      expect(selection.protocol).to.equal(handledProtocol)
+      const duplexes = duplexPair<Uint8Array>()
+      const outputStream = lpStream(duplexes[1])
+      void drain(duplexes[1].source)
 
-      await pipe(selection.stream, selection.stream)
+      void outputStream.writeV([
+        uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),
+        uint8ArrayFromString('/not/supported/1.0.0\n\n'),
+        ...input
+      ])
 
-      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+      await expect(mss.handle(duplexes[0], protocol, {
+        log: logger('test')
+      })).to.eventually.be.rejected()
     })
 
     it('should handle ls', async () => {
-      const protocols = ['/echo/2.0.0', '/echo/1.0.0']
-      const handledProtocols = ['/test/1.0.0', protocols[protocols.length - 1]]
-      const handledProtocol = protocols[protocols.length - 1]
-      const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
-      let output: Uint8ArrayList[] = []
+      const protocol = '/echo/1.0.0'
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
-      const duplex: Duplex<Generator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>> = {
-        sink: async source => {
-          const read = reader(source)
-          let msg: string
+      const duplexes = duplexPair<Uint8Array>()
+      const outputStream = lpStream(duplexes[1])
+      void drain(duplexes[1].source)
 
-          // First message will be multistream-select header
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(mss.PROTOCOL_ID)
+      void outputStream.writeV([
+        uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),
+        uint8ArrayFromString('ls\n'),
+        uint8ArrayFromString(protocol + '\n'),
+        ...input
+      ])
 
-          // Second message will be ls response
-          const buf = await Multistream.read(read)
+      const selection = await mss.handle(duplexes[0], protocol, {
+        log: logger('test')
+      })
+      expect(selection.protocol).to.equal(protocol)
 
-          const protocolsReader = reader([buf])
-
-          // Decode each of the protocols from the reader
-          const lsProtocols = await pipe(
-            protocolsReader,
-            (source) => Lp.decode(source),
-            // Stringify and remove the newline
-            (source) => map(source, (buf) => uint8ArrayToString(buf.subarray()).trim()),
-            async (source) => all(source)
-          )
-
-          expect(lsProtocols).to.deep.equal(handledProtocols)
-
-          // Third message will be handledProtocol
-          msg = await Multistream.readString(read)
-          expect(msg).to.equal(handledProtocol)
-
-          // Rest is data
-          output = await all(read)
-        },
-        source: (function * () {
-          yield Multistream.encode(uint8ArrayFromString(mss.PROTOCOL_ID))
-          yield Multistream.encode(uint8ArrayFromString('ls'))
-          yield Multistream.encode(uint8ArrayFromString(handledProtocol))
-          yield * input
-        })()
-      }
-
-      const selection = await mss.handle(duplex, handledProtocols)
-      expect(selection.protocol).to.equal(handledProtocol)
-
-      await pipe(selection.stream, selection.stream)
-
-      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+      const inputStream = lpStream(selection.stream)
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[0]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[1]))
+      await expect(inputStream.read()).to.eventually.eql(new Uint8ArrayList(input[2]))
     })
   })
 })

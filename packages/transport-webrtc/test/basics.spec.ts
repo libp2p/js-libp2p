@@ -247,7 +247,7 @@ describe('basics', () => {
     await remoteStream.closeRead()
 
     // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-    const remoteInputStream = pushable()
+    const remoteInputStream = pushable<Uint8Array>()
     void remoteStream.sink(remoteInputStream)
 
     const p = stream.closeWrite()

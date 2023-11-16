@@ -85,6 +85,14 @@ export class Message {
 
     return msg
   }
+
+  static encode (message: Message): Uint8Array {
+    return message.serialize()
+  }
+
+  static decode (buf: Uint8Array | Uint8ArrayList): Message {
+    return Message.deserialize(buf)
+  }
 }
 
 function toPbPeer (peer: PeerInfo): PBPeer {

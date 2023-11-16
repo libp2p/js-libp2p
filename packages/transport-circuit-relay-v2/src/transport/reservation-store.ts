@@ -272,6 +272,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       response = await hopstr.read(options)
     } catch (err: any) {
       this.log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
+      stream.abort(err)
       throw err
     } finally {
       await stream.close()

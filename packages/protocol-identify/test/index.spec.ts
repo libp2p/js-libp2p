@@ -22,6 +22,7 @@ import type { Connection, Stream } from '@libp2p/interface/src/connection'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('identify', () => {
   let components: StubbedIdentifyComponents
@@ -158,12 +159,12 @@ describe('identify', () => {
 
     const { connection, stream } = identifyStream(remotePeer)
 
-    const input = stream.source = pushable()
+    const input = stream.source = pushable<Uint8ArrayList>()
     stream.sink.callsFake(async (source) => {
       await drain(source)
     })
 
-    input.push(lp.encode.single(new Uint8Array(maxIdentifyMessageSize + 1)))
+    void input.push(lp.encode.single(new Uint8Array(maxIdentifyMessageSize + 1)))
 
     // run identify
     await expect(identify.identify(connection))

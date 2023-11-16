@@ -1,13 +1,14 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { handshake } from 'it-handshake'
+import { encode } from 'it-length-prefixed'
+import { lpStream } from 'it-length-prefixed-stream'
 import merge from 'it-merge'
 import { pushable } from 'it-pushable'
-import { reader } from 'it-reader'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { MAX_PROTOCOL_LENGTH } from './constants.js'
 import * as multistream from './multistream.js'
 import { PROTOCOL_ID } from './index.js'
-import type { ByteArrayInit, ByteListInit, MultistreamSelectInit, ProtocolStream } from './index.js'
+import type { MultistreamSelectInit, ProtocolStream } from './index.js'
 import type { Duplex, Source } from 'it-stream-types'
 
 /**
@@ -53,12 +54,11 @@ import type { Duplex, Source } from 'it-stream-types'
  * // }
  * ```
  */
-export async function select (stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>, protocols: string | string[], options: ByteArrayInit): Promise<ProtocolStream<Uint8Array>>
-export async function select (stream: Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Source<Uint8ArrayList | Uint8Array>>, protocols: string | string[], options?: ByteListInit): Promise<ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>>
-export async function select (stream: any, protocols: string | string[], options?: MultistreamSelectInit): Promise<ProtocolStream<any>> {
+export async function select <Stream extends Duplex<any, any, any>> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
-  const { reader, writer, rest, stream: shakeStream } = handshake(stream)
-
+  const lp = lpStream(stream, {
+    maxDataLength: MAX_PROTOCOL_LENGTH
+  })
   const protocol = protocols.shift()
 
   if (protocol == null) {
@@ -66,39 +66,36 @@ export async function select (stream: any, protocols: string | string[], options
   }
 
   options?.log.trace('select: write ["%s", "%s"]', PROTOCOL_ID, protocol)
-  const p1 = uint8ArrayFromString(PROTOCOL_ID)
-  const p2 = uint8ArrayFromString(protocol)
-  multistream.writeAll(writer, [p1, p2], options)
+  const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
+  const p2 = uint8ArrayFromString(`${protocol}\n`)
+  await multistream.writeAll(lp, [p1, p2], options)
 
-  let response = await multistream.readString(reader, options)
+  let response = await multistream.readString(lp, options)
   options?.log.trace('select: read "%s"', response)
 
   // Read the protocol response if we got the protocolId in return
   if (response === PROTOCOL_ID) {
-    response = await multistream.readString(reader, options)
+    response = await multistream.readString(lp, options)
     options?.log.trace('select: read "%s"', response)
   }
 
   // We're done
   if (response === protocol) {
-    rest()
-    return { stream: shakeStream, protocol }
+    return { stream: lp.unwrap(), protocol }
   }
 
   // We haven't gotten a valid ack, try the other protocols
   for (const protocol of protocols) {
     options?.log.trace('select: write "%s"', protocol)
-    multistream.write(writer, uint8ArrayFromString(protocol), options)
-    const response = await multistream.readString(reader, options)
+    await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
+    const response = await multistream.readString(lp, options)
     options?.log.trace('select: read "%s" for "%s"', response, protocol)
 
     if (response === protocol) {
-      rest() // End our writer so others can start writing to stream
-      return { stream: shakeStream, protocol }
+      return { stream: lp.unwrap(), protocol }
     }
   }
 
-  rest()
   throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
 }
 
@@ -110,26 +107,25 @@ export async function select (stream: any, protocols: string | string[], options
  *
  * Use when it is known that the receiver supports the desired protocol.
  */
-export function lazySelect (stream: Duplex<Source<Uint8Array>, Source<Uint8Array>>, protocol: string): ProtocolStream<Uint8Array>
-export function lazySelect (stream: Duplex<Source<Uint8ArrayList | Uint8Array>, Source<Uint8ArrayList | Uint8Array>>, protocol: string): ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>
-export function lazySelect (stream: Duplex<any>, protocol: string): ProtocolStream<any> {
+export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Stream, protocol: string): ProtocolStream<Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>> {
   // This is a signal to write the multistream headers if the consumer tries to
   // read from the source
-  const negotiateTrigger = pushable()
+  const negotiateTrigger = pushable<Uint8Array>()
   let negotiated = false
   return {
     stream: {
       sink: async source => {
         await stream.sink((async function * () {
           let first = true
+
           for await (const chunk of merge(source, negotiateTrigger)) {
             if (first) {
               first = false
               negotiated = true
               negotiateTrigger.end()
-              const p1 = uint8ArrayFromString(PROTOCOL_ID)
-              const p2 = uint8ArrayFromString(protocol)
-              const list = new Uint8ArrayList(multistream.encode(p1), multistream.encode(p2))
+              const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
+              const p2 = uint8ArrayFromString(`${protocol}\n`)
+              const list = new Uint8ArrayList(encode.single(p1), encode.single(p2))
               if (chunk.length > 0) list.append(chunk)
               yield * list
             } else {
@@ -139,18 +135,25 @@ export function lazySelect (stream: Duplex<any>, protocol: string): ProtocolStre
         })())
       },
       source: (async function * () {
-        if (!negotiated) negotiateTrigger.push(new Uint8Array())
-        const byteReader = reader(stream.source)
-        let response = await multistream.readString(byteReader)
-        if (response === PROTOCOL_ID) {
-          response = await multistream.readString(byteReader)
+        if (!negotiated) {
+          negotiateTrigger.push(new Uint8Array())
         }
+
+        const lp = lpStream(stream, {
+          maxDataLength: MAX_PROTOCOL_LENGTH
+        })
+
+        let response = await multistream.readString(lp)
+
+        if (response === PROTOCOL_ID) {
+          response = await multistream.readString(lp)
+        }
+
         if (response !== protocol) {
           throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
         }
-        for await (const chunk of byteReader) {
-          yield * chunk
-        }
+
+        yield * lp.unwrap().source
       })()
     },
     protocol

@@ -40,6 +40,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abstract-stream": {
+      "types": "./dist/src/abstract-stream.d.ts",
+      "import": "./dist/src/abstract-stream.js"
+    },
     "./address-sort": {
       "types": "./dist/src/address-sort.d.ts",
       "import": "./dist/src/address-sort.js"
@@ -48,9 +52,17 @@
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"
     },
+    "./close-source": {
+      "types": "./dist/src/close-source.d.ts",
+      "import": "./dist/src/close-source.js"
+    },
     "./ip-port-to-multiaddr": {
       "types": "./dist/src/ip-port-to-multiaddr.d.ts",
       "import": "./dist/src/ip-port-to-multiaddr.js"
+    },
+    "./is-promise": {
+      "types": "./dist/src/is-promise.d.ts",
+      "import": "./dist/src/is-promise.js"
     },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
@@ -94,20 +106,27 @@
     "@libp2p/interface": "^0.1.6",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
+    "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.1",
+    "it-pushable": "^3.2.2",
     "it-stream-types": "^2.0.1",
     "p-queue": "^7.4.1",
     "private-ip": "^3.0.1",
+    "race-signal": "^1.0.1",
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^3.1.0",
     "@libp2p/peer-id-factory": "^3.0.8",
     "aegir": "^41.0.2",
+    "delay": "^6.0.0",
     "it-all": "^3.0.3",
+    "it-drain": "^3.0.5",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0",
     "uint8arrays": "^4.0.6"
   }
 }

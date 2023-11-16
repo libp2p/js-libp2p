@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { abortableSource } from 'abortable-iterator'
+import { closeSource } from '@libp2p/utils/close-source'
 import { pipe } from 'it-pipe'
 import { type PushableV, pushableV } from 'it-pushable'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
@@ -242,11 +242,13 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   _createSink (): Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
     const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-      try {
-        source = abortableSource(source, this.closeController.signal, {
-          returnOnAbort: true
-        })
+      const abortListener = (): void => {
+        closeSource(source, this.log)
+      }
 
+      this.closeController.signal.addEventListener('abort', abortListener)
+
+      try {
         const decoder = new Decoder(this._init.maxMsgSize, this._init.maxUnprocessedMessageQueueSize)
 
         for await (const chunk of source) {
@@ -259,6 +261,8 @@ export class MplexStreamMuxer implements StreamMuxer {
       } catch (err: any) {
         this.log('error in sink', err)
         this._source.end(err) // End the source with an error
+      } finally {
+        this.closeController.signal.removeEventListener('abort', abortListener)
       }
     }
 

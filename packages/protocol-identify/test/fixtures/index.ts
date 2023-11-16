@@ -3,6 +3,7 @@ import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { Identify as IdentifyMessage } from '../../src/pb/message.js'
 import type { ComponentLogger, Libp2pEvents, NodeInfo } from '@libp2p/interface'
 import type { TypedEventTarget } from '@libp2p/interface/events'
@@ -53,8 +54,8 @@ export function identifyPushStream (remotePeer: PeerId): { connection: StubbedIn
 export function identifyConnection (remotePeer: PeerId, message: IdentifyMessage): StubbedInstance<Connection> {
   const { connection, stream } = identifyStream(remotePeer)
 
-  const input = stream.source = pushable()
-  input.push(lp.encode.single(IdentifyMessage.encode(message)))
+  const input = stream.source = pushable<Uint8ArrayList>()
+  void input.push(new Uint8ArrayList(lp.encode.single(IdentifyMessage.encode(message))))
 
   return connection
 }
