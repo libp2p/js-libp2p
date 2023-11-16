@@ -51,7 +51,7 @@
     "@libp2p/interface": "^0.1.6",
     "@libp2p/interface-internal": "^0.1.9",
     "@multiformats/multiaddr": "^12.1.10",
-    "it-byte-stream": "^1.0.2"
+    "it-pushable": "^3.2.3"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^4.1.5",
