@@ -530,7 +530,34 @@ describe('circuit-relay', () => {
       expect(remoteConns).to.have.lengthOf(1)
       expect(remoteConns).to.have.nested.property('[0].status', 'open')
     })
+    /*
+    it('should fail to open connection over relayed connection', async () => {
+      // relay1 dials relay2
+      await relay1.dial(relay2.getMultiaddrs()[0])
+      await usingAsRelay(relay1, relay2)
+      // remote dials relay2
+      await remote.dial(relay2.getMultiaddrs()[0])
+      await usingAsRelay(remote, relay2)
+      // local dials relay1 via relay2
+      const ma = getRelayAddress(relay1)
 
+      // open hop stream and try to connect to remote
+      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
+        runOnTransientConnection: true
+      })
+      const hopStream = pbStream(stream).pb(HopMessage)
+      await hopStream.write({
+        type: HopMessage.Type.CONNECT,
+        peer: {
+          id: remote.peerId.toBytes(),
+          addrs: []
+        }
+      })
+      const response = await hopStream.read()
+      expect(response).to.have.property('type', HopMessage.Type.STATUS)
+      expect(response).to.have.property('status', Status.PERMISSION_DENIED)
+    })
+    */
     it('should fail to dial remote over relay over relay', async () => {
       // relay1 dials relay2
       await relay1.dial(relay2.getMultiaddrs()[0])
