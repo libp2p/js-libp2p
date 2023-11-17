@@ -5,6 +5,34 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+## [11.0.0](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.15...kad-dht-v11.0.0) (2023-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Bug Fixes
+
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/interface-internal bumped from ^0.1.9 to ^0.1.10
+    * @libp2p/peer-collections bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+    * @libp2p/peer-store bumped from ^9.0.9 to ^9.0.10
+
 ### [10.0.15](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.14...kad-dht-v10.0.15) (2023-11-10)
 
 

@@ -5,6 +5,15 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+### [2.0.9](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.8...crypto-v2.0.9) (2023-11-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+
 ### [2.0.8](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.7...crypto-v2.0.8) (2023-11-07)
 
 

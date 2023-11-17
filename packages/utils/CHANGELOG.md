@@ -11,6 +11,33 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#100](https://github.com/libp2p/js-libp2p-utils/issues/100)) ([da6547c](https://github.com/libp2p/js-libp2p-utils/commit/da6547cdd073ba1a4225be5a419c6776c4ebe6f1))
 
+## [5.0.0](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.7...utils-v5.0.0) (2023-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+
+### Bug Fixes
+
+* close maconn stream after reading/writing ([#2236](https://www.github.com/libp2p/js-libp2p/issues/2236)) ([9c67c5b](https://www.github.com/libp2p/js-libp2p/commit/9c67c5b3d0ab63c7a1a62f363ae732b300ef6b87))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Code Refactoring
+
+* extract circuit relay v2 to separate module ([#2222](https://www.github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://www.github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+
 ### [4.0.7](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.6...utils-v4.0.7) (2023-11-07)
 
 

@@ -5,6 +5,24 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+## [4.0.0](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v3.0.6...peer-id-v4.0.0) (2023-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+
+### Code Refactoring
+
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+
 ### [3.0.6](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v3.0.5...peer-id-v3.0.6) (2023-11-07)
 
 

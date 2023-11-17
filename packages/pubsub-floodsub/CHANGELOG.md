@@ -11,6 +11,26 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#233](https://github.com/libp2p/js-libp2p-floodsub/issues/233)) ([e073298](https://github.com/libp2p/js-libp2p-floodsub/commit/e073298f324a89656b0ca6d9a629e60eaedc7873))
 
+### [8.0.14](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.13...floodsub-v8.0.14) (2023-11-17)
+
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/pubsub bumped from ^8.0.10 to ^8.0.11
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+    * @libp2p/peer-collections bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+
 ### [8.0.13](https://www.github.com/libp2p/js-libp2p/compare/floodsub-v8.0.12...floodsub-v8.0.13) (2023-11-07)
 
 

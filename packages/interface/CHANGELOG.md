@@ -5,6 +5,35 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.0.0](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.6...interface-v1.0.0) (2023-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/upnp-nat` should be updated to `@libp2p/upnp-nat`
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+* move autonat into separate package (#2107)
+* remove libp2p.keychain (#2084)
+* remove min/max from topologies (#2158)
+
+### Bug Fixes
+
+* remove min/max from topologies ([#2158](https://www.github.com/libp2p/js-libp2p/issues/2158)) ([511359a](https://www.github.com/libp2p/js-libp2p/commit/511359a86235e7abe65887dce7262b34a53bad5a))
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+
+
+### Code Refactoring
+
+* extract DCUtR into separate module ([#2220](https://www.github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://www.github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract UPnP NAT into separate module ([#2217](https://www.github.com/libp2p/js-libp2p/issues/2217)) ([f29b73f](https://www.github.com/libp2p/js-libp2p/commit/f29b73f781afcea36cba0589aafdd81e1852e194))
+* move autonat into separate package ([#2107](https://www.github.com/libp2p/js-libp2p/issues/2107)) ([b0e8f06](https://www.github.com/libp2p/js-libp2p/commit/b0e8f06f0dcdbda0e367186b093e42e8bff3ee27))
+* remove isStarted method from Startable ([#2145](https://www.github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://www.github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+* remove libp2p.keychain ([#2084](https://www.github.com/libp2p/js-libp2p/issues/2084)) ([125c84b](https://www.github.com/libp2p/js-libp2p/commit/125c84bb8a30ac986fb5aed0a4de23bc806d3aea))
+
 ### [0.1.6](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.5...interface-v0.1.6) (2023-11-07)
 
 
