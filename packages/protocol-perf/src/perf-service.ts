@@ -64,6 +64,7 @@ export class Perf implements Startable, PerfInterface {
           // downcast 64 to 52 bits to avoid bigint arithmetic performance penalty
           bytesToSendBack = Number(buf.getBigUint64(0, false))
         }
+
         // Ingest all the bufs and wait for the read side to close
       }
 
@@ -71,7 +72,7 @@ export class Perf implements Startable, PerfInterface {
         throw new Error('bytesToSendBack was not set')
       }
 
-      const uint8Buf = new Uint8Array(this.databuf)
+      const uint8Buf = new Uint8Array(this.databuf, 0, this.databuf.byteLength)
 
       await stream.sink(async function * () {
         while (bytesToSendBack > 0) {
@@ -95,34 +96,16 @@ export class Perf implements Startable, PerfInterface {
     const uint8Buf = new Uint8Array(this.databuf)
     const writeBlockSize = this.writeBlockSize
 
-    let lastReportedTime = Date.now()
+    const initialStartTime = Date.now()
     const connection = await this.components.connectionManager.openConnection(ma, {
       ...options,
       force: options.reuseExistingConnection !== true
     })
 
-    yield {
-      type: 'connection',
-      timeSeconds: (Date.now() - lastReportedTime) / 1000,
-      uploadBytes: 0,
-      downloadBytes: 0
-    }
-
-    lastReportedTime = Date.now()
-
     const stream = await connection.newStream(this.protocol, options)
 
-    let initialStartTime = Date.now()
-
-    yield {
-      type: 'stream',
-      timeSeconds: (Date.now() - lastReportedTime) / 1000,
-      uploadBytes: 0,
-      downloadBytes: 0
-    }
-
     let lastAmountOfBytesSent = 0
-    lastReportedTime = Date.now()
+    let lastReportedTime = Date.now()
     let totalBytesSent = 0
 
     // tell the remote how many bytes we will send. Up cast to 64 bit number
@@ -133,28 +116,26 @@ export class Perf implements Startable, PerfInterface {
     this.log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     try {
-      const sendOutput = pushable<PerfOutput>({
+      const output = pushable<PerfOutput>({
         objectMode: true
       })
 
-      void stream.sink(async function * () {
-        // Send the number of bytes to receive
+      stream.sink(async function * () {
         yield uint8Buf.subarray(0, 8)
 
-        initialStartTime = Date.now()
-
         while (sendBytes > 0) {
-          options.signal?.throwIfAborted()
-
           let toSend: number = writeBlockSize
+
           if (toSend > sendBytes) {
             toSend = sendBytes
           }
-          sendBytes = sendBytes - toSend
+
           yield uint8Buf.subarray(0, toSend)
 
+          sendBytes -= toSend
+
           if (Date.now() - lastReportedTime > 1000) {
-            sendOutput.push({
+            output.push({
               type: 'intermediary',
               timeSeconds: (Date.now() - lastReportedTime) / 1000,
               uploadBytes: lastAmountOfBytesSent,
@@ -171,22 +152,80 @@ export class Perf implements Startable, PerfInterface {
           totalBytesSent += toSend
         }
 
-        sendOutput.end()
+        output.end()
       }())
         .catch(err => {
-          sendOutput.end(err)
+          output.end(err)
         })
 
-      yield * sendOutput
+      yield * output
 
+      /*
+      const b = byteStream(stream)
+      await b.write(uint8Buf.subarray(0, 8), options)
+
+      while (sendBytes > 0) {
+        let toSend: number = writeBlockSize
+
+        if (toSend > sendBytes) {
+          toSend = sendBytes
+        }
+
+        const chunk = uint8Buf.subarray(0, toSend)
+
+        await b.write(chunk, options)
+
+        sendBytes -= toSend
+
+        if (Date.now() - lastReportedTime > 1000) {
+          yield {
+            type: 'intermediary',
+            timeSeconds: (Date.now() - lastReportedTime) / 1000,
+            uploadBytes: lastAmountOfBytesSent,
+            downloadBytes: 0
+          }
+
+          // record last reported time after `console.log` because it can
+          // affect benchmark timings
+          lastReportedTime = Date.now()
+          lastAmountOfBytesSent = 0
+        }
+
+        lastAmountOfBytesSent += toSend
+        totalBytesSent += toSend
+      }
+
+      // sent all the bytes, close the write end of the stream
+      await b.unwrap().closeWrite()
+
+*/
       // Read the received bytes
       let lastAmountOfBytesReceived = 0
       lastReportedTime = Date.now()
       let totalBytesReceived = 0
+      /*
+      while (totalBytesReceived < receiveBytes) {
+        const buf = await b.read(1024, options)
 
+        if (Date.now() - lastReportedTime > 1000) {
+          yield {
+            type: 'intermediary',
+            timeSeconds: (Date.now() - lastReportedTime) / 1000,
+            uploadBytes: 0,
+            downloadBytes: lastAmountOfBytesReceived
+          }
+
+          // record last reported time after `console.log` because it can
+          // affect benchmark timings
+          lastReportedTime = Date.now()
+          lastAmountOfBytesReceived = 0
+        }
+
+        lastAmountOfBytesReceived += buf.byteLength
+        totalBytesReceived += buf.byteLength
+      }
+*/
       for await (const buf of stream.source) {
-        options.signal?.throwIfAborted()
-
         if (Date.now() - lastReportedTime > 1000) {
           yield {
             type: 'intermediary',

@@ -76,8 +76,9 @@ export class Fetch implements Startable, FetchInterface {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      this.log('using default timeout of %d ms', this.init.timeout)
-      signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
+      const timeout = this.init.timeout ?? DEFAULT_TIMEOUT
+      this.log('using default timeout of %d ms', timeout)
+      signal = AbortSignal.timeout(timeout)
 
       setMaxListeners(Infinity, signal)
     }

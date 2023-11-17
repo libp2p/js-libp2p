@@ -15,7 +15,7 @@ import type { Duplex, Source } from 'it-stream-types'
 
 describe('circuit-relay utils', () => {
   it('should create relay', async () => {
-    const received = pushable()
+    const received = pushable<Uint8Array>()
 
     const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
@@ -60,7 +60,7 @@ describe('circuit-relay utils', () => {
   })
 
   it('should create data limited relay', async () => {
-    const received = pushable()
+    const received = pushable<Uint8Array>()
 
     const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
@@ -108,7 +108,7 @@ describe('circuit-relay utils', () => {
   })
 
   it('should create data limited relay that limits data in both directions', async () => {
-    const received = pushable()
+    const received = pushable<Uint8Array>()
 
     const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {
@@ -168,7 +168,7 @@ describe('circuit-relay utils', () => {
   })
 
   it('should create time limited relay', async () => {
-    const received = pushable()
+    const received = pushable<Uint8Array>()
 
     const local: Duplex<any, Source<any>, any> = {
       source: (async function * () {

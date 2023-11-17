@@ -67,7 +67,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i protons",
+    "dep-check": "aegir dep-check",
     "build": "aegir build",
     "generate": "protons test/message/rpc.proto",
     "test": "aegir test",
@@ -84,7 +84,7 @@
     "@libp2p/interface-internal": "^0.1.9",
     "@libp2p/peer-collections": "^4.0.8",
     "@libp2p/peer-id": "^3.0.6",
-    "abortable-iterator": "^5.0.1",
+    "@libp2p/utils": "^4.0.7",
     "it-length-prefixed": "^9.0.3",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.1",

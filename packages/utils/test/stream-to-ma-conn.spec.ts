@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { defaultLogger } from '@libp2p/logger'
+import { defaultLogger, logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -27,7 +27,8 @@ function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
     id: `muxed-stream-${Math.random()}`,
     status: 'open',
     readStatus: 'ready',
-    writeStatus: 'ready'
+    writeStatus: 'ready',
+    log: logger('muxed-stream')
   }
 
   return muxedStream

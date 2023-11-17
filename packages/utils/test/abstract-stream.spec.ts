@@ -1,12 +1,12 @@
+import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { AbstractStream } from '../../src/stream-muxer/stream.js'
-import { logger } from '../fixtures/logger.js'
-import type { AbortOptions } from '../../src/index.js'
+import { AbstractStream } from '../src/abstract-stream.js'
+import type { AbortOptions } from '@libp2p/interface'
 
 class TestStream extends AbstractStream {
   async sendNewStream (options?: AbortOptions): Promise<void> {
@@ -37,7 +37,7 @@ describe('abstract stream', () => {
     stream = new TestStream({
       id: 'test',
       direction: 'outbound',
-      log: logger()
+      log: logger('test')
     })
   })
 

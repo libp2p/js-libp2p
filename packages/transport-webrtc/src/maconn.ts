@@ -32,7 +32,8 @@ export interface WebRTCMultiaddrConnectionComponents {
 }
 
 export class WebRTCMultiaddrConnection implements MultiaddrConnection {
-  private readonly log: Logger
+  readonly log: Logger
+
   /**
    * WebRTC Peer Connection
    */

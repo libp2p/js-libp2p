@@ -1,12 +1,11 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { abortableSource } from 'abortable-iterator'
 import { CLOSE_TIMEOUT } from './constants.js'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { MultiaddrConnection } from '@libp2p/interface/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 
-export interface SocketToConnOptions extends AbortOptions {
+export interface SocketToConnOptions {
   localAddr?: Multiaddr
   logger: ComponentLogger
 }
@@ -14,14 +13,12 @@ export interface SocketToConnOptions extends AbortOptions {
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
 export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, options: SocketToConnOptions): MultiaddrConnection {
-  const log = options.logger.forComponent('libp2p:websockets:socket')
+  const log = options.logger.forComponent('libp2p:websockets:maconn')
 
   const maConn: MultiaddrConnection = {
-    async sink (source) {
-      if ((options?.signal) != null) {
-        source = abortableSource(source, options.signal)
-      }
+    log,
 
+    async sink (source) {
       try {
         await stream.sink(source)
       } catch (err: any) {
@@ -31,7 +28,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
       }
     },
 
-    source: (options.signal != null) ? abortableSource(stream.source, options.signal) : stream.source,
+    source: stream.source,
 
     remoteAddr,
 

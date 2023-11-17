@@ -1,8 +1,6 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { abortableSource } from 'abortable-iterator'
+import { closeSource } from '@libp2p/utils/close-source'
 import { anySignal } from 'any-signal'
-import * as lp from 'it-length-prefixed'
-import { AbortError, raceSignal } from 'race-signal'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
@@ -29,41 +27,40 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
     options.signal
   ])
 
-  const source = abortableSource(stream.unwrap().unwrap().source, signal, {
-    returnOnAbort: true
-  })
+  const abortListener = (): void => {
+    closeSource(stream.unwrap().unwrap().source, options.log)
+  }
+
+  signal.addEventListener('abort', abortListener)
 
   try {
     // read candidates until we are connected or we reach the end of the stream
-    for await (const buf of lp.decode(source)) {
-      const message = Message.decode(buf)
+    while (true) {
+      const message = await Promise.race([
+        connectedPromise.promise,
+        stream.read()
+      ])
+
+      // stream ended or we became connected
+      if (message == null) {
+        break
+      }
 
       if (message.type !== Message.Type.ICE_CANDIDATE) {
         throw new CodeError('ICE candidate message expected', 'ERR_NOT_ICE_CANDIDATE')
       }
 
-      let candidateInit = JSON.parse(message.data ?? 'null')
+      const candidateInit = JSON.parse(message.data ?? 'null')
 
-      if (candidateInit === '') {
-        options.log.trace('end-of-candidates for this generation received')
-        candidateInit = {
-          candidate: '',
-          sdpMid: '0',
-          sdpMLineIndex: 0
-        }
-      }
-
-      if (candidateInit === null) {
-        options.log.trace('end-of-candidates received')
-        candidateInit = {
-          candidate: null,
-          sdpMid: '0',
-          sdpMLineIndex: 0
-        }
-      }
-
-      // a null candidate means end-of-candidates
+      // an empty string means this generation of candidates is complete, a null
+      // candidate means candidate gathering has finished
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidateInit === '' || candidateInit === null) {
+        options.log.trace('end-of-candidates received')
+
+        continue
+      }
+
       const candidate = new RTCIceCandidate(candidateInit)
 
       options.log.trace('%s received new ICE candidate', options.direction, candidate)
@@ -71,24 +68,15 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
       try {
         await pc.addIceCandidate(candidate)
       } catch (err) {
-        options.log.error('%s bad candidate received', options.direction, err)
+        options.log.error('%s bad candidate received', options.direction, candidateInit, err)
       }
     }
   } catch (err) {
     options.log.error('%s error parsing ICE candidate', options.direction, err)
   } finally {
+    signal.removeEventListener('abort', abortListener)
     signal.clear()
   }
-
-  if (options.signal?.aborted === true) {
-    throw new AbortError('Aborted while reading ICE candidates', 'ERR_ICE_CANDIDATES_READ_ABORTED')
-  }
-
-  // read all available ICE candidates, wait for connection state change
-  await raceSignal(connectedPromise.promise, options.signal, {
-    errorMessage: 'Aborted before connected',
-    errorCode: 'ERR_ABORTED_BEFORE_CONNECTED'
-  })
 }
 
 export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {

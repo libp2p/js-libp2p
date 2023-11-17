@@ -19,13 +19,51 @@ function randomBuffer (): Uint8Array {
   return uint8ArrayFromString(Math.random().toString())
 }
 
-const infiniteRandom = {
-  [Symbol.asyncIterator]: async function * () {
-    while (true) {
-      yield new Uint8ArrayList(randomBuffer())
-      await delay(50)
+function infiniteRandom (): AsyncGenerator<Uint8ArrayList, void, unknown> {
+  let done: Error | boolean = false
+
+  const generator: AsyncGenerator<Uint8ArrayList, void, unknown> = {
+    [Symbol.asyncIterator]: () => {
+      return generator
+    },
+    async next () {
+      await delay(10)
+
+      if (done instanceof Error) {
+        throw done
+      }
+
+      if (done) {
+        return {
+          done: true,
+          value: undefined
+        }
+      }
+
+      return {
+        done: false,
+        value: new Uint8ArrayList(randomBuffer())
+      }
+    },
+    async return (): Promise<IteratorReturnResult<void>> {
+      done = true
+
+      return {
+        done: true,
+        value: undefined
+      }
+    },
+    async throw (err: Error): Promise<IteratorReturnResult<void>> {
+      done = err
+
+      return {
+        done: true,
+        value: undefined
+      }
     }
   }
+
+  return generator
 }
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
@@ -55,7 +93,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void Promise.all(
         streams.map(async stream => {
           await pipe(
-            infiniteRandom,
+            infiniteRandom(),
             stream,
             drain
           )
@@ -97,7 +135,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void Promise.all(
         streams.map(async stream => {
           await pipe(
-            infiniteRandom,
+            infiniteRandom(),
             stream,
             drain
           )
@@ -139,7 +177,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const streamPipes = streams.map(async stream => {
         await pipe(
-          infiniteRandom,
+          infiniteRandom(),
           stream,
           drain
         )
@@ -213,7 +251,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         controllers.push(controller)
 
         try {
-          const abortableRand = abortableSource(infiniteRandom, controller.signal, { abortCode: 'ERR_TEST_ABORT' })
+          const abortableRand = abortableSource(infiniteRandom(), controller.signal, { abortCode: 'ERR_TEST_ABORT' })
           await pipe(abortableRand, stream, drain)
         } catch (err: any) {
           if (err.code !== 'ERR_TEST_ABORT') throw err

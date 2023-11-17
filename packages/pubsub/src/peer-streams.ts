@@ -1,5 +1,5 @@
 import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { abortableSource } from 'abortable-iterator'
+import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
@@ -90,18 +90,22 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
    * Attach a raw inbound stream and setup a read stream
    */
   attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+    const abortListener = (): void => {
+      closeSource(stream.source, this.log)
+    }
+
+    this._inboundAbortController.signal.addEventListener('abort', abortListener, {
+      once: true
+    })
+
     // Create and attach a new inbound stream
     // The inbound stream is:
     // - abortable, set to only return on abort, rather than throw
     // - transformed with length-prefix transform
     this._rawInboundStream = stream
-    this.inboundStream = abortableSource(
-      pipe(
-        this._rawInboundStream,
-        (source) => lp.decode(source)
-      ),
-      this._inboundAbortController.signal,
-      { returnOnAbort: true }
+    this.inboundStream = pipe(
+      this._rawInboundStream,
+      (source) => lp.decode(source)
     )
 
     this.dispatchEvent(new CustomEvent('stream:inbound'))
@@ -121,7 +125,6 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
 
     this._rawOutboundStream = stream
     this.outboundStream = pushable<Uint8ArrayList>({
-      objectMode: true,
       onEnd: (shouldEmit) => {
         // close writable side of the stream
         if (this._rawOutboundStream != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain

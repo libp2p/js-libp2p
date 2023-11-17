@@ -1,4 +1,4 @@
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { MultiaddrConnection, Stream } from '@libp2p/interface/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -15,55 +15,65 @@ export interface StreamProperties {
  */
 export function streamToMaConnection (props: StreamProperties): MultiaddrConnection {
   const { stream, remoteAddr, logger } = props
-  const { sink, source } = stream
   const log = logger.forComponent('libp2p:stream:converter')
 
   let closedRead = false
   let closedWrite = false
 
-  const mapSource = (async function * () {
+  // piggyback on `stream.close` invocations to close maconn
+  const streamClose = stream.close.bind(stream)
+  stream.close = async (options) => {
+    await streamClose(options)
+    close(true)
+  }
+
+  // piggyback on `stream.abort` invocations to close maconn
+  const streamAbort = stream.abort.bind(stream)
+  stream.abort = (err) => {
+    streamAbort(err)
+    close(true)
+  }
+
+  // piggyback on `stream.sink` invocations to close maconn
+  const streamSink = stream.sink.bind(stream)
+  stream.sink = async (source) => {
     try {
-      for await (const list of source) {
-        if (list instanceof Uint8Array) {
-          yield list
-        } else {
-          yield * list
-        }
+      await streamSink(source)
+    } catch (err: any) {
+      // If aborted we can safely ignore
+      if (err.type !== 'aborted') {
+        // If the source errored the socket will already have been destroyed by
+        // toIterable.duplex(). If the socket errored it will already be
+        // destroyed. There's nothing to do here except log the error & return.
+        log(err)
       }
     } finally {
-      closedRead = true
+      closedWrite = true
       close()
     }
-  }())
+  }
 
   const maConn: MultiaddrConnection = {
-    async sink (source) {
+    log,
+    sink: stream.sink,
+    source: (async function * () {
       try {
-        await sink(source)
-      } catch (err: any) {
-        // If aborted we can safely ignore
-        if (err.type !== 'aborted') {
-          // If the source errored the socket will already have been destroyed by
-          // toIterable.duplex(). If the socket errored it will already be
-          // destroyed. There's nothing to do here except log the error & return.
-          log(err)
+        for await (const list of stream.source) {
+          if (list instanceof Uint8Array) {
+            yield list
+          } else {
+            yield * list
+          }
         }
       } finally {
-        closedWrite = true
+        closedRead = true
         close()
       }
-    },
-    source: mapSource,
+    }()),
     remoteAddr,
     timeline: { open: Date.now(), close: undefined },
-    async close (options?: AbortOptions) {
-      close(true)
-      await stream.close(options)
-    },
-    abort (err: Error): void {
-      close(true)
-      stream.abort(err)
-    }
+    close: stream.close,
+    abort: stream.abort
   }
 
   function close (force?: boolean): void {

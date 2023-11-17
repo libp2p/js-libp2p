@@ -6,6 +6,7 @@ import { expect } from 'aegir/chai'
 import { detect } from 'detect-browser'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
+import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { initiateConnection } from '../src/private-to-private/initiate-connection.js'
@@ -105,13 +106,15 @@ describe('webrtc basic', () => {
       ])
     ).to.eventually.be.fulfilled()
 
-    if (isFirefox) {
-      expect(initiator.peerConnection.iceConnectionState).eq('connected')
-      expect(recipient.peerConnection.iceConnectionState).eq('connected')
-      return
-    }
-    expect(initiator.peerConnection.connectionState).eq('connected')
-    expect(recipient.peerConnection.connectionState).eq('connected')
+    await pRetry(async () => {
+      if (isFirefox) {
+        expect(initiator.peerConnection.iceConnectionState).eq('connected')
+        expect(recipient.peerConnection.iceConnectionState).eq('connected')
+        return
+      }
+      expect(initiator.peerConnection.connectionState).eq('connected')
+      expect(recipient.peerConnection.connectionState).eq('connected')
+    })
 
     initiator.peerConnection.close()
     recipient.peerConnection.close()

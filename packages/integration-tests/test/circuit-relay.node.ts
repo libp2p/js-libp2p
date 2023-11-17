@@ -16,6 +16,7 @@ import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { createLibp2p, type Libp2pOptions } from 'libp2p'
 import defer from 'p-defer'
+import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -502,13 +503,15 @@ describe('circuit-relay', () => {
       expect(conns).to.have.lengthOf(1)
       expect(conns).to.have.nested.property('[0].status', 'open')
 
-      // we should not have any streams with the hop codec
-      const streams = local.getConnections(relay1.peerId)
-        .map(conn => conn.streams)
-        .flat()
-        .filter(stream => stream.protocol === RELAY_V2_HOP_CODEC)
+      await pRetry(() => {
+        // we should not have any streams with the hop codec
+        const streams = local.getConnections(relay1.peerId)
+          .map(conn => conn.streams)
+          .flat()
+          .filter(stream => stream.protocol === RELAY_V2_HOP_CODEC)
 
-      expect(streams).to.be.empty()
+        expect(streams).to.be.empty()
+      })
     })
 
     it('destination peer should stay connected to an already connected relay on hop failure', async () => {

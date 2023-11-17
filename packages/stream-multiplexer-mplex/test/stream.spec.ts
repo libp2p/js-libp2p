@@ -366,6 +366,7 @@ describe('stream', () => {
     ])
 
     expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
+      MessageTypes.MESSAGE_RECEIVER,
       MessageTypes.MESSAGE_RECEIVER
     ])
   })
@@ -393,7 +394,9 @@ describe('stream', () => {
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
-      MessageTypes.MESSAGE_INITIATOR
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.CLOSE_INITIATOR
     ])
 
     // Recipient reset after two messages
@@ -429,6 +432,7 @@ describe('stream', () => {
 
     // Reset after two messages
     expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
+      MessageTypes.MESSAGE_RECEIVER,
       MessageTypes.MESSAGE_RECEIVER
     ])
   })
@@ -456,7 +460,9 @@ describe('stream', () => {
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
-      MessageTypes.MESSAGE_INITIATOR
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.CLOSE_INITIATOR
     ])
 
     // Recipient reset after two messages

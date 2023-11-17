@@ -463,6 +463,8 @@ export class DialQueue {
     const dialAbortControllers: Array<(AbortController | undefined)> = pendingDial.multiaddrs.map(() => new AbortController())
 
     try {
+      let success = false
+
       // internal peer dial queue to ensure we only dial the configured number of addresses
       // per peer at the same time to prevent one peer with a lot of addresses swamping
       // the dial queue
@@ -470,7 +472,9 @@ export class DialQueue {
         concurrency: this.maxParallelDialsPerPeer
       })
       peerDialQueue.on('error', (err) => {
-        this.log.error('error dialling', err)
+        if (!success) {
+          this.log.error('error dialling [%s] %o', pendingDial.multiaddrs, err)
+        }
       })
 
       const conn = await Promise.any(pendingDial.multiaddrs.map(async (addr, i) => {
@@ -534,6 +538,7 @@ export class DialQueue {
               })
 
               this.log('dial to %a succeeded', addr)
+              success = true
 
               // resolve the connection promise
               deferred.resolve(conn)

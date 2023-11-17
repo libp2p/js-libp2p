@@ -22,25 +22,16 @@
 
 import { PROTOCOL_ID } from './constants.js'
 import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
-import type { Duplex, Source } from 'it-stream-types'
 
 export { PROTOCOL_ID }
 
-export interface ProtocolStream<TSource, TSink = TSource, RSink = Promise<void>> {
-  stream: Duplex<AsyncGenerator<TSource>, Source<TSink>, RSink>
+export interface ProtocolStream<Stream> {
+  stream: Stream
   protocol: string
 }
 
-export interface ByteArrayInit extends AbortOptions, LoggerOptions {
-  writeBytes: true
-}
-
-export interface ByteListInit extends AbortOptions, LoggerOptions {
-  writeBytes?: false
-}
-
 export interface MultistreamSelectInit extends AbortOptions, LoggerOptions {
-  writeBytes?: boolean
+
 }
 
 export { select, lazySelect } from './select.js'

@@ -50,6 +50,7 @@ export class ConnectionImpl implements Connection {
   public encryption?: string
   public status: ConnectionStatus
   public transient: boolean
+  public readonly log: Logger
 
   /**
    * User provided tags
@@ -74,8 +75,6 @@ export class ConnectionImpl implements Connection {
    */
   private readonly _getStreams: () => Stream[]
 
-  private readonly log: Logger
-
   /**
    * An implementation of the js-libp2p connection.
    * Any libp2p transport should use an upgrader to return this connection.
@@ -92,7 +91,7 @@ export class ConnectionImpl implements Connection {
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
     this.transient = init.transient ?? false
-    this.log = init.logger.forComponent('libp2p:connection')
+    this.log = init.logger.forComponent(`libp2p:connection:${this.direction}:${this.id}`)
 
     if (this.remoteAddr.getPeerId() == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
