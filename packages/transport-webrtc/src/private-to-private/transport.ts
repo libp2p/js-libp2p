@@ -22,7 +22,7 @@ import type { TransportManager } from '@libp2p/interface-internal/transport-mana
 
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
-export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
+export const SIGNALING_PROTO_ID = '/webrtc-signaling'
 const INBOUND_CONNECTION_TIMEOUT = 30 * 1000
 
 export interface WebRTCTransportInit {
