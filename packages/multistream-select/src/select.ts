@@ -66,11 +66,13 @@ export async function select <Stream extends Duplex<any, any, any>> (stream: Str
   const p2 = uint8ArrayFromString(`${protocol}\n`)
   await multistream.writeAll(lp, [p1, p2], options)
 
+  options?.log.trace('select: reading multistream-select header')
   let response = await multistream.readString(lp, options)
   options?.log.trace('select: read "%s"', response)
 
   // Read the protocol response if we got the protocolId in return
   if (response === PROTOCOL_ID) {
+    options?.log.trace('select: reading protocol response')
     response = await multistream.readString(lp, options)
     options?.log.trace('select: read "%s"', response)
   }
@@ -84,6 +86,7 @@ export async function select <Stream extends Duplex<any, any, any>> (stream: Str
   for (const protocol of protocols) {
     options?.log.trace('select: write "%s"', protocol)
     await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
+    options?.log.trace('select: reading protocol response')
     const response = await multistream.readString(lp, options)
     options?.log.trace('select: read "%s" for "%s"', response, protocol)
 

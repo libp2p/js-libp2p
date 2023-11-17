@@ -71,8 +71,8 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
     }
 
     if (protocols.includes(protocol)) {
-      await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
       options.log.trace('respond with "%s" for "%s"', protocol, protocol)
+      await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
 
       return { stream: lp.unwrap(), protocol }
     }
@@ -89,7 +89,7 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
       continue
     }
 
-    await multistream.write(lp, uint8ArrayFromString('na\n'), options)
     options.log('respond with "na" for "%s"', protocol)
+    await multistream.write(lp, uint8ArrayFromString('na\n'), options)
   }
 }
