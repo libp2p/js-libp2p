@@ -97,9 +97,6 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   }
 
   createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
-    // stop listening for early streams
-    this.peerConnection.ondatachannel = null
-
     return new DataChannelMuxer(this.components, {
       ...init,
       peerConnection: this.peerConnection,
@@ -150,7 +147,7 @@ export class DataChannelMuxer implements StreamMuxer {
      *
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
-    this.peerConnection.addEventListener('datachannel', ({ channel }) => {
+    this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming datachannel with channel id %d', channel.id)
 
       // 'init' channel is only used during connection establishment
@@ -175,7 +172,7 @@ export class DataChannelMuxer implements StreamMuxer {
       this.streams.push(stream)
       this.metrics?.increment({ incoming_stream: true })
       init?.onIncomingStream?.(stream)
-    })
+    }
 
     // the DataChannelMuxer constructor is called during set up of the
     // connection by the upgrader.
