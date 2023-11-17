@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Docs for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/doc#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/doc#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

@@ -16,8 +16,6 @@ Metrics allow you to gather run time statistics on your libp2p node.
 - See the [API](./API.md) for Metrics usage. Metrics in libp2p do not emit events, as such applications wishing to read Metrics will need to do so actively. This ensures that the system is not unnecessarily firing update notifications.
 - For large installations you may wish to combine the statistics with a visualizer such as [Graphana](https://grafana.com/)
 
-There are two types of metrics [`StreamMetrics`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L66-L115) and [`ComponentMetrics`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L183-L193). `StreamMetrics` track data in and out of streams, `ComponentMetrics` allow system components to record metrics that are of interest to the observer.
-
 Although designed to primarily integrate with tools such as [Prometheus](https://prometheus.io/) it does not introduce any dependencies that require you to use any particular tool to store or graph metrics.
 
 ## Tracking
@@ -28,7 +26,7 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 
 ### Enable metrics
 
-First enable metrics tracking by supplying a [Metrics](https://www.npmjs.com/package/@libp2p/interface-metrics) implementation:
+First enable metrics tracking by supplying a [Metrics](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/metrics/index.ts#L150) implementation:
 
 ```ts
 import { createLibp2p } from 'libp2p'

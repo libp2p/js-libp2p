@@ -3,7 +3,7 @@
   "version": "9.0.14",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-mdns#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

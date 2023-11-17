@@ -3,7 +3,7 @@
   "version": "9.0.9",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-store#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

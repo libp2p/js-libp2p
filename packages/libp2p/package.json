@@ -3,7 +3,7 @@
   "version": "0.46.21",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/libp2p#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

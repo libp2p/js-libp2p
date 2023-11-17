@@ -3,7 +3,7 @@
   "version": "6.0.9",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-record#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Implementation of the Identify Protocol",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/protocol-identify#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-identify#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

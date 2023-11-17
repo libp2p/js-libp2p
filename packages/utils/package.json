@@ -3,7 +3,7 @@
   "version": "4.0.7",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/utils#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

@@ -4,7 +4,7 @@
   "description": "Collect libp2p metrics for scraping by Prometheus or Graphana",
   "author": "",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/metrics-prometheus#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-prometheus#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

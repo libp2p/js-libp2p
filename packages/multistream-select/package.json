@@ -3,7 +3,7 @@
   "version": "4.0.6",
   "description": "JavaScript implementation of multistream-select",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/multistream-select#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/multistream-select#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

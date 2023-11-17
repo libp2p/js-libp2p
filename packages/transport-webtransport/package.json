@@ -3,7 +3,7 @@
   "version": "3.1.10",
   "description": "JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

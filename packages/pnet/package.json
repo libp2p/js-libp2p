@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Implementation of Connection protection management via a shared secret",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/pnet#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pnet#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

@@ -26,7 +26,7 @@ It's possible to limit the total amount of connections a node is able to make (c
 
 We can also limit the number of connections in a 'pending' state. These connections have been opened by a remote peer but peer IDs have yet to be exchanged and/or connection encryption and multiplexing negotiated. Once this limit is hit further connections will be closed unless the remote peer has an address in the [allow list](#allowdeny-lists).
 
-All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
+All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -83,7 +83,7 @@ await libp2p.peerStore.merge(peerId, {
 
 To prevent individual peers from opening multiple connections to a node, an `inboundConnectionThreshold` is configurable. This is the number of connections per second an individual peer can open to a node, once this threshold is crossed all further connections opened by that peer will be rejected until the threshold resets in the next second.
 
-All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/master/src/connection-manager/index.ts) - please see that file for the current values.
+All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/connection-manager/index.ts) - please see that file for the current values.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -109,9 +109,9 @@ These settings are done on a per-muxer basis, please see the README of the relev
 
 ### Mplex
 
-[@libp2p/mplex](https://github.com/libp2p/js-libp2p-mplex) supports the following.
+[@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) supports the following.
 
-All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p-mplex/blob/master/src/mplex.ts) - please see that file for the current values.
+All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/stream-multiplexer-mplex/src/mplex.ts) - please see that file for the current values.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -186,13 +186,13 @@ const node = await createLibp2p({
 
 ### Protocol limits
 
-When registering listeners for custom protocols, the maximum number of simultaneously open inbound and outbound streams per-connection can be specified. If not specified these will default to [32 inbound streams and 64 outbound streams](https://github.com/libp2p/js-libp2p/blob/master/src/registrar.ts#L14-L15).
+When registering listeners for custom protocols, the maximum number of simultaneously open inbound and outbound streams per-connection can be specified. If not specified these will default to [32 inbound streams and 64 outbound streams](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/registrar.ts#L14-L15).
 
 If more than this number of streams for the given protocol are opened on a single connection, subsequent new streams for that protocol will be immediately reset.
 
 Since incoming stream data is buffered until it is consumed, you should attempt to specify the minimum amount of streams required to keep memory usage to a minimum.
 
-All fields are optional. The default values are defined in [src/registrar.ts](https://github.com/libp2p/js-libp2p/blob/master/src/registrar.ts) - please see that file for the current values.
+All fields are optional. The default values are defined in [src/registrar.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/registrar.ts) - please see that file for the current values.
 
 ```ts
 import { createLibp2p } from 'libp2p';
@@ -220,9 +220,9 @@ A non-exhaustive list follows:
 
 ### TCP
 
-The [@libp2p/tcp](https://github.com/libp2p/js-libp2p-tcp) transport allows additional limits to be configured.
+The [@libp2p/tcp](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp) transport allows additional limits to be configured.
 
-All fields are optional. The full list of options is defined in [@libp2p/tcp/src/index.ts](https://github.com/libp2p/js-libp2p-tcp/blob/master/src/index.ts) - please see that file for more details.
+All fields are optional. The full list of options is defined in [@libp2p/tcp/src/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-tcp/src/index.ts) - please see that file for more details.
 
 ```ts
 import { createLibp2p } from 'libp2p'

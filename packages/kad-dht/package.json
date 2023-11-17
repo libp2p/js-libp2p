@@ -3,7 +3,7 @@
   "version": "10.0.15",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

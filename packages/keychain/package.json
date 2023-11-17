@@ -3,7 +3,7 @@
   "version": "3.0.8",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/keychain#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

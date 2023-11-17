@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "libp2p integration tests",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/integration-tests#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/integration-tests#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

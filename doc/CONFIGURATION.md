@@ -71,12 +71,12 @@ Bear in mind that a **transport** and **connection encryption** module are **req
 
 Some available transports are:
 
-- [@libp2p/tcp](https://github.com/libp2p/tree/master/packages/transport-tcp) (not available in browsers)
-- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webrtc)
-- [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets)
-- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/master/packages/transport-webtransport)
+- [@libp2p/tcp](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp) (not available in browsers)
+- [@libp2p/webrtc](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc)
+- [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets)
+- [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport)
 
-If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-interfaces/tree/master/src/transport).
+If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport).
 
 If you want to know more about libp2p transports, you should read the following content:
 
@@ -89,12 +89,12 @@ If you want to know more about libp2p transports, you should read the following 
 
 Some available stream multiplexers are:
 
-- [@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex)
+- [@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex)
 - [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
 
-If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer).
+If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer).
 
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
@@ -113,9 +113,9 @@ If you configure multiple muxers for use in your application, js-libp2p will cho
 Some available connection encryption protocols:
 
 - [@chainsafe/libp2p-noise](https://github.com/chainsafe/js-libp2p-noise)
-- [Plaintext](https://github.com/libp2p/js-libp2p/blob/master/src/insecure/index.ts) (Not for production use)
+- [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/src/packages/connection-encrypter-plaintext/index.ts) (Not for production use)
 
-If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-interfaces/tree/master/src/crypto).
+If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto).
 
 If you want to know more about libp2p connection encryption, you should read the following content:
 
@@ -128,12 +128,12 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns)
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5)
 
-If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-discovery).
+If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
 
 If you want to know more about libp2p peer discovery, you should read the following content:
 
@@ -145,11 +145,11 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 Some available content routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
 - [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
-If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/content-routing).
+If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/content-routing).
 
 If you want to know more about libp2p content routing, you should read the following content:
 
@@ -161,10 +161,10 @@ If you want to know more about libp2p content routing, you should read the follo
 
 Some available peer routing modules are:
 
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht)
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
 
-If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-interfaces/tree/master/src/peer-routing). **(WIP: This module is not yet implemented)**
+If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/peer-routing). **(WIP: This module is not yet implemented)**
 
 If you want to know more about libp2p peer routing, you should read the following content:
 
@@ -174,7 +174,7 @@ If you want to know more about libp2p peer routing, you should read the followin
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/master/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
@@ -227,7 +227,7 @@ Besides the `modules` and `config`, libp2p allows other internal options and con
 - `addresses`: an object containing `listen`, `announce` and `announceFilter`:
   - `listen` addresses will be provided to the libp2p underlying transports for listening on them.
   - `announce` addresses will be used to compute the advertises that the node should advertise to the network.
-  - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: returns all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p-utils) provides useful [multiaddr utilities](https://github.com/libp2p/js-libp2p-utils/blob/master/API.md#multiaddr-isloopbackma) to create your filters.
+  - `announceFilter`: filter function used to filter announced addresses programmatically: `(ma: Array<multiaddr>) => Array<multiaddr>`. Default: returns all addresses. [`libp2p-utils`](https://github.com/libp2p/js-libp2p/tree/main/packages/utils) provides useful [multiaddr utilities](https://libp2p.github.io/js-libp2p/modules/_libp2p_utils.html) to create your filters.
 
 It's important to note that some services depend on others in order to function optimally, this is further explained in the examples below.
 
@@ -866,7 +866,7 @@ const node = await createLibp2p({
 
 #### Customizing Transports
 
-Some Transports can be passed additional options when they are created. For example, [webRTC](../packages/transport-webrtc) accepts optional [DataChannel Options](https://github.com/libp2p/js-libp2p/blob/master/packages/transport-webrtc/src/stream.ts#L13-L17). In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
+Some Transports can be passed additional options when they are created. For example, [webRTC](../packages/transport-webrtc) accepts optional [DataChannel Options](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-webrtc/src/stream.ts#L13-L17). In addition to libp2p passing itself and an `Upgrader` to handle connection upgrading, libp2p will also pass the options, if they are provided, from `config.transport`.
 
 ```js
 import { createLibp2p } from 'libp2p'

@@ -3,7 +3,7 @@
   "version": "3.0.8",
   "description": "Create PeerId instances",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-id-factory#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

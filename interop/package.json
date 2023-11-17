@@ -4,7 +4,7 @@
   "description": "Multidimensional interop tests",
   "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/interop#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/interop#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"

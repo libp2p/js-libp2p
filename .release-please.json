@@ -1,4 +1,5 @@
 {
+  "last-release-sha": "17d980c902fa5314e954508255a41c0854416d47",
   "plugins": ["node-workspace"],
   "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
