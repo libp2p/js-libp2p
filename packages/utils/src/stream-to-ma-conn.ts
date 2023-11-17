@@ -54,6 +54,7 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
   }
 
   const maConn: MultiaddrConnection = {
+    log,
     sink: stream.sink,
     source: (async function * () {
       try {

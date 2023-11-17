@@ -66,6 +66,12 @@ export interface DataChannelOptions {
    * controls how long we wait for the acknowledgement in ms (default: 5s)
    */
   closeTimeout?: number
+
+  /**
+   * When sending the first data message, if the channel is not in the "open"
+   * state, wait this long for the "open" event to fire.
+   */
+  openTimeout?: number
 }
 
 /**

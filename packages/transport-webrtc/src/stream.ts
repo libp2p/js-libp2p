@@ -57,6 +57,12 @@ export const MAX_MESSAGE_SIZE = 16 * 1024
  */
 export const FIN_ACK_TIMEOUT = 5000
 
+/**
+ * When sending data messages, if the channel is not in the "open" state, wait
+ * this long for the "open" event to fire.
+ */
+export const OPEN_TIMEOUT = 5000
+
 export class WebRTCStream extends AbstractStream {
   /**
    * The data channel used to send and receive data
@@ -83,7 +89,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
-  private readonly channelOpen: DeferredPromise<void>
+  private readonly openTimeout: number
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
@@ -127,13 +133,12 @@ export class WebRTCStream extends AbstractStream {
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
-    this.channelOpen = pDefer()
+    this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
 
     // set up initial state
     switch (this.channel.readyState) {
       case 'open':
         this.timeline.open = new Date().getTime()
-        this.channelOpen.resolve()
         break
 
       case 'closed':
@@ -154,7 +159,6 @@ export class WebRTCStream extends AbstractStream {
     // handle RTCDataChannel events
     this.channel.onopen = (_evt) => {
       this.timeline.open = new Date().getTime()
-      this.channelOpen.resolve()
     }
 
     this.channel.onclose = (_evt) => {
@@ -205,8 +209,22 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
+    if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
+      throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
+    }
+
+    if (this.channel.readyState !== 'open') {
+      this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
+      await pEvent(this.channel, 'open', { timeout: this.openTimeout })
+      this.log('channel state is now "%s", sending data', this.channel.readyState)
+    }
+
+    // send message without copying data
+    this.channel.send(data.subarray())
+
     if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
       try {
+        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
@@ -216,17 +234,6 @@ export class WebRTCStream extends AbstractStream {
         throw err
       }
     }
-
-    if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
-      throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
-    }
-
-    if (this.channel.readyState !== 'open') {
-      await this.channelOpen.promise
-    }
-
-    // send message without copying data
-    this.channel.send(data.subarray())
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
@@ -321,7 +328,7 @@ export class WebRTCStream extends AbstractStream {
       // flags can be sent while we or the remote are closing the datachannel so
       // if the channel isn't open, don't try to send it but return false to let
       // the caller know and act if they need to
-      this.log.trace('not sending flag %s because channel is not open', flag.toString())
+      this.log.trace('not sending flag %s because channel is "%s" and not "open"', this.channel.readyState, flag.toString())
       return false
     }
 

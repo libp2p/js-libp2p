@@ -182,7 +182,9 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       log('%s socket abort due to error', lOptsStr, err)
 
       socket.destroy(err)
-    }
+    },
+
+    log
   }
 
   return maConn

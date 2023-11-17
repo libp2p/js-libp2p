@@ -27,7 +27,7 @@ describe('Listener', () => {
       ])
 
       const selection = await mss.handle(duplexes[0], protocol, {
-        log: logger('test')
+        log: logger('mss:test')
       })
       expect(selection.protocol).to.equal(protocol)
 
@@ -54,7 +54,7 @@ describe('Listener', () => {
       ])
 
       const selection = await mss.handle(duplexes[0], protocol, {
-        log: logger('test')
+        log: logger('mss:test')
       })
       expect(selection.protocol).to.equal(protocol)
 
@@ -79,7 +79,7 @@ describe('Listener', () => {
       ])
 
       await expect(mss.handle(duplexes[0], protocol, {
-        log: logger('test')
+        log: logger('mss:test')
       })).to.eventually.be.rejected()
     })
 
@@ -99,7 +99,7 @@ describe('Listener', () => {
       ])
 
       const selection = await mss.handle(duplexes[0], protocol, {
-        log: logger('test')
+        log: logger('mss:test')
       })
       expect(selection.protocol).to.equal(protocol)
 

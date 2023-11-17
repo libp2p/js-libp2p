@@ -1,15 +1,11 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { encode } from 'it-length-prefixed'
 import { lpStream } from 'it-length-prefixed-stream'
-import merge from 'it-merge'
-import { pushable } from 'it-pushable'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_PROTOCOL_LENGTH } from './constants.js'
 import * as multistream from './multistream.js'
 import { PROTOCOL_ID } from './index.js'
 import type { MultistreamSelectInit, ProtocolStream } from './index.js'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Duplex } from 'it-stream-types'
 
 /**
  * Negotiate a protocol to use from a list of protocols.
@@ -107,55 +103,51 @@ export async function select <Stream extends Duplex<any, any, any>> (stream: Str
  *
  * Use when it is known that the receiver supports the desired protocol.
  */
-export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Stream, protocol: string): ProtocolStream<Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>> {
-  // This is a signal to write the multistream headers if the consumer tries to
-  // read from the source
-  const negotiateTrigger = pushable<Uint8Array>()
-  let negotiated = false
+export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Stream, protocol: string, options: MultistreamSelectInit): ProtocolStream<Stream> {
+  const originalSink = stream.sink.bind(stream)
+  const originalSource = stream.source
+
+  const lp = lpStream({
+    sink: originalSink,
+    source: originalSource
+  }, {
+    maxDataLength: MAX_PROTOCOL_LENGTH
+  })
+
+  stream.sink = async source => {
+    options?.log.trace('lazy: write ["%s", "%s"]', PROTOCOL_ID, protocol)
+
+    await lp.writeV([
+      uint8ArrayFromString(`${PROTOCOL_ID}\n`),
+      uint8ArrayFromString(`${protocol}\n`)
+    ])
+
+    options?.log.trace('lazy: writing rest of "%s" stream', protocol)
+    await lp.unwrap().sink(source)
+  }
+
+  stream.source = (async function * () {
+    options?.log.trace('lazy: reading multistream select header')
+
+    let response = await multistream.readString(lp, options)
+    options?.log.trace('lazy: read multistream select header "%s"', response)
+
+    if (response === PROTOCOL_ID) {
+      response = await multistream.readString(lp, options)
+    }
+
+    options?.log.trace('lazy: read protocol "%s", expecting "%s"', response, protocol)
+
+    if (response !== protocol) {
+      throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
+    }
+
+    options?.log.trace('lazy: reading rest of "%s" stream', protocol)
+    yield * lp.unwrap().source
+  })()
+
   return {
-    stream: {
-      sink: async source => {
-        await stream.sink((async function * () {
-          let first = true
-
-          for await (const chunk of merge(source, negotiateTrigger)) {
-            if (first) {
-              first = false
-              negotiated = true
-              negotiateTrigger.end()
-              const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
-              const p2 = uint8ArrayFromString(`${protocol}\n`)
-              const list = new Uint8ArrayList(encode.single(p1), encode.single(p2))
-              if (chunk.length > 0) list.append(chunk)
-              yield * list
-            } else {
-              yield chunk
-            }
-          }
-        })())
-      },
-      source: (async function * () {
-        if (!negotiated) {
-          negotiateTrigger.push(new Uint8Array())
-        }
-
-        const lp = lpStream(stream, {
-          maxDataLength: MAX_PROTOCOL_LENGTH
-        })
-
-        let response = await multistream.readString(lp)
-
-        if (response === PROTOCOL_ID) {
-          response = await multistream.readString(lp)
-        }
-
-        if (response !== protocol) {
-          throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
-        }
-
-        yield * lp.unwrap().source
-      })()
-    },
+    stream,
     protocol
   }
 }

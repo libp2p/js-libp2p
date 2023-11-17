@@ -13,9 +13,11 @@ export interface SocketToConnOptions {
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
 export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, options: SocketToConnOptions): MultiaddrConnection {
-  const log = options.logger.forComponent('libp2p:websockets:socket')
+  const log = options.logger.forComponent('libp2p:websockets:maconn')
 
   const maConn: MultiaddrConnection = {
+    log,
+
     async sink (source) {
       try {
         await stream.sink(source)

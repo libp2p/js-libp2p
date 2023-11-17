@@ -4,7 +4,7 @@ import type { Direction, Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
 
 export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {
-  const log = logger.forComponent('libp2p:webtransport:stream')
+  const log = logger.forComponent(`libp2p:webtransport:stream:${direction}:${streamId}`)
   const writer = bidiStream.writable.getWriter()
   const reader = bidiStream.readable.getReader()
   await writer.ready
@@ -177,7 +177,8 @@ export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBi
 
         await stream.closeWrite()
       }
-    }
+    },
+    log
   }
 
   return stream

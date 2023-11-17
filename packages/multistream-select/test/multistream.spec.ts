@@ -17,7 +17,7 @@ describe('Multistream', () => {
       const outputStream = lpStream(duplexes[1])
 
       void Multistream.write(inputStream, input, {
-        log: logger('test')
+        log: logger('mss:test')
       })
 
       const output = await outputStream.read()
@@ -98,7 +98,7 @@ describe('Multistream', () => {
 
       await expect(Multistream.read(outputStream, {
         signal: controller.signal,
-        log: logger('test')
+        log: logger('mss:test')
       })).to.eventually.be.rejected.with.property('name', 'AbortError')
     })
   })

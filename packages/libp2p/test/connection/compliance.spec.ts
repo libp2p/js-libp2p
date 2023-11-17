@@ -1,6 +1,6 @@
 import tests from '@libp2p/interface-compliance-tests/connection'
 import peers from '@libp2p/interface-compliance-tests/peers'
-import { peerLogger } from '@libp2p/logger'
+import { logger, peerLogger } from '@libp2p/logger'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createConnection } from '../../src/connection/index.js'
@@ -54,7 +54,8 @@ describe('connection compliance', () => {
             metadata: {},
             status: 'open',
             writeStatus: 'ready',
-            readStatus: 'ready'
+            readStatus: 'ready',
+            log: logger('test')
           }
 
           openStreams.push(stream)

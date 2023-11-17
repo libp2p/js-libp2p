@@ -92,6 +92,7 @@ export abstract class AbstractStream implements Stream {
   public status: StreamStatus
   public readStatus: ReadStatus
   public writeStatus: WriteStatus
+  public readonly log: Logger
 
   private readonly sinkController: AbortController
   private readonly sinkEnd: DeferredPromise<void>
@@ -103,8 +104,6 @@ export abstract class AbstractStream implements Stream {
   private readonly onReset?: () => void
   private readonly onAbort?: (err: Error) => void
   private readonly sendCloseWriteTimeout: number
-
-  protected readonly log: Logger
 
   constructor (init: AbstractStreamInit) {
     this.sinkController = new AbortController()

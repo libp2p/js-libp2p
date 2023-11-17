@@ -190,6 +190,7 @@ class WebTransportTransport implements Transport {
         timeline: {
           open: Date.now()
         },
+        log: this.components.logger.forComponent('libp2p:webtransport:maconn'),
         // This connection is never used directly since webtransport supports native streams.
         ...inertDuplex()
       }

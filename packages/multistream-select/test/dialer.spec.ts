@@ -19,11 +19,11 @@ describe('Dialer', () => {
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       void mss.handle(incomingStream, protocol, {
-        log: logger('test-incoming')
+        log: logger('mss:test-incoming')
       })
 
       const selection = await mss.select(outgoingStream, protocol, {
-        log: logger('test-outgoing')
+        log: logger('mss:test-outgoing')
       })
       expect(selection.protocol).to.equal(protocol)
 
@@ -40,17 +40,17 @@ describe('Dialer', () => {
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       void mss.handle(incomingStream, protocol, {
-        log: logger('test-incoming')
+        log: logger('mss:test-incoming')
       })
 
       const selection = await mss.select(outgoingStream, protocol, {
-        log: logger('test-outgoing')
+        log: logger('mss:test-outgoing')
       })
       expect(selection.protocol).to.equal(protocol)
 
       // A second select will timeout
       await pTimeout(mss.select(outgoingStream, protocol2, {
-        log: logger('test-outgoing')
+        log: logger('mss:test-outgoing')
       }), {
         milliseconds: 1e3
       })
@@ -65,11 +65,11 @@ describe('Dialer', () => {
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       void mss.handle(incomingStream, ['/nope/1.0.0', selectedProtocol], {
-        log: logger('test-incoming')
+        log: logger('mss:test-incoming')
       })
 
       const selection = await mss.select(outgoingStream, protocols, {
-        log: logger('test-outgoing')
+        log: logger('mss:test-outgoing')
       })
       expect(protocols).to.have.length(2)
       expect(selection.protocol).to.equal(selectedProtocol)
@@ -86,11 +86,11 @@ describe('Dialer', () => {
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       void mss.handle(incomingStream, ['/nope/1.0.0', '/still/nope/1.0.0'], {
-        log: logger('test-incoming')
+        log: logger('mss:test-incoming')
       })
 
       await expect(mss.select(outgoingStream, protocol, {
-        log: logger('test-outgoing')
+        log: logger('mss:test-outgoing')
       })).to.eventually.be.rejected
         .with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
     })
@@ -101,13 +101,19 @@ describe('Dialer', () => {
       const protocol = '/echo/1.0.0'
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
-      const selection = mss.lazySelect(outgoingStream, protocol)
+      const selection = mss.lazySelect(outgoingStream, protocol, {
+        log: logger('mss:test-lazy')
+      })
       expect(selection.protocol).to.equal(protocol)
 
       // Ensure stream is usable after selection
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
-      void pipe(input, selection.stream)
-      const output = await all(incomingStream.source)
+
+      const [, output] = await Promise.all([
+        pipe(input, selection.stream),
+        all(incomingStream.source)
+      ])
+
       expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(
         Uint8Array.from([19]),
         uint8ArrayFromString(`${mss.PROTOCOL_ID}\n`),

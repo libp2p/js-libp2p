@@ -1,3 +1,4 @@
+import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { duplexPair } from 'it-pair/duplex'
 import type { MultiaddrConnection } from '@libp2p/interface/connection'
@@ -14,7 +15,8 @@ export function createMaConnPair (): [MultiaddrConnection, MultiaddrConnection] 
       remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
       timeline: {
         open: Date.now()
-      }
+      },
+      log: logger('duplex-maconn')
     }
 
     return output

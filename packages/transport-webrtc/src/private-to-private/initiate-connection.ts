@@ -82,10 +82,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       // we create the channel so that the RTCPeerConnection has a component for
       // which to collect candidates. The label is not relevant to connection
       // initiation but can be useful for debugging
-
-      // n.b. we leave the init channel open as it seems to stop Firefox
-      // closing other channels
-      peerConnection.createDataChannel('init')
+      const channel = peerConnection.createDataChannel('init')
 
       // setup callback to write ICE candidates to the remote peer
       peerConnection.onicecandidate = ({ candidate }) => {
@@ -151,6 +148,9 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
         signal,
         log
       })
+
+      log.trace('initiator connected, closing init channel')
+      channel.close()
 
       log.trace('initiator closing signalling stream')
       await messageStream.unwrap().unwrap().close({
