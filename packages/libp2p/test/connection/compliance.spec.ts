@@ -1,5 +1,6 @@
 import tests from '@libp2p/interface-compliance-tests/connection'
 import peers from '@libp2p/interface-compliance-tests/peers'
+import { logger, peerLogger } from '@libp2p/logger'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createConnection } from '../../src/connection/index.js'
@@ -13,6 +14,7 @@ describe('connection compliance', () => {
      * certain values for testing.
      */
     async setup (properties) {
+      const localPeer = await PeerIdFactory.createEd25519PeerId()
       const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/8081')
       const remotePeer = await PeerIdFactory.createFromJSON(peers[0])
       let openStreams: Stream[] = []
@@ -29,6 +31,7 @@ describe('connection compliance', () => {
         encryption: '/secio/1.0.0',
         multiplexer: '/mplex/6.7.0',
         status: 'open',
+        logger: peerLogger(localPeer),
         newStream: async (protocols) => {
           const id = `${streamId++}`
           const stream: Stream = {
@@ -51,7 +54,8 @@ describe('connection compliance', () => {
             metadata: {},
             status: 'open',
             writeStatus: 'ready',
-            readStatus: 'ready'
+            readStatus: 'ready',
+            log: logger('test')
           }
 
           openStreams.push(stream)

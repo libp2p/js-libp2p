@@ -2,6 +2,7 @@
 
 import { isPeerId } from '@libp2p/interface/peer-id'
 import { start, stop } from '@libp2p/interface/startable'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { IPFS } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -20,7 +21,8 @@ describe('bootstrap', () => {
     peerStore = stubInterface<PeerStore>()
 
     components = {
-      peerStore
+      peerStore,
+      logger: defaultLogger()
     }
   })
 

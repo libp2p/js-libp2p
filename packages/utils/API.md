@@ -1,29 +1,30 @@
 # API
 
-* [addressSort.publicAddressesFirst(addresses)](#addresssortpublicaddressesfirstaddresses)
-    * [Parameters](#parameters)
-    * [Returns](#returns)
-    * [Example](#example)
-* [arrayEquals(a, b)](#arrayequalsa-b)
-    * [Parameters](#parameters)
-    * [Returns](#returns)
-    * [Example](#example)
-* [multiaddr .isLoopback(ma)](#multiaddr-isloopbackma)
-    * [Parameters](#parameters-1)
-    * [Returns](#returns-1)
-    * [Example](#example-1)
-* [multiaddr .isPrivate(ma)](#multiaddr-isprivatema)
-    * [Parameters](#parameters-2)
-    * [Returns](#returns-2)
-    * [Example](#example-2)
-* [ipPortToMultiaddr(ip, port)](#ipporttomultiaddrip-port)
-    * [Parameters](#parameters-3)
-    * [Returns](#returns-3)
-    * [Example](#example-3)
-* [streamToMaConnection(streamProperties, options)](#streamtomaconnectionstreamproperties-options)
-    * [Parameters](#parameters-4)
-    * [Returns](#returns-4)
-    * [Example](#example-4)
+- [API](#api)
+  - [addressSort.publicAddressesFirst(addresses)](#addresssortpublicaddressesfirstaddresses)
+    - [Parameters](#parameters)
+    - [Returns](#returns)
+    - [Example](#example)
+  - [arrayEquals(a, b)](#arrayequalsa-b)
+    - [Parameters](#parameters-1)
+    - [Returns](#returns-1)
+    - [Example](#example-1)
+  - [multiaddr `.isLoopback(ma)`](#multiaddr-isloopbackma)
+    - [Parameters](#parameters-2)
+    - [Returns](#returns-2)
+    - [Example](#example-2)
+  - [multiaddr `.isPrivate(ma)`](#multiaddr-isprivatema)
+    - [Parameters](#parameters-3)
+    - [Returns](#returns-3)
+    - [Example](#example-3)
+  - [ipPortToMultiaddr(ip, port)](#ipporttomultiaddrip-port)
+    - [Parameters](#parameters-4)
+    - [Returns](#returns-4)
+    - [Example](#example-4)
+  - [streamToMaConnection(streamProperties, options)](#streamtomaconnectionstreamproperties-options)
+    - [Parameters](#parameters-5)
+    - [Returns](#returns-5)
+    - [Example](#example-5)
 
 ## addressSort.publicAddressesFirst(addresses)
 
@@ -179,7 +180,7 @@ Convert a duplex stream into a [MultiaddrConnection](https://github.com/libp2p/i
 | Name | Type | Description |
 |------|------|-------------|
 | streamProperties | `object` | duplex stream properties |
-| streamProperties.stream | [`DuplexStream`](https://github.com/libp2p/js-libp2p/blob/master/doc/STREAMING_ITERABLES.md#duplex) | duplex stream |
+| streamProperties.stream | [`DuplexStream`](https://github.com/libp2p/js-libp2p/blob/main/doc/STREAMING_ITERABLES.md#duplex) | duplex stream |
 | streamProperties.remoteAddr | `Multiaddr` | stream remote address |
 | streamProperties.localAddr | `Multiaddr` | stream local address |
 | [options] | `object` | options |
@@ -189,7 +190,7 @@ Convert a duplex stream into a [MultiaddrConnection](https://github.com/libp2p/i
 
 | Type | Description |
 |------|-------------|
-| `Connection` | returns a multiaddr [Connection](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/connection) |
+| `Connection` | returns a multiaddr [Connection](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/connection/index.ts#L202) |
 
 ### Example
 

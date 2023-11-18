@@ -5,6 +5,65 @@
 
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#144](https://github.com/libp2p/js-libp2p-pubsub/issues/144)) ([1364ce4](https://github.com/libp2p/js-libp2p-pubsub/commit/1364ce41815d3392cfca61169e113cc5414ac2d9))
 
+### [8.0.10](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.9...pubsub-v8.0.10) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+
+### [8.0.9](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.8...pubsub-v8.0.9) (2023-11-03)
+
+
+### Bug Fixes
+
+* opt-in to toplogy notifications on transient connections ([#2049](https://www.github.com/libp2p/js-libp2p/issues/2049)) ([346ff5a](https://www.github.com/libp2p/js-libp2p/commit/346ff5a2b81bded9f9b26051501ab9d25246961c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/interface-internal bumped from ^0.1.7 to ^0.1.8
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-collections bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+
+### [8.0.8](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.7...pubsub-v8.0.8) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+
 ### [8.0.7](https://www.github.com/libp2p/js-libp2p/compare/pubsub-v8.0.6...pubsub-v8.0.7) (2023-10-06)
 
 

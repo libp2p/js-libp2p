@@ -1,3 +1,4 @@
+import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { abortableSource } from 'abortable-iterator'
 import { duplexPair } from 'it-pair/duplex'
@@ -16,6 +17,7 @@ export function mockMultiaddrConnection (source: Duplex<AsyncGenerator<Uint8Arra
       open: Date.now()
     },
     remoteAddr: multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${peerId.toString()}`),
+    log: logger('mock-maconn'),
     ...source
   }
 
@@ -49,7 +51,8 @@ export function mockMultiaddrConnPair (opts: MockMultiaddrConnPairOptions): { in
     abort: (err: Error) => {
       outbound.timeline.close = Date.now()
       controller.abort(err)
-    }
+    },
+    log: logger('mock-maconn-outbound')
   }
 
   const inbound: MultiaddrConnection = {
@@ -65,7 +68,8 @@ export function mockMultiaddrConnPair (opts: MockMultiaddrConnPairOptions): { in
     abort: (err: Error) => {
       outbound.timeline.close = Date.now()
       controller.abort(err)
-    }
+    },
+    log: logger('mock-maconn-inbound')
   }
 
   // Make the sources abortable so we can close them easily

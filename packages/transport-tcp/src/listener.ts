@@ -1,7 +1,6 @@
 import net from 'net'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
@@ -10,21 +9,20 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
+import type { ComponentLogger, Logger, LoggerOptions } from '@libp2p/interface'
 import type { MultiaddrConnection, Connection } from '@libp2p/interface/connection'
 import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface/metrics'
 import type { Listener, ListenerEvents, Upgrader } from '@libp2p/interface/transport'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const log = logger('libp2p:tcp:listener')
-
 /**
  * Attempts to close the given maConn. If a failure occurs, it will be logged
  */
-async function attemptClose (maConn: MultiaddrConnection): Promise<void> {
+async function attemptClose (maConn: MultiaddrConnection, options: LoggerOptions): Promise<void> {
   try {
     await maConn.close()
   } catch (err) {
-    log.error('an error occurred closing the connection', err)
+    options.log.error('an error occurred closing the connection', err)
   }
 }
 
@@ -45,6 +43,7 @@ interface Context extends TCPCreateListenerOptions {
   backlog?: number
   metrics?: Metrics
   closeServerOnMaxConnections?: CloseServerOnMaxConnectionsOpts
+  logger: ComponentLogger
 }
 
 export interface TCPListenerMetrics {
@@ -71,19 +70,21 @@ type Status = { code: TCPListenerStatusCode.INACTIVE } | {
   netConfig: NetConfig
 }
 
-export class TCPListener extends EventEmitter<ListenerEvents> implements Listener {
+export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly server: net.Server
   /** Keep track of open connections to destroy in case of timeout */
   private readonly connections = new Set<MultiaddrConnection>()
   private status: Status = { code: TCPListenerStatusCode.INACTIVE }
   private metrics?: TCPListenerMetrics
   private addr: string
+  private readonly log: Logger
 
   constructor (private readonly context: Context) {
     super()
 
     context.keepAlive = context.keepAlive ?? true
 
+    this.log = context.logger.forComponent('libp2p:tcp:listener')
     this.addr = 'unknown'
     this.server = net.createServer(context, this.onSocket.bind(this))
 
@@ -172,7 +173,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     }
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
-      log('socket error', err)
+      this.log('socket error', err)
       this.metrics?.events.increment({ [`${this.addr} error`]: true })
     })
 
@@ -183,19 +184,20 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
         socketInactivityTimeout: this.context.socketInactivityTimeout,
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
-        metricPrefix: `${this.addr} `
+        metricPrefix: `${this.addr} `,
+        logger: this.context.logger
       })
     } catch (err) {
-      log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed', err)
       this.metrics?.errors.increment({ [`${this.addr} inbound_to_connection`]: true })
       return
     }
 
-    log('new inbound connection %s', maConn.remoteAddr)
+    this.log('new inbound connection %s', maConn.remoteAddr)
     try {
       this.context.upgrader.upgradeInbound(maConn)
         .then((conn) => {
-          log('inbound connection upgraded %s', maConn.remoteAddr)
+          this.log('inbound connection upgraded %s', maConn.remoteAddr)
           this.connections.add(maConn)
 
           socket.once('close', () => {
@@ -210,7 +212,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
               // we can do. resume() will be called again every time a connection is dropped, which
               // acts as an eventual retry mechanism. onListenError allows the consumer act on this.
               this.resume().catch(e => {
-                log.error('error attempting to listen server once connection count under limit', e)
+                this.log.error('error attempting to listen server once connection count under limit', e)
                 this.context.closeServerOnMaxConnections?.onListenError?.(e as Error)
               })
             }
@@ -225,27 +227,31 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
             this.connections.size >= this.context.closeServerOnMaxConnections.closeAbove
           ) {
             this.pause(false).catch(e => {
-              log.error('error attempting to close server once connection count over limit', e)
+              this.log.error('error attempting to close server once connection count over limit', e)
             })
           }
 
           this.dispatchEvent(new CustomEvent<Connection>('connection', { detail: conn }))
         })
         .catch(async err => {
-          log.error('inbound connection failed', err)
+          this.log.error('inbound connection failed', err)
           this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-          await attemptClose(maConn)
+          await attemptClose(maConn, {
+            log: this.log
+          })
         })
         .catch(err => {
-          log.error('closing inbound connection failed', err)
+          this.log.error('closing inbound connection failed', err)
         })
     } catch (err) {
-      log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed', err)
 
-      attemptClose(maConn)
+      attemptClose(maConn, {
+        log: this.log
+      })
         .catch(err => {
-          log.error('closing inbound connection failed', err)
+          this.log.error('closing inbound connection failed', err)
           this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
         })
     }
@@ -276,7 +282,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
           addrs = addrs.concat(getMultiaddrs('ip6', address.address, address.port))
         }
       } catch (err) {
-        log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
+        this.log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
       }
     }
 
@@ -310,9 +316,11 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
   async close (): Promise<void> {
     // Close connections and server the same time to avoid any race condition
     await Promise.all([
-      Promise.all(Array.from(this.connections.values()).map(async maConn => attemptClose(maConn))),
+      Promise.all(Array.from(this.connections.values()).map(async maConn => attemptClose(maConn, {
+        log: this.log
+      }))),
       this.pause(true).catch(e => {
-        log.error('error attempting to close server once connection count over limit', e)
+        this.log.error('error attempting to close server once connection count over limit', e)
       })
     ])
   }
@@ -334,7 +342,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
     })
 
     this.status = { ...this.status, code: TCPListenerStatusCode.ACTIVE }
-    log('Listening on %s', this.server.address())
+    this.log('Listening on %s', this.server.address())
   }
 
   private async pause (permanent: boolean): Promise<void> {
@@ -347,7 +355,7 @@ export class TCPListener extends EventEmitter<ListenerEvents> implements Listene
       return
     }
 
-    log('Closing server on %s', this.server.address())
+    this.log('Closing server on %s', this.server.address())
 
     // NodeJS implementation tracks listening status with `this._handle` property.
     // - Server.close() sets this._handle to null immediately. If this._handle is null, ERR_SERVER_NOT_RUNNING is thrown

@@ -11,6 +11,84 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+### [3.1.10](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.9...webtransport-v3.1.10) (2023-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.20 to ^0.46.21
+
+### [3.1.9](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.8...webtransport-v3.1.9) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+    * libp2p bumped from ^0.46.19 to ^0.46.20
+
+### [3.1.8](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.7...webtransport-v3.1.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.18 to ^0.46.19
+
+### [3.1.7](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.6...webtransport-v3.1.7) (2023-11-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.17 to ^0.46.18
+
+### [3.1.6](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.5...webtransport-v3.1.6) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+    * libp2p bumped from ^0.46.16 to ^0.46.17
+
+### [3.1.5](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.4...webtransport-v3.1.5) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * libp2p bumped from ^0.46.15 to ^0.46.16
+
+### [3.1.4](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.3...webtransport-v3.1.4) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^0.46.14 to ^0.46.15
+
 ### [3.1.3](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.2...webtransport-v3.1.3) (2023-10-10)
 
 

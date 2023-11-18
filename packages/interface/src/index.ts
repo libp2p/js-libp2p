@@ -16,8 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { EventEmitter } from './events.js'
-import type { KeyChain } from './keychain/index.js'
+import type { TypedEventTarget } from './events.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -99,6 +98,28 @@ export interface IdentifyResult {
    * If sent by the remote peer this is the deserialized signed peer record
    */
   signedPeerRecord?: SignedPeerRecord
+
+  /**
+   * The connection that the identify protocol ran over
+   */
+  connection: Connection
+}
+
+/**
+ * Logger component for libp2p
+ */
+export interface Logger {
+  (formatter: any, ...args: any[]): void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
+  enabled: boolean
+}
+
+/**
+ * Peer logger component for libp2p
+ */
+export interface ComponentLogger {
+  forComponent(name: string): Logger
 }
 
 /**
@@ -303,7 +324,7 @@ export interface PendingDial {
 /**
  * Libp2p nodes implement this interface.
  */
-export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, EventEmitter<Libp2pEvents<T>> {
+export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, TypedEventTarget<Libp2pEvents<T>> {
   /**
    * The PeerId is a unique identifier for a node on the network.
    *
@@ -373,20 +394,6 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
   contentRouting: ContentRouting
 
   /**
-   * The keychain contains the keys used by the current node, and can create new
-   * keys, export them, import them, etc.
-   *
-   * @example
-   *
-   * ```js
-   * const keyInfo = await libp2p.keychain.createKey('new key')
-   * console.info(keyInfo)
-   * // { id: '...', name: 'new key' }
-   * ```
-   */
-  keychain: KeyChain
-
-  /**
    * The metrics subsystem allows recording values to assess the health/performance
    * of the running node.
    *
@@ -402,6 +409,8 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * ```
    */
   metrics?: Metrics
+
+  logger: ComponentLogger
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
@@ -601,6 +610,21 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
 }
 
 /**
+ * Metadata about the current node
+ */
+export interface NodeInfo {
+  /**
+   * The implementation name
+   */
+  name: string
+
+  /**
+   * The implementation version
+   */
+  version: string
+}
+
+/**
  * An object that contains an AbortSignal as
  * the optional `signal` property.
  *
@@ -619,6 +643,13 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
  */
 export interface AbortOptions {
   signal?: AbortSignal
+}
+
+/**
+ * An object that contains a Logger as the `log` property.
+ */
+export interface LoggerOptions {
+  log: Logger
 }
 
 /**

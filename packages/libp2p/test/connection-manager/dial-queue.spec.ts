@@ -1,14 +1,17 @@
 /* eslint-env mocha */
 
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { peerLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { PeerId } from '@libp2p/interface/peer-id'
@@ -22,15 +25,19 @@ describe('dial queue', () => {
     peerStore: StubbedInstance<PeerStore>
     transportManager: StubbedInstance<TransportManager>
     connectionGater: StubbedInstance<ConnectionGater>
+    logger: ComponentLogger
   }
   let dialer: DialQueue
 
   beforeEach(async () => {
+    const peerId = await createEd25519PeerId()
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
       peerStore: stubInterface<PeerStore>(),
       transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>()
+      connectionGater: stubInterface<ConnectionGater>(),
+      logger: peerLogger(peerId)
     }
   })
 
@@ -329,5 +336,42 @@ describe('dial queue', () => {
     expect(dialedBadAddress).to.be.false('Dialed address with wrong peer id')
 
     resolvers.delete('dnsaddr')
+  })
+
+  it('should dial WebRTC address with peer id appended', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const relayPeer = await createEd25519PeerId()
+    const ma = multiaddr(`/ip4/123.123.123.123/tcp/123/ws/p2p/${relayPeer}/p2p-circuit/webrtc`)
+    const maWithPeer = `${ma}/p2p/${remotePeer}`
+
+    components.transportManager.transportForMultiaddr.callsFake(ma => {
+      if (WebRTC.exactMatch(ma)) {
+        return stubInterface<Transport>()
+      }
+    })
+    components.peerStore.get.withArgs(remotePeer).resolves({
+      id: remotePeer,
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map(),
+      addresses: [{
+        multiaddr: ma,
+        isCertified: true
+      }]
+    })
+
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => {
+      if (ma.toString() === maWithPeer) {
+        await delay(100)
+        return connection
+      }
+
+      throw new Error('Could not dial address')
+    })
+
+    dialer = new DialQueue(components)
+    await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
   })
 })

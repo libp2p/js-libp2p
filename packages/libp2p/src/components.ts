@@ -1,10 +1,11 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { isStartable, type Startable } from '@libp2p/interface/startable'
-import type { Libp2pEvents } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
+import type { Libp2pEvents, ComponentLogger, NodeInfo } from '@libp2p/interface'
 import type { ConnectionProtector } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { EventEmitter } from '@libp2p/interface/events'
+import type { TypedEventTarget } from '@libp2p/interface/events'
 import type { Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerRouting } from '@libp2p/interface/peer-routing'
@@ -18,7 +19,9 @@ import type { Datastore } from 'interface-datastore'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
-  events: EventEmitter<Libp2pEvents>
+  nodeInfo: NodeInfo
+  logger: ComponentLogger
+  events: TypedEventTarget<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
@@ -35,7 +38,9 @@ export interface Components extends Record<string, any>, Startable {
 
 export interface ComponentsInit {
   peerId?: PeerId
-  events?: EventEmitter<Libp2pEvents>
+  nodeInfo?: NodeInfo
+  logger?: ComponentLogger
+  events?: TypedEventTarget<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader
@@ -59,6 +64,10 @@ class DefaultComponents implements Startable {
 
     for (const [key, value] of Object.entries(init)) {
       this.components[key] = value
+    }
+
+    if (this.components.logger == null) {
+      this.components.logger = defaultLogger()
     }
   }
 

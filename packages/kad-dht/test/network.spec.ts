@@ -4,10 +4,7 @@ import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MESSAGE_TYPE } from '../src/message/index.js'
 import { TestDHT } from './utils/test-dht.js'
@@ -16,6 +13,7 @@ import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Sink, Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('Network', () => {
   let dht: DefaultDualKadDHT
@@ -61,27 +59,15 @@ describe('Network', () => {
             const protocol = Array.isArray(protocols) ? protocols[0] : protocols
             const msg = new Message(MESSAGE_TYPE.FIND_NODE, uint8ArrayFromString('world'), 0)
 
-            const data = await pipe(
-              [msg.serialize()],
-              (source) => lp.encode(source),
-              source => map(source, arr => new Uint8ArrayList(arr)),
-              async (source) => all(source)
-            )
-
             const source = (async function * () {
-              const array = data
-
-              yield * array
+              yield lp.encode.single(msg.serialize())
             })()
 
             const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-              const res = await pipe(
-                source,
-                (source) => lp.decode(source),
-                async (source) => all(source)
-              )
-              expect(Message.deserialize(res[0]).type).to.eql(MESSAGE_TYPE.PING)
-              finish()
+              for await (const buf of lp.decode(source)) {
+                expect(Message.deserialize(buf).type).to.eql(MESSAGE_TYPE.PING)
+                finish()
+              }
             }
 
             const stream = mockStream({ source, sink })

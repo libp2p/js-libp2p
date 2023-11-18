@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -47,11 +48,12 @@ describe('rpc', () => {
       peerId,
       datastore,
       peerStore: stubInterface<PeerStore>(),
-      addressManager: stubInterface<AddressManager>()
+      addressManager: stubInterface<AddressManager>(),
+      logger: defaultLogger()
     }
     components.peerStore = new PersistentPeerStore({
       ...components,
-      events: new EventEmitter<Libp2pEvents>()
+      events: new TypedEventEmitter<Libp2pEvents>()
     })
 
     await start(...Object.values(components))

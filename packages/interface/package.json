@@ -1,9 +1,9 @@
 {
   "name": "@libp2p/interface",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -147,7 +147,7 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i @libp2p/utils",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -158,22 +158,19 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@multiformats/multiaddr": "^12.1.5",
-    "abortable-iterator": "^5.0.1",
-    "it-pushable": "^3.2.0",
+    "@multiformats/multiaddr": "^12.1.10",
+    "it-pushable": "^3.2.1",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^12.0.1",
-    "p-defer": "^4.0.0",
-    "race-signal": "^1.0.0",
+    "multiformats": "^12.1.3",
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^17.0.0",
     "aegir": "^41.0.2",
-    "delay": "^6.0.0",
-    "it-all": "^3.0.3",
-    "it-drain": "^3.0.3",
-    "sinon": "^16.0.0",
-    "sinon-ts": "^1.0.0"
+    "sinon": "^17.0.0",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "events": "./dist/src/events.browser.js"
   }
 }

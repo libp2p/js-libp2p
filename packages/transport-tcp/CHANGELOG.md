@@ -5,6 +5,65 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#279](https://github.com/libp2p/js-libp2p-tcp/issues/279)) ([3ed1235](https://github.com/libp2p/js-libp2p-tcp/commit/3ed12353aa48b5a933f80042846a8f1c2337fa47))
 
+### [8.0.13](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.12...tcp-v8.0.13) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/utils bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
+### [8.0.12](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.11...tcp-v8.0.12) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
+### [8.0.11](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.10...tcp-v8.0.11) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/utils bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.2 to ^4.1.3
+
+### [8.0.10](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.9...tcp-v8.0.10) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/utils bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+
 ### [8.0.9](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.8...tcp-v8.0.9) (2023-10-06)
 
 

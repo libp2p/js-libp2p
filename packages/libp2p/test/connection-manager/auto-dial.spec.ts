@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -12,6 +13,7 @@ import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { defaultComponents } from '../../src/components.js'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
@@ -22,24 +24,25 @@ import type { PeerStore, Peer } from '@libp2p/interface/peer-store'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 
 describe('auto-dial', () => {
-  let autoDialler: AutoDial
-  let events: EventEmitter<Libp2pEvents>
+  let autoDialer: AutoDial
+  let events: TypedEventTarget<Libp2pEvents>
   let peerStore: PeerStore
   let peerId: PeerId
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
-    events = new EventEmitter()
+    events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
       datastore: new MemoryDatastore(),
       events,
-      peerId
+      peerId,
+      logger: defaultLogger()
     })
   })
 
   afterEach(() => {
-    if (autoDialler != null) {
-      autoDialler.stop()
+    if (autoDialer != null) {
+      autoDialer.stop()
     }
   })
 
@@ -69,20 +72,20 @@ describe('auto-dial', () => {
     await peerStore.save(peerWithoutAddress.id, peerWithoutAddress)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialer = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialInterval: 10000
     })
-    autoDialler.start()
-    void autoDialler.autoDial()
+    autoDialer.start()
+    void autoDialer.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 1
@@ -123,19 +126,19 @@ describe('auto-dial', () => {
     connectionMap.set(connectedPeer.id, [stubInterface<Connection>()])
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: connectionMap,
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(connectionMap),
+      getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialer = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10
     })
-    autoDialler.start()
-    await autoDialler.autoDial()
+    autoDialer.start()
+    await autoDialer.autoDial()
 
     await pWaitFor(() => connectionManager.openConnection.callCount === 1)
     await delay(1000)
@@ -172,24 +175,24 @@ describe('auto-dial', () => {
     await peerStore.save(peerNotInDialQueue.id, peerNotInDialQueue)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: [{
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([{
         id: 'foo',
         peerId: peerInDialQueue.id,
         multiaddrs: [],
         status: 'queued'
-      }]
+      }])
     })
 
-    autoDialler = new AutoDial({
+    autoDialer = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10
     })
-    autoDialler.start()
-    await autoDialler.autoDial()
+    autoDialer.start()
+    await autoDialer.autoDial()
 
     await pWaitFor(() => connectionManager.openConnection.callCount === 1)
     await delay(1000)
@@ -203,24 +206,24 @@ describe('auto-dial', () => {
     const peerStoreAllSpy = Sinon.spy(peerStore, 'all')
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialer = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialInterval: 10000
     })
-    autoDialler.start()
+    autoDialer.start()
 
     // call autodial twice
     await Promise.all([
-      autoDialler.autoDial(),
-      autoDialler.autoDial()
+      autoDialer.autoDial(),
+      autoDialer.autoDial()
     ])
 
     // should only have queried peer store once
@@ -254,21 +257,21 @@ describe('auto-dial', () => {
     await peerStore.save(undialablePeer.id, undialablePeer)
 
     const connectionManager = stubInterface<ConnectionManager>({
-      getConnectionsMap: new PeerMap(),
-      getDialQueue: []
+      getConnectionsMap: Sinon.stub().returns(new PeerMap()),
+      getDialQueue: Sinon.stub().returns([])
     })
 
-    autoDialler = new AutoDial({
+    autoDialer = new AutoDial(defaultComponents({
       peerStore,
       connectionManager,
       events
-    }, {
+    }), {
       minConnections: 10,
       autoDialPeerRetryThreshold: 2000
     })
-    autoDialler.start()
+    autoDialer.start()
 
-    void autoDialler.autoDial()
+    void autoDialer.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 1
@@ -282,7 +285,7 @@ describe('auto-dial', () => {
     await delay(2000)
 
     // autodial again
-    void autoDialler.autoDial()
+    void autoDialer.autoDial()
 
     await pWaitFor(() => {
       return connectionManager.openConnection.callCount === 3

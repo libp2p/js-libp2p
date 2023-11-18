@@ -1,3 +1,5 @@
+import { setMaxListeners as nodeSetMaxListeners } from 'events'
+
 export interface EventCallback<EventType> { (evt: EventType): void }
 export interface EventObject<EventType> { handleEvent: EventCallback<EventType> }
 export type EventHandler<EventType> = EventCallback<EventType> | EventObject<EventType>
@@ -15,7 +17,23 @@ interface Listener {
  * https://github.com/microsoft/TypeScript/issues/299
  * etc
  */
-export class EventEmitter<EventMap extends Record<string, any>> extends EventTarget {
+export interface TypedEventTarget <EventMap extends Record<string, any>> extends EventTarget {
+  addEventListener<K extends keyof EventMap>(type: K, listener: EventHandler<EventMap[K]> | null, options?: boolean | AddEventListenerOptions): void
+
+  listenerCount (type: string): number
+
+  removeEventListener<K extends keyof EventMap>(type: K, listener?: EventHandler<EventMap[K]> | null, options?: boolean | EventListenerOptions): void
+
+  removeEventListener (type: string, listener?: EventHandler<Event>, options?: boolean | EventListenerOptions): void
+
+  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail>): boolean
+}
+
+/**
+ * An implementation of a typed event target
+ * etc
+ */
+export class TypedEventEmitter<EventMap extends Record<string, any>> extends EventTarget implements TypedEventTarget<EventMap> {
   #listeners = new Map<any, Listener[]>()
 
   listenerCount (type: string): number {
@@ -98,3 +116,15 @@ class CustomEventPolyfill<T = any> extends Event {
 }
 
 export const CustomEvent = globalThis.CustomEvent ?? CustomEventPolyfill
+
+// TODO: remove this in v1
+export { TypedEventEmitter as EventEmitter }
+
+// create a setMaxListeners that doesn't break browser usage
+export const setMaxListeners: typeof nodeSetMaxListeners = (n, ...eventTargets) => {
+  try {
+    nodeSetMaxListeners(n, ...eventTargets)
+  } catch {
+    // swallow error, gulp
+  }
+}

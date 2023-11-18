@@ -1,6 +1,7 @@
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { WebRTCPeerListener } from '../src/private-to-private/listener.js'
 import type { Listener } from '@libp2p/interface/transport'
@@ -21,11 +22,11 @@ describe('webrtc private-to-private listener', () => {
     })
 
     const otherListener = stubInterface<Listener>({
-      getAddrs: [multiaddr(otherListenAddress)]
+      getAddrs: Sinon.stub().returns([multiaddr(otherListenAddress)])
     })
 
     const relayListener = stubInterface<Listener>({
-      getAddrs: [multiaddr(relayedAddress)]
+      getAddrs: Sinon.stub().returns([multiaddr(relayedAddress)])
     })
 
     transportManager.getListeners.returns([

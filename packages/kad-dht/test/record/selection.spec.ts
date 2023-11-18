@@ -13,26 +13,20 @@ describe('selection', () => {
     it('throws no records given when no records received', () => {
       expect(
         () => selection.bestRecord({}, uint8ArrayFromString('/'), [])
-      ).to.throw(
-        /No records given/
-      )
+      ).to.throw().with.property('code', 'ERR_NO_RECORDS_RECEIVED')
     })
 
     it('throws on missing selector in the record key', () => {
       expect(
         () => selection.bestRecord({}, uint8ArrayFromString('/'), records)
-      ).to.throw(
-        /Record key does not have a selector function/
-      )
+      ).to.throw().with.property('code', 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
     })
 
     it('throws on unknown key prefix', () => {
       expect(
         // @ts-expect-error invalid input
         () => selection.bestRecord({ world () {} }, uint8ArrayFromString('/hello/'), records)
-      ).to.throw(
-        /Unrecognized key prefix: hello/
-      )
+      ).to.throw().with.property('code', 'ERR_UNRECOGNIZED_KEY_PREFIX')
     })
 
     it('returns the index from the matching selector', () => {

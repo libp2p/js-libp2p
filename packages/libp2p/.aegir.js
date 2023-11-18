@@ -15,11 +15,9 @@ export default {
       const { yamux } = await import('@chainsafe/libp2p-yamux')
       const { WebSockets } = await import('@multiformats/mafmt')
       const { createLibp2p } = await import('./dist/src/index.js')
-      const { plaintext } = await import('./dist/src/insecure/index.js')
-      const { circuitRelayServer, circuitRelayTransport } = await import('./dist/src/circuit-relay/index.js')
-      const { identifyService } = await import('./dist/src/identify/index.js')
-      const { pingService } = await import('./dist/src/ping/index.js')
-      const { fetchService } = await import('./dist/src/fetch/index.js')
+      const { plaintext } = await import('@libp2p/plaintext')
+      const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
+      const { identify } = await import('@libp2p/identify')
 
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
@@ -48,9 +46,7 @@ export default {
           plaintext()
         ],
         services: {
-          identify: identifyService(),
-          ping: pingService(),
-          fetch: fetchService(),
+          identify: identify(),
           relay: circuitRelayServer({
             reservations: {
               maxReservations: 100000

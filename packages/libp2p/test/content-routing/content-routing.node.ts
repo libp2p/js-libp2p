@@ -251,8 +251,7 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ],
-        protocols: []
+        ]
       }
 
       if (node.services.dht == null) {

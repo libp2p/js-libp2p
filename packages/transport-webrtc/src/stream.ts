@@ -1,6 +1,5 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
-import { logger } from '@libp2p/logger'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
@@ -10,7 +9,7 @@ import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Direction } from '@libp2p/interface/connection'
 import type { DeferredPromise } from 'p-defer'
 
@@ -22,6 +21,8 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
   channel: RTCDataChannel
+
+  logger: ComponentLogger
 }
 
 /**
@@ -56,6 +57,12 @@ export const MAX_MESSAGE_SIZE = 16 * 1024
  */
 export const FIN_ACK_TIMEOUT = 5000
 
+/**
+ * When sending data messages, if the channel is not in the "open" state, wait
+ * this long for the "open" event to fire.
+ */
+export const OPEN_TIMEOUT = 5000
+
 export class WebRTCStream extends AbstractStream {
   /**
    * The data channel used to send and receive data
@@ -67,8 +74,6 @@ export class WebRTCStream extends AbstractStream {
    * and then the protobuf decoder.
    */
   private readonly incomingData: Pushable<Uint8Array>
-
-  private messageQueue?: Uint8ArrayList
 
   private readonly maxBufferedAmount: number
 
@@ -84,7 +89,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
-  //  private sentFinAck: boolean
+  private readonly openTimeout: number
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
@@ -122,17 +127,18 @@ export class WebRTCStream extends AbstractStream {
 
     this.channel = init.channel
     this.channel.binaryType = 'arraybuffer'
-    this.incomingData = pushable()
-    this.messageQueue = new Uint8ArrayList()
+    this.incomingData = pushable<Uint8Array>()
     this.bufferedAmountLowEventTimeout = init.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
+    this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
 
     // set up initial state
     switch (this.channel.readyState) {
       case 'open':
+        this.timeline.open = new Date().getTime()
         break
 
       case 'closed':
@@ -153,19 +159,6 @@ export class WebRTCStream extends AbstractStream {
     // handle RTCDataChannel events
     this.channel.onopen = (_evt) => {
       this.timeline.open = new Date().getTime()
-
-      if (this.messageQueue != null && this.messageQueue.byteLength > 0) {
-        this.log.trace('dataChannel opened, sending queued messages', this.messageQueue.byteLength, this.channel.readyState)
-
-        // send any queued messages
-        this._sendMessage(this.messageQueue)
-          .catch(err => {
-            this.log.error('error sending queued messages', err)
-            this.abort(err)
-          })
-      }
-
-      this.messageQueue = undefined
     }
 
     this.channel.onclose = (_evt) => {
@@ -218,6 +211,7 @@ export class WebRTCStream extends AbstractStream {
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
     if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
       try {
+        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
@@ -232,22 +226,14 @@ export class WebRTCStream extends AbstractStream {
       throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
     }
 
-    if (this.channel.readyState === 'open') {
-      // send message without copying data
-      for (const buf of data) {
-        this.channel.send(buf)
-      }
-    } else if (this.channel.readyState === 'connecting') {
-      // queue message for when we are open
-      if (this.messageQueue == null) {
-        this.messageQueue = new Uint8ArrayList()
-      }
-
-      this.messageQueue.append(data)
-    } else {
-      this.log.error('unknown datachannel state %s', this.channel.readyState)
-      throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
+    if (this.channel.readyState !== 'open') {
+      this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
+      await pEvent(this.channel, 'open', { timeout: this.openTimeout })
+      this.log('channel state is now "%s", sending data', this.channel.readyState)
     }
+
+    // send message without copying data
+    this.channel.send(data.subarray())
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
@@ -342,7 +328,7 @@ export class WebRTCStream extends AbstractStream {
       // flags can be sent while we or the remote are closing the datachannel so
       // if the channel isn't open, don't try to send it but return false to let
       // the caller know and act if they need to
-      this.log.trace('not sending flag %s because channel is not open', flag.toString())
+      this.log.trace('not sending flag %s because channel is "%s" and not "open"', this.channel.readyState, flag.toString())
       return false
     }
 
@@ -380,6 +366,8 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    * A callback invoked when the channel ends
    */
   onEnd?(err?: Error | undefined): void
+
+  logger: ComponentLogger
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
@@ -387,7 +375,7 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
 
   return new WebRTCStream({
     id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
-    log: logger(`libp2p:webrtc:stream:${direction}:${channel.id}`),
+    log: options.logger.forComponent(`libp2p:webrtc:stream:${direction}:${channel.id}`),
     ...options
   })
 }

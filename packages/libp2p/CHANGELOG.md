@@ -20,6 +20,165 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### [0.46.21](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.20...libp2p-v0.46.21) (2023-11-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/kad-dht bumped from ^10.0.14 to ^10.0.15
+
+### [0.46.20](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.19...libp2p-v0.46.20) (2023-11-07)
+
+
+### Features
+
+* add component logger ([#2198](https://www.github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://www.github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://www.github.com/libp2p/js-libp2p/issues/2105)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/keychain bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/multistream-select bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/peer-record bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-store bumped from ^9.0.8 to ^9.0.9
+    * @libp2p/utils bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.11 to ^9.0.12
+    * @libp2p/floodsub bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+    * @libp2p/kad-dht bumped from ^10.0.13 to ^10.0.14
+    * @libp2p/mdns bumped from ^9.0.13 to ^9.0.14
+    * @libp2p/mplex bumped from ^9.0.11 to ^9.0.12
+    * @libp2p/tcp bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/websockets bumped from ^7.0.12 to ^7.0.13
+
+### [0.46.19](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.18...libp2p-v0.46.19) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.10 to ^9.0.11
+    * @libp2p/floodsub bumped from ^8.0.11 to ^8.0.12
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/kad-dht bumped from ^10.0.12 to ^10.0.13
+    * @libp2p/mdns bumped from ^9.0.12 to ^9.0.13
+    * @libp2p/mplex bumped from ^9.0.10 to ^9.0.11
+    * @libp2p/tcp bumped from ^8.0.11 to ^8.0.12
+    * @libp2p/websockets bumped from ^7.0.11 to ^7.0.12
+
+### [0.46.18](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.17...libp2p-v0.46.18) (2023-11-06)
+
+
+### Bug Fixes
+
+* append peer id to dial addresses before filtering ([#2199](https://www.github.com/libp2p/js-libp2p/issues/2199)) ([bafccd6](https://www.github.com/libp2p/js-libp2p/commit/bafccd6b8e90c2cf1c616aeeb5001ade940c523a))
+* log peer data in identify correctly ([#2197](https://www.github.com/libp2p/js-libp2p/issues/2197)) ([fdcb801](https://www.github.com/libp2p/js-libp2p/commit/fdcb801ee3180b740a25e0e05a75c32dd8e4ef63))
+* only send ip/domain observed address in identify ([#2201](https://www.github.com/libp2p/js-libp2p/issues/2201)) ([40855f4](https://www.github.com/libp2p/js-libp2p/commit/40855f4f38bf5e56ccb2890699ec0cdd60596a27))
+
+### [0.46.17](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.16...libp2p-v0.46.17) (2023-11-03)
+
+
+### Bug Fixes
+
+* allow dialing a peer when we only have transient connections ([#2187](https://www.github.com/libp2p/js-libp2p/issues/2187)) ([dd400cd](https://www.github.com/libp2p/js-libp2p/commit/dd400cd57bd4943469af1ffc67b235a46c2b206c))
+* append peer id to connection remote addr if not present ([#2182](https://www.github.com/libp2p/js-libp2p/issues/2182)) ([3bdaad3](https://www.github.com/libp2p/js-libp2p/commit/3bdaad3956cb015af1657f3f23061b47463953da))
+* do not overwrite addresses on identify push when none are sent ([#2192](https://www.github.com/libp2p/js-libp2p/issues/2192)) ([025c082](https://www.github.com/libp2p/js-libp2p/commit/025c082a4d3d08904f1f5b0209ed6f40648fb78d))
+* opt-in to toplogy notifications on transient connections ([#2049](https://www.github.com/libp2p/js-libp2p/issues/2049)) ([346ff5a](https://www.github.com/libp2p/js-libp2p/commit/346ff5a2b81bded9f9b26051501ab9d25246961c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/interface-internal bumped from ^0.1.7 to ^0.1.8
+    * @libp2p/keychain bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/multistream-select bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-collections bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/peer-record bumped from ^6.0.7 to ^6.0.8
+    * @libp2p/peer-store bumped from ^9.0.7 to ^9.0.8
+    * @libp2p/utils bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.9 to ^9.0.10
+    * @libp2p/floodsub bumped from ^8.0.10 to ^8.0.11
+    * @libp2p/interface-compliance-tests bumped from ^4.1.2 to ^4.1.3
+    * @libp2p/kad-dht bumped from ^10.0.11 to ^10.0.12
+    * @libp2p/mdns bumped from ^9.0.11 to ^9.0.12
+    * @libp2p/mplex bumped from ^9.0.9 to ^9.0.10
+    * @libp2p/tcp bumped from ^8.0.10 to ^8.0.11
+    * @libp2p/websockets bumped from ^7.0.10 to ^7.0.11
+
+### [0.46.16](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.15...libp2p-v0.46.16) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/keychain bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/multistream-select bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-record bumped from ^6.0.6 to ^6.0.7
+    * @libp2p/peer-store bumped from ^9.0.6 to ^9.0.7
+    * @libp2p/utils bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^9.0.8 to ^9.0.9
+    * @libp2p/floodsub bumped from ^8.0.9 to ^8.0.10
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/kad-dht bumped from ^10.0.10 to ^10.0.11
+    * @libp2p/mdns bumped from ^9.0.10 to ^9.0.11
+    * @libp2p/mplex bumped from ^9.0.8 to ^9.0.9
+    * @libp2p/tcp bumped from ^8.0.9 to ^8.0.10
+    * @libp2p/websockets bumped from ^7.0.9 to ^7.0.10
+
+### [0.46.15](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.14...libp2p-v0.46.15) (2023-10-25)
+
+
+### Bug Fixes
+
+* remove relay:removed event listener after relay is removed ([#1998](https://www.github.com/libp2p/js-libp2p/issues/1998)) ([ab2c1f6](https://www.github.com/libp2p/js-libp2p/commit/ab2c1f6731ccfe21a39482bdab217a8abd3f027b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/kad-dht bumped from ^10.0.9 to ^10.0.10
+
 ### [0.46.14](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.13...libp2p-v0.46.14) (2023-10-10)
 
 

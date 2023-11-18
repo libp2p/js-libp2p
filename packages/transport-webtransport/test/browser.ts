@@ -125,7 +125,7 @@ describe('libp2p-webtransport', () => {
   })
 
   it('closes writes of streams after they have sunk a source', async () => {
-    // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-stream-muxer-compliance-tests/src/close-test.ts)
+    // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p/blob/main/packages/interface-compliance-tests/src/stream-muxer/close-test.ts)
     if (process.env.serverAddr == null) {
       throw new Error('serverAddr not found')
     }

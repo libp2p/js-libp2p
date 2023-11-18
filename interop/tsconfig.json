@@ -12,7 +12,16 @@
       "path": "../packages/libp2p"
     },
     {
+      "path": "../packages/protocol-identify"
+    },
+    {
+      "path": "../packages/protocol-ping"
+    },
+    {
       "path": "../packages/stream-multiplexer-mplex"
+    },
+    {
+      "path": "../packages/transport-circuit-relay-v2"
     },
     {
       "path": "../packages/transport-tcp"

@@ -1,16 +1,14 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
+import type { ComponentLogger } from '@libp2p/interface'
 import type { MultiaddrConnection } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
-
-const log = logger('libp2p:tcp:socket')
 
 interface ToConnectionOptions {
   listeningAddr?: Multiaddr
@@ -20,6 +18,7 @@ interface ToConnectionOptions {
   socketCloseTimeout?: number
   metrics?: CounterGroup
   metricPrefix?: string
+  logger: ComponentLogger
 }
 
 /**
@@ -27,6 +26,7 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
+  const log = options.logger.forComponent('libp2p:tcp:socket')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
@@ -126,7 +126,14 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         return
       }
 
-      options.signal = options.signal ?? AbortSignal.timeout(closeTimeout)
+      if (options.signal == null) {
+        const signal = AbortSignal.timeout(closeTimeout)
+
+        options = {
+          ...options,
+          signal
+        }
+      }
 
       try {
         log('%s closing socket', lOptsStr)
@@ -175,7 +182,9 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       log('%s socket abort due to error', lOptsStr, err)
 
       socket.destroy(err)
-    }
+    },
+
+    log
   }
 
   return maConn

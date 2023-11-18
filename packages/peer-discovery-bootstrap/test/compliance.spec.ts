@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
+import { defaultLogger } from '@libp2p/logger'
 import { stubInterface } from 'sinon-ts'
 import { bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
@@ -10,7 +11,8 @@ describe('compliance tests', () => {
   tests({
     async setup () {
       const components = {
-        peerStore: stubInterface<PeerStore>()
+        peerStore: stubInterface<PeerStore>(),
+        logger: defaultLogger()
       }
 
       return bootstrap({

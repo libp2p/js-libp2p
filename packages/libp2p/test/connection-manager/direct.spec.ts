@@ -1,13 +1,16 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { AbortError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { type Identify, identify } from '@libp2p/identify'
+import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { plaintext } from '@libp2p/plaintext'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -23,9 +26,7 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -45,7 +46,7 @@ describe('dialing (direct, WebSockets)', () => {
   let connectionManager: DefaultConnectionManager
 
   beforeEach(async () => {
-    const localEvents = new EventEmitter()
+    const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
       peerId: await createEd25519PeerId(),
       datastore: new MemoryDatastore(),
@@ -64,7 +65,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     localTM = new DefaultTransportManager(localComponents)
-    localTM.add(webSockets({ filter: filters.all })())
+    localTM.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
     localComponents.transportManager = localTM
 
     // this peer is spun up in .aegir.cjs
@@ -167,7 +170,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+      .and.to.have.property('code', ERR_TIMEOUT)
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {
@@ -357,7 +360,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  let libp2p: Libp2p<{ identify: IdentifyService }>
+  let libp2p: Libp2p<{ identify: Identify }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -388,7 +391,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService()
+        identify: identify()
       },
       connectionGater: mockConnectionGater()
     })
@@ -432,7 +435,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService({
+        identify: identify({
           runOnConnectionOpen: false
         })
       },

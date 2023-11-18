@@ -1,4 +1,4 @@
-import type { AbortOptions } from '../index.js'
+import type { AbortOptions, Logger } from '../index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
@@ -169,6 +169,11 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    * The current status of the writable end of the stream
    */
   writeStatus: WriteStatus
+
+  /**
+   * The stream logger
+   */
+  log: Logger
 }
 
 export interface NewStreamOptions extends AbortOptions {
@@ -268,6 +273,11 @@ export interface Connection {
    * Immediately close the connection, any queued data will be discarded
    */
   abort(err: Error): void
+
+  /**
+   * The connection logger
+   */
+  log: Logger
 }
 
 export const symbol = Symbol.for('@libp2p/connection')
@@ -329,4 +339,9 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, 
    * When connection lifecycle events occurred
    */
   timeline: MultiaddrConnectionTimeline
+
+  /**
+   * The multiaddr connection logger
+   */
+  log: Logger
 }

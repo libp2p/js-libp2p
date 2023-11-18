@@ -1,26 +1,28 @@
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
-import { abortableSource } from 'abortable-iterator'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStreamEvents } from '@libp2p/interface/pubsub'
 import type { Pushable } from 'it-pushable'
-
-const log = logger('libp2p-pubsub:peer-streams')
 
 export interface PeerStreamsInit {
   id: PeerId
   protocol: string
 }
 
+export interface PeerStreamsComponents {
+  logger: ComponentLogger
+}
+
 /**
  * Thin wrapper around a peer's inbound / outbound pubsub streams
  */
-export class PeerStreams extends EventEmitter<PeerStreamEvents> {
+export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
   public readonly id: PeerId
   public readonly protocol: string
   /**
@@ -44,10 +46,12 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
    */
   private readonly _inboundAbortController: AbortController
   private closed: boolean
+  private readonly log: Logger
 
-  constructor (init: PeerStreamsInit) {
+  constructor (components: PeerStreamsComponents, init: PeerStreamsInit) {
     super()
 
+    this.log = components.logger.forComponent('libp2p-pubsub:peer-streams')
     this.id = init.id
     this.protocol = init.protocol
 
@@ -86,18 +90,22 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
    * Attach a raw inbound stream and setup a read stream
    */
   attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+    const abortListener = (): void => {
+      closeSource(stream.source, this.log)
+    }
+
+    this._inboundAbortController.signal.addEventListener('abort', abortListener, {
+      once: true
+    })
+
     // Create and attach a new inbound stream
     // The inbound stream is:
     // - abortable, set to only return on abort, rather than throw
     // - transformed with length-prefix transform
     this._rawInboundStream = stream
-    this.inboundStream = abortableSource(
-      pipe(
-        this._rawInboundStream,
-        (source) => lp.decode(source)
-      ),
-      this._inboundAbortController.signal,
-      { returnOnAbort: true }
+    this.inboundStream = pipe(
+      this._rawInboundStream,
+      (source) => lp.decode(source)
     )
 
     this.dispatchEvent(new CustomEvent('stream:inbound'))
@@ -117,13 +125,12 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
 
     this._rawOutboundStream = stream
     this.outboundStream = pushable<Uint8ArrayList>({
-      objectMode: true,
       onEnd: (shouldEmit) => {
         // close writable side of the stream
         if (this._rawOutboundStream != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain
           this._rawOutboundStream.closeWrite()
             .catch(err => {
-              log('error closing outbound stream', err)
+              this.log('error closing outbound stream', err)
             })
         }
 
@@ -140,7 +147,7 @@ export class PeerStreams extends EventEmitter<PeerStreamEvents> {
       (source) => lp.encode(source),
       this._rawOutboundStream
     ).catch((err: Error) => {
-      log.error(err)
+      this.log.error(err)
     })
 
     // Only emit if the connection is new

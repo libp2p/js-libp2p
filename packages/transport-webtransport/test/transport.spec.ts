@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -11,7 +12,8 @@ describe('WebTransport Transport', () => {
 
   beforeEach(async () => {
     components = {
-      peerId: await createEd25519PeerId()
+      peerId: await createEd25519PeerId(),
+      logger: defaultLogger()
     }
   })
 

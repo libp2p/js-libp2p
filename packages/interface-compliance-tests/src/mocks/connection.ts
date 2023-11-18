@@ -1,27 +1,27 @@
 import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { defaultLogger, logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { closeSource } from '@libp2p/utils/close-source'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { mockMultiaddrConnection } from './multiaddr-connection.js'
 import { mockMuxer } from './muxer.js'
 import { mockRegistrar } from './registrar.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
-
-const log = logger('libp2p:mock-connection')
 
 export interface MockConnectionOptions {
   direction?: Direction
   registrar?: Registrar
   muxerFactory?: StreamMuxerFactory
+  logger?: ComponentLogger
 }
 
 interface MockConnectionInit {
@@ -30,6 +30,7 @@ interface MockConnectionInit {
   direction: Direction
   maConn: MultiaddrConnection
   muxer: StreamMuxer
+  logger: ComponentLogger
 }
 
 class MockConnection implements Connection {
@@ -44,12 +45,14 @@ class MockConnection implements Connection {
   public streams: Stream[]
   public tags: string[]
   public transient: boolean
+  public log: Logger
 
   private readonly muxer: StreamMuxer
   private readonly maConn: MultiaddrConnection
+  private readonly logger: ComponentLogger
 
   constructor (init: MockConnectionInit) {
-    const { remoteAddr, remotePeer, direction, maConn, muxer } = init
+    const { remoteAddr, remotePeer, direction, maConn, muxer, logger } = init
 
     this.id = `mock-connection-${Math.random()}`
     this.remoteAddr = remoteAddr
@@ -65,6 +68,8 @@ class MockConnection implements Connection {
     this.muxer = muxer
     this.maConn = maConn
     this.transient = false
+    this.logger = logger
+    this.log = logger.forComponent(this.id)
   }
 
   async newStream (protocols: string | string[], options?: AbortOptions): Promise<Stream> {
@@ -82,7 +87,10 @@ class MockConnection implements Connection {
 
     const id = `${Math.random()}`
     const stream = await this.muxer.newStream(id)
-    const result = await mss.select(stream, protocols, options)
+    const result = await mss.select(stream, protocols, {
+      ...options,
+      log: this.logger.forComponent('libp2p:mock-connection:stream:mss:select')
+    })
 
     stream.protocol = result.protocol
     stream.direction = 'outbound'
@@ -118,6 +126,7 @@ class MockConnection implements Connection {
 export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectionOptions = {}): Connection {
   const remoteAddr = maConn.remoteAddr
   const remotePeerIdStr = remoteAddr.getPeerId() ?? '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq'
+  const logger = opts.logger ?? defaultLogger()
 
   if (remotePeerIdStr == null) {
     throw new Error('Remote multiaddr must contain a peer id')
@@ -127,12 +136,15 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
   const direction = opts.direction ?? 'inbound'
   const registrar = opts.registrar ?? mockRegistrar()
   const muxerFactory = opts.muxerFactory ?? mockMuxer()
+  const log = logger.forComponent('libp2p:mock-muxer')
 
   const muxer = muxerFactory.createStreamMuxer({
     direction,
     onIncomingStream: (muxedStream) => {
       try {
-        mss.handle(muxedStream, registrar.getProtocols())
+        mss.handle(muxedStream, registrar.getProtocols(), {
+          log
+        })
           .then(({ stream, protocol }) => {
             log('%s: incoming stream opened on %s', direction, protocol)
             muxedStream.protocol = protocol
@@ -164,7 +176,8 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     remotePeer,
     direction,
     maConn,
-    muxer
+    muxer,
+    logger
   })
 
   return connection
@@ -177,12 +190,60 @@ export interface StreamInit {
 }
 
 export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
-  return {
+  const id = `stream-${Date.now()}`
+  const log = logger(`libp2p:mock-stream:${id}`)
+
+  // ensure stream output is `Uint8ArrayList` as it would be from an actual
+  // Stream where everything is length-varint encoded
+  const originalSource = stream.source
+  stream.source = (async function * (): AsyncGenerator<Uint8ArrayList, any, unknown> {
+    for await (const buf of originalSource) {
+      if (buf instanceof Uint8Array) {
+        yield new Uint8ArrayList(buf)
+      } else {
+        yield buf
+      }
+    }
+  })()
+
+  const abortSinkController = new AbortController()
+  const originalSink = stream.sink.bind(stream)
+  stream.sink = async (source) => {
+    abortSinkController.signal.addEventListener('abort', () => {
+      closeSource(source, log)
+    })
+
+    await originalSink(source)
+  }
+
+  const mockStream: Stream = {
     ...stream,
-    close: async () => {},
-    closeRead: async () => {},
-    closeWrite: async () => {},
-    abort: () => {},
+    close: async (options) => {
+      await mockStream.closeRead(options)
+      await mockStream.closeWrite(options)
+    },
+    closeRead: async () => {
+      closeSource(originalSource, log)
+      mockStream.timeline.closeRead = Date.now()
+
+      if (mockStream.timeline.closeWrite != null) {
+        mockStream.timeline.close = Date.now()
+      }
+    },
+    closeWrite: async () => {
+      abortSinkController.abort()
+      mockStream.timeline.closeWrite = Date.now()
+
+      if (mockStream.timeline.closeRead != null) {
+        mockStream.timeline.close = Date.now()
+      }
+    },
+    abort: () => {
+      closeSource(originalSource, log)
+      mockStream.timeline.closeWrite = Date.now()
+      mockStream.timeline.closeRead = Date.now()
+      mockStream.timeline.close = Date.now()
+    },
     direction: 'outbound',
     protocol: '/foo/1.0.0',
     timeline: {
@@ -193,8 +254,11 @@ export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Sourc
     status: 'open',
     readStatus: 'ready',
     writeStatus: 'ready',
+    log: logger('mock-stream'),
     ...init
   }
+
+  return mockStream
 }
 
 export interface StreamPairInit {

@@ -1,12 +1,10 @@
-import { logger } from '@libp2p/logger'
 import { bases } from 'multiformats/basics'
 import * as multihashes from 'multihashes'
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
 import { CERTHASH_CODE } from './transport.js'
+import type { LoggerOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { HashCode, HashName } from 'multihashes'
-
-const log = logger('libp2p:webrtc:sdp')
 
 /**
  * Get base2 | identity decoders
@@ -14,11 +12,11 @@ const log = logger('libp2p:webrtc:sdp')
 // @ts-expect-error - Not easy to combine these types.
 export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
-export function getLocalFingerprint (pc: RTCPeerConnection): string | undefined {
+export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
   // try to fetch fingerprint from local certificate
   const localCert = pc.getConfiguration().certificates?.at(0)
   if (localCert == null || localCert.getFingerprints == null) {
-    log.trace('fetching fingerprint from local SDP')
+    options.log.trace('fetching fingerprint from local SDP')
     const localDescription = pc.localDescription
     if (localDescription == null) {
       return undefined
@@ -26,7 +24,7 @@ export function getLocalFingerprint (pc: RTCPeerConnection): string | undefined 
     return getFingerprintFromSdp(localDescription.sdp)
   }
 
-  log.trace('fetching fingerprint from local certificate')
+  options.log.trace('fetching fingerprint from local certificate')
 
   if (localCert.getFingerprints().length === 0) {
     return undefined
@@ -54,8 +52,6 @@ function ipv (ma: Multiaddr): string {
       return proto.toUpperCase()
     }
   }
-
-  log('Warning: multiaddr does not appear to contain IP4 or IP6, defaulting to IP6', ma)
 
   return 'IP6'
 }

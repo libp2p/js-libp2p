@@ -1,7 +1,8 @@
 import net from 'node:net'
 import { promisify } from 'util'
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
@@ -85,10 +86,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })()
+    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+      logger: defaultLogger()
+    })
 
     const upgrader = mockUpgrader({
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const listener = trasnport.createListener({ upgrader }) as TCPListener
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -112,10 +115,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })()
+    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+      logger: defaultLogger()
+    })
 
     const upgrader = mockUpgrader({
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const listener = trasnport.createListener({ upgrader }) as TCPListener
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -147,10 +152,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })()
+    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+      logger: defaultLogger()
+    })
 
     const upgrader = mockUpgrader({
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const listener = trasnport.createListener({ upgrader }) as TCPListener
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -178,10 +185,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })()
+    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+      logger: defaultLogger()
+    })
 
     const upgrader = mockUpgrader({
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const listener = trasnport.createListener({ upgrader }) as TCPListener
     // eslint-disable-next-line @typescript-eslint/promise-function-async

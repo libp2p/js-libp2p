@@ -1,10 +1,10 @@
 {
+  "last-release-sha": "17d980c902fa5314e954508255a41c0854416d47",
   "plugins": ["node-workspace"],
-  "bump-minor-pre-major": true,
-  "bump-patch-for-minor-pre-major": true,
   "group-pull-request-title-pattern": "chore: release ${component}",
   "packages": {
     "interop": {},
+    "packages/connection-encrypter-plaintext": {},
     "packages/crypto": {},
     "packages/interface": {},
     "packages/interface-compliance-tests": {},
@@ -22,14 +22,21 @@
     "packages/peer-id-factory": {},
     "packages/peer-record": {},
     "packages/peer-store": {},
+    "packages/protocol-autonat": {},
+    "packages/protocol-dcutr": {},
+    "packages/protocol-fetch": {},
+    "packages/protocol-identify": {},
     "packages/protocol-perf": {},
+    "packages/protocol-ping": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
     "packages/stream-multiplexer-mplex": {},
+    "packages/transport-circuit-relay-v2": {},
     "packages/transport-tcp": {},
     "packages/transport-webrtc": {},
     "packages/transport-websockets": {},
     "packages/transport-webtransport": {},
+    "packages/upnp-nat": {},
     "packages/utils": {}
   }
 }

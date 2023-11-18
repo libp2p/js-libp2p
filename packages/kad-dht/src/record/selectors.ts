@@ -24,7 +24,7 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
   const selector = selectors[parts[1].toString()]
 
   if (selector == null) {
-    const errMsg = `Unrecognized key prefix: ${parts[1]}`
+    const errMsg = `No selector function configured for key type "${parts[1]}"`
 
     throw new CodeError(errMsg, 'ERR_UNRECOGNIZED_KEY_PREFIX')
   }

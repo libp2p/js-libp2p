@@ -1,18 +1,16 @@
-import { setMaxListeners } from 'events'
-import { logger } from '@libp2p/logger'
+import { setMaxListeners } from '@libp2p/interface/events'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import { type ObjectSchema, array, number, object, string } from 'yup'
-import { validateMultiaddr } from '../config/helpers.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, INBOUND_UPGRADE_TIMEOUT, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PARALLEL_DIALS_PER_PEER, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { validateMultiaddr } from '../config/helpers'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, INBOUND_UPGRADE_TIMEOUT, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PARALLEL_DIALS_PER_PEER, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants'
 import type { ConnectionManagerInit } from '.'
-
-const log = logger('libp2p:connection-manager:utils')
+import type { LoggerOptions } from '@libp2p/interface'
 
 /**
  * Resolve multiaddr recursively
  */
-export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
+export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions & LoggerOptions): Promise<Multiaddr[]> {
   // TODO: recursive logic should live in multiaddr once dns4/dns6 support is in place
   // Now only supporting resolve for dnsaddr
   const resolvableProto = ma.protoNames().includes('dnsaddr')
@@ -35,7 +33,7 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
     return array
   }, ([]))
 
-  log('resolved %s to', ma, output.map(ma => ma.toString()))
+  options.log('resolved %s to', ma, output.map(ma => ma.toString()))
 
   return output
 }
@@ -43,13 +41,13 @@ export async function resolveMultiaddrs (ma: Multiaddr, options: AbortOptions): 
 /**
  * Resolve a given multiaddr. If this fails, an empty array will be returned
  */
-async function resolveRecord (ma: Multiaddr, options: AbortOptions): Promise<Multiaddr[]> {
+async function resolveRecord (ma: Multiaddr, options: AbortOptions & LoggerOptions): Promise<Multiaddr[]> {
   try {
     ma = multiaddr(ma.toString()) // Use current multiaddr module
     const multiaddrs = await ma.resolve(options)
     return multiaddrs
   } catch (err) {
-    log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
+    options.log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
     return []
   }
 }
@@ -59,10 +57,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
 
   for (const sig of signals) {
     if (sig != null) {
-      try {
-        // fails on node < 15.4
-        setMaxListeners?.(Infinity, sig)
-      } catch { }
+      setMaxListeners(Infinity, sig)
       sigs.push(sig)
     }
   }
@@ -70,10 +65,7 @@ export function combineSignals (...signals: Array<AbortSignal | undefined>): Cle
   // let any signal abort the dial
   const signal = anySignal(sigs)
 
-  try {
-    // fails on node < 15.4
-    setMaxListeners?.(Infinity, signal)
-  } catch { }
+  setMaxListeners(Infinity, signal)
 
   return signal
 }

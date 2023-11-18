@@ -5,6 +5,95 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+### [10.0.15](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.14...kad-dht-v10.0.15) (2023-11-10)
+
+
+### Bug Fixes
+
+* crash during DHT query abort when reading is slow ([#2225](https://www.github.com/libp2p/js-libp2p/issues/2225)) ([c960eb6](https://www.github.com/libp2p/js-libp2p/commit/c960eb659d2deff0c29cb2f5fe2a506310b8f971)), closes [#2216](https://www.github.com/libp2p/js-libp2p/issues/2216)
+
+### [10.0.14](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.13...kad-dht-v10.0.14) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/peer-store bumped from ^9.0.8 to ^9.0.9
+
+### [10.0.13](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.12...kad-dht-v10.0.13) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
+### [10.0.12](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.11...kad-dht-v10.0.12) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/interface-internal bumped from ^0.1.7 to ^0.1.8
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-collections bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.2 to ^4.1.3
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/peer-store bumped from ^9.0.7 to ^9.0.8
+
+### [10.0.11](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.10...kad-dht-v10.0.11) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-store bumped from ^9.0.6 to ^9.0.7
+
+### [10.0.10](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.9...kad-dht-v10.0.10) (2023-10-25)
+
+
+### Bug Fixes
+
+* allow DHT self-query to time out ([#2169](https://www.github.com/libp2p/js-libp2p/issues/2169)) ([ce0e38d](https://www.github.com/libp2p/js-libp2p/commit/ce0e38d28240303f7afc7f37de441b067e3e855e))
+* export DHT record class ([#2168](https://www.github.com/libp2p/js-libp2p/issues/2168)) ([2f6a239](https://www.github.com/libp2p/js-libp2p/commit/2f6a2397f7e8ec7cf2edda7c9996be263a423661))
+
 ### [10.0.9](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.8...kad-dht-v10.0.9) (2023-10-06)
 
 

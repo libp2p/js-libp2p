@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -123,7 +124,8 @@ describe('QueryManager', () => {
 
   it('does not run queries before start', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -135,7 +137,8 @@ describe('QueryManager', () => {
 
   it('does not run queries after stop', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -150,7 +153,8 @@ describe('QueryManager', () => {
 
   it('should pass query context', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -183,7 +187,8 @@ describe('QueryManager', () => {
 
   it('simple run - succeed finding value', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -235,7 +240,8 @@ describe('QueryManager', () => {
 
   it('simple run - fail to find value', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -277,7 +283,8 @@ describe('QueryManager', () => {
 
   it('should abort a query', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 2,
@@ -322,7 +329,8 @@ describe('QueryManager', () => {
 
   it('should allow a sub-query to timeout without aborting the whole query', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 2,
@@ -373,7 +381,8 @@ describe('QueryManager', () => {
 
   it('does not return an error if only some queries error', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 10
@@ -411,7 +420,8 @@ describe('QueryManager', () => {
 
   it('returns empty run if initial peer list is empty', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 10
@@ -432,7 +442,8 @@ describe('QueryManager', () => {
 
   it('should query closer peers first', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -484,7 +495,8 @@ describe('QueryManager', () => {
 
   it('should stop when passing through the same node twice', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 20,
@@ -520,7 +532,8 @@ describe('QueryManager', () => {
 
   it('only closerPeers', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -534,8 +547,7 @@ describe('QueryManager', () => {
         messageType: MESSAGE_TYPE.GET_VALUE,
         closer: [{
           id: peers[2],
-          multiaddrs: [],
-          protocols: []
+          multiaddrs: []
         }]
       })
     }
@@ -552,7 +564,8 @@ describe('QueryManager', () => {
 
   it('only closerPeers concurrent', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 3
@@ -587,7 +600,8 @@ describe('QueryManager', () => {
 
   it('queries stop after shutdown', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -640,7 +654,8 @@ describe('QueryManager', () => {
 
   it('disjoint path values', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 2
@@ -681,7 +696,8 @@ describe('QueryManager', () => {
 
   it('disjoint path continue other paths after error on one path', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 2
@@ -719,7 +735,8 @@ describe('QueryManager', () => {
 
   it('should allow the self-query query to run', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       initialQuerySelfHasRun: pDefer<any>(),
       routingTable
@@ -752,7 +769,8 @@ describe('QueryManager', () => {
     const initialQuerySelfHasRun = pDefer<any>()
 
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       initialQuerySelfHasRun,
       alpha: 2,
@@ -804,7 +822,8 @@ describe('QueryManager', () => {
 
   it('should end paths when they have no closer peers to those already queried', async () => {
     const manager = new QueryManager({
-      peerId: ourPeerId
+      peerId: ourPeerId,
+      logger: defaultLogger()
     }, {
       ...defaultInit(),
       disjointPaths: 1,

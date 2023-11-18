@@ -5,6 +5,44 @@
 
 * specify updated formatter for multiaddrs ([#36](https://github.com/libp2p/js-libp2p-logger/issues/36)) ([abaefb4](https://github.com/libp2p/js-libp2p-logger/commit/abaefb490a0d9464a23b422d9fc5b80051532d10))
 
+## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.0.5...logger-v3.1.0) (2023-11-07)
+
+
+### Features
+
+* add component logger ([#2198](https://www.github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://www.github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://www.github.com/libp2p/js-libp2p/issues/2105)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+  * devDependencies
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+
+### [3.0.5](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.0.4...logger-v3.0.5) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+
+### [3.0.4](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.0.3...logger-v3.0.4) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+
 ### [3.0.3](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.0.2...logger-v3.0.3) (2023-10-06)
 
 

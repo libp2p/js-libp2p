@@ -2,10 +2,11 @@
 
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { webSockets } from '@libp2p/websockets'
 import * as filter from '@libp2p/websockets/filters'
-import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import map from 'it-map'
@@ -13,7 +14,6 @@ import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import pDefer from 'p-defer'
 import pRetry from 'p-retry'
 import { webRTC } from '../src/index.js'
@@ -60,7 +60,7 @@ describe('basics', () => {
 
   async function connectNodes (): Promise<Connection> {
     const remoteAddr = remoteNode.getMultiaddrs()
-      .filter(ma => WebRTC.matches(ma)).pop()
+      .filter(ma => WebRTC.exactMatch(ma)).pop()
 
     if (remoteAddr == null) {
       throw new Error('Remote peer could not listen on relay')
@@ -120,6 +120,15 @@ describe('basics', () => {
 
     // asset that we got the right data
     expect(output).to.equalBytes(toBuffer(input))
+  })
+
+  it('reports remote addresses correctly', async () => {
+    const initatorConnection = await connectNodes()
+    expect(initatorConnection.remoteAddr.toString()).to.equal(`${process.env.RELAY_MULTIADDR}/p2p-circuit/webrtc/p2p/${remoteNode.peerId}`)
+
+    const receiverConnections = remoteNode.getConnections(localNode.peerId)
+      .filter(conn => conn.remoteAddr.toString() === `/webrtc/p2p/${localNode.peerId}`)
+    expect(receiverConnections).to.have.lengthOf(1)
   })
 
   it('can send a large file', async () => {
@@ -238,7 +247,7 @@ describe('basics', () => {
     await remoteStream.closeRead()
 
     // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-    const remoteInputStream = pushable()
+    const remoteInputStream = pushable<Uint8Array>()
     void remoteStream.sink(remoteInputStream)
 
     const p = stream.closeWrite()
