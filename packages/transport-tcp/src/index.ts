@@ -234,13 +234,12 @@ class TCP implements Transport {
         ...(this.opts.socket ?? {}),
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
-      const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
 
       this.log('dialing %a', ma)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
-        err.message = `connection error ${cOptsStr}: ${err.message}`
+        err.message = `connection error ${cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`}: ${err.message}`
         this.metrics?.dialerEvents.increment({ error: true })
 
         done(err)
