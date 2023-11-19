@@ -236,7 +236,7 @@ class TCP implements Transport {
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
       const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
 
-      this.log('dialing %o', cOpts)
+      this.log('dialing %a', ma)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
@@ -247,7 +247,7 @@ class TCP implements Transport {
       }
 
       const onTimeout = (): void => {
-        this.log('connection timeout %s', cOptsStr)
+        this.log('connection timeout %a', ma)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
         const err = new CodeError(`connection timeout after ${Date.now() - start}ms`, 'ERR_CONNECT_TIMEOUT')
@@ -256,13 +256,13 @@ class TCP implements Transport {
       }
 
       const onConnect = (): void => {
-        this.log('connection opened %o', cOpts)
+        this.log('connection opened %a', ma)
         this.metrics?.dialerEvents.increment({ connect: true })
         done()
       }
 
       const onAbort = (): void => {
-        this.log('connection aborted %o', cOpts)
+        this.log('connection aborted %a', ma)
         this.metrics?.dialerEvents.increment({ abort: true })
         rawSocket.destroy()
         done(new AbortError())
