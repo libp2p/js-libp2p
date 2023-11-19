@@ -239,7 +239,8 @@ class TCP implements Transport {
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
-        err.message = `connection error ${cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`}: ${err.message}`
+        const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
+        err.message = `connection error ${cOptsStr}: ${err.message}`
         this.metrics?.dialerEvents.increment({ error: true })
 
         done(err)
