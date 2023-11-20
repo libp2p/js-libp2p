@@ -389,7 +389,8 @@ export class DefaultUpgrader implements Upgrader {
             .then(async () => {
               const protocols = this.components.registrar.getProtocols()
               const { stream, protocol } = await mss.handle(muxedStream, protocols, {
-                log: muxedStream.log
+                log: muxedStream.log,
+                yieldBytes: false
               })
 
               if (connection == null) {
@@ -458,7 +459,8 @@ export class DefaultUpgrader implements Upgrader {
 
           const { stream, protocol } = await mss.select(muxedStream, protocols, {
             ...options,
-            log: muxedStream.log
+            log: muxedStream.log,
+            yieldBytes: false
           })
 
           connection.log('negotiated protocol stream %s with id %s', protocol, muxedStream.id)
