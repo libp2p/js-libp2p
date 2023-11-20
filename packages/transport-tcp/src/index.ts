@@ -118,17 +118,17 @@ export interface TCPOptions {
  */
 export interface TCPSocketOptions extends AbortOptions {
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
    */
   noDelay?: boolean
 
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
    */
   keepAlive?: boolean
 
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
    */
   keepAliveInitialDelay?: number
 
