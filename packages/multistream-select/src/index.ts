@@ -22,6 +22,7 @@
 
 import { PROTOCOL_ID } from './constants.js'
 import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
+import type { LengthPrefixedStreamOpts } from 'it-length-prefixed-stream'
 
 export { PROTOCOL_ID }
 
@@ -30,7 +31,7 @@ export interface ProtocolStream<Stream> {
   protocol: string
 }
 
-export interface MultistreamSelectInit extends AbortOptions, LoggerOptions {
+export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Partial<LengthPrefixedStreamOpts> {
 
 }
 

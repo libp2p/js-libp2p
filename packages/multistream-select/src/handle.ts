@@ -58,6 +58,7 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
   options.log.trace('handle: available protocols %s', protocols)
 
   const lp = lpStream(stream, {
+    ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
     maxLengthLength: 2 // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
   })

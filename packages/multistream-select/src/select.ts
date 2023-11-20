@@ -55,6 +55,7 @@ import type { Duplex } from 'it-stream-types'
 export async function select <Stream extends Duplex<any, any, any>> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
   const lp = lpStream(stream, {
+    ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH
   })
   const protocol = protocols.shift()
@@ -117,6 +118,7 @@ export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Strea
     sink: originalSink,
     source: originalSource
   }, {
+    ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH
   })
 
