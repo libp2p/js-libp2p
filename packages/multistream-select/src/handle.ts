@@ -55,7 +55,7 @@ import type { Duplex } from 'it-stream-types'
  */
 export async function handle <Stream extends Duplex<any, any, any>> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? protocols : [protocols]
-  options.log.trace('available protocols %s', protocols)
+  options.log.trace('handle: available protocols %s', protocols)
 
   const lp = lpStream(stream, {
     maxDataLength: MAX_PROTOCOL_LENGTH,
@@ -63,21 +63,21 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
   })
 
   while (true) {
-    options?.log.trace('reading incoming string')
+    options?.log.trace('handle: reading incoming string')
     const protocol = await multistream.readString(lp, options)
-    options.log.trace('read "%s"', protocol)
+    options.log.trace('handle: read "%s"', protocol)
 
     if (protocol === PROTOCOL_ID) {
-      options.log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
+      options.log.trace('handle: respond with "%s" for "%s"', PROTOCOL_ID, protocol)
       await multistream.write(lp, uint8ArrayFromString(`${PROTOCOL_ID}\n`), options)
-      options.log.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol)
+      options.log.trace('handle: responded with "%s" for "%s"', PROTOCOL_ID, protocol)
       continue
     }
 
     if (protocols.includes(protocol)) {
-      options.log.trace('respond with "%s" for "%s"', protocol, protocol)
+      options.log.trace('handle: respond with "%s" for "%s"', protocol, protocol)
       await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
-      options.log.trace('responded with "%s" for "%s"', protocol, protocol)
+      options.log.trace('handle: responded with "%s" for "%s"', protocol, protocol)
 
       return { stream: lp.unwrap(), protocol }
     }
@@ -89,13 +89,14 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
         uint8ArrayFromString('\n')
       )
 
-      options.log.trace('respond with "%s" for %s', protocols, protocol)
+      options.log.trace('handle: respond with "%s" for %s', protocols, protocol)
       await multistream.write(lp, protos, options)
-      options.log.trace('responded with "%s" for %s', protocols, protocol)
+      options.log.trace('handle: responded with "%s" for %s', protocols, protocol)
       continue
     }
 
-    options.log('respond with "na" for "%s"', protocol)
+    options.log('handle: respond with "na" for "%s"', protocol)
     await multistream.write(lp, uint8ArrayFromString('na\n'), options)
+    options.log('handle: responded with "na" for "%s"', protocol)
   }
 }
