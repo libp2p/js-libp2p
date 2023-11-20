@@ -61,7 +61,7 @@ describe('Multistream', () => {
       const duplexes = duplexPair<Uint8Array>()
       const inputStream = lpStream(duplexes[0])
       const outputStream = lpStream(duplexes[1], {
-        maxDataLength: 100
+        maxDataLength: 9999
       })
 
       void inputStream.write(input)
