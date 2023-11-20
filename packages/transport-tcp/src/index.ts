@@ -101,15 +101,40 @@ export interface TCPOptions {
    * Open server (start listening for new connections) if connections fall below a limit.
    */
   closeServerOnMaxConnections?: CloseServerOnMaxConnectionsOpts
+
+  /**
+   * Options passed to `net.connect` for every opened TCP socket
+   */
+  dialOpts?: TCPSocketOptions
+
+  /**
+   * Options passed to every `net.createServer` for every TCP server
+   */
+  listenOpts?: TCPSocketOptions
 }
 
 /**
  * Expose a subset of net.connect options
  */
 export interface TCPSocketOptions extends AbortOptions {
+  /**
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   */
   noDelay?: boolean
+
+  /**
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   */
   keepAlive?: boolean
+
+  /**
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+   */
   keepAliveInitialDelay?: number
+
+  /**
+   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#new-netsocketoptions
+   */
   allowHalfOpen?: boolean
 }
 
@@ -205,13 +230,16 @@ class TCP implements Transport {
 
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
-      const cOpts = multiaddrToNetConfig(ma) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
-      const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
+      const cOpts = multiaddrToNetConfig(ma, {
+        ...(this.opts.dialOpts ?? {}),
+        ...options
+      }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-      this.log('dialing %j', cOpts)
+      this.log('dialing %a', ma)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
+        const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
         err.message = `connection error ${cOptsStr}: ${err.message}`
         this.metrics?.dialerEvents.increment({ error: true })
 
@@ -219,7 +247,7 @@ class TCP implements Transport {
       }
 
       const onTimeout = (): void => {
-        this.log('connection timeout %s', cOptsStr)
+        this.log('connection timeout %a', ma)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
         const err = new CodeError(`connection timeout after ${Date.now() - start}ms`, 'ERR_CONNECT_TIMEOUT')
@@ -228,13 +256,13 @@ class TCP implements Transport {
       }
 
       const onConnect = (): void => {
-        this.log('connection opened %j', cOpts)
+        this.log('connection opened %a', ma)
         this.metrics?.dialerEvents.increment({ connect: true })
         done()
       }
 
       const onAbort = (): void => {
-        this.log('connection aborted %j', cOpts)
+        this.log('connection aborted %a', ma)
         this.metrics?.dialerEvents.increment({ abort: true })
         rawSocket.destroy()
         done(new AbortError())
@@ -273,6 +301,7 @@ class TCP implements Transport {
    */
   createListener (options: TCPCreateListenerOptions): Listener {
     return new TCPListener({
+      ...(this.opts.listenOpts ?? {}),
       ...options,
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
