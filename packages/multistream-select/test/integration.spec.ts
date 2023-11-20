@@ -113,6 +113,76 @@ describe('Dialer and Listener integration', () => {
     expect(new Uint8ArrayList(...dialerOut).slice()).to.eql(new Uint8ArrayList(...input).slice())
   })
 
+  it('should handle and lazySelect that fails', async () => {
+    const protocol = '/echo/1.0.0'
+    const otherProtocol = '/echo/2.0.0'
+    const pair = duplexPair<Uint8ArrayList | Uint8Array>()
+
+    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+      log: logger('mss:test')
+    })
+    expect(dialerSelection.protocol).to.equal(protocol)
+
+    // the listener handles the incoming stream
+    void mss.handle(pair[1], otherProtocol, {
+      log: logger('mss:test')
+    })
+
+    // should fail when we interact with the stream
+    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    await expect(pipe(input, dialerSelection.stream, async source => all(source)))
+      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+  })
+
+  it('should handle and lazySelect only by reading', async () => {
+    const protocol = '/echo/1.0.0'
+    const pair = duplexPair<Uint8ArrayList | Uint8Array>()
+
+    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+      log: logger('mss:dialer')
+    })
+    expect(dialerSelection.protocol).to.equal(protocol)
+
+    // ensure stream is usable after selection
+    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+
+    const [, dialerOut] = await Promise.all([
+      // the listener handles the incoming stream
+      mss.handle(pair[1], protocol, {
+        log: logger('mss:listener')
+      }).then(async result => {
+        // the listener writes to the incoming stream
+        await pipe(input, result.stream)
+      }),
+
+      // the dialer just reads from the stream
+      pipe(dialerSelection.stream, async source => all(source))
+    ])
+
+    expect(new Uint8ArrayList(...dialerOut).slice()).to.eql(new Uint8ArrayList(...input).slice())
+  })
+
+  it('should handle and lazySelect only by reading that fails', async () => {
+    const protocol = '/echo/1.0.0'
+    const otherProtocol = '/echo/2.0.0'
+    const pair = duplexPair<Uint8ArrayList | Uint8Array>()
+
+    // lazy succeeds
+    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+      log: logger('mss:dialer')
+    })
+    expect(dialerSelection.protocol).to.equal(protocol)
+
+    // the listener handles the incoming stream
+    void mss.handle(pair[1], otherProtocol, {
+      log: logger('mss:listener')
+    })
+
+    // should fail when we interact with the stream
+    await expect(pipe(dialerSelection.stream, async source => all(source)))
+      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+  })
+
   it('should abort an unhandled lazySelect', async () => {
     const protocol = '/echo/1.0.0'
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()

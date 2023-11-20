@@ -1,5 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { lpStream } from 'it-length-prefixed-stream'
+import * as varint from 'uint8-varint'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_PROTOCOL_LENGTH } from './constants.js'
 import * as multistream from './multistream.js'
@@ -109,6 +111,7 @@ export async function select <Stream extends Duplex<any, any, any>> (stream: Str
 export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Stream, protocol: string, options: MultistreamSelectInit): ProtocolStream<Stream> {
   const originalSink = stream.sink.bind(stream)
   const originalSource = stream.source
+  let selected = false
 
   const lp = lpStream({
     sink: originalSink,
@@ -118,20 +121,47 @@ export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Strea
   })
 
   stream.sink = async source => {
-    options?.log.trace('lazy: write ["%s", "%s"]', PROTOCOL_ID, protocol)
+    const { sink } = lp.unwrap()
 
-    await lp.writeV([
-      uint8ArrayFromString(`${PROTOCOL_ID}\n`),
-      uint8ArrayFromString(`${protocol}\n`)
-    ])
+    await sink(async function * () {
+      for await (const buf of source) {
+        // if writing before selecting, send selection with first data chunk
+        if (!selected) {
+          selected = true
+          options?.log.trace('lazy: write ["%s", "%s", data] in sink', PROTOCOL_ID, protocol)
 
-    options?.log.trace('lazy: writing rest of "%s" stream', protocol)
-    await lp.unwrap().sink(source)
+          const protocolString = `${protocol}\n`
+
+          // send protocols in first chunk of data written to transport
+          yield new Uint8ArrayList(
+            Uint8Array.from([19]), // length of PROTOCOL_ID plus newline
+            uint8ArrayFromString(`${PROTOCOL_ID}\n`),
+            varint.encode(protocolString.length),
+            uint8ArrayFromString(protocolString),
+            buf
+          ).subarray()
+
+          options?.log.trace('lazy: wrote ["%s", "%s", data] in sink', PROTOCOL_ID, protocol)
+        } else {
+          yield buf
+        }
+      }
+    }())
   }
 
   stream.source = (async function * () {
-    options?.log.trace('lazy: reading multistream select header')
+    // if reading before selecting, send selection before first data chunk
+    if (!selected) {
+      selected = true
+      options?.log.trace('lazy: write ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
+      await lp.writeV([
+        uint8ArrayFromString(`${PROTOCOL_ID}\n`),
+        uint8ArrayFromString(`${protocol}\n`)
+      ])
+      options?.log.trace('lazy: wrote ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
+    }
 
+    options?.log.trace('lazy: reading multistream select header')
     let response = await multistream.readString(lp, options)
     options?.log.trace('lazy: read multistream select header "%s"', response)
 
