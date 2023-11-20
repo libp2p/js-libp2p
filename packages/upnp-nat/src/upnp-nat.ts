@@ -25,6 +25,7 @@ const configValidator = object({
   keepAlive: boolean().default(true),
   gateway: string().optional()
 })
+
 export class UPnPNAT implements Startable {
   private readonly components: UPnPNATComponents
   private readonly externalAddress?: string
@@ -49,6 +50,7 @@ export class UPnPNAT implements Startable {
     this.description = config.description ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${this.components.peerId.toString()}`
     this.keepAlive = config.keepAlive
     this.gateway = config.gateway
+    this.ttl = config.ttl
 
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, ERR_INVALID_PARAMETERS)

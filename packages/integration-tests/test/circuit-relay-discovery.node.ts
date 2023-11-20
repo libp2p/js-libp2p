@@ -2,6 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
@@ -34,7 +35,7 @@ describe('circuit-relay discovery', () => {
         mockContentRouting()
       ],
       services: {
-        identify: identifyService(),
+        identify: identify(),
         relay: circuitRelayServer({
           advertise: {
             bootDelay: 10

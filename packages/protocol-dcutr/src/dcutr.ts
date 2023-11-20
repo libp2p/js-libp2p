@@ -2,12 +2,7 @@ import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface/errors'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
-<<<<<<< HEAD:packages/libp2p/src/dcutr/dcutr.ts
-import isPrivate from 'private-ip'
 import { number, object } from 'yup'
-import { codes } from '../errors.js'
-=======
->>>>>>> main:packages/protocol-dcutr/src/dcutr.ts
 import { HolePunch } from './pb/message.js'
 import { isPublicAndDialable } from './utils.js'
 import { multicodec } from './index.js'

@@ -12,6 +12,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 import { boolean, number, object, string } from 'yup'
 import {
+  AGENT_VERSION,
   IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
@@ -77,6 +78,7 @@ export class Identify implements Startable, IdentifyInterface {
   private readonly maxObservedAddresses: number
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
+  private readonly runOnConnectionOpen: boolean
   private readonly log: Logger
 
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -328,7 +330,7 @@ export class Identify implements Startable, IdentifyInterface {
 
     if (cleanObservedAddr != null &&
       this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
-      log('storing our observed address %a', cleanObservedAddr)
+      this.log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }
 

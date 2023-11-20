@@ -2,6 +2,8 @@ export const PROTOCOL_VERSION = 'ipfs/0.1.0' // deprecated
 export const MULTICODEC_IDENTIFY = '/ipfs/id/1.0.0' // deprecated
 export const MULTICODEC_IDENTIFY_PUSH = '/ipfs/id/push/1.0.0' // deprecated
 
+export const AGENT_VERSION = 'js-libp2p/1.0.0'
+
 export const PROTOCOL_PREFIX = 'ipfs'
 export const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
 export const MAX_INBOUND_STREAMS = 1

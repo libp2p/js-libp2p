@@ -3,45 +3,15 @@ import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-<<<<<<< HEAD:packages/libp2p/src/ping/index.ts
 import { boolean, number, object, string } from 'yup'
-import { codes } from '../errors.js'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
-import type { AbortOptions } from '@libp2p/interface'
-=======
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
 import type { AbortOptions, Logger } from '@libp2p/interface'
->>>>>>> main:packages/protocol-ping/src/ping.ts
 import type { Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Startable } from '@libp2p/interface/startable'
 import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-<<<<<<< HEAD:packages/libp2p/src/ping/index.ts
-const log = logger('libp2p:ping')
-
-export interface PingService {
-  ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
-}
-
-export interface PingServiceInit {
-  protocolPrefix?: string
-  maxInboundStreams?: number
-  maxOutboundStreams?: number
-  runOnTransientConnection?: boolean
-
-  /**
-   * How long we should wait for a ping response
-   */
-  timeout?: number
-}
-
-export interface PingServiceComponents {
-  registrar: Registrar
-  connectionManager: ConnectionManager
-}
 
 const configValidator = object({
   protocolPrefix: string().default(PROTOCOL_PREFIX),
@@ -51,10 +21,7 @@ const configValidator = object({
   runOnTransientConnection: boolean().default(true)
 })
 
-class DefaultPingService implements Startable, PingService {
-=======
 export class PingService implements Startable, PingServiceInterface {
->>>>>>> main:packages/protocol-ping/src/ping.ts
   public readonly protocol: string
   private readonly components: PingServiceComponents
   private started: boolean
@@ -68,7 +35,6 @@ export class PingService implements Startable, PingServiceInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:ping')
     this.started = false
-<<<<<<< HEAD:packages/libp2p/src/ping/index.ts
 
     const config = configValidator.validateSync(init)
 
@@ -77,15 +43,6 @@ export class PingService implements Startable, PingServiceInterface {
     this.maxInboundStreams = config.maxInboundStreams
     this.maxOutboundStreams = config.maxOutboundStreams
     this.runOnTransientConnection = config.runOnTransientConnection
-=======
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? TIMEOUT
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? true
-
-    this.handleMessage = this.handleMessage.bind(this)
->>>>>>> main:packages/protocol-ping/src/ping.ts
   }
 
   async start (): Promise<void> {
