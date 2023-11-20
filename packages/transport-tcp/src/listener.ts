@@ -83,6 +83,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     super()
 
     context.keepAlive = context.keepAlive ?? true
+    context.noDelay = context.noDelay ?? true
 
     this.log = context.logger.forComponent('libp2p:tcp:listener')
     this.addr = 'unknown'
