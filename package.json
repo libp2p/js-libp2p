@@ -29,7 +29,7 @@
     "lint": "aegir run lint",
     "dep-check": "aegir run dep-check",
     "release": "run-s build docs:no-publish npm:release docs",
-    "npm:release": "aegir exec --bail false npm -- publish",
+    "npm:release": "aegir exec --bail false npm -- publish --provenance",
     "release:rc": "aegir release-rc",
     "docs": "aegir docs",
     "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
