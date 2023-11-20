@@ -105,12 +105,12 @@ export interface TCPOptions {
   /**
    * Options passed to `net.connect` for every opened TCP socket
    */
-  socket?: TCPSocketOptions
+  dialOpts?: TCPSocketOptions
 
   /**
    * Options passed to every `net.createServer` for every TCP server
    */
-  server?: TCPSocketOptions
+  listenOpts?: TCPSocketOptions
 }
 
 /**
@@ -231,7 +231,7 @@ class TCP implements Transport {
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
       const cOpts = multiaddrToNetConfig(ma, {
-        ...(this.opts.socket ?? {}),
+        ...(this.opts.dialOpts ?? {}),
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
@@ -301,7 +301,7 @@ class TCP implements Transport {
    */
   createListener (options: TCPCreateListenerOptions): Listener {
     return new TCPListener({
-      ...(this.opts.server ?? {}),
+      ...(this.opts.listenOpts ?? {}),
       ...options,
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
