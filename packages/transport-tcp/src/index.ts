@@ -182,6 +182,7 @@ class TCP implements Transport {
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
+    options.noDelay = options.noDelay ?? true
 
     // options.signal destroys the socket before 'connect' event
     const socket = await this._connect(ma, options)
