@@ -118,22 +118,22 @@ export interface TCPOptions {
  */
 export interface TCPSocketOptions extends AbortOptions {
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
    */
   noDelay?: boolean
 
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
    */
   keepAlive?: boolean
 
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#socketconnectoptions-connectlistener
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
    */
   keepAliveInitialDelay?: number
 
   /**
-   * @see https://nodejs.org/dist/latest-v18.x/docs/api/net.html#new-netsocketoptions
+   * @see https://nodejs.org/api/net.html#new-netsocketoptions
    */
   allowHalfOpen?: boolean
 }
