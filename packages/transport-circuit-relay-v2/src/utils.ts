@@ -40,19 +40,15 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
-    clearTimeout(timeout)
   }
 
-  const abortController = new AbortController()
-  const signal = anySignal([abortSignal, abortController.signal])
-
-  let timeout: ReturnType<typeof setTimeout> | undefined
+  const signals = [abortSignal]
 
   if (limit?.duration != null) {
-    timeout = setTimeout(() => {
-      abortController.abort()
-    }, limit.duration)
+    signals.push(AbortSignal.timeout(limit.duration))
   }
+
+  const signal = anySignal(signals)
 
   let srcDstFinished = false
   let dstSrcFinished = false
@@ -67,6 +63,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
+      console.info('duration limit reached, abort dst')
       dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
@@ -83,13 +80,13 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
         if (dstSrcFinished) {
           signal.removeEventListener('abort', onAbort)
           signal.clear()
-          clearTimeout(timeout)
         }
       })
   })
 
   queueMicrotask(() => {
     const onAbort = (): void => {
+      console.info('duration limit reached, abort src')
       src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
@@ -106,7 +103,6 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
         if (srcDstFinished) {
           signal.removeEventListener('abort', onAbort)
           signal.clear()
-          clearTimeout(timeout)
         }
       })
   })
