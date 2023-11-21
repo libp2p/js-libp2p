@@ -63,7 +63,6 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      console.info('duration limit reached, abort dst')
       dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
@@ -86,7 +85,6 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      console.info('duration limit reached, abort src')
       src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
     }
 
