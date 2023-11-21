@@ -12,7 +12,6 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 import { boolean, number, object, string } from 'yup'
 import {
-  AGENT_VERSION,
   IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
@@ -43,7 +42,6 @@ import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/r
 
 const configValidator = object({
   protocolPrefix: string().default(PROTOCOL_PREFIX),
-  agentVersion: string().default(AGENT_VERSION),
   timeout: number().integer().min(0).default(TIMEOUT),
   maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
   maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
@@ -108,7 +106,7 @@ export class Identify implements Startable, IdentifyInterface {
     // Store self host metadata
     this.host = {
       protocolVersion: `${config.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: config.agentVersion
+      agentVersion: init.agentVersion ?? `${components.nodeInfo.name}/${components.nodeInfo.version}`
     }
 
     if (this.runOnConnectionOpen) {
