@@ -19,6 +19,7 @@
       "sourceType": "module"
     }
   },
+  "exports": {},
   "scripts": {
     "doc-check": "aegir doc-check"
   },

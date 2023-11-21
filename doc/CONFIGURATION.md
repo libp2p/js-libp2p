@@ -930,11 +930,11 @@ For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-au
 
 ```ts
 import { createLibp2p } from 'libp2p'
-import { autoNATService } from '@libp2p/autonat'
+import { autoNAT } from '@libp2p/autonat'
 
 const node = await createLibp2p({
   services: {
-    nat: autoNATService({
+    nat: autoNAT({
       protocolPrefix: 'my-node', // this should be left as the default value to ensure maximum compatibility
       timeout: 30000, // the remote must complete the AutoNAT protocol within this timeout
       maxInboundStreams: 1, // how many concurrent inbound AutoNAT protocols streams to allow on each connection

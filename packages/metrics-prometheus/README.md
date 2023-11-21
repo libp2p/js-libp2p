@@ -76,7 +76,10 @@ rate(libp2p_tcp_dialer_errors_total[30s])
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
-const metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+      logger: defaultLogger()
+})
+
 const myMetric = metrics.registerMetric({
  name: 'my_metric',
  label: 'my_label',
@@ -92,8 +95,12 @@ A metric that is expensive to calculate can be created by passing a `calculate` 
 
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
+
 const myMetric = metrics.registerMetric({
  name: 'my_metric',
  label: 'my_label',
@@ -111,8 +118,12 @@ If several metrics should be grouped together (e.g. for graphing purposes) `regi
 
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
+
 const myMetricGroup = metrics.registerMetricGroup({
  name: 'my_metric_group',
  label: 'my_label',
@@ -131,8 +142,11 @@ Track a newly opened multiaddr connection:
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
 
 const libp2p = await createLibp2p({
    metrics: metrics,
@@ -149,8 +163,11 @@ Track a newly opened stream:
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
 
 const libp2p = await createLibp2p({
   metrics: metrics,

@@ -86,8 +86,11 @@ A tracked metric can be created by calling either `registerMetric` on the metric
 ```ts
 import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics: Metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
 
 const metric = metrics.registerMetric('my_metric', {
   // an optional label
@@ -119,8 +122,11 @@ A metric that is expensive to calculate can be created by passing a `calculate` 
 ```ts
 import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics: Metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
 
 metrics.registerMetric('my_metric', {
   async calculate () {
@@ -134,8 +140,11 @@ If several metrics should be grouped together (e.g. for graphing purposes) `regi
 ```ts
 import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { defaultLogger } from '@libp2p/logger'
 
-const metrics: Metrics = prometheusMetrics()()
+const metrics: Metrics = prometheusMetrics()({
+  logger: defaultLogger()
+})
 
 const metric = metrics.registerMetricGroup('my_metric', {
   // an optional label
