@@ -43,6 +43,8 @@ export class PingService implements Startable, PingServiceInterface {
     this.maxInboundStreams = config.maxInboundStreams
     this.maxOutboundStreams = config.maxOutboundStreams
     this.runOnTransientConnection = config.runOnTransientConnection
+
+    this.handleMessage = this.handleMessage.bind(this)
   }
 
   async start (): Promise<void> {
