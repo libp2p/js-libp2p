@@ -9,7 +9,7 @@ import pDefer from 'p-defer'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
 
-describe.only('ping', () => {
+describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>
 
   beforeEach(async () => {
