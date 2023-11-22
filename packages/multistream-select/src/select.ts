@@ -130,7 +130,7 @@ export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Strea
         // if writing before selecting, send selection with first data chunk
         if (!selected) {
           selected = true
-          options?.log.trace('lazy: write ["%s", "%s", data] in sink', PROTOCOL_ID, protocol)
+          options?.log.trace('lazy: write ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
 
           const protocolString = `${protocol}\n`
 
@@ -143,7 +143,7 @@ export function lazySelect <Stream extends Duplex<any, any, any>> (stream: Strea
             buf
           ).subarray()
 
-          options?.log.trace('lazy: wrote ["%s", "%s", data] in sink', PROTOCOL_ID, protocol)
+          options?.log.trace('lazy: wrote ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
         } else {
           yield buf
         }

@@ -388,7 +388,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 
     // Create local to remote streams
-    const stream = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream(['/echo/1.0.0', '/other/1.0.0'])
     await connection.newStream('/stream-count/3')
     await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
 
@@ -398,8 +398,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
     source.push(uint8ArrayFromString('hello'))
 
     // Create remote to local streams
-    await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/1')
-    await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/2')
+    await remoteLibp2p.dialProtocol(libp2p.peerId, ['/stream-count/1', '/other/1.0.0'])
+    await remoteLibp2p.dialProtocol(libp2p.peerId, ['/stream-count/2', '/other/1.0.0'])
 
     // Verify stream count
     const remoteConn = remoteLibp2p.getConnections(libp2p.peerId)
