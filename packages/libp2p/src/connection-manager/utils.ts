@@ -78,8 +78,6 @@ export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): Ob
     autoDialConcurrency: number().integer().min(0).default(AUTO_DIAL_CONCURRENCY),
     autoDialPriority: number().integer().min(0).default(AUTO_DIAL_PRIORITY),
     maxParallelDials: number().integer().min(0).default(MAX_PARALLEL_DIALS),
-    // #TODO: To be removed https://github.com/libp2p/js-libp2p/issues/2090
-    maxParallelDialsPerPeer: number().max(1, 'maxParallelDialsPerPeer is being removed').default(MAX_PARALLEL_DIALS_PER_PEER),
     maxPeerAddrsToDialed: number().min(0).integer().default(MAX_PEER_ADDRS_TO_DIAL),
     dialTimeout: number().integer().min(0).default(DIAL_TIMEOUT),
     inboundUpgradeTimeout: number().integer().min(0).default(INBOUND_UPGRADE_TIMEOUT),
