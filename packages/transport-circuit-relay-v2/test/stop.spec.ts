@@ -1,31 +1,48 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
 import { isStartable } from '@libp2p/interface/startable'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream, type MessageStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
-import { stubInterface } from 'sinon-ts'
-import { circuitRelayTransport } from '../src/index.js'
+import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
+import { CircuitRelayTransport } from '../src/transport/transport.js'
+import type { ComponentLogger, Libp2pEvents } from '@libp2p/interface'
 import type { Connection, Stream } from '@libp2p/interface/connection'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
 import type { ContentRouting } from '@libp2p/interface/content-routing'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Transport, Upgrader } from '@libp2p/interface/transport'
+import type { Upgrader } from '@libp2p/interface/transport'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar, StreamHandler } from '@libp2p/interface-internal/registrar'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 
+interface StubbedCircuitRelayTransportComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+  registrar: StubbedInstance<Registrar>
+  connectionManager: StubbedInstance<ConnectionManager>
+  transportManager: StubbedInstance<TransportManager>
+  upgrader: StubbedInstance<Upgrader>
+  addressManager: StubbedInstance<AddressManager>
+  contentRouting: StubbedInstance<ContentRouting>
+  connectionGater: StubbedInstance<ConnectionGater>
+  events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
+}
+
 describe('circuit-relay stop protocol', function () {
-  let transport: Transport
+  let transport: CircuitRelayTransport
+  let components: StubbedCircuitRelayTransportComponents
   let handler: StreamHandler
   let pbstr: MessageStream<StopMessage>
   let sourcePeer: PeerId
@@ -34,7 +51,7 @@ describe('circuit-relay stop protocol', function () {
   let remoteStream: Stream
 
   beforeEach(async () => {
-    const components = {
+    components = {
       addressManager: stubInterface<AddressManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
       contentRouting: stubInterface<ContentRouting>(),
@@ -48,9 +65,9 @@ describe('circuit-relay stop protocol', function () {
       logger: defaultLogger()
     }
 
-    transport = circuitRelayTransport({
+    transport = new CircuitRelayTransport(components, {
       stopTimeout
-    })(components)
+    })
 
     if (isStartable(transport)) {
       await transport.start()
@@ -152,5 +169,39 @@ describe('circuit-relay stop protocol', function () {
 
     // should have aborted remote stream
     expect(abortSpy).to.have.property('called', true)
+  })
+
+  it('should try to listen on the address of a relay we are dialed via if no reservation exists', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const remoteAddr = multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
+    transport.reservationStore.hasReservation = Sinon.stub().returns(false)
+    const connection = stubInterface<Connection>({
+      remotePeer,
+      remoteAddr
+    })
+
+    components.transportManager.listen.returns(Promise.resolve())
+
+    void transport.onStop({
+      connection,
+      stream: remoteStream
+    })
+
+    await pbstr.write({
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: []
+      }
+    })
+
+    const response = await pbstr.read()
+    expect(response.status).to.be.equal(Status.OK)
+
+    expect(components.transportManager.listen.called).to.be.true()
+    expect(components.transportManager.listen.getCall(0).args[0][0].toString()).to.equal(
+      remoteAddr.encapsulate('/p2p-circuit').toString(),
+      'did not dial relay we did not have a reservation on'
+    )
   })
 })
