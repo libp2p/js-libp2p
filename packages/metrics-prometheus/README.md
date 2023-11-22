@@ -75,12 +75,14 @@ rate(libp2p_tcp_dialer_errors_total[30s])
 
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-      logger: defaultLogger()
+const node = createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
-const myMetric = metrics.registerMetric({
+const myMetric = node.metrics?.registerMetric({
  name: 'my_metric',
  label: 'my_label',
  help: 'my help text'
@@ -95,13 +97,14 @@ A metric that is expensive to calculate can be created by passing a `calculate` 
 
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { defaultLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-  logger: defaultLogger()
+const node = createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
-const myMetric = metrics.registerMetric({
+const myMetric = node.metrics?.registerMetric({
  name: 'my_metric',
  label: 'my_label',
  help: 'my help text',
@@ -118,10 +121,11 @@ If several metrics should be grouped together (e.g. for graphing purposes) `regi
 
 ```typescript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { defaultLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-  logger: defaultLogger()
+const node = createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
 const myMetricGroup = metrics.registerMetricGroup({

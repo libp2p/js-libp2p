@@ -84,20 +84,20 @@ class MyClass {
 A tracked metric can be created by calling either `registerMetric` on the metrics object:
 
 ```ts
-import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { defaultLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-  logger: defaultLogger()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
-const metric = metrics.registerMetric('my_metric', {
+const metric = node.metrics?.registerMetric('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 // set a value
 metric.update(5)
@@ -122,13 +122,14 @@ A metric that is expensive to calculate can be created by passing a `calculate` 
 ```ts
 import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { defaultLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-  logger: defaultLogger()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
-metrics.registerMetric('my_metric', {
+node.metrics?.registerMetric('my_metric', {
   async calculate () {
     return 5
   }
@@ -138,20 +139,20 @@ metrics.registerMetric('my_metric', {
 If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
 
 ```ts
-import type { Metrics } from '@libp2p/interface/metrics'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { defaultLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()({
-  logger: defaultLogger()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
 })
 
-const metric = metrics.registerMetricGroup('my_metric', {
+const metric = node.metrics?.registerMetricGroup('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 metric.update({
   key1: 1,
@@ -185,7 +186,6 @@ Metrics implementations will allow extracting the values for presentation in an 
 ```ts
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
-
 import client from 'prom-client'
 import { createServer } from 'http'
 
