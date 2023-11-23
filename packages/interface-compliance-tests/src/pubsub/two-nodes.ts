@@ -73,7 +73,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
         expect(psA.getTopics()).to.deep.equal([topic])
         expect(psB.getPeers()).to.have.lengthOf(1)
         expect(psB.getSubscribers(topic).map(p => p.toString())).to.deep.equal([componentsA.peerId.toString()])
-        expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+        expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
         expect(changedSubs).to.have.lengthOf(1)
         expect(changedSubs[0].topic).to.equal(topic)
         expect(changedSubs[0].subscribe).to.equal(true)
@@ -243,7 +243,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
           const { peerId: changedPeerId, subscriptions: changedSubs } = evt.detail
           expect(psB.getPeers()).to.have.lengthOf(1)
           expect(psB.getTopics()).to.be.empty()
-          expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+          expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
           expect(changedSubs).to.have.lengthOf(1)
           expect(changedSubs[0].topic).to.equal(topic)
           expect(changedSubs[0].subscribe).to.equal(true)
@@ -252,7 +252,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
           const { peerId: changedPeerId, subscriptions: changedSubs } = evt.detail
           expect(psB.getPeers()).to.have.lengthOf(1)
           expect(psB.getTopics()).to.be.empty()
-          expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+          expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
           expect(changedSubs).to.have.lengthOf(1)
           expect(changedSubs[0].topic).to.equal(topic)
           expect(changedSubs[0].subscribe).to.equal(false)
