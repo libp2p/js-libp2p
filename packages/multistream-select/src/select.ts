@@ -14,6 +14,7 @@ export interface SelectStream extends Duplex<any, any, any> {
   readStatus?: string
   closeWrite?(): Promise<void>
   closeRead?(): Promise<void>
+  close?(): Promise<void>
 }
 
 /**
@@ -312,6 +313,23 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
 
       // protocol has been negotiated, ok to close the writable end
       await originalCloseWrite()
+    }
+  }
+
+  if (stream.close != null) {
+    const originalClose = stream.close.bind(stream)
+
+    stream.close = async () => {
+      // the stream is being closed, don't try to negotiate a protocol if we
+      // haven't already
+      if (!negotiated) {
+        negotiated = true
+        negotiating = false
+        doneNegotiating.resolve()
+      }
+
+      // protocol has been negotiated, ok to close the writable end
+      await originalClose()
     }
   }
 

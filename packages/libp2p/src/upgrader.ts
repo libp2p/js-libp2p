@@ -423,6 +423,11 @@ export class DefaultUpgrader implements Upgrader {
                 muxedStream.closeRead = stream.closeRead
               }
 
+              // make sure we don't try to negotiate a stream we are closing
+              if (stream.close != null) {
+                muxedStream.close = stream.close
+              }
+
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
@@ -471,6 +476,7 @@ export class DefaultUpgrader implements Upgrader {
             stream,
             protocol
           } = await mss.select(muxedStream, protocols, {
+            ...options,
             log: muxedStream.log,
             yieldBytes: true
           })
@@ -507,6 +513,11 @@ export class DefaultUpgrader implements Upgrader {
           // allow closing the read end of a not-yet-negotiated stream
           if (stream.closeRead != null) {
             muxedStream.closeRead = stream.closeRead
+          }
+
+          // make sure we don't try to negotiate a stream we are closing
+          if (stream.close != null) {
+            muxedStream.close = stream.close
           }
 
           this.components.metrics?.trackProtocolStream(muxedStream, connection)
