@@ -24,6 +24,9 @@ class EchoService implements Startable {
   async start (): Promise<void> {
     await this.registrar.handle(this.protocol, ({ stream }) => {
       void pipe(stream, stream)
+        // sometimes connections are closed before multistream-select finishes
+        // which causes an error
+        .catch()
     })
   }
 
