@@ -8,13 +8,14 @@ import { MAX_PROTOCOL_LENGTH } from './constants.js'
 import * as multistream from './multistream.js'
 import { PROTOCOL_ID } from './index.js'
 import type { MultistreamSelectInit, ProtocolStream } from './index.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 
 export interface SelectStream extends Duplex<any, any, any> {
   readStatus?: string
-  closeWrite?(): Promise<void>
-  closeRead?(): Promise<void>
-  close?(): Promise<void>
+  closeWrite?(options?: AbortOptions): Promise<void>
+  closeRead?(options?: AbortOptions): Promise<void>
+  close?(options?: AbortOptions): Promise<void>
 }
 
 /**
@@ -285,7 +286,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
   if (stream.closeRead != null) {
     const originalCloseRead = stream.closeRead.bind(stream)
 
-    stream.closeRead = async () => {
+    stream.closeRead = async (opts) => {
       // we need to read & write to negotiate the protocol so ensure we've done
       // this before closing the readable end of the stream
       if (!negotiated) {
@@ -295,14 +296,14 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       }
 
       // protocol has been negotiated, ok to close the readable end
-      await originalCloseRead()
+      await originalCloseRead(opts)
     }
   }
 
   if (stream.closeWrite != null) {
     const originalCloseWrite = stream.closeWrite.bind(stream)
 
-    stream.closeWrite = async () => {
+    stream.closeWrite = async (opts) => {
       // we need to read & write to negotiate the protocol so ensure we've done
       // this before closing the writable end of the stream
       if (!negotiated) {
@@ -312,14 +313,14 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       }
 
       // protocol has been negotiated, ok to close the writable end
-      await originalCloseWrite()
+      await originalCloseWrite(opts)
     }
   }
 
   if (stream.close != null) {
     const originalClose = stream.close.bind(stream)
 
-    stream.close = async () => {
+    stream.close = async (opts) => {
       // the stream is being closed, don't try to negotiate a protocol if we
       // haven't already
       if (!negotiated) {
@@ -329,7 +330,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       }
 
       // protocol has been negotiated, ok to close the writable end
-      await originalClose()
+      await originalClose(opts)
     }
   }
 

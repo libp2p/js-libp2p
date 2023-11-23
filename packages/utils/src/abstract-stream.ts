@@ -96,6 +96,7 @@ export abstract class AbstractStream implements Stream {
 
   private readonly sinkController: AbortController
   private readonly sinkEnd: DeferredPromise<void>
+  private readonly closed: DeferredPromise<void>
   private endErr: Error | undefined
   private readonly streamSource: Pushable<Uint8ArrayList>
   private readonly onEnd?: (err?: Error | undefined) => void
@@ -108,6 +109,7 @@ export abstract class AbstractStream implements Stream {
   constructor (init: AbstractStreamInit) {
     this.sinkController = new AbortController()
     this.sinkEnd = defer()
+    this.closed = defer()
     this.log = init.log
 
     // stream status
@@ -235,6 +237,7 @@ export abstract class AbstractStream implements Stream {
       }
 
       if (this.onEnd != null) {
+        this.closed.resolve()
         this.onEnd(this.endErr)
       }
     } else {
@@ -265,6 +268,7 @@ export abstract class AbstractStream implements Stream {
       }
 
       if (this.onEnd != null) {
+        this.closed.resolve()
         this.onEnd(this.endErr)
       }
     } else {
@@ -282,6 +286,9 @@ export abstract class AbstractStream implements Stream {
       this.closeRead(options),
       this.closeWrite(options)
     ])
+
+    // wait for read and write ends to close
+    await raceSignal(this.closed.promise, options?.signal)
 
     this.status = 'closed'
 
