@@ -18,6 +18,7 @@ export default {
       const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
+      const { echo, ECHO_PROTOCOL } = await import('./dist/test/fixtures/echo-service.js')
 
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
@@ -51,13 +52,9 @@ export default {
             reservations: {
               maxReservations: 100000
             }
-          })
+          }),
+          echo: echo()
         }
-      })
-      // Add the echo protocol
-      await libp2p.handle('/echo/1.0.0', ({ stream }) => {
-        pipe(stream, stream)
-          .catch() // sometimes connections are closed before multistream-select finishes which causes an error
       })
 
       return {

@@ -3,6 +3,7 @@ import { PeerMap } from '@libp2p/peer-collections'
 import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
@@ -279,6 +280,23 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     if (response.status === Status.OK && (response.reservation != null)) {
+      // check that the returned relay has the relay address - this can be
+      // omitted when requesting a reservation from a go-libp2p relay we
+      // already have a reservation on
+      let hasRelayAddress = false
+      const relayAddressBytes = connection.remoteAddr.bytes
+
+      for (const buf of response.reservation.addrs) {
+        if (uint8ArrayEquals(relayAddressBytes, buf)) {
+          hasRelayAddress = true
+          break
+        }
+      }
+
+      if (!hasRelayAddress) {
+        response.reservation.addrs.push(relayAddressBytes)
+      }
+
       return response.reservation
     }
 

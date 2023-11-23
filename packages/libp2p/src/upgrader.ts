@@ -117,14 +117,12 @@ export class DefaultUpgrader implements Upgrader {
   private readonly muxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly logger: ComponentLogger
   private readonly log: Logger
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
     this.components = components
     this.connectionEncryption = new Map()
     this.log = components.logger.forComponent('libp2p:upgrader')
-    this.logger = components.logger
 
     init.connectionEncryption.forEach(encrypter => {
       this.connectionEncryption.set(encrypter.protocol, encrypter)
@@ -415,6 +413,21 @@ export class DefaultUpgrader implements Upgrader {
               muxedStream.sink = stream.sink
               muxedStream.protocol = protocol
 
+              // allow closing the write end of a not-yet-negotiated stream
+              if (stream.closeWrite != null) {
+                muxedStream.closeWrite = stream.closeWrite
+              }
+
+              // allow closing the read end of a not-yet-negotiated stream
+              if (stream.closeRead != null) {
+                muxedStream.closeRead = stream.closeRead
+              }
+
+              // make sure we don't try to negotiate a stream we are closing
+              if (stream.close != null) {
+                muxedStream.close = stream.close
+              }
+
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
               // the peerstore should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
@@ -426,7 +439,7 @@ export class DefaultUpgrader implements Upgrader {
               this._onStream({ connection, stream: muxedStream, protocol })
             })
             .catch(async err => {
-              this.log.error('error handling incoming stream id %d', muxedStream.id, err.message, err.code, err.stack)
+              this.log.error('error handling incoming stream id %s', muxedStream.id, err.message, err.code, err.stack)
 
               if (muxedStream.timeline.close == null) {
                 await muxedStream.close()
@@ -440,13 +453,13 @@ export class DefaultUpgrader implements Upgrader {
           throw new CodeError('Stream is not multiplexed', codes.ERR_MUXER_UNAVAILABLE)
         }
 
-        connection.log('starting new stream for protocols [%s]', protocols)
+        connection.log('starting new stream for protocols %s', protocols)
         const muxedStream = await muxer.newStream()
-        connection.log.trace('starting new stream %s for protocols [%s]', muxedStream.id, protocols)
+        connection.log.trace('started new stream %s for protocols %s', muxedStream.id, protocols)
 
         try {
           if (options.signal == null) {
-            this.log('No abort signal was passed while trying to negotiate protocols [%s] falling back to default timeout', protocols)
+            this.log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
 
             const signal = AbortSignal.timeout(DEFAULT_PROTOCOL_SELECT_TIMEOUT)
             setMaxListeners(Infinity, signal)
@@ -457,13 +470,18 @@ export class DefaultUpgrader implements Upgrader {
             }
           }
 
-          const { stream, protocol } = await mss.select(muxedStream, protocols, {
+          muxedStream.log.trace('selecting protocol from protocols %s', protocols)
+
+          const {
+            stream,
+            protocol
+          } = await mss.select(muxedStream, protocols, {
             ...options,
             log: muxedStream.log,
-            yieldBytes: false
+            yieldBytes: true
           })
 
-          connection.log('negotiated protocol stream %s with id %s', protocol, muxedStream.id)
+          muxedStream.log('selected protocol %s', protocol)
 
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options)
           const streamCount = countStreams(protocol, 'outbound', connection)
@@ -486,6 +504,21 @@ export class DefaultUpgrader implements Upgrader {
           muxedStream.source = stream.source
           muxedStream.sink = stream.sink
           muxedStream.protocol = protocol
+
+          // allow closing the write end of a not-yet-negotiated stream
+          if (stream.closeWrite != null) {
+            muxedStream.closeWrite = stream.closeWrite
+          }
+
+          // allow closing the read end of a not-yet-negotiated stream
+          if (stream.closeRead != null) {
+            muxedStream.closeRead = stream.closeRead
+          }
+
+          // make sure we don't try to negotiate a stream we are closing
+          if (stream.close != null) {
+            muxedStream.close = stream.close
+          }
 
           this.components.metrics?.trackProtocolStream(muxedStream, connection)
 
@@ -637,16 +670,23 @@ export class DefaultUpgrader implements Upgrader {
     this.log('selecting outbound crypto protocol', protocols)
 
     try {
-      const { stream, protocol } = await mss.select(connection, protocols, {
-        log: this.logger.forComponent('libp2p:mss:select')
+      connection.log.trace('selecting encrypter from %s', protocols)
+
+      const {
+        stream,
+        protocol
+      } = await mss.select(connection, protocols, {
+        log: connection.log,
+        yieldBytes: true
       })
+
       const encrypter = this.connectionEncryption.get(protocol)
 
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      this.log('encrypting outbound connection to %p', remotePeerId)
+      connection.log('encrypting outbound connection to %p using %p', remotePeerId)
 
       return {
         ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
@@ -665,15 +705,22 @@ export class DefaultUpgrader implements Upgrader {
     const protocols = Array.from(muxers.keys())
     this.log('outbound selecting muxer %s', protocols)
     try {
-      const { stream, protocol } = await mss.select(connection, protocols, {
-        log: this.logger.forComponent('libp2p:mss:select')
+      connection.log.trace('selecting stream muxer from %s', protocols)
+
+      const {
+        stream,
+        protocol
+      } = await mss.select(connection, protocols, {
+        log: connection.log,
+        yieldBytes: true
       })
-      this.log('%s selected as muxer protocol', protocol)
+
+      connection.log('selected %s as muxer protocol', protocol)
       const muxerFactory = muxers.get(protocol)
 
       return { stream, muxerFactory }
     } catch (err: any) {
-      this.log.error('error multiplexing outbound stream', err)
+      connection.log.error('error multiplexing outbound stream', err)
       throw new CodeError(String(err), codes.ERR_MUXER_UNAVAILABLE)
     }
   }

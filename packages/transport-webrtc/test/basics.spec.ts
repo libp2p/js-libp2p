@@ -242,6 +242,9 @@ describe('basics', () => {
       runOnTransientConnection: true
     })
 
+    // close the write end immediately
+    const p = stream.closeWrite()
+
     const remoteStream = await getRemoteStream.promise
     // close the readable end of the remote stream
     await remoteStream.closeRead()
@@ -249,8 +252,6 @@ describe('basics', () => {
     // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
     const remoteInputStream = pushable<Uint8Array>()
     void remoteStream.sink(remoteInputStream)
-
-    const p = stream.closeWrite()
 
     // wait for remote to receive local close-write
     await pRetry(() => {
@@ -302,14 +303,14 @@ describe('basics', () => {
       runOnTransientConnection: true
     })
 
+    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+    const p = stream.sink([])
+
     const remoteStream = await getRemoteStream.promise
     // close the readable end of the remote stream
     await remoteStream.closeRead()
     // readable end should finish
     await drain(remoteStream.source)
-
-    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-    const p = stream.sink([])
 
     // wait for remote to receive local close-write
     await pRetry(() => {

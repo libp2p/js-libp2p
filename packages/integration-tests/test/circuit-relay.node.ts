@@ -522,7 +522,7 @@ describe('circuit-relay', () => {
       expect(conns).to.have.lengthOf(1)
 
       // this should fail as the local peer has HOP disabled
-      await expect(conns[0].newStream(RELAY_V2_HOP_CODEC))
+      await expect(conns[0].newStream([RELAY_V2_HOP_CODEC, '/other/1.0.0']))
         .to.be.rejected()
 
       // we should still be connected to the relay

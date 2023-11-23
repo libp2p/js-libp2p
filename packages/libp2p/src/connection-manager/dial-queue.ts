@@ -461,7 +461,7 @@ export class DialQueue {
       // internal peer dial queue - only one dial per peer at a time
       const peerDialQueue = new PQueue({ concurrency: 1 })
       peerDialQueue.on('error', (err) => {
-        this.log.error('error dialing [%s] %o', pendingDial.multiaddrs, err)
+        this.log.error('error dialing %s %o', pendingDial.multiaddrs, err)
       })
 
       const conn = await Promise.any(pendingDial.multiaddrs.map(async (addr, i) => {

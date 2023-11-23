@@ -45,6 +45,7 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     const relayConn = await this.connectionManager.openConnection(relayAddr)
 
     if (!this.relayStore.hasReservation(relayConn.remotePeer)) {
+      this.log('making reservation on peer %p', relayConn.remotePeer)
       // addRelay calls transportManager.listen which calls this listen method
       await this.relayStore.addRelay(relayConn.remotePeer, 'configured')
       return

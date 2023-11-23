@@ -12,14 +12,14 @@ const NewLine = uint8ArrayFromString('\n')
 /**
  * `write` encodes and writes a single buffer
  */
-export async function write (writer: LengthPrefixedStream<Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>>, buffer: Uint8Array | Uint8ArrayList, options?: MultistreamSelectInit): Promise<void> {
+export async function write (writer: LengthPrefixedStream<Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>, Source<Uint8Array>>>, buffer: Uint8Array | Uint8ArrayList, options?: MultistreamSelectInit): Promise<void> {
   await writer.write(buffer, options)
 }
 
 /**
  * `writeAll` behaves like `write`, except it encodes an array of items as a single write
  */
-export async function writeAll (writer: LengthPrefixedStream<Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>>>, buffers: Uint8Array[], options?: MultistreamSelectInit): Promise<void> {
+export async function writeAll (writer: LengthPrefixedStream<Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>, Source<Uint8Array>>>, buffers: Uint8Array[], options?: MultistreamSelectInit): Promise<void> {
   await writer.writeV(buffers, options)
 }
 

@@ -37,7 +37,8 @@ describe('abstract stream', () => {
     stream = new TestStream({
       id: 'test',
       direction: 'outbound',
-      log: logger('test')
+      log: logger('test'),
+      onEnd: () => {}
     })
   })
 
@@ -68,11 +69,13 @@ describe('abstract stream', () => {
   it('closes', async () => {
     const sendCloseReadSpy = Sinon.spy(stream, 'sendCloseRead')
     const sendCloseWriteSpy = Sinon.spy(stream, 'sendCloseWrite')
+    const onEndSpy = Sinon.spy(stream as any, 'onEnd')
 
     await stream.close()
 
     expect(sendCloseReadSpy.calledOnce).to.be.true()
     expect(sendCloseWriteSpy.calledOnce).to.be.true()
+    expect(onEndSpy.calledOnce).to.be.true()
 
     expect(stream).to.have.property('status', 'closed')
     expect(stream).to.have.property('writeStatus', 'closed')
