@@ -33,6 +33,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
+import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -303,10 +304,10 @@ describe('libp2p.dialer (direct, TCP)', () => {
       ],
       connectionEncryption: [
         plaintext()
-      ]
-    })
-    await remoteLibp2p.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
+      ],
+      services: {
+        echo: echo()
+      }
     })
 
     await remoteLibp2p.start()
@@ -348,9 +349,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remotePeerId)
     expect(connection).to.exist()
-    const stream = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream(ECHO_PROTOCOL)
     expect(stream).to.exist()
-    expect(stream).to.have.property('protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', ECHO_PROTOCOL)
     await connection.close()
   })
 
@@ -388,7 +389,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 
     // Create local to remote streams
-    const stream = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream([ECHO_PROTOCOL, '/other/1.0.0'])
     await connection.newStream('/stream-count/3')
     await libp2p.dialProtocol(remoteLibp2p.peerId, '/stream-count/4')
 
@@ -398,8 +399,8 @@ describe('libp2p.dialer (direct, TCP)', () => {
     source.push(uint8ArrayFromString('hello'))
 
     // Create remote to local streams
-    await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/1')
-    await remoteLibp2p.dialProtocol(libp2p.peerId, '/stream-count/2')
+    await remoteLibp2p.dialProtocol(libp2p.peerId, ['/stream-count/1', '/other/1.0.0'])
+    await remoteLibp2p.dialProtocol(libp2p.peerId, ['/stream-count/2', '/other/1.0.0'])
 
     // Verify stream count
     const remoteConn = remoteLibp2p.getConnections(libp2p.peerId)
@@ -497,9 +498,9 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(remoteAddr)
     expect(connection).to.exist()
-    const stream = await connection.newStream('/echo/1.0.0')
+    const stream = await connection.newStream(ECHO_PROTOCOL)
     expect(stream).to.exist()
-    expect(stream).to.have.property('protocol', '/echo/1.0.0')
+    expect(stream).to.have.property('protocol', ECHO_PROTOCOL)
     await connection.close()
     expect(protectorProtectSpy.callCount).to.equal(1)
   })

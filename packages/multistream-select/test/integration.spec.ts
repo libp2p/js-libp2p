@@ -45,7 +45,7 @@ describe('Dialer and Listener integration', () => {
       mss.handle(pair[1], selectedProtocol, {
         log: logger('mss:test')
       }),
-      (async () => mss.select(pair[0], selectedProtocol, {
+      (async () => mss.select(pair[0], protocols, {
         log: logger('mss:test')
       }))()
     ])
@@ -92,7 +92,7 @@ describe('Dialer and Listener integration', () => {
     const protocol = '/echo/1.0.0'
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
-    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+    const dialerSelection = await mss.select(pair[0], [protocol], {
       log: logger('mss:test')
     })
     expect(dialerSelection.protocol).to.equal(protocol)
@@ -118,7 +118,7 @@ describe('Dialer and Listener integration', () => {
     const otherProtocol = '/echo/2.0.0'
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
-    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+    const dialerSelection = await mss.select(pair[0], [protocol], {
       log: logger('mss:test')
     })
     expect(dialerSelection.protocol).to.equal(protocol)
@@ -138,7 +138,7 @@ describe('Dialer and Listener integration', () => {
     const protocol = '/echo/1.0.0'
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
-    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+    const dialerSelection = await mss.select(pair[0], [protocol], {
       log: logger('mss:dialer')
     })
     expect(dialerSelection.protocol).to.equal(protocol)
@@ -168,7 +168,7 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     // lazy succeeds
-    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+    const dialerSelection = await mss.select(pair[0], [protocol], {
       log: logger('mss:dialer')
     })
     expect(dialerSelection.protocol).to.equal(protocol)
@@ -187,7 +187,7 @@ describe('Dialer and Listener integration', () => {
     const protocol = '/echo/1.0.0'
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
-    const dialerSelection = mss.lazySelect(pair[0], protocol, {
+    const dialerSelection = await mss.select(pair[0], [protocol], {
       log: logger('mss:test')
     })
     expect(dialerSelection.protocol).to.equal(protocol)
