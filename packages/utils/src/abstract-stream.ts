@@ -237,9 +237,10 @@ export abstract class AbstractStream implements Stream {
       }
 
       if (this.onEnd != null) {
-        this.closed.resolve()
         this.onEnd(this.endErr)
       }
+
+      this.closed.resolve()
     } else {
       this.log.trace('source ended, waiting for sink to end')
     }
@@ -268,9 +269,10 @@ export abstract class AbstractStream implements Stream {
       }
 
       if (this.onEnd != null) {
-        this.closed.resolve()
         this.onEnd(this.endErr)
       }
+
+      this.closed.resolve()
     } else {
       this.log.trace('sink ended, waiting for source to end')
     }
