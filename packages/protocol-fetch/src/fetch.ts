@@ -22,8 +22,8 @@ import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
 
 const configValidator = object({
   timeout: number().integer().default(TIMEOUT),
-  maxInboundStreams: number().integer().default(MAX_INBOUND_STREAMS),
-  maxOutboundStreams: number().integer().default(MAX_OUTBOUND_STREAMS)
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
 })
 export class Fetch implements Startable, FetchInterface {
   public readonly protocol: string
