@@ -14,11 +14,11 @@ import * as mss from '../src/index.js'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {
-    it('should select from single protocol', async () => {
+    it('should select from single protocol on outgoing stream', async () => {
       const protocol = '/echo/1.0.0'
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
-      void mss.handle(incomingStream, protocol, {
+      const handled = mss.handle(incomingStream, protocol, {
         log: logger('mss:test-incoming')
       })
 
@@ -27,10 +27,39 @@ describe('Dialer', () => {
       })
       expect(selection.protocol).to.equal(protocol)
 
-      // Ensure stream is usable after selection
+      // Ensure stream is usable after selection - send data outgoing -> incoming
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
       void pipe(input, selection.stream)
+
+      // wait for incoming end to have completed negotiation
+      await handled
+
       const output = await all(incomingStream.source)
+      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+    })
+
+    it('should select from single protocol on incoming stream', async () => {
+      const protocol = '/echo/1.0.0'
+      const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+
+      void mss.select(outgoingStream, protocol, {
+        log: logger('mss:test-outgoing')
+      })
+
+      // have to interact with the stream to start protocol negotiation
+      const outgoingSourceData = all(outgoingStream.source)
+
+      const selection = await mss.handle(incomingStream, protocol, {
+        log: logger('mss:test-incoming')
+      })
+
+      expect(selection.protocol).to.equal(protocol)
+
+      // Ensure stream is usable after selection - send data incoming -> outgoing
+      void pipe(input, selection.stream)
+
+      const output = await outgoingSourceData
       expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })
 
@@ -49,7 +78,7 @@ describe('Dialer', () => {
       expect(selection.protocol).to.equal(protocol)
 
       // A second select will timeout
-      await pTimeout(mss.select(outgoingStream, protocol2, {
+      await pTimeout(mss.select(outgoingStream, [protocol, protocol2], {
         log: logger('mss:test-outgoing')
       }), {
         milliseconds: 1e3
@@ -101,7 +130,7 @@ describe('Dialer', () => {
       const protocol = '/echo/1.0.0'
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
-      const selection = mss.lazySelect(outgoingStream, protocol, {
+      const selection = await mss.select(outgoingStream, [protocol], {
         log: logger('mss:test-lazy')
       })
       expect(selection.protocol).to.equal(protocol)

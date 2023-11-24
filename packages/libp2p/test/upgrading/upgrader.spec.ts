@@ -345,12 +345,21 @@ describe('Upgrader', () => {
       }
     }
 
+    class OtherOtherMuxerFactory implements StreamMuxerFactory {
+      protocol = '/muxer-local-other'
+
+      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
+        return new OtherMuxer()
+      }
+    }
+
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         plaintext()(localComponents)
       ],
       muxers: [
-        new OtherMuxerFactory()
+        new OtherMuxerFactory(),
+        new OtherOtherMuxerFactory()
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -390,9 +399,10 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     // Create a few streams, at least 1 in each direction
-    await connections[0].newStream('/echo/1.0.0')
-    await connections[1].newStream('/echo/1.0.0')
-    await connections[0].newStream('/echo/1.0.0')
+    // use multiple protocols to trigger regular multistream select
+    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
+    await connections[1].newStream(['/echo/1.0.0', '/echo/1.0.1'])
+    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
     connections.forEach(conn => {
       expect(conn.streams).to.have.length(3)
     })
@@ -495,7 +505,7 @@ describe('Upgrader', () => {
       })
     }
 
-    await expect(connections[0].newStream('/echo/1.0.0', {
+    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'], {
       signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
@@ -514,7 +524,7 @@ describe('Upgrader', () => {
     expect(connections[0].streams).to.have.lengthOf(0)
     expect(connections[1].streams).to.have.lengthOf(0)
 
-    await expect(connections[0].newStream('/echo/1.0.0'))
+    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1']))
       .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
 
     // wait for remote to close
@@ -558,7 +568,7 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const stream = await connections[0].newStream('/echo/1.0.0')
+    const stream = await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
     expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
@@ -704,7 +714,7 @@ describe('libp2p.upgrader', () => {
     ])
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteComponents.upgrader as DefaultUpgrader, '_onStream')
 
-    const stream = await localConnection.newStream(['/echo/1.0.0'])
+    const stream = await localConnection.newStream(['/echo/1.0.0', '/echo/1.0.1'])
     expect(stream).to.include.keys(['id', 'sink', 'source'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
@@ -852,7 +862,7 @@ describe('libp2p.upgrader', () => {
 
     expect(streamCount).to.equal(0)
 
-    await localToRemote.newStream(protocol)
+    await localToRemote.newStream([protocol, '/other/1.0.0'])
 
     expect(streamCount).to.equal(1)
 
@@ -930,7 +940,7 @@ describe('libp2p.upgrader', () => {
 
     expect(streamCount).to.equal(0)
 
-    await localToRemote.newStream(protocol)
+    await localToRemote.newStream([protocol, '/other/1.0.0'])
 
     expect(streamCount).to.equal(1)
 
@@ -1004,7 +1014,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(0)
 
     for (let i = 0; i < limit; i++) {
-      await localToRemote.newStream(protocol, {
+      await localToRemote.newStream([protocol, '/other/1.0.0'], {
         maxOutboundStreams: limit
       })
     }
