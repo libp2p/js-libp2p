@@ -1,5 +1,5 @@
 import { FaultTolerance } from '@libp2p/interface/transport'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
 import { object } from 'yup'
@@ -15,7 +15,7 @@ const DefaultConfig: Partial<Libp2pInit> = {
     resolvers: {
       dnsaddr: dnsaddrResolver
     },
-    addressSorter: publicAddressesFirst
+    addressSorter: defaultAddressSort
   },
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL
