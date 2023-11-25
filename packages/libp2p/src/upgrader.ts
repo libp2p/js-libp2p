@@ -18,7 +18,6 @@ import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-m
 import type { Upgrader, UpgraderOptions } from '@libp2p/interface/transport'
 import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
 import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { Duplex, Source } from 'it-stream-types'
 
 const DEFAULT_PROTOCOL_SELECT_TIMEOUT = 30000
 
@@ -26,7 +25,7 @@ interface CreateConnectionOptions {
   cryptoProtocol: string
   direction: 'inbound' | 'outbound'
   maConn: MultiaddrConnection
-  upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
+  upgradedConn: MultiaddrConnection
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
   transient?: boolean
@@ -38,7 +37,7 @@ interface OnStreamOptions {
   protocol: string
 }
 
-export interface CryptoResult extends SecuredConnection {
+export interface CryptoResult extends SecuredConnection<MultiaddrConnection> {
   protocol: string
 }
 
@@ -107,8 +106,6 @@ export interface DefaultUpgraderComponents {
   logger: ComponentLogger
 }
 
-type EncryptedConn = Duplex<AsyncGenerator<Uint8Array, any, unknown>, Source<Uint8Array>, Promise<void>>
-
 type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection' | 'denyInboundEncryptedConnection' | 'denyOutboundEncryptedConnection' | 'denyInboundUpgradedConnection' | 'denyOutboundUpgradedConnection'>
 
 export class DefaultUpgrader implements Upgrader {
@@ -158,9 +155,9 @@ export class DefaultUpgrader implements Upgrader {
       throw new CodeError('connection denied', codes.ERR_CONNECTION_DENIED)
     }
 
-    let encryptedConn: EncryptedConn
+    let encryptedConn: MultiaddrConnection
     let remotePeer
-    let upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
+    let upgradedConn: MultiaddrConnection
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
@@ -274,9 +271,9 @@ export class DefaultUpgrader implements Upgrader {
       await this.shouldBlockConnection(remotePeerId, maConn, 'denyOutboundConnection')
     }
 
-    let encryptedConn
+    let encryptedConn: MultiaddrConnection
     let remotePeer: PeerId
-    let upgradedConn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
+    let upgradedConn: MultiaddrConnection
     let cryptoProtocol
     let muxerFactory
 
@@ -701,7 +698,7 @@ export class DefaultUpgrader implements Upgrader {
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
    */
-  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, muxerFactory?: StreamMuxerFactory }> {
+  async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: MultiaddrConnection, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     this.log('outbound selecting muxer %s', protocols)
     try {
@@ -729,7 +726,7 @@ export class DefaultUpgrader implements Upgrader {
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
    */
-  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, muxerFactory?: StreamMuxerFactory }> {
+  async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: MultiaddrConnection, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
     this.log('inbound handling muxers %s', protocols)
     try {

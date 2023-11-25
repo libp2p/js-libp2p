@@ -164,7 +164,8 @@ import { PrometheusMetric } from './metric.js'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
 import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface/metrics'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 // prom-client metrics are global
 const metrics = new Map<string, any>()
@@ -268,7 +269,7 @@ class PrometheusMetrics implements Metrics {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<Source<any>>, name: string): void {
+  _track (stream: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, name: string): void {
     const self = this
 
     const sink = stream.sink

@@ -98,7 +98,15 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   const maConn: MultiaddrConnection = {
     async sink (source) {
       try {
-        await sink(source)
+        await sink((async function * () {
+          for await (const buf of source) {
+            if (buf instanceof Uint8Array) {
+              yield buf
+            } else {
+              yield buf.subarray()
+            }
+          }
+        })())
       } catch (err: any) {
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {

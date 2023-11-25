@@ -20,7 +20,15 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
     async sink (source) {
       try {
-        await stream.sink(source)
+        await stream.sink((async function * () {
+          for await (const buf of source) {
+            if (buf instanceof Uint8Array) {
+              yield buf
+            } else {
+              yield buf.subarray()
+            }
+          }
+        })())
       } catch (err: any) {
         if (err.type !== 'aborted') {
           log.error(err)

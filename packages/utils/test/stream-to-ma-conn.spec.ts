@@ -71,7 +71,9 @@ describe('Convert stream into a multiaddr connection', () => {
 
     const data = uint8ArrayFromString('hey')
     const streamData = await pipe(
-      [data],
+      async function * () {
+        yield data
+      },
       maConn,
       async (source) => all(source)
     )
