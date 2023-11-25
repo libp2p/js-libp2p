@@ -60,7 +60,6 @@
     "@libp2p/interface": "^0.1.6",
     "@libp2p/utils": "^4.0.7",
     "benchmark": "^2.1.4",
-    "it-batched-bytes": "^2.0.2",
     "it-pushable": "^3.2.1",
     "it-stream-types": "^2.0.1",
     "rate-limiter-flexible": "^3.0.0",
@@ -81,7 +80,6 @@
     "it-map": "^3.0.3",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "it-to-buffer": "^4.0.3",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
   },
