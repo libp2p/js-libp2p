@@ -117,9 +117,6 @@ class CustomEventPolyfill<T = any> extends Event {
 
 export const CustomEvent = globalThis.CustomEvent ?? CustomEventPolyfill
 
-// TODO: remove this in v1
-export { TypedEventEmitter as EventEmitter }
-
 // create a setMaxListeners that doesn't break browser usage
 export const setMaxListeners: typeof nodeSetMaxListeners = (n, ...eventTargets) => {
   try {
