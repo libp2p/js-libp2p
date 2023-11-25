@@ -22,7 +22,7 @@ async function drainAndClose (stream: Duplex<any>): Promise<void> {
 export default (common: TestSetup<StreamMuxerFactory>): void => {
   describe('base', () => {
     it('Open a stream from the dialer', async () => {
-      const p = duplexPair<Uint8Array>()
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
       const onStreamPromise: DeferredPromise<Stream> = defer()
@@ -75,7 +75,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('Open a stream from the listener', async () => {
-      const p = duplexPair<Uint8Array>()
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const onStreamPromise: DeferredPromise<Stream> = defer()
       const dialerFactory = await common.setup()
       const dialer = dialerFactory.createStreamMuxer({
@@ -106,7 +106,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('Open a stream on both sides', async () => {
-      const p = duplexPair<Uint8Array>()
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const onDialerStreamPromise: DeferredPromise<Stream> = defer()
       const onListenerStreamPromise: DeferredPromise<Stream> = defer()
       const dialerFactory = await common.setup()
@@ -146,7 +146,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('Open a stream on one side, write, open a stream on the other side', async () => {
       const toString = (source: Source<Uint8ArrayList>): AsyncGenerator<string> => map(source, (u) => uint8ArrayToString(u.subarray()))
-      const p = duplexPair<Uint8Array>()
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const onDialerStreamPromise: DeferredPromise<Stream> = defer()
       const onListenerStreamPromise: DeferredPromise<Stream> = defer()
       const dialerFactory = await common.setup()

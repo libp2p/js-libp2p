@@ -231,9 +231,9 @@ describe('socket-to-conn', () => {
     })
 
     // send some data between the client and server
-    await inboundMaConn.sink([
-      Uint8Array.from([0, 1, 2, 3])
-    ])
+    await inboundMaConn.sink(async function * () {
+      yield Uint8Array.from([0, 1, 2, 3])
+    }())
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()

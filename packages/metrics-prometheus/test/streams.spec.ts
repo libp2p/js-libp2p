@@ -50,9 +50,9 @@ describe('streams', () => {
 
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await outbound.sink([
-      data
-    ])
+    await outbound.sink(async function * () {
+      yield data
+    }())
 
     // wait for all bytes to be received
     await deferred.promise
@@ -82,9 +82,9 @@ describe('streams', () => {
 
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await outbound.sink([
-      data
-    ])
+    await outbound.sink(async function * () {
+      yield data
+    }())
 
     // process all the bytes
     void pipe(inbound, drain).then(() => {

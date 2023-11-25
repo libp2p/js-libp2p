@@ -57,7 +57,9 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
       // Send some data and collect the result
       const input = uint8ArrayFromString('data to encrypt')
       const result = await pipe(
-        [input],
+        async function * () {
+          yield input
+        },
         outboundResult.conn,
         async (source) => all(source)
       )

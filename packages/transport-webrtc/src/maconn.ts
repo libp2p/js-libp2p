@@ -4,6 +4,7 @@ import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/i
 import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebRTCMultiaddrConnectionInit {
   /**
@@ -62,7 +63,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   /**
    * The stream destination, a no-op as the transport natively supports multiplexing
    */
-  sink: Sink<Source<Uint8Array>, Promise<void>> = nopSink
+  sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
   constructor (components: WebRTCMultiaddrConnectionComponents, init: WebRTCMultiaddrConnectionInit) {
     this.log = components.logger.forComponent('libp2p:webrtc:maconn')

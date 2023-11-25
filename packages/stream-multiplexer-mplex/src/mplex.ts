@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { closeSource } from '@libp2p/utils/close-source'
 import { pipe } from 'it-pipe'
-import { type PushableV, pushableV } from 'it-pushable'
+import { type Pushable, pushable } from 'it-pushable'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { Decoder } from './decode.js'
@@ -53,13 +53,13 @@ export class MplexStreamMuxer implements StreamMuxer {
   public protocol = '/mplex/6.7.0'
 
   public sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>>
-  public source: AsyncGenerator<Uint8Array>
+  public source: AsyncGenerator<Uint8ArrayList | Uint8Array>
 
   private readonly log: Logger
   private _streamId: number
   private readonly _streams: { initiators: Map<number, MplexStream>, receivers: Map<number, MplexStream> }
   private readonly _init: MplexStreamMuxerInit
-  private readonly _source: PushableV<Message>
+  private readonly _source: Pushable<Message>
   private readonly closeController: AbortController
   private readonly rateLimiter: RateLimiterMemory
   private readonly closeTimeout: number
@@ -92,7 +92,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     /**
      * An iterable source
      */
-    this._source = pushableV<Message>({
+    this._source = pushable<Message>({
       objectMode: true,
       onEnd: (): void => {
         // the source has ended, we can't write any more messages to gracefully
@@ -108,7 +108,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     })
     this.source = pipe(
       this._source,
-      source => encode(source, this._init.minSendBytes)
+      source => encode(source)
     )
 
     /**

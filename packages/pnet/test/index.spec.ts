@@ -48,7 +48,10 @@ describe('private network', () => {
     ])
 
     void pipe(
-      [uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')],
+      async function * () {
+        yield uint8ArrayFromString('hello world')
+        yield uint8ArrayFromString('doo dah')
+      },
       aToB
     )
 
@@ -79,7 +82,6 @@ describe('private network', () => {
       logger: defaultLogger()
     })
     const protectorB = preSharedKey({
-      enabled: true,
       psk: wrongSwarmKeyBuffer
     })({
       logger: defaultLogger()
@@ -91,7 +93,10 @@ describe('private network', () => {
     ])
 
     void pipe(
-      [uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')],
+      async function * () {
+        yield uint8ArrayFromString('hello world')
+        yield uint8ArrayFromString('doo dah')
+      },
       aToB
     )
 
