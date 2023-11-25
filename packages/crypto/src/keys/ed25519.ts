@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
+import { concat as uint8arrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Uint8ArrayKeyPair } from './interface.js'
@@ -48,7 +49,7 @@ export async function generateKey (): Promise<Uint8ArrayKeyPair> {
   const publicKeyRaw = uint8arrayFromString(key.privateKey.x, 'base64url')
 
   return {
-    privateKey: concatKeys(privateKeyRaw, publicKeyRaw),
+    privateKey: uint8arrayConcat([privateKeyRaw, publicKeyRaw], privateKeyRaw.byteLength + publicKeyRaw.byteLength),
     publicKey: publicKeyRaw
   }
 }
@@ -67,7 +68,7 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
   const publicKeyRaw = derivePublicKey(seed)
 
   return {
-    privateKey: concatKeys(seed, publicKeyRaw),
+    privateKey: uint8arrayConcat([seed, publicKeyRaw], seed.byteLength + publicKeyRaw.byteLength),
     publicKey: publicKeyRaw
   }
 }
@@ -126,13 +127,4 @@ export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint
   })
 
   return crypto.verify(null, msg instanceof Uint8Array ? msg : msg.subarray(), obj, sig)
-}
-
-function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {
-  const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH)
-  for (let i = 0; i < KEYS_BYTE_LENGTH; i++) {
-    privateKey[i] = privateKeyRaw[i]
-    privateKey[KEYS_BYTE_LENGTH + i] = publicKey[i]
-  }
-  return privateKey
 }
