@@ -9,6 +9,7 @@ import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const MAX_KEY_SIZE = 8192
 
@@ -19,7 +20,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -34,7 +35,7 @@ export class RsaPublicKey {
     }).subarray()
   }
 
-  encrypt (bytes: Uint8Array): Uint8Array {
+  encrypt (bytes: Uint8Array | Uint8ArrayList): Uint8Array {
     return crypto.encrypt(this._key, bytes)
   }
 
@@ -62,7 +63,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  async sign (message: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -74,7 +75,7 @@ export class RsaPrivateKey {
     return new RsaPublicKey(this._publicKey)
   }
 
-  decrypt (bytes: Uint8Array): Uint8Array {
+  decrypt (bytes: Uint8Array | Uint8ArrayList): Uint8Array {
     return crypto.decrypt(this._key, bytes)
   }
 

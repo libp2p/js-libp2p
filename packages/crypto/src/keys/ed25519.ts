@@ -3,6 +3,7 @@ import { promisify } from 'util'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Uint8ArrayKeyPair } from './interface.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = promisify(crypto.generateKeyPair)
 
@@ -71,7 +72,7 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
   }
 }
 
-export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Buffer> {
+export async function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Buffer> {
   if (!(key instanceof Uint8Array)) {
     throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
   }
@@ -99,10 +100,10 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array): Promise<Bu
     }
   })
 
-  return crypto.sign(null, msg, obj)
+  return crypto.sign(null, msg instanceof Uint8Array ? msg : msg.subarray(), obj)
 }
 
-export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
+export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
   if (key.byteLength !== PUBLIC_KEY_BYTE_LENGTH) {
     throw new TypeError('"key" must be 32 bytes in length.')
   } else if (!(key instanceof Uint8Array)) {
@@ -124,7 +125,7 @@ export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint
     }
   })
 
-  return crypto.verify(null, msg, obj, sig)
+  return crypto.verify(null, msg instanceof Uint8Array ? msg : msg.subarray(), obj, sig)
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {

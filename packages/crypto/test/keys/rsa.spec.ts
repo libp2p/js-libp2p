@@ -1,6 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
 import { MAX_KEY_SIZE, RsaPrivateKey, RsaPublicKey } from '../../src/keys/rsa-class.js'
@@ -45,6 +46,22 @@ describe('RSA', function () {
     const sig = await key.sign(text)
     const res = await key.public.verify(text, sig)
     expect(res).to.be.eql(true)
+  })
+
+  it('signs a list', async () => {
+    const text = new Uint8ArrayList(
+      crypto.randomBytes(512),
+      crypto.randomBytes(512)
+    )
+    const sig = await key.sign(text)
+
+    await expect(key.sign(text.subarray()))
+      .to.eventually.deep.equal(sig, 'list did not have same signature as a single buffer')
+
+    await expect(key.public.verify(text, sig))
+      .to.eventually.be.true('did not verify message as list')
+    await expect(key.public.verify(text.subarray(), sig))
+      .to.eventually.be.true('did not verify message as single buffer')
   })
 
   it('encoding', async () => {

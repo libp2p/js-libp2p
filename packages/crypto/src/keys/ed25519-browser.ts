@@ -1,5 +1,6 @@
 import { ed25519 as ed } from '@noble/curves/ed25519'
 import type { Uint8ArrayKeyPair } from './interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
 const PRIVATE_KEY_BYTE_LENGTH = 64 // private key is actually 32 bytes but for historical reasons we concat private and public keys
@@ -44,14 +45,14 @@ export async function generateKeyFromSeed (seed: Uint8Array): Promise<Uint8Array
   }
 }
 
-export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
+export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
-  return ed.sign(msg, privateKeyRaw)
+  return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
 }
 
-export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
-  return ed.verify(sig, msg, publicKey)
+export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+  return ed.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey)
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {
