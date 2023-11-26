@@ -4,7 +4,7 @@ import { CodeError } from '@libp2p/interface/errors'
 import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
-import { defaultLogger } from '@libp2p/logger'
+import { peerLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -70,7 +70,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     this.#started = false
     this.peerId = init.peerId
-    this.logger = init.logger ?? defaultLogger()
+    this.logger = init.logger ?? peerLogger(this.peerId)
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
