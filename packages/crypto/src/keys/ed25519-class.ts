@@ -129,12 +129,12 @@ export function unmarshalEd25519PublicKey (bytes: Uint8Array): Ed25519PublicKey 
 }
 
 export async function generateKeyPair (): Promise<Ed25519PrivateKey> {
-  const { privateKey, publicKey } = await crypto.generateKey()
+  const { privateKey, publicKey } = crypto.generateKey()
   return new Ed25519PrivateKey(privateKey, publicKey)
 }
 
 export async function generateKeyPairFromSeed (seed: Uint8Array): Promise<Ed25519PrivateKey> {
-  const { privateKey, publicKey } = await crypto.generateKeyFromSeed(seed)
+  const { privateKey, publicKey } = crypto.generateKeyFromSeed(seed)
   return new Ed25519PrivateKey(privateKey, publicKey)
 }
 

@@ -51,7 +51,7 @@ export interface AESCipher {
  * @param key - The key, if length `16` then `AES 128` is used. For length `32`, `AES 256` is used
  * @param iv - Must have length `16`
  */
-export async function create (key: Uint8Array, iv: Uint8Array): Promise<AESCipher> {
+export function create (key: Uint8Array, iv: Uint8Array): AESCipher {
   const mode = cipherMode(key)
   const cipher = ciphers.createCipheriv(mode, key, iv)
   const decipher = ciphers.createDecipheriv(mode, key, iv)
