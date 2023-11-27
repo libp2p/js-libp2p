@@ -11,6 +11,9 @@
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
+  "publishConfig": {
+    "provenance": true
+  },
   "keywords": [
     "IPFS",
     "libp2p",
