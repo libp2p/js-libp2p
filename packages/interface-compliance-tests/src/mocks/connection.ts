@@ -287,7 +287,7 @@ export interface Peer {
 }
 
 export function multiaddrConnectionPair (a: { peerId: PeerId, registrar: Registrar }, b: { peerId: PeerId, registrar: Registrar }): [ MultiaddrConnection, MultiaddrConnection ] {
-  const [peerBtoPeerA, peerAtoPeerB] = duplexPair<Uint8Array>()
+  const [peerBtoPeerA, peerAtoPeerB] = duplexPair<Uint8Array | Uint8ArrayList>()
 
   return [
     mockMultiaddrConnection(peerAtoPeerB, b.peerId),

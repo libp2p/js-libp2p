@@ -1,4 +1,4 @@
-import { CustomEvent, EventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
 import { peerDiscovery } from '@libp2p/interface/peer-discovery'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
@@ -23,7 +23,7 @@ export interface MulticastDNSComponents {
   logger: ComponentLogger
 }
 
-export class MulticastDNS extends EventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
+export class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   public mdns?: multicastDNS.MulticastDNS
 
   private readonly log: Logger

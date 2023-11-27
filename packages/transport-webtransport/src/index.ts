@@ -36,6 +36,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
 import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebTransportSessionCleanup {
   (metric: string): void
@@ -237,9 +238,13 @@ class WebTransportTransport implements Transport {
           }
         }
       })(),
-      sink: async function (source: Source<Uint8Array>) {
+      sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
         for await (const chunk of source) {
-          await writer.write(chunk)
+          if (chunk instanceof Uint8Array) {
+            await writer.write(chunk)
+          } else {
+            await writer.write(chunk.subarray())
+          }
         }
       }
     }
