@@ -218,6 +218,9 @@ jobs:
       transport-interop
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # https://docs.npmjs.com/generating-provenance-statements
+    permissions:
+      id-token: write
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
