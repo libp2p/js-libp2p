@@ -1,13 +1,11 @@
-import { logger } from '@libp2p/logger'
-import { handshake } from 'it-handshake'
+import { encode } from 'it-length-prefixed'
+import { lpStream } from 'it-length-prefixed-stream'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { PROTOCOL_ID } from './constants.js'
+import { MAX_PROTOCOL_LENGTH, PROTOCOL_ID } from './constants.js'
 import * as multistream from './multistream.js'
-import type { ByteArrayInit, ByteListInit, MultistreamSelectInit, ProtocolStream } from './index.js'
-import type { Duplex, Source } from 'it-stream-types'
-
-const log = logger('libp2p:mss:handle')
+import type { MultistreamSelectInit, ProtocolStream } from './index.js'
+import type { Duplex } from 'it-stream-types'
 
 /**
  * Handle multistream protocol selections for the given list of protocols.
@@ -55,38 +53,51 @@ const log = logger('libp2p:mss:handle')
  * })
  * ```
  */
-export async function handle (stream: Duplex<Source<Uint8Array>, Source<Uint8Array>>, protocols: string | string[], options: ByteArrayInit): Promise<ProtocolStream<Uint8Array>>
-export async function handle (stream: Duplex<Source<Uint8ArrayList | Uint8Array>, Source<Uint8ArrayList | Uint8Array>>, protocols: string | string[], options?: ByteListInit): Promise<ProtocolStream<Uint8ArrayList, Uint8ArrayList | Uint8Array>>
-export async function handle (stream: any, protocols: string | string[], options?: MultistreamSelectInit): Promise<ProtocolStream<any>> {
+export async function handle <Stream extends Duplex<any, any, any>> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? protocols : [protocols]
-  const { writer, reader, rest, stream: shakeStream } = handshake(stream)
+  options.log.trace('handle: available protocols %s', protocols)
+
+  const lp = lpStream(stream, {
+    ...options,
+    maxDataLength: MAX_PROTOCOL_LENGTH,
+    maxLengthLength: 2 // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
+  })
 
   while (true) {
-    const protocol = await multistream.readString(reader, options)
-    log.trace('read "%s"', protocol)
+    options?.log.trace('handle: reading incoming string')
+    const protocol = await multistream.readString(lp, options)
+    options.log.trace('handle: read "%s"', protocol)
 
     if (protocol === PROTOCOL_ID) {
-      log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
-      multistream.write(writer, uint8ArrayFromString(PROTOCOL_ID), options)
+      options.log.trace('handle: respond with "%s" for "%s"', PROTOCOL_ID, protocol)
+      await multistream.write(lp, uint8ArrayFromString(`${PROTOCOL_ID}\n`), options)
+      options.log.trace('handle: responded with "%s" for "%s"', PROTOCOL_ID, protocol)
       continue
     }
 
     if (protocols.includes(protocol)) {
-      multistream.write(writer, uint8ArrayFromString(protocol), options)
-      log.trace('respond with "%s" for "%s"', protocol, protocol)
-      rest()
-      return { stream: shakeStream, protocol }
+      options.log.trace('handle: respond with "%s" for "%s"', protocol, protocol)
+      await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
+      options.log.trace('handle: responded with "%s" for "%s"', protocol, protocol)
+
+      return { stream: lp.unwrap(), protocol }
     }
 
     if (protocol === 'ls') {
       // <varint-msg-len><varint-proto-name-len><proto-name>\n<varint-proto-name-len><proto-name>\n\n
-      multistream.write(writer, new Uint8ArrayList(...protocols.map(p => multistream.encode(uint8ArrayFromString(p)))), options)
-      // multistream.writeAll(writer, protocols.map(p => uint8ArrayFromString(p)))
-      log.trace('respond with "%s" for %s', protocols, protocol)
+      const protos = new Uint8ArrayList(
+        ...protocols.map(p => encode.single(uint8ArrayFromString(`${p}\n`))),
+        uint8ArrayFromString('\n')
+      )
+
+      options.log.trace('handle: respond with "%s" for %s', protocols, protocol)
+      await multistream.write(lp, protos, options)
+      options.log.trace('handle: responded with "%s" for %s', protocols, protocol)
       continue
     }
 
-    multistream.write(writer, uint8ArrayFromString('na'), options)
-    log('respond with "na" for "%s"', protocol)
+    options.log('handle: respond with "na" for "%s"', protocol)
+    await multistream.write(lp, uint8ArrayFromString('na\n'), options)
+    options.log('handle: responded with "na" for "%s"', protocol)
   }
 }

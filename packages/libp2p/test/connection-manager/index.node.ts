@@ -1,10 +1,12 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start } from '@libp2p/interface/startable'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -13,6 +15,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode, createPeerId } from '../fixtures/creators/peer.js'
+import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
 import type { ConnectionGater } from '@libp2p/interface/connection-gater'
@@ -53,7 +56,7 @@ describe('Connection Manager', () => {
       peerStore,
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
@@ -91,7 +94,7 @@ describe('Connection Manager', () => {
       peerStore,
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
-      events: new EventEmitter()
+      events: new TypedEventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
@@ -401,6 +404,9 @@ describe('libp2p.connections', () => {
           peerId: peerIds[1],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          services: {
+            echo: echo()
           }
         })
       })
@@ -591,16 +597,23 @@ describe('libp2p.connections', () => {
           },
           connectionGater: {
             denyInboundUpgradedConnection
+          },
+          services: {
+            echo: echo()
           }
         })
       })
       await remoteLibp2p.peerStore.patch(libp2p.peerId, {
         multiaddrs: libp2p.getMultiaddrs()
       })
-      await remoteLibp2p.dial(libp2p.peerId)
+      const connection = await remoteLibp2p.dial(libp2p.peerId)
+      const stream = await connection.newStream(ECHO_PROTOCOL)
+      const input = [Uint8Array.from([0])]
+      const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
       expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
 
     it('intercept outbound upgraded', async () => {
@@ -620,10 +633,14 @@ describe('libp2p.connections', () => {
       await libp2p.peerStore.patch(remoteLibp2p.peerId, {
         multiaddrs: remoteLibp2p.getMultiaddrs()
       })
-      await libp2p.dial(remoteLibp2p.peerId)
+      const connection = await libp2p.dial(remoteLibp2p.peerId)
+      const stream = await connection.newStream(ECHO_PROTOCOL)
+      const input = [Uint8Array.from([0])]
+      const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
       expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
   })
 })

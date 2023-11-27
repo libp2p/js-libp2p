@@ -27,7 +27,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import type { PeerId } from '@libp2p/interface/peer-id'
 
 function arrayEquals (array1: Uint8Array, array2: Uint8Array): boolean {
@@ -95,14 +95,14 @@ export interface KBucketOptions {
    * An optional `distance` function that gets two `id` Uint8Arrays and return
    * distance (as number) between them.
    */
-  distance?: (a: Uint8Array, b: Uint8Array) => number
+  distance?(a: Uint8Array, b: Uint8Array): number
 
   /**
    * An optional `arbiter` function that given two `contact` objects with the
    * same `id` returns the desired object to be used for updating the k-bucket.
    * For more details, see [arbiter function](#arbiter-function).
    */
-  arbiter?: (incumbent: Contact, candidate: Contact) => Contact
+  arbiter?(incumbent: Contact, candidate: Contact): Contact
 }
 
 export interface Contact {
@@ -122,10 +122,8 @@ export interface Bucket {
 /**
  * Implementation of a Kademlia DHT k-bucket used for storing
  * contact (peer node) information.
- *
- * @extends EventEmitter
  */
-export class KBucket extends EventEmitter<KBucketEvents> {
+export class KBucket extends TypedEventEmitter<KBucketEvents> {
   public localNodeId: Uint8Array
   public root: Bucket
   private readonly numberOfNodesPerKBucket: number

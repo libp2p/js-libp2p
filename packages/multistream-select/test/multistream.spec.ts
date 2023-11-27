@@ -1,89 +1,56 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
+import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pushable } from 'it-pushable'
-import { reader } from 'it-reader'
-import * as varint from 'uint8-varint'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { lpStream } from 'it-length-prefixed-stream'
+import { duplexPair } from 'it-pair/duplex'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as Multistream from '../src/multistream.js'
 
 describe('Multistream', () => {
-  describe('Multistream.encode', () => {
-    it('should encode data Buffer as a multistream-select message', () => {
-      const input = uint8ArrayFromString(`TEST${Date.now()}`)
-      const output = Multistream.encode(input)
-
-      const expected = uint8ArrayConcat([
-        varint.encode(input.length + 1), // +1 to include newline
-        input,
-        uint8ArrayFromString('\n')
-      ])
-
-      expect(output.slice()).to.eql(expected)
-    })
-
-    it('should encode data Uint8ArrayList as a multistream-select message', () => {
-      const input = new Uint8ArrayList(uint8ArrayFromString('TEST'), uint8ArrayFromString(`${Date.now()}`))
-      const output = Multistream.encode(input.slice())
-
-      const expected = uint8ArrayConcat([
-        varint.encode(input.length + 1), // +1 to include newline
-        input.slice(),
-        uint8ArrayFromString('\n')
-      ])
-
-      expect(output.slice()).to.eql(expected)
-    })
-  })
-
   describe('Multistream.write', () => {
     it('should encode and write a multistream-select message', async () => {
       const input = uint8ArrayFromString(`TEST${Date.now()}`)
-      const writer = pushable<Uint8ArrayList | Uint8Array>()
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1])
 
-      Multistream.write(writer, input)
+      void Multistream.write(inputStream, input, {
+        log: logger('mss:test')
+      })
 
-      const expected = uint8ArrayConcat([
-        varint.encode(input.length + 1), // +1 to include newline
-        input,
-        uint8ArrayFromString('\n')
-      ])
-
-      writer.end()
-
-      const output = await all(writer)
-      expect(output.length).to.equal(1)
-      expect(output[0].subarray()).to.equalBytes(expected)
+      const output = await outputStream.read()
+      expect(output.subarray()).to.equalBytes(input)
     })
   })
 
   describe('Multistream.read', () => {
     it('should decode a multistream-select message', async () => {
-      const input = uint8ArrayFromString(`TEST${Date.now()}`)
+      const input = `TEST${Date.now()}`
+      const inputBuf = uint8ArrayFromString(input)
 
-      const source = reader([uint8ArrayConcat([
-        varint.encode(input.length + 1), // +1 to include newline
-        input,
-        uint8ArrayFromString('\n')
-      ])])
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1])
 
-      const output = await Multistream.read(source)
-      expect(output.subarray()).to.equalBytes(input)
+      void inputStream.write(uint8ArrayFromString(`${input}\n`))
+
+      const output = await Multistream.read(outputStream)
+      expect(output.subarray()).to.equalBytes(inputBuf)
     })
 
     it('should throw for non-newline delimited message', async () => {
-      const input = uint8ArrayFromString(`TEST${Date.now()}`)
+      const input = `TEST${Date.now()}`
+      const inputBuf = uint8ArrayFromString(input)
 
-      const source = reader([uint8ArrayConcat([
-        varint.encode(input.length),
-        input
-      ])])
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1])
 
-      await expect(Multistream.read(source)).to.eventually.be.rejected()
+      void inputStream.write(inputBuf)
+
+      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
         .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
     })
 
@@ -91,42 +58,48 @@ describe('Multistream', () => {
       const input = new Uint8Array(10000)
       input[input.length - 1] = '\n'.charCodeAt(0)
 
-      const source = reader([uint8ArrayConcat([
-        varint.encode(input.length),
-        input
-      ])])
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1], {
+        maxDataLength: 9999
+      })
 
-      await expect(Multistream.read(source)).to.eventually.be.rejected()
+      void inputStream.write(input)
+
+      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
         .with.property('code', 'ERR_MSG_DATA_TOO_LONG')
     })
 
     it('should throw for a 0-length message', async () => {
       const input = new Uint8Array(0)
 
-      const source = reader([uint8ArrayConcat([
-        varint.encode(input.length),
-        input
-      ])])
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1])
 
-      await expect(Multistream.read(source)).to.eventually.be.rejected()
+      void inputStream.write(input)
+
+      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
         .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
     })
 
     it('should be abortable', async () => {
-      const input = uint8ArrayFromString(`TEST${Date.now()}`)
-
-      const source = reader([uint8ArrayConcat([
-        varint.encode(input.length + 1), // +1 to include newline
-        input,
-        uint8ArrayFromString('\n')
-      ])])
+      const input = `TEST${Date.now()}`
+      const inputBuf = uint8ArrayFromString(`${input}\n`)
 
       const controller = new AbortController()
       controller.abort()
 
-      await expect(Multistream.read(source, {
-        signal: controller.signal
-      })).to.eventually.be.rejected().with.property('code', 'ABORT_ERR')
+      const duplexes = duplexPair<Uint8Array>()
+      const inputStream = lpStream(duplexes[0])
+      const outputStream = lpStream(duplexes[1])
+
+      void inputStream.write(inputBuf)
+
+      await expect(Multistream.read(outputStream, {
+        signal: controller.signal,
+        log: logger('mss:test')
+      })).to.eventually.be.rejected.with.property('name', 'AbortError')
     })
   })
 })

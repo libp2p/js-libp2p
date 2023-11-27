@@ -6,7 +6,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
-export function bigIntegerToUintBase64url (num: { abs: () => any }, len?: number): string {
+export function bigIntegerToUintBase64url (num: { abs(): any }, len?: number): string {
   // Call `.abs()` to convert to unsigned
   let buf = Uint8Array.from(num.abs().toByteArray()) // toByteArray converts to big endian
 

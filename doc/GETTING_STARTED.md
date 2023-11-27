@@ -134,7 +134,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux',
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -214,7 +214,7 @@ import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mplex } from '@libp2p/mplex'
-import { yamux } from '@chainsafe/libp2p-yamux',
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 import { bootstrap } from '@libp2p/bootstrap'
 
@@ -276,9 +276,9 @@ localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-
 
 ## What is next
 
-There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples folder](../examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
+There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
 
-[transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
-[crypto]: https://github.com/libp2p/js-interfaces/tree/master/src/crypto
-[streamMuxer]: https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer
+[transport]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport
+[crypto]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto
+[streamMuxer]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer

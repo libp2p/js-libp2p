@@ -6,6 +6,115 @@
 * **dev:** bump @libp2p/interface-mocks from 11.0.3 to 12.0.1 ([#241](https://github.com/libp2p/js-libp2p-websockets/issues/241)) ([f956836](https://github.com/libp2p/js-libp2p-websockets/commit/f95683641bda2f9b250768768451e0c121afc2a0))
 * **dev:** bump aegir from 38.1.8 to 39.0.9 ([#245](https://github.com/libp2p/js-libp2p-websockets/issues/245)) ([4a35f6b](https://github.com/libp2p/js-libp2p-websockets/commit/4a35f6b39a918fb7ef779292553cb452a543afb0))
 
+### [7.0.13](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.12...websockets-v7.0.13) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/utils bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
+### [7.0.12](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.11...websockets-v7.0.12) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
+### [7.0.11](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.10...websockets-v7.0.11) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/utils bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.2 to ^4.1.3
+
+### [7.0.10](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.9...websockets-v7.0.10) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/utils bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+
+### [7.0.9](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.8...websockets-v7.0.9) (2023-10-06)
+
+
+### Bug Fixes
+
+* close webrtc streams without data loss ([#2073](https://www.github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://www.github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/utils bumped from ^4.0.3 to ^4.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.0 to ^4.1.1
+
+### [7.0.8](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.7...websockets-v7.0.8) (2023-10-01)
+
+
+### Bug Fixes
+
+* log websocket error on graceful close failure ([#2072](https://www.github.com/libp2p/js-libp2p/issues/2072)) ([72319fe](https://www.github.com/libp2p/js-libp2p/commit/72319fe6d3b6402a92788c4c4e52eb7e0e477b3d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.6 to ^4.1.0
+
+### [7.0.7](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.6...websockets-v7.0.7) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.5 to ^4.0.6
+
+### [7.0.6](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.5...websockets-v7.0.6) (2023-09-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^4.0.2 to ^4.0.3
+
 ### [7.0.5](https://www.github.com/libp2p/js-libp2p/compare/websockets-v7.0.4...websockets-v7.0.5) (2023-08-25)
 
 

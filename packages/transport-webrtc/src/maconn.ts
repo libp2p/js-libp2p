@@ -1,11 +1,10 @@
-import { logger } from '@libp2p/logger'
 import { nopSink, nopSource } from './util.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface/connection'
 import type { CounterGroup } from '@libp2p/interface/metrics'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
-
-const log = logger('libp2p:webrtc:connection')
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebRTCMultiaddrConnectionInit {
   /**
@@ -29,7 +28,13 @@ interface WebRTCMultiaddrConnectionInit {
   metrics?: CounterGroup
 }
 
+export interface WebRTCMultiaddrConnectionComponents {
+  logger: ComponentLogger
+}
+
 export class WebRTCMultiaddrConnection implements MultiaddrConnection {
+  readonly log: Logger
+
   /**
    * WebRTC Peer Connection
    */
@@ -58,22 +63,28 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   /**
    * The stream destination, a no-op as the transport natively supports multiplexing
    */
-  sink: Sink<Source<Uint8Array>, Promise<void>> = nopSink
+  sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
-  constructor (init: WebRTCMultiaddrConnectionInit) {
+  constructor (components: WebRTCMultiaddrConnectionComponents, init: WebRTCMultiaddrConnectionInit) {
+    this.log = components.logger.forComponent('libp2p:webrtc:maconn')
     this.remoteAddr = init.remoteAddr
     this.timeline = init.timeline
     this.peerConnection = init.peerConnection
 
+    const initialState = this.peerConnection.connectionState
+
     this.peerConnection.onconnectionstatechange = () => {
-      if (this.peerConnection.connectionState === 'closed' || this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed') {
+      this.log.trace('peer connection state change', this.peerConnection.connectionState, 'initial state', initialState)
+
+      if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
+        // nothing else to do but close the connection
         this.timeline.close = Date.now()
       }
     }
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    log.trace('closing connection')
+    this.log.trace('closing connection')
 
     this.peerConnection.close()
     this.timeline.close = Date.now()
@@ -81,7 +92,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   }
 
   abort (err: Error): void {
-    log.error('closing connection due to error', err)
+    this.log.error('closing connection due to error', err)
 
     this.peerConnection.close()
     this.timeline.close = Date.now()

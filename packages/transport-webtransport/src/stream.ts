@@ -1,12 +1,10 @@
-import { logger } from '@libp2p/logger'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
 import type { Direction, Stream } from '@libp2p/interface/connection'
 import type { Source } from 'it-stream-types'
 
-const log = logger('libp2p:webtransport:stream')
-
-export async function webtransportBiDiStreamToStream (bidiStream: any, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void)): Promise<Stream> {
+export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {
+  const log = logger.forComponent(`libp2p:webtransport:stream:${direction}:${streamId}`)
   const writer = bidiStream.writable.getWriter()
   const reader = bidiStream.readable.getReader()
   await writer.ready
@@ -60,6 +58,9 @@ export async function webtransportBiDiStreamToStream (bidiStream: any, streamId:
     abort (err: Error) {
       if (!writerClosed) {
         writer.abort(err)
+          .catch(err => {
+            log.error('could not abort stream', err)
+          })
         writerClosed = true
       }
       readerClosed = true
@@ -140,7 +141,7 @@ export async function webtransportBiDiStreamToStream (bidiStream: any, streamId:
     source: (async function * () {
       while (true) {
         const val = await reader.read()
-        if (val.done === true) {
+        if (val.done) {
           readerClosed = true
           if (writerClosed) {
             cleanupStreamFromActiveStreams()
@@ -176,7 +177,8 @@ export async function webtransportBiDiStreamToStream (bidiStream: any, streamId:
 
         await stream.closeWrite()
       }
-    }
+    },
+    log
   }
 
   return stream

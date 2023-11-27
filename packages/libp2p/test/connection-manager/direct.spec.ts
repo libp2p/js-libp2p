@@ -1,14 +1,17 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { AbortError } from '@libp2p/interface/errors'
-import { EventEmitter } from '@libp2p/interface/events'
+import { type Identify, identify } from '@libp2p/identify'
+import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { publicAddressesFirst } from '@libp2p/utils/address-sort'
+import { plaintext } from '@libp2p/plaintext'
+import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -23,9 +26,7 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { type IdentifyService, identifyService } from '../../src/identify/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -45,7 +46,7 @@ describe('dialing (direct, WebSockets)', () => {
   let connectionManager: DefaultConnectionManager
 
   beforeEach(async () => {
-    const localEvents = new EventEmitter()
+    const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
       peerId: await createEd25519PeerId(),
       datastore: new MemoryDatastore(),
@@ -64,7 +65,9 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     localTM = new DefaultTransportManager(localComponents)
-    localTM.add(webSockets({ filter: filters.all })())
+    localTM.add(webSockets({ filter: filters.all })({
+      logger: defaultLogger()
+    }))
     localComponents.transportManager = localTM
 
     // this peer is spun up in .aegir.cjs
@@ -167,7 +170,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TIMEOUT)
+      .and.to.have.property('code', ERR_TIMEOUT)
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {
@@ -193,11 +196,11 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr('/ip4/30.0.0.1/tcp/15001/ws')
     ]
 
-    const publicAddressesFirstSpy = sinon.spy(publicAddressesFirst)
+    const addressesSorttSpy = sinon.spy(defaultAddressSort)
     const localTMDialStub = sinon.stub(localTM, 'dial').callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
 
     connectionManager = new DefaultConnectionManager(localComponents, {
-      addressSorter: publicAddressesFirstSpy,
+      addressSorter: addressesSorttSpy,
       maxParallelDials: 3
     })
     await connectionManager.start()
@@ -212,11 +215,9 @@ describe('dialing (direct, WebSockets)', () => {
 
     const sortedAddresses = peerMultiaddrs
       .map((m) => ({ multiaddr: m, isCertified: false }))
-      .sort(publicAddressesFirst)
+      .sort(defaultAddressSort)
 
     expect(localTMDialStub.getCall(0).args[0].equals(sortedAddresses[0].multiaddr))
-    expect(localTMDialStub.getCall(1).args[0].equals(sortedAddresses[1].multiaddr))
-    expect(localTMDialStub.getCall(2).args[0].equals(sortedAddresses[2].multiaddr))
   })
 
   it('shutting down should abort pending dials', async () => {
@@ -258,30 +259,6 @@ describe('dialing (direct, WebSockets)', () => {
     } catch {
       expect(connectionManager.getDialQueue()).to.have.lengthOf(0) // 0 dial requests
     }
-  })
-
-  it('should dial all multiaddrs for a passed peer id', async () => {
-    const addrs = [
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${remoteComponents.peerId.toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8002/ws/p2p/${remoteComponents.peerId.toString()}`)
-    ]
-
-    // Inject data into the AddressBook
-    await localComponents.peerStore.merge(remoteComponents.peerId, {
-      multiaddrs: addrs
-    })
-
-    connectionManager = new DefaultConnectionManager(localComponents)
-    await connectionManager.start()
-
-    const transactionManagerDialStub = sinon.stub(localTM, 'dial')
-    transactionManagerDialStub.callsFake(async (ma) => mockConnection(mockMultiaddrConnection(mockDuplex(), remoteComponents.peerId)))
-
-    // Perform dial
-    await connectionManager.openConnection(remoteComponents.peerId)
-
-    expect(transactionManagerDialStub).to.have.property('callCount', 3)
   })
 
   it('should dial only the multiaddr that is passed', async () => {
@@ -354,7 +331,7 @@ describe('dialing (direct, WebSockets)', () => {
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
-  let libp2p: Libp2p<{ identify: IdentifyService }>
+  let libp2p: Libp2p<{ identify: Identify }>
   let peerId: PeerId
 
   beforeEach(async () => {
@@ -385,7 +362,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService()
+        identify: identify()
       },
       connectionGater: mockConnectionGater()
     })
@@ -429,7 +406,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         plaintext()
       ],
       services: {
-        identify: identifyService({
+        identify: identify({
           runOnConnectionOpen: false
         })
       },

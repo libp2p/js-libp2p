@@ -1,9 +1,9 @@
 {
   "name": "@libp2p/peer-record",
-  "version": "6.0.3",
+  "version": "6.0.9",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-record#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -31,6 +31,7 @@
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
+      "project": true,
       "sourceType": "module"
     },
     "ignorePatterns": [
@@ -55,19 +56,19 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^2.0.3",
-    "@libp2p/interface": "^0.1.2",
-    "@libp2p/peer-id": "^3.0.2",
-    "@libp2p/utils": "^4.0.2",
-    "@multiformats/multiaddr": "^12.1.5",
+    "@libp2p/crypto": "^2.0.8",
+    "@libp2p/interface": "^0.1.6",
+    "@libp2p/peer-id": "^3.0.6",
+    "@libp2p/utils": "^4.0.7",
+    "@multiformats/multiaddr": "^12.1.10",
     "protons-runtime": "^5.0.0",
     "uint8-varint": "^2.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.3",
-    "aegir": "^40.0.8",
-    "protons": "^7.0.2"
+    "@libp2p/peer-id-factory": "^3.0.8",
+    "aegir": "^41.0.2",
+    "protons": "^7.3.0"
   }
 }

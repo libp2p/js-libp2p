@@ -1,6 +1,5 @@
 {
   "entryPoints": [
-    "./src/index.ts",
-    "./src/filters.ts"
+    "./src/index.ts"
   ]
 }

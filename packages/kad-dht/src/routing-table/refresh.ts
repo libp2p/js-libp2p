@@ -1,5 +1,4 @@
 import { randomBytes } from '@libp2p/crypto'
-import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import length from 'it-length'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -8,13 +7,17 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Logger } from '@libp2p/logger'
 
 /**
  * Cannot generate random KadIds longer than this + 1
  */
 const MAX_COMMON_PREFIX_LENGTH = 15
+
+export interface RoutingTableRefreshComponents {
+  logger: ComponentLogger
+}
 
 export interface RoutingTableRefreshInit {
   peerRouting: PeerRouting
@@ -37,9 +40,9 @@ export class RoutingTableRefresh {
   private readonly commonPrefixLengthRefreshedAt: Date[]
   private refreshTimeoutId?: ReturnType<typeof setTimeout>
 
-  constructor (init: RoutingTableRefreshInit) {
+  constructor (components: RoutingTableRefreshComponents, init: RoutingTableRefreshInit) {
     const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL

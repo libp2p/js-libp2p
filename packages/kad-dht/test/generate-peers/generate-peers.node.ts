@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { defaultLogger } from '@libp2p/logger'
 import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { execa } from 'execa'
@@ -55,7 +56,8 @@ describe.skip('generate peers', function () {
     const components = {
       peerId: id,
       connectionManager: stubInterface<ConnectionManager>(),
-      peerStore: stubInterface<PeerStore>()
+      peerStore: stubInterface<PeerStore>(),
+      logger: defaultLogger()
     }
     const table = new RoutingTable(components, {
       kBucketSize: 20,
@@ -63,6 +65,8 @@ describe.skip('generate peers', function () {
       protocol: '/ipfs/kad/1.0.0'
     })
     refresh = new RoutingTableRefresh({
+      logger: defaultLogger()
+    }, {
       routingTable: table,
       // @ts-expect-error not a full implementation
       peerRouting: {},

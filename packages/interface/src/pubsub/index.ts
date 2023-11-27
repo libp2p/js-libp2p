@@ -1,5 +1,5 @@
 import type { Stream } from '../connection/index.js'
-import type { EventEmitter } from '../events.js'
+import type { TypedEventTarget } from '../events.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -65,17 +65,17 @@ export interface PubSubRPC {
   messages: PubSubRPCMessage[]
 }
 
-export interface PeerStreams extends EventEmitter<PeerStreamEvents> {
+export interface PeerStreams extends TypedEventTarget<PeerStreamEvents> {
   id: PeerId
   protocol: string
   outboundStream?: Pushable<Uint8ArrayList>
   inboundStream?: AsyncIterable<Uint8ArrayList>
   isWritable: boolean
 
-  close: () => void
-  write: (buf: Uint8Array | Uint8ArrayList) => void
-  attachInboundStream: (stream: Stream) => AsyncIterable<Uint8ArrayList>
-  attachOutboundStream: (stream: Stream) => Promise<Pushable<Uint8ArrayList>>
+  close(): void
+  write(buf: Uint8Array | Uint8ArrayList): void
+  attachInboundStream(stream: Stream): AsyncIterable<Uint8ArrayList>
+  attachOutboundStream(stream: Stream): Promise<Pushable<Uint8ArrayList>>
 }
 
 export interface PubSubInit {
@@ -152,7 +152,7 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
-export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends EventEmitter<Events> {
+export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends TypedEventTarget<Events> {
   /**
    * The global signature policy controls whether or not we sill send and receive
    * signed or unsigned messages.
@@ -189,7 +189,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    */
   topicValidators: Map<string, TopicValidatorFn>
 
-  getPeers: () => PeerId[]
+  getPeers(): PeerId[]
 
   /**
    * Gets a list of topics the node is subscribed to.
@@ -198,7 +198,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    * const topics = libp2p.pubsub.getTopics()
    * ```
    */
-  getTopics: () => string[]
+  getTopics(): string[]
 
   /**
    * Subscribes to a pubsub topic.
@@ -217,7 +217,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    * libp2p.pubsub.subscribe(topic)
    * ```
    */
-  subscribe: (topic: string) => void
+  subscribe(topic: string): void
 
   /**
    * Unsubscribes from a pubsub topic.
@@ -234,7 +234,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    * libp2p.pubsub.unsubscribe(topic)
    * ```
    */
-  unsubscribe: (topic: string) => void
+  unsubscribe(topic: string): void
 
   /**
    * Gets a list of the PeerIds that are subscribed to one topic.
@@ -245,7 +245,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    * const peerIds = libp2p.pubsub.getSubscribers(topic)
    * ```
    */
-  getSubscribers: (topic: string) => PeerId[]
+  getSubscribers(topic: string): PeerId[]
 
   /**
    * Publishes messages to the given topic.
@@ -259,7 +259,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    * await libp2p.pubsub.publish(topic, data)
    * ```
    */
-  publish: (topic: string, data: Uint8Array) => Promise<PublishResult>
+  publish(topic: string, data: Uint8Array): Promise<PublishResult>
 }
 
 export interface PeerStreamEvents {

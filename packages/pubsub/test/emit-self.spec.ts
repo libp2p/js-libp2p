@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -21,7 +22,8 @@ describe('emitSelf', () => {
 
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol],
         emitSelf: true
@@ -76,7 +78,8 @@ describe('emitSelf', () => {
 
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol],
         emitSelf: false

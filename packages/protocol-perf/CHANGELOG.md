@@ -1,5 +1,175 @@
 # Changelog
 
+### [2.0.1](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.0...perf-v2.0.1) (2023-11-07)
+
+
+### Bug Fixes
+
+* do not overwrite signal property of options ([#2214](https://www.github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://www.github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
+## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.15...perf-v2.0.0) (2023-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* Measures upload/download speed separately and also over time rather than in total.
+
+### Features
+
+* measure transfer perf over time ([#2067](https://www.github.com/libp2p/js-libp2p/issues/2067)) ([78db573](https://www.github.com/libp2p/js-libp2p/commit/78db573f9e8f28cd3d0a89f36094f5d566482b9f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
+### [1.1.15](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.14...perf-v1.1.15) (2023-11-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.17 to ^0.46.18
+
+### [1.1.14](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.13...perf-v1.1.14) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/interface-compliance-tests bumped from ^4.1.2 to ^4.1.3
+    * @libp2p/interface-internal bumped from ^0.1.7 to ^0.1.8
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/tcp bumped from ^8.0.10 to ^8.0.11
+    * libp2p bumped from ^0.46.16 to ^0.46.17
+
+### [1.1.13](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.12...perf-v1.1.13) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-compliance-tests bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/tcp bumped from ^8.0.9 to ^8.0.10
+    * libp2p bumped from ^0.46.15 to ^0.46.16
+
+### [1.1.12](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.11...perf-v1.1.12) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.14 to ^0.46.15
+
+### [1.1.11](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.10...perf-v1.1.11) (2023-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.13 to ^0.46.14
+
+### [1.1.10](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.9...perf-v1.1.10) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.4 to ^2.0.5
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/interface-compliance-tests bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/interface-internal bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id-factory bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/tcp bumped from ^8.0.8 to ^8.0.9
+    * libp2p bumped from ^0.46.12 to ^0.46.13
+
+### [1.1.9](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.8...perf-v1.1.9) (2023-10-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.0.6 to ^4.1.0
+    * @libp2p/tcp bumped from ^8.0.7 to ^8.0.8
+    * libp2p bumped from ^0.46.11 to ^0.46.12
+
+### [1.1.8](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.7...perf-v1.1.8) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.3 to ^2.0.4
+    * @libp2p/interface-compliance-tests bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/interface-internal bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/tcp bumped from ^8.0.6 to ^8.0.7
+    * libp2p bumped from ^0.46.10 to ^0.46.11
+
+### [1.1.7](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.6...perf-v1.1.7) (2023-09-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
+    * libp2p bumped from ^0.46.9 to ^0.46.10
+
+### [1.1.6](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.5...perf-v1.1.6) (2023-09-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.8 to ^0.46.9
+
+### [1.1.5](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.4...perf-v1.1.5) (2023-09-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^0.46.7 to ^0.46.8
+
 ### [1.1.4](https://www.github.com/libp2p/js-libp2p/compare/perf-v1.1.3...perf-v1.1.4) (2023-08-25)
 
 

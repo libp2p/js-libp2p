@@ -1,8 +1,8 @@
-name: ci
+name: CI
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
       - '**'
@@ -17,6 +17,10 @@ jobs:
       with:
         node-version: lts/*
     - uses: ipfs/aegir/actions/cache-node-modules@master
+      with:
+        directories: |
+          ./interop/dist
+          ./interop/node_modules
 
   check:
     needs: build
@@ -48,8 +52,8 @@ jobs:
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: node
+          files: .coverage/*,packages/*/.coverage/*
 
   test-chrome:
     needs: build
@@ -63,8 +67,8 @@ jobs:
       - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome
+          files: .coverage/*,packages/*/.coverage/*
 
   test-chrome-webworker:
     needs: build
@@ -78,8 +82,8 @@ jobs:
       - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: chrome-webworker
+          files: .coverage/*,packages/*/.coverage/*
 
   test-firefox:
     needs: build
@@ -93,8 +97,8 @@ jobs:
       - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox
+          files: .coverage/*,packages/*/.coverage/*
 
   test-firefox-webworker:
     needs: build
@@ -108,8 +112,8 @@ jobs:
       - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: firefox-webworker
+          files: .coverage/*,packages/*/.coverage/*
 
   test-webkit:
     needs: build
@@ -124,8 +128,8 @@ jobs:
       - run: npm run --if-present test:webkit
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: webkit
+          files: .coverage/*,packages/*/.coverage/*
 
   test-electron-main:
     needs: build
@@ -139,8 +143,8 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-main
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-main
+          files: .coverage/*,packages/*/.coverage/*
 
   test-electron-renderer:
     needs: build
@@ -154,8 +158,8 @@ jobs:
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
       - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2.1.0
         with:
-          directory: ./.nyc_output
           flags: electron-renderer
+          files: .coverage/*,packages/*/.coverage/*
 
   test-interop:
     needs: build
@@ -168,18 +172,7 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run test:interop -- --bail
 
-  test-examples:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-      - run: npm run --if-present test:example
-
-  multidim-interop:
+  transport-interop:
     needs: build
     runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
     steps:
@@ -188,6 +181,10 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
+        with:
+          directories: |
+            ./interop/dist
+            ./interop/node_modules
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
@@ -218,10 +215,9 @@ jobs:
       test-electron-main,
       test-electron-renderer,
       test-interop,
-      test-examples,
-      multidim-interop
+      transport-interop
     ]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release

@@ -1,3 +1,15 @@
+/**
+ * @packageDocumentation
+ *
+ * **Supported Key Types**
+ *
+ * The {@link generateKeyPair}, {@link marshalPublicKey}, and {@link marshalPrivateKey} functions accept a string `type` argument.
+ *
+ * Currently the `'RSA'`, `'ed25519'`, and `secp256k1` types are supported, although ed25519 and secp256k1 keys support only signing and verification of messages.
+ *
+ * For encryption / decryption support, RSA keys should be used.
+ */
+
 import 'node-forge/lib/asn1.js'
 import 'node-forge/lib/pbe.js'
 import { CodeError } from '@libp2p/interface/errors'
@@ -40,13 +52,21 @@ function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k
   throw unsupportedKey(type)
 }
 
-// Generates a keypair of the given type and bitsize
+/**
+ * Generates a keypair of the given type and bitsize
+ *
+ * @param type
+ * @param bits -  Minimum of 1024
+ */
 export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<PrivateKey> {
   return typeToKey(type).generateKeyPair(bits ?? 2048)
 }
 
-// Generates a keypair of the given type and bitsize
-// seed is a 32 byte uint8array
+/**
+ * Generates a keypair of the given type and bitsize.
+ *
+ * Seed is a 32 byte uint8array
+ */
 export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array, bits?: number): Promise<PrivateKey> {
   if (type.toLowerCase() !== 'ed25519') {
     throw new CodeError('Seed key derivation is unimplemented for RSA or secp256k1', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
@@ -55,8 +75,9 @@ export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array,
   return Ed25519.generateKeyPairFromSeed(seed)
 }
 
-// Converts a protobuf serialized public key into its
-// representative object
+/**
+ * Converts a protobuf serialized public key into its representative object
+ */
 export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
@@ -69,19 +90,22 @@ export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
     case keysPBM.KeyType.Secp256k1:
       return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(data)
     default:
-      throw unsupportedKey(decoded.Type ?? 'RSA')
+      throw unsupportedKey(decoded.Type ?? 'unknown')
   }
 }
 
-// Converts a public key object into a protobuf serialized public key
+/**
+ * Converts a public key object into a protobuf serialized public key
+ */
 export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Uint8Array {
   type = (type ?? 'rsa').toLowerCase()
   typeToKey(type) // check type
   return key.bytes
 }
 
-// Converts a protobuf serialized private key into its
-// representative object
+/**
+ * Converts a protobuf serialized private key into its representative object
+ */
 export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
@@ -98,7 +122,9 @@ export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey>
   }
 }
 
-// Converts a private key object into a protobuf serialized private key
+/**
+ * Converts a private key object into a protobuf serialized private key
+ */
 export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): Uint8Array {
   type = (type ?? 'rsa').toLowerCase()
   typeToKey(type) // check type
@@ -106,9 +132,9 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): U
 }
 
 /**
+ * Converts an exported private key into its representative object.
  *
- * @param {string} encryptedKey
- * @param {string} password
+ * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
  */
 export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey> {
   try {

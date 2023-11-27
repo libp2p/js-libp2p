@@ -1,21 +1,19 @@
 import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
 import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
 import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
-import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
 import merge from 'it-merge'
 import isPrivate from 'private-ip'
 import { DefaultKadDHT } from './kad-dht.js'
 import { queryErrorEvent } from './query/events.js'
 import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
+import type { Logger } from '@libp2p/interface'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
-
-const log = logger('libp2p:kad-dht')
 
 /**
  * Wrapper class to convert events into returned values
@@ -103,8 +101,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
 
   // dns4 or dns6 or dnsaddr
   if (tuples[0][0] === DNS4_CODE || tuples[0][0] === DNS6_CODE || tuples[0][0] === DNSADDR_CODE) {
-    log('%m is public %s', multiaddr, true)
-
     return true
   }
 
@@ -112,8 +108,6 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
   if (tuples[0][0] === IP4_CODE || tuples[0][0] === IP6_CODE) {
     const result = isPrivate(`${tuples[0][1]}`)
     const isPublic = result == null || !result
-
-    log('%m is public %s', multiaddr, isPublic)
 
     return isPublic
   }
@@ -125,17 +119,19 @@ function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
-export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
+export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements DualKadDHT, PeerDiscovery {
   public readonly wan: DefaultKadDHT
   public readonly lan: DefaultKadDHT
   public readonly components: KadDHTComponents
   private readonly contentRouting: ContentRouting
   private readonly peerRouting: PeerRouting
+  private readonly log: Logger
 
   constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
     this.components = components
+    this.log = components.logger.forComponent('libp2p:kad-dht')
 
     this.wan = new DefaultKadDHT(components, {
       protocolPrefix: '/ipfs',
@@ -168,15 +164,9 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
     // mode when the node's peer data is updated with publicly dialable addresses
     if (init.clientMode == null) {
       components.events.addEventListener('self:peer:update', (evt) => {
-        log('received update of self-peer info')
+        this.log('received update of self-peer info')
         const hasPublicAddress = evt.detail.peer.addresses
-          .some(({ multiaddr }) => {
-            const isPublic = multiaddrIsPublic(multiaddr)
-
-            log('%m is public %s', multiaddr, isPublic)
-
-            return isPublic
-          })
+          .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
 
         this.getMode()
           .then(async mode => {
@@ -187,7 +177,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
             }
           })
           .catch(err => {
-            log.error('error setting dht server mode', err)
+            this.log.error('error setting dht server mode', err)
           })
       })
     }
@@ -332,7 +322,7 @@ export class DefaultDualKadDHT extends EventEmitter<PeerDiscoveryEvents> impleme
       }
 
       if (event.name === 'PEER_RESPONSE' && event.messageName === 'ADD_PROVIDER') {
-        log('sent provider record for %s to %p', key, event.from)
+        this.log('sent provider record for %s to %p', key, event.from)
         success++
       }
     }

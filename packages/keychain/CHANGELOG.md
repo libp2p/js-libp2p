@@ -11,6 +11,73 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-keychain/issues/70)) ([4da4a08](https://github.com/libp2p/js-libp2p-keychain/commit/4da4a08b86f436c36e2fae48ecc48817e9b8066f))
 
+### [3.0.8](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.7...keychain-v3.0.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+
+### [3.0.7](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.6...keychain-v3.0.7) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+
+### [3.0.6](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.5...keychain-v3.0.6) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+
+### [3.0.5](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.4...keychain-v3.0.5) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.4 to ^2.0.5
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id bumped from ^3.0.2 to ^3.0.3
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.4 to ^3.0.5
+
+### [3.0.4](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.3...keychain-v3.0.4) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^2.0.3 to ^2.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.4
+
 ### [3.0.3](https://www.github.com/libp2p/js-libp2p/compare/keychain-v3.0.2...keychain-v3.0.3) (2023-08-14)
 
 

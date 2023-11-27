@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -29,9 +30,14 @@ describe('rpc - handlers - AddProvider', () => {
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
 
-    providers = new Providers({ datastore })
+    providers = new Providers({
+      datastore,
+      logger: defaultLogger()
+    })
 
     handler = new AddProviderHandler({
+      logger: defaultLogger()
+    }, {
       providers
     })
   })
@@ -68,12 +74,10 @@ describe('rpc - handlers - AddProvider', () => {
 
     msg.providerPeers = [{
       id: peerIds[0],
-      multiaddrs: [ma1],
-      protocols: []
+      multiaddrs: [ma1]
     }, {
       id: peerIds[1],
-      multiaddrs: [ma2],
-      protocols: []
+      multiaddrs: [ma2]
     }]
 
     await handler.handle(peerIds[0], msg)

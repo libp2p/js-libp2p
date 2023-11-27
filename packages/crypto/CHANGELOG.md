@@ -5,6 +5,49 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+### [2.0.8](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.7...crypto-v2.0.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+
+### [2.0.7](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.6...crypto-v2.0.7) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+
+### [2.0.6](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.5...crypto-v2.0.6) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+
+### [2.0.5](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.4...crypto-v2.0.5) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+
+### [2.0.4](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.3...crypto-v2.0.4) (2023-09-15)
+
+
+### Bug Fixes
+
+* **@libp2p/crypto:** improve unsupported key type message ([#2051](https://www.github.com/libp2p/js-libp2p/issues/2051)) ([d9159dd](https://www.github.com/libp2p/js-libp2p/commit/d9159dd5985241160f791acda164bb2e6408dd90))
+
 ### [2.0.3](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.2...crypto-v2.0.3) (2023-08-14)
 
 

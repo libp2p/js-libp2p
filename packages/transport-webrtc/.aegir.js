@@ -7,8 +7,7 @@ export default {
   test: {
     before: async () => {
       const { createLibp2p } = await import('libp2p')
-      const { circuitRelayServer } = await import('libp2p/circuit-relay')
-      const { identifyService } = await import('libp2p/identify')
+      const { circuitRelayServer } = await import('@libp2p/circuit-relay-v2')
       const { webSockets } = await import('@libp2p/websockets')
       const { noise } = await import('@chainsafe/libp2p-noise')
       const { yamux } = await import('@chainsafe/libp2p-yamux')
@@ -34,11 +33,11 @@ export default {
             reservations: {
               maxReservations: Infinity
             }
-          }),
-          identify: identifyService()
+          })
         },
         connectionManager: {
-          minConnections: 0
+          minConnections: 0,
+          inboundConnectionThreshold: Infinity
         }
       })
 

@@ -5,6 +5,97 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+### [4.1.5](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.4...interface-compliance-tests-v4.1.5) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/interface-internal bumped from ^0.1.8 to ^0.1.9
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/multistream-select bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-collections bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+
+### [4.1.4](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.3...interface-compliance-tests-v4.1.4) (2023-11-07)
+
+
+### Bug Fixes
+
+* ensure mock stream output is uint8arraylist ([#2209](https://www.github.com/libp2p/js-libp2p/issues/2209)) ([8b82e68](https://www.github.com/libp2p/js-libp2p/commit/8b82e68e8f897f3e295ee511f1bbcbfd4cd9c652))
+
+### [4.1.3](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.2...interface-compliance-tests-v4.1.3) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/interface-internal bumped from ^0.1.7 to ^0.1.8
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/multistream-select bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-collections bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-id-factory bumped from ^3.0.6 to ^3.0.7
+
+### [4.1.2](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.1...interface-compliance-tests-v4.1.2) (2023-10-25)
+
+
+### Bug Fixes
+
+* rename event emitter class ([#2173](https://www.github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://www.github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* revert "refactor: rename event emitter class" ([#2172](https://www.github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://www.github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/interface-internal bumped from ^0.1.6 to ^0.1.7
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/multistream-select bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-collections bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.5 to ^3.0.6
+
+### [4.1.1](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.0...interface-compliance-tests-v4.1.1) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/interface-internal bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/multistream-select bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-collections bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-id bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id-factory bumped from ^3.0.4 to ^3.0.5
+
+## [4.1.0](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.6...interface-compliance-tests-v4.1.0) (2023-10-01)
+
+
+### Features
+
+* add mock stream pair ([#2069](https://www.github.com/libp2p/js-libp2p/issues/2069)) ([e3ab192](https://www.github.com/libp2p/js-libp2p/commit/e3ab1929b505df6d50b5a6ddc50cd2669f54b894))
+
+### [4.0.6](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.5...interface-compliance-tests-v4.0.6) (2023-09-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/peer-collections bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.3 to ^3.0.4
+
 ### [4.0.5](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.0.4...interface-compliance-tests-v4.0.5) (2023-08-25)
 
 

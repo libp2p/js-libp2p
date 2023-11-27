@@ -85,6 +85,14 @@ export class Message {
 
     return msg
   }
+
+  static encode (message: Message): Uint8Array {
+    return message.serialize()
+  }
+
+  static decode (buf: Uint8Array | Uint8ArrayList): Message {
+    return Message.deserialize(buf)
+  }
 }
 
 function toPbPeer (peer: PeerInfo): PBPeer {
@@ -104,7 +112,6 @@ function fromPbPeer (peer: PBMessage.Peer): PeerInfo {
 
   return {
     id: peerIdFromBytes(peer.id),
-    multiaddrs: (peer.addrs ?? []).map((a) => multiaddr(a)),
-    protocols: []
+    multiaddrs: (peer.addrs ?? []).map((a) => multiaddr(a))
   }
 }

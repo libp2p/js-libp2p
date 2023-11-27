@@ -1,8 +1,8 @@
 import { noise as Noise } from '@chainsafe/libp2p-noise'
 import { type CreateListenerOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as multihashes from 'multihashes'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
@@ -15,13 +15,12 @@ import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
-import type { DataChannelOpts } from '../stream.js'
+import type { DataChannelOptions } from '../index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:webrtc:transport')
 
 /**
  * The time to wait, in milliseconds, for the data channel handshake to complete
@@ -48,6 +47,7 @@ export const CERTHASH_CODE: number = protocols('certhash').code
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
   metrics?: Metrics
+  logger: ComponentLogger
 }
 
 export interface WebRTCMetrics {
@@ -55,21 +55,23 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
-  dataChannel?: Partial<DataChannelOpts>
+  dataChannel?: DataChannelOptions
 }
 
 export class WebRTCDirectTransport implements Transport {
+  private readonly log: Logger
   private readonly metrics?: WebRTCMetrics
   private readonly components: WebRTCDirectTransportComponents
   private readonly init: WebRTCTransportDirectInit
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
+    this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
     if (components.metrics != null) {
       this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc-direct_dialer_events_total', {
           label: 'event',
-          help: 'Total count of WebRTC dial events by type'
+          help: 'Total count of WebRTC-direct dial events by type'
         })
       }
     }
@@ -80,7 +82,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    log(`dialing address - ${ma.toString()}`)
+    this.log('dialing address: %a', ma)
     return rawConn
   }
 
@@ -95,7 +97,7 @@ export class WebRTCDirectTransport implements Transport {
    * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
    */
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(validMa)
+    return multiaddrs.filter(WebRTCDirect.exactMatch)
   }
 
   /**
@@ -143,7 +145,7 @@ export class WebRTCDirectTransport implements Transport {
         const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
         const handshakeTimeout = setTimeout(() => {
           const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-          log.error(error)
+          this.log.error(error)
           this.metrics?.dialerEvents.increment({ open_error: true })
           reject(dataChannelError('data', error))
         }, HANDSHAKE_TIMEOUT_MS)
@@ -158,7 +160,7 @@ export class WebRTCDirectTransport implements Transport {
           clearTimeout(handshakeTimeout)
           const errorTarget = event.target?.toString() ?? 'not specified'
           const error = `Error opening a data channel for handshaking: ${errorTarget}`
-          log.error(error)
+          this.log.error(error)
           // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
           this.metrics?.dialerEvents.increment({ unknown_error: true })
           reject(dataChannelError('data', error))
@@ -193,7 +195,12 @@ export class WebRTCDirectTransport implements Transport {
       // we pass in undefined for these parameters.
       const noise = Noise({ prologueBytes: fingerprintsPrologue })()
 
-      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', dataChannelOptions: this.init.dataChannel })
+      const wrappedChannel = createStream({
+        channel: handshakeDataChannel,
+        direction: 'inbound',
+        logger: this.components.logger,
+        ...(this.init.dataChannel ?? {})
+      })
       const wrappedDuplex = {
         ...wrappedChannel,
         sink: wrappedChannel.sink.bind(wrappedChannel),
@@ -208,7 +215,7 @@ export class WebRTCDirectTransport implements Transport {
 
       // Creating the connection before completion of the noise
       // handshake ensures that the stream opening callback is set up
-      const maConn = new WebRTCMultiaddrConnection({
+      const maConn = new WebRTCMultiaddrConnection(this.components, {
         peerConnection,
         remoteAddr: ma,
         timeline: {
@@ -225,7 +232,7 @@ export class WebRTCDirectTransport implements Transport {
           case 'disconnected':
           case 'closed':
             maConn.close().catch((err) => {
-              log.error('error closing connection', err)
+              this.log.error('error closing connection', err)
             }).finally(() => {
               // Remove the event listener once the connection is closed
               controller.abort()
@@ -239,7 +246,11 @@ export class WebRTCDirectTransport implements Transport {
       // Track opened peer connection
       this.metrics?.dialerEvents.increment({ peer_connection: true })
 
-      const muxerFactory = new DataChannelMuxerFactory({ peerConnection, metrics: this.metrics?.dialerEvents, dataChannelOptions: this.init.dataChannel })
+      const muxerFactory = new DataChannelMuxerFactory(this.components, {
+        peerConnection,
+        metrics: this.metrics?.dialerEvents,
+        dataChannelOptions: this.init.dataChannel
+      })
 
       // For outbound connections, the remote is expected to start the noise handshake.
       // Therefore, we need to secure an inbound noise connection from the remote.
@@ -261,7 +272,9 @@ export class WebRTCDirectTransport implements Transport {
       throw invalidArgument('no local certificate')
     }
 
-    const localFingerprint = sdp.getLocalFingerprint(pc)
+    const localFingerprint = sdp.getLocalFingerprint(pc, {
+      log: this.log
+    })
     if (localFingerprint == null) {
       throw invalidArgument('no local fingerprint found')
     }
@@ -274,13 +287,4 @@ export class WebRTCDirectTransport implements Transport {
 
     return concat([prefix, local, remote])
   }
-}
-
-/**
- * Determine if a given multiaddr contains a WebRTC Code (280),
- * a Certhash Code (466) and a PeerId
- */
-function validMa (ma: Multiaddr): boolean {
-  const codes = ma.protoCodes()
-  return codes.includes(WEBRTC_CODE) && codes.includes(CERTHASH_CODE) && ma.getPeerId() != null && !codes.includes(protocols('p2p-circuit').code)
 }

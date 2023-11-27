@@ -16,8 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { EventEmitter } from './events.js'
-import type { KeyChain } from './keychain/index.js'
+import type { TypedEventTarget } from './events.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -99,6 +98,28 @@ export interface IdentifyResult {
    * If sent by the remote peer this is the deserialized signed peer record
    */
   signedPeerRecord?: SignedPeerRecord
+
+  /**
+   * The connection that the identify protocol ran over
+   */
+  connection: Connection
+}
+
+/**
+ * Logger component for libp2p
+ */
+export interface Logger {
+  (formatter: any, ...args: any[]): void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
+  enabled: boolean
+}
+
+/**
+ * Peer logger component for libp2p
+ */
+export interface ComponentLogger {
+  forComponent(name: string): Logger
 }
 
 /**
@@ -303,7 +324,7 @@ export interface PendingDial {
 /**
  * Libp2p nodes implement this interface.
  */
-export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, EventEmitter<Libp2pEvents<T>> {
+export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, TypedEventTarget<Libp2pEvents<T>> {
   /**
    * The PeerId is a unique identifier for a node on the network.
    *
@@ -373,20 +394,6 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
   contentRouting: ContentRouting
 
   /**
-   * The keychain contains the keys used by the current node, and can create new
-   * keys, export them, import them, etc.
-   *
-   * @example
-   *
-   * ```js
-   * const keyInfo = await libp2p.keychain.createKey('new key')
-   * console.info(keyInfo)
-   * // { id: '...', name: 'new key' }
-   * ```
-   */
-  keychain: KeyChain
-
-  /**
    * The metrics subsystem allows recording values to assess the health/performance
    * of the running node.
    *
@@ -403,6 +410,8 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    */
   metrics?: Metrics
 
+  logger: ComponentLogger
+
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
    * the listen addresses used by transports with any configured
@@ -418,7 +427,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
    * ```
    */
-  getMultiaddrs: () => Multiaddr[]
+  getMultiaddrs(): Multiaddr[]
 
   /**
    * Returns a list of supported protocols
@@ -430,7 +439,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * // [ '/ipfs/ping/1.0.0', '/ipfs/id/1.0.0' ]
    * ```
    */
-  getProtocols: () => string[]
+  getProtocols(): string[]
 
   /**
    * Return a list of all connections this node has open, optionally filtering
@@ -445,7 +454,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * }
    * ```
    */
-  getConnections: (peerId?: PeerId) => Connection[]
+  getConnections(peerId?: PeerId): Connection[]
 
   /**
    * Return the list of dials currently in progress or queued to start
@@ -458,12 +467,12 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * }
    * ```
    */
-  getDialQueue: () => PendingDial[]
+  getDialQueue(): PendingDial[]
 
   /**
    * Return a list of all peers we currently have a connection open to
    */
-  getPeers: () => PeerId[]
+  getPeers(): PeerId[]
 
   /**
    * Dials to the provided peer. If successful, the known metadata of the
@@ -485,7 +494,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * await conn.close()
    * ```
    */
-  dial: (peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions) => Promise<Connection>
+  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -503,7 +512,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol: (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions) => Promise<Stream>
+  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
@@ -518,7 +527,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
-  hangUp: (peer: PeerId | Multiaddr, options?: AbortOptions) => Promise<void>
+  hangUp(peer: PeerId | Multiaddr, options?: AbortOptions): Promise<void>
 
   /**
    * Sets up [multistream-select routing](https://github.com/multiformats/multistream-select) of protocols to their application handlers. Whenever a stream is opened on one of the provided protocols, the handler will be called. `handle` must be called in order to register a handler and support for a given protocol. This also informs other peers of the protocols you support.
@@ -540,7 +549,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * })
    * ```
    */
-  handle: (protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions) => Promise<void>
+  handle(protocol: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void>
 
   /**
    * Removes the handler for each protocol. The protocol
@@ -552,7 +561,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
-  unhandle: (protocols: string[] | string) => Promise<void>
+  unhandle(protocols: string[] | string): Promise<void>
 
   /**
    * Register a topology to be informed when peers are encountered that
@@ -571,7 +580,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * })
    * ```
    */
-  register: (protocol: string, topology: Topology) => Promise<string>
+  register(protocol: string, topology: Topology): Promise<string>
 
   /**
    * Unregister topology to no longer be informed when peers connect or
@@ -585,19 +594,34 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
    * libp2p.unregister(id)
    * ```
    */
-  unregister: (id: string) => void
+  unregister(id: string): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
    * this may mean searching the DHT if the key is not present in the KeyStore.
    * A set of user defined services
    */
-  getPublicKey: (peer: PeerId, options?: AbortOptions) => Promise<Uint8Array>
+  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<Uint8Array>
 
   /**
    * A set of user defined services
    */
   services: T
+}
+
+/**
+ * Metadata about the current node
+ */
+export interface NodeInfo {
+  /**
+   * The implementation name
+   */
+  name: string
+
+  /**
+   * The implementation version
+   */
+  version: string
 }
 
 /**
@@ -619,6 +643,13 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ev
  */
 export interface AbortOptions {
   signal?: AbortSignal
+}
+
+/**
+ * An object that contains a Logger as the `log` property.
+ */
+export interface LoggerOptions {
+  log: Logger
 }
 
 /**

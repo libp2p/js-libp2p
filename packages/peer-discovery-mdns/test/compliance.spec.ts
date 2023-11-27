@@ -2,14 +2,14 @@
 
 import { CustomEvent } from '@libp2p/interface/events'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'ts-sinon'
-import { mdns } from '../src/index.js'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
+import { MulticastDNS } from '../src/mdns.js'
 import type { AddressManager } from '@libp2p/interface-internal/address-manager'
 
-let discovery: PeerDiscovery
+let discovery: MulticastDNS
 
 describe('compliance tests', () => {
   let intervalId: ReturnType<typeof setInterval>
@@ -24,24 +24,30 @@ describe('compliance tests', () => {
         multiaddr(`/ip4/127.0.0.1/tcp/13921/p2p/${peerId1.toString()}`)
       ])
 
-      discovery = mdns({
+      discovery = new MulticastDNS({
+        addressManager,
+        logger: defaultLogger()
+      }, {
         broadcast: false,
         port: 50001
-      })({
-        addressManager
       })
 
       // Trigger discovery
-      const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star/p2p/QmcgpsyWgH8Y8ajJz1Cu72KnS5uo2Aa2LpzU7kinSooo2d'
+      const maStr = '/ip4/127.0.0.1/tcp/15555/ws/p2p-webrtc-star'
 
-      // @ts-expect-error not a PeerDiscovery field
-      intervalId = setInterval(() => discovery._onPeer(new CustomEvent('peer', {
-        detail: {
-          id: peerId2,
-          multiaddrs: [multiaddr(maStr)],
-          protocols: []
+      intervalId = setInterval(() => {
+        if (!discovery.isStarted()) {
+          return
         }
-      })), 1000)
+
+        discovery.dispatchEvent(new CustomEvent('peer', {
+          detail: {
+            id: peerId2,
+            multiaddrs: [multiaddr(maStr)],
+            protocols: []
+          }
+        }))
+      }, 1000)
 
       return discovery
     },

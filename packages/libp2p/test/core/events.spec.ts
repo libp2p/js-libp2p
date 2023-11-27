@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('events', () => {

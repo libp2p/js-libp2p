@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -33,12 +34,13 @@ describe('Routing Table', () => {
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
-    const events = new EventEmitter<Libp2pEvents>()
+    const events = new TypedEventEmitter<Libp2pEvents>()
 
     components = {
       peerId: await createPeerId(),
       connectionManager: stubInterface<ConnectionManager>(),
-      peerStore: stubInterface<PeerStore>()
+      peerStore: stubInterface<PeerStore>(),
+      logger: defaultLogger()
     }
     components.connectionManager = mockConnectionManager({
       ...components,

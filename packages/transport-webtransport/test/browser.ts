@@ -7,12 +7,6 @@ import { expect } from 'aegir/chai'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { webTransport } from '../src/index.js'
 
-declare global {
-  interface Window {
-    WebTransport: any
-  }
-}
-
 describe('libp2p-webtransport', () => {
   let node: Libp2p
 
@@ -94,8 +88,8 @@ describe('libp2p-webtransport', () => {
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
 
-    const err = await expect(node.dial(ma)).to.eventually.be.rejected()
-    expect(err.toString()).to.contain('Expected multiaddr to contain certhashes')
+    await expect(node.dial(ma)).to.eventually.be.rejected()
+      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
   })
 
   it('fails to connect due to an aborted signal', async () => {
@@ -131,7 +125,7 @@ describe('libp2p-webtransport', () => {
   })
 
   it('closes writes of streams after they have sunk a source', async () => {
-    // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-stream-muxer-compliance-tests/src/close-test.ts)
+    // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p/blob/main/packages/interface-compliance-tests/src/stream-muxer/close-test.ts)
     if (process.env.serverAddr == null) {
       throw new Error('serverAddr not found')
     }

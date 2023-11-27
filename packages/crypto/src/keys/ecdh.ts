@@ -11,6 +11,11 @@ const curves = {
 const curveTypes = Object.keys(curves)
 const names = curveTypes.join(' / ')
 
+/**
+ * Generates an ephemeral public key and returns a function that will compute the shared secret key.
+ *
+ * Focuses only on ECDH now, but can be made more general in the future.
+ */
 export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')

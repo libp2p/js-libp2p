@@ -7,6 +7,7 @@ import * as crypto from './ed25519.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Ed25519PublicKey {
   private readonly _key: Uint8Array
@@ -15,7 +16,7 @@ export class Ed25519PublicKey {
     this._key = ensureKey(key, crypto.publicKeyLength)
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -52,7 +53,7 @@ export class Ed25519PrivateKey {
     this._publicKey = ensureKey(publicKey, crypto.publicKeyLength)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  async sign (message: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 

@@ -1,11 +1,5 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { EventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { logger } from '@libp2p/logger'
-import { abortableDuplex } from 'abortable-iterator'
-import drain from 'it-drain'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { pbStream } from 'it-protobuf-stream'
 import { Message } from './message/index.js'
 import {
   dialPeerEvent,
@@ -14,14 +8,11 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent, QueryOptions } from './index.js'
-import type { AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 import type { Stream } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
 import type { PeerInfo } from '@libp2p/interface/peer-info'
 import type { Startable } from '@libp2p/interface/startable'
-import type { Logger } from '@libp2p/logger'
-import type { Duplex, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface NetworkInit {
   protocol: string
@@ -35,7 +26,7 @@ interface NetworkEvents {
 /**
  * Handle network operations for the dht
  */
-export class Network extends EventEmitter<NetworkEvents> implements Startable {
+export class Network extends TypedEventEmitter<NetworkEvents> implements Startable {
   private readonly log: Logger
   private readonly protocol: string
   private running: boolean
@@ -49,7 +40,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
 
     const { protocol, lan } = init
     this.components = components
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
+    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:network`)
     this.running = false
     this.protocol = protocol
   }
@@ -97,7 +88,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
       const connection = await this.components.connectionManager.openConnection(to, options)
       const stream = await connection.newStream(this.protocol, options)
 
-      const response = await this._writeReadMessage(stream, msg.serialize(), options)
+      const response = await this._writeReadMessage(stream, msg, options)
 
       yield peerResponseEvent({
         from: to,
@@ -133,7 +124,7 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
       const connection = await this.components.connectionManager.openConnection(to, options)
       const stream = await connection.newStream(this.protocol, options)
 
-      await this._writeMessage(stream, msg.serialize(), options)
+      await this._writeMessage(stream, msg, options)
 
       yield peerResponseEvent({ from: to, messageType: msg.type }, options)
     } catch (err: any) {
@@ -148,17 +139,10 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<void> {
-    if (options.signal != null) {
-      stream = abortableDuplex(stream, options.signal)
-    }
-
-    await pipe(
-      [msg],
-      (source) => lp.encode(source),
-      stream,
-      drain
-    )
+  async _writeMessage (stream: Stream, msg: Message, options: AbortOptions): Promise<void> {
+    const pb = pbStream(stream)
+    await pb.write(msg, Message, options)
+    await pb.unwrap().close(options)
   }
 
   /**
@@ -166,28 +150,14 @@ export class Network extends EventEmitter<NetworkEvents> implements Startable {
    * If no response is received after the specified timeout
    * this will error out.
    */
-  async _writeReadMessage (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>>, msg: Uint8Array | Uint8ArrayList, options: AbortOptions): Promise<Message> {
-    if (options.signal != null) {
-      stream = abortableDuplex(stream, options.signal)
-    }
+  async _writeReadMessage (stream: Stream, msg: Message, options: AbortOptions): Promise<Message> {
+    const pb = pbStream(stream)
 
-    const res = await pipe(
-      [msg],
-      (source) => lp.encode(source),
-      stream,
-      (source) => lp.decode(source),
-      async source => {
-        const buf = await first(source)
+    await pb.write(msg, Message, options)
 
-        if (buf != null) {
-          return buf
-        }
+    const message = await pb.read(Message, options)
 
-        throw new CodeError('No message received', 'ERR_NO_MESSAGE_RECEIVED')
-      }
-    )
-
-    const message = Message.deserialize(res)
+    await pb.unwrap().close(options)
 
     // tell any listeners about new peers we've seen
     message.closerPeers.forEach(peerData => {

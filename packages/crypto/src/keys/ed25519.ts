@@ -1,7 +1,9 @@
 import crypto from 'crypto'
+import { concat as uint8arrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import type { Uint8ArrayKeyPair } from './interface.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = crypto.generateKeyPairSync
 
@@ -46,7 +48,7 @@ export function generateKey (): Uint8ArrayKeyPair {
   const publicKeyRaw = uint8arrayFromString(key.privateKey.x, 'base64url')
 
   return {
-    privateKey: concatKeys(privateKeyRaw, publicKeyRaw),
+    privateKey: uint8arrayConcat([privateKeyRaw, publicKeyRaw], privateKeyRaw.byteLength + publicKeyRaw.byteLength),
     publicKey: publicKeyRaw
   }
 }
@@ -65,12 +67,12 @@ export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   const publicKeyRaw = derivePublicKey(seed)
 
   return {
-    privateKey: concatKeys(seed, publicKeyRaw),
+    privateKey: uint8arrayConcat([seed, publicKeyRaw], seed.byteLength + publicKeyRaw.byteLength),
     publicKey: publicKeyRaw
   }
 }
 
-export function hashAndSign (key: Uint8Array, msg: Uint8Array): Buffer {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Buffer {
   if (!(key instanceof Uint8Array)) {
     throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
   }
@@ -98,10 +100,10 @@ export function hashAndSign (key: Uint8Array, msg: Uint8Array): Buffer {
     }
   })
 
-  return crypto.sign(null, msg, obj)
+  return crypto.sign(null, msg instanceof Uint8Array ? msg : msg.subarray(), obj)
 }
 
-export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array): boolean {
+export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
   if (key.byteLength !== PUBLIC_KEY_BYTE_LENGTH) {
     throw new TypeError('"key" must be 32 bytes in length.')
   } else if (!(key instanceof Uint8Array)) {
@@ -123,14 +125,5 @@ export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array
     }
   })
 
-  return crypto.verify(null, msg, obj, sig)
-}
-
-function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {
-  const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH)
-  for (let i = 0; i < KEYS_BYTE_LENGTH; i++) {
-    privateKey[i] = privateKeyRaw[i]
-    privateKey[KEYS_BYTE_LENGTH + i] = publicKey[i]
-  }
-  return privateKey
+  return crypto.verify(null, msg instanceof Uint8Array ? msg : msg.subarray(), obj, sig)
 }

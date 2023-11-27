@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
-import { EventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface/events'
 import { start, stop } from '@libp2p/interface/startable'
 import { FaultTolerance } from '@libp2p/interface/transport'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
@@ -33,7 +34,7 @@ describe('Transport Manager (TCP)', () => {
   })
 
   beforeEach(async () => {
-    const events = new EventEmitter()
+    const events = new TypedEventEmitter()
     components = defaultComponents({
       peerId: localPeer,
       events,
@@ -60,14 +61,18 @@ describe('Transport Manager (TCP)', () => {
 
   it('should be able to add and remove a transport', async () => {
     expect(tm.getTransports()).to.have.lengthOf(0)
-    tm.add(tcp()())
+    tm.add(tcp()({
+      logger: defaultLogger()
+    }))
     expect(tm.getTransports()).to.have.lengthOf(1)
     await tm.remove('@libp2p/tcp')
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should be able to listen', async () => {
-    const transport = tcp()()
+    const transport = tcp()({
+      logger: defaultLogger()
+    })
 
     expect(tm.getTransports()).to.be.empty()
 
@@ -85,7 +90,9 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should be able to dial', async () => {
-    tm.add(tcp()())
+    tm.add(tcp()({
+      logger: defaultLogger()
+    }))
     await tm.listen(addrs)
     const addr = tm.getAddrs().shift()
 
@@ -99,7 +106,9 @@ describe('Transport Manager (TCP)', () => {
   })
 
   it('should remove listeners when they stop listening', async () => {
-    const transport = tcp()()
+    const transport = tcp()({
+      logger: defaultLogger()
+    })
     tm.add(transport)
 
     expect(tm.getListeners()).to.have.lengthOf(0)

@@ -11,6 +11,53 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#100](https://github.com/libp2p/js-libp2p-utils/issues/100)) ([da6547c](https://github.com/libp2p/js-libp2p-utils/commit/da6547cdd073ba1a4225be5a419c6776c4ebe6f1))
 
+### [4.0.7](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.6...utils-v4.0.7) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+
+### [4.0.6](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.5...utils-v4.0.6) (2023-11-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.4 to ^0.1.5
+    * @libp2p/logger bumped from ^3.0.4 to ^3.0.5
+
+### [4.0.5](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.4...utils-v4.0.5) (2023-10-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.3 to ^0.1.4
+    * @libp2p/logger bumped from ^3.0.3 to ^3.0.4
+
+### [4.0.4](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.3...utils-v4.0.4) (2023-10-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.2 to ^0.1.3
+    * @libp2p/logger bumped from ^3.0.2 to ^3.0.3
+
+### [4.0.3](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.2...utils-v4.0.3) (2023-09-10)
+
+
+### Bug Fixes
+
+* **libp2p:** sort addresses to dial as public, then relay ([#2031](https://www.github.com/libp2p/js-libp2p/issues/2031)) ([5294f14](https://www.github.com/libp2p/js-libp2p/commit/5294f14caa314bb150554afff3a7ff45d2bf17ba))
+
 ### [4.0.2](https://www.github.com/libp2p/js-libp2p/compare/utils-v4.0.1...utils-v4.0.2) (2023-08-14)
 
 

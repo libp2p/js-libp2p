@@ -1,30 +1,39 @@
 import { CodeError } from '@libp2p/interface/errors'
 import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
-import { cleanup } from '../webrtc/index.js'
-import { initiateConnection, handleIncomingStream } from './handler.js'
+import { DataChannelMuxerFactory } from '../muxer.js'
+import { cleanup, RTCPeerConnection } from '../webrtc/index.js'
+import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
-import type { DataChannelOpts } from '../stream.js'
+import { handleIncomingStream } from './signaling-stream-handler.js'
+import type { DataChannelOptions } from '../index.js'
+import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { Connection } from '@libp2p/interface/connection'
 import type { PeerId } from '@libp2p/interface/peer-id'
+import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
 import type { Startable } from '@libp2p/interface/startable'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { ConnectionManager } from '@libp2p/interface-internal/src/connection-manager/index.js'
 import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-
-const log = logger('libp2p:webrtc:peer')
 
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
-const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
-const WEBRTC_CODE = protocols('webrtc').code
+export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
+const INBOUND_CONNECTION_TIMEOUT = 30 * 1000
 
 export interface WebRTCTransportInit {
   rtcConfiguration?: RTCConfiguration
-  dataChannel?: Partial<DataChannelOpts>
+  dataChannel?: DataChannelOptions
+
+  /**
+   * Inbound connections must complete the upgrade within this many ms
+   * (default: 30s)
+   */
+  inboundConnectionTimeout?: number
 }
 
 export interface WebRTCTransportComponents {
@@ -32,15 +41,41 @@ export interface WebRTCTransportComponents {
   registrar: Registrar
   upgrader: Upgrader
   transportManager: TransportManager
+  connectionManager: ConnectionManager
+  metrics?: Metrics
+  logger: ComponentLogger
+}
+
+export interface WebRTCTransportMetrics {
+  dialerEvents: CounterGroup
+  listenerEvents: CounterGroup
 }
 
 export class WebRTCTransport implements Transport, Startable {
+  private readonly log: Logger
   private _started = false
+  private readonly metrics?: WebRTCTransportMetrics
+  private readonly shutdownController: AbortController
 
   constructor (
     private readonly components: WebRTCTransportComponents,
     private readonly init: WebRTCTransportInit = {}
   ) {
+    this.log = components.logger.forComponent('libp2p:webrtc')
+    this.shutdownController = new AbortController()
+
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebRTC dialer events by type'
+        }),
+        listenerEvents: components.metrics.registerCounterGroup('libp2p_webrtc_listener_events_total', {
+          label: 'event',
+          help: 'Total count of WebRTC listener events by type'
+        })
+      }
+    }
   }
 
   isStarted (): boolean {
@@ -49,7 +84,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
-      this._onProtocol(data).catch(err => { log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+      this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
     }, {
       runOnTransientConnection: true
     })
@@ -63,7 +98,9 @@ export class WebRTCTransport implements Transport, Startable {
   }
 
   createListener (options: CreateListenerOptions): Listener {
-    return new WebRTCPeerListener(this.components)
+    return new WebRTCPeerListener(this.components, {
+      shutdownController: this.shutdownController
+    })
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/webrtc'
@@ -71,10 +108,7 @@ export class WebRTCTransport implements Transport, Startable {
   readonly [symbol] = true
 
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter((ma) => {
-      const codes = ma.protoCodes()
-      return codes.includes(WEBRTC_CODE)
-    })
+    return multiaddrs.filter(WebRTC.exactMatch)
   }
 
   /*
@@ -85,79 +119,100 @@ export class WebRTCTransport implements Transport, Startable {
    * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
   */
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    log.trace('dialing address: ', ma)
-    const { baseAddr, peerId } = splitAddr(ma)
+    this.log.trace('dialing address: %a', ma)
 
-    if (options.signal == null) {
-      const controller = new AbortController()
-      options.signal = controller.signal
-    }
-
-    const connection = await this.components.transportManager.dial(baseAddr, options)
-    const signalingStream = await connection.newStream(SIGNALING_PROTO_ID, {
-      ...options,
-      runOnTransientConnection: true
+    const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory(this.components, {
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
     })
 
-    try {
-      const { pc, muxerFactory, remoteAddress } = await initiateConnection({
-        stream: signalingStream,
-        rtcConfiguration: this.init.rtcConfiguration,
-        dataChannelOptions: this.init.dataChannel,
-        signal: options.signal
-      })
+    const { remoteAddress } = await initiateConnection({
+      peerConnection,
+      multiaddr: ma,
+      dataChannelOptions: this.init.dataChannel,
+      signal: options.signal,
+      connectionManager: this.components.connectionManager,
+      transportManager: this.components.transportManager,
+      log: this.log
+    })
 
-      const result = await options.upgrader.upgradeOutbound(
-        new WebRTCMultiaddrConnection({
-          peerConnection: pc,
-          timeline: { open: Date.now() },
-          remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`)
-        }),
-        {
-          skipProtection: true,
-          skipEncryption: true,
-          muxerFactory
-        }
-      )
+    const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
+      peerConnection,
+      timeline: { open: Date.now() },
+      remoteAddr: remoteAddress,
+      metrics: this.metrics?.dialerEvents
+    })
 
-      // close the stream if SDP has been exchanged successfully
-      await signalingStream.close()
-      return result
-    } catch (err: any) {
-      // reset the stream in case of any error
-      signalingStream.abort(err)
-      throw err
-    } finally {
-      // Close the signaling connection
-      await connection.close()
-    }
+    const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
+      skipProtection: true,
+      skipEncryption: true,
+      muxerFactory
+    })
+
+    // close the connection on shut down
+    this._closeOnShutdown(peerConnection, webRTCConn)
+
+    return connection
   }
 
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
+    const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
+    const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory(this.components, {
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
+    })
+
     try {
-      const { pc, muxerFactory, remoteAddress } = await handleIncomingStream({
-        rtcConfiguration: this.init.rtcConfiguration,
+      const { remoteAddress } = await handleIncomingStream({
+        peerConnection,
         connection,
         stream,
-        dataChannelOptions: this.init.dataChannel
+        signal,
+        log: this.log
       })
 
-      await this.components.upgrader.upgradeInbound(new WebRTCMultiaddrConnection({
-        peerConnection: pc,
+      const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
+        peerConnection,
         timeline: { open: (new Date()).getTime() },
-        remoteAddr: multiaddr(remoteAddress).encapsulate(`/p2p/${connection.remotePeer.toString()}`)
-      }), {
+        remoteAddr: remoteAddress,
+        metrics: this.metrics?.listenerEvents
+      })
+
+      // close the connection on shut down
+      this._closeOnShutdown(peerConnection, webRTCConn)
+
+      await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
         muxerFactory
       })
+
+      // close the stream if SDP messages have been exchanged successfully
+      await stream.close({
+        signal
+      })
     } catch (err: any) {
       stream.abort(err)
       throw err
-    } finally {
-      // Close the signaling connection
-      await connection.close()
     }
+  }
+
+  private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: WebRTCMultiaddrConnection): void {
+    // close the connection on shut down
+    const shutDownListener = (): void => {
+      webRTCConn.close()
+        .catch(err => {
+          this.log.error('could not close WebRTCMultiaddrConnection', err)
+        })
+    }
+
+    this.shutdownController.signal.addEventListener('abort', shutDownListener)
+
+    pc.addEventListener('close', () => {
+      this.shutdownController.signal.removeEventListener('abort', shutDownListener)
+    })
   }
 }
 
