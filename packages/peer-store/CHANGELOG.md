@@ -11,6 +11,26 @@
 
 * **dev:** bump p-event from 5.0.1 to 6.0.0 ([#89](https://github.com/libp2p/js-libp2p-peer-store/issues/89)) ([9d96700](https://github.com/libp2p/js-libp2p-peer-store/commit/9d9670048b5e8feeac656cba92cb2e513e4a77be))
 
+### [9.0.10](https://www.github.com/libp2p/js-libp2p/compare/peer-store-v9.0.9...peer-store-v9.0.10) (2023-11-28)
+
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-collections bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+    * @libp2p/peer-record bumped from ^6.0.9 to ^6.0.10
+  * devDependencies
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [9.0.9](https://www.github.com/libp2p/js-libp2p/compare/peer-store-v9.0.8...peer-store-v9.0.9) (2023-11-07)
 
 
