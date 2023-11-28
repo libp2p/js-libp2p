@@ -13,9 +13,7 @@ import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
 import { hasRelay } from './fixtures/utils.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Libp2p, Connection, PeerId } from '@libp2p/interface'
 
 describe('circuit-relay', () => {
   let local: Libp2p
@@ -31,6 +29,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],
@@ -57,6 +56,7 @@ describe('circuit-relay', () => {
           circuitRelayTransport()
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],

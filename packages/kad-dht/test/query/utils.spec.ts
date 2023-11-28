@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'

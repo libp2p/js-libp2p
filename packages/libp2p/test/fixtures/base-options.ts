@@ -22,6 +22,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       circuitRelayTransport()
     ],
     streamMuxers: [
+      // @ts-expect-error TODO: yamux needs to be upgraded
       yamux(),
       mplex()
     ],

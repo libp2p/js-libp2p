@@ -1,14 +1,10 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import Queue from 'p-queue'
 import * as utils from '../utils.js'
 import { KBucket, type PingEventDetails } from './k-bucket.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Metric, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { ComponentLogger, Logger, Metric, Metrics, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50

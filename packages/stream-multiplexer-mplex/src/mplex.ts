@@ -1,4 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+/* eslint-disable complexity */
+
+import { CodeError } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import { pipe } from 'it-pipe'
 import { type Pushable, pushable } from 'it-pushable'
@@ -8,10 +10,8 @@ import { Decoder } from './decode.js'
 import { encode } from './encode.js'
 import { MessageTypes, MessageTypeNames, type Message } from './message-types.js'
 import { createStream, type MplexStream } from './stream.js'
-import type { MplexInit } from './index.js'
-import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
-import type { StreamMuxer, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { MplexComponents, MplexInit } from './index.js'
+import type { AbortOptions, ComponentLogger, Logger, Stream, StreamMuxer, StreamMuxerInit } from '@libp2p/interface'
 import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -36,10 +36,6 @@ function printMessage (msg: Message): any {
   }
 
   return output
-}
-
-export interface MplexComponents {
-  logger: ComponentLogger
 }
 
 interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {

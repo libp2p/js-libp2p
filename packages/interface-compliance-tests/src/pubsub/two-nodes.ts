@@ -1,6 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 6] */
-import { TopicValidatorResult } from '@libp2p/interface/pubsub'
-import { start, stop } from '@libp2p/interface/startable'
+import { TopicValidatorResult, start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
@@ -11,7 +10,7 @@ import { mockNetwork } from '../mocks/index.js'
 import { createComponents, waitForSubscriptionUpdate } from './utils.js'
 import type { PubSubArgs, PubSubComponents } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Message, PubSub } from '@libp2p/interface/pubsub'
+import type { Message, PubSub } from '@libp2p/interface'
 
 const topic = 'foo'
 

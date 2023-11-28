@@ -20,14 +20,11 @@
  * ```
  */
 
-import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface/errors'
+import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
 import { Exchange, KeyType } from './pb/proto.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

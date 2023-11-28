@@ -1,16 +1,12 @@
-import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 const DEFAULT_TIMEOUT = 10000
 

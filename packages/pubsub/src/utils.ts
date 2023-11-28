@@ -1,11 +1,11 @@
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { codes } from './errors.js'
-import type { Message, PubSubRPCMessage } from '@libp2p/interface/pubsub'
+import type { Message, PubSubRPCMessage } from '@libp2p/interface'
 
 /**
  * Generate a random sequence number

@@ -25,6 +25,7 @@ describe('circuit-relay discovery', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()
       ],
       connectionEncryption: [
@@ -58,6 +59,7 @@ describe('circuit-relay discovery', () => {
           })
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux()
         ],
         connectionEncryption: [
@@ -78,6 +80,7 @@ describe('circuit-relay discovery', () => {
           })
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux()
         ],
         connectionEncryption: [

@@ -3,7 +3,7 @@
 import {
   InvalidCryptoExchangeError,
   UnexpectedPeerError
-} from '@libp2p/interface/errors'
+} from '@libp2p/interface'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
@@ -12,8 +12,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { plaintext } from '../src/index.js'
-import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 describe('plaintext', () => {
   let localPeer: PeerId

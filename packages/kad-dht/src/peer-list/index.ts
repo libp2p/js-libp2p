@@ -1,4 +1,4 @@
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 /**
  * A list of unique peers.

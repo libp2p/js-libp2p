@@ -1,5 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { symbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader } from '@libp2p/interface/transport'
+import { CodeError, transportSymbol } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
@@ -11,15 +10,8 @@ import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager/index.js'
+import type { AbortOptions, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Transport, CreateListenerOptions, Listener, Upgrader } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const isValidStop = (request: StopMessage): request is Required<StopMessage> => {
@@ -136,7 +128,7 @@ export class CircuitRelayTransport implements Transport {
     this.started = false
   }
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = 'libp2p/circuit-relay-v2'
 

@@ -1,9 +1,6 @@
 import { unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
+import { type ContentRouting, contentRoutingSymbol, type PeerRouting, peerRoutingSymbol, type Libp2pEvents, type PendingDial, type ServiceMap, type AbortOptions, type ComponentLogger, type Logger, type Connection, type NewStreamOptions, type Stream, type Metrics, type PeerId, type PeerInfo, type PeerStore, type Topology } from '@libp2p/interface'
+import { CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -27,14 +24,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection, NewStreamOptions, Stream } from '@libp2p/interface/connection'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal/registrar'
+import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
@@ -172,19 +162,19 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         this.services[name as keyof T] = service
         this.configureComponent(name, service)
 
-        if (service[contentRouting] != null) {
+        if (service[contentRoutingSymbol] != null) {
           this.log('registering service %s for content routing', name)
-          contentRouters.push(service[contentRouting])
+          contentRouters.push(service[contentRoutingSymbol])
         }
 
-        if (service[peerRouting] != null) {
+        if (service[peerRoutingSymbol] != null) {
           this.log('registering service %s for peer routing', name)
-          peerRouters.push(service[peerRouting])
+          peerRouters.push(service[peerRoutingSymbol])
         }
 
-        if (service[peerDiscovery] != null) {
+        if (service[peerDiscoverySymbol] != null) {
           this.log('registering service %s for peer discovery', name)
-          service[peerDiscovery].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
+          service[peerDiscoverySymbol].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
         }

@@ -1,6 +1,6 @@
-import { noise as Noise } from '@chainsafe/libp2p-noise'
-import { type CreateListenerOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
-import * as p from '@libp2p/peer-id'
+import { noise } from '@chainsafe/libp2p-noise'
+import { transportSymbol } from '@libp2p/interface'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as multihashes from 'multihashes'
@@ -15,11 +15,8 @@ import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
-import type { DataChannelOptions } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { WebRTCDirectTransportComponents, WebRTCTransportDirectInit } from '../index.js'
+import type { Logger, Connection, CounterGroup, CreateListenerOptions, Transport, Listener } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -41,21 +38,8 @@ export const WEBRTC_CODE: number = protocols('webrtc-direct').code
  */
 export const CERTHASH_CODE: number = protocols('certhash').code
 
-/**
- * The peer for this transport
- */
-export interface WebRTCDirectTransportComponents {
-  peerId: PeerId
-  metrics?: Metrics
-  logger: ComponentLogger
-}
-
 export interface WebRTCMetrics {
   dialerEvents: CounterGroup
-}
-
-export interface WebRTCTransportDirectInit {
-  dataChannel?: DataChannelOptions
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -108,7 +92,7 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Symbol.for('@libp2p/transport')
    */
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   /**
    * Connect to a peer using a multiaddr
@@ -121,7 +105,7 @@ export class WebRTCDirectTransport implements Transport {
     if (remotePeerString === null) {
       throw inappropriateMultiaddr("we need to have the remote's PeerId")
     }
-    const theirPeerId = p.peerIdFromString(remotePeerString)
+    const theirPeerId = peerIdFromString(remotePeerString)
 
     const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
 
@@ -193,7 +177,7 @@ export class WebRTCDirectTransport implements Transport {
 
       // Since we use the default crypto interface and do not use a static key or early data,
       // we pass in undefined for these parameters.
-      const noise = Noise({ prologueBytes: fingerprintsPrologue })()
+      const encrypter = noise({ prologueBytes: fingerprintsPrologue })()
 
       const wrappedChannel = createStream({
         channel: handshakeDataChannel,
@@ -254,7 +238,7 @@ export class WebRTCDirectTransport implements Transport {
 
       // For outbound connections, the remote is expected to start the noise handshake.
       // Therefore, we need to secure an inbound noise connection from the remote.
-      await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+      await encrypter.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
 
       return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
     } catch (err) {

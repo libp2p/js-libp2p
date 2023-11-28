@@ -18,6 +18,10 @@ export class AbortError extends Error {
   static readonly type = 'aborted'
 }
 
+/**
+ * An {@see Error } subclass that defines a `.code` property that calling code
+ * can use to detect what type of error has been thrown and act accordingly.
+ */
 export class CodeError<T extends Record<string, any> = Record<string, never>> extends Error {
   public readonly props: T
 
@@ -55,20 +59,22 @@ export class InvalidCryptoExchangeError extends Error {
   static readonly code = 'ERR_INVALID_CRYPTO_EXCHANGE'
 }
 
-export class InvalidCryptoTransmissionError extends Error {
-  public code: string
-
-  constructor (message = 'Invalid crypto transmission') {
-    super(message)
-    this.code = InvalidCryptoTransmissionError.code
-  }
-
-  static readonly code = 'ERR_INVALID_CRYPTO_TRANSMISSION'
-}
-
-// Error codes
-
+/**
+ * A generic error code indicating that a timeout occurred
+ */
 export const ERR_TIMEOUT = 'ERR_TIMEOUT'
+
+/**
+ * A generic error code indicating that invalid paramters were passed
+ */
 export const ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS'
+
+/**
+ * A generic error code indicating that something was not found
+ */
 export const ERR_NOT_FOUND = 'ERR_NOT_FOUND'
+
+/**
+ * A generic error code indicating that the message was invalid
+ */
 export const ERR_INVALID_MESSAGE = 'ERR_INVALID_MESSAGE'

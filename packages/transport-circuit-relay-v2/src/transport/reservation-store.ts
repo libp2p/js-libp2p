@@ -1,4 +1,4 @@
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type AbortOptions, type ComponentLogger, type Logger, type Connection, type PeerId, type PeerStore, type Startable } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -8,13 +8,7 @@ import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
 const REFRESH_WINDOW = (60 * 1000) * 10

@@ -77,8 +77,23 @@
  */
 
 import { MulticastDNS } from './mdns.js'
-import type { MulticastDNSInit, MulticastDNSComponents } from './mdns.js'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
+import type { ComponentLogger, PeerDiscovery } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
+
+export interface MulticastDNSInit {
+  broadcast?: boolean
+  interval?: number
+  serviceTag?: string
+  peerName?: string
+  port?: number
+  ip?: string
+}
+
+export interface MulticastDNSComponents {
+  addressManager: AddressManager
+  logger: ComponentLogger
+
+}
 
 export function mdns (init: MulticastDNSInit = {}): (components: MulticastDNSComponents) => PeerDiscovery {
   return (components: MulticastDNSComponents) => new MulticastDNS(components, init)

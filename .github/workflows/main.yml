@@ -222,6 +222,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      pull-requests: write
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release

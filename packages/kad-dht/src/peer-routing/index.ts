@@ -1,5 +1,5 @@
 import { keys } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Message, MESSAGE_TYPE } from '../message/index.js'
@@ -17,9 +17,7 @@ import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { AbortOptions, Logger, PeerId, PeerInfo } from '@libp2p/interface'
 import type { PeerStore } from '@libp2p/interface/src/peer-store/index.js'
 
 export interface PeerRoutingInit {

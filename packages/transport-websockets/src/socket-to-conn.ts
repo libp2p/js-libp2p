@@ -1,7 +1,6 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { CLOSE_TIMEOUT } from './constants.js'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
+import type { AbortOptions, ComponentLogger, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 

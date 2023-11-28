@@ -12,7 +12,7 @@
 
 import 'node-forge/lib/asn1.js'
 import 'node-forge/lib/pbe.js'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -23,7 +23,7 @@ import { keyStretcher } from './key-stretcher.js'
 import * as keysPBM from './keys.js'
 import * as RSA from './rsa-class.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey } from '@libp2p/interface/keys'
+import type { PrivateKey, PublicKey } from '@libp2p/interface'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }

@@ -57,7 +57,7 @@
  */
 
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { byteStream } from 'it-byte-stream'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
@@ -69,8 +69,7 @@ import {
 } from './crypto.js'
 import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface/connection'
+import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { generateKey } from './key-generator.js'

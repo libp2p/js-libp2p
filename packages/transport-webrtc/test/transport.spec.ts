@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import { type CreateListenerOptions, symbol } from '@libp2p/interface/transport'
+import { type CreateListenerOptions, transportSymbol, type Metrics } from '@libp2p/interface'
 import { mockMetrics, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { UnimplementedError } from '../src/error.js'
-import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { expectError } from './util.js'
-import type { Metrics } from '@libp2p/interface/metrics'
+import type { WebRTCDirectTransportComponents } from '../src/index.js'
 
 function ignoredDialOption (): CreateListenerOptions {
   const upgrader = mockUpgrader({})
@@ -61,7 +61,7 @@ describe('WebRTCDirect Transport', () => {
 
   it('symbol property getter', () => {
     const t = new WebRTCDirectTransport(components)
-    const s = t[symbol]
+    const s = t[transportSymbol]
     expect(s).to.equal(true)
   })
 

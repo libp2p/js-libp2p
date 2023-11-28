@@ -22,18 +22,14 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
-import { type Multiaddr, type AbortOptions } from '@multiformats/multiaddr'
+import { transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
+import type { ComponentLogger, Logger, Connection, MultiaddrConnection, Stream, CounterGroup, Metrics, PeerId, StreamMuxerFactory, StreamMuxerInit, StreamMuxer, Transport, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface'
+import type { Multiaddr, AbortOptions } from '@multiformats/multiaddr'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -81,7 +77,7 @@ class WebTransportTransport implements Transport {
 
   readonly [Symbol.toStringTag] = '@libp2p/webtransport'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     options?.signal?.throwIfAborted()

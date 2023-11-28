@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
@@ -13,9 +13,7 @@ import { Libp2pRecord } from '../../../src/record/index.js'
 import { GetValueHandler, type GetValueHandlerComponents } from '../../../src/rpc/handlers/get-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { SinonStubbedInstance } from 'sinon'
 

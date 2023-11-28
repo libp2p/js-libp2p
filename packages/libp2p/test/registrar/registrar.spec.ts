@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type ConnectionGater, type PeerId, type PeerStore, type Topology } from '@libp2p/interface'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -19,14 +19,7 @@ import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultRegistrar } from '../../src/registrar.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 const protocol = '/test/1.0.0'
 
@@ -409,6 +402,7 @@ describe('registrar', () => {
           webSockets()
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],

@@ -36,7 +36,7 @@
  * - `filters.dnsWsOrWss`
  *   - Returns all DNS based addresses, both with `ws` or `wss`.
  *
- * @example
+ * @example How to allow connecting to insecure addresses
  *
  * ```js
  * import { createLibp2pNode } from 'libp2p'
@@ -63,8 +63,7 @@
  * ```
  */
 
-import { AbortError, CodeError } from '@libp2p/interface/errors'
-import { type Transport, type MultiaddrFilter, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
+import { transportSymbol, AbortError, CodeError } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
@@ -72,8 +71,7 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
+import type { AbortOptions, ComponentLogger, Logger, Connection, Transport, MultiaddrFilter, CreateListenerOptions, DialOptions, Listener } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -102,7 +100,7 @@ class WebSockets implements Transport {
 
   readonly [Symbol.toStringTag] = '@libp2p/websockets'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     this.log('dialing %s', ma)

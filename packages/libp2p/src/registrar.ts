@@ -1,13 +1,8 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal/registrar'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
+import type { ConnectionManager, StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32

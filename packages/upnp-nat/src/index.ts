@@ -36,10 +36,8 @@
  */
 
 import { UPnPNAT } from './upnp-nat.js'
-import type { ComponentLogger, NodeInfo } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ComponentLogger, NodeInfo, PeerId } from '@libp2p/interface'
+import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
 
 export interface PMPOptions {
   /**

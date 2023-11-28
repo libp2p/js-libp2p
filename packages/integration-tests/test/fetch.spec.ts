@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { type Fetch, fetch } from '@libp2p/fetch'
-import { ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
+import { ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { isWebWorker } from 'wherearewe'

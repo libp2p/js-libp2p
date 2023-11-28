@@ -35,7 +35,7 @@
  */
 
 import type { Limit } from './pb/index.js'
-import type { TypedEventEmitter } from '@libp2p/interface/events'
+import type { TypedEventEmitter } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -55,8 +55,8 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
   reservations: PeerMap<RelayReservation>
 }
 
-export { circuitRelayServer } from './server/index.js'
-export { circuitRelayTransport } from './transport/index.js'
+export { circuitRelayServer, type CircuitRelayServerInit, type CircuitRelayServerComponents } from './server/index.js'
+export { circuitRelayTransport, type CircuitRelayTransportInit, type CircuitRelayTransportComponents } from './transport/index.js'
 
 export {
   RELAY_V2_HOP_CODEC,

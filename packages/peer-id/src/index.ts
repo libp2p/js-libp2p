@@ -14,8 +14,7 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface/errors'
-import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, symbol, type PeerId } from '@libp2p/interface/peer-id'
+import { CodeError, peerIdSymbol } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { bases } from 'multiformats/basics'
 import { CID } from 'multiformats/cid'
@@ -23,10 +22,11 @@ import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import type { Ed25519PeerId, PeerIdType, RSAPeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-const inspect = Symbol.for('nodejs.util.inspect.custom')
+const inspectSymbol = Symbol.for('nodejs.util.inspect.custom')
 
 const baseDecoder = Object
   .values(bases)
@@ -85,7 +85,7 @@ class PeerIdImpl {
     return `PeerId(${this.toString()})`
   }
 
-  readonly [symbol] = true
+  readonly [peerIdSymbol] = true
 
   toString (): string {
     if (this.string == null) {
@@ -139,7 +139,7 @@ class PeerIdImpl {
    * // 'PeerId(QmFoo)'
    * ```
    */
-  [inspect] (): string {
+  [inspectSymbol] (): string {
     return `PeerId(${this.toString()})`
   }
 }

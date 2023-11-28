@@ -1,10 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { CID } from 'multiformats/cid'
 import type { Message } from '../../message/index.js'
 import type { Providers } from '../../providers'
 import type { DHTMessageHandler } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 export interface AddProviderComponents {
   logger: ComponentLogger

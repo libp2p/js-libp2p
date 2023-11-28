@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { start } from '@libp2p/interface/startable'
+import { ERR_TIMEOUT, start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -12,10 +11,8 @@ import pDefer from 'p-defer'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PING_PROTOCOL } from '../src/constants.js'
 import { PingService } from '../src/ping.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { Stream, Connection } from '@libp2p/interface/connection'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 interface StubbedPingServiceComponents {
   registrar: StubbedInstance<Registrar>

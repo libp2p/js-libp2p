@@ -42,21 +42,16 @@
  * const libp2p = await createLibp2p(options)
  *
  * libp2p.on('peer:discovery', function (peerId) {
- *   console.this.log('found peer: ', peerId.toB58String())
+ *   console.log('found peer: ', peerId.toB58String())
  * })
  * ```
  */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
+import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
 
 const DEFAULT_BOOTSTRAP_TAG_NAME = 'bootstrap'
 const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
@@ -144,7 +139,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     this._init = options
   }
 
-  readonly [peerDiscovery] = this
+  readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
 

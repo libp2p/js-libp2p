@@ -13,6 +13,7 @@ describe('libp2p-webtransport', () => {
   beforeEach(async () => {
     node = await createLibp2p({
       transports: [webTransport()],
+      // @ts-expect-error TODO: noise needs to be upgraded
       connectionEncryption: [noise()],
       connectionGater: {
         denyDialMultiaddr: async () => false
