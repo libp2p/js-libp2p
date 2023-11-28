@@ -42,7 +42,7 @@
  * const libp2p = await createLibp2p(options)
  *
  * libp2p.on('peer:discovery', function (peerId) {
- *   console.this.log('found peer: ', peerId.toB58String())
+ *   console.log('found peer: ', peerId.toB58String())
  * })
  * ```
  */

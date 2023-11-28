@@ -23,7 +23,7 @@
  *
  * node.pubsub.subscribe('fruit')
  * node.pubsub.addEventListener('message', (evt) => {
- *   console.this.log(evt)
+ *   console.log(evt)
  * })
  *
  * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
