@@ -14,7 +14,7 @@ export function generateKey (): Uint8Array {
 /**
  * Hash and sign message with private key
  */
-export async function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
   const hash = crypto.createHash('sha256')
 
   if (msg instanceof Uint8Array) {
@@ -38,7 +38,7 @@ export async function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8Array
 /**
  * Hash message and verify signature with public key
  */
-export async function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
   const hash = crypto.createHash('sha256')
 
   if (msg instanceof Uint8Array) {

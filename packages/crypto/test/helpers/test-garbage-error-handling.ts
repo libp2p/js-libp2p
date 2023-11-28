@@ -4,7 +4,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 const garbage = [uint8ArrayFromString('00010203040506070809', 'base16'), {}, null, false, undefined, true, 1, 0, uint8ArrayFromString(''), 'aGVsbG93b3JsZA==', 'helloworld', '']
 
-export function testGarbage (fncName: string, fnc: (...args: Uint8Array[]) => Promise<any>, num?: number, skipBuffersAndStrings?: boolean): void {
+export function testGarbage (fncName: string, fnc: (...args: Uint8Array[]) => any | Promise<any>, num?: number, skipBuffersAndStrings?: boolean): void {
   const count = num ?? 1
 
   garbage.forEach((garbage) => {

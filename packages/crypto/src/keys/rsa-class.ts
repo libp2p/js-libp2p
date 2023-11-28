@@ -5,6 +5,7 @@ import forge from 'node-forge/lib/forge.js'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import 'node-forge/lib/sha512.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isPromise } from '../util.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
@@ -20,7 +21,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): Promise<boolean> {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -39,14 +40,18 @@ export class RsaPublicKey {
     return crypto.encrypt(this._key, bytes)
   }
 
-  equals (key: any): boolean {
+  equals (key: any): boolean | boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 }
 
@@ -63,7 +68,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -94,10 +99,14 @@ export class RsaPrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 
   /**

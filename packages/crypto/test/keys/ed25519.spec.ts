@@ -57,8 +57,8 @@ describe('ed25519', function () {
 
   it('signs', async () => {
     const text = crypto.randomBytes(512)
-    const sig = await key.sign(text)
-    const res = await key.public.verify(text, sig)
+    const sig = key.sign(text)
+    const res = key.public.verify(text, sig)
     expect(res).to.be.eql(true)
   })
 
@@ -67,15 +67,15 @@ describe('ed25519', function () {
       crypto.randomBytes(512),
       crypto.randomBytes(512)
     )
-    const sig = await key.sign(text)
+    const sig = key.sign(text)
 
-    await expect(key.sign(text.subarray()))
-      .to.eventually.deep.equal(sig, 'list did not have same signature as a single buffer')
+    expect(key.sign(text.subarray()))
+      .to.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    await expect(key.public.verify(text, sig))
-      .to.eventually.be.true('did not verify message as list')
-    await expect(key.public.verify(text.subarray(), sig))
-      .to.eventually.be.true('did not verify message as single buffer')
+    expect(key.public.verify(text, sig))
+      .to.be.true('did not verify message as list')
+    expect(key.public.verify(text.subarray(), sig))
+      .to.be.true('did not verify message as single buffer')
   })
 
   it('encoding', () => {
@@ -178,8 +178,8 @@ describe('ed25519', function () {
 
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = await key.sign(data)
-    const valid = await key.public.verify(data, sig)
+    const sig = key.sign(data)
+    const valid = key.public.verify(data, sig)
     expect(valid).to.eql(true)
   })
 
@@ -194,8 +194,8 @@ describe('ed25519', function () {
 
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = await key.sign(data)
-    const valid = await key.public.verify(uint8ArrayFromString('hello'), sig)
+    const sig = key.sign(data)
+    const valid = key.public.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.eql(false)
   })
 
