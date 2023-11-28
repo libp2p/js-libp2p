@@ -2,7 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -28,12 +28,7 @@ import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
-import type { Upgrader } from '@libp2p/interface/transport'
+import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader } from '@libp2p/interface'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -79,6 +74,7 @@ describe('Upgrader', () => {
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
     localMuxerFactory = mplex()(localComponents)
+    // @ts-expect-error TODO: yamux needs to be upgraded
     localYamuxerFactory = yamux()()
     localConnectionEncrypter = plaintext()(localComponents)
     localUpgrader = new DefaultUpgrader(localComponents, {
@@ -106,6 +102,7 @@ describe('Upgrader', () => {
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
     remoteMuxerFactory = mplex()(remoteComponents)
+    // @ts-expect-error TODO: yamux needs to be upgraded
     remoteYamuxerFactory = yamux()()
     remoteConnectionEncrypter = plaintext()(remoteComponents)
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
@@ -288,6 +285,7 @@ describe('Upgrader', () => {
         plaintext()(localComponents)
       ],
       muxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()()
       ],
       inboundUpgradeTimeout: 1000
@@ -297,6 +295,7 @@ describe('Upgrader', () => {
         plaintext()(localComponents)
       ],
       muxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()()
       ],
       inboundUpgradeTimeout: 1000
@@ -368,6 +367,7 @@ describe('Upgrader', () => {
         plaintext()(localComponents)
       ],
       muxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()(),
         mplex()(localComponents)
       ],
@@ -638,6 +638,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -669,6 +670,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -690,6 +692,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -737,6 +740,7 @@ describe('libp2p.upgrader', () => {
         circuitRelayTransport()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -756,6 +760,7 @@ describe('libp2p.upgrader', () => {
         circuitRelayTransport()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -883,6 +888,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()
       ],
       connectionEncryption: [
@@ -902,6 +908,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()
       ],
       connectionEncryption: [
@@ -959,6 +966,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()
       ],
       connectionEncryption: [
@@ -978,6 +986,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux()
       ],
       connectionEncryption: [

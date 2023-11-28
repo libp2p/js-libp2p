@@ -21,9 +21,8 @@ import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay, usingAsRelayCount } from './fixtures/utils.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2p, Connection } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 
 const DEFAULT_DATA_LIMIT = BigInt(1 << 17)
 
@@ -37,6 +36,7 @@ async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
       circuitRelayTransport()
     ],
     streamMuxers: [
+      // @ts-expect-error TODO: yamux needs to be upgraded
       yamux(),
       mplex()
     ],
@@ -63,6 +63,7 @@ async function createRelay (options: Libp2pOptions = {}): Promise<Libp2p<{ relay
       circuitRelayTransport()
     ],
     streamMuxers: [
+      // @ts-expect-error TODO: yamux needs to be upgraded
       yamux(),
       mplex()
     ],

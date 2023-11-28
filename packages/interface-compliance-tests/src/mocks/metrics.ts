@@ -1,5 +1,4 @@
-import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
-import type { Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions } from '@libp2p/interface/metrics'
+import type { MultiaddrConnection, Stream, Connection, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions } from '@libp2p/interface'
 
 class DefaultMetric implements Metric {
   public value: number = 0

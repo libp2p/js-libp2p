@@ -10,9 +10,8 @@ import {
   MockRegistrar,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface/pubsub'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { PeerId, PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 class PubsubProtocol extends PubSubBaseProtocol {

@@ -1,5 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
+import { CodeError, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
@@ -10,41 +9,14 @@ import { cleanup, RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
-import type { DataChannelOptions } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type { ConnectionManager } from '@libp2p/interface-internal/src/connection-manager/index.js'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { WebRTCTransportComponents, WebRTCTransportInit } from '../index.js'
+import type { Logger, Connection, CounterGroup, PeerId, Startable, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
 export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
 const INBOUND_CONNECTION_TIMEOUT = 30 * 1000
-
-export interface WebRTCTransportInit {
-  rtcConfiguration?: RTCConfiguration
-  dataChannel?: DataChannelOptions
-
-  /**
-   * Inbound connections must complete the upgrade within this many ms
-   * (default: 30s)
-   */
-  inboundConnectionTimeout?: number
-}
-
-export interface WebRTCTransportComponents {
-  peerId: PeerId
-  registrar: Registrar
-  upgrader: Upgrader
-  transportManager: TransportManager
-  connectionManager: ConnectionManager
-  metrics?: Metrics
-  logger: ComponentLogger
-}
 
 export interface WebRTCTransportMetrics {
   dialerEvents: CounterGroup
@@ -105,7 +77,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   readonly [Symbol.toStringTag] = '@libp2p/webrtc'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTC.exactMatch)

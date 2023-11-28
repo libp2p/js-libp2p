@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-internal",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Interfaces implemented by internal libp2p components",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal#readme",
@@ -47,26 +47,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./address-manager": {
-      "types": "./dist/src/address-manager/index.d.ts",
-      "import": "./dist/src/address-manager/index.js"
-    },
-    "./connection-manager": {
-      "types": "./dist/src/connection-manager/index.d.ts",
-      "import": "./dist/src/connection-manager/index.js"
-    },
-    "./record": {
-      "types": "./dist/src/record/index.d.ts",
-      "import": "./dist/src/record/index.js"
-    },
-    "./registrar": {
-      "types": "./dist/src/registrar/index.d.ts",
-      "import": "./dist/src/registrar/index.js"
-    },
-    "./transport-manager": {
-      "types": "./dist/src/transport-manager/index.d.ts",
-      "import": "./dist/src/transport-manager/index.js"
     }
   },
   "eslintConfig": {
@@ -83,8 +63,8 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.6",
-    "@libp2p/peer-collections": "^4.0.8",
+    "@libp2p/interface": "^1.0.0",
+    "@libp2p/peer-collections": "^4.0.9",
     "@multiformats/multiaddr": "^12.1.10",
     "uint8arraylist": "^2.4.3"
   },

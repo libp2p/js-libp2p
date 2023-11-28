@@ -1,9 +1,8 @@
 import { pushable } from 'it-pushable'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { Logger, Startable } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Perf implements Startable, PerfInterface {

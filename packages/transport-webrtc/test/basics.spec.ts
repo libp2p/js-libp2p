@@ -17,9 +17,7 @@ import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 import pRetry from 'p-retry'
 import { webRTC } from '../src/index.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { StreamHandler } from '@libp2p/interface/stream-handler'
+import type { Libp2p, Connection, Stream, StreamHandler } from '@libp2p/interface'
 
 async function createNode (): Promise<Libp2p> {
   return createLibp2p({
@@ -37,9 +35,11 @@ async function createNode (): Promise<Libp2p> {
       webRTC()
     ],
     connectionEncryption: [
+      // @ts-expect-error TODO: noise needs to be upgraded
       noise()
     ],
     streamMuxers: [
+      // @ts-expect-error TODO: yamux needs to be upgraded
       yamux()
     ],
     connectionGater: {

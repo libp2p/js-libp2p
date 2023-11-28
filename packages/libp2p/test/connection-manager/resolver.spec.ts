@@ -16,8 +16,7 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Transport } from '@libp2p/interface/transport'
+import type { PeerId, Transport } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
@@ -57,6 +56,7 @@ describe('dialing (resolvable addresses)', () => {
           })
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],
@@ -81,6 +81,7 @@ describe('dialing (resolvable addresses)', () => {
           })
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],

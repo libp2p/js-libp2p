@@ -6,7 +6,7 @@ import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
-import { type StubbedInstance, stubInterface } from 'ts-sinon'
+import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { EventTypes, type QueryEvent } from '../src/index.js'
 import { MESSAGE_TYPE } from '../src/message/index.js'
@@ -21,7 +21,7 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 interface TopologyEntry {
   delay?: number

@@ -5,6 +5,34 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.8...crypto-v3.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove unnecessary async from crypto methods (#1963)
+
+### Features
+
+* support streaming hashes for key sign/verify ([#2255](https://www.github.com/libp2p/js-libp2p/issues/2255)) ([ac7bc38](https://www.github.com/libp2p/js-libp2p/commit/ac7bc3839ae3d8253e9141c52be2c7c0c66a1d60))
+
+
+### Bug Fixes
+
+* allow keys to do sync sign/verify ([#2258](https://www.github.com/libp2p/js-libp2p/issues/2258)) ([dd7d17c](https://www.github.com/libp2p/js-libp2p/commit/dd7d17cc478dfcba02211a47789439b7d7ab9627))
+
+
+### Code Refactoring
+
+* remove unnecessary async from crypto methods ([#1963](https://www.github.com/libp2p/js-libp2p/issues/1963)) ([e2267d4](https://www.github.com/libp2p/js-libp2p/commit/e2267d437eeda3d964c77874ec757768d838981a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+
 ### [2.0.8](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.7...crypto-v2.0.8) (2023-11-07)
 
 

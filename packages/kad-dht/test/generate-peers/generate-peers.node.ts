@@ -5,7 +5,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { createRSAPeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { execa } from 'execa'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import { toString as uintArrayToString } from 'uint8arrays/to-string'
 import which from 'which'
 import { RoutingTable } from '../../src/routing-table/index.js'
@@ -13,8 +13,8 @@ import { RoutingTableRefresh } from '../../src/routing-table/refresh.js'
 import {
   convertPeerId
 } from '../../src/utils.js'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { PeerStore } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 

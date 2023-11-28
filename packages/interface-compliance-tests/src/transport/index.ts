@@ -2,7 +2,7 @@ import dial from './dial-test.js'
 import filter from './filter-test.js'
 import listen from './listen-test.js'
 import type { TestSetup } from '../index.js'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Transport } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface Connector {

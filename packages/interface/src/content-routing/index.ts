@@ -21,7 +21,7 @@ import type { CID } from 'multiformats/cid'
  * }
  * ```
  */
-export const contentRouting = Symbol.for('@libp2p/content-routing')
+export const contentRoutingSymbol = Symbol.for('@libp2p/content-routing')
 
 export interface ContentRouting {
   /**

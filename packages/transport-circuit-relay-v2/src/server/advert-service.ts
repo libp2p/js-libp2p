@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import pRetry from 'p-retry'
 import {
   DEFAULT_ADVERT_BOOT_DELAY,
@@ -6,9 +6,7 @@ import {
   RELAY_RENDEZVOUS_NS
 } from '../constants.js'
 import { namespaceToCid } from '../utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Logger, ContentRouting, Startable } from '@libp2p/interface'
 
 export interface AdvertServiceInit {
   /**

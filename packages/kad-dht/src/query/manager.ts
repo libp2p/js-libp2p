@@ -1,5 +1,4 @@
-import { AbortError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface/events'
+import { AbortError, TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
@@ -12,10 +11,7 @@ import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent, QueryOptions as RootQueryOptions } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { Metric, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Metric, Metrics, PeerId, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {

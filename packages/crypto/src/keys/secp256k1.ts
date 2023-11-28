@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

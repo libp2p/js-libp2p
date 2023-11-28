@@ -1,6 +1,5 @@
 import net from 'net'
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { CodeError, TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
@@ -9,10 +8,7 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { ComponentLogger, Logger, LoggerOptions } from '@libp2p/interface'
-import type { MultiaddrConnection, Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, MetricGroup, Metrics } from '@libp2p/interface/metrics'
-import type { Listener, ListenerEvents, Upgrader } from '@libp2p/interface/transport'
+import type { ComponentLogger, Logger, LoggerOptions, MultiaddrConnection, Connection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**

@@ -1,11 +1,10 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { type Pushable, pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { closeSource } from './close-source.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, WriteStatus } from '@libp2p/interface/connection'
+import type { AbortOptions, Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, WriteStatus } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Source } from 'it-stream-types'
 

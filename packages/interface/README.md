@@ -5,6 +5,20 @@
 
 > The interface implemented by a libp2p node
 
+# About
+
+Exports a `Libp2p` type for modules to use as a type argument.
+
+## Example
+
+```typescript
+import type { Libp2p } from '@libp2p/interface'
+
+function doSomethingWithLibp2p (node: Libp2p) {
+  // ...
+}
+```
+
 # Install
 
 ```console

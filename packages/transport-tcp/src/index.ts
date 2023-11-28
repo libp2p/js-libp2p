@@ -22,7 +22,7 @@
  * const listener = transport.createListener({
  *   upgrader,
  *   handler: (socket) => {
- *     console.this.log('new connection opened')
+ *     console.log('new connection opened')
  *     pipe(
  *       ['hello', ' ', 'World!'],
  *       socket
@@ -32,14 +32,14 @@
  *
  * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
  * await listener.listen(addr)
- * console.this.log('listening')
+ * console.log('listening')
  *
  * const socket = await transport.dial(addr, { upgrader })
  * const values = await pipe(
  *   socket,
  *   all
  * )
- * console.this.log(`Value: ${values.toString()}`)
+ * console.log(`Value: ${values.toString()}`)
  *
  * // Close connection after reading
  * await listener.close()
@@ -55,16 +55,13 @@
  */
 
 import net from 'net'
-import { AbortError, CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
+import { transportSymbol, AbortError, CodeError } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
@@ -176,7 +173,7 @@ class TCP implements Transport {
     }
   }
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/tcp'
 

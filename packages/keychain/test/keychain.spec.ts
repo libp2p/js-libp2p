@@ -12,7 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DefaultKeychain } from '../src/keychain.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 describe('keychain', () => {

@@ -6,9 +6,7 @@ import { stubInterface } from 'sinon-ts'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { PeerDiscovery, PeerId, Startable } from '@libp2p/interface'
 
 describe('peer discovery', () => {
   describe('basic functions', () => {

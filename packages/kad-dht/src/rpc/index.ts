@@ -11,9 +11,8 @@ import type { Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing'
 import type { Providers } from '../providers'
 import type { RoutingTable } from '../routing-table'
-import type { Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { Logger, PeerId } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>

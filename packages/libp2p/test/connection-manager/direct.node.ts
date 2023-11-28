@@ -4,10 +4,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { type Connection, type ConnectionProtector, isConnection } from '@libp2p/interface/connection'
-import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start, stop } from '@libp2p/interface/startable'
+import { type Connection, type ConnectionProtector, isConnection, type PeerId } from '@libp2p/interface'
+import { AbortError, ERR_TIMEOUT, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -34,8 +32,7 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
@@ -299,6 +296,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -333,6 +331,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -362,6 +361,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -426,6 +426,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -453,6 +454,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -483,6 +485,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -512,6 +515,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -552,6 +556,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -611,6 +616,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],
@@ -629,6 +635,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         tcp()
       ],
       streamMuxers: [
+        // @ts-expect-error TODO: yamux needs to be upgraded
         yamux(),
         mplex()
       ],

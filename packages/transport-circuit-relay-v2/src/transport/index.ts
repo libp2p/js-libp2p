@@ -1,16 +1,8 @@
-import { type Transport, type Upgrader } from '@libp2p/interface/transport'
+import { type Transport, type Upgrader, type Libp2pEvents, type ComponentLogger, type ConnectionGater, type ContentRouting, type TypedEventTarget, type PeerId, type PeerStore } from '@libp2p/interface'
 import { type RelayDiscoveryComponents } from './discovery.js'
 import { type RelayStoreInit } from './reservation-store.js'
 import { CircuitRelayTransport } from './transport.js'
-import type { Libp2pEvents, ComponentLogger } from '@libp2p/interface'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface CircuitRelayTransportComponents extends RelayDiscoveryComponents {
   peerId: PeerId

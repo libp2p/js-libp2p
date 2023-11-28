@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import {
   MAX_RECORD_AGE
 } from '../../constants.js'
@@ -7,9 +7,7 @@ import { Libp2pRecord } from '../../record/index.js'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 export interface GetValueHandlerInit {

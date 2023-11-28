@@ -1,16 +1,10 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { isPeerId, type PeerId } from '@libp2p/interface/peer-id'
+import { CodeError } from '@libp2p/interface'
+import { isPeerId, type PeerId, type ComponentLogger, type Libp2pEvents, type PendingDial, type Connection, type TypedEventTarget, type PubSub, type Startable } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { connectionPair } from './connection.js'
-import type { ComponentLogger, Libp2pEvents, PendingDial } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PubSub } from '@libp2p/interface/pubsub'
-import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface MockNetworkComponents {
   peerId: PeerId

@@ -122,7 +122,9 @@ describe('ping test', function () {
         skipSecureChannel = true
         skipMuxer = true
         // Setup yamux and noise to connect to the relay node
+        // @ts-expect-error TODO: yamux needs to be upgraded
         options.streamMuxers = [yamux()]
+        // @ts-expect-error TODO: noise needs to be upgraded
         options.connectionEncryption = [noise()]
         break
       default:
@@ -132,6 +134,7 @@ describe('ping test', function () {
     if (!skipSecureChannel) {
       switch (SECURE_CHANNEL) {
         case 'noise':
+          // @ts-expect-error TODO: noise needs to be upgraded
           options.connectionEncryption = [noise()]
           break
         default:
@@ -145,6 +148,7 @@ describe('ping test', function () {
           options.streamMuxers = [mplex()]
           break
         case 'yamux':
+          // @ts-expect-error TODO: yamux needs to be upgraded
           options.streamMuxers = [yamux()]
           break
         default:

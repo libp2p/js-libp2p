@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start } from '@libp2p/interface/startable'
+import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -18,10 +17,8 @@ import { createNode, createPeerId } from '../fixtures/creators/peer.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p

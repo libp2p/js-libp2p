@@ -49,6 +49,10 @@ export function isStartable (obj: any): obj is Startable {
   return obj != null && typeof obj.start === 'function' && typeof obj.stop === 'function'
 }
 
+/**
+ * Start one or more {@link Startable}s, calling the `beforeStart` and
+ * `afterStart` lifecycle methods if defined.
+ */
 export async function start (...objs: any[]): Promise<void> {
   const startables: Startable[] = []
 
@@ -81,6 +85,10 @@ export async function start (...objs: any[]): Promise<void> {
   )
 }
 
+/**
+ * Stop one or more {@link Startable}s, calling the `beforeStop` and
+ * `afterStop` lifecycle methods if defined.
+ */
 export async function stop (...objs: any[]): Promise<void> {
   const startables: Startable[] = []
 

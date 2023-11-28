@@ -5,7 +5,7 @@ import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 const listenAddr = '/ip4/0.0.0.0/tcp/0'
 

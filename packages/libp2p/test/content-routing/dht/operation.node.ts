@@ -12,8 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createLibp2p } from '../../../src/index.js'
 import { createPeerId } from '../../fixtures/creators/peer.js'
 import { subsystemMulticodecs } from './utils.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { DualKadDHT } from '@libp2p/kad-dht'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -60,6 +59,7 @@ describe('DHT subsystem operates correctly', () => {
           plaintext()
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],
@@ -82,6 +82,7 @@ describe('DHT subsystem operates correctly', () => {
           plaintext()
         ],
         streamMuxers: [
+          // @ts-expect-error TODO: yamux needs to be upgraded
           yamux(),
           mplex()
         ],

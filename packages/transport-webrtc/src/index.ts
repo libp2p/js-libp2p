@@ -30,9 +30,9 @@
  */
 
 import { WebRTCTransport } from './private-to-private/transport.js'
-import { WebRTCDirectTransport, type WebRTCTransportDirectInit, type WebRTCDirectTransportComponents } from './private-to-public/transport.js'
-import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
-import type { Transport } from '@libp2p/interface/transport'
+import { WebRTCDirectTransport } from './private-to-public/transport.js'
+import type { ComponentLogger, Metrics, PeerId, Transport, Upgrader } from '@libp2p/interface'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface DataChannelOptions {
   /**
@@ -74,6 +74,16 @@ export interface DataChannelOptions {
   openTimeout?: number
 }
 
+export interface WebRTCDirectTransportComponents {
+  peerId: PeerId
+  metrics?: Metrics
+  logger: ComponentLogger
+}
+
+export interface WebRTCTransportDirectInit {
+  dataChannel?: DataChannelOptions
+}
+
 /**
  * @param {WebRTCTransportDirectInit} init - WebRTC direct transport configuration
  * @param init.dataChannel - DataChannel configurations
@@ -84,6 +94,27 @@ export interface DataChannelOptions {
  */
 function webRTCDirect (init?: WebRTCTransportDirectInit): (components: WebRTCDirectTransportComponents) => Transport {
   return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, init)
+}
+
+export interface WebRTCTransportInit {
+  rtcConfiguration?: RTCConfiguration
+  dataChannel?: DataChannelOptions
+
+  /**
+   * Inbound connections must complete the upgrade within this many ms
+   * (default: 30s)
+   */
+  inboundConnectionTimeout?: number
+}
+
+export interface WebRTCTransportComponents {
+  peerId: PeerId
+  registrar: Registrar
+  upgrader: Upgrader
+  transportManager: TransportManager
+  connectionManager: ConnectionManager
+  metrics?: Metrics
+  logger: ComponentLogger
 }
 
 /**
