@@ -221,6 +221,7 @@ jobs:
     # https://docs.npmjs.com/generating-provenance-statements
     permissions:
       id-token: write
+      contents: write
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
         id: release
