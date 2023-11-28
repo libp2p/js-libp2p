@@ -220,6 +220,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # https://docs.npmjs.com/generating-provenance-statements
     permissions:
+      contents: read
       id-token: write
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2
