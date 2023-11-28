@@ -9,6 +9,40 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#197](https://github.com/libp2p/js-libp2p-mdns/issues/197)) ([e8172af](https://github.com/libp2p/js-libp2p-mdns/commit/e8172af8b9856a934327195238b00e5fbba436a4))
 
+## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.14...mdns-v10.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* removed EventEmitter re-export - please use TypedEventEmitter instead
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Bug Fixes
+
+* remove event emitter type from interfaces ([#2196](https://www.github.com/libp2p/js-libp2p/issues/2196)) ([f3ec538](https://www.github.com/libp2p/js-libp2p/commit/f3ec538451afe105a5a4513d66832965ad63debe))
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Code Refactoring
+
+* remove isStarted method from Startable ([#2145](https://www.github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://www.github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+    * @libp2p/utils bumped from ^4.0.7 to ^5.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/interface-internal bumped from ^0.1.9 to ^0.1.10
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+
 ### [9.0.14](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.13...mdns-v9.0.14) (2023-11-07)
 
 

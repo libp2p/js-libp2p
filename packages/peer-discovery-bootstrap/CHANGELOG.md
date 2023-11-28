@@ -9,6 +9,29 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#176](https://github.com/libp2p/js-libp2p-bootstrap/issues/176)) ([1954e75](https://github.com/libp2p/js-libp2p-bootstrap/commit/1954e75fa4b1e6b3b42f885f663f989fd0e422ab))
 
+## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.12...bootstrap-v10.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Bug Fixes
+
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [9.0.12](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.11...bootstrap-v9.0.12) (2023-11-07)
 
 

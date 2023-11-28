@@ -5,6 +5,34 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#279](https://github.com/libp2p/js-libp2p-tcp/issues/279)) ([3ed1235](https://github.com/libp2p/js-libp2p-tcp/commit/3ed12353aa48b5a933f80042846a8f1c2337fa47))
 
+## [9.0.0](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.13...tcp-v9.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+
+
+### Bug Fixes
+
+* disable Nagle's algorithm by default ([#2242](https://www.github.com/libp2p/js-libp2p/issues/2242)) ([13a870c](https://www.github.com/libp2p/js-libp2p/commit/13a870cbef326a3a3b3c55b886c2109feaa2b628))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/utils bumped from ^4.0.7 to ^5.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [8.0.13](https://www.github.com/libp2p/js-libp2p/compare/tcp-v8.0.12...tcp-v8.0.13) (2023-11-07)
 
 
