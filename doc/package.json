@@ -31,7 +31,8 @@
     "@libp2p/tcp": "^8.0.0",
     "aegir": "^41.0.2",
     "libp2p": "^0.46.0",
-    "prom-client": "^15.0.0"
+    "prom-client": "^15.0.0",
+    "typescript": "5.2.2"
   },
   "private": true
 }
