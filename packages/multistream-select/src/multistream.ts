@@ -30,7 +30,7 @@ export async function read (reader: LengthPrefixedStream<Duplex<AsyncGenerator<U
   const buf = await reader.read(options)
 
   if (buf.byteLength === 0 || buf.get(buf.byteLength - 1) !== NewLine[0]) {
-    options?.log.error('Invalid mss message - missing newline', buf)
+    options?.log?.error('Invalid mss message - missing newline', buf)
     throw new CodeError('missing newline', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
   }
 

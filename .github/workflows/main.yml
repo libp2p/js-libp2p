@@ -218,19 +218,20 @@ jobs:
       transport-interop
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # https://docs.npmjs.com/generating-provenance-statements
     permissions:
       id-token: write
       contents: write
+      pull-requests: write
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v2
+      - uses: google-github-actions/release-please-action@v3
         id: release
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          command: manifest
+          token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           release-type: node
-          manifest-file: .release-please-manifest.json
-          config-file: .release-please.json
+          monorepo-tags: true
+          last-release-sha: a7eb258e0ef2147671acba73d9febc2f882a484a
+          group-pull-request-title-pattern: "chore: release ${component}"
+          tag-separator: '@'
           changelog-types: |
             [
               { "type": "feat", "section": "Features", "hidden": false },
