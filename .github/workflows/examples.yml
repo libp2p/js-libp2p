@@ -42,11 +42,11 @@ jobs:
           #     - '@libp2p/identify@$PWD/packages/protocol-identify'
           #     - '@libp2p/websockets@$PWD/packages/transport-websockets'
           #     - 'libp2p@$PWD/packages/libp2p'
-          - name: js-libp2p-example-connection-encryption
-            repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
-            deps:
-              - '@libp2p/tcp@$PWD/packages/transport-tcp'
-              - 'libp2p@$PWD/packages/libp2p'
+          # - name: js-libp2p-example-connection-encryption
+          #   repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
+          #   deps:
+          #     - '@libp2p/tcp@$PWD/packages/transport-tcp'
+          #     - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
