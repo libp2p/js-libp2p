@@ -5,6 +5,15 @@
 
 * skip self-query if not running ([#479](https://github.com/libp2p/js-libp2p-kad-dht/issues/479)) ([7095290](https://github.com/libp2p/js-libp2p-kad-dht/commit/70952907a27fd8778773172059879656b4f08855))
 
+### [11.0.1](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v11.0.0...kad-dht-v11.0.1) (2023-11-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+
 ## [11.0.0](https://www.github.com/libp2p/js-libp2p/compare/kad-dht-v10.0.15...kad-dht-v11.0.0) (2023-11-28)
 
 

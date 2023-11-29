@@ -5,6 +5,15 @@
 
 * move prom-client to deps ([#32](https://github.com/libp2p/js-libp2p-prometheus-metrics/issues/32)) ([73acad0](https://github.com/libp2p/js-libp2p-prometheus-metrics/commit/73acad0a20a9a0ad024cd47a53f154668dbae77b))
 
+### [3.0.1](https://www.github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.0...prometheus-metrics-v3.0.1) (2023-11-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/prometheus-metrics-v2.0.12...prometheus-metrics-v3.0.0) (2023-11-28)
 
 

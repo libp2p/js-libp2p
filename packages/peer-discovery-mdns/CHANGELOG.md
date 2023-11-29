@@ -9,6 +9,15 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#197](https://github.com/libp2p/js-libp2p-mdns/issues/197)) ([e8172af](https://github.com/libp2p/js-libp2p-mdns/commit/e8172af8b9856a934327195238b00e5fbba436a4))
 
+### [10.0.1](https://www.github.com/libp2p/js-libp2p/compare/mdns-v10.0.0...mdns-v10.0.1) (2023-11-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+
 ## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/mdns-v9.0.14...mdns-v10.0.0) (2023-11-28)
 
 

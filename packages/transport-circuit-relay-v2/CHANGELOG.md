@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v1.0.0...circuit-relay-v2-v1.0.1) (2023-11-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+
 ## 1.0.0 (2023-11-28)
 
 

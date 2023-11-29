@@ -5,6 +5,15 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+### [5.0.1](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.0...interface-compliance-tests-v5.0.1) (2023-11-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/multistream-select bumped from ^4.0.7 to ^4.0.8
+
 ## [5.0.0](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.5...interface-compliance-tests-v5.0.0) (2023-11-28)
 
 
