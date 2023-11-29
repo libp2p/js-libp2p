@@ -12,6 +12,22 @@
 * **dev:** bump cborg from 1.10.2 to 2.0.1 ([#282](https://github.com/libp2p/js-libp2p-mplex/issues/282)) ([4dbc590](https://github.com/libp2p/js-libp2p-mplex/commit/4dbc590d1ac92581fe2e937757567eef3854acf4))
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#281](https://github.com/libp2p/js-libp2p-mplex/issues/281)) ([1e03e75](https://github.com/libp2p/js-libp2p-mplex/commit/1e03e75369722be9872f747cd83f555bc08d49fe))
 
+## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.12...mplex-v10.0.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
 ## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.12...mplex-v10.0.0) (2023-11-28)
 
 

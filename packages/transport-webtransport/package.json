@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.0",
-    "@libp2p/peer-id-factory": "^3.0.9",
+    "@libp2p/peer-id-factory": "^3.0.10",
     "aegir": "^41.0.2",
     "libp2p": "^1.0.0",
     "p-defer": "^4.0.0"

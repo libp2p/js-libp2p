@@ -85,8 +85,8 @@
   "dependencies": {
     "@libp2p/crypto": "^3.0.0",
     "@libp2p/interface": "^1.0.0",
-    "@libp2p/interface-internal": "^0.1.10",
-    "@libp2p/peer-collections": "^4.0.9",
+    "@libp2p/interface-internal": "^0.1.11",
+    "@libp2p/peer-collections": "^4.0.10",
     "@libp2p/peer-id": "^4.0.0",
     "@libp2p/utils": "^5.0.0",
     "it-length-prefixed": "^9.0.3",
@@ -99,7 +99,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.0",
-    "@libp2p/peer-id-factory": "^3.0.9",
+    "@libp2p/peer-id-factory": "^3.0.10",
     "@types/sinon": "^17.0.0",
     "aegir": "^41.0.2",
     "delay": "^6.0.0",

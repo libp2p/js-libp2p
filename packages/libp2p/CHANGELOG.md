@@ -20,6 +20,67 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+## [1.0.0](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.21...libp2p-v1.0.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* remove per-peer parallel dialling (#2090) (#2251)
+* imports from `libp2p/fetch` should be updated to `@libp2p/fetch`
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/ping` must be updated to `@libp2p/ping`
+* imports from `libp2p/upnp-nat` should be updated to `@libp2p/upnp-nat`
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+* move autonat into separate package (#2107)
+* remove libp2p.keychain (#2084)
+* remove dialler language (#2143)
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+
+
+### Bug Fixes
+
+* allow mss lazy select on read ([#2246](https://www.github.com/libp2p/js-libp2p/issues/2246)) ([d8f5bc2](https://www.github.com/libp2p/js-libp2p/commit/d8f5bc211185a963c2a5182d58d73629457bc78d))
+* remove dialler language ([#2143](https://www.github.com/libp2p/js-libp2p/issues/2143)) ([a321f15](https://www.github.com/libp2p/js-libp2p/commit/a321f15329ba9b8e6a84a5a7429784edf7fa96e9))
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use optimistic protocol negotation ([#2253](https://www.github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://www.github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+
+
+### Code Refactoring
+
+* extract circuit relay v2 to separate module ([#2222](https://www.github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://www.github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* extract DCUtR into separate module ([#2220](https://www.github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://www.github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract fetch to separate module ([#2223](https://www.github.com/libp2p/js-libp2p/issues/2223)) ([9b19be2](https://www.github.com/libp2p/js-libp2p/commit/9b19be2796c2dbbe207029199b1ac203647744e3))
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract ping service into separate module ([#2218](https://www.github.com/libp2p/js-libp2p/issues/2218)) ([556282a](https://www.github.com/libp2p/js-libp2p/commit/556282afdc9b328fd58df1045dc7c792199be932))
+* extract plaintext into separate module ([#2221](https://www.github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://www.github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* extract UPnP NAT into separate module ([#2217](https://www.github.com/libp2p/js-libp2p/issues/2217)) ([f29b73f](https://www.github.com/libp2p/js-libp2p/commit/f29b73f781afcea36cba0589aafdd81e1852e194))
+* move autonat into separate package ([#2107](https://www.github.com/libp2p/js-libp2p/issues/2107)) ([b0e8f06](https://www.github.com/libp2p/js-libp2p/commit/b0e8f06f0dcdbda0e367186b093e42e8bff3ee27))
+* remove isStarted method from Startable ([#2145](https://www.github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://www.github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+* remove libp2p.keychain ([#2084](https://www.github.com/libp2p/js-libp2p/issues/2084)) ([125c84b](https://www.github.com/libp2p/js-libp2p/commit/125c84bb8a30ac986fb5aed0a4de23bc806d3aea))
+* remove per-peer parallel dialling ([#2090](https://www.github.com/libp2p/js-libp2p/issues/2090)) ([#2251](https://www.github.com/libp2p/js-libp2p/issues/2251)) ([bb6ceb1](https://www.github.com/libp2p/js-libp2p/commit/bb6ceb19252de2c1441ef736127d13763837d644))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.10 to ^0.1.11
+    * @libp2p/peer-collections bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^3.0.9 to ^3.0.10
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/identify bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/plaintext bumped from ^1.0.0 to ^2.0.0
+
 ## [1.0.0](https://www.github.com/libp2p/js-libp2p/compare/libp2p-v0.46.21...libp2p-v1.0.0) (2023-11-28)
 
 

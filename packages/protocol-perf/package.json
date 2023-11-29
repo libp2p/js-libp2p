@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.0.0",
-    "@libp2p/interface-internal": "^0.1.10",
+    "@libp2p/interface-internal": "^0.1.11",
     "@multiformats/multiaddr": "^12.1.10",
     "it-pushable": "^3.2.3"
   },

@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/multidim-interop-v1.0.14...multidim-interop-v2.0.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/ping` must be updated to `@libp2p/ping`
+
+### Code Refactoring
+
+* extract circuit relay v2 to separate module ([#2222](https://www.github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://www.github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract ping service into separate module ([#2218](https://www.github.com/libp2p/js-libp2p/issues/2218)) ([556282a](https://www.github.com/libp2p/js-libp2p/commit/556282afdc9b328fd58df1045dc7c792199be932))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/identify bumped from ^1.0.0 to ^2.0.0
+    * @libp2p/ping bumped from ^1.0.0 to ^2.0.0
+
 ## [2.0.0](https://www.github.com/libp2p/js-libp2p/compare/multidim-interop-v1.0.14...multidim-interop-v2.0.0) (2023-11-28)
 
 

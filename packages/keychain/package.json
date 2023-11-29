@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.0",
-    "@libp2p/peer-id-factory": "^3.0.9",
+    "@libp2p/peer-id-factory": "^3.0.10",
     "aegir": "^41.0.2",
     "datastore-core": "^9.1.1",
     "multiformats": "^12.1.3"

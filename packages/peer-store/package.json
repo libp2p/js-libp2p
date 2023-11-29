@@ -59,10 +59,10 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.0.0",
-    "@libp2p/peer-collections": "^4.0.9",
+    "@libp2p/peer-collections": "^4.0.10",
     "@libp2p/peer-id": "^4.0.0",
-    "@libp2p/peer-id-factory": "^3.0.9",
-    "@libp2p/peer-record": "^6.0.10",
+    "@libp2p/peer-id-factory": "^3.0.10",
+    "@libp2p/peer-record": "^6.0.11",
     "@multiformats/multiaddr": "^12.1.10",
     "interface-datastore": "^8.2.0",
     "it-all": "^3.0.2",

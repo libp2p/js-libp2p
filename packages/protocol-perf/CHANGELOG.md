@@ -1,5 +1,30 @@
 # Changelog
 
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.1...perf-v3.0.0) (2023-11-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `perfService` export is now just `perf`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Code Refactoring
+
+* extract plaintext into separate module ([#2221](https://www.github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://www.github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* rename perf exports to remove Service ([#2227](https://www.github.com/libp2p/js-libp2p/issues/2227)) ([1034416](https://www.github.com/libp2p/js-libp2p/commit/10344168fe5f56c08a21d6b35468817e17ab0b25))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.10 to ^0.1.11
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.1...perf-v3.0.0) (2023-11-28)
 
 

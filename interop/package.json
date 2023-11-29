@@ -53,10 +53,10 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^13.0.0",
     "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@libp2p/circuit-relay-v2": "^1.0.0",
-    "@libp2p/identify": "^1.0.0",
+    "@libp2p/circuit-relay-v2": "^2.0.0",
+    "@libp2p/identify": "^2.0.0",
     "@libp2p/mplex": "^10.0.0",
-    "@libp2p/ping": "^1.0.0",
+    "@libp2p/ping": "^2.0.0",
     "@libp2p/tcp": "^9.0.0",
     "@libp2p/webrtc": "^4.0.0",
     "@libp2p/websockets": "^8.0.0",
