@@ -6,7 +6,7 @@ import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { object, number } from 'yup'
-import { CIRCUIT_PROTO_CODE, DEFAULT_STOP_TIMEOUT, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVER_RELAYS, DEFAULT_STOP_TIMEOUT, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
@@ -40,7 +40,7 @@ interface ConnectOptions {
 }
 
 const configValidator = object({
-  discoverRelays: number().min(0).integer().default(0),
+  discoverRelays: number().min(0).integer().default(DEFAULT_DISCOVER_RELAYS),
   maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
   maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
   stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)

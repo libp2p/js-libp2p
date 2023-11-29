@@ -78,11 +78,11 @@ export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): Ob
     autoDialConcurrency: number().integer().min(0).default(AUTO_DIAL_CONCURRENCY),
     autoDialPriority: number().integer().min(0).default(AUTO_DIAL_PRIORITY),
     maxParallelDials: number().integer().min(0).default(MAX_PARALLEL_DIALS),
-    maxPeerAddrsToDialed: number().min(0).integer().default(MAX_PEER_ADDRS_TO_DIAL),
+    maxPeerAddrsToDialed: number().integer().min(0).default(MAX_PEER_ADDRS_TO_DIAL),
     dialTimeout: number().integer().min(0).default(DIAL_TIMEOUT),
     inboundUpgradeTimeout: number().integer().min(0).default(INBOUND_UPGRADE_TIMEOUT),
-    allow: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
-    deny: array().of(string()).test('is multiaddr', validateMultiaddr).optional(),
+    allow: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
+    deny: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
     inboundConnectionThreshold: number().integer().min(0).default(INBOUND_CONNECTION_THRESHOLD),
     maxIncomingPendingConnections: number().integer().min(0).default(MAX_INCOMING_PENDING_CONNECTIONS)
   })

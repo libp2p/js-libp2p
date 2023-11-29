@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { number, object } from 'yup'
-import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
+import { DEFAULT_DISCOVER_RELAYS, DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
@@ -71,9 +71,9 @@ export interface ReservationStoreEvents {
 }
 
 const configValidator = object({
-  discoverRelays: number().integer().min(0).default(0),
-  maxReservationQueueLength: number().integer().min(0).default(100),
-  reservationCompletionTimeout: number().integer().min(0).default(10000),
+  discoverRelays: number().integer().min(0).default(DEFAULT_DISCOVER_RELAYS),
+  maxReservationQueueLength: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_QUEUE_LENGTH),
+  reservationCompletionTimeout: number().integer().min(0).default(DEFAULT_RESERVATION_COMPLETION_TIMEOUT),
   reservationConcurrency: number().integer().min(0).default(DEFAULT_RESERVATION_CONCURRENCY)
 })
 

@@ -1,6 +1,5 @@
 import { type ObjectSchema, object, array, string, mixed } from 'yup'
 import { validateMultiaddr } from '../config/helpers.js'
-import type { AddressManagerInit } from '.'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export function debounce (func: () => void, wait: number): () => void {
@@ -17,7 +16,7 @@ export function debounce (func: () => void, wait: number): () => void {
   }
 }
 
-export function validateAddressManagerConfig (opts: AddressManagerInit): ObjectSchema<Record<string, unknown>> {
+export function validateAddressManagerConfig (): ObjectSchema<Record<string, unknown>> {
   return object({
     listen: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),
     announce: array().of(string()).test('is multiaddr', validateMultiaddr).default([]),

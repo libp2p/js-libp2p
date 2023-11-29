@@ -2,8 +2,8 @@ import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, se
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import { object, number } from 'yup'
-import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
+import { object, number, string } from 'yup'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
@@ -19,8 +19,10 @@ import type { IncomingStreamData } from '@libp2p/interface-internal'
 const configValidator = object({
   timeout: number().integer().default(TIMEOUT),
   maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
-  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS)
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  protocolPrefix: string().default(PROTOCOL_PREFIX)
 })
+
 export class Fetch implements Startable, FetchInterface {
   public readonly protocol: string
   private readonly components: FetchComponents
@@ -40,7 +42,7 @@ export class Fetch implements Startable, FetchInterface {
 
     const config = configValidator.validateSync(init)
 
-    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = config.timeout
     this.maxInboundStreams = config.maxInboundStreams
     this.maxOutboundStreams = config.maxOutboundStreams

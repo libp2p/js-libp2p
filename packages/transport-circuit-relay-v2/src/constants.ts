@@ -42,6 +42,14 @@ export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
 export const RELAY_TAG = 'circuit-relay-relay'
 
+export const DEFAULT_DEFAULT_APPLY_LIMIT = true
+
+export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 10000
+
+export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
+
+export const DEFAULT_DISCOVER_RELAYS = 0
+
 // circuit v2 connection limits
 // https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go#L61-L66
 

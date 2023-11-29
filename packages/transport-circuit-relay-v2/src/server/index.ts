@@ -4,16 +4,12 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
-import { object, number, boolean } from 'yup'
+import { object, number } from 'yup'
 import {
   CIRCUIT_PROTO_CODE,
-  DEFAULT_DURATION_LIMIT,
   DEFAULT_HOP_TIMEOUT,
   DEFAULT_MAX_INBOUND_STREAMS,
   DEFAULT_MAX_OUTBOUND_STREAMS,
-  DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL,
-  DEFAULT_MAX_RESERVATION_STORE_SIZE,
-  DEFAULT_MAX_RESERVATION_TTL,
   MAX_CONNECTIONS,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
@@ -22,7 +18,7 @@ import {
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
 import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } from './advert-service.js'
-import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
+import { ReservationStore, reservationStoreConfigValidator, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
 import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
@@ -95,13 +91,7 @@ export interface RelayServerEvents {
 
 const configValidator = object({
   hopTimeout: number().integer().min(0).default(DEFAULT_HOP_TIMEOUT),
-  reservations: object({
-    maxReservations: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
-    reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
-    applyDefaultLimit: boolean().default(false),
-    reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
-    defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT)
-  }),
+  reservations: reservationStoreConfigValidator,
   maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
   maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS),
   maxOutboundStopStreams: number().integer().min(0).default(MAX_CONNECTIONS)

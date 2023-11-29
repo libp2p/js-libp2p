@@ -20,9 +20,9 @@ import {
   MAX_OUTBOUND_STREAMS,
   MAX_IDENTIFY_MESSAGE_SIZE,
   TIMEOUT,
-  RUN_ON_CONNECTION_OPEN,
+  RUN_ON_CONNECTION_OPEN as DEFAULT_RUN_ON_CONNECTION_OPEN,
   PROTOCOL_PREFIX,
-  RUN_ON_TRANSIENT_CONNECTION,
+  RUN_ON_TRANSIENT_CONNECTION as DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS,
   MAX_PUSH_INCOMING_STREAMS,
   MAX_PUSH_OUTGOING_STREAMS,
   MAX_OBSERVED_ADDRESSES
@@ -41,8 +41,8 @@ const configValidator = object({
   maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
   maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
   maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
-  runOnConnectionOpen: boolean().default(RUN_ON_CONNECTION_OPEN),
-  runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
+  runOnConnectionOpen: boolean().default(DEFAULT_RUN_ON_CONNECTION_OPEN),
+  runOnTransientConnection: boolean().default(DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS)
 })
 
 export class Identify implements Startable, IdentifyInterface {

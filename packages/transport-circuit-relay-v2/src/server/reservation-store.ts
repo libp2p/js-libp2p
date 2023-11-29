@@ -1,6 +1,6 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { object, mixed, number, boolean } from 'yup'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DEFAULT_APPLY_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { type Limit, Status } from '../pb/index.js'
 import type { RelayReservation } from '../index.js'
 import type { RecursivePartial, PeerId, Startable } from '@libp2p/interface'
@@ -37,13 +37,13 @@ export interface ReservationStoreInit {
 
 export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
 
-const configValidator = object({
+export const reservationStoreConfigValidator = object({
   maxReservations: number().min(0).integer().default(DEFAULT_MAX_RESERVATION_STORE_SIZE),
   reservationClearInterval: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL),
-  applyDefaultLimit: boolean().default(true),
+  applyDefaultLimit: boolean().default(DEFAULT_DEFAULT_APPLY_LIMIT),
   reservationTtl: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_TTL),
   defaultDurationLimit: number().integer().min(0).default(DEFAULT_DURATION_LIMIT),
-  defaultDataLimit: mixed().test('is-bigint', 'Invalid bigint', value => typeof value === 'bigint').default(DEFAULT_DATA_LIMIT)
+  defaultDataLimit: mixed<bigint>().test('is-bigint', 'Invalid bigint', value => typeof value === 'bigint').default(DEFAULT_DATA_LIMIT)
 })
 export class ReservationStore implements Startable {
   public readonly reservations = new PeerMap<RelayReservation>()
@@ -57,14 +57,14 @@ export class ReservationStore implements Startable {
   private readonly defaultDataLimit: bigint
 
   constructor (options: ReservationStoreOptions = {}) {
-    const config = configValidator.validateSync(options)
+    const config = reservationStoreConfigValidator.validateSync(options)
 
     this.maxReservations = config.maxReservations
     this.reservationClearInterval = config.reservationClearInterval
     this.applyDefaultLimit = config.applyDefaultLimit
     this.reservationTtl = config.reservationTtl
     this.defaultDurationLimit = config.defaultDurationLimit
-    this.defaultDataLimit = config.defaultDataLimit as bigint
+    this.defaultDataLimit = config.defaultDataLimit
   }
 
   isStarted (): boolean {

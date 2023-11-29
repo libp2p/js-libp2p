@@ -5,12 +5,11 @@ import mergeOptions from 'merge-options'
 import { object } from 'yup'
 import { validateAddressManagerConfig } from '../address-manager/utils.js'
 import { validateConnectionManagerConfig } from '../connection-manager/utils.js'
-import type { AddressManagerInit } from '../address-manager'
 import type { ConnectionManagerInit } from '../connection-manager/index.js'
 import type { Libp2pInit } from '../index.js'
 import type { ServiceMap, RecursivePartial } from '@libp2p/interface'
 
-const DefaultConfig: Partial<Libp2pInit> = {
+const defaultConfig: Partial<Libp2pInit> = {
   connectionManager: {
     resolvers: {
       dnsaddr: dnsaddrResolver
@@ -24,13 +23,13 @@ const DefaultConfig: Partial<Libp2pInit> = {
 
 export function validateConfig<T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
   const libp2pConfig = object({
-    addresses: validateAddressManagerConfig(opts?.addresses as AddressManagerInit),
+    addresses: validateAddressManagerConfig(),
     connectionManager: validateConnectionManagerConfig(opts?.connectionManager as ConnectionManagerInit)
   })
 
   const parsedOpts = libp2pConfig.validateSync(opts)
 
-  const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, parsedOpts)
+  const resultingOptions: Libp2pInit<T> = mergeOptions(defaultConfig, parsedOpts)
 
   return resultingOptions
 }

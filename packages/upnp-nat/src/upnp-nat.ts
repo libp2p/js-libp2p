@@ -10,6 +10,8 @@ import type { Logger, Startable } from '@libp2p/interface'
 
 const DEFAULT_TTL = 7200
 
+const DEFAULT_KEEP_ALIVE = true
+
 function highPort (min = 1024, max = 65535): number {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -21,7 +23,7 @@ const configValidator = object({
   localAddress: string().matches(validIPRegex, 'Invalid IP address'),
   description: string(),
   ttl: number().integer().min(0).default(DEFAULT_TTL),
-  keepAlive: boolean().default(true),
+  keepAlive: boolean().default(DEFAULT_KEEP_ALIVE),
   gateway: string().optional()
 })
 
@@ -31,7 +33,7 @@ export class UPnPNAT implements Startable {
   private readonly localAddress?: string
   private readonly description: string
   private readonly ttl: number
-  private readonly keepAlive?: boolean
+  private readonly keepAlive: boolean
   private readonly gateway?: string
   private started: boolean
   private client?: NatAPI

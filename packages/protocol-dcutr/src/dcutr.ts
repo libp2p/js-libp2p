@@ -3,6 +3,7 @@ import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
 import { number, object } from 'yup'
+import { DCUTR_DIAL_PRIORITY, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_RETRIES, DEFAULT_TIMEOUT, MAX_DCUTR_MESSAGE_SIZE } from './constants.js'
 import { HolePunch } from './pb/message.js'
 import { isPublicAndDialable } from './utils.js'
 import { multicodec } from './index.js'
@@ -10,18 +11,13 @@ import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Logger, Connection, Stream, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
-// https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
-const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
-// ensure the dial has a high priority to jump to the head of the dial queue
-const DCUTR_DIAL_PRIORITY = 100
-
 const configValidator = object({
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
-  timeout: number().integer().default(5000).min(0),
+  timeout: number().integer().min(0).default(DEFAULT_TIMEOUT),
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
-  retries: number().integer().default(3).min(0),
-  maxInboundStreams: number().integer().default(1).min(0),
-  maxOutboundStreams: number().integer().default(1).min(0)
+  retries: number().integer().min(0).default(DEFAULT_RETRIES),
+  maxInboundStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS)
 })
 
 export class DefaultDCUtRService implements Startable {

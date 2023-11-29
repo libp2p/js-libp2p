@@ -4,7 +4,7 @@ import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { boolean, number, object, string } from 'yup'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
@@ -15,7 +15,7 @@ const configValidator = object({
   timeout: number().integer().min(0).default(TIMEOUT),
   maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
   maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
-  runOnTransientConnection: boolean().default(true)
+  runOnTransientConnection: boolean().default(DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS)
 })
 
 export class PingService implements Startable, PingServiceInterface {
