@@ -35,12 +35,12 @@
 
 > JavaScript implementation of libp2p, a modular peer to peer network stack
 
-
 ### Project status
 
 This project has been used in production for years in Ethereum, IPFS, and more.  It is actively maintained by multiple organizations and continues to be improved!  The API might change, but we strictly follow semver.
 
 The documentation in the main branch may contain changes from a pre-release.
+
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
 **Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
