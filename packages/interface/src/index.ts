@@ -321,6 +321,8 @@ export interface PendingDial {
   multiaddrs: Multiaddr[]
 }
 
+export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -410,7 +412,15 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    */
   metrics?: Metrics
 
+  /**
+   * The logger used by this libp2p node
+   */
   logger: ComponentLogger
+
+  /**
+   * The current status of the libp2p node
+   */
+  status: Libp2pStatus
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
