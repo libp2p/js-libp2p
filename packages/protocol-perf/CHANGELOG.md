@@ -1,5 +1,11 @@
 # Changelog
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+
 ## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.1...perf-v3.0.0) (2023-11-28)
 
 
