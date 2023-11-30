@@ -5,6 +5,27 @@
 
 * bump aegir from 38.1.8 to 39.0.5 ([#393](https://github.com/libp2p/js-libp2p-interfaces/issues/393)) ([31f3797](https://github.com/libp2p/js-libp2p-interfaces/commit/31f3797b24f7c23f3f16e9db3a230bd5f7cd5175))
 
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.0...interface-compliance-tests-v5.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/interface-internal bumped from ^0.1.10 to ^0.1.11
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/multistream-select bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-collections bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/utils bumped from ^5.0.0 to ^5.0.1
+
 ## [5.0.0](https://www.github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v4.1.5...interface-compliance-tests-v5.0.0) (2023-11-28)
 
 
