@@ -6,6 +6,24 @@
 * **dev:** bump @libp2p/interface-mocks from 11.0.3 to 12.0.1 ([#241](https://github.com/libp2p/js-libp2p-websockets/issues/241)) ([f956836](https://github.com/libp2p/js-libp2p-websockets/commit/f95683641bda2f9b250768768451e0c121afc2a0))
 * **dev:** bump aegir from 38.1.8 to 39.0.9 ([#245](https://github.com/libp2p/js-libp2p-websockets/issues/245)) ([4a35f6b](https://github.com/libp2p/js-libp2p-websockets/commit/4a35f6b39a918fb7ef779292553cb452a543afb0))
 
+## [8.0.2](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.1...websockets-v8.0.2) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/utils bumped from ^5.0.1 to ^5.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+
 ## [8.0.1](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.0...websockets-v8.0.1) (2023-11-30)
 
 

@@ -11,6 +11,23 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#36](https://github.com/libp2p/js-libp2p-peer-collections/issues/36)) ([9fa3de6](https://github.com/libp2p/js-libp2p-peer-collections/commit/9fa3de6d85dbe1ade54fda86b597ed9ffe6d71d5))
 
+## [4.0.11](https://github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.10...peer-collections-v4.0.11) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^3.0.11
+
 ## [4.0.10](https://github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.9...peer-collections-v4.0.10) (2023-11-30)
 
 
