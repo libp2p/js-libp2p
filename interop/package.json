@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^13.0.0",
-    "@chainsafe/libp2p-yamux": "^5.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.0",
     "@libp2p/circuit-relay-v2": "^1.0.0",
     "@libp2p/identify": "^1.0.0",
     "@libp2p/mplex": "^10.0.0",
