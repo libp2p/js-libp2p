@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.1...interface-v1.0.2) (2023-11-30)
+
+
+### Bug Fixes
+
+* add status property ([#2269](https://github.com/libp2p/js-libp2p/issues/2269)) ([a32e70b](https://github.com/libp2p/js-libp2p/commit/a32e70bac126a0746dff9f7c87a4d6211a00fa7a))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.0...interface-v1.0.1) (2023-11-30)
 
 
