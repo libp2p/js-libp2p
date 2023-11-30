@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.11](https://github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.10...interface-internal-v0.1.11) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/peer-collections bumped from ^4.0.9 to ^4.0.10
+
 ### [0.1.10](https://www.github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.9...interface-internal-v0.1.10) (2023-11-28)
 
 
