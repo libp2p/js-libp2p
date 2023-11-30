@@ -49,7 +49,7 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^13.0.0",
+    "@chainsafe/libp2p-noise": "^14.0.0",
     "@libp2p/interface": "^1.0.0",
     "@libp2p/interface-internal": "^0.1.10",
     "@libp2p/logger": "^4.0.0",
@@ -78,7 +78,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-yamux": "^5.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.1",
     "@libp2p/circuit-relay-v2": "^1.0.0",
     "@libp2p/interface-compliance-tests": "^5.0.0",
     "@libp2p/peer-id-factory": "^3.0.9",

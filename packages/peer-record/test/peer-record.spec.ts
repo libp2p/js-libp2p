@@ -7,7 +7,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { PeerRecord } from '../src/peer-record/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 describe('PeerRecord', () => {
   let peerId: PeerId

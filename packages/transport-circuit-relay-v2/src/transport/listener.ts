@@ -1,12 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { CodeError, TypedEventEmitter } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ReservationStore } from './reservation-store.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Listener, ListenerEvents } from '@libp2p/interface/transport'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { ComponentLogger, Logger, PeerId, Listener, ListenerEvents } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface CircuitRelayTransportListenerComponents {

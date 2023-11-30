@@ -1,13 +1,10 @@
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStreamEvents } from '@libp2p/interface/pubsub'
+import type { ComponentLogger, Logger, Stream, PeerId, PeerStreamEvents } from '@libp2p/interface'
 import type { Pushable } from 'it-pushable'
 
 export interface PeerStreamsInit {

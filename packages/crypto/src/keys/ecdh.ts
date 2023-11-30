@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import type { ECDHKey, ECDHKeyPair } from './interface.js'
 
 const curves = {

@@ -12,7 +12,7 @@ import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import type { Validators } from '../../../src/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 const T = MESSAGE_TYPE.PUT_VALUE

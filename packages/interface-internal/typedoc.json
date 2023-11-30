@@ -1,10 +1,5 @@
 {
   "entryPoints": [
-    "./src/index.ts",
-    "./src/address-manager/index.ts",
-    "./src/connection-manager/index.ts",
-    "./src/record/index.ts",
-    "./src/registrar/index.ts",
-    "./src/transport-manager/index.ts"
+    "./src/index.ts"
   ]
 }

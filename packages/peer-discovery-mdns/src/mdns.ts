@@ -1,13 +1,9 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
+import { CustomEvent, TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
 import { stringGen } from './utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Startable } from '@libp2p/interface/src/startable.js'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, Startable } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 
 export interface MulticastDNSInit {
   broadcast?: boolean
@@ -58,7 +54,7 @@ export class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> impleme
     this._onMdnsError = this._onMdnsError.bind(this)
   }
 
-  readonly [peerDiscovery] = this
+  readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/mdns'
 

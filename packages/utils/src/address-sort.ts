@@ -22,7 +22,7 @@
 
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { isPrivate } from './multiaddr/is-private.js'
-import type { Address } from '@libp2p/interface/peer-store'
+import type { Address } from '@libp2p/interface'
 
 /**
  * Compare function for array.sort() that moves public addresses to the start

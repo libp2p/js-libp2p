@@ -1,6 +1,6 @@
 import spawn from './spawner.js'
 import type { TestSetup } from '../index.js'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
   const createMuxer = async (init?: StreamMuxerInit): Promise<StreamMuxer> => {

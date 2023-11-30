@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
-import { CustomEvent } from '@libp2p/interface/events'
+import { CustomEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'ts-sinon'
+import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { finalPeerEvent } from '../src/query/events.js'
 import { QuerySelf } from '../src/query-self.js'
 import type { PeerRouting } from '../src/peer-routing/index.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 describe('Query Self', () => {

@@ -1,7 +1,7 @@
 import { type Multiaddr } from '@multiformats/multiaddr'
 import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
 import isPrivate from 'private-ip'
-import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 /**
  * Returns true if the passed multiaddr is public, not relayed and we have a

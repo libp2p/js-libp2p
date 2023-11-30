@@ -7,10 +7,8 @@ import {
 } from '../../utils.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { ComponentLogger, Logger, PeerId, PeerInfo } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 
 export interface FindNodeHandlerInit {
   peerRouting: PeerRouting

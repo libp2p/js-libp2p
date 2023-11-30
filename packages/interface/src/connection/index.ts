@@ -280,10 +280,10 @@ export interface Connection {
   log: Logger
 }
 
-export const symbol = Symbol.for('@libp2p/connection')
+export const connectionSymbol = Symbol.for('@libp2p/connection')
 
 export function isConnection (other: any): other is Connection {
-  return other != null && Boolean(other[symbol])
+  return other != null && Boolean(other[connectionSymbol])
 }
 
 export interface ConnectionProtector {

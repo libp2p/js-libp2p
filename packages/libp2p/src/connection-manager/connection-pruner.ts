@@ -1,9 +1,7 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { MAX_CONNECTIONS } from './constants.js'
-import type { Libp2pEvents, Logger, ComponentLogger } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 interface ConnectionPrunerInit {

@@ -1,4 +1,4 @@
-import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface/errors'
+import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
@@ -6,14 +6,8 @@ import { HolePunch } from './pb/message.js'
 import { isPublicAndDialable } from './utils.js'
 import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/src/transport-manager/index.js'
+import type { Logger, Connection, Stream, PeerStore, Startable } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4

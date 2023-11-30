@@ -32,7 +32,7 @@
  */
 
 import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export interface MplexInit {
   /**

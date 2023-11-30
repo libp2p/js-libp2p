@@ -660,3 +660,25 @@ export interface LoggerOptions {
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
 }
+
+export * from './connection/index.js'
+export * from './connection-encrypter/index.js'
+export * from './connection-gater/index.js'
+export * from './content-routing/index.js'
+export * from './keys/index.js'
+export * from './metrics/index.js'
+export * from './peer-discovery/index.js'
+export * from './peer-id/index.js'
+export * from './peer-info/index.js'
+export * from './peer-routing/index.js'
+export * from './peer-store/index.js'
+export * from './peer-store/tags.js'
+export * from './pubsub/index.js'
+export * from './record/index.js'
+export * from './stream-handler/index.js'
+export * from './stream-muxer/index.js'
+export * from './topology/index.js'
+export * from './transport/index.js'
+export * from './errors.js'
+export * from './events.js'
+export * from './startable.js'

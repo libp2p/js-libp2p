@@ -1,5 +1,4 @@
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { Topology } from '@libp2p/interface/topology'
+import type { Connection, Stream, Topology } from '@libp2p/interface'
 
 export interface IncomingStreamData {
   stream: Stream

@@ -20,13 +20,8 @@
  */
 
 import { AutoNATService } from './autonat.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerRouting } from '@libp2p/interface/peer-routing'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ComponentLogger, PeerId, PeerRouting } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface AutoNATServiceInit {
   /**

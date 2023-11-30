@@ -1,5 +1,4 @@
-import type { Connection } from '@libp2p/interface/connection'
-import type { Listener, Transport } from '@libp2p/interface/transport'
+import type { Connection, Listener, Transport } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface TransportManager {

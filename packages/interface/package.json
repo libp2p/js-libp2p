@@ -47,98 +47,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./connection": {
-      "types": "./dist/src/connection/index.d.ts",
-      "import": "./dist/src/connection/index.js"
-    },
-    "./connection-encrypter": {
-      "types": "./dist/src/connection-encrypter/index.d.ts",
-      "import": "./dist/src/connection-encrypter/index.js"
-    },
-    "./connection-gater": {
-      "types": "./dist/src/connection-gater/index.d.ts",
-      "import": "./dist/src/connection-gater/index.js"
-    },
-    "./content-routing": {
-      "types": "./dist/src/content-routing/index.d.ts",
-      "import": "./dist/src/content-routing/index.js"
-    },
-    "./errors": {
-      "types": "./dist/src/errors.d.ts",
-      "import": "./dist/src/errors.js"
-    },
-    "./events": {
-      "types": "./dist/src/events.d.ts",
-      "import": "./dist/src/events.js"
-    },
-    "./keychain": {
-      "types": "./dist/src/keychain/index.d.ts",
-      "import": "./dist/src/keychain/index.js"
-    },
-    "./keys": {
-      "types": "./dist/src/keys/index.d.ts",
-      "import": "./dist/src/keys/index.js"
-    },
-    "./metrics": {
-      "types": "./dist/src/metrics/index.d.ts",
-      "import": "./dist/src/metrics/index.js"
-    },
-    "./metrics/tracked-map": {
-      "types": "./dist/src/metrics/tracked-map.d.ts",
-      "import": "./dist/src/metrics/tracked-map.js"
-    },
-    "./peer-discovery": {
-      "types": "./dist/src/peer-discovery/index.d.ts",
-      "import": "./dist/src/peer-discovery/index.js"
-    },
-    "./peer-id": {
-      "types": "./dist/src/peer-id/index.d.ts",
-      "import": "./dist/src/peer-id/index.js"
-    },
-    "./peer-info": {
-      "types": "./dist/src/peer-info/index.d.ts",
-      "import": "./dist/src/peer-info/index.js"
-    },
-    "./peer-routing": {
-      "types": "./dist/src/peer-routing/index.d.ts",
-      "import": "./dist/src/peer-routing/index.js"
-    },
-    "./peer-store": {
-      "types": "./dist/src/peer-store/index.d.ts",
-      "import": "./dist/src/peer-store/index.js"
-    },
-    "./peer-store/tags": {
-      "types": "./dist/src/peer-store/tags.d.ts",
-      "import": "./dist/src/peer-store/tags.js"
-    },
-    "./pubsub": {
-      "types": "./dist/src/pubsub/index.d.ts",
-      "import": "./dist/src/pubsub/index.js"
-    },
-    "./record": {
-      "types": "./dist/src/record/index.d.ts",
-      "import": "./dist/src/record/index.js"
-    },
-    "./startable": {
-      "types": "./dist/src/startable.d.ts",
-      "import": "./dist/src/startable.js"
-    },
-    "./stream-handler": {
-      "types": "./dist/src/stream-handler/index.d.ts",
-      "import": "./dist/src/stream-handler/index.js"
-    },
-    "./stream-muxer": {
-      "types": "./dist/src/stream-muxer/index.d.ts",
-      "import": "./dist/src/stream-muxer/index.js"
-    },
-    "./stream-muxer/stream": {
-      "types": "./dist/src/stream-muxer/stream.d.ts",
-      "import": "./dist/src/stream-muxer/stream.js"
-    },
-    "./transport": {
-      "types": "./dist/src/transport/index.d.ts",
-      "import": "./dist/src/transport/index.js"
     }
   },
   "eslintConfig": {
@@ -152,14 +60,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check -i @libp2p/utils",
-    "build": "aegir build",
-    "test": "aegir test",
-    "test:chrome": "aegir test -t browser --cov",
-    "test:chrome-webworker": "aegir test -t webworker",
-    "test:firefox": "aegir test -t browser -- --browser firefox",
-    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main"
+    "build": "aegir build"
   },
   "dependencies": {
     "@multiformats/multiaddr": "^12.1.10",
@@ -169,10 +70,7 @@
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "@types/sinon": "^17.0.0",
-    "aegir": "^41.0.2",
-    "sinon": "^17.0.0",
-    "sinon-ts": "^2.0.0"
+    "aegir": "^41.0.2"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"

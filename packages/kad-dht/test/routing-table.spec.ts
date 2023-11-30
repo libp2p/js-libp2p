@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -15,17 +15,14 @@ import random from 'lodash.random'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import { PROTOCOL_DHT } from '../src/constants.js'
 import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('Routing Table', () => {
   let table: RoutingTable

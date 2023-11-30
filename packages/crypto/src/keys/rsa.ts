@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import randomBytes from '../random-bytes.js'
 import * as utils from './rsa-utils.js'
 import type { JWKKeyPair } from './interface.js'

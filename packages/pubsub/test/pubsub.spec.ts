@@ -17,8 +17,7 @@ import {
   PubsubImplementation,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Message, PubSubRPC } from '@libp2p/interface/pubsub'
+import type { PeerId, Message, PubSubRPC } from '@libp2p/interface'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'test-topic'

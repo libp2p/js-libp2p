@@ -14,10 +14,8 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Logger, Connection, Stream } from '@libp2p/interface'
+import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 const browser = detect()
 

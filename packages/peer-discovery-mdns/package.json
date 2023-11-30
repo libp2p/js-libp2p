@@ -64,6 +64,6 @@
     "@libp2p/peer-id-factory": "^3.0.9",
     "aegir": "^41.0.2",
     "p-wait-for": "^5.0.2",
-    "ts-sinon": "^2.0.2"
+    "sinon-ts": "^2.0.0"
   }
 }

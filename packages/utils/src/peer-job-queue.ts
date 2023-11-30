@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
+import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import PQueue from 'p-queue'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { QueueAddOptions, Options, Queue } from 'p-queue'
 
 // Port of lower_bound from https://en.cppreference.com/w/cpp/algorithm/lower_bound

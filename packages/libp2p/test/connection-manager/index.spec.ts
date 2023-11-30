@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { KEEP_ALIVE } from '@libp2p/interface/peer-store/tags'
+import { TypedEventEmitter, KEEP_ALIVE } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -15,12 +14,8 @@ import { DefaultConnectionManager, type DefaultConnectionManagerComponents } fro
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { AbortOptions, Connection, ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
   maxConnections: 10,

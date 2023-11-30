@@ -55,16 +55,13 @@
  */
 
 import net from 'net'
-import { AbortError, CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
+import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
@@ -176,7 +173,7 @@ class TCP implements Transport {
     }
   }
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/tcp'
 

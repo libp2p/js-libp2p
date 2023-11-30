@@ -1,5 +1,4 @@
-import type { ComponentLogger } from '@libp2p/interface'
-import type { MultiaddrConnection, Stream } from '@libp2p/interface/connection'
+import type { ComponentLogger, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface StreamProperties {

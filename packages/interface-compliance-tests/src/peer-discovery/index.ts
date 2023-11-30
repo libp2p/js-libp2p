@@ -1,10 +1,10 @@
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import type { TestSetup } from '../index.js'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
+import type { PeerDiscovery } from '@libp2p/interface'
 
 export default (common: TestSetup<PeerDiscovery>): void => {
   describe('interface-peer-discovery compliance tests', () => {

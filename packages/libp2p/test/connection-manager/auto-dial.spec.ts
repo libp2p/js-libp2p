@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type Connection, type PeerId, type PeerStore, type Peer } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -17,11 +17,7 @@ import { defaultComponents } from '../../src/components.js'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { matchPeerId } from '../fixtures/match-peer-id.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore, Peer } from '@libp2p/interface/peer-store'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 describe('auto-dial', () => {
   let autoDialer: AutoDial
