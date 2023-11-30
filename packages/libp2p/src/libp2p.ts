@@ -23,7 +23,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -34,13 +34,15 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public metrics?: Metrics
   public services: T
   public logger: ComponentLogger
+  public status: Libp2pStatus
 
   public components: Components
-  #started: boolean
   private readonly log: Logger
 
   constructor (init: Libp2pInit<T>) {
     super()
+
+    this.status = 'stopped'
 
     // event bus - components can listen to this emitter to be notified of system events
     // and also cause them to be emitted
@@ -58,7 +60,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     // This emitter gets listened to a lot
     setMaxListeners(Infinity, events)
 
-    this.#started = false
     this.peerId = init.peerId
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('libp2p')
@@ -196,11 +197,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Starts the libp2p node and all its subsystems
    */
   async start (): Promise<void> {
-    if (this.#started) {
+    if (this.status !== 'stopped') {
       return
     }
 
-    this.#started = true
+    this.status = 'starting'
 
     this.log('libp2p is starting')
 
@@ -209,6 +210,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       await this.components.start()
       await this.components.afterStart?.()
 
+      this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
       this.log('libp2p has started')
     } catch (err: any) {
@@ -222,24 +224,21 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Stop the libp2p node by closing its listeners and open connections
    */
   async stop (): Promise<void> {
-    if (!this.#started) {
+    if (this.status !== 'started') {
       return
     }
 
     this.log('libp2p is stopping')
 
-    this.#started = false
+    this.status = 'stopping'
 
     await this.components.beforeStop?.()
     await this.components.stop()
     await this.components.afterStop?.()
 
+    this.status = 'stopped'
     this.safeDispatchEvent('stop', { detail: this })
     this.log('libp2p has stopped')
-  }
-
-  isStarted (): boolean {
-    return this.#started
   }
 
   getConnections (peerId?: PeerId): Connection[] {
