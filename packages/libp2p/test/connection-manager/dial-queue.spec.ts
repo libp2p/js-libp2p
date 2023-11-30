@@ -11,13 +11,8 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Transport } from '@libp2p/interface/transport'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerStore, Transport } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('dial queue', () => {
   let components: {

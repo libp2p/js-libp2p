@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { randomBytes as randB } from '@noble/hashes/utils'
 
 /**

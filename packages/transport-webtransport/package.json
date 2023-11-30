@@ -49,7 +49,7 @@
     "test:chrome-webworker": "aegir test -t webworker"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^13.0.0",
+    "@chainsafe/libp2p-noise": "^14.0.0",
     "@libp2p/interface": "^1.0.0",
     "@libp2p/peer-id": "^4.0.0",
     "@multiformats/multiaddr": "^12.1.10",

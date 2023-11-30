@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { CID } from 'multiformats/cid'
 import { Message } from '../../message/index.js'
 import {
@@ -8,10 +8,7 @@ import {
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
+import type { ComponentLogger, Logger, PeerId, PeerInfo, PeerStore } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface GetProvidersHandlerInit {

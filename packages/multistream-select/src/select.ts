@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { lpStream } from 'it-length-prefixed-stream'
 import pDefer from 'p-defer'
 import * as varint from 'uint8-varint'

@@ -35,8 +35,7 @@ import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
 import { multicodec } from './config.js'
 import { RPC } from './message/rpc.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface/pubsub'
+import type { PeerId, PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { multicodec }

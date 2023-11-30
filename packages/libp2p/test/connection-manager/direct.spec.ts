@@ -2,8 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Identify, identify } from '@libp2p/identify'
-import { AbortError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { AbortError, ERR_TIMEOUT, TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -29,10 +28,8 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Libp2p, Connection, PeerId } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const unsupportedAddr = multiaddr('/ip4/127.0.0.1/tcp/9999')

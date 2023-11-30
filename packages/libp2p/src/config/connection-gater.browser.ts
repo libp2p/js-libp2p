@@ -1,5 +1,5 @@
 import isPrivate from 'private-ip'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
+import type { ConnectionGater } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**

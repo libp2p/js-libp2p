@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
-import { stop } from '@libp2p/interface/startable'
+import { ERR_INVALID_PARAMETERS, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -9,10 +8,8 @@ import { expect } from 'aegir/chai'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { UPnPNAT } from '../src/upnp-nat.js'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
-import type { ComponentLogger, NodeInfo } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ComponentLogger, NodeInfo, PeerId } from '@libp2p/interface'
+import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
 
 interface StubbedUPnPNATComponents {
   peerId: PeerId

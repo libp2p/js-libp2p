@@ -110,7 +110,7 @@
     "p-wait-for": "^5.0.2",
     "protons": "^7.3.0",
     "sinon": "^17.0.0",
-    "ts-sinon": "^2.0.2",
+    "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1",
     "which": "^4.0.0"
   },

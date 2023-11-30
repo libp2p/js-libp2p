@@ -2,8 +2,7 @@
 
 import { bootstrap } from '@libp2p/bootstrap'
 import { randomBytes } from '@libp2p/crypto'
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
+import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import { kadDHT } from '@libp2p/kad-dht'
 import { mdns } from '@libp2p/mdns'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -15,15 +14,13 @@ import { createLibp2p } from '../../src/index.js'
 import { createBaseOptions } from '../fixtures/base-options.js'
 import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2pOptions } from '../../src/index.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Libp2p, PeerDiscovery, PeerDiscoveryEvents, PeerId } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 class TestPeerDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery {
-  get [peerDiscovery] (): PeerDiscovery {
+  get [peerDiscoverySymbol] (): PeerDiscovery {
     return this
   }
 

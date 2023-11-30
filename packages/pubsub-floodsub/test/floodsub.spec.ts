@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface/pubsub'
+import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'

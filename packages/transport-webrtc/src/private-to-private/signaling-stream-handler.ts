@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
@@ -6,7 +6,7 @@ import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.j
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
 import type { Logger } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 export interface IncomingStreamOpts extends IncomingStreamData {
   peerConnection: RTCPeerConnection

@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
-import { CustomEvent } from '@libp2p/interface/events'
+import { CustomEvent } from '@libp2p/interface'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import { MulticastDNS } from '../src/mdns.js'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { AddressManager } from '@libp2p/interface-internal'
 
 let discovery: MulticastDNS
 

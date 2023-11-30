@@ -1,4 +1,4 @@
-import { setMaxListeners } from '@libp2p/interface/events'
+import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
 import { pipe } from 'it-pipe'
@@ -8,9 +8,7 @@ import { pEvent } from 'p-event'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { RoutingTable } from './routing-table/index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 export interface QuerySelfInit {

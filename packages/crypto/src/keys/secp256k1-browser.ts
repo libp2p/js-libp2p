@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { isPromise } from '../util.js'

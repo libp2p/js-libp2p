@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface'
 import pDefer from 'p-defer'
 import { PROTOCOL_DHT, PROTOCOL_PREFIX, LAN_PREFIX } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -19,10 +19,7 @@ import {
   removePublicAddresses
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, QueryOptions, Validators, Selectors, KadDHT, QueryEvent } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { Logger, PeerDiscoveryEvents, PeerId, PeerInfo } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32

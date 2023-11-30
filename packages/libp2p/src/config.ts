@@ -1,5 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { FaultTolerance } from '@libp2p/interface/transport'
+import { CodeError, FaultTolerance } from '@libp2p/interface'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'

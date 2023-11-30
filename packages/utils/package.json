@@ -83,6 +83,10 @@
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
+    },
+    "./tracked-map": {
+      "types": "./dist/src/tracked-map.d.ts",
+      "import": "./dist/src/tracked-map.js"
     }
   },
   "eslintConfig": {

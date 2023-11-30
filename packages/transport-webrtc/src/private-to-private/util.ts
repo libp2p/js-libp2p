@@ -1,11 +1,10 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import { anySignal } from 'any-signal'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import type { LoggerOptions } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
+import type { LoggerOptions, Stream } from '@libp2p/interface'
 import type { AbortOptions, MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
 

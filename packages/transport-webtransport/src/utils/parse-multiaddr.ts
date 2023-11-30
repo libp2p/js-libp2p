@@ -1,9 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { WebTransport } from '@multiformats/multiaddr-matcher'
 import { bases, digest } from 'multiformats/basics'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 // @ts-expect-error - Not easy to combine these types.

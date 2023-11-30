@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Selectors } from '../index.js'
 
