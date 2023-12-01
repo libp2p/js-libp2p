@@ -19,7 +19,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
 import pDefer from 'p-defer'
-import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
+import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from 'libp2p'
 import type { ServiceMap, PeerId } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 

@@ -81,8 +81,7 @@
     "test:chrome-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\"",
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
-    "test:webkit": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser webkit",
-    "test:interop": "aegir test -t node -f dist/test/interop.js"
+    "test:webkit": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser webkit"
   },
   "dependencies": {
     "@libp2p/crypto": "^3.0.1",
@@ -120,17 +119,12 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^10.0.0",
     "@chainsafe/libp2p-noise": "^14.0.0",
     "@chainsafe/libp2p-yamux": "^6.0.1",
     "@libp2p/bootstrap": "^10.0.2",
     "@libp2p/circuit-relay-v2": "^1.0.2",
-    "@libp2p/daemon-client": "^8.0.0",
-    "@libp2p/daemon-server": "^7.0.0",
-    "@libp2p/floodsub": "^8.0.16",
     "@libp2p/identify": "^1.0.1",
     "@libp2p/interface-compliance-tests": "^5.0.2",
-    "@libp2p/interop": "^10.0.0",
     "@libp2p/kad-dht": "^11.0.2",
     "@libp2p/mdns": "^10.0.2",
     "@libp2p/mplex": "^10.0.2",
@@ -138,8 +132,6 @@
     "@libp2p/tcp": "^9.0.2",
     "@libp2p/websockets": "^8.0.2",
     "aegir": "^41.0.2",
-    "execa": "^8.0.1",
-    "go-libp2p": "^1.1.1",
     "it-pushable": "^3.2.1",
     "p-event": "^6.0.0",
     "p-times": "^4.0.0",
