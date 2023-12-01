@@ -20,6 +20,23 @@
     * @libp2p/tcp bumped from ^8.0.5 to ^8.0.6
     * @libp2p/websockets bumped from ^7.0.5 to ^7.0.6
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/multistream-select bumped from ^4.0.8 to ^4.0.9
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^10.0.1 to ^10.0.2
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/floodsub bumped from ^8.0.15 to ^8.0.16
+    * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/kad-dht bumped from ^11.0.1 to ^11.0.2
+    * @libp2p/mdns bumped from ^10.0.1 to ^10.0.2
+    * @libp2p/mplex bumped from ^10.0.1 to ^10.0.2
+    * @libp2p/plaintext bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/tcp bumped from ^9.0.1 to ^9.0.2
+    * @libp2p/websockets bumped from ^8.0.1 to ^8.0.2
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.0...libp2p-v1.0.1) (2023-11-30)
 
 
