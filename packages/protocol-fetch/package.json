@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/fetch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Implementation of the Fetch Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-fetch#readme",
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.0.1",
-    "@libp2p/interface-internal": "^0.1.11",
+    "@libp2p/interface-internal": "^1.0.0",
     "it-protobuf-stream": "^1.0.2",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/autonat",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Implementation of Autonat Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-autonat#readme",
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.0.1",
-    "@libp2p/interface-internal": "^0.1.11",
+    "@libp2p/interface-internal": "^1.0.0",
     "@libp2p/peer-id": "^4.0.1",
     "@multiformats/multiaddr": "^12.1.10",
     "it-first": "^3.0.3",

@@ -5,6 +5,12 @@
 
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#144](https://github.com/libp2p/js-libp2p-pubsub/issues/144)) ([1364ce4](https://github.com/libp2p/js-libp2p-pubsub/commit/1364ce41815d3392cfca61169e113cc5414ac2d9))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
+
 ## [8.0.12](https://github.com/libp2p/js-libp2p/compare/pubsub-v8.0.11...pubsub-v8.0.12) (2023-11-30)
 
 
