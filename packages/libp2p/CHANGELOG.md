@@ -37,6 +37,14 @@
     * @libp2p/tcp bumped from ^9.0.1 to ^9.0.2
     * @libp2p/websockets bumped from ^8.0.1 to ^8.0.2
 
+## [1.0.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.2...libp2p-v1.0.3) (2023-12-01)
+
+
+### Bug Fixes
+
+* export version from libp2p ([#2279](https://github.com/libp2p/js-libp2p/issues/2279)) ([8c169db](https://github.com/libp2p/js-libp2p/commit/8c169db1bcc923fa2edd3749e6669eb69d93f6b3))
+* log upgrade messages on connection ([#2281](https://github.com/libp2p/js-libp2p/issues/2281)) ([f537b37](https://github.com/libp2p/js-libp2p/commit/f537b37316c78d26939e9c8d04bcf67599992554))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.0...libp2p-v1.0.1) (2023-11-30)
 
 
