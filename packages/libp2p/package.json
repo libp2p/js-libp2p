@@ -12,6 +12,7 @@
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "publishConfig": {
+    "access": "public",
     "provenance": true
   },
   "keywords": [
@@ -24,6 +25,22 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -34,6 +51,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./version": {
+      "types": "./dist/src/version.d.ts",
+      "import": "./dist/src/version.js"
     }
   },
   "eslintConfig": {
