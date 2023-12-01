@@ -16,9 +16,7 @@ describe('Multistream', () => {
       const inputStream = lpStream(duplexes[0])
       const outputStream = lpStream(duplexes[1])
 
-      void Multistream.write(inputStream, input, {
-        log: logger('mss:test')
-      })
+      void Multistream.write(inputStream, input)
 
       const output = await outputStream.read()
       expect(output.subarray()).to.equalBytes(input)
@@ -36,7 +34,9 @@ describe('Multistream', () => {
 
       void inputStream.write(uint8ArrayFromString(`${input}\n`))
 
-      const output = await Multistream.read(outputStream)
+      const output = await Multistream.read(outputStream, {
+        log: logger('mss:test')
+      })
       expect(output.subarray()).to.equalBytes(inputBuf)
     })
 
@@ -50,7 +50,9 @@ describe('Multistream', () => {
 
       void inputStream.write(inputBuf)
 
-      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
+      await expect(Multistream.read(outputStream, {
+        log: logger('mss:test')
+      })).to.eventually.be.rejected()
         .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
     })
 
@@ -66,7 +68,9 @@ describe('Multistream', () => {
 
       void inputStream.write(input)
 
-      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
+      await expect(Multistream.read(outputStream, {
+        log: logger('mss:test')
+      })).to.eventually.be.rejected()
         .with.property('code', 'ERR_MSG_DATA_TOO_LONG')
     })
 
@@ -79,7 +83,9 @@ describe('Multistream', () => {
 
       void inputStream.write(input)
 
-      await expect(Multistream.read(outputStream)).to.eventually.be.rejected()
+      await expect(Multistream.read(outputStream, {
+        log: logger('mss:test')
+      })).to.eventually.be.rejected()
         .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
     })
 

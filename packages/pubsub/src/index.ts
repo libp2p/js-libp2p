@@ -4,6 +4,7 @@
  * A set of components to be extended in order to create a pubsub implementation.
  *
  * @example
+ *
  * ```javascript
  * import { PubSubBaseProtocol } from '@libp2p/pubsub'
  *

@@ -78,20 +78,20 @@ export async function select <Stream extends SelectStream> (stream: Stream, prot
     throw new Error('At least one protocol must be specified')
   }
 
-  options?.log?.trace('select: write ["%s", "%s"]', PROTOCOL_ID, protocol)
+  options.log.trace('select: write ["%s", "%s"]', PROTOCOL_ID, protocol)
   const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
   const p2 = uint8ArrayFromString(`${protocol}\n`)
   await multistream.writeAll(lp, [p1, p2], options)
 
-  options?.log?.trace('select: reading multistream-select header')
+  options.log.trace('select: reading multistream-select header')
   let response = await multistream.readString(lp, options)
-  options?.log?.trace('select: read "%s"', response)
+  options.log.trace('select: read "%s"', response)
 
   // Read the protocol response if we got the protocolId in return
   if (response === PROTOCOL_ID) {
-    options?.log?.trace('select: reading protocol response')
+    options.log.trace('select: reading protocol response')
     response = await multistream.readString(lp, options)
-    options?.log?.trace('select: read "%s"', response)
+    options.log.trace('select: read "%s"', response)
   }
 
   // We're done
@@ -101,11 +101,11 @@ export async function select <Stream extends SelectStream> (stream: Stream, prot
 
   // We haven't gotten a valid ack, try the other protocols
   for (const protocol of protocols) {
-    options?.log?.trace('select: write "%s"', protocol)
+    options.log.trace('select: write "%s"', protocol)
     await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
-    options?.log?.trace('select: reading protocol response')
+    options.log.trace('select: reading protocol response')
     const response = await multistream.readString(lp, options)
-    options?.log?.trace('select: read "%s" for "%s"', response, protocol)
+    options.log.trace('select: read "%s" for "%s"', response, protocol)
 
     if (response === protocol) {
       return { stream: lp.unwrap(), protocol }
@@ -163,7 +163,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
         if (!sentProtocol) {
           sendingProtocol = true
 
-          options?.log?.trace('optimistic: write ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
+          options.log.trace('optimistic: write ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
 
           const protocolString = `${protocol}\n`
 
@@ -176,7 +176,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
             buf
           ).subarray()
 
-          options?.log?.trace('optimistic: wrote ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
+          options.log.trace('optimistic: wrote ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength)
 
           sentProtocol = true
           sendingProtocol = false
@@ -198,7 +198,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
 
   async function negotiate (): Promise<void> {
     if (negotiating) {
-      options?.log?.trace('optimistic: already negotiating %s stream', protocol)
+      options.log.trace('optimistic: already negotiating %s stream', protocol)
       await doneNegotiating.promise
       return
     }
@@ -208,13 +208,13 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
     try {
       // we haven't sent the protocol yet, send it now
       if (!sentProtocol) {
-        options?.log?.trace('optimistic: doing send protocol for %s stream', protocol)
+        options.log.trace('optimistic: doing send protocol for %s stream', protocol)
         await doSendProtocol()
       }
 
       // if we haven't read the protocol response yet, do it now
       if (!readProtocol) {
-        options?.log?.trace('optimistic: doing read protocol for %s stream', protocol)
+        options.log.trace('optimistic: doing read protocol for %s stream', protocol)
         await doReadProtocol()
       }
     } finally {
@@ -233,12 +233,12 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
     sendingProtocol = true
 
     try {
-      options?.log?.trace('optimistic: write ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
+      options.log.trace('optimistic: write ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
       await lp.writeV([
         uint8ArrayFromString(`${PROTOCOL_ID}\n`),
         uint8ArrayFromString(`${protocol}\n`)
       ])
-      options?.log?.trace('optimistic: wrote ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
+      options.log.trace('optimistic: wrote ["%s", "%s", data] in source', PROTOCOL_ID, protocol)
     } finally {
       sentProtocol = true
       sendingProtocol = false
@@ -255,15 +255,15 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
     readingProtocol = true
 
     try {
-      options?.log?.trace('optimistic: reading multistream select header')
+      options.log.trace('optimistic: reading multistream select header')
       let response = await multistream.readString(lp, options)
-      options?.log?.trace('optimistic: read multistream select header "%s"', response)
+      options.log.trace('optimistic: read multistream select header "%s"', response)
 
       if (response === PROTOCOL_ID) {
         response = await multistream.readString(lp, options)
       }
 
-      options?.log?.trace('optimistic: read protocol "%s", expecting "%s"', response, protocol)
+      options.log.trace('optimistic: read protocol "%s", expecting "%s"', response, protocol)
 
       if (response !== protocol) {
         throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
@@ -279,7 +279,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
     // make sure we've done protocol negotiation before we read stream data
     await negotiate()
 
-    options?.log?.trace('optimistic: reading data from "%s" stream', protocol)
+    options.log.trace('optimistic: reading data from "%s" stream', protocol)
     yield * lp.unwrap().source
   })()
 
@@ -291,7 +291,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       // this before closing the readable end of the stream
       if (!negotiated) {
         await negotiate().catch(err => {
-          options?.log?.error('could not negotiate protocol before close read', err)
+          options.log.error('could not negotiate protocol before close read', err)
         })
       }
 
@@ -308,7 +308,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       // this before closing the writable end of the stream
       if (!negotiated) {
         await negotiate().catch(err => {
-          options?.log?.error('could not negotiate protocol before close write', err)
+          options.log.error('could not negotiate protocol before close write', err)
         })
       }
 
