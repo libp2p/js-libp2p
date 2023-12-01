@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * Generate, import, and export PeerIDs, for use with [IPFS](https://github.com/ipfs/ipfs).
+ * Generate, import, and export PeerIDs.
  *
  * A Peer ID is the SHA-256 [multihash](https://github.com/multiformats/multihash) of a public key.
  *

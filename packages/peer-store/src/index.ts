@@ -1,3 +1,9 @@
+/**
+ * @packageDocumentation
+ *
+ * The peer store is where libp2p stores data about the peers it has encountered on the network.
+ */
+
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'

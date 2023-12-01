@@ -9,7 +9,7 @@
  *
  * Instead please use [gossipsub](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub) - a more complete implementation which is also compatible with floodsub.
  *
- * @example
+ * @example Configuring libp2p to use floodsub
  *
  * ```JavaScript
  * import { createLibp2pNode } from 'libp2p'
