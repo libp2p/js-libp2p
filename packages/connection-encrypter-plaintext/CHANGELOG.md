@@ -12,6 +12,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.0...plaintext-v1.0.1) (2023-11-30)
 
 

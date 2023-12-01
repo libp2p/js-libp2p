@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id-factory",
-  "version": "3.0.10",
+  "version": "4.0.0",
   "description": "Create PeerId instances",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory#readme",

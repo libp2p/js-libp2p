@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-record",
-  "version": "6.0.11",
+  "version": "7.0.0",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record#readme",
@@ -63,7 +63,7 @@
     "@libp2p/crypto": "^3.0.1",
     "@libp2p/interface": "^1.0.1",
     "@libp2p/peer-id": "^4.0.1",
-    "@libp2p/utils": "^5.0.1",
+    "@libp2p/utils": "^5.0.2",
     "@multiformats/multiaddr": "^12.1.10",
     "protons-runtime": "^5.0.0",
     "uint8-varint": "^2.0.0",
@@ -71,7 +71,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.10",
+    "@libp2p/peer-id-factory": "^4.0.0",
     "aegir": "^41.0.2",
     "protons": "^7.3.0"
   }

@@ -1,5 +1,11 @@
 # Changelog
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^4.0.10 to ^5.0.0
+
 ## [1.0.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v0.1.11...interface-internal-v1.0.0) (2023-12-01)
 
 

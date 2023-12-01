@@ -11,6 +11,28 @@
   * dependencies
     * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
 
+## [9.0.0](https://github.com/libp2p/js-libp2p/compare/pubsub-v8.0.13...pubsub-v9.0.0) (2023-12-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires libp2p v1
+
+### Bug Fixes
+
+* release majors of modules that had patches during v1.0 ([#2286](https://github.com/libp2p/js-libp2p/issues/2286)) ([738dd40](https://github.com/libp2p/js-libp2p/commit/738dd40f1e1b8ed1b83693763cc91c218ec2b41b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/peer-collections bumped from ^4.0.10 to ^5.0.0
+    * @libp2p/utils bumped from ^5.0.1 to ^5.0.2
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+
 ## [8.0.12](https://github.com/libp2p/js-libp2p/compare/pubsub-v8.0.11...pubsub-v8.0.12) (2023-11-30)
 
 
