@@ -11,6 +11,12 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-keychain/issues/70)) ([4da4a08](https://github.com/libp2p/js-libp2p-keychain/commit/4da4a08b86f436c36e2fae48ecc48817e9b8066f))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/keychain-v4.0.0...keychain-v4.0.1) (2023-11-30)
 
 

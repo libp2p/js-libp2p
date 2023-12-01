@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-collections",
-  "version": "4.0.10",
+  "version": "5.0.0",
   "description": "Stores values against a peer id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections#readme",
@@ -57,7 +57,7 @@
     "@libp2p/peer-id": "^4.0.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.10",
+    "@libp2p/peer-id-factory": "^4.0.0",
     "aegir": "^41.0.2"
   }
 }

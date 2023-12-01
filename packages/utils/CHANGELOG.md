@@ -11,6 +11,12 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#100](https://github.com/libp2p/js-libp2p-utils/issues/100)) ([da6547c](https://github.com/libp2p/js-libp2p-utils/commit/da6547cdd073ba1a4225be5a419c6776c4ebe6f1))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.0.0...utils-v5.0.1) (2023-11-30)
 
 

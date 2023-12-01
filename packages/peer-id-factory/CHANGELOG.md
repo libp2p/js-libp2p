@@ -5,6 +5,17 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+## [4.0.0](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.10...peer-id-factory-v4.0.0) (2023-12-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires libp2p v1
+
+### Bug Fixes
+
+* release majors of modules that had patches during v1.0 ([#2286](https://github.com/libp2p/js-libp2p/issues/2286)) ([738dd40](https://github.com/libp2p/js-libp2p/commit/738dd40f1e1b8ed1b83693763cc91c218ec2b41b))
+
 ## [3.0.10](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v3.0.9...peer-id-factory-v3.0.10) (2023-11-30)
 
 
