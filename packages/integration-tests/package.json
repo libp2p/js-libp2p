@@ -40,7 +40,7 @@
     "@libp2p/identify": "^1.0.0",
     "@libp2p/interface": "^1.0.0",
     "@libp2p/interface-compliance-tests": "^5.0.0",
-    "@libp2p/interface-internal": "^1.0.0",
+    "@libp2p/interface-internal": "^0.1.11",
     "@libp2p/mplex": "^10.0.0",
     "@libp2p/peer-id": "^4.0.0",
     "@libp2p/peer-id-factory": "^3.0.8",
