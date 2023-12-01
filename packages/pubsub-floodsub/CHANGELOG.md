@@ -17,6 +17,14 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^8.0.12 to ^8.0.13
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
+
 ## [8.0.15](https://github.com/libp2p/js-libp2p/compare/floodsub-v8.0.14...floodsub-v8.0.15) (2023-11-30)
 
 

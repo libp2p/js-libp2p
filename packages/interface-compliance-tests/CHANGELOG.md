@@ -11,6 +11,12 @@
   * dependencies
     * @libp2p/multistream-select bumped from ^4.0.8 to ^4.0.9
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.0...interface-compliance-tests-v5.0.1) (2023-11-30)
 
 

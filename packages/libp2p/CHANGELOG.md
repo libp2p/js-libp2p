@@ -37,6 +37,23 @@
     * @libp2p/tcp bumped from ^9.0.1 to ^9.0.2
     * @libp2p/websockets bumped from ^8.0.1 to ^8.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^10.0.2 to ^10.0.3
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.2 to ^1.0.3
+    * @libp2p/identify bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/kad-dht bumped from ^11.0.2 to ^11.0.3
+    * @libp2p/mdns bumped from ^10.0.2 to ^10.0.3
+    * @libp2p/mplex bumped from ^10.0.2 to ^10.0.3
+    * @libp2p/plaintext bumped from ^1.0.2 to ^1.0.3
+    * @libp2p/tcp bumped from ^9.0.2 to ^9.0.3
+    * @libp2p/websockets bumped from ^8.0.2 to ^8.0.3
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.2...libp2p-v1.0.3) (2023-12-01)
 
 
