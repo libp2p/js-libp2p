@@ -37,7 +37,7 @@ jobs:
           - name: js-libp2p-example-circuit-relay
             repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
             deps:
-              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay'
+              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
