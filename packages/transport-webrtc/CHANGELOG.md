@@ -44,6 +44,15 @@
     * @libp2p/websockets bumped from ^8.0.3 to ^8.0.4
     * libp2p bumped from ^1.0.4 to ^1.0.5
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/websockets bumped from ^8.0.4 to ^8.0.5
+    * libp2p bumped from ^1.0.5 to ^1.0.6
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.0...webrtc-v4.0.1) (2023-11-30)
 
 

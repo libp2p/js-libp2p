@@ -76,6 +76,32 @@
     * @libp2p/tcp bumped from ^9.0.3 to ^9.0.4
     * @libp2p/websockets bumped from ^8.0.3 to ^8.0.4
 
+## [1.0.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.5...libp2p-v1.0.6) (2023-12-02)
+
+
+### Bug Fixes
+
+* remove duplicate autodial from startup ([#2289](https://github.com/libp2p/js-libp2p/issues/2289)) ([bcfa159](https://github.com/libp2p/js-libp2p/commit/bcfa15993fd533c56c7523384e4b135c4930855b))
+* set libp2p status to started before stopping ([#2288](https://github.com/libp2p/js-libp2p/issues/2288)) ([09dd029](https://github.com/libp2p/js-libp2p/commit/09dd02987d84770547f7dfd347fa09a0a98d3081))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/multistream-select bumped from ^5.0.0 to ^5.0.1
+  * devDependencies
+    * @libp2p/bootstrap bumped from ^10.0.4 to ^10.0.5
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/identify bumped from ^1.0.3 to ^1.0.4
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/kad-dht bumped from ^11.0.4 to ^11.0.5
+    * @libp2p/mdns bumped from ^10.0.4 to ^10.0.5
+    * @libp2p/mplex bumped from ^10.0.4 to ^10.0.5
+    * @libp2p/plaintext bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/tcp bumped from ^9.0.4 to ^9.0.5
+    * @libp2p/websockets bumped from ^8.0.4 to ^8.0.5
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.2...libp2p-v1.0.3) (2023-12-01)
 
 

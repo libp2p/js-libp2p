@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "9.0.4",
+  "version": "9.0.5",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp#readme",
@@ -63,7 +63,7 @@
     "stream-to-it": "^0.2.2"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.0.4",
+    "@libp2p/interface-compliance-tests": "^5.0.5",
     "@libp2p/logger": "^4.0.1",
     "aegir": "^41.0.2",
     "it-all": "^3.0.3",

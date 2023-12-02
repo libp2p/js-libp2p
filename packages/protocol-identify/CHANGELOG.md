@@ -15,6 +15,13 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
 
+## [1.0.4](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.3...identify-v1.0.4) (2023-12-02)
+
+
+### Bug Fixes
+
+* do not wait for stream reads and writes at the same time ([#2290](https://github.com/libp2p/js-libp2p/issues/2290)) ([10ea197](https://github.com/libp2p/js-libp2p/commit/10ea19700ae0c464734c88eb5922e2faeb27446a))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.0...identify-v1.0.1) (2023-11-30)
 
 
