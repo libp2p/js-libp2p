@@ -215,6 +215,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       this.log('libp2p has started')
     } catch (err: any) {
       this.log.error('An error occurred starting libp2p', err)
+      // set status to 'started' so this.stop() will stop any running components
+      this.status = 'started'
       await this.stop()
       throw err
     }
