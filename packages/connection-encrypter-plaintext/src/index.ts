@@ -75,23 +75,26 @@ class Plaintext implements ConnectionEncrypter {
       type = KeyType.Secp256k1
     }
 
-    // Encode the public key and write it to the remote peer
-    await pb.write({
-      id: localId.toBytes(),
-      pubkey: {
-        Type: type,
-        Data: localId.publicKey ?? new Uint8Array(0)
-      }
-    }, {
-      signal
-    })
-
     this.log('write pubkey exchange to peer %p', remoteId)
 
-    // Get the Exchange message
-    const response = await pb.read({
-      signal
-    })
+    const [
+      , response
+    ] = await Promise.all([
+      // Encode the public key and write it to the remote peer
+      pb.write({
+        id: localId.toBytes(),
+        pubkey: {
+          Type: type,
+          Data: localId.publicKey ?? new Uint8Array(0)
+        }
+      }, {
+        signal
+      }),
+      // Get the Exchange message
+      pb.read({
+        signal
+      })
+    ])
 
     let peerId
     try {

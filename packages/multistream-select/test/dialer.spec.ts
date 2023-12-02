@@ -5,6 +5,7 @@ import { logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
+import drain from 'it-drain'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import pTimeout from 'p-timeout'
@@ -29,7 +30,7 @@ describe('Dialer', () => {
 
       // Ensure stream is usable after selection - send data outgoing -> incoming
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
-      void pipe(input, selection.stream)
+      void pipe(input, selection.stream, drain)
 
       // wait for incoming end to have completed negotiation
       await handled

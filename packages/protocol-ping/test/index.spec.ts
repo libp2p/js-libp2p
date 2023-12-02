@@ -122,7 +122,7 @@ describe('ping', () => {
     const input = Uint8Array.from([0, 1, 2, 3, 4])
 
     const b = byteStream(outgoingStream)
-    await b.write(input)
+    void b.write(input)
 
     const output = await b.read()
 

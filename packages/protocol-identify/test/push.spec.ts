@@ -107,7 +107,7 @@ describe('identify (push)', () => {
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     const pb = pbStream(stream)
-    await pb.write({
+    void pb.write({
       publicKey: remotePeer.publicKey,
       protocols: [
         updatedProtocol
