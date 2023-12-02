@@ -19,6 +19,20 @@
     * @libp2p/interface-compliance-tests bumped from ^5.0.3 to ^5.0.4
     * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
 
+## [1.0.5](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.4...plaintext-v1.0.5) (2023-12-02)
+
+
+### Bug Fixes
+
+* do not wait for stream reads and writes at the same time ([#2290](https://github.com/libp2p/js-libp2p/issues/2290)) ([10ea197](https://github.com/libp2p/js-libp2p/commit/10ea19700ae0c464734c88eb5922e2faeb27446a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.0...plaintext-v1.0.1) (2023-11-30)
 
 

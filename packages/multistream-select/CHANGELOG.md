@@ -11,6 +11,13 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-multistream-select/issues/70)) ([f87b1c3](https://github.com/libp2p/js-libp2p-multistream-select/commit/f87b1c3505934ebeed6eff018af8d3042e7e6e06))
 
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.0.0...multistream-select-v5.0.1) (2023-12-02)
+
+
+### Bug Fixes
+
+* do not wait for stream reads and writes at the same time ([#2290](https://github.com/libp2p/js-libp2p/issues/2290)) ([10ea197](https://github.com/libp2p/js-libp2p/commit/10ea19700ae0c464734c88eb5922e2faeb27446a))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.9...multistream-select-v5.0.0) (2023-12-01)
 
 
