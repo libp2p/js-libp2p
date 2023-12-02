@@ -127,13 +127,17 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     const signal = AbortSignal.timeout(this.timeout)
 
     const bytes = byteStream(connection)
-    await bytes.write(localNonce, {
-      signal
-    })
 
-    const result = await bytes.read(NONCE_LENGTH, {
-      signal
-    })
+    const [
+      , result
+    ] = await Promise.all([
+      bytes.write(localNonce, {
+        signal
+      }),
+      bytes.read(NONCE_LENGTH, {
+        signal
+      })
+    ])
 
     const remoteNonce = result.subarray()
 
