@@ -76,7 +76,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
     }
 
     await Promise.all(this.routers.map(async (router) => {
@@ -90,7 +90,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
     }
 
     return Promise.any(this.routers.map(async (router) => {

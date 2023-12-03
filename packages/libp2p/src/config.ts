@@ -28,10 +28,6 @@ const DefaultConfig: Partial<Libp2pInit> = {
 export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
   const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, opts)
 
-  if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
-    throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
-  }
-
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
   }
