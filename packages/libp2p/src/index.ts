@@ -76,7 +76,7 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
   /**
    * An array that must include at least 1 compliant transport
    */
-  transports: Array<(components: Components) => Transport>
+  transports?: Array<(components: Components) => Transport>
   streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
   connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
   peerDiscovery?: Array<(components: Components) => PeerDiscovery>
@@ -150,7 +150,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

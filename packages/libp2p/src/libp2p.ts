@@ -145,7 +145,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     })
 
     // Transport modules
-    init.transports.forEach((fn, index) => {
+    init.transports?.forEach((fn, index) => {
       this.components.transportManager.add(this.configureComponent(`transport-${index}`, fn(this.components)))
     })
 
@@ -385,7 +385,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
   options.peerId ??= await createEd25519PeerId()
 
   return new Libp2pNode(validateConfig(options))
