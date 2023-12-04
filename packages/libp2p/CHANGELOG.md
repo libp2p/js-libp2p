@@ -76,6 +76,13 @@
     * @libp2p/tcp bumped from ^9.0.3 to ^9.0.4
     * @libp2p/websockets bumped from ^8.0.3 to ^8.0.4
 
+## [1.0.8](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.7...libp2p-v1.0.8) (2023-12-04)
+
+
+### Bug Fixes
+
+* make transports optional ([#2295](https://github.com/libp2p/js-libp2p/issues/2295)) ([887c6ff](https://github.com/libp2p/js-libp2p/commit/887c6ffe1b38bc9f0219b861b36d71de59095a8e))
+
 ## [1.0.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.6...libp2p-v1.0.7) (2023-12-04)
 
 
