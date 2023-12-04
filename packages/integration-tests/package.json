@@ -41,6 +41,7 @@
     "@libp2p/daemon-server": "^7.0.1",
     "@libp2p/dcutr": "^1.0.0",
     "@libp2p/fetch": "^1.0.0",
+    "@libp2p/floodsub": "^9.0.0",
     "@libp2p/identify": "^1.0.0",
     "@libp2p/interface": "^1.0.0",
     "@libp2p/interface-compliance-tests": "^5.0.0",
