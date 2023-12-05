@@ -82,10 +82,6 @@ class WebTransportTransport implements Transport {
     options?.signal?.throwIfAborted()
 
     this.log('dialing %s', ma)
-    const localPeer = this.components.peerId
-    if (localPeer === undefined) {
-      throw new Error('Need a local peerid')
-    }
 
     options = options ?? {}
 
@@ -167,7 +163,7 @@ class WebTransportTransport implements Transport {
           cleanUpWTSession('remote_close')
         })
 
-      if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
+      if (!await this.authenticateWebTransport(wt, remotePeer, certhashes)) {
         throw new Error('Failed to authenticate webtransport')
       }
 
@@ -213,7 +209,7 @@ class WebTransportTransport implements Transport {
     }
   }
 
-  async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
+  async authenticateWebTransport (wt: InstanceType<typeof WebTransport>, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
@@ -246,7 +242,7 @@ class WebTransportTransport implements Transport {
 
     const n = noise()(this.components)
 
-    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, remotePeer)
+    const { remoteExtensions } = await n.secureOutbound(duplex, remotePeer)
 
     // We're done with this authentication stream
     writer.close().catch((err: Error) => {
