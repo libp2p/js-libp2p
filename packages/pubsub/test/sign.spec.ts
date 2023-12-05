@@ -10,7 +10,7 @@ import {
 } from '../src/sign.js'
 import { randomSeqno, toRpcMessage } from '../src/utils.js'
 import { RPC } from './message/rpc.js'
-import type { PeerId, PubSubRPCMessage } from '@libp2p/interface'
+import type { PeerId, PrivateKey, PubSubRPCMessage } from '@libp2p/interface'
 
 function encodeMessage (message: PubSubRPCMessage): Uint8Array {
   return RPC.Message.encode(message)
@@ -18,11 +18,13 @@ function encodeMessage (message: PubSubRPCMessage): Uint8Array {
 
 describe('message signing', () => {
   let peerId: PeerId
+  let privateKey: PrivateKey
 
   before(async () => {
     peerId = await PeerIdFactory.createRSAPeerId({
       bits: 1024
     })
+    privateKey = await keys.unmarshalPrivateKey(peerId.privateKey)
   })
 
   it('should be able to sign and verify a message', async () => {
@@ -44,7 +46,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(peerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(peerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
@@ -79,7 +81,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(secPeerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(secPeerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.eql(expectedSignature)
@@ -113,7 +115,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(peerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(peerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
