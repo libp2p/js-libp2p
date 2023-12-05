@@ -20,7 +20,7 @@ import type { PeerId } from '@libp2p/interface'
  * ```
  */
 export class PeerList {
-  private readonly list: string[]
+  private list: string[]
 
   constructor (list?: PeerList | Iterable<PeerId>) {
     this.list = []
@@ -148,7 +148,15 @@ export class PeerList {
     return len
   }
 
+  clear (): void {
+    this.list = []
+  }
+
   get length (): number {
     return this.list.length
   }
+}
+
+export function peerList (): PeerList {
+  return new PeerList()
 }

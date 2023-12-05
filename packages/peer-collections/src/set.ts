@@ -122,3 +122,7 @@ export class PeerSet {
     return output
   }
 }
+
+export function peerSet (): PeerSet {
+  return new PeerSet()
+}
