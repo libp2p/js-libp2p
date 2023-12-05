@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { Circuit } from '@multiformats/mafmt'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
@@ -25,6 +25,7 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
     this.transportManager = components.transportManager
 
     this.shutdownController = init.shutdownController
+    setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
   async listen (): Promise<void> {
