@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, setMaxListeners } from '@libp2p/interface'
 import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -56,6 +56,7 @@ export class WebRTCTransport implements Transport, Startable {
   ) {
     this.log = components.logger.forComponent('libp2p:webrtc')
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     if (components.metrics != null) {
       this.metrics = {
