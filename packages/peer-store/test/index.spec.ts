@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId } from '@libp2p/interface'
+import { unmarshalPrivateKey } from '@libp2p/crypto'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PrivateKey } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -15,12 +16,14 @@ const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 
 describe('PersistentPeerStore', () => {
   let peerId: PeerId
+  let privateKey: PrivateKey
   let otherPeerId: PeerId
   let peerStore: PersistentPeerStore
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
+    privateKey = await unmarshalPrivateKey(peerId.privateKey)
     otherPeerId = await createEd25519PeerId()
     events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
@@ -176,7 +179,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ]
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, privateKey)
 
       await expect(peerStore.has(peerId)).to.eventually.be.false()
       await peerStore.consumePeerRecord(signedPeerRecord.marshal())
@@ -205,7 +208,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ]
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, privateKey)
 
       await peerStore.consumePeerRecord(signedPeerRecord.marshal())
 
@@ -228,7 +231,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
         seqNumber: 1n
-      }), peerId)
+      }), privateKey)
 
       const newSignedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
         peerId,
@@ -236,7 +239,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ],
         seqNumber: 2n
-      }), peerId)
+      }), privateKey)
 
       await expect(peerStore.consumePeerRecord(newSignedPeerRecord.marshal())).to.eventually.equal(true)
       await expect(peerStore.consumePeerRecord(oldSignedPeerRecord.marshal())).to.eventually.equal(false)
@@ -257,7 +260,7 @@ describe('PersistentPeerStore', () => {
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ]
-      }), peerId)
+      }), privateKey)
 
       await expect(peerStore.has(peerId)).to.eventually.be.false()
       await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), otherPeerId)).to.eventually.equal(false)

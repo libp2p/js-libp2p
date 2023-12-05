@@ -7,7 +7,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { PeerRecord } from '../src/peer-record/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerId, PrivateKey } from '@libp2p/interface'
 
 describe('PeerRecord', () => {
   let peerId: PeerId
@@ -30,7 +30,7 @@ describe('PeerRecord', () => {
     // The payload isn't going to match because of how the protobuf encodes uint64 values
     // They are marshalled correctly on both sides, but will be off by 1 value
     // Signatures will still be validated
-    const jsEnv = await RecordEnvelope.seal(record, peerId)
+    const jsEnv = await RecordEnvelope.seal(record, key)
     expect(env.payloadType).to.eql(jsEnv.payloadType)
   })
 
@@ -117,10 +117,12 @@ describe('PeerRecord', () => {
 
 describe('PeerRecord inside Envelope', () => {
   let peerId: PeerId
+  let privateKey: PrivateKey
   let peerRecord: PeerRecord
 
   before(async () => {
     peerId = await createEd25519PeerId()
+    privateKey = await unmarshalPrivateKey(peerId.privateKey)
     const multiaddrs = [
       multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]
@@ -129,7 +131,7 @@ describe('PeerRecord inside Envelope', () => {
   })
 
   it('creates an envelope with the PeerRecord and can unmarshal it', async () => {
-    const e = await RecordEnvelope.seal(peerRecord, peerId)
+    const e = await RecordEnvelope.seal(peerRecord, privateKey)
     const byteE = e.marshal()
 
     const decodedE = await RecordEnvelope.openAndCertify(byteE, PeerRecord.DOMAIN)

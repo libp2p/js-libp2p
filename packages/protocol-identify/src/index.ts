@@ -23,7 +23,7 @@ import {
   MULTICODEC_IDENTIFY_PUSH
 } from './consts.js'
 import { Identify as IdentifyClass } from './identify.js'
-import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection } from '@libp2p/interface'
+import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface IdentifyInit {
@@ -67,6 +67,7 @@ export interface IdentifyInit {
 
 export interface IdentifyComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   peerStore: PeerStore
   connectionManager: ConnectionManager
   registrar: Registrar

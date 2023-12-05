@@ -5,7 +5,7 @@ import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Identify as IdentifyMessage } from '../../src/pb/message.js'
-import type { ComponentLogger, Libp2pEvents, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, Stream } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, Stream, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export function matchPeerId (peerId: PeerId): Sinon.SinonMatcher {
@@ -14,6 +14,7 @@ export function matchPeerId (peerId: PeerId): Sinon.SinonMatcher {
 
 export interface StubbedIdentifyComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   peerStore: StubbedInstance<PeerStore>
   connectionManager: StubbedInstance<ConnectionManager>
   registrar: StubbedInstance<Registrar>

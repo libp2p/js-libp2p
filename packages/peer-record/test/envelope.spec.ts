@@ -1,10 +1,11 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { RecordEnvelope } from '../src/envelope/index.js'
 import { codes as ErrorCodes } from '../src/errors.js'
-import type { PeerId, Record } from '@libp2p/interface'
+import type { PeerId, PrivateKey, Record } from '@libp2p/interface'
 
 const domain = 'libp2p-testing'
 const codec = uint8arrayFromString('/libp2p/testdata')
@@ -32,10 +33,12 @@ class TestRecord implements Record {
 describe('Envelope', () => {
   const payloadType = codec
   let peerId: PeerId
+  let privateKey: PrivateKey
   let testRecord: TestRecord
 
   before(async () => {
     peerId = await createEd25519PeerId()
+    privateKey = await unmarshalPrivateKey(peerId.privateKey)
     testRecord = new TestRecord('test-data')
   })
 
@@ -45,6 +48,7 @@ describe('Envelope', () => {
 
     const envelope = new RecordEnvelope({
       peerId,
+      publicKey: privateKey.public,
       payloadType,
       payload,
       signature
@@ -58,7 +62,7 @@ describe('Envelope', () => {
   })
 
   it('can seal a record', async () => {
-    const envelope = await RecordEnvelope.seal(testRecord, peerId)
+    const envelope = await RecordEnvelope.seal(testRecord, privateKey)
     expect(envelope).to.exist()
     expect(envelope.peerId.equals(peerId)).to.eql(true)
     expect(envelope.payloadType).to.eql(payloadType)
@@ -67,7 +71,7 @@ describe('Envelope', () => {
   })
 
   it('can open and verify a sealed record', async () => {
-    const envelope = await RecordEnvelope.seal(testRecord, peerId)
+    const envelope = await RecordEnvelope.seal(testRecord, privateKey)
     const rawEnvelope = envelope.marshal()
 
     const unmarshalledEnvelope = await RecordEnvelope.openAndCertify(rawEnvelope, testRecord.domain)
@@ -78,7 +82,7 @@ describe('Envelope', () => {
   })
 
   it('throw on open and verify when a different domain is used', async () => {
-    const envelope = await RecordEnvelope.seal(testRecord, peerId)
+    const envelope = await RecordEnvelope.seal(testRecord, privateKey)
     const rawEnvelope = envelope.marshal()
 
     await expect(RecordEnvelope.openAndCertify(rawEnvelope, '/bad-domain'))

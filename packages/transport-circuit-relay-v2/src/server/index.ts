@@ -18,7 +18,7 @@ import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } f
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
@@ -75,6 +75,7 @@ export interface CircuitRelayServerComponents extends AdvertServiceComponents {
   peerStore: PeerStore
   addressManager: AddressManager
   peerId: PeerId
+  privateKey: PrivateKey
   connectionManager: ConnectionManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
@@ -95,6 +96,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   private readonly peerStore: PeerStore
   private readonly addressManager: AddressManager
   private readonly peerId: PeerId
+  private readonly privateKey: PrivateKey
   private readonly connectionManager: ConnectionManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
@@ -118,6 +120,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.peerStore = components.peerStore
     this.addressManager = components.addressManager
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
@@ -303,7 +306,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       peer: remotePeer,
       relay: this.peerId,
       expiration: Number(expire)
-    }), this.peerId)
+    }), this.privateKey)
 
     return {
       addrs,

@@ -1,4 +1,4 @@
-import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import * as varint from 'uint8-varint'
@@ -7,10 +7,11 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
-import type { PeerId, Record, Envelope } from '@libp2p/interface'
+import type { Record, Envelope, PrivateKey, PublicKey, PeerId } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {
   peerId: PeerId
+  publicKey: PublicKey
   payloadType: Uint8Array
   payload: Uint8Array
   signature: Uint8Array
@@ -23,9 +24,11 @@ export class RecordEnvelope implements Envelope {
   static createFromProtobuf = async (data: Uint8Array | Uint8ArrayList): Promise<RecordEnvelope> => {
     const envelopeData = Protobuf.decode(data)
     const peerId = await peerIdFromKeys(envelopeData.publicKey)
+    const publicKey = await unmarshalPublicKey(envelopeData.publicKey)
 
     return new RecordEnvelope({
       peerId,
+      publicKey,
       payloadType: envelopeData.payloadType,
       payload: envelopeData.payload,
       signature: envelopeData.signature
@@ -34,22 +37,18 @@ export class RecordEnvelope implements Envelope {
 
   /**
    * Seal marshals the given Record, places the marshaled bytes inside an Envelope
-   * and signs it with the given peerId's private key
+   * and signs it with the given private key
    */
-  static seal = async (record: Record, peerId: PeerId): Promise<RecordEnvelope> => {
-    if (peerId.privateKey == null) {
-      throw new Error('Missing private key')
-    }
-
+  static seal = async (record: Record, privateKey: PrivateKey): Promise<RecordEnvelope> => {
     const domain = record.domain
     const payloadType = record.codec
     const payload = record.marshal()
     const signData = formatSignaturePayload(domain, payloadType, payload)
-    const key = await unmarshalPrivateKey(peerId.privateKey)
-    const signature = await key.sign(signData.subarray())
+    const signature = await privateKey.sign(signData.subarray())
 
     return new RecordEnvelope({
-      peerId,
+      peerId: await peerIdFromKeys(privateKey.public.bytes),
+      publicKey: privateKey.public,
       payloadType,
       payload,
       signature
@@ -72,6 +71,7 @@ export class RecordEnvelope implements Envelope {
   }
 
   public peerId: PeerId
+  public publicKey: PublicKey
   public payloadType: Uint8Array
   public payload: Uint8Array
   public signature: Uint8Array
@@ -82,9 +82,10 @@ export class RecordEnvelope implements Envelope {
    * by a libp2p peer.
    */
   constructor (init: RecordEnvelopeInit) {
-    const { peerId, payloadType, payload, signature } = init
+    const { peerId, publicKey, payloadType, payload, signature } = init
 
     this.peerId = peerId
+    this.publicKey = publicKey
     this.payloadType = payloadType
     this.payload = payload
     this.signature = signature
@@ -94,13 +95,9 @@ export class RecordEnvelope implements Envelope {
    * Marshal the envelope content
    */
   marshal (): Uint8Array {
-    if (this.peerId.publicKey == null) {
-      throw new Error('Missing public key')
-    }
-
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
-        publicKey: this.peerId.publicKey,
+        publicKey: this.publicKey.bytes,
         payloadType: this.payloadType,
         payload: this.payload.subarray(),
         signature: this.signature
@@ -123,13 +120,7 @@ export class RecordEnvelope implements Envelope {
   async validate (domain: string): Promise<boolean> {
     const signData = formatSignaturePayload(domain, this.payloadType, this.payload)
 
-    if (this.peerId.publicKey == null) {
-      throw new Error('Missing public key')
-    }
-
-    const key = unmarshalPublicKey(this.peerId.publicKey)
-
-    return key.verify(signData.subarray(), this.signature)
+    return this.publicKey.verify(signData.subarray(), this.signature)
   }
 }
 

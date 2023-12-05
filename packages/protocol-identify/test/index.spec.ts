@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -24,8 +25,10 @@ describe('identify', () => {
   let identify: Identify
 
   beforeEach(async () => {
+    const peerId = await createEd25519PeerId()
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
@@ -215,6 +218,7 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey)
 
     const oldPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -222,7 +226,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(1n)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     const connection = identifyConnection(remotePeer, {
       listenAddrs: [],
@@ -238,7 +242,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     components.peerStore.get.resolves({
       id: remotePeer,
@@ -298,6 +302,7 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey)
 
     const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -305,7 +310,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/5678')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
     const peerRecordEnvelope = signedPeerRecord.marshal()
 
     const message = {
