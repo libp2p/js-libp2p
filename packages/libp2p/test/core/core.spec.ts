@@ -12,7 +12,7 @@ describe('core', () => {
   })
 
   it('should start a minimal node', async () => {
-    libp2p = await createLibp2p({})
+    libp2p = await createLibp2p()
 
     expect(libp2p).to.have.property('status', 'started')
   })
