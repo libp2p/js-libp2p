@@ -1,11 +1,10 @@
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
-import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
-import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import { readCandidatesUntilConnected } from './util.js'
 import type { DataChannelOptions } from '../index.js'
 import type { LoggerOptions, Connection } from '@libp2p/interface'
 import type { ConnectionManager, IncomingStreamData, TransportManager } from '@libp2p/interface-internal'
@@ -65,17 +64,8 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
     })
 
     const messageStream = pbStream(stream).pb(Message)
-    const connectedPromise: DeferredPromise<void> = pDefer()
-    const sdpAbortedListener = (): void => {
-      connectedPromise.reject(new CodeError('SDP handshake aborted', 'ERR_SDP_HANDSHAKE_ABORTED'))
-    }
 
     try {
-      resolveOnConnected(peerConnection, connectedPromise)
-
-      // reject the connectedPromise if the signal aborts
-      signal?.addEventListener('abort', sdpAbortedListener)
-
       // we create the channel so that the RTCPeerConnection has a component for
       // which to collect candidates. The label is not relevant to connection
       // initiation but can be useful for debugging
@@ -102,7 +92,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
           })
       }
       peerConnection.onicecandidateerror = (event) => {
-        log('initiator ICE candidate error', event)
+        log.error('initiator ICE candidate error', event)
       }
 
       // create an offer
@@ -140,7 +130,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
 
       log.trace('initiator read candidates until connected')
 
-      await readCandidatesUntilConnected(connectedPromise, peerConnection, messageStream, {
+      await readCandidatesUntilConnected(peerConnection, messageStream, {
         direction: 'initiator',
         signal,
         log
@@ -164,8 +154,6 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       stream.abort(err)
       throw err
     } finally {
-      // remove event listeners
-      signal?.removeEventListener('abort', sdpAbortedListener)
       peerConnection.onicecandidate = null
       peerConnection.onicecandidateerror = null
     }

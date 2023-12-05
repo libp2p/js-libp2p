@@ -4,7 +4,7 @@ import { pbStream } from 'it-protobuf-stream'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import { readCandidatesUntilConnected } from './util.js'
 import type { Logger } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
@@ -20,40 +20,28 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
   const messageStream = pbStream(stream).pb(Message)
 
   try {
-    const connectedPromise: DeferredPromise<void> = pDefer()
     const answerSentPromise: DeferredPromise<void> = pDefer()
-
-    signal.onabort = () => {
-      connectedPromise.reject(new CodeError('Timed out while trying to connect', 'ERR_TIMEOUT'))
-    }
 
     // candidate callbacks
     peerConnection.onicecandidate = ({ candidate }) => {
-      answerSentPromise.promise.then(
-        async () => {
-          // a null candidate means end-of-candidates, an empty string candidate
-          // means end-of-candidates for this generation, otherwise this should
-          // be a valid candidate object
-          // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
-          const data = JSON.stringify(candidate?.toJSON() ?? null)
+      // a null candidate means end-of-candidates, an empty string candidate
+      // means end-of-candidates for this generation, otherwise this should
+      // be a valid candidate object
+      // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      const data = JSON.stringify(candidate?.toJSON() ?? null)
 
-          log.trace('recipient sending ICE candidate %s', data)
+      log.trace('recipient sending ICE candidate %s', data)
 
-          await messageStream.write({
-            type: Message.Type.ICE_CANDIDATE,
-            data
-          }, {
-            signal
-          })
-        },
-        (err) => {
-          log.error('cannot set candidate since sending answer failed', err)
-          connectedPromise.reject(err)
-        }
-      )
+      messageStream.write({
+        type: Message.Type.ICE_CANDIDATE,
+        data
+      }, {
+        signal
+      })
+        .catch(err => {
+          log.error('error sending ICE candidate', err)
+        })
     }
-
-    resolveOnConnected(peerConnection, connectedPromise)
 
     // read an SDP offer
     const pbOffer = await messageStream.read({
@@ -90,18 +78,20 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       signal
     })
 
-    await peerConnection.setLocalDescription(answer).catch(err => {
+    peerConnection.setLocalDescription(answer).then(() => {
+      answerSentPromise.resolve()
+    }, err => {
       log.error('could not execute setLocalDescription', err)
       answerSentPromise.reject(err)
       throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
     })
 
-    answerSentPromise.resolve()
+    await answerSentPromise.promise
 
     log.trace('recipient read candidates until connected')
 
     // wait until candidates are connected
-    await readCandidatesUntilConnected(connectedPromise, peerConnection, messageStream, {
+    await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: 'recipient',
       signal,
       log
