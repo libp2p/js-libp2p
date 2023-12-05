@@ -25,7 +25,6 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
     this.transportManager = components.transportManager
 
     this.shutdownController = init.shutdownController
-    setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
   async listen (): Promise<void> {
