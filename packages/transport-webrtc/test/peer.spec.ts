@@ -3,6 +3,7 @@ import { defaultLogger, logger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { detect } from 'detect-browser'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
@@ -116,6 +117,39 @@ describe('webrtc basic', () => {
 
     initiator.peerConnection.close()
     recipient.peerConnection.close()
+  })
+
+  it('should survive aborting during connection', async () => {
+    const abortController = new AbortController()
+    const { initiator, recipient } = await getComponents()
+
+    // no existing connection
+    initiator.connectionManager.getConnections.returns([])
+
+    // transport manager dials recipient
+    initiator.transportManager.dial.resolves(initiator.connection)
+
+    const createOffer = initiator.peerConnection.setRemoteDescription.bind(initiator.peerConnection)
+
+    initiator.peerConnection.setRemoteDescription = async (name) => {
+      // the dial is aborted
+      abortController.abort(new Error('Oh noes!'))
+      // setting the description takes some time
+      await delay(100)
+      return createOffer(name)
+    }
+
+    // signalling stream opens successfully
+    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+
+    await expect(Promise.all([
+      initiateConnection({
+        ...initiator,
+        signal: abortController.signal
+      }),
+      handleIncomingStream(recipient)
+    ]))
+      .to.eventually.be.rejected.with.property('message', 'Oh noes!')
   })
 })
 
