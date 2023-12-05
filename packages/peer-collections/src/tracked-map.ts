@@ -57,7 +57,7 @@ export interface CreateTrackedPeerMapInit {
  *
  * @example
  *
- * * ```JavaScript
+ * * ```Typescript
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  *
