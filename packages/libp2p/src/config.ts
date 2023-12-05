@@ -25,11 +25,15 @@ const DefaultConfig: Partial<Libp2pInit> = {
   }
 }
 
-export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
+export async function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Promise<Libp2pInit<T>> {
   const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, opts)
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
+  }
+
+  if (await resultingOptions.privateKey.id() !== resultingOptions.peerId.toString()) {
+    throw new CodeError('Private key doesn\'t match peer id', codes.ERR_INVALID_KEY)
   }
 
   return resultingOptions
