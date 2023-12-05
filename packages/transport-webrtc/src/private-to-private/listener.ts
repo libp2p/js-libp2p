@@ -1,4 +1,4 @@
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { Circuit } from '@multiformats/mafmt'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
