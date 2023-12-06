@@ -1,4 +1,5 @@
 import { CodeError, FaultTolerance } from '@libp2p/interface'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
@@ -32,7 +33,7 @@ export async function validateConfig <T extends ServiceMap = Record<string, unkn
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
   }
 
-  if (await resultingOptions.privateKey.id() !== resultingOptions.peerId.toString()) {
+  if (!(await peerIdFromKeys(resultingOptions.privateKey.public.bytes, resultingOptions.privateKey.bytes)).equals(resultingOptions.peerId)) {
     throw new CodeError('Private key doesn\'t match peer id', codes.ERR_INVALID_KEY)
   }
 
