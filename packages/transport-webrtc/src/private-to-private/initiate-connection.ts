@@ -96,7 +96,10 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       }
 
       // create an offer
-      const offerSdp = await peerConnection.createOffer()
+      const offerSdp = await peerConnection.createOffer().catch(err => {
+        log.error('could not execute createOffer', err)
+        throw new CodeError('Failed to set createOffer', 'ERR_SDP_HANDSHAKE_FAILED')
+      })
 
       log.trace('initiator send SDP offer %s', offerSdp.sdp)
 
@@ -117,7 +120,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       })
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
-        throw new CodeError('remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new CodeError('Remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
       }
 
       log.trace('initiator receive SDP answer %s', answerMessage.data)

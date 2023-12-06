@@ -214,7 +214,7 @@ describe('webrtc dialer', () => {
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
 
-    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/remote should send an SDP answer/)
+    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
     pc.close()
   })
