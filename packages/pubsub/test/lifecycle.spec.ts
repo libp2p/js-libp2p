@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -53,6 +54,7 @@ describe('pubsub base lifecycle', () => {
 
       pubsub = new PubsubProtocol({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: sinonMockRegistrar,
         logger: defaultLogger()
       }, {
@@ -113,6 +115,7 @@ describe('pubsub base lifecycle', () => {
 
       pubsubA = new PubsubImplementation({
         peerId: peerIdA,
+        privateKey: await unmarshalPrivateKey(peerIdA.privateKey as Uint8Array),
         registrar: registrarA,
         logger: defaultLogger()
       }, {
@@ -120,6 +123,7 @@ describe('pubsub base lifecycle', () => {
       })
       pubsubB = new PubsubImplementation({
         peerId: peerIdB,
+        privateKey: await unmarshalPrivateKey(peerIdB.privateKey as Uint8Array),
         registrar: registrarB,
         logger: defaultLogger()
       }, {

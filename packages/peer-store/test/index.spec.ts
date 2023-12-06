@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { unmarshalPrivateKey } from '@libp2p/crypto'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PrivateKey } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -23,7 +23,7 @@ describe('PersistentPeerStore', () => {
 
   beforeEach(async () => {
     peerId = await createEd25519PeerId()
-    privateKey = await unmarshalPrivateKey(peerId.privateKey)
+    privateKey = await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
     otherPeerId = await createEd25519PeerId()
     events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({

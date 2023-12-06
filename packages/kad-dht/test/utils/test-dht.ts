@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -23,8 +24,10 @@ export class TestDHT {
 
   async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<DefaultDualKadDHT> {
     const events = new TypedEventEmitter<Libp2pEvents>()
+    const peerId = await createPeerId()
+    const privateKey = await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
     const components: KadDHTComponents = {
-      peerId: await createPeerId(),
+      peerId,
       datastore: new MemoryDatastore(),
       registrar: mockRegistrar(),
       // connectionGater: mockConnectionGater(),
@@ -47,6 +50,7 @@ export class TestDHT {
 
     mockNetwork.addNode({
       ...components,
+      privateKey,
       events
     })
 

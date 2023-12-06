@@ -122,7 +122,7 @@ describe('PeerRecord inside Envelope', () => {
 
   before(async () => {
     peerId = await createEd25519PeerId()
-    privateKey = await unmarshalPrivateKey(peerId.privateKey)
+    privateKey = await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
     const multiaddrs = [
       multiaddr('/ip4/127.0.0.1/tcp/2000')
     ]

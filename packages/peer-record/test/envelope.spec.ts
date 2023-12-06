@@ -38,7 +38,7 @@ describe('Envelope', () => {
 
   before(async () => {
     peerId = await createEd25519PeerId()
-    privateKey = await unmarshalPrivateKey(peerId.privateKey)
+    privateKey = await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
     testRecord = new TestRecord('test-data')
   })
 

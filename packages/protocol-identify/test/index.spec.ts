@@ -28,7 +28,7 @@ describe('identify', () => {
     const peerId = await createEd25519PeerId()
     components = {
       peerId,
-      privateKey: await unmarshalPrivateKey(peerId.privateKey),
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
@@ -218,7 +218,7 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = await createEd25519PeerId()
-    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey)
+    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey as Uint8Array)
 
     const oldPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -302,7 +302,7 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = await createEd25519PeerId()
-    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey)
+    const remotePrivateKey = await unmarshalPrivateKey(remotePeer.privateKey as Uint8Array)
 
     const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,

@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -22,6 +23,7 @@ describe('emitSelf', () => {
 
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -78,6 +80,7 @@ describe('emitSelf', () => {
 
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
