@@ -24,7 +24,7 @@ export class RecordEnvelope implements Envelope {
   static createFromProtobuf = async (data: Uint8Array | Uint8ArrayList): Promise<RecordEnvelope> => {
     const envelopeData = Protobuf.decode(data)
     const peerId = await peerIdFromKeys(envelopeData.publicKey)
-    const publicKey = await unmarshalPublicKey(envelopeData.publicKey)
+    const publicKey = unmarshalPublicKey(envelopeData.publicKey)
 
     return new RecordEnvelope({
       peerId,
