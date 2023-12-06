@@ -78,6 +78,20 @@
     * @libp2p/webtransport bumped from ^4.0.7 to ^4.0.8
     * libp2p bumped from ^1.0.7 to ^1.0.8
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.5 to ^1.0.6
+    * @libp2p/identify bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/mplex bumped from ^10.0.5 to ^10.0.6
+    * @libp2p/ping bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/tcp bumped from ^9.0.5 to ^9.0.6
+    * @libp2p/webrtc bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/websockets bumped from ^8.0.5 to ^8.0.6
+    * @libp2p/webtransport bumped from ^4.0.8 to ^4.0.9
+    * libp2p bumped from ^1.0.8 to ^1.0.9
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p/compare/multidim-interop-v2.0.0...multidim-interop-v2.0.1) (2023-11-30)
 
 

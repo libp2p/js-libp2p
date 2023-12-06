@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "10.0.0",
+  "version": "10.0.1",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.0.1",
-    "@libp2p/peer-collections": "^5.0.0",
+    "@libp2p/peer-collections": "^5.1.0",
     "@libp2p/peer-id": "^4.0.1",
     "@libp2p/peer-id-factory": "^4.0.0",
     "@libp2p/peer-record": "^7.0.0",

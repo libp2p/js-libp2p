@@ -12,6 +12,12 @@
   * dependencies
     * @libp2p/interface-internal bumped from ^1.0.0 to ^1.0.1
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.0...dcutr-v1.0.1) (2023-11-30)
 
 
