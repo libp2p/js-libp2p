@@ -11,6 +11,13 @@
   * dependencies
     * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-collections bumped from ^5.0.0 to ^5.1.0
+
 ## [9.0.0](https://github.com/libp2p/js-libp2p/compare/pubsub-v8.0.13...pubsub-v9.0.0) (2023-12-01)
 
 

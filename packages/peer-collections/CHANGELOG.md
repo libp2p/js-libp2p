@@ -11,6 +11,13 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#36](https://github.com/libp2p/js-libp2p-peer-collections/issues/36)) ([9fa3de6](https://github.com/libp2p/js-libp2p-peer-collections/commit/9fa3de6d85dbe1ade54fda86b597ed9ffe6d71d5))
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.0.0...peer-collections-v5.1.0) (2023-12-06)
+
+
+### Features
+
+* add versions of peer lists/sets/maps that report their sizes ([#2300](https://github.com/libp2p/js-libp2p/issues/2300)) ([57944fa](https://github.com/libp2p/js-libp2p/commit/57944fa494c1f7df4bb07d1cc58c5f7e95229bc2))
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.10...peer-collections-v5.0.0) (2023-12-01)
 
 
