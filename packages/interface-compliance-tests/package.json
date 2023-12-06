@@ -103,6 +103,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
+    "@libp2p/crypto": "^3.0.1",
     "@libp2p/interface": "^1.0.1",
     "@libp2p/interface-internal": "^1.0.1",
     "@libp2p/logger": "^4.0.1",
