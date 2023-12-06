@@ -13,6 +13,12 @@
     * @libp2p/interface-internal bumped from ^1.0.0 to ^1.0.1
     * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p/compare/ping-v1.0.3...ping-v1.0.4) (2023-12-02)
 
 

@@ -11,6 +11,12 @@
 
 * **dev:** bump p-event from 5.0.1 to 6.0.0 ([#89](https://github.com/libp2p/js-libp2p-peer-store/issues/89)) ([9d96700](https://github.com/libp2p/js-libp2p-peer-store/commit/9d9670048b5e8feeac656cba92cb2e513e4a77be))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^5.0.0 to ^5.1.0
+
 ## [10.0.0](https://github.com/libp2p/js-libp2p/compare/peer-store-v9.0.11...peer-store-v10.0.0) (2023-12-01)
 
 
