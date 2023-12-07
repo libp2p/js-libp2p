@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
 import { codes } from '../errors.js'
 
