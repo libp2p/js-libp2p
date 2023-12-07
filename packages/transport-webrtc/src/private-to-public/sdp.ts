@@ -1,11 +1,9 @@
-import { bases } from 'multiformats/basics'
-import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
+import { type Multiaddr } from '@multiformats/multiaddr'
+import { bases, digest } from 'multiformats/basics'
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithmCode } from '../error.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { HashCode, HashName } from 'multihashes'
-
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 /**
  * Get base2 | identity decoders
  */
@@ -71,9 +69,8 @@ export function certhash (ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
-  const mbdecoded = mbdecoder.decode(certhash)
-  return multihashes.decode(mbdecoded)
+export function decodeCerthash (certhash: string): MultihashDigest {
+  return digest.decode(mbdecoder.decode(certhash))
 }
 
 /**
@@ -81,7 +78,7 @@ export function decodeCerthash (certhash: string): { code: HashCode, name: HashN
  */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
   const mhdecoded = decodeCerthash(certhash(ma))
-  const prefix = toSupportedHashFunction(mhdecoded.name)
+  const prefix = toSupportedHashFunction(mhdecoded.code)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
   const sdp = fingerprint.match(/.{1,2}/g)
 
@@ -95,16 +92,16 @@ export function ma2Fingerprint (ma: Multiaddr): string[] {
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (name: multihashes.HashName): string {
-  switch (name) {
-    case 'sha1':
+export function toSupportedHashFunction (code: number): string {
+  switch (code) {
+    case 0x11:
       return 'sha-1'
-    case 'sha2-256':
+    case 0x16:
       return 'sha-256'
-    case 'sha2-512':
+    case 0x14:
       return 'sha-512'
     default:
-      throw unsupportedHashAlgorithm(name)
+      throw unsupportedHashAlgorithmCode(code)
   }
 }
 
