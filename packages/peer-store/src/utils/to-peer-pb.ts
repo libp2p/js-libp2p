@@ -1,11 +1,10 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import { codes } from '../errors.js'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Address, Peer, PeerData, TagOptions } from '@libp2p/interface/peer-store'
+import type { PeerId, Address, Peer, PeerData, TagOptions } from '@libp2p/interface'
 
 export interface ToPBPeerOptions {
   addressFilter?: AddressFilter

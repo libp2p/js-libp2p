@@ -1,4 +1,4 @@
-import { UnexpectedPeerError } from '@libp2p/interface/errors'
+import { UnexpectedPeerError } from '@libp2p/interface'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -7,8 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import peers from '../peers.js'
 import { createMaConnPair } from './utils/index.js'
 import type { TestSetup } from '../index.js'
-import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 export default (common: TestSetup<ConnectionEncrypter>): void => {
   describe('interface-connection-encrypter compliance tests', () => {
@@ -57,7 +56,9 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
       // Send some data and collect the result
       const input = uint8ArrayFromString('data to encrypt')
       const result = await pipe(
-        [input],
+        async function * () {
+          yield input
+        },
         outboundResult.conn,
         async (source) => all(source)
       )

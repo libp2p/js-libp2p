@@ -64,7 +64,7 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
   })
 
   while (true) {
-    options?.log.trace('handle: reading incoming string')
+    options.log.trace('handle: reading incoming string')
     const protocol = await multistream.readString(lp, options)
     options.log.trace('handle: read "%s"', protocol)
 

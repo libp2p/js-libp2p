@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
-import { isStartable } from '@libp2p/interface/startable'
+import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Upgrader } from '@libp2p/interface'
+import { isStartable } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -14,17 +14,7 @@ import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
-import type { ComponentLogger, Libp2pEvents } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Upgrader } from '@libp2p/interface/transport'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar, StreamHandler } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { AddressManager, ConnectionManager, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId

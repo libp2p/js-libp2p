@@ -1,5 +1,4 @@
-import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
@@ -7,11 +6,8 @@ import { object, number } from 'yup'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.

@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 // @ts-expect-error types are missing
 import forgePbkdf2 from 'node-forge/lib/pbkdf2.js'
 // @ts-expect-error types are missing

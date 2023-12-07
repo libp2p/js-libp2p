@@ -35,7 +35,7 @@
  */
 
 import type { Limit } from './pb/index.js'
-import type { TypedEventEmitter } from '@libp2p/interface/events'
+import type { TypedEventEmitter } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

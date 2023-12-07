@@ -1,8 +1,6 @@
 import merge from 'merge-options'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Topology } from '@libp2p/interface/topology'
-import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-internal/registrar'
+import type { Connection, PeerId, Topology } from '@libp2p/interface'
+import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-internal'
 
 export class MockRegistrar implements Registrar {
   private readonly topologies = new Map<string, Array<{ id: string, topology: Topology }>>()

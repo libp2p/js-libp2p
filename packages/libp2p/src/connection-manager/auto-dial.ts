@@ -2,11 +2,8 @@ import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
-import type { Libp2pEvents, Logger, ComponentLogger } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
+import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Startable } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 interface AutoDialInit {
   minConnections?: number
@@ -104,12 +101,6 @@ export class AutoDial implements Startable {
   }
 
   start (): void {
-    this.autoDialInterval = setTimeout(() => {
-      this.autoDial()
-        .catch(err => {
-          this.log.error('error while autodialing', err)
-        })
-    }, this.autoDialIntervalMs)
     this.started = true
   }
 
@@ -129,28 +120,27 @@ export class AutoDial implements Startable {
   }
 
   async autoDial (): Promise<void> {
-    if (!this.started) {
+    if (!this.started || this.running) {
       return
     }
 
     const connections = this.connectionManager.getConnectionsMap()
     const numConnections = connections.size
 
-    // Already has enough connections
+    // already have enough connections
     if (numConnections >= this.minConnections) {
       if (this.minConnections > 0) {
         this.log.trace('have enough connections %d/%d', numConnections, this.minConnections)
       }
+
+      // no need to schedule next autodial as it will be run when on
+      // connection:close event
       return
     }
 
     if (this.queue.size > this.autoDialMaxQueueLength) {
       this.log('not enough connections %d/%d but auto dial queue is full', numConnections, this.minConnections)
-      return
-    }
-
-    if (this.running) {
-      this.log('not enough connections %d/%d - but skipping autodial as it is already running', numConnections, this.minConnections)
+      this.sheduleNextAutodial()
       return
     }
 
@@ -165,12 +155,12 @@ export class AutoDial implements Startable {
         .filter(Boolean)
     )
 
-    // Sort peers on whether we know protocols or public keys for them
+    // sort peers on whether we know protocols or public keys for them
     const peers = await this.peerStore.all({
       filters: [
-        // Remove some peers
+        // remove some peers
         (peer) => {
-          // Remove peers without addresses
+          // remove peers without addresses
           if (peer.addresses.length === 0) {
             this.log.trace('not autodialing %p because they have no addresses', peer.id)
             return false
@@ -203,7 +193,7 @@ export class AutoDial implements Startable {
     // dialled in a different order each time
     const shuffledPeers = peers.sort(() => Math.random() > 0.5 ? 1 : -1)
 
-    // Sort shuffled peers by tag value
+    // sort shuffled peers by tag value
     const peerValues = new PeerMap<number>()
     for (const peer of shuffledPeers) {
       if (peerValues.has(peer.id)) {
@@ -274,14 +264,19 @@ export class AutoDial implements Startable {
     }
 
     this.running = false
+    this.sheduleNextAutodial()
+  }
 
-    if (this.started) {
-      this.autoDialInterval = setTimeout(() => {
-        this.autoDial()
-          .catch(err => {
-            this.log.error('error while autodialing', err)
-          })
-      }, this.autoDialIntervalMs)
+  private sheduleNextAutodial (): void {
+    if (!this.started) {
+      return
     }
+
+    this.autoDialInterval = setTimeout(() => {
+      this.autoDial()
+        .catch(err => {
+          this.log.error('error while autodialing', err)
+        })
+    }, this.autoDialIntervalMs)
   }
 }

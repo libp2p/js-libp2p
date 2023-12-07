@@ -1,5 +1,5 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { isPeerId, type PeerId } from '@libp2p/interface/peer-id'
+import { CodeError } from '@libp2p/interface'
+import { isPeerId, type PeerId } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
 import { codes } from '../errors.js'
 

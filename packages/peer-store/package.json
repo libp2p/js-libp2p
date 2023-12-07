@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "9.0.9",
+  "version": "10.0.1",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
@@ -10,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -54,11 +58,11 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.6",
-    "@libp2p/peer-collections": "^4.0.8",
-    "@libp2p/peer-id": "^3.0.6",
-    "@libp2p/peer-id-factory": "^3.0.8",
-    "@libp2p/peer-record": "^6.0.9",
+    "@libp2p/interface": "^1.0.1",
+    "@libp2p/peer-collections": "^5.1.0",
+    "@libp2p/peer-id": "^4.0.1",
+    "@libp2p/peer-id-factory": "^4.0.0",
+    "@libp2p/peer-record": "^7.0.0",
     "@multiformats/multiaddr": "^12.1.10",
     "interface-datastore": "^8.2.0",
     "it-all": "^3.0.2",
@@ -69,7 +73,7 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@libp2p/logger": "^3.1.0",
+    "@libp2p/logger": "^4.0.1",
     "@types/sinon": "^17.0.0",
     "aegir": "^41.0.2",
     "datastore-core": "^9.1.1",

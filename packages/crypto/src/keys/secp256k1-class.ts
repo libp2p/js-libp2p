@@ -1,11 +1,13 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isPromise } from '../util.js'
 import { exporter } from './exporter.js'
 import * as keysProtobuf from './keys.js'
 import * as crypto from './secp256k1.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Secp256k1PublicKey {
   private readonly _key: Uint8Array
@@ -15,7 +17,7 @@ export class Secp256k1PublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -35,7 +37,14 @@ export class Secp256k1PublicKey {
   }
 
   async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+    const p = sha256.digest(this.bytes)
+    let bytes: Uint8Array
+
+    if (isPromise(p)) {
+      ({ bytes } = await p)
+    } else {
+      bytes = p.bytes
+    }
 
     return bytes
   }
@@ -52,7 +61,7 @@ export class Secp256k1PrivateKey {
     crypto.validatePublicKey(this._publicKey)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -75,10 +84,14 @@ export class Secp256k1PrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 
   /**

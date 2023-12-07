@@ -22,20 +22,16 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { type Transport, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
+import { type Transport, transportSymbol, type CreateListenerOptions, type DialOptions, type Listener, type ComponentLogger, type Logger, type Connection, type MultiaddrConnection, type Stream, type CounterGroup, type Metrics, type PeerId, type StreamMuxerFactory, type StreamMuxerInit, type StreamMuxer } from '@libp2p/interface'
 import { type Multiaddr, type AbortOptions } from '@multiformats/multiaddr'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection, MultiaddrConnection, Stream } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface/stream-muxer'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebTransportSessionCleanup {
   (metric: string): void
@@ -80,7 +76,7 @@ class WebTransportTransport implements Transport {
 
   readonly [Symbol.toStringTag] = '@libp2p/webtransport'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     options?.signal?.throwIfAborted()
@@ -237,14 +233,18 @@ class WebTransportTransport implements Transport {
           }
         }
       })(),
-      sink: async function (source: Source<Uint8Array>) {
+      sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
         for await (const chunk of source) {
-          await writer.write(chunk)
+          if (chunk instanceof Uint8Array) {
+            await writer.write(chunk)
+          } else {
+            await writer.write(chunk.subarray())
+          }
         }
       }
     }
 
-    const n = noise()()
+    const n = noise()(this.components)
 
     const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, remotePeer)
 

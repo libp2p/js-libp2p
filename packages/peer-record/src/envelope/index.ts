@@ -1,5 +1,5 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -7,8 +7,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Record, Envelope } from '@libp2p/interface/record'
+import type { PeerId, Record, Envelope } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {
   peerId: PeerId

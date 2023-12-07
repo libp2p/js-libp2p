@@ -8,9 +8,7 @@ import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
 import { identify } from '@libp2p/identify'
-import { contentRouting } from '@libp2p/interface/content-routing'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { peerRouting } from '@libp2p/interface/peer-routing'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import { interopTests } from '@libp2p/interop'
 import { kadDHT } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
@@ -20,10 +18,9 @@ import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
+import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from 'libp2p'
 import pDefer from 'p-defer'
-import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from '../src/index.js'
-import type { ServiceMap } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ServiceMap, PeerId } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 
 /**
@@ -174,19 +171,19 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       lan.topologyListener.protocol = protocol
 
       Object.defineProperties(lan, {
-        [contentRouting]: {
+        [contentRoutingSymbol]: {
           get () {
-            return dht[contentRouting]
+            return dht[contentRoutingSymbol]
           }
         },
-        [peerRouting]: {
+        [peerRoutingSymbol]: {
           get () {
-            return dht[peerRouting]
+            return dht[peerRoutingSymbol]
           }
         },
-        [peerDiscovery]: {
+        [peerDiscoverySymbol]: {
           get () {
-            return dht[peerDiscovery]
+            return dht[peerDiscoverySymbol]
           }
         }
       })

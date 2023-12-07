@@ -1,17 +1,11 @@
-import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { type PeerDiscovery, peerDiscovery, type PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import drain from 'it-drain'
 import merge from 'it-merge'
 import isPrivate from 'private-ip'
 import { DefaultKadDHT } from './kad-dht.js'
 import { queryErrorEvent } from './query/events.js'
 import type { DualKadDHT, KadDHT, KadDHTComponents, KadDHTInit, QueryEvent, QueryOptions } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerDiscovery, PeerDiscoveryEvents, PeerRouting, ContentRouting, Logger, PeerId, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
@@ -185,15 +179,15 @@ export class DefaultDualKadDHT extends TypedEventEmitter<PeerDiscoveryEvents> im
 
   readonly [Symbol.toStringTag] = '@libp2p/dual-kad-dht'
 
-  get [contentRouting] (): ContentRouting {
+  get [contentRoutingSymbol] (): ContentRouting {
     return this.contentRouting
   }
 
-  get [peerRouting] (): PeerRouting {
+  get [peerRoutingSymbol] (): PeerRouting {
     return this.peerRouting
   }
 
-  get [peerDiscovery] (): PeerDiscovery {
+  get [peerDiscoverySymbol] (): PeerDiscovery {
     return this
   }
 

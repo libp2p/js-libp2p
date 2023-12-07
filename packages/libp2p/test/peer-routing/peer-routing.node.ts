@@ -14,10 +14,7 @@ import { createBaseOptions } from '../fixtures/base-options.js'
 import { createNode, createPeerId, populateAddressBooks } from '../fixtures/creators/peer.js'
 import { createRoutingOptions } from './utils.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerRouting } from '@libp2p/interface/peer-routing'
+import type { Libp2p, PeerId, PeerInfo, PeerRouting } from '@libp2p/interface'
 
 describe('peer-routing', () => {
   let peerId: PeerId

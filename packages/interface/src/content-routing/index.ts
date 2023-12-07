@@ -10,10 +10,10 @@ import type { CID } from 'multiformats/cid'
  * @example
  *
  * ```js
- * import { contentRouting, ContentRouting } from '@libp2p/content-routing'
+ * import { contentRoutingSymbol, ContentRouting } from '@libp2p/content-routing'
  *
  * class MyContentRouter implements ContentRouting {
- *   get [contentRouting] () {
+ *   get [contentRoutingSymbol] () {
  *     return this
  *   }
  *
@@ -21,7 +21,7 @@ import type { CID } from 'multiformats/cid'
  * }
  * ```
  */
-export const contentRouting = Symbol.for('@libp2p/content-routing')
+export const contentRoutingSymbol = Symbol.for('@libp2p/content-routing')
 
 export interface ContentRouting {
   /**

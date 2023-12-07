@@ -54,8 +54,7 @@
 
 import { Perf as PerfClass } from './perf-service.js'
 import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface PerfOptions extends AbortOptions {

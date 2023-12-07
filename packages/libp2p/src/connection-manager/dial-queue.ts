@@ -1,5 +1,4 @@
-import { AbortError, CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { AbortError, CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { type Multiaddr, type Resolver, resolvers } from '@multiformats/multiaddr'
@@ -17,13 +16,8 @@ import {
   LAST_DIAL_FAILURE_KEY
 } from './constants.js'
 import { combineSignals, resolveMultiaddrs } from './utils.js'
-import type { AddressSorter, AbortOptions, PendingDial, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { Metric, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Address, PeerStore } from '@libp2p/interface/peer-store'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { AddressSorter, AbortOptions, PendingDial, ComponentLogger, Logger, Connection, ConnectionGater, Metric, Metrics, PeerId, Address, PeerStore } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 export interface PendingDialTarget {
   resolve(value: any): void

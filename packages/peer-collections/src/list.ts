@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { mapIterable } from './util.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 /**
  * We can't use PeerIds as list entries because list entries are
@@ -20,7 +20,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
  * ```
  */
 export class PeerList {
-  private readonly list: string[]
+  private list: string[]
 
   constructor (list?: PeerList | Iterable<PeerId>) {
     this.list = []
@@ -148,7 +148,15 @@ export class PeerList {
     return len
   }
 
+  clear (): void {
+    this.list = []
+  }
+
   get length (): number {
     return this.list.length
   }
+}
+
+export function peerList (): PeerList {
+  return new PeerList()
 }

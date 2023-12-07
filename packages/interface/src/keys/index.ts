@@ -1,9 +1,11 @@
+import type { Uint8ArrayList } from 'uint8arraylist'
+
 export interface PublicKey {
   readonly bytes: Uint8Array
-  verify(data: Uint8Array, sig: Uint8Array): Promise<boolean>
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
   marshal(): Uint8Array
   equals(key: PublicKey): boolean
-  hash(): Promise<Uint8Array>
+  hash(): Uint8Array | Promise<Uint8Array>
 }
 
 /**
@@ -12,10 +14,10 @@ export interface PublicKey {
 export interface PrivateKey {
   readonly public: PublicKey
   readonly bytes: Uint8Array
-  sign(data: Uint8Array): Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
   marshal(): Uint8Array
   equals(key: PrivateKey): boolean
-  hash(): Promise<Uint8Array>
+  hash(): Uint8Array | Promise<Uint8Array>
   /**
    * Gets the ID of the key.
    *

@@ -1,4 +1,4 @@
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**

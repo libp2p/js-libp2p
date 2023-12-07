@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -10,8 +10,7 @@ import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { tcp } from '../src/index.js'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
-import type { Transport, Upgrader } from '@libp2p/interface/transport'
+import type { MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 

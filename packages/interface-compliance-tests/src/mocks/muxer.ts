@@ -8,9 +8,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Direction, Stream } from '@libp2p/interface/connection'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { AbortOptions, Direction, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 
 let muxers = 0

@@ -280,10 +280,10 @@ export interface Connection {
   log: Logger
 }
 
-export const symbol = Symbol.for('@libp2p/connection')
+export const connectionSymbol = Symbol.for('@libp2p/connection')
 
 export function isConnection (other: any): other is Connection {
-  return other != null && Boolean(other[symbol])
+  return other != null && Boolean(other[connectionSymbol])
 }
 
 export interface ConnectionProtector {
@@ -318,7 +318,7 @@ export interface MultiaddrConnectionTimeline {
  * a peer. It is a low-level primitive and is the raw connection
  * without encryption or stream multiplexing.
  */
-export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>> {
+export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
   /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.

@@ -1,11 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { closeSource } from '@libp2p/utils/close-source'
-import { anySignal } from 'any-signal'
+import { CodeError } from '@libp2p/interface'
+import pDefer from 'p-defer'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import type { LoggerOptions } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
+import type { LoggerOptions, Stream } from '@libp2p/interface'
 import type { AbortOptions, MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
 
@@ -13,32 +11,19 @@ export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions {
   direction: string
 }
 
-export const readCandidatesUntilConnected = async (connectedPromise: DeferredPromise<void>, pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
-  // if we connect, stop trying to read from the stream
-  const controller = new AbortController()
-  connectedPromise.promise.then(() => {
-    controller.abort()
-  }, () => {
-    controller.abort()
-  })
-
-  const signal = anySignal([
-    controller.signal,
-    options.signal
-  ])
-
-  const abortListener = (): void => {
-    closeSource(stream.unwrap().unwrap().source, options.log)
-  }
-
-  signal.addEventListener('abort', abortListener)
-
+export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
   try {
+    const connectedPromise: DeferredPromise<void> = pDefer()
+    resolveOnConnected(pc, connectedPromise)
+
     // read candidates until we are connected or we reach the end of the stream
     while (true) {
+      // if we connect, stop trying to read from the stream
       const message = await Promise.race([
         connectedPromise.promise,
-        stream.read()
+        stream.read({
+          signal: options.signal
+        })
       ])
 
       // stream ended or we became connected
@@ -73,15 +58,20 @@ export const readCandidatesUntilConnected = async (connectedPromise: DeferredPro
     }
   } catch (err) {
     options.log.error('%s error parsing ICE candidate', options.direction, err)
-  } finally {
-    signal.removeEventListener('abort', abortListener)
-    signal.clear()
+
+    if (options.signal?.aborted === true) {
+      throw err
+    }
   }
 }
 
-export function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
+function getConnectionState (pc: RTCPeerConnection): string {
+  return isFirefox ? pc.iceConnectionState : pc.connectionState
+}
+
+function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
   pc[isFirefox ? 'oniceconnectionstatechange' : 'onconnectionstatechange'] = (_) => {
-    switch (isFirefox ? pc.iceConnectionState : pc.connectionState) {
+    switch (getConnectionState(pc)) {
       case 'connected':
         promise.resolve()
         break

@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/await-thenable */ // secp is sync in node, async in browsers
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
 import * as Secp256k1 from '../../src/keys/secp256k1-class.js'
@@ -38,6 +40,22 @@ describe('secp256k1 keys', () => {
     const sig = await key.sign(text)
     const res = await key.public.verify(text, sig)
     expect(res).to.equal(true)
+  })
+
+  it('signs a list', async () => {
+    const text = new Uint8ArrayList(
+      crypto.randomBytes(512),
+      crypto.randomBytes(512)
+    )
+    const sig = await key.sign(text)
+
+    expect(await key.sign(text.subarray()))
+      .to.deep.equal(sig, 'list did not have same signature as a single buffer')
+
+    expect(await key.public.verify(text, sig))
+      .to.be.true('did not verify message as list')
+    expect(await key.public.verify(text.subarray(), sig))
+      .to.be.true('did not verify message as single buffer')
   })
 
   it('encoding', () => {
@@ -152,19 +170,25 @@ describe('crypto functions', () => {
   })
 
   it('errors if given a null Uint8Array to sign', async () => {
-    // @ts-expect-error incorrect args
-    await expect(secp256k1Crypto.hashAndSign(privKey, null)).to.eventually.be.rejected()
+    await expect((async () => {
+      // @ts-expect-error incorrect args
+      await secp256k1Crypto.hashAndSign(privKey, null)
+    })()).to.eventually.be.rejected()
   })
 
   it('errors when signing with an invalid key', async () => {
-    await expect(secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_INPUT')
+    await expect((async () => {
+      await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
+    })()).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_INPUT')
   })
 
   it('errors if given a null Uint8Array to validate', async () => {
     const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
 
-    // @ts-expect-error incorrect args
-    await expect(secp256k1Crypto.hashAndVerify(privKey, sig, null)).to.eventually.be.rejected()
+    await expect((async () => {
+      // @ts-expect-error incorrect args
+      await secp256k1Crypto.hashAndVerify(privKey, sig, null)
+    })()).to.eventually.be.rejected()
   })
 
   it('throws when compressing an invalid public key', () => {

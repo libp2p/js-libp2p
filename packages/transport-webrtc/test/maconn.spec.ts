@@ -6,7 +6,7 @@ import { expect } from 'aegir/chai'
 import { stubObject } from 'sinon-ts'
 import { WebRTCMultiaddrConnection } from '../src/maconn.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
-import type { CounterGroup } from '@libp2p/interface/metrics'
+import type { CounterGroup } from '@libp2p/interface'
 
 describe('Multiaddr Connection', () => {
   it('can open and close', async () => {

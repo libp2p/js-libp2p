@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
-import { start, stop } from '@libp2p/interface/startable'
+import { ERR_INVALID_PARAMETERS, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -11,11 +10,8 @@ import sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Fetch } from '../src/fetch.js'
 import { FetchRequest, FetchResponse } from '../src/pb/proto.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { ComponentLogger, Connection, Stream, PeerId } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 interface StubbedFetchComponents {
   registrar: StubbedInstance<Registrar>

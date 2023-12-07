@@ -1,8 +1,6 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface'
 import type { KadDHTComponents } from '.'
-import type { Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { Logger, PeerId, Startable } from '@libp2p/interface'
 
 export interface TopologyListenerInit {
   protocol: string

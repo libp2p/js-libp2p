@@ -57,8 +57,8 @@
  */
 
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
-import { handshake } from 'it-handshake'
+import { CodeError } from '@libp2p/interface'
+import { byteStream } from 'it-byte-stream'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
@@ -69,14 +69,22 @@ import {
 } from './crypto.js'
 import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { ConnectionProtector, MultiaddrConnection } from '@libp2p/interface/connection'
+import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { generateKey } from './key-generator.js'
 
 export interface ProtectorInit {
-  enabled?: boolean
+  /**
+   * A pre-shared key. This must be the same byte value for all peers in the
+   * swarm in order for them to communicate.
+   */
   psk: Uint8Array
+  /**
+   * The initial nonce exchange must complete within this many milliseconds
+   * (default: 1000)
+   */
+  timeout?: number
 }
 
 export interface ProtectorComponents {
@@ -87,7 +95,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
   private readonly log: Logger
   private readonly psk: Uint8Array
-  private readonly enabled: boolean
+  private readonly timeout: number
 
   /**
    * Takes a Private Shared Key (psk) and provides a `protect` method
@@ -95,16 +103,11 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    */
   constructor (components: ProtectorComponents, init: ProtectorInit) {
     this.log = components.logger.forComponent('libp2p:pnet')
-    this.enabled = init.enabled !== false
+    this.timeout = init.timeout ?? 1000
 
-    if (this.enabled) {
-      const decodedPSK = decodeV1PSK(init.psk)
-      this.psk = decodedPSK.psk
-      this.tag = decodedPSK.tag ?? ''
-    } else {
-      this.psk = new Uint8Array()
-      this.tag = ''
-    }
+    const decodedPSK = decodeV1PSK(init.psk)
+    this.psk = decodedPSK.psk
+    this.tag = decodedPSK.tag ?? ''
   }
 
   /**
@@ -113,10 +116,6 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * created with.
    */
   async protect (connection: MultiaddrConnection): Promise<MultiaddrConnection> {
-    if (!this.enabled) {
-      return connection
-    }
-
     if (connection == null) {
       throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, Errors.ERR_INVALID_PARAMETERS)
     }
@@ -125,26 +124,31 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     this.log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
-    const shake = handshake(connection)
-    shake.write(localNonce)
+    const signal = AbortSignal.timeout(this.timeout)
 
-    const result = await shake.reader.next(NONCE_LENGTH)
+    const bytes = byteStream(connection)
 
-    if (result.value == null) {
-      throw new CodeError(Errors.STREAM_ENDED, Errors.ERR_INVALID_PARAMETERS)
-    }
+    const [
+      , result
+    ] = await Promise.all([
+      bytes.write(localNonce, {
+        signal
+      }),
+      bytes.read(NONCE_LENGTH, {
+        signal
+      })
+    ])
 
-    const remoteNonce = result.value.slice()
-    shake.rest()
+    const remoteNonce = result.subarray()
 
     // Create the boxing/unboxing pipe
     this.log('exchanged nonces')
-    const [internal, external] = duplexPair<Uint8Array>()
+    const [internal, external] = duplexPair<Uint8Array | Uint8ArrayList>()
     pipe(
       external,
       // Encrypt all outbound traffic
       createBoxStream(localNonce, this.psk),
-      shake.stream,
+      bytes.unwrap(),
       (source) => map(source, (buf) => buf.subarray()),
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),

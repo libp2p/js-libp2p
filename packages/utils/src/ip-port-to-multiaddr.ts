@@ -1,5 +1,5 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 
 export const Errors = {

@@ -2,12 +2,12 @@ import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { abortableSource } from 'abortable-iterator'
 import { duplexPair } from 'it-pair/duplex'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
-export function mockMultiaddrConnection (source: Duplex<AsyncGenerator<Uint8Array>> & Partial<MultiaddrConnection>, peerId: PeerId): MultiaddrConnection {
+export function mockMultiaddrConnection (source: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> & Partial<MultiaddrConnection>, peerId: PeerId): MultiaddrConnection {
   const maConn: MultiaddrConnection = {
     async close () {
 
@@ -36,7 +36,7 @@ export function mockMultiaddrConnPair (opts: MockMultiaddrConnPairOptions): { in
   const { addrs, remotePeer } = opts
   const controller = new AbortController()
   const [localAddr, remoteAddr] = addrs
-  const [inboundStream, outboundStream] = duplexPair<Uint8Array>()
+  const [inboundStream, outboundStream] = duplexPair<Uint8Array | Uint8ArrayList>()
 
   const outbound: MultiaddrConnection = {
     ...outboundStream,

@@ -6,7 +6,7 @@ import {
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 } from './consts.js'
 import { PeerRecord as Protobuf } from './peer-record.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

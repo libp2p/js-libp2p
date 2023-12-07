@@ -1,4 +1,4 @@
-import { type PubSubRPC, TopicValidatorResult } from '@libp2p/interface/pubsub'
+import { type PubSubRPC, TopicValidatorResult, type PeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -11,7 +11,6 @@ import {
   MockRegistrar,
   PubsubImplementation
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
 
 const protocol = '/pubsub/1.0.0'
 

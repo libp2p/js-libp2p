@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import merge from 'it-merge'
 import { pipe } from 'it-pipe'
 import { codes, messages } from '../errors.js'
@@ -7,11 +7,7 @@ import {
   uniquePeers,
   requirePeers
 } from './utils.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
+import type { AbortOptions, ContentRouting, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 export interface CompoundContentRoutingInit {
@@ -80,7 +76,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
     }
 
     await Promise.all(this.routers.map(async (router) => {
@@ -94,7 +90,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.DHT_NOT_STARTED)
+      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
     }
 
     return Promise.any(this.routers.map(async (router) => {

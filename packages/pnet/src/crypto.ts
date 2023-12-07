@@ -4,16 +4,17 @@ import xsalsa20 from 'xsalsa20'
 import * as Errors from './errors.js'
 import { KEY_LENGTH } from './key-generator.js'
 import type { Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
  * Creates a stream iterable to encrypt messages in a private network
  */
-export function createBoxStream (nonce: Uint8Array, psk: Uint8Array): (source: Source<Uint8Array>) => AsyncIterable<Uint8Array> {
+export function createBoxStream (nonce: Uint8Array, psk: Uint8Array): (source: Source<Uint8Array | Uint8ArrayList>) => AsyncGenerator<Uint8Array | Uint8ArrayList> {
   const xor = xsalsa20(nonce, psk)
 
-  return (source: Source<Uint8Array>) => (async function * () {
+  return (source: Source<Uint8Array | Uint8ArrayList>) => (async function * () {
     for await (const chunk of source) {
-      yield Uint8Array.from(xor.update(chunk.slice()))
+      yield Uint8Array.from(xor.update(chunk.subarray()))
     }
   })()
 }
@@ -26,7 +27,7 @@ export function createUnboxStream (nonce: Uint8Array, psk: Uint8Array) {
     const xor = xsalsa20(nonce, psk)
 
     for await (const chunk of source) {
-      yield Uint8Array.from(xor.update(chunk.slice()))
+      yield Uint8Array.from(xor.update(chunk.subarray()))
     }
   })()
 }

@@ -5,7 +5,7 @@ import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 const sample = {
   id: '122019318b6e5e0cf93a2314bf01269a2cc23cd3dcd452d742cdb9379d8646f6e4a9',

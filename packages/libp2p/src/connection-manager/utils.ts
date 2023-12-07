@@ -1,4 +1,4 @@
-import { setMaxListeners } from '@libp2p/interface/events'
+import { setMaxListeners } from '@libp2p/interface'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import { type ObjectSchema, array, number, object, string } from 'yup'

@@ -1,7 +1,6 @@
 /* eslint-disable complexity */
 
-import { CodeError, ERR_NOT_FOUND } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_NOT_FOUND, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
@@ -30,15 +29,8 @@ import {
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Peer, PeerData, PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger, Connection, Stream, TypedEventTarget, PeerId, Peer, PeerData, PeerStore, Startable } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 
 const configValidator = object({
   protocolPrefix: string().default(PROTOCOL_PREFIX),

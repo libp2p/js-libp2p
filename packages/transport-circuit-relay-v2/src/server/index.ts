@@ -1,4 +1,4 @@
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface/events'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -25,15 +25,8 @@ import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } f
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)

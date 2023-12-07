@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/mdns",
-  "version": "9.0.14",
+  "version": "10.0.6",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns#readme",
@@ -10,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -45,21 +49,21 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.6",
-    "@libp2p/peer-id": "^3.0.6",
-    "@libp2p/utils": "^4.0.7",
+    "@libp2p/interface": "^1.0.1",
+    "@libp2p/peer-id": "^4.0.1",
+    "@libp2p/utils": "^5.0.2",
     "@multiformats/multiaddr": "^12.1.10",
     "@types/multicast-dns": "^7.2.1",
     "dns-packet": "^5.4.0",
     "multicast-dns": "^7.2.5"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.1.5",
-    "@libp2p/interface-internal": "^0.1.9",
-    "@libp2p/logger": "^3.1.0",
-    "@libp2p/peer-id-factory": "^3.0.8",
+    "@libp2p/interface-compliance-tests": "^5.0.6",
+    "@libp2p/interface-internal": "^1.0.2",
+    "@libp2p/logger": "^4.0.1",
+    "@libp2p/peer-id-factory": "^4.0.0",
     "aegir": "^41.0.2",
     "p-wait-for": "^5.0.2",
-    "ts-sinon": "^2.0.2"
+    "sinon-ts": "^2.0.0"
   }
 }

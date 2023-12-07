@@ -1,14 +1,20 @@
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { trackedMap } from '../../src/metrics/tracked-map.js'
-import type { Metric, Metrics } from '../../src/metrics/index.js'
+import { PeerList } from '../src/list.js'
+import { trackedPeerList } from '../src/tracked-list.js'
+import type { Metric, Metrics, PeerId } from '@libp2p/interface'
 import type { SinonStubbedInstance } from 'sinon'
 
-describe('tracked-map', () => {
+describe('tracked-peer-list', () => {
   let metrics: SinonStubbedInstance<Metrics>
+  let peer1: PeerId
+  let peer2: PeerId
 
-  beforeEach(() => {
+  beforeEach(async () => {
     metrics = stubInterface<Metrics>()
+    peer1 = await createEd25519PeerId()
+    peer2 = await createEd25519PeerId()
   })
 
   it('should return a map with metrics', () => {
@@ -17,26 +23,26 @@ describe('tracked-map', () => {
     // @ts-expect-error the wrong overload is selected
     metrics.registerMetric.withArgs(name).returns(metric)
 
-    const map = trackedMap({
+    const list = trackedPeerList({
       name,
       metrics
     })
 
-    expect(map).to.be.an.instanceOf(Map)
+    expect(list).to.be.an.instanceOf(PeerList)
     expect(metrics.registerMetric.calledWith(name)).to.be.true()
   })
 
-  it('should return a map without metrics', () => {
+  it('should return a list without metrics', () => {
     const name = 'system_component_metric'
     const metric = stubInterface<Metric>()
     // @ts-expect-error the wrong overload is selected
     metrics.registerMetric.withArgs(name).returns(metric)
 
-    const map = trackedMap({
+    const list = trackedPeerList({
       name
     })
 
-    expect(map).to.be.an.instanceOf(Map)
+    expect(list).to.be.an.instanceOf(PeerList)
     expect(metrics.registerMetric.called).to.be.false()
   })
 
@@ -57,37 +63,32 @@ describe('tracked-map', () => {
       callCount++
     })
 
-    const map = trackedMap({
+    const list = trackedPeerList({
       name,
       metrics
     })
 
-    expect(map).to.be.an.instanceOf(Map)
+    expect(list).to.be.an.instanceOf(PeerList)
     expect(callCount).to.equal(1)
 
-    map.set('key1', 'value1')
+    list.push(peer1)
 
     expect(value).to.equal(1)
     expect(callCount).to.equal(2)
 
-    map.set('key1', 'value2')
-
-    expect(value).to.equal(1)
-    expect(callCount).to.equal(3)
-
-    map.set('key2', 'value3')
+    list.push(peer2)
 
     expect(value).to.equal(2)
-    expect(callCount).to.equal(4)
+    expect(callCount).to.equal(3)
 
-    map.delete('key2')
+    list.pop()
 
     expect(value).to.equal(1)
-    expect(callCount).to.equal(5)
+    expect(callCount).to.equal(4)
 
-    map.clear()
+    list.clear()
 
     expect(value).to.equal(0)
-    expect(callCount).to.equal(6)
+    expect(callCount).to.equal(5)
   })
 })

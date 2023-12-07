@@ -1,5 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 6] */
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -11,7 +11,7 @@ import { mockNetwork } from '../mocks/index.js'
 import { createComponents, waitForSubscriptionUpdate } from './utils.js'
 import type { PubSubArgs, PubSubComponents } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Message, PubSub } from '@libp2p/interface/pubsub'
+import type { Message, PubSub } from '@libp2p/interface'
 
 export default (common: TestSetup<PubSub, PubSubArgs>): void => {
   describe('pubsub with multiple nodes', function () {

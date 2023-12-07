@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "2.0.8",
+  "version": "3.0.1",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -10,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS",
@@ -86,7 +90,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.6",
+    "@libp2p/interface": "^1.0.1",
     "@noble/curves": "^1.1.0",
     "@noble/hashes": "^1.3.1",
     "multiformats": "^12.1.3",
@@ -107,6 +111,7 @@
     "./dist/src/hmac/index.js": "./dist/src/hmac/index-browser.js",
     "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh-browser.js",
     "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519-browser.js",
-    "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js"
+    "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js",
+    "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1-browser.js"
   }
 }

@@ -1,14 +1,16 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import 'node-forge/lib/sha512.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isPromise } from '../util.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const MAX_KEY_SIZE = 8192
 
@@ -19,7 +21,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -34,18 +36,22 @@ export class RsaPublicKey {
     }).subarray()
   }
 
-  encrypt (bytes: Uint8Array): Uint8Array {
+  encrypt (bytes: Uint8Array | Uint8ArrayList): Uint8Array {
     return crypto.encrypt(this._key, bytes)
   }
 
-  equals (key: any): boolean {
+  equals (key: any): boolean | boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 }
 
@@ -62,7 +68,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -74,7 +80,7 @@ export class RsaPrivateKey {
     return new RsaPublicKey(this._publicKey)
   }
 
-  decrypt (bytes: Uint8Array): Uint8Array {
+  decrypt (bytes: Uint8Array | Uint8ArrayList): Uint8Array {
     return crypto.decrypt(this._key, bytes)
   }
 
@@ -93,10 +99,14 @@ export class RsaPrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 
   /**

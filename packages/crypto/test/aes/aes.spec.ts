@@ -24,7 +24,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = await crypto.aes.create(key, iv)
+      const cipher = crypto.aes.create(key, iv)
 
       await encryptAndDecrypt(cipher)
       await encryptAndDecrypt(cipher)
@@ -42,7 +42,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = await crypto.aes.create(key, iv)
+      const cipher = crypto.aes.create(key, iv)
       // @ts-expect-error cannot index fixtures like this
       const fixture = fixtures[length]
 
@@ -71,7 +71,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = await crypto.aes.create(key, iv)
+      const cipher = crypto.aes.create(key, iv)
       // @ts-expect-error cannot index fixtures like this
       const fixture = goFixtures[length]
 
@@ -90,7 +90,7 @@ describe('AES-CTR', () => {
   it('checks key length', () => {
     const key = new Uint8Array(5)
     const iv = new Uint8Array(16)
-    return expect(crypto.aes.create(key, iv)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_LENGTH')
+    return expect(() => crypto.aes.create(key, iv)).to.throw().with.property('code', 'ERR_INVALID_KEY_LENGTH')
   })
 })
 

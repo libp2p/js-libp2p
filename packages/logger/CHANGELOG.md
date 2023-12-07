@@ -5,6 +5,44 @@
 
 * specify updated formatter for multiaddrs ([#36](https://github.com/libp2p/js-libp2p-logger/issues/36)) ([abaefb4](https://github.com/libp2p/js-libp2p-logger/commit/abaefb490a0d9464a23b422d9fc5b80051532d10))
 
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.0...logger-v4.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+  * devDependencies
+    * @libp2p/peer-id bumped from ^4.0.0 to ^4.0.1
+
+## [4.0.0](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.1.0...logger-v4.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+
+### Code Refactoring
+
+* extract DCUtR into separate module ([#2220](https://www.github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://www.github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+
 ## [3.1.0](https://www.github.com/libp2p/js-libp2p/compare/logger-v3.0.5...logger-v3.1.0) (2023-11-07)
 
 

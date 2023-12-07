@@ -3,9 +3,7 @@ import { object, mixed, number, boolean } from 'yup'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { type Limit, Status } from '../pb/index.js'
 import type { RelayReservation } from '../index.js'
-import type { RecursivePartial } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { RecursivePartial, PeerId, Startable } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED

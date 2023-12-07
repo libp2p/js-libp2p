@@ -1,8 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start, stop } from '@libp2p/interface/startable'
-import { FaultTolerance } from '@libp2p/interface/transport'
+import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -17,8 +15,7 @@ import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { Libp2p, PeerId } from '@libp2p/interface'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 

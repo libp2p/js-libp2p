@@ -1,5 +1,4 @@
-import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -17,12 +16,8 @@ import {
 } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { Logger, Connection, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
 // IP then we are convinced that it is, in fact, our external IP
