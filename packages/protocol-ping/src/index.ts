@@ -23,10 +23,8 @@
  */
 
 import { PingService as PingServiceClass } from './ping.js'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface PingService {

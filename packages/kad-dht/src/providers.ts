@@ -10,9 +10,7 @@ import {
   PROVIDERS_LRU_CACHE_SIZE,
   PROVIDER_KEY_PREFIX
 } from './constants.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats'
 

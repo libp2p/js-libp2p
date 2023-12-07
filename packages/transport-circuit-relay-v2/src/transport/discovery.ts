@@ -1,17 +1,11 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import {
   RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
 import { namespaceToCid } from '../utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ComponentLogger, Logger, ContentRouting, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface RelayDiscoveryEvents {
   'relay:discover': CustomEvent<PeerId>

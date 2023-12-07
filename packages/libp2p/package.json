@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "0.46.21",
+  "version": "1.0.9",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p#readme",
@@ -12,6 +12,7 @@
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "publishConfig": {
+    "access": "public",
     "provenance": true
   },
   "keywords": [
@@ -24,6 +25,22 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -34,6 +51,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./version": {
+      "types": "./dist/src/version.d.ts",
+      "import": "./dist/src/version.js"
     }
   },
   "eslintConfig": {
@@ -60,20 +81,19 @@
     "test:chrome-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\"",
     "test:firefox": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -f \"./dist/test/**/*.spec.js\" -- --browser firefox",
-    "test:webkit": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser webkit",
-    "test:interop": "aegir test -t node -f dist/test/interop.js"
+    "test:webkit": "aegir test -t browser -f \"./dist/test/**/*.spec.js\" -- --browser webkit"
   },
   "dependencies": {
-    "@libp2p/crypto": "^2.0.8",
-    "@libp2p/interface": "^0.1.6",
-    "@libp2p/interface-internal": "^0.1.9",
-    "@libp2p/logger": "^3.1.0",
-    "@libp2p/multistream-select": "^4.0.6",
-    "@libp2p/peer-collections": "^4.0.8",
-    "@libp2p/peer-id": "^3.0.6",
-    "@libp2p/peer-id-factory": "^3.0.8",
-    "@libp2p/peer-store": "^9.0.9",
-    "@libp2p/utils": "^4.0.7",
+    "@libp2p/crypto": "^3.0.1",
+    "@libp2p/interface": "^1.0.1",
+    "@libp2p/interface-internal": "^1.0.2",
+    "@libp2p/logger": "^4.0.1",
+    "@libp2p/multistream-select": "^5.0.1",
+    "@libp2p/peer-collections": "^5.1.0",
+    "@libp2p/peer-id": "^4.0.1",
+    "@libp2p/peer-id-factory": "^4.0.0",
+    "@libp2p/peer-store": "^10.0.1",
+    "@libp2p/utils": "^5.0.2",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
@@ -99,26 +119,19 @@
     "uint8arrays": "^4.0.6"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^10.0.0",
-    "@chainsafe/libp2p-noise": "^13.0.2",
-    "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@libp2p/bootstrap": "^9.0.12",
-    "@libp2p/circuit-relay-v2": "^0.0.0",
-    "@libp2p/daemon-client": "^7.0.0",
-    "@libp2p/daemon-server": "^6.0.0",
-    "@libp2p/floodsub": "^8.0.13",
-    "@libp2p/identify": "^0.0.0",
-    "@libp2p/interface-compliance-tests": "^4.1.5",
-    "@libp2p/interop": "^9.0.0",
-    "@libp2p/kad-dht": "^10.0.15",
-    "@libp2p/mdns": "^9.0.14",
-    "@libp2p/mplex": "^9.0.12",
-    "@libp2p/plaintext": "^0.0.0",
-    "@libp2p/tcp": "^8.0.13",
-    "@libp2p/websockets": "^7.0.13",
+    "@chainsafe/libp2p-noise": "^14.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@libp2p/bootstrap": "^10.0.6",
+    "@libp2p/circuit-relay-v2": "^1.0.6",
+    "@libp2p/identify": "^1.0.5",
+    "@libp2p/interface-compliance-tests": "^5.0.6",
+    "@libp2p/kad-dht": "^11.0.6",
+    "@libp2p/mdns": "^10.0.6",
+    "@libp2p/mplex": "^10.0.6",
+    "@libp2p/plaintext": "^1.0.6",
+    "@libp2p/tcp": "^9.0.6",
+    "@libp2p/websockets": "^8.0.6",
     "aegir": "^41.0.2",
-    "execa": "^8.0.1",
-    "go-libp2p": "^1.1.1",
     "it-pushable": "^3.2.1",
     "p-event": "^6.0.0",
     "p-times": "^4.0.0",

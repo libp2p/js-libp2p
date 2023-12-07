@@ -21,7 +21,7 @@ import type { PeerInfo } from '../peer-info/index.js'
  * }
  * ```
  */
-export const peerRouting = Symbol.for('@libp2p/peer-routing')
+export const peerRoutingSymbol = Symbol.for('@libp2p/peer-routing')
 
 export interface PeerRouting {
   /**

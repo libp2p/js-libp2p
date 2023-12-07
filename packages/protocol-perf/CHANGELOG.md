@@ -1,5 +1,88 @@
 # Changelog
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^0.1.11 to ^1.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.0 to ^1.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.3 to ^5.0.4
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
+
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/perf-v3.0.0...perf-v3.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/interface-internal bumped from ^0.1.10 to ^0.1.11
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.1...perf-v3.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `perfService` export is now just `perf`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Code Refactoring
+
+* extract plaintext into separate module ([#2221](https://www.github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://www.github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* rename perf exports to remove Service ([#2227](https://www.github.com/libp2p/js-libp2p/issues/2227)) ([1034416](https://www.github.com/libp2p/js-libp2p/commit/10344168fe5f56c08a21d6b35468817e17ab0b25))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/interface-internal bumped from ^0.1.9 to ^0.1.10
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [2.0.1](https://www.github.com/libp2p/js-libp2p/compare/perf-v2.0.0...perf-v2.0.1) (2023-11-07)
 
 

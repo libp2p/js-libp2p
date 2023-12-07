@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 
 const CIPHER_MODES = {
   16: 'aes-128-ctr',

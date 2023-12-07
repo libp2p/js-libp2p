@@ -1,6 +1,6 @@
 import { pipe } from 'it-pipe'
-import type { Startable } from '@libp2p/interface/startable'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Startable } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 
 export const ECHO_PROTOCOL = '/echo/1.0.0'
 

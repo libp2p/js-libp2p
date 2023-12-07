@@ -1,6 +1,4 @@
-import type { AbortOptions, PendingDial } from '@libp2p/interface'
-import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

@@ -1,6 +1,5 @@
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
-import type { Direction, Stream } from '@libp2p/interface/connection'
+import type { AbortOptions, ComponentLogger, Direction, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 
 export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {

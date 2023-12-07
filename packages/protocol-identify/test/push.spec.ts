@@ -1,5 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start, stop } from '@libp2p/interface/startable'
+import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -10,11 +9,8 @@ import { stubInterface } from 'sinon-ts'
 import { Identify } from '../src/identify.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
 import { identifyPushStream, matchPeerId, type StubbedIdentifyComponents } from './fixtures/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('identify (push)', () => {
   let components: StubbedIdentifyComponents
@@ -111,7 +107,7 @@ describe('identify (push)', () => {
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
     const pb = pbStream(stream)
-    await pb.write({
+    void pb.write({
       publicKey: remotePeer.publicKey,
       protocols: [
         updatedProtocol

@@ -1,5 +1,5 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener, type Upgrader } from '@libp2p/interface/transport'
+import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
@@ -11,14 +11,7 @@ import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { CounterGroup, Metrics } from '@libp2p/interface/src/metrics/index.js'
-import type { Startable } from '@libp2p/interface/startable'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
-import type { ConnectionManager } from '@libp2p/interface-internal/src/connection-manager/index.js'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { IncomingStreamData, Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
@@ -63,6 +56,7 @@ export class WebRTCTransport implements Transport, Startable {
   ) {
     this.log = components.logger.forComponent('libp2p:webrtc')
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     if (components.metrics != null) {
       this.metrics = {
@@ -105,7 +99,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   readonly [Symbol.toStringTag] = '@libp2p/webrtc'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   filter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTC.exactMatch)

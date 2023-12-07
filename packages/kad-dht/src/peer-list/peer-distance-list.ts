@@ -1,7 +1,7 @@
 import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import * as utils from '../utils.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 interface PeerDistance {
   peerId: PeerId

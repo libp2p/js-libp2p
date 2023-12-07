@@ -3,6 +3,7 @@ import { defaultLogger, logger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { detect } from 'detect-browser'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
@@ -14,10 +15,8 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Logger, Connection, Stream } from '@libp2p/interface'
+import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 const browser = detect()
 
@@ -119,6 +118,39 @@ describe('webrtc basic', () => {
     initiator.peerConnection.close()
     recipient.peerConnection.close()
   })
+
+  it('should survive aborting during connection', async () => {
+    const abortController = new AbortController()
+    const { initiator, recipient } = await getComponents()
+
+    // no existing connection
+    initiator.connectionManager.getConnections.returns([])
+
+    // transport manager dials recipient
+    initiator.transportManager.dial.resolves(initiator.connection)
+
+    const createOffer = initiator.peerConnection.setRemoteDescription.bind(initiator.peerConnection)
+
+    initiator.peerConnection.setRemoteDescription = async (name) => {
+      // the dial is aborted
+      abortController.abort(new Error('Oh noes!'))
+      // setting the description takes some time
+      await delay(100)
+      return createOffer(name)
+    }
+
+    // signalling stream opens successfully
+    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+
+    await expect(Promise.all([
+      initiateConnection({
+        ...initiator,
+        signal: abortController.signal
+      }),
+      handleIncomingStream(recipient)
+    ]))
+      .to.eventually.be.rejected.with.property('message', 'Oh noes!')
+  })
 })
 
 describe('webrtc receiver', () => {
@@ -182,7 +214,7 @@ describe('webrtc dialer', () => {
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
 
-    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/remote should send an SDP answer/)
+    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
     pc.close()
   })

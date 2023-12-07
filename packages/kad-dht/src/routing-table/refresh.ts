@@ -7,8 +7,7 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 /**
  * Cannot generate random KadIds longer than this + 1

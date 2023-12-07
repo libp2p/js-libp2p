@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'

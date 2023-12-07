@@ -1,7 +1,5 @@
 import { nopSink, nopSource } from './util.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { MultiaddrConnection, MultiaddrConnectionTimeline } from '@libp2p/interface/connection'
-import type { CounterGroup } from '@libp2p/interface/metrics'
+import type { ComponentLogger, Logger, MultiaddrConnection, MultiaddrConnectionTimeline, CounterGroup } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'

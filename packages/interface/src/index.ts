@@ -321,6 +321,8 @@ export interface PendingDial {
   multiaddrs: Multiaddr[]
 }
 
+export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -410,7 +412,15 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    */
   metrics?: Metrics
 
+  /**
+   * The logger used by this libp2p node
+   */
   logger: ComponentLogger
+
+  /**
+   * The current status of the libp2p node
+   */
+  status: Libp2pStatus
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
@@ -660,3 +670,25 @@ export interface LoggerOptions {
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
 }
+
+export * from './connection/index.js'
+export * from './connection-encrypter/index.js'
+export * from './connection-gater/index.js'
+export * from './content-routing/index.js'
+export * from './keys/index.js'
+export * from './metrics/index.js'
+export * from './peer-discovery/index.js'
+export * from './peer-id/index.js'
+export * from './peer-info/index.js'
+export * from './peer-routing/index.js'
+export * from './peer-store/index.js'
+export * from './peer-store/tags.js'
+export * from './pubsub/index.js'
+export * from './record/index.js'
+export * from './stream-handler/index.js'
+export * from './stream-muxer/index.js'
+export * from './topology/index.js'
+export * from './transport/index.js'
+export * from './errors.js'
+export * from './events.js'
+export * from './startable.js'

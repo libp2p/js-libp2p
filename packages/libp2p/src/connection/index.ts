@@ -1,9 +1,5 @@
-import { symbol } from '@libp2p/interface/connection'
-import { CodeError } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
-import type { AbortOptions, Logger, ComponentLogger } from '@libp2p/interface'
-import type { Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import { connectionSymbol, CodeError, setMaxListeners } from '@libp2p/interface'
+import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const CLOSE_TIMEOUT = 500
@@ -106,7 +102,7 @@ export class ConnectionImpl implements Connection {
 
   readonly [Symbol.toStringTag] = 'Connection'
 
-  readonly [symbol] = true
+  readonly [connectionSymbol] = true
 
   /**
    * Get all the streams of the muxer

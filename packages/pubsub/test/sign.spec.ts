@@ -10,8 +10,7 @@ import {
 } from '../src/sign.js'
 import { randomSeqno, toRpcMessage } from '../src/utils.js'
 import { RPC } from './message/rpc.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PubSubRPCMessage } from '@libp2p/interface/pubsub'
+import type { PeerId, PubSubRPCMessage } from '@libp2p/interface'
 
 function encodeMessage (message: PubSubRPCMessage): Uint8Array {
   return RPC.Message.encode(message)

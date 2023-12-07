@@ -1,4 +1,4 @@
-import type { Metric, Metrics } from './index.js'
+import type { Metric, Metrics } from '@libp2p/interface'
 
 export interface TrackedMapInit {
   name: string

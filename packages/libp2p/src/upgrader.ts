@@ -1,23 +1,12 @@
-import { CodeError, ERR_TIMEOUT } from '@libp2p/interface/errors'
-import { setMaxListeners } from '@libp2p/interface/events'
+import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { StreamMuxer, StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
-import type { Upgrader, UpgraderOptions } from '@libp2p/interface/transport'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 const DEFAULT_PROTOCOL_SELECT_TIMEOUT = 30000
 
@@ -114,12 +103,10 @@ export class DefaultUpgrader implements Upgrader {
   private readonly muxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly log: Logger
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
     this.components = components
     this.connectionEncryption = new Map()
-    this.log = components.logger.forComponent('libp2p:upgrader')
 
     init.connectionEncryption.forEach(encrypter => {
       this.connectionEncryption.set(encrypter.protocol, encrypter)
@@ -178,7 +165,7 @@ export class DefaultUpgrader implements Upgrader {
 
       this.components.metrics?.trackMultiaddrConnection(maConn)
 
-      this.log('starting the inbound connection upgrade')
+      maConn.log('starting the inbound connection upgrade')
 
       // Protect
       let protectedConn = maConn
@@ -187,7 +174,7 @@ export class DefaultUpgrader implements Upgrader {
         const protector = this.components.connectionProtector
 
         if (protector != null) {
-          this.log('protecting the inbound connection')
+          maConn.log('protecting the inbound connection')
           protectedConn = await protector.protect(maConn)
         }
       }
@@ -234,13 +221,13 @@ export class DefaultUpgrader implements Upgrader {
           upgradedConn = multiplexed.stream
         }
       } catch (err: any) {
-        this.log.error('Failed to upgrade inbound connection', err)
+        maConn.log.error('failed to upgrade inbound connection', err)
         throw err
       }
 
       await this.shouldBlockConnection(remotePeer, maConn, 'denyInboundUpgradedConnection')
 
-      this.log('successfully upgraded inbound connection')
+      maConn.log('successfully upgraded inbound connection')
 
       return this._createConnection({
         cryptoProtocol,
@@ -279,7 +266,7 @@ export class DefaultUpgrader implements Upgrader {
 
     this.components.metrics?.trackMultiaddrConnection(maConn)
 
-    this.log('Starting the outbound connection upgrade')
+    maConn.log('starting the outbound connection upgrade')
 
     // If the transport natively supports encryption, skip connection
     // protector and encryption
@@ -332,14 +319,14 @@ export class DefaultUpgrader implements Upgrader {
         upgradedConn = multiplexed.stream
       }
     } catch (err: any) {
-      this.log.error('Failed to upgrade outbound connection', err)
+      maConn.log.error('failed to upgrade outbound connection', err)
       await maConn.close(err)
       throw err
     }
 
     await this.shouldBlockConnection(remotePeer, maConn, 'denyOutboundUpgradedConnection')
 
-    this.log('Successfully upgraded outbound connection')
+    maConn.log('successfully upgraded outbound connection')
 
     return this._createConnection({
       cryptoProtocol,
@@ -436,7 +423,7 @@ export class DefaultUpgrader implements Upgrader {
               this._onStream({ connection, stream: muxedStream, protocol })
             })
             .catch(async err => {
-              this.log.error('error handling incoming stream id %s', muxedStream.id, err.message, err.code, err.stack)
+              connection.log.error('error handling incoming stream id %s', muxedStream.id, err.message, err.code, err.stack)
 
               if (muxedStream.timeline.close == null) {
                 await muxedStream.close()
@@ -456,7 +443,7 @@ export class DefaultUpgrader implements Upgrader {
 
         try {
           if (options.signal == null) {
-            this.log('No abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
+            muxedStream.log('no abort signal was passed while trying to negotiate protocols %s falling back to default timeout', protocols)
 
             const signal = AbortSignal.timeout(DEFAULT_PROTOCOL_SELECT_TIMEOUT)
             setMaxListeners(Infinity, signal)
@@ -540,7 +527,7 @@ export class DefaultUpgrader implements Upgrader {
         muxer.sink(upgradedConn.source),
         upgradedConn.sink(muxer.source)
       ]).catch(err => {
-        this.log.error(err)
+        connection.log.error('error piping data through muxer', err)
       })
     }
 
@@ -555,14 +542,14 @@ export class DefaultUpgrader implements Upgrader {
                 await connection.close()
               }
             } catch (err: any) {
-              this.log.error(err)
+              connection.log.error('error closing connection after timeline close', err)
             } finally {
               this.events.safeDispatchEvent('connection:close', {
                 detail: connection
               })
             }
           })().catch(err => {
-            this.log.error(err)
+            connection.log.error('error thrown while dispatching connection:close event', err)
           })
         }
 
@@ -591,14 +578,14 @@ export class DefaultUpgrader implements Upgrader {
       close: async (options?: AbortOptions) => {
         // Ensure remaining streams are closed gracefully
         if (muxer != null) {
-          this.log.trace('close muxer')
+          connection.log.trace('close muxer')
           await muxer.close(options)
         }
 
-        this.log.trace('close maconn')
+        connection.log.trace('close maconn')
         // close the underlying transport
         await maConn.close(options)
-        this.log.trace('closed maconn')
+        connection.log.trace('closed maconn')
       },
       abort: (err) => {
         maConn.abort(err)
@@ -635,7 +622,7 @@ export class DefaultUpgrader implements Upgrader {
    */
   async _encryptInbound (connection: MultiaddrConnection): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
-    this.log('handling inbound crypto protocol selection', protocols)
+    connection.log('handling inbound crypto protocol selection', protocols)
 
     try {
       const { stream, protocol } = await mss.handle(connection, protocols, {
@@ -647,7 +634,7 @@ export class DefaultUpgrader implements Upgrader {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      this.log('encrypting inbound connection using', protocol)
+      connection.log('encrypting inbound connection using', protocol)
 
       return {
         ...await encrypter.secureInbound(this.components.peerId, stream),
@@ -664,7 +651,7 @@ export class DefaultUpgrader implements Upgrader {
    */
   async _encryptOutbound (connection: MultiaddrConnection, remotePeerId?: PeerId): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
-    this.log('selecting outbound crypto protocol', protocols)
+    connection.log('selecting outbound crypto protocol', protocols)
 
     try {
       connection.log.trace('selecting encrypter from %s', protocols)
@@ -700,7 +687,7 @@ export class DefaultUpgrader implements Upgrader {
    */
   async _multiplexOutbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: MultiaddrConnection, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
-    this.log('outbound selecting muxer %s', protocols)
+    connection.log('outbound selecting muxer %s', protocols)
     try {
       connection.log.trace('selecting stream muxer from %s', protocols)
 
@@ -717,7 +704,7 @@ export class DefaultUpgrader implements Upgrader {
 
       return { stream, muxerFactory }
     } catch (err: any) {
-      connection.log.error('error multiplexing outbound stream', err)
+      connection.log.error('error multiplexing outbound connection', err)
       throw new CodeError(String(err), codes.ERR_MUXER_UNAVAILABLE)
     }
   }
@@ -728,7 +715,7 @@ export class DefaultUpgrader implements Upgrader {
    */
   async _multiplexInbound (connection: MultiaddrConnection, muxers: Map<string, StreamMuxerFactory>): Promise<{ stream: MultiaddrConnection, muxerFactory?: StreamMuxerFactory }> {
     const protocols = Array.from(muxers.keys())
-    this.log('inbound handling muxers %s', protocols)
+    connection.log('inbound handling muxers %s', protocols)
     try {
       const { stream, protocol } = await mss.handle(connection, protocols, {
         log: connection.log
@@ -737,7 +724,7 @@ export class DefaultUpgrader implements Upgrader {
 
       return { stream, muxerFactory }
     } catch (err: any) {
-      this.log.error('error multiplexing inbound stream', err)
+      connection.log.error('error multiplexing inbound connection', err)
       throw new CodeError(String(err), codes.ERR_MUXER_UNAVAILABLE)
     }
   }

@@ -1,7 +1,7 @@
 import { logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { duplexPair } from 'it-pair/duplex'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
+import type { MultiaddrConnection } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

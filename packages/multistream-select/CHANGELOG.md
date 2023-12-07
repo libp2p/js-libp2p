@@ -11,6 +11,65 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#70](https://github.com/libp2p/js-libp2p-multistream-select/issues/70)) ([f87b1c3](https://github.com/libp2p/js-libp2p-multistream-select/commit/f87b1c3505934ebeed6eff018af8d3042e7e6e06))
 
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.0.0...multistream-select-v5.0.1) (2023-12-02)
+
+
+### Bug Fixes
+
+* do not wait for stream reads and writes at the same time ([#2290](https://github.com/libp2p/js-libp2p/issues/2290)) ([10ea197](https://github.com/libp2p/js-libp2p/commit/10ea19700ae0c464734c88eb5922e2faeb27446a))
+
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.9...multistream-select-v5.0.0) (2023-12-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires libp2p v1
+
+### Bug Fixes
+
+* release majors of modules that had patches during v1.0 ([#2286](https://github.com/libp2p/js-libp2p/issues/2286)) ([738dd40](https://github.com/libp2p/js-libp2p/commit/738dd40f1e1b8ed1b83693763cc91c218ec2b41b))
+
+## [4.0.9](https://github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.8...multistream-select-v4.0.9) (2023-12-01)
+
+
+### Bug Fixes
+
+* make mss check logger before use ([#2261](https://github.com/libp2p/js-libp2p/issues/2261)) ([#2274](https://github.com/libp2p/js-libp2p/issues/2274)) ([cf96369](https://github.com/libp2p/js-libp2p/commit/cf963694f0253cc32ef805980c5be3397a41fae2))
+
+## [4.0.8](https://github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.7...multistream-select-v4.0.8) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+
+### [4.0.7](https://www.github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.6...multistream-select-v4.0.7) (2023-11-28)
+
+
+### Bug Fixes
+
+* allow mss lazy select on read ([#2246](https://www.github.com/libp2p/js-libp2p/issues/2246)) ([d8f5bc2](https://www.github.com/libp2p/js-libp2p/commit/d8f5bc211185a963c2a5182d58d73629457bc78d))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use optimistic protocol negotation ([#2253](https://www.github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://www.github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [4.0.6](https://www.github.com/libp2p/js-libp2p/compare/multistream-select-v4.0.5...multistream-select-v4.0.6) (2023-11-07)
 
 

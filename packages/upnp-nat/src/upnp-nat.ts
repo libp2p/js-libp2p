@@ -1,12 +1,11 @@
 import { upnpNat, type NatAPI } from '@achingbrain/nat-port-mapper'
-import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface/errors'
+import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
 import type { UPnPNATComponents, UPnPNATInit } from './index.js'
-import type { Logger } from '@libp2p/interface'
-import type { Startable } from '@libp2p/interface/startable'
+import type { Logger, Startable } from '@libp2p/interface'
 
 const DEFAULT_TTL = 7200
 

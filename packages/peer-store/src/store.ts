@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import mortice, { type Mortice } from 'mortice'
@@ -10,9 +10,7 @@ import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
 import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
-import type { PeerUpdate as PeerUpdateExternal } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Peer, PeerData, PeerQuery } from '@libp2p/interface/peer-store'
+import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery } from '@libp2p/interface'
 import type { Datastore, Key, Query } from 'interface-datastore'
 
 /**

@@ -8,7 +8,7 @@ import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
-import type { Connection } from '@libp2p/interface/connection'
+import type { Connection } from '@libp2p/interface'
 
 describe('streams', () => {
   let connectionA: Connection

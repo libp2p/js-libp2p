@@ -9,7 +9,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Providers } from '../src/providers.js'
 import { createPeerIds } from './utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 describe('Providers', () => {
   let peers: PeerId[]

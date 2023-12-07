@@ -62,7 +62,7 @@ const node = await createLibp2p({
 To define component metrics first get a reference to the metrics object:
 
 ```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+import type { Metrics } from '@libp2p/interface'
 
 interface MyClassComponents {
   metrics: Metrics
@@ -84,6 +84,7 @@ class MyClass {
 A tracked metric can be created by calling either `registerMetric` on the metrics object:
 
 ```ts
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
 
@@ -120,7 +121,7 @@ stopTimer()
 A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
 
 ```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
 
@@ -139,6 +140,7 @@ node.metrics?.registerMetric('my_metric', {
 If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
 
 ```ts
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
 

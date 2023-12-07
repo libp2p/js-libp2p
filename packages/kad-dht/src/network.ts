@@ -1,4 +1,4 @@
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
 import { Message } from './message/index.js'
 import {
@@ -8,11 +8,7 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent, QueryOptions } from './index.js'
-import type { AbortOptions, Logger } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Startable } from '@libp2p/interface/startable'
+import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable } from '@libp2p/interface'
 
 export interface NetworkInit {
   protocol: string

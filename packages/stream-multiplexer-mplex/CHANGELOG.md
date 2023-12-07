@@ -12,6 +12,83 @@
 * **dev:** bump cborg from 1.10.2 to 2.0.1 ([#282](https://github.com/libp2p/js-libp2p-mplex/issues/282)) ([4dbc590](https://github.com/libp2p/js-libp2p-mplex/commit/4dbc590d1ac92581fe2e937757567eef3854acf4))
 * **dev:** bump delay from 5.0.0 to 6.0.0 ([#281](https://github.com/libp2p/js-libp2p-mplex/issues/281)) ([1e03e75](https://github.com/libp2p/js-libp2p-mplex/commit/1e03e75369722be9872f747cd83f555bc08d49fe))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.0.1 to ^5.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.3 to ^5.0.4
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
+
+## [10.0.1](https://github.com/libp2p/js-libp2p/compare/mplex-v10.0.0...mplex-v10.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/utils bumped from ^5.0.0 to ^5.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+
+## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.12...mplex-v10.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/utils bumped from ^4.0.7 to ^5.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
 ### [9.0.12](https://www.github.com/libp2p/js-libp2p/compare/mplex-v9.0.11...mplex-v9.0.12) (2023-11-07)
 
 

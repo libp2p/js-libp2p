@@ -11,7 +11,7 @@
  *
  * You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
  *
- * @example
+ * @example Creating a peer record
  *
  * Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
  *
@@ -42,7 +42,7 @@
  * const wireData = e.marshal()
  * ```
  *
- * @example
+ * @example Consuming a peer record
  *
  * Consume a received envelope (`wireData`) and transform it back to a record:
  *

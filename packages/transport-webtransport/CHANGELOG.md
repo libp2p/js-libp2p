@@ -11,6 +11,102 @@
 
 * bump @chainsafe/libp2p-noise from 11.0.4 to 12.0.1 ([#80](https://github.com/libp2p/js-libp2p-webtransport/issues/80)) ([599dab1](https://github.com/libp2p/js-libp2p-webtransport/commit/599dab1b4f6ae816b0c0feefc926c1b38d24b676))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.1 to ^1.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.2 to ^1.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.3 to ^1.0.4
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+    * libp2p bumped from ^1.0.4 to ^1.0.5
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.5 to ^1.0.6
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.6 to ^1.0.7
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.7 to ^1.0.8
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.8 to ^1.0.9
+
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.0...webtransport-v4.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/peer-id bumped from ^4.0.0 to ^4.0.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/peer-id-factory bumped from ^3.0.9 to ^3.0.10
+    * libp2p bumped from ^1.0.0 to ^1.0.1
+
+## [4.0.0](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.10...webtransport-v4.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+
+
+### Bug Fixes
+
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+    * libp2p bumped from ^0.46.21 to ^1.0.0
+
 ### [3.1.10](https://www.github.com/libp2p/js-libp2p/compare/webtransport-v3.1.9...webtransport-v3.1.10) (2023-11-10)
 
 

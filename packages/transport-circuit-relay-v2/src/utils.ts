@@ -1,11 +1,10 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { ERR_TRANSFER_LIMIT_EXCEEDED } from './constants.js'
 import type { Limit } from './pb/index.js'
-import type { LoggerOptions } from '@libp2p/interface'
-import type { Stream } from '@libp2p/interface/connection'
+import type { LoggerOptions, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

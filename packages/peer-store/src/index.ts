@@ -1,10 +1,13 @@
+/**
+ * @packageDocumentation
+ *
+ * The peer store is where libp2p stores data about the peers it has encountered on the network.
+ */
+
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
-import type { ComponentLogger, Libp2pEvents, Logger } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface/peer-store'
+import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 

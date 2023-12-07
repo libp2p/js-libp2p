@@ -4,6 +4,7 @@
  * A set of components to be extended in order to create a pubsub implementation.
  *
  * @example
+ *
  * ```javascript
  * import { PubSubBaseProtocol } from '@libp2p/pubsub'
  *
@@ -13,9 +14,8 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult } from '@libp2p/interface/pubsub'
+import { CodeError, TypedEventEmitter, CustomEvent } from '@libp2p/interface'
+import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult, type ComponentLogger, type Logger, type Connection, type PeerId } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'
@@ -26,10 +26,7 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { ComponentLogger, Logger } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal/registrar'
+import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PubSubComponents {

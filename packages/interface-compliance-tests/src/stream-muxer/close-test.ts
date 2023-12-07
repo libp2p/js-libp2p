@@ -13,7 +13,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message } from './fixtures/pb/message.js'
 import type { TestSetup } from '../index.js'
-import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
+import type { StreamMuxerFactory } from '@libp2p/interface'
 
 function randomBuffer (): Uint8Array {
   return uint8ArrayFromString(Math.random().toString())

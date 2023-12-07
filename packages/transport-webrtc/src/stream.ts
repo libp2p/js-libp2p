@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
@@ -9,8 +9,7 @@ import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
-import type { Direction } from '@libp2p/interface/connection'
+import type { AbortOptions, ComponentLogger, Direction } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {

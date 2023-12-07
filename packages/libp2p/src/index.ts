@@ -19,17 +19,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo } from '@libp2p/interface'
-import type { ConnectionProtector } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerRouting } from '@libp2p/interface/peer-routing'
-import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
@@ -86,7 +76,7 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
   /**
    * An array that must include at least 1 compliant transport
    */
-  transports: Array<(components: Components) => Transport>
+  transports?: Array<(components: Components) => Transport>
   streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
   connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
   peerDiscovery?: Array<(components: Components) => PeerDiscovery>
@@ -160,7 +150,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

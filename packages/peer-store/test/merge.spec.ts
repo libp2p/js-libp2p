@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerData } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -9,9 +9,6 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { pEvent } from 'p-event'
 import { PersistentPeerStore } from '../src/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerData } from '@libp2p/interface/peer-store'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
