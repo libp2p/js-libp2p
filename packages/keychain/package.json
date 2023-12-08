@@ -64,7 +64,7 @@
     "interface-datastore": "^8.2.0",
     "merge-options": "^3.0.4",
     "sanitize-filename": "^1.6.3",
-    "uint8arrays": "^4.0.6"
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.1",

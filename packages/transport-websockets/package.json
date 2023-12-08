@@ -96,7 +96,7 @@
     "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.2",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "uint8arrays": "^5.0.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
