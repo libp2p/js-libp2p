@@ -56,7 +56,7 @@
     "it-protobuf-stream": "^1.0.2",
     "protons-runtime": "^5.0.0",
     "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.1",
