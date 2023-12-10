@@ -21,6 +21,18 @@
   * dependencies
     * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/interface-internal bumped from ^1.0.2 to ^1.0.3
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-record bumped from ^7.0.0 to ^7.0.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.3...identify-v1.0.4) (2023-12-02)
 
 
