@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -23,8 +24,10 @@ describe('floodsub', () => {
   before(async () => {
     expect(multicodec).to.exist()
 
+    const peerId = await createEd25519PeerId()
     floodsub = new FloodSub({
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       registrar: mockRegistrar(),
       logger: defaultLogger()
     }, {

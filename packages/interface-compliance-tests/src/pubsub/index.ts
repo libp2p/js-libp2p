@@ -5,11 +5,12 @@ import messagesTest from './messages.js'
 import multipleNodesTest from './multiple-nodes.js'
 import twoNodesTest from './two-nodes.js'
 import type { TestSetup } from '../index.js'
-import type { ComponentLogger, PeerId, PubSub, PubSubInit } from '@libp2p/interface'
+import type { ComponentLogger, PeerId, PrivateKey, PubSub, PubSubInit } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface PubSubComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: Registrar
   connectionManager: ConnectionManager
   pubsub?: PubSub

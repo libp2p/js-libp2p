@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { type PubSubRPC, TopicValidatorResult, type PeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -25,6 +26,7 @@ describe('topic validators', () => {
 
     pubsub = new PubsubImplementation({
       peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       registrar: new MockRegistrar(),
       logger: defaultLogger()
     }, {

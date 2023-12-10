@@ -18,7 +18,7 @@ import {
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger, Connection, Stream, TypedEventTarget, PeerId, Peer, PeerData, PeerStore, Startable } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger, Connection, Stream, TypedEventTarget, PeerId, Peer, PeerData, PeerStore, Startable, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 
 // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
@@ -49,6 +49,7 @@ export class Identify implements Startable, IdentifyInterface {
   private started: boolean
   private readonly timeout: number
   private readonly peerId: PeerId
+  private readonly privateKey: PrivateKey
   private readonly peerStore: PeerStore
   private readonly registrar: Registrar
   private readonly connectionManager: ConnectionManager
@@ -66,6 +67,7 @@ export class Identify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
     this.started = false
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.peerStore = components.peerStore
     this.registrar = components.registrar
     this.addressManager = components.addressManager
@@ -167,7 +169,7 @@ export class Identify implements Startable, IdentifyInterface {
       peerId: this.peerId,
       multiaddrs: listenAddresses
     })
-    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId)
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey)
     const supportedProtocols = this.registrar.getProtocols()
     const peer = await this.peerStore.get(this.peerId)
     const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
@@ -339,7 +341,7 @@ export class Identify implements Startable, IdentifyInterface {
           multiaddrs
         })
 
-        const envelope = await RecordEnvelope.seal(peerRecord, this.peerId)
+        const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey)
         signedPeerRecord = envelope.marshal().subarray()
       }
 

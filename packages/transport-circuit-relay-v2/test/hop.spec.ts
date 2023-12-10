@@ -1,6 +1,7 @@
 /* eslint-disable max-nested-callbacks */
 
-import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Transport, type Upgrader } from '@libp2p/interface'
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Transport, type Upgrader, type PrivateKey } from '@libp2p/interface'
 import { isStartable } from '@libp2p/interface'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -23,6 +24,7 @@ export function matchPeerId (peerId: PeerId): Sinon.SinonMatcher {
 
 interface Node {
   peerId: PeerId
+  privateKey: PrivateKey
   multiaddr: Multiaddr
   registrar: Registrar
   peerStore: StubbedInstance<PeerStore>
@@ -88,6 +90,7 @@ describe('circuit-relay hop protocol', function () {
       contentRouting: stubInterface<ContentRouting>(),
       connectionManager,
       peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       peerStore,
       registrar,
       connectionGater,
@@ -118,6 +121,7 @@ describe('circuit-relay hop protocol', function () {
 
     const node: Node = {
       peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       multiaddr: ma,
       registrar,
       circuitRelayService: service,

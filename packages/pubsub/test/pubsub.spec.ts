@@ -1,4 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 6] */
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -31,6 +32,7 @@ describe('pubsub base implementation', () => {
       const peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -105,6 +107,7 @@ describe('pubsub base implementation', () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
           peerId,
+          privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
           registrar: new MockRegistrar(),
           logger: defaultLogger()
         }, {
@@ -138,6 +141,7 @@ describe('pubsub base implementation', () => {
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
+          privateKey: await unmarshalPrivateKey(peerIdA.privateKey as Uint8Array),
           registrar: registrarA,
           logger: defaultLogger()
         }, {
@@ -145,6 +149,7 @@ describe('pubsub base implementation', () => {
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
+          privateKey: await unmarshalPrivateKey(peerIdB.privateKey as Uint8Array),
           registrar: registrarB,
           logger: defaultLogger()
         }, {
@@ -210,6 +215,7 @@ describe('pubsub base implementation', () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
           peerId,
+          privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
           registrar: new MockRegistrar(),
           logger: defaultLogger()
         }, {
@@ -247,6 +253,7 @@ describe('pubsub base implementation', () => {
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
+          privateKey: await unmarshalPrivateKey(peerIdA.privateKey as Uint8Array),
           registrar: registrarA,
           logger: defaultLogger()
         }, {
@@ -254,6 +261,7 @@ describe('pubsub base implementation', () => {
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
+          privateKey: await unmarshalPrivateKey(peerIdB.privateKey as Uint8Array),
           registrar: registrarB,
           logger: defaultLogger()
         }, {
@@ -343,6 +351,7 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -373,6 +382,7 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -447,6 +457,7 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {

@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -19,6 +20,7 @@ describe('pubsub base messages', () => {
     peerId = await createPeerId()
     pubsub = new PubsubImplementation({
       peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       registrar: new MockRegistrar(),
       logger: defaultLogger()
     }, {

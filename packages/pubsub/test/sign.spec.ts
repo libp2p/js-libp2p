@@ -44,7 +44,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(peerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(peerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
@@ -79,7 +79,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(secPeerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(secPeerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.eql(expectedSignature)
@@ -113,7 +113,7 @@ describe('message signing', () => {
     const privateKey = await keys.unmarshalPrivateKey(peerId.privateKey)
     const expectedSignature = await privateKey.sign(bytesToSign)
 
-    const signedMessage = await signMessage(peerId, message, encodeMessage)
+    const signedMessage = await signMessage(privateKey, message, encodeMessage)
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)

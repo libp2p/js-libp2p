@@ -1,3 +1,4 @@
+import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -17,8 +18,10 @@ describe('identify (push)', () => {
   let identify: Identify
 
   beforeEach(async () => {
+    const peerId = await createEd25519PeerId()
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey: await unmarshalPrivateKey(peerId.privateKey as Uint8Array),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),

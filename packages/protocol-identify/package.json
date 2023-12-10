@@ -65,6 +65,7 @@
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
+    "@libp2p/crypto": "^3.0.1",
     "@libp2p/logger": "^4.0.1",
     "@libp2p/peer-id-factory": "^4.0.0",
     "aegir": "^41.0.2",
