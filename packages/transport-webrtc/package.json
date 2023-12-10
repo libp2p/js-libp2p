@@ -73,6 +73,7 @@
     "p-timeout": "^6.1.2",
     "protons-runtime": "^5.0.0",
     "race-signal": "^1.0.0",
+    "react-native-webrtc": "^118.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^5.0.0"
   },
@@ -97,5 +98,8 @@
   },
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js"
+  },
+  "react-native": {
+    "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.react-native.js"
   }
 }

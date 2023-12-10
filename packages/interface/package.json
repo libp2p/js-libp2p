@@ -74,5 +74,8 @@
   },
   "browser": {
     "events": "./dist/src/events.browser.js"
+  },
+  "react-native": {
+    "./dist/src/events.js": "./dist/src/events.browser.js"
   }
 }

@@ -79,7 +79,7 @@
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-to-uri": "^9.0.2",
     "@types/ws": "^8.5.4",
-    "it-ws": "^6.0.0",
+    "it-ws": "^6.1.0",
     "p-defer": "^4.0.0",
     "wherearewe": "^2.0.1",
     "ws": "^8.12.1"
