@@ -68,5 +68,8 @@
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
+  },
+  "react-native": {
+    "./dist/src/listener.js": "./dist/src/listener.browser.js"
   }
 }

@@ -142,5 +142,9 @@
   "browser": {
     "./dist/src/connection-manager/constants.js": "./dist/src/connection-manager/constants.browser.js",
     "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js"
+  },
+  "react-native": {
+    "./dist/src/connection-manager/constants.js": "./dist/src/connection-manager/constants.browser.js",
+    "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js"
   }
 }

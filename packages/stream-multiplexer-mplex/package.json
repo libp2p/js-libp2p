@@ -86,8 +86,5 @@
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
-  },
-  "browser": {
-    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
   }
 }
