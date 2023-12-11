@@ -59,12 +59,14 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
       }
     })
 
+    this.started = true
+  }
+
+  afterStart (): void {
     void this.discover()
       .catch(err => {
         this.log.error('error listening on relays', err)
       })
-
-    this.started = true
   }
 
   stop (): void {
