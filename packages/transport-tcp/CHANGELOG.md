@@ -37,6 +37,16 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/utils bumped from ^5.0.2 to ^5.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+
 ## [9.0.1](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.0...tcp-v9.0.1) (2023-11-30)
 
 

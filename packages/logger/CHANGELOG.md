@@ -5,6 +5,14 @@
 
 * specify updated formatter for multiaddrs ([#36](https://github.com/libp2p/js-libp2p-logger/issues/36)) ([abaefb4](https://github.com/libp2p/js-libp2p-logger/commit/abaefb490a0d9464a23b422d9fc5b80051532d10))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+  * devDependencies
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.0...logger-v4.0.1) (2023-11-30)
 
 
