@@ -118,7 +118,7 @@
     "is-loopback-addr": "^2.0.1",
     "it-pushable": "^3.2.2",
     "it-stream-types": "^2.0.1",
-    "p-queue": "^7.4.1",
+    "p-queue": "^8.0.0",
     "private-ip": "^3.0.1",
     "race-signal": "^1.0.1",
     "uint8arraylist": "^2.4.3"
