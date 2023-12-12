@@ -1,5 +1,5 @@
 import type { Connection, MultiaddrConnection } from '../connection/index.js'
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { AbortOptions } from '../index.js'
 import type { StreamMuxerFactory } from '../stream-muxer/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
