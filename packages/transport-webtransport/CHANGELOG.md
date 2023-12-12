@@ -60,6 +60,25 @@
   * devDependencies
     * libp2p bumped from ^1.0.8 to ^1.0.9
 
+## [4.0.10](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.9...webtransport-v4.0.10) (2023-12-10)
+
+
+### Bug Fixes
+
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
+    * libp2p bumped from ^1.0.9 to ^1.0.10
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.0...webtransport-v4.0.1) (2023-11-30)
 
 

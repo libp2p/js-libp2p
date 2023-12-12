@@ -1,4 +1,4 @@
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { PeerInfo } from '../peer-info/index.js'
 
 /**

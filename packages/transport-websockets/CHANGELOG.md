@@ -38,6 +38,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
 
+## [8.0.7](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.6...websockets-v8.0.7) (2023-12-10)
+
+
+### Bug Fixes
+
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/utils bumped from ^5.0.2 to ^5.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+
 ## [8.0.1](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.0...websockets-v8.0.1) (2023-11-30)
 
 
