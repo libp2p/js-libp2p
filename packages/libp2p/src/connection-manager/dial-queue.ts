@@ -294,17 +294,14 @@ export class DialQueue {
 
   private createDialAbortControllers (userSignal?: AbortSignal): ClearableSignal {
     // let any signal abort the dial
-    const signal = anySignal(
-      [AbortSignal.timeout(this.dialTimeout),
-        this.shutDownController.signal,
-        userSignal
-      ]
-    )
+    const signal = anySignal([
+      AbortSignal.timeout(this.dialTimeout),
+      this.shutDownController.signal,
+      userSignal
+    ])
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    // This emitter gets listened to a lot
+    setMaxListeners(Infinity, signal)
 
     return signal
   }

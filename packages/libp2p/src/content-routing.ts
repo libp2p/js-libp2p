@@ -1,13 +1,9 @@
 import { CodeError } from '@libp2p/interface'
+import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
-import { pipe } from 'it-pipe'
-import { codes, messages } from '../errors.js'
-import {
-  storeAddresses,
-  uniquePeers,
-  requirePeers
-} from './utils.js'
-import type { AbortOptions, ContentRouting, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
+import parallel from 'it-parallel'
+import { codes, messages } from './errors.js'
+import type { AbortOptions, ComponentLogger, ContentRouting, Logger, PeerInfo, PeerRouting, PeerStore, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 export interface CompoundContentRoutingInit {
@@ -16,14 +12,18 @@ export interface CompoundContentRoutingInit {
 
 export interface CompoundContentRoutingComponents {
   peerStore: PeerStore
+  peerRouting: PeerRouting
+  logger: ComponentLogger
 }
 
 export class CompoundContentRouting implements ContentRouting, Startable {
+  private readonly log: Logger
   private readonly routers: ContentRouting[]
   private started: boolean
   private readonly components: CompoundContentRoutingComponents
 
   constructor (components: CompoundContentRoutingComponents, init: CompoundContentRoutingInit) {
+    this.log = components.logger.forComponent('libp2p:content-routing')
     this.routers = init.routers ?? []
     this.started = false
     this.components = components
@@ -44,19 +44,65 @@ export class CompoundContentRouting implements ContentRouting, Startable {
   /**
    * Iterates over all content routers in parallel to find providers of the given key
    */
-  async * findProviders (key: CID, options: AbortOptions = {}): AsyncIterable<PeerInfo> {
+  async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
       throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    yield * pipe(
-      merge(
-        ...this.routers.map(router => router.findProviders(key, options))
-      ),
-      (source) => storeAddresses(source, this.components.peerStore),
-      (source) => uniquePeers(source),
-      (source) => requirePeers(source)
-    )
+    const self = this
+    const seen = new PeerSet()
+
+    for await (const peer of parallel(
+      async function * () {
+        const source = merge(
+          ...self.routers.map(router => router.findProviders(key, options))
+        )
+
+        for await (let peer of source) {
+          yield async () => {
+            // find multiaddrs if they are missing
+            if (peer.multiaddrs.length === 0) {
+              try {
+                peer = await self.components.peerRouting.findPeer(peer.id, {
+                  ...options,
+                  useCache: false
+                })
+              } catch (err) {
+                self.log.error('could not find peer multiaddrs', err)
+                return
+              }
+            }
+
+            return peer
+          }
+        }
+      }()
+    )) {
+      // the peer was yielded by a content router without multiaddrs and we
+      // failed to load them
+      if (peer == null) {
+        continue
+      }
+
+      // skip peers without addresses
+      if (peer.multiaddrs.length === 0) {
+        continue
+      }
+
+      // ensure we have the addresses for a given peer
+      await this.components.peerStore.merge(peer.id, {
+        multiaddrs: peer.multiaddrs
+      })
+
+      // deduplicate peers
+      if (seen.has(peer.id)) {
+        continue
+      }
+
+      seen.add(peer.id)
+
+      yield peer
+    }
   }
 
   /**
@@ -68,7 +114,9 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    await Promise.all(this.routers.map(async (router) => { await router.provide(key, options) }))
+    await Promise.all(this.routers.map(async (router) => {
+      await router.provide(key, options)
+    }))
   }
 
   /**

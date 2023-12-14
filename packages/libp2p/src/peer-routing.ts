@@ -1,15 +1,9 @@
 import { CodeError } from '@libp2p/interface'
-import filter from 'it-filter'
-import first from 'it-first'
+import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
-import { pipe } from 'it-pipe'
-import {
-  storeAddresses,
-  uniquePeers,
-  requirePeers
-} from './content-routing/utils.js'
+import parallel from 'it-parallel'
 import { codes, messages } from './errors.js'
-import type { AbortOptions, Logger, PeerId, PeerInfo, PeerRouting, PeerStore } from '@libp2p/interface'
+import type { Logger, PeerId, PeerInfo, PeerRouting, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export interface PeerRoutingInit {
@@ -38,7 +32,7 @@ export class DefaultPeerRouting implements PeerRouting {
   /**
    * Iterates over all peer routers in parallel to find the given peer
    */
-  async findPeer (id: PeerId, options?: AbortOptions): Promise<PeerInfo> {
+  async findPeer (id: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
       throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
@@ -48,24 +42,27 @@ export class DefaultPeerRouting implements PeerRouting {
     }
 
     const self = this
-
-    const output = await pipe(
-      merge(
-        ...this.routers.map(router => (async function * () {
-          try {
-            yield await router.findPeer(id, options)
-          } catch (err) {
-            self.log.error(err)
-          }
-        })())
-      ),
-      (source) => filter(source, Boolean),
-      (source) => storeAddresses(source, this.peerStore),
-      async (source) => first(source)
+    const source = merge(
+      ...this.routers.map(router => (async function * () {
+        try {
+          yield await router.findPeer(id, options)
+        } catch (err) {
+          self.log.error(err)
+        }
+      })())
     )
 
-    if (output != null) {
-      return output
+    for await (const peer of source) {
+      if (peer == null) {
+        continue
+      }
+
+      // ensure we have the addresses for a given peer
+      await this.peerStore.merge(peer.id, {
+        multiaddrs: peer.multiaddrs
+      })
+
+      return peer
     }
 
     throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
@@ -74,18 +71,64 @@ export class DefaultPeerRouting implements PeerRouting {
   /**
    * Attempt to find the closest peers on the network to the given key
    */
-  async * getClosestPeers (key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
       throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
     }
 
-    yield * pipe(
-      merge(
-        ...this.routers.map(router => router.getClosestPeers(key, options))
-      ),
-      (source) => storeAddresses(source, this.peerStore),
-      (source) => uniquePeers(source),
-      (source) => requirePeers(source)
-    )
+    const self = this
+    const seen = new PeerSet()
+
+    for await (const peer of parallel(
+      async function * () {
+        const source = merge(
+          ...self.routers.map(router => router.getClosestPeers(key, options))
+        )
+
+        for await (let peer of source) {
+          yield async () => {
+            // find multiaddrs if they are missing
+            if (peer.multiaddrs.length === 0) {
+              try {
+                peer = await self.findPeer(peer.id, {
+                  ...options,
+                  useCache: false
+                })
+              } catch (err) {
+                self.log.error('could not find peer multiaddrs', err)
+                return
+              }
+            }
+
+            return peer
+          }
+        }
+      }()
+    )) {
+      // the peer was yielded by a content router without multiaddrs and we
+      // failed to load them
+      if (peer == null) {
+        continue
+      }
+
+      // skip peers without addresses
+      if (peer.multiaddrs.length === 0) {
+        continue
+      }
+
+      // ensure we have the addresses for a given peer
+      await this.peerStore.merge(peer.id, {
+        multiaddrs: peer.multiaddrs
+      })
+
+      // deduplicate peers
+      if (seen.has(peer.id)) {
+        continue
+      }
+
+      seen.add(peer.id)
+
+      yield peer
+    }
   }
 }
