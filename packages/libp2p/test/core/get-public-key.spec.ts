@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
 import { contentRoutingSymbol } from '@libp2p/interface'
+import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
 import type { ContentRouting, ContentRoutingProvider, Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -31,7 +31,7 @@ describe('getPublicKey', () => {
   })
 
   it('should extract embedded public key', async () => {
-    const otherPeer = await createPeerId()
+    const otherPeer = await createEd25519PeerId()
 
     const key = await node.getPublicKey(otherPeer)
 
@@ -39,7 +39,7 @@ describe('getPublicKey', () => {
   })
 
   it('should get key from the peerstore', async () => {
-    const otherPeer = await createPeerId({ opts: { type: 'rsa' } })
+    const otherPeer = await createRSAPeerId()
 
     if (otherPeer.publicKey == null) {
       throw new Error('Public key was missing')
@@ -55,7 +55,7 @@ describe('getPublicKey', () => {
   })
 
   it('should query content routing when the key is not in the keystore', async () => {
-    const otherPeer = await createPeerId({ opts: { type: 'rsa' } })
+    const otherPeer = await createRSAPeerId()
 
     if (otherPeer.publicKey == null) {
       throw new Error('Public key was missing')

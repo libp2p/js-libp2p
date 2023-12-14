@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter } from '@libp2p/interface'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
 import type { PeerDiscovery, PeerDiscoveryEvents, PeerId, Startable, Libp2p } from '@libp2p/interface'
 
 describe('peer discovery', () => {
@@ -14,7 +14,7 @@ describe('peer discovery', () => {
   let libp2p: Libp2p
 
   before(async () => {
-    peerId = await createPeerId()
+    peerId = await createEd25519PeerId()
   })
 
   afterEach(async () => {
