@@ -8,7 +8,6 @@ export default {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
       const { webSockets } = await import('@libp2p/websockets')
       const { mplex } = await import('@libp2p/mplex')
-      const { noise } = await import('@chainsafe/libp2p-noise')
       const { createEd25519PeerId } = await import('@libp2p/peer-id-factory')
       const { yamux } = await import('@chainsafe/libp2p-yamux')
       const { WebSockets } = await import('@multiformats/mafmt')
@@ -39,7 +38,6 @@ export default {
           mplex()
         ],
         connectionEncryption: [
-          noise(),
           plaintext()
         ],
         services: {

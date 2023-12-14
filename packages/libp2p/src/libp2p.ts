@@ -14,7 +14,7 @@ import { defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
-import { CompoundContentRouting } from './content-routing/index.js'
+import { CompoundContentRouting } from './content-routing.js'
 import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { DefaultRegistrar } from './registrar.js'
@@ -175,7 +175,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
         if (service[peerDiscoverySymbol] != null) {
           this.log('registering service %s for peer discovery', name)
-          service[peerDiscoverySymbol].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
+          service[peerDiscoverySymbol].addEventListener?.('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
         }
@@ -262,7 +262,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    return this.components.connectionManager.openConnection(peer, options)
+    return this.components.connectionManager.openConnection(peer, {
+      // ensure any userland dials take top priority in the queue
+      priority: 75,
+      ...options
+    })
   }
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {

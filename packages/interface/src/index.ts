@@ -27,6 +27,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index
 import type { Topology } from './topology/index.js'
 import type { Listener } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -669,6 +670,28 @@ export interface LoggerOptions {
  */
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
+}
+
+/**
+ * When a routing operation involves reading values, these options allow
+ * controlling where the values are read from. By default libp2p will check
+ * local caches but may not use the network if a valid local value is found,
+ * these options allow tuning that behaviour.
+ */
+export interface RoutingOptions extends AbortOptions, ProgressOptions {
+  /**
+   * Pass `false` to not use the network
+   *
+   * @default true
+   */
+  useNetwork?: boolean
+
+  /**
+   * Pass `false` to not use cached values
+   *
+   * @default true
+   */
+  useCache?: boolean
 }
 
 export * from './connection/index.js'
