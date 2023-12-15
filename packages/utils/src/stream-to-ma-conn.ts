@@ -44,7 +44,7 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
         // If the source errored the socket will already have been destroyed by
         // toIterable.duplex(). If the socket errored it will already be
         // destroyed. There's nothing to do here except log the error & return.
-        log(err)
+        log.error('%s error in sink', remoteAddr, err)
       }
     } finally {
       closedWrite = true
