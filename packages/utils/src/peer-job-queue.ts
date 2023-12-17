@@ -179,4 +179,9 @@ export class PeerJobQueue extends PQueue<PeerPriorityQueue, PeerPriorityQueueOpt
       }
     }, opts) as Promise<T>
   }
+
+  clear (): void {
+    this.results.clear()
+    super.clear()
+  }
 }

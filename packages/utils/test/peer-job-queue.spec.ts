@@ -93,4 +93,32 @@ describe('peer job queue', () => {
     await expect(joinedJob).to.eventually.rejected
       .with.property('message', error.message)
   })
+
+  it('cannot join jobs after clear', async () => {
+    const value = 'hello world'
+    const deferred = pDefer<string>()
+
+    const peerIdA = await createEd25519PeerId()
+    const queue = new PeerJobQueue({
+      concurrency: 1
+    })
+
+    expect(queue.hasJob(peerIdA)).to.be.false()
+
+    await expect(queue.joinJob(peerIdA)).to.eventually.rejected
+      .with.property('code', 'ERR_NO_JOB_FOR_PEER_ID')
+
+    void queue.add(async () => {
+      return deferred.promise
+    }, {
+      peerId: peerIdA
+    })
+
+    queue.clear()
+
+    await expect(queue.joinJob(peerIdA)).to.eventually.rejected
+      .with.property('code', 'ERR_NO_JOB_FOR_PEER_ID')
+
+    deferred.resolve(value)
+  })
 })
