@@ -182,6 +182,12 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
           sentProtocol = true
           sendingProtocol = false
           doneSendingProtocol.resolve()
+
+          // read the negotiation response but don't block more sending
+          negotiate()
+            .catch(err => {
+              options.log.error('could not finish optimistic protocol negotiation of %s', protocol, err)
+            })
         } else {
           yield buf
         }
