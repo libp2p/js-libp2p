@@ -35,7 +35,8 @@ describe('Query Self', () => {
       lan: false,
       peerRouting,
       routingTable,
-      initialQuerySelfHasRun
+      initialQuerySelfHasRun,
+      logPrefix: ''
     }
 
     querySelf = new QuerySelf(components, init)

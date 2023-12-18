@@ -61,7 +61,7 @@ describe.skip('generate peers', function () {
     }
     const table = new RoutingTable(components, {
       kBucketSize: 20,
-      lan: false,
+      logPrefix: '',
       protocol: '/ipfs/kad/1.0.0'
     })
     refresh = new RoutingTableRefresh({
@@ -70,7 +70,7 @@ describe.skip('generate peers', function () {
       routingTable: table,
       // @ts-expect-error not a full implementation
       peerRouting: {},
-      lan: false
+      logPrefix: ''
     })
   })
 
