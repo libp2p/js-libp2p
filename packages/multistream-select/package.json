@@ -63,6 +63,7 @@
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "p-defer": "^4.0.0",
+    "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.2",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^5.0.0"
