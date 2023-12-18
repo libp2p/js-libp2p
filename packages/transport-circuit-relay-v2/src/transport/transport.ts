@@ -103,8 +103,7 @@ export class CircuitRelayTransport implements Transport {
   }
 
   async start (): Promise<void> {
-    await this.reservationStore.start()
-    await this.discovery?.start()
+    this.reservationStore.start()
 
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this.onStop(data).catch(err => {
@@ -117,12 +116,18 @@ export class CircuitRelayTransport implements Transport {
       runOnTransientConnection: true
     })
 
+    await this.discovery?.start()
+
     this.started = true
+  }
+
+  afterStart (): void {
+    this.discovery?.afterStart()
   }
 
   async stop (): Promise<void> {
     this.discovery?.stop()
-    await this.reservationStore.stop()
+    this.reservationStore.stop()
     await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
 
     this.started = false

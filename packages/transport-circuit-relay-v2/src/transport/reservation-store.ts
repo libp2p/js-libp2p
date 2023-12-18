@@ -115,11 +115,11 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     return this.started
   }
 
-  async start (): Promise<void> {
+  start (): void {
     this.started = true
   }
 
-  async stop (): Promise<void> {
+  stop (): void {
     this.reserveQueue.clear()
     this.reservations.forEach(({ timeout }) => {
       clearTimeout(timeout)
