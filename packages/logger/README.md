@@ -11,7 +11,7 @@ A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package
 
 ## Example
 
-```JavaScript
+```TypeScript
 import { logger } from '@libp2p/logger'
 
 const log = logger('libp2p:my:component:name')

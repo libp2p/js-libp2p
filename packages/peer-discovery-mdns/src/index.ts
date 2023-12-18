@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```ts
+ * ```TypeScript
  * import { mdns } from '@libp2p/mdns'
  *
  * const options = {

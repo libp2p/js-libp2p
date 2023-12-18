@@ -28,7 +28,7 @@ We can also limit the number of connections in a 'pending' state. These connecti
 
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/connection-manager/index.ts) - please see that file for the current values.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 
 const node = await createLibp2p({
@@ -57,7 +57,7 @@ const node = await createLibp2p({
 
 When choosing connections to close the connection manager sorts the list of connections by the value derived from the tags given to each peer. The values of all tags are summed and connections with lower valued peers are eligible for closing first. If there are tags with equal values, the shortest-lived connection will be closed first.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
@@ -85,7 +85,7 @@ To prevent individual peers from opening multiple connections to a node, an `inb
 
 All fields are optional. The default values are defined in [src/connection-manager/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/connection-manager/index.ts) - please see that file for the current values.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 
 const node = await createLibp2p({
@@ -113,7 +113,7 @@ These settings are done on a per-muxer basis, please see the README of the relev
 
 All fields are optional. The default values are defined in [@libp2p/mplex/src/mplex.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/stream-multiplexer-mplex/src/mplex.ts) - please see that file for the current values.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { mplex } from '@libp2p/mplex'
 
@@ -157,7 +157,7 @@ const node = await createLibp2p({
 
 All fields are optional. The default values are defined in [@chainsafe/libp2p-yamux/src/config.ts](https://github.com/ChainSafe/js-libp2p-yamux/blob/master/src/config.ts) - please see that file for the current values.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
@@ -194,7 +194,7 @@ Since incoming stream data is buffered until it is consumed, you should attempt 
 
 All fields are optional. The default values are defined in [src/registrar.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/registrar.ts) - please see that file for the current values.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p';
 
 const node = await createLibp2p({});
@@ -224,7 +224,7 @@ The [@libp2p/tcp](https://github.com/libp2p/js-libp2p/tree/main/packages/transpo
 
 All fields are optional. The full list of options is defined in [@libp2p/tcp/src/index.ts](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-tcp/src/index.ts) - please see that file for more details.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import {tcp } from '@libp2p/tcp'
 
@@ -258,7 +258,7 @@ const node = await createLibp2p({
 
 It is possible to configure some hosts to always accept connections from and some to always reject connections from.
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 
 const node = await createLibp2p({

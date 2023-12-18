@@ -11,7 +11,7 @@
  *
  * @example Configuring libp2p to use floodsub
  *
- * ```JavaScript
+ * ```TypeScript
  * import { createLibp2pNode } from 'libp2p'
  * import { floodsub } from '@libp2p/floodsub'
  *
@@ -23,7 +23,7 @@
  *
  * node.pubsub.subscribe('fruit')
  * node.pubsub.addEventListener('message', (evt) => {
- *   console.this.log(evt)
+ *   console.log(evt)
  * })
  *
  * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))

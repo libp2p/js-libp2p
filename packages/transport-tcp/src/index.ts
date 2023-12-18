@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { tcp } from '@libp2p/tcp'
  * import { multiaddr } from '@multiformats/multiaddr'
  * import { pipe } from 'it-pipe'
@@ -22,7 +22,7 @@
  * const listener = transport.createListener({
  *   upgrader,
  *   handler: (socket) => {
- *     console.this.log('new connection opened')
+ *     console.log('new connection opened')
  *     pipe(
  *       ['hello', ' ', 'World!'],
  *       socket
@@ -32,14 +32,14 @@
  *
  * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
  * await listener.listen(addr)
- * console.this.log('listening')
+ * console.log('listening')
  *
  * const socket = await transport.dial(addr, { upgrader })
  * const values = await pipe(
  *   socket,
  *   all
  * )
- * console.this.log(`Value: ${values.toString()}`)
+ * console.log(`Value: ${values.toString()}`)
  *
  * // Close connection after reading
  * await listener.close()

@@ -28,7 +28,7 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 
 First enable metrics tracking by supplying a [Metrics](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/metrics/index.ts#L150) implementation:
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -61,7 +61,7 @@ const node = await createLibp2p({
 
 To define component metrics first get a reference to the metrics object:
 
-```ts
+```TypeScript
 import type { Metrics } from '@libp2p/interface'
 
 interface MyClassComponents {
@@ -83,7 +83,7 @@ class MyClass {
 
 A tracked metric can be created by calling either `registerMetric` on the metrics object:
 
-```ts
+```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -116,7 +116,7 @@ stopTimer()
 
 A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
 
-```ts
+```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -131,7 +131,7 @@ metrics.registerMetric('my_metric', {
 
 If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
 
-```ts
+```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -173,7 +173,7 @@ stopTimer()
 Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [docs](https://libp2p.github.io/js-libp2p-prometheus-metrics/)
 
 
-```ts
+```TypeScript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
 
