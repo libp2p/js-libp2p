@@ -11,7 +11,7 @@ An implementation of a peer id
 
 ## Example
 
-```JavaScript
+```TypeScript
 import { peerIdFromString } from '@libp2p/peer-id'
 const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
 

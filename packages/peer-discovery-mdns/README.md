@@ -11,7 +11,7 @@ A peer discover mechanism that uses [mDNS](https://datatracker.ietf.org/doc/html
 
 ## Example
 
-```ts
+```TypeScript
 import { mdns } from '@libp2p/mdns'
 
 const options = {

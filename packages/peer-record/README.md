@@ -17,7 +17,7 @@ This envelope stores a marshaled record implementing the [interface-record](http
 
 You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
-## Example
+## Example - Creating a peer record
 
 Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
 
@@ -48,7 +48,7 @@ const e = await PeerEnvelope.seal(rec, peerId)
 const wireData = e.marshal()
 ```
 
-## Example
+## Example - Consuming a peer record
 
 Consume a received envelope (`wireData`) and transform it back to a record:
 

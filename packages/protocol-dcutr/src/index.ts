@@ -11,7 +11,7 @@
  *
  * @example
  *
- * ```ts
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { circuitRelayTransport } from 'libp2p/circuit-relay'
  * import { tcp } from '@libp2p/tcp'
