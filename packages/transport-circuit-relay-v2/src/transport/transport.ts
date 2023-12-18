@@ -116,6 +116,8 @@ export class CircuitRelayTransport implements Transport {
       runOnTransientConnection: true
     })
 
+    await this.discovery?.start()
+
     this.started = true
   }
 
