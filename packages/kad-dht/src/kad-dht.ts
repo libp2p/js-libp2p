@@ -19,7 +19,7 @@ import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
 import {
   multiaddrIsPublic,
-  passthroughMapper
+  removePrivateAddressesMapper
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper } from './index.js'
 import type { AbortOptions, ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
@@ -223,7 +223,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.clientMode = clientMode ?? true
     this.maxInboundStreams = maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
-    this.peerInfoMapper = init.peerInfoMapper ?? passthroughMapper
+    this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper
     this.routingTable = new RoutingTable(components, {
       kBucketSize,
       pingTimeout,
