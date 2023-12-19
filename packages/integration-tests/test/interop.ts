@@ -9,7 +9,7 @@ import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
 import { identify } from '@libp2p/identify'
 import { interopTests } from '@libp2p/interop'
-import { kadDHT } from '@libp2p/kad-dht'
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
@@ -156,6 +156,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.dht === true) {
     services.dht = kadDHT({
       protocol: '/ipfs/kad/1.0.0',
+      peerInfoMapper: passthroughMapper,
       clientMode: false
     })
   }
