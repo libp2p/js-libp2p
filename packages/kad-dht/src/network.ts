@@ -103,6 +103,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record)
       }, options)
     } catch (err: any) {
+      this.log.error('could not send %s to %p', msg.type, to, err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       if (stream != null) {

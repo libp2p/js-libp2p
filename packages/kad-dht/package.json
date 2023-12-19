@@ -105,6 +105,7 @@
     "execa": "^8.0.1",
     "it-filter": "^3.0.1",
     "it-last": "^3.0.3",
+    "it-pair": "^2.0.6",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^6.1.0",

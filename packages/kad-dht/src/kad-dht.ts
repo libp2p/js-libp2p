@@ -1,5 +1,7 @@
 import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import drain from 'it-drain'
+import map from 'it-map'
+import parallel from 'it-parallel'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -20,8 +22,27 @@ import {
   passthroughMapper
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper } from './index.js'
-import type { ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
+import type { AbortOptions, ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
+
+async function * ensurePeerInfoHasMultiaddrs (source: AsyncGenerator<PeerInfo>, peerRouting: PeerRouting, log: Logger, options: AbortOptions = {}): AsyncGenerator<() => Promise<PeerInfo | undefined>, void, undefined> {
+  yield * map(source, prov => {
+    return async () => {
+      if (prov.multiaddrs.length > 0) {
+        return prov
+      }
+
+      try {
+        return await peerRouting.findPeer(prov.id, {
+          ...options,
+          useCache: false
+        })
+      } catch (err) {
+        log.error('could not find peer', err)
+      }
+    }
+  })
+}
 
 /**
  * Wrapper class to convert events into returned values
@@ -30,11 +51,13 @@ class DHTContentRouting implements ContentRouting {
   private readonly dht: KadDHTInterface
   private readonly peerInfoMapper: PeerInfoMapper
   private readonly peerRouting: PeerRouting
+  private readonly log: Logger
 
-  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper, peerRouting: PeerRouting) {
+  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper, peerRouting: PeerRouting, log: Logger) {
     this.dht = dht
     this.peerInfoMapper = peerInfoMapper
     this.peerRouting = peerRouting
+    this.log = log
   }
 
   async provide (cid: CID, options: RoutingOptions = {}): Promise<void> {
@@ -42,20 +65,26 @@ class DHTContentRouting implements ContentRouting {
   }
 
   async * findProviders (cid: CID, options: RoutingOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
-    for await (const event of this.dht.findProviders(cid, options)) {
-      if (event.name === 'PROVIDER') {
-        for (let peer of event.providers) {
-          if (peer.multiaddrs.length === 0) {
-            peer = await this.peerRouting.findPeer(peer.id, options)
-          }
-
-          peer = this.peerInfoMapper(peer)
-
-          if (peer.multiaddrs.length > 0) {
-            yield peer
-          }
+    const self = this
+    const source = async function * (): AsyncGenerator<PeerInfo, void, undefined> {
+      for await (const event of self.dht.findProviders(cid, options)) {
+        if (event.name === 'PROVIDER') {
+          yield * event.providers
         }
       }
+    }
+    for await (let peerInfo of parallel(ensurePeerInfoHasMultiaddrs(source(), this.peerRouting, this.log, options))) {
+      if (peerInfo == null) {
+        continue
+      }
+
+      peerInfo = this.peerInfoMapper(peerInfo)
+
+      if (peerInfo.multiaddrs.length === 0) {
+        continue
+      }
+
+      yield peerInfo
     }
   }
 
@@ -80,10 +109,12 @@ class DHTContentRouting implements ContentRouting {
 class DHTPeerRouting implements PeerRouting {
   private readonly dht: KadDHTInterface
   private readonly peerInfoMapper: PeerInfoMapper
+  private readonly log: Logger
 
-  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper) {
+  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper, log: Logger) {
     this.dht = dht
     this.peerInfoMapper = peerInfoMapper
+    this.log = log
   }
 
   async findPeer (peerId: PeerId, options: RoutingOptions = {}): Promise<PeerInfo> {
@@ -101,18 +132,27 @@ class DHTPeerRouting implements PeerRouting {
   }
 
   async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
-    for await (const event of this.dht.getClosestPeers(key, options)) {
-      if (event.name === 'FINAL_PEER') {
-        if (event.peer.multiaddrs.length === 0) {
-          event.peer = await this.findPeer(event.peer.id, options)
-        }
-
-        const peer = this.peerInfoMapper(event.peer)
-
-        if (peer.multiaddrs.length > 0) {
-          yield peer
+    const self = this
+    const source = async function * (): AsyncGenerator<PeerInfo, void, undefined> {
+      for await (const event of self.dht.getClosestPeers(key, options)) {
+        if (event.name === 'FINAL_PEER') {
+          yield event.peer
         }
       }
+    }
+
+    for await (let peerInfo of parallel(ensurePeerInfoHasMultiaddrs(source(), this, this.log, options))) {
+      if (peerInfo == null) {
+        continue
+      }
+
+      peerInfo = this.peerInfoMapper(peerInfo)
+
+      if (peerInfo.multiaddrs.length === 0) {
+        continue
+      }
+
+      yield peerInfo
     }
   }
 }
@@ -307,8 +347,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       })
     })
 
-    this.dhtPeerRouting = new DHTPeerRouting(this, this.peerInfoMapper)
-    this.dhtContentRouting = new DHTContentRouting(this, this.peerInfoMapper, this.dhtPeerRouting)
+    this.dhtPeerRouting = new DHTPeerRouting(this, this.peerInfoMapper, this.log)
+    this.dhtContentRouting = new DHTContentRouting(this, this.peerInfoMapper, this.dhtPeerRouting, this.log)
 
     // if client mode has not been explicitly specified, auto-switch to server
     // mode when the node's peer data is updated with publicly dialable
@@ -407,17 +447,16 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     // Only respond to queries when not in client mode
     await this.setMode(this.clientMode ? 'client' : 'server')
 
+    this.querySelf.start()
+
     await Promise.all([
       this.providers.start(),
       this.queryManager.start(),
       this.network.start(),
       this.routingTable.start(),
-      this.topologyListener.start()
+      this.topologyListener.start(),
+      this.routingTableRefresh.start()
     ])
-
-    this.querySelf.start()
-
-    await this.routingTableRefresh.start()
   }
 
   /**

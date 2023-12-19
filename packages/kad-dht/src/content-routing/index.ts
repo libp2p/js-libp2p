@@ -200,19 +200,6 @@ export class ContentRouting {
         }
 
         if (newProviders.length > 0) {
-          // ensure providers with multiaddrs are yielded first
-          newProviders.sort((a, b) => {
-            if (a.multiaddrs.length > b.multiaddrs.length) {
-              return -1
-            }
-
-            if (a.multiaddrs.length < b.multiaddrs.length) {
-              return 1
-            }
-
-            return 0
-          })
-
           yield providerEvent({ from: event.from, providers: newProviders }, options)
         }
 
