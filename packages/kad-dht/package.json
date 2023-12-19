@@ -61,6 +61,7 @@
     "@libp2p/interface-internal": "^1.0.3",
     "@libp2p/peer-collections": "^5.1.1",
     "@libp2p/peer-id": "^4.0.2",
+    "@libp2p/utils": "^5.0.3",
     "@multiformats/multiaddr": "^12.1.10",
     "@types/sinon": "^17.0.0",
     "any-signal": "^4.1.1",
