@@ -427,6 +427,6 @@ export interface KadDHTComponents {
  * Creates a custom DHT implementation, please ensure you pass a `protocol`
  * string as an option.
  */
-export function kadDHT (init: KadDHTInit & { protocol: string }): (components: KadDHTComponents) => KadDHT {
+export function kadDHT (init: KadDHTInit): (components: KadDHTComponents) => KadDHT {
   return (components: KadDHTComponents) => new KadDHTClass(components, init)
 }
