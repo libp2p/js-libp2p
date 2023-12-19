@@ -26,6 +26,18 @@
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
     * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.0.3...utils-v5.1.0) (2023-12-19)
+
+
+### Features
+
+* allow joining jobs in peer queues ([#2316](https://github.com/libp2p/js-libp2p/issues/2316)) ([9eff7ef](https://github.com/libp2p/js-libp2p/commit/9eff7eff0ea6f54bc6c24a8bc4736ba0e2807c8b))
+
+
+### Bug Fixes
+
+* remove results map on job queue clear ([#2320](https://github.com/libp2p/js-libp2p/issues/2320)) ([230afea](https://github.com/libp2p/js-libp2p/commit/230afea4b2919486bd8d61d9f0923a7761a6d2a0))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.0.0...utils-v5.0.1) (2023-11-30)
 
 

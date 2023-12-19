@@ -19,6 +19,13 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [5.0.3](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.0.2...multistream-select-v5.0.3) (2023-12-19)
+
+
+### Bug Fixes
+
+* graceful close of optimistic selection with early data ([#2318](https://github.com/libp2p/js-libp2p/issues/2318)) ([a7c6a93](https://github.com/libp2p/js-libp2p/commit/a7c6a93c6717a073bd8677a714565c91515290f2))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.0.0...multistream-select-v5.0.1) (2023-12-02)
 
 
