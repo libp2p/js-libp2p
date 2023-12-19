@@ -38,6 +38,14 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.0.3 to ^5.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.7 to ^5.0.8
+
 ## [8.0.7](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.6...websockets-v8.0.7) (2023-12-10)
 
 
