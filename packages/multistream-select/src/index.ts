@@ -32,7 +32,13 @@ export interface ProtocolStream<Stream> {
 }
 
 export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Partial<LengthPrefixedStreamOpts> {
-
+  /**
+   * Disable optimistic select and wait for the protocol negotiation to complete
+   * before returning.
+   *
+   * @default false
+   */
+  negotiateFully?: boolean
 }
 
 export { select } from './select.js'
