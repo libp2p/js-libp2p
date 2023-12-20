@@ -4,7 +4,7 @@ import type { Logger, PeerId, Startable } from '@libp2p/interface'
 
 export interface TopologyListenerInit {
   protocol: string
-  lan: boolean
+  logPrefix: string
 }
 
 export interface TopologyListenerEvents {
@@ -24,10 +24,10 @@ export class TopologyListener extends TypedEventEmitter<TopologyListenerEvents> 
   constructor (components: KadDHTComponents, init: TopologyListenerInit) {
     super()
 
-    const { protocol, lan } = init
+    const { protocol, logPrefix } = init
 
     this.components = components
-    this.log = components.logger.forComponent(`libp2p:kad-dht:topology-listener:${lan ? 'lan' : 'wan'}`)
+    this.log = components.logger.forComponent(`${logPrefix}:topology-listener`)
     this.running = false
     this.protocol = protocol
   }

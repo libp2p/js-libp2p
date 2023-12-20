@@ -8,9 +8,8 @@ import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
 import { identify } from '@libp2p/identify'
-import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import { interopTests } from '@libp2p/interop'
-import { kadDHT } from '@libp2p/kad-dht'
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
@@ -155,41 +154,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   if (options.dht === true) {
-    services.dht = (components: any) => {
-      const dht: any = kadDHT({
-        clientMode: false
-      })(components)
-
-      // go-libp2p-daemon only has the older single-table DHT instead of the dual
-      // lan/wan version found in recent go-ipfs versions. unfortunately it's been
-      // abandoned so here we simulate the older config with the js implementation
-      const lan: any = dht.lan
-
-      const protocol = '/ipfs/kad/1.0.0'
-      lan.protocol = protocol
-      lan.network.protocol = protocol
-      lan.topologyListener.protocol = protocol
-
-      Object.defineProperties(lan, {
-        [contentRoutingSymbol]: {
-          get () {
-            return dht[contentRoutingSymbol]
-          }
-        },
-        [peerRoutingSymbol]: {
-          get () {
-            return dht[peerRoutingSymbol]
-          }
-        },
-        [peerDiscoverySymbol]: {
-          get () {
-            return dht[peerDiscoverySymbol]
-          }
-        }
-      })
-
-      return lan
-    }
+    services.dht = kadDHT({
+      protocol: '/ipfs/kad/1.0.0',
+      peerInfoMapper: passthroughMapper,
+      clientMode: false
+    })
   }
 
   const node: any = await createLibp2p({

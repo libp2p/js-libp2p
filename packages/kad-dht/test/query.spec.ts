@@ -9,7 +9,7 @@ import pDefer from 'p-defer'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { EventTypes, type QueryEvent } from '../src/index.js'
-import { MESSAGE_TYPE } from '../src/message/index.js'
+import { MessageType } from '../src/message/dht.js'
 import {
   peerResponseEvent,
   valueEvent,
@@ -45,7 +45,8 @@ describe('QueryManager', () => {
   const defaultInit = (): QueryManagerInit => {
     const init: QueryManagerInit = {
       initialQuerySelfHasRun: pDefer<any>(),
-      routingTable
+      routingTable,
+      logPrefix: ''
     }
 
     init.initialQuerySelfHasRun.resolve()
@@ -70,7 +71,7 @@ describe('QueryManager', () => {
       } else {
         event = peerResponseEvent({
           from,
-          messageType: MESSAGE_TYPE.GET_VALUE,
+          messageType: MessageType.GET_VALUE,
           closer: (config.closerPeers ?? []).map((id) => ({
             id: peers[id],
             multiaddrs: [],
@@ -196,7 +197,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const peersQueried = []
+    const peersQueried: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer, signal }) { // eslint-disable-line require-await
       expect(signal).to.be.an.instanceOf(AbortSignal)
@@ -206,7 +207,7 @@ describe('QueryManager', () => {
         // query more peers
         yield peerResponseEvent({
           from: peer,
-          messageType: MESSAGE_TYPE.GET_VALUE,
+          messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(id => ({ id, multiaddrs: [], protocols: [] }))
         })
       } else if (peersQueried.length === 6) {
@@ -219,7 +220,7 @@ describe('QueryManager', () => {
         // a peer that cannot help in our query
         yield peerResponseEvent({
           from: peer,
-          messageType: MESSAGE_TYPE.GET_VALUE
+          messageType: MessageType.GET_VALUE
         })
       }
     }
@@ -249,7 +250,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const peersQueried = []
+    const peersQueried: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       peersQueried.push(peer)
@@ -258,14 +259,14 @@ describe('QueryManager', () => {
         // query more peers
         yield peerResponseEvent({
           from: peer,
-          messageType: MESSAGE_TYPE.GET_VALUE,
+          messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(id => ({ id, multiaddrs: [], protocols: [] }))
         })
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
           from: peer,
-          messageType: MESSAGE_TYPE.GET_VALUE
+          messageType: MessageType.GET_VALUE
         })
       }
     }
@@ -396,7 +397,7 @@ describe('QueryManager', () => {
           error: new Error('Urk!')
         })
       } else {
-        yield peerResponseEvent({ from: peer, messageType: MESSAGE_TYPE.GET_VALUE })
+        yield peerResponseEvent({ from: peer, messageType: MessageType.GET_VALUE })
       }
     }
 
@@ -544,7 +545,7 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       yield peerResponseEvent({
         from: peer,
-        messageType: MESSAGE_TYPE.GET_VALUE,
+        messageType: MessageType.GET_VALUE,
         closer: [{
           id: peers[2],
           multiaddrs: []
@@ -739,7 +740,8 @@ describe('QueryManager', () => {
       logger: defaultLogger()
     }, {
       initialQuerySelfHasRun: pDefer<any>(),
-      routingTable
+      routingTable,
+      logPrefix: ''
     })
     await manager.start()
 
@@ -774,7 +776,8 @@ describe('QueryManager', () => {
     }, {
       initialQuerySelfHasRun,
       alpha: 2,
-      routingTable
+      routingTable,
+      logPrefix: ''
     })
     await manager.start()
 

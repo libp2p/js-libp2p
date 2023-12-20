@@ -9,9 +9,9 @@ import {
 import { convertBuffer } from '../utils.js'
 import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
-import type { QueryEvent, QueryOptions as RootQueryOptions } from '../index.js'
+import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { ComponentLogger, Metric, Metrics, PeerId, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Metric, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {
@@ -19,7 +19,7 @@ export interface CleanUpEvents {
 }
 
 export interface QueryManagerInit {
-  lan?: boolean
+  logPrefix: string
   disjointPaths?: number
   alpha?: number
   initialQuerySelfHasRun: DeferredPromise<void>
@@ -32,8 +32,12 @@ export interface QueryManagerComponents {
   logger: ComponentLogger
 }
 
-export interface QueryOptions extends RootQueryOptions {
+export interface QueryOptions extends RoutingOptions {
+  /**
+   * A timeout for subqueries executed as part of the main query
+   */
   queryFuncTimeout?: number
+
   isSelfQuery?: boolean
 }
 
@@ -41,7 +45,6 @@ export interface QueryOptions extends RootQueryOptions {
  * Keeps track of all running queries
  */
 export class QueryManager implements Startable {
-  private readonly lan: boolean
   public disjointPaths: number
   private readonly alpha: number
   private readonly shutDownController: AbortController
@@ -51,18 +54,19 @@ export class QueryManager implements Startable {
   private readonly peerId: PeerId
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
+  private readonly logPrefix: string
   private readonly metrics?: {
     runningQueries: Metric
     queryTime: Metric
   }
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
-    const { lan = false, disjointPaths = K, alpha = ALPHA } = init
+    const { disjointPaths = K, alpha = ALPHA, logPrefix } = init
 
+    this.logPrefix = logPrefix
     this.disjointPaths = disjointPaths ?? K
     this.running = false
     this.alpha = alpha ?? ALPHA
-    this.lan = lan
     this.queries = 0
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
     this.routingTable = init.routingTable
@@ -71,8 +75,8 @@ export class QueryManager implements Startable {
 
     if (components.metrics != null) {
       this.metrics = {
-        runningQueries: components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_running_queries`),
-        queryTime: components.metrics.registerMetric(`libp2p_kad_dht_${this.lan ? 'lan' : 'wan'}_query_time_seconds`)
+        runningQueries: components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_running_queries`),
+        queryTime: components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_query_time_seconds`)
       }
     }
 
@@ -129,7 +133,7 @@ export class QueryManager implements Startable {
     // so make sure we don't make a lot of noise in the logs
     setMaxListeners(Infinity, signal)
 
-    const log = this.logger.forComponent(`libp2p:kad-dht:${this.lan ? 'lan' : 'wan'}:query:` + uint8ArrayToString(key, 'base58btc'))
+    const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
     const startTime = Date.now()

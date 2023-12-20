@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Record {
@@ -63,24 +63,30 @@ export namespace Record {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.key = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.value = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.author = reader.bytes()
               break
-            case 4:
+            }
+            case 4: {
               obj.signature = reader.bytes()
               break
-            case 5:
+            }
+            case 5: {
               obj.timeReceived = reader.string()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -100,138 +106,141 @@ export namespace Record {
   }
 }
 
+export enum MessageType {
+  PUT_VALUE = 'PUT_VALUE',
+  GET_VALUE = 'GET_VALUE',
+  ADD_PROVIDER = 'ADD_PROVIDER',
+  GET_PROVIDERS = 'GET_PROVIDERS',
+  FIND_NODE = 'FIND_NODE',
+  PING = 'PING'
+}
+
+enum __MessageTypeValues {
+  PUT_VALUE = 0,
+  GET_VALUE = 1,
+  ADD_PROVIDER = 2,
+  GET_PROVIDERS = 3,
+  FIND_NODE = 4,
+  PING = 5
+}
+
+export namespace MessageType {
+  export const codec = (): Codec<MessageType> => {
+    return enumeration<MessageType>(__MessageTypeValues)
+  }
+}
+export enum ConnectionType {
+  NOT_CONNECTED = 'NOT_CONNECTED',
+  CONNECTED = 'CONNECTED',
+  CAN_CONNECT = 'CAN_CONNECT',
+  CANNOT_CONNECT = 'CANNOT_CONNECT'
+}
+
+enum __ConnectionTypeValues {
+  NOT_CONNECTED = 0,
+  CONNECTED = 1,
+  CAN_CONNECT = 2,
+  CANNOT_CONNECT = 3
+}
+
+export namespace ConnectionType {
+  export const codec = (): Codec<ConnectionType> => {
+    return enumeration<ConnectionType>(__ConnectionTypeValues)
+  }
+}
+export interface PeerInfo {
+  id: Uint8Array
+  multiaddrs: Uint8Array[]
+  connection?: ConnectionType
+}
+
+export namespace PeerInfo {
+  let _codec: Codec<PeerInfo>
+
+  export const codec = (): Codec<PeerInfo> => {
+    if (_codec == null) {
+      _codec = message<PeerInfo>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if ((obj.id != null && obj.id.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.id)
+        }
+
+        if (obj.multiaddrs != null) {
+          for (const value of obj.multiaddrs) {
+            w.uint32(18)
+            w.bytes(value)
+          }
+        }
+
+        if (obj.connection != null) {
+          w.uint32(24)
+          ConnectionType.codec().encode(obj.connection, w)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length) => {
+        const obj: any = {
+          id: uint8ArrayAlloc(0),
+          multiaddrs: []
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              obj.id = reader.bytes()
+              break
+            }
+            case 2: {
+              obj.multiaddrs.push(reader.bytes())
+              break
+            }
+            case 3: {
+              obj.connection = ConnectionType.codec().decode(reader)
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Partial<PeerInfo>): Uint8Array => {
+    return encodeMessage(obj, PeerInfo.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerInfo => {
+    return decodeMessage(buf, PeerInfo.codec())
+  }
+}
+
 export interface Message {
-  type?: Message.MessageType
-  clusterLevelRaw?: number
+  type: MessageType
+  clusterLevel?: number
   key?: Uint8Array
   record?: Uint8Array
-  closerPeers: Message.Peer[]
-  providerPeers: Message.Peer[]
+  closer: PeerInfo[]
+  providers: PeerInfo[]
 }
 
 export namespace Message {
-  export enum MessageType {
-    PUT_VALUE = 'PUT_VALUE',
-    GET_VALUE = 'GET_VALUE',
-    ADD_PROVIDER = 'ADD_PROVIDER',
-    GET_PROVIDERS = 'GET_PROVIDERS',
-    FIND_NODE = 'FIND_NODE',
-    PING = 'PING'
-  }
-
-  enum __MessageTypeValues {
-    PUT_VALUE = 0,
-    GET_VALUE = 1,
-    ADD_PROVIDER = 2,
-    GET_PROVIDERS = 3,
-    FIND_NODE = 4,
-    PING = 5
-  }
-
-  export namespace MessageType {
-    export const codec = (): Codec<MessageType> => {
-      return enumeration<MessageType>(__MessageTypeValues)
-    }
-  }
-
-  export enum ConnectionType {
-    NOT_CONNECTED = 'NOT_CONNECTED',
-    CONNECTED = 'CONNECTED',
-    CAN_CONNECT = 'CAN_CONNECT',
-    CANNOT_CONNECT = 'CANNOT_CONNECT'
-  }
-
-  enum __ConnectionTypeValues {
-    NOT_CONNECTED = 0,
-    CONNECTED = 1,
-    CAN_CONNECT = 2,
-    CANNOT_CONNECT = 3
-  }
-
-  export namespace ConnectionType {
-    export const codec = (): Codec<ConnectionType> => {
-      return enumeration<ConnectionType>(__ConnectionTypeValues)
-    }
-  }
-
-  export interface Peer {
-    id?: Uint8Array
-    addrs: Uint8Array[]
-    connection?: Message.ConnectionType
-  }
-
-  export namespace Peer {
-    let _codec: Codec<Peer>
-
-    export const codec = (): Codec<Peer> => {
-      if (_codec == null) {
-        _codec = message<Peer>((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork()
-          }
-
-          if (obj.id != null) {
-            w.uint32(10)
-            w.bytes(obj.id)
-          }
-
-          if (obj.addrs != null) {
-            for (const value of obj.addrs) {
-              w.uint32(18)
-              w.bytes(value)
-            }
-          }
-
-          if (obj.connection != null) {
-            w.uint32(24)
-            Message.ConnectionType.codec().encode(obj.connection, w)
-          }
-
-          if (opts.lengthDelimited !== false) {
-            w.ldelim()
-          }
-        }, (reader, length) => {
-          const obj: any = {
-            addrs: []
-          }
-
-          const end = length == null ? reader.len : reader.pos + length
-
-          while (reader.pos < end) {
-            const tag = reader.uint32()
-
-            switch (tag >>> 3) {
-              case 1:
-                obj.id = reader.bytes()
-                break
-              case 2:
-                obj.addrs.push(reader.bytes())
-                break
-              case 3:
-                obj.connection = Message.ConnectionType.codec().decode(reader)
-                break
-              default:
-                reader.skipType(tag & 7)
-                break
-            }
-          }
-
-          return obj
-        })
-      }
-
-      return _codec
-    }
-
-    export const encode = (obj: Partial<Peer>): Uint8Array => {
-      return encodeMessage(obj, Peer.codec())
-    }
-
-    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
-      return decodeMessage(buf, Peer.codec())
-    }
-  }
-
   let _codec: Codec<Message>
 
   export const codec = (): Codec<Message> => {
@@ -241,14 +250,14 @@ export namespace Message {
           w.fork()
         }
 
-        if (obj.type != null) {
+        if (obj.type != null && __MessageTypeValues[obj.type] !== 0) {
           w.uint32(8)
-          Message.MessageType.codec().encode(obj.type, w)
+          MessageType.codec().encode(obj.type, w)
         }
 
-        if (obj.clusterLevelRaw != null) {
+        if (obj.clusterLevel != null) {
           w.uint32(80)
-          w.int32(obj.clusterLevelRaw)
+          w.int32(obj.clusterLevel)
         }
 
         if (obj.key != null) {
@@ -261,17 +270,17 @@ export namespace Message {
           w.bytes(obj.record)
         }
 
-        if (obj.closerPeers != null) {
-          for (const value of obj.closerPeers) {
+        if (obj.closer != null) {
+          for (const value of obj.closer) {
             w.uint32(66)
-            Message.Peer.codec().encode(value, w)
+            PeerInfo.codec().encode(value, w)
           }
         }
 
-        if (obj.providerPeers != null) {
-          for (const value of obj.providerPeers) {
+        if (obj.providers != null) {
+          for (const value of obj.providers) {
             w.uint32(74)
-            Message.Peer.codec().encode(value, w)
+            PeerInfo.codec().encode(value, w)
           }
         }
 
@@ -280,8 +289,9 @@ export namespace Message {
         }
       }, (reader, length) => {
         const obj: any = {
-          closerPeers: [],
-          providerPeers: []
+          type: MessageType.PUT_VALUE,
+          closer: [],
+          providers: []
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -290,27 +300,34 @@ export namespace Message {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
-              obj.type = Message.MessageType.codec().decode(reader)
+            case 1: {
+              obj.type = MessageType.codec().decode(reader)
               break
-            case 10:
-              obj.clusterLevelRaw = reader.int32()
+            }
+            case 10: {
+              obj.clusterLevel = reader.int32()
               break
-            case 2:
+            }
+            case 2: {
               obj.key = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.record = reader.bytes()
               break
-            case 8:
-              obj.closerPeers.push(Message.Peer.codec().decode(reader, reader.uint32()))
+            }
+            case 8: {
+              obj.closer.push(PeerInfo.codec().decode(reader, reader.uint32()))
               break
-            case 9:
-              obj.providerPeers.push(Message.Peer.codec().decode(reader, reader.uint32()))
+            }
+            case 9: {
+              obj.providers.push(PeerInfo.codec().decode(reader, reader.uint32()))
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
