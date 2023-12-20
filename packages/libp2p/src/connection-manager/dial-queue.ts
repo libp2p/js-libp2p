@@ -73,7 +73,7 @@ export class DialQueue {
   private readonly dialTimeout: number
   private readonly inProgressDialCount?: Metric
   private readonly pendingDialCount?: Metric
-  private readonly shutDownController: AbortController
+  private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
 
@@ -138,11 +138,16 @@ export class DialQueue {
     })
   }
 
+  start (): void {
+    this.shutDownController = new AbortController()
+  }
+
   /**
    * Clears any pending dials
    */
   stop (): void {
     this.shutDownController.abort()
+    this.queue.clear()
   }
 
   /**

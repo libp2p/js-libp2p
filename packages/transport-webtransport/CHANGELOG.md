@@ -66,6 +66,12 @@
   * devDependencies
     * libp2p bumped from ^1.0.10 to ^1.0.11
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.0.11 to ^1.0.12
+
 ## [4.0.10](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.9...webtransport-v4.0.10) (2023-12-10)
 
 

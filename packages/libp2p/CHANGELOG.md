@@ -95,6 +95,13 @@
     * @libp2p/tcp bumped from ^9.0.5 to ^9.0.6
     * @libp2p/websockets bumped from ^8.0.5 to ^8.0.6
 
+## [1.0.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.11...libp2p-v1.0.12) (2023-12-20)
+
+
+### Bug Fixes
+
+* reset dial queue shut down controller on node restart ([#2329](https://github.com/libp2p/js-libp2p/issues/2329)) ([cd8cafc](https://github.com/libp2p/js-libp2p/commit/cd8cafcd5c6aa141aba855a4de4c12336c429913)), closes [#2188](https://github.com/libp2p/js-libp2p/issues/2188)
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.0.10...libp2p-v1.0.11) (2023-12-19)
 
 

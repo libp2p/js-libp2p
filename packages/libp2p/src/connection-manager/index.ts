@@ -338,6 +338,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
+    this.dialQueue.start()
     this.autoDial.start()
 
     this.started = true
