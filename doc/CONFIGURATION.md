@@ -928,7 +928,7 @@ If enough peers report that this address is dialable, the node is free to change
 
 For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { autoNAT } from '@libp2p/autonat'
 

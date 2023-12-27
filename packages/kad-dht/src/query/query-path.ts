@@ -6,14 +6,14 @@ import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import { queueToGenerator } from './utils.js'
 import type { CleanUpEvents } from './manager.js'
-import type { QueryEvent, QueryOptions } from '../index.js'
+import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, TypedEventTarget, PeerId } from '@libp2p/interface'
+import type { Logger, TypedEventTarget, PeerId, RoutingOptions } from '@libp2p/interface'
 import type { PeerSet } from '@libp2p/peer-collections'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
-export interface QueryPathOptions extends QueryOptions {
+export interface QueryPathOptions extends RoutingOptions {
   /**
    * What are we trying to find
    */

@@ -7,7 +7,7 @@
  *
  * Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
  *
- * ```JavaScript
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { bootstrap } from '@libp2p/bootstrap'
  * import { tcp } from 'libp2p/tcp'

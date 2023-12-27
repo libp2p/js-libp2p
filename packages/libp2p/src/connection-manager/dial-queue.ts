@@ -73,7 +73,7 @@ export class DialQueue {
   private readonly dialTimeout: number
   private readonly inProgressDialCount?: Metric
   private readonly pendingDialCount?: Metric
-  private readonly shutDownController: AbortController
+  private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
 
@@ -138,11 +138,16 @@ export class DialQueue {
     })
   }
 
+  start (): void {
+    this.shutDownController = new AbortController()
+  }
+
   /**
    * Clears any pending dials
    */
   stop (): void {
     this.shutDownController.abort()
+    this.queue.clear()
   }
 
   /**
@@ -294,17 +299,14 @@ export class DialQueue {
 
   private createDialAbortControllers (userSignal?: AbortSignal): ClearableSignal {
     // let any signal abort the dial
-    const signal = anySignal(
-      [AbortSignal.timeout(this.dialTimeout),
-        this.shutDownController.signal,
-        userSignal
-      ]
-    )
+    const signal = anySignal([
+      AbortSignal.timeout(this.dialTimeout),
+      this.shutDownController.signal,
+      userSignal
+    ])
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, signal)
-    } catch {}
+    // This emitter gets listened to a lot
+    setMaxListeners(Infinity, signal)
 
     return signal
   }

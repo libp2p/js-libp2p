@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "5.0.3",
+  "version": "5.1.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -112,6 +112,7 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@libp2p/interface": "^1.0.2",
+    "@libp2p/peer-collections": "^5.1.1",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
     "get-iterator": "^2.0.1",

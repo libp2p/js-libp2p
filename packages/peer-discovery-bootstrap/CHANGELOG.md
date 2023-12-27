@@ -49,6 +49,12 @@
     * @libp2p/interface-compliance-tests bumped from ^5.0.6 to ^5.0.7
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.7 to ^5.0.8
+
 ## [10.0.1](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.0...bootstrap-v10.0.1) (2023-11-30)
 
 

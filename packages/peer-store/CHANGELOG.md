@@ -29,6 +29,12 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-record bumped from ^7.0.1 to ^7.0.2
+
 ## [10.0.0](https://github.com/libp2p/js-libp2p/compare/peer-store-v9.0.11...peer-store-v10.0.0) (2023-12-01)
 
 

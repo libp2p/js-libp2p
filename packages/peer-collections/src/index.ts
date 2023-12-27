@@ -9,7 +9,7 @@
  *
  * @example Peer lists
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerList } from '@libp2p/peer-collections'
  *
  * const list = peerList()
@@ -18,7 +18,7 @@
  *
  * @example Tracked peer lists
  *
- * * ```Typescript
+ * ```TypeScript
  * import { trackedPeerList } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  *
@@ -30,7 +30,7 @@
  *
  * @example Peer maps
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerMap } from '@libp2p/peer-collections'
  *
  * const map = peerMap<string>()
@@ -39,7 +39,7 @@
  *
  * @example Tracked peer maps
  *
- * * ```Typescript
+ * ```TypeScript
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  *
@@ -51,7 +51,7 @@
  *
  * @example Peer sets
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
  *
  * const set = peerSet()
@@ -60,7 +60,7 @@
  *
  * @example Tracked peer sets
  *
- * * ```Typescript
+ * ```TypeScript
  * import { trackedPeerSet } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  *

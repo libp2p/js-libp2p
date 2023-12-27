@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
+import { type Message, MessageType } from '../../../src/message/dht.js'
 import { Providers } from '../../../src/providers.js'
 import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
@@ -38,16 +38,27 @@ describe('rpc - handlers - AddProvider', () => {
     handler = new AddProviderHandler({
       logger: defaultLogger()
     }, {
-      providers
+      providers,
+      logPrefix: ''
     })
   })
 
   describe('invalid messages', () => {
-    const tests = [{
-      message: new Message(MESSAGE_TYPE.ADD_PROVIDER, new Uint8Array(0), 0),
+    const tests: Array<{ message: Message, error: string }> = [{
+      message: {
+        type: MessageType.ADD_PROVIDER,
+        key: new Uint8Array(0),
+        closer: [],
+        providers: []
+      },
       error: 'ERR_MISSING_KEY'
     }, {
-      message: new Message(MESSAGE_TYPE.ADD_PROVIDER, uint8ArrayFromString('hello world'), 0),
+      message: {
+        type: MessageType.ADD_PROVIDER,
+        key: uint8ArrayFromString('hello world'),
+        closer: [],
+        providers: []
+      },
       error: 'ERR_INVALID_CID'
     }]
 
@@ -67,17 +78,22 @@ describe('rpc - handlers - AddProvider', () => {
 
   it('ignore providers that do not match the sender', async () => {
     const cid = values[0].cid
-    const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, cid.bytes, 0)
+    const msg: Message = {
+      type: MessageType.ADD_PROVIDER,
+      key: cid.bytes,
+      closer: [],
+      providers: []
+    }
 
     const ma1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
     const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
 
-    msg.providerPeers = [{
-      id: peerIds[0],
-      multiaddrs: [ma1]
+    msg.providers = [{
+      id: peerIds[0].toBytes(),
+      multiaddrs: [ma1.bytes]
     }, {
-      id: peerIds[1],
-      multiaddrs: [ma2]
+      id: peerIds[1].toBytes(),
+      multiaddrs: [ma2.bytes]
     }]
 
     await handler.handle(peerIds[0], msg)

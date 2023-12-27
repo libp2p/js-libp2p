@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { tcp } from '@libp2p/tcp'
  * import { multiaddr } from '@multiformats/multiaddr'
  * import { pipe } from 'it-pipe'

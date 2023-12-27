@@ -5,6 +5,10 @@
 
 > Stores information about peers libp2p knows on the network
 
+# About
+
+The peer store is where libp2p stores data about the peers it has encountered on the network.
+
 # Install
 
 ```console
