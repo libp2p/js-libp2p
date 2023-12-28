@@ -11,6 +11,20 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [4.0.3](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.2...peer-id-v4.0.3) (2023-12-28)
+
+
+### Bug Fixes
+
+* make peerid optional in peerid.equals ([#2335](https://github.com/libp2p/js-libp2p/issues/2335)) ([f1c1167](https://github.com/libp2p/js-libp2p/commit/f1c116746ab82b15b93a7875ed1b05861b8c0d32))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.0...peer-id-v4.0.1) (2023-11-30)
 
 

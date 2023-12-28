@@ -72,6 +72,17 @@
   * devDependencies
     * libp2p bumped from ^1.0.11 to ^1.0.12
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+    * libp2p bumped from ^1.0.12 to ^1.1.0
+
 ## [4.0.10](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.9...webtransport-v4.0.10) (2023-12-10)
 
 

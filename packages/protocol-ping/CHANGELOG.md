@@ -30,6 +30,17 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/interface-internal bumped from ^1.0.3 to ^1.0.4
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p/compare/ping-v1.0.3...ping-v1.0.4) (2023-12-02)
 
 

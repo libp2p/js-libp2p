@@ -28,6 +28,17 @@
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
     * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+
 ## [4.0.1](https://github.com/libp2p/js-libp2p/compare/keychain-v4.0.0...keychain-v4.0.1) (2023-11-30)
 
 

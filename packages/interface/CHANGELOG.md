@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.2...interface-v1.1.0) (2023-12-28)
+
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+
+
+### Bug Fixes
+
+* make peerid optional in peerid.equals ([#2335](https://github.com/libp2p/js-libp2p/issues/2335)) ([f1c1167](https://github.com/libp2p/js-libp2p/commit/f1c116746ab82b15b93a7875ed1b05861b8c0d32))
+
 ## [1.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.1...interface-v1.0.2) (2023-12-10)
 
 

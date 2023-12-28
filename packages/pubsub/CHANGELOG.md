@@ -38,6 +38,20 @@
   * dependencies
     * @libp2p/utils bumped from ^5.0.3 to ^5.1.0
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/interface-internal bumped from ^1.0.3 to ^1.0.4
+    * @libp2p/peer-collections bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/utils bumped from ^5.1.0 to ^5.1.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+
 ## [9.0.0](https://github.com/libp2p/js-libp2p/compare/pubsub-v8.0.13...pubsub-v9.0.0) (2023-12-01)
 
 
