@@ -353,7 +353,12 @@ describe('dial', () => {
 
       // Dial first no loopback address
       const conn = await ws.dial(addrs[0], { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       await expect(pipe(
@@ -404,7 +409,12 @@ describe('dial', () => {
 
     it('dial ip4', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       const res = await pipe(s, stream, toBuffers, s)
@@ -438,7 +448,12 @@ describe('dial', () => {
 
     it('dial ip6', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
@@ -449,7 +464,9 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
 
       const s = goodbye({
-        source: [uint8ArrayFromString('hey')],
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
         sink: all
       })
       const stream = await conn.newStream([protocol])
