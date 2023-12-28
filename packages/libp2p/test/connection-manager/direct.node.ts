@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { type Connection, type ConnectionProtector, isConnection, type PeerId } from '@libp2p/interface'
+import { type Connection, type ConnectionProtector, isConnection, type PeerId, type Stream } from '@libp2p/interface'
 import { AbortError, ERR_TIMEOUT, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -20,6 +20,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
+import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -639,5 +640,106 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const connection = await libp2p.dial(unixMultiaddr)
 
     expect(connection.remotePeer.toString()).to.equal(remotePeerId.toString())
+  })
+
+  it('should negotiate protocol fully when dialing a protocol', async () => {
+    remoteLibp2p = await createLibp2pNode({
+      addresses: {
+        listen: [
+          '/ip4/0.0.0.0/tcp/0'
+        ]
+      },
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    libp2p = await createLibp2pNode({
+      peerId,
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await Promise.all([
+      remoteLibp2p.start(),
+      libp2p.start()
+    ])
+
+    const protocol = '/test/1.0.0'
+    const streamOpen = pDefer<Stream>()
+
+    await remoteLibp2p.handle(protocol, ({ stream }) => {
+      streamOpen.resolve(stream)
+    })
+
+    const outboundStream = await libp2p.dialProtocol(remoteLibp2p.getMultiaddrs(), protocol)
+
+    expect(outboundStream).to.have.property('protocol', protocol)
+
+    await expect(streamOpen.promise).to.eventually.have.property('protocol', protocol)
+  })
+
+  it('should negotiate protocol fully when opening on a connection', async () => {
+    remoteLibp2p = await createLibp2pNode({
+      addresses: {
+        listen: [
+          '/ip4/0.0.0.0/tcp/0'
+        ]
+      },
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    libp2p = await createLibp2pNode({
+      peerId,
+      transports: [
+        tcp()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncryption: [
+        plaintext()
+      ]
+    })
+
+    await Promise.all([
+      remoteLibp2p.start(),
+      libp2p.start()
+    ])
+
+    const protocol = '/test/1.0.0'
+    const streamOpen = pDefer<Stream>()
+
+    await remoteLibp2p.handle(protocol, ({ stream }) => {
+      streamOpen.resolve(stream)
+    })
+
+    const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
+    const outboundStream = await connection.newStream(protocol)
+
+    expect(outboundStream).to.have.property('protocol', protocol)
+
+    await expect(streamOpen.promise).to.eventually.have.property('protocol', protocol)
   })
 })

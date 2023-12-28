@@ -93,7 +93,8 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:test')
+      log: logger('mss:test'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
@@ -119,7 +120,8 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:test')
+      log: logger('mss:test'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
@@ -139,7 +141,8 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:dialer')
+      log: logger('mss:dialer'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
@@ -167,7 +170,8 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:dialer')
+      log: logger('mss:dialer'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
@@ -200,7 +204,8 @@ describe('Dialer and Listener integration', () => {
 
     // lazy succeeds
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:dialer')
+      log: logger('mss:dialer'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
@@ -219,7 +224,8 @@ describe('Dialer and Listener integration', () => {
     const pair = duplexPair<Uint8ArrayList | Uint8Array>()
 
     const dialerSelection = await mss.select(pair[0], [protocol], {
-      log: logger('mss:test')
+      log: logger('mss:test'),
+      negotiateFully: false
     })
     expect(dialerSelection.protocol).to.equal(protocol)
 
