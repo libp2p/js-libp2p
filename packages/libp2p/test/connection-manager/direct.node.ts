@@ -685,9 +685,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamOpen.resolve(stream)
     })
 
-    const outboundStream = await libp2p.dialProtocol(remoteLibp2p.getMultiaddrs(), protocol, {
-      negotiateFully: true
-    })
+    const outboundStream = await libp2p.dialProtocol(remoteLibp2p.getMultiaddrs(), protocol)
 
     expect(outboundStream).to.have.property('protocol', protocol)
 
@@ -738,9 +736,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     })
 
     const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
-    const outboundStream = await connection.newStream(protocol, {
-      negotiateFully: true
-    })
+    const outboundStream = await connection.newStream(protocol)
 
     expect(outboundStream).to.have.property('protocol', protocol)
 

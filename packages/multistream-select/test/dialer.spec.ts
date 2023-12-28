@@ -45,7 +45,8 @@ describe('Dialer', () => {
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
       void mss.select(outgoingStream, protocol, {
-        log: logger('mss:test-outgoing')
+        log: logger('mss:test-outgoing'),
+        negotiateFully: false
       })
 
       // have to interact with the stream to start protocol negotiation
@@ -127,12 +128,13 @@ describe('Dialer', () => {
   })
 
   describe('dialer optimistic select', () => {
-    it('should optimistically select a single protocol', async () => {
+    it('should optimistically select a single protocol when negotiateFully is false', async () => {
       const protocol = '/echo/1.0.0'
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       const selection = await mss.select(outgoingStream, [protocol], {
-        log: logger('mss:test-optimistic')
+        log: logger('mss:test-optimistic'),
+        negotiateFully: false
       })
       expect(selection.protocol).to.equal(protocol)
 

@@ -33,10 +33,11 @@ export interface ProtocolStream<Stream> {
 
 export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Partial<LengthPrefixedStreamOpts> {
   /**
-   * Disable optimistic select and wait for the protocol negotiation to complete
-   * before returning.
+   * When false, and only a single protocol is being negotiated, use optimistic
+   * select to send both the protocol name and the first data buffer in the
+   * initial message, saving a round trip for connection establishment.
    *
-   * @default false
+   * @default true
    */
   negotiateFully?: boolean
 }

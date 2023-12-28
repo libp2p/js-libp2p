@@ -193,9 +193,13 @@ export interface NewStreamOptions extends AbortOptions {
   runOnTransientConnection?: boolean
 
   /**
+   * By default when negotiating a protocol the dialer writes then protocol name
+   * then reads the response.
+   *
    * When a only a single protocol is being negotiated on an outbound stream,
-   * and the stream is written to before being read from, the protocol and the
-   * first chunk of data are sent in the same buffer.
+   * and the stream is written to before being read from, we can optimistically
+   * write the protocol name and the first chunk of data together in the first
+   * message.
    *
    * Reading and handling the protocol response is done asynchronously, which
    * means we can skip a round trip on writing to newly opened streams which
@@ -205,13 +209,13 @@ export interface NewStreamOptions extends AbortOptions {
    * protocol until either data is written to or read from the stream so it will
    * not be opened on the remote until this is done.
    *
-   * Pass `true` here to instead wait for the stream protocol to be negotiated
-   * fully before returning.
+   * Pass `false` here to optimistically write the protocol name and first chunk
+   * of data in the first message.
    *
    * If multiple protocols are being negotiated, negotiation is always completed
-   * in full before the stream is returned so this has no effect.
+   * in full before the stream is returned so this option has no effect.
    *
-   * @default false
+   * @default true
    */
   negotiateFully?: boolean
 }

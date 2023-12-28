@@ -65,7 +65,7 @@ export interface SelectStream extends Duplex<any, any, any> {
 export async function select <Stream extends SelectStream> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
 
-  if (protocols.length === 1 && options.negotiateFully !== true) {
+  if (protocols.length === 1 && options.negotiateFully === false) {
     return optimisticSelect(stream, protocols[0], options)
   }
 
