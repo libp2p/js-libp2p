@@ -60,6 +60,27 @@
     * @libp2p/multistream-select bumped from ^5.0.2 to ^5.0.3
     * @libp2p/utils bumped from ^5.0.3 to ^5.1.0
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.8...interface-compliance-tests-v5.1.0) (2023-12-28)
+
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/interface-internal bumped from ^1.0.3 to ^1.0.4
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/multistream-select bumped from ^5.0.3 to ^5.1.0
+    * @libp2p/peer-collections bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/utils bumped from ^5.1.0 to ^5.1.1
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.0...interface-compliance-tests-v5.0.1) (2023-11-30)
 
 
