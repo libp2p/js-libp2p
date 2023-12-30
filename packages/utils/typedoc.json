@@ -10,6 +10,8 @@
     "./src/multiaddr/is-loopback.ts",
     "./src/multiaddr/is-private.ts",
     "./src/peer-job-queue.ts",
-    "./src/stream-to-ma-conn.ts"
+    "./src/stream-to-ma-conn.ts",
+    "./src/tracked-list.ts",
+    "./src/tracked-map.ts",
   ]
 }
