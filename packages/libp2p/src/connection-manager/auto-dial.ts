@@ -1,8 +1,8 @@
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
-import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_INTERVAL, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, LAST_DIAL_FAILURE_KEY, MIN_CONNECTIONS } from './constants.js'
-import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Startable } from '@libp2p/interface'
+import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Startable, Metrics } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 interface AutoDialInit {
@@ -20,6 +20,7 @@ interface AutoDialComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 const defaultOptions = {
@@ -35,7 +36,7 @@ const defaultOptions = {
 export class AutoDial implements Startable {
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
-  private readonly queue: PeerJobQueue
+  private readonly queue: PeerQueue<void>
   private readonly minConnections: number
   private readonly autoDialPriority: number
   private readonly autoDialIntervalMs: number
@@ -64,11 +65,13 @@ export class AutoDial implements Startable {
     this.log = components.logger.forComponent('libp2p:connection-manager:auto-dial')
     this.started = false
     this.running = false
-    this.queue = new PeerJobQueue({
-      concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency
+    this.queue = new PeerQueue({
+      concurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency,
+      metricName: 'libp2p_autodial_queue',
+      metrics: components.metrics
     })
-    this.queue.addListener('error', (err) => {
-      this.log.error('error during auto-dial', err)
+    this.queue.addEventListener('error', (evt) => {
+      this.log.error('error during auto-dial', evt.detail)
     })
 
     // check the min connection limit whenever a peer disconnects
@@ -179,7 +182,7 @@ export class AutoDial implements Startable {
           }
 
           // remove peers already in the autodial queue
-          if (this.queue.hasJob(peer.id)) {
+          if (this.queue.has(peer.id)) {
             this.log.trace('not autodialing %p because they are already being autodialed', peer.id)
             return false
           }

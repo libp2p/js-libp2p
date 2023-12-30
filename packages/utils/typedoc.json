@@ -9,7 +9,9 @@
     "./src/is-promise.ts",
     "./src/multiaddr/is-loopback.ts",
     "./src/multiaddr/is-private.ts",
-    "./src/peer-job-queue.ts",
-    "./src/stream-to-ma-conn.ts"
+    "./src/peer-queue.ts",
+    "./src/queue/index.ts",
+    "./src/stream-to-ma-conn.ts",
+    "./src/tracked-map.ts",
   ]
 }

@@ -1,6 +1,4 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { type ClearableSignal, anySignal } from 'any-signal'
 import type { LoggerOptions } from '@libp2p/interface'
 
 /**
@@ -46,22 +44,4 @@ async function resolveRecord (ma: Multiaddr, options: AbortOptions & LoggerOptio
     options.log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
     return []
   }
-}
-
-export function combineSignals (...signals: Array<AbortSignal | undefined>): ClearableSignal {
-  const sigs: AbortSignal[] = []
-
-  for (const sig of signals) {
-    if (sig != null) {
-      setMaxListeners(Infinity, sig)
-      sigs.push(sig)
-    }
-  }
-
-  // let any signal abort the dial
-  const signal = anySignal(sigs)
-
-  setMaxListeners(Infinity, signal)
-
-  return signal
 }

@@ -146,7 +146,7 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateError')
+      expect(err).to.have.property('name', 'CodeError')
     }
 
     expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
@@ -182,7 +182,7 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateError')
+      expect(err).to.have.property('name', 'CodeError')
     }
 
     expect(reject).to.have.property('callCount', addrs.length)

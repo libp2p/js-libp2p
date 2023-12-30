@@ -90,7 +90,7 @@ export class TypedEventEmitter<EventMap extends Record<string, any>> extends Eve
     return result
   }
 
-  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail>): boolean {
+  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail> = {}): boolean {
     return this.dispatchEvent(new CustomEvent<Detail>(type as string, detail))
   }
 }
