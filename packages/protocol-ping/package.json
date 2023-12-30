@@ -52,7 +52,6 @@
     "@libp2p/crypto": "^3.0.3",
     "@libp2p/interface": "^1.1.0",
     "@libp2p/interface-internal": "^1.0.4",
-    "@libp2p/peer-id-factory": "^4.0.2",
     "@multiformats/multiaddr": "^12.1.10",
     "it-first": "^3.0.3",
     "it-pipe": "^3.0.1",
@@ -60,6 +59,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.3",
+    "@libp2p/peer-id-factory": "^4.0.2",
     "aegir": "^41.0.2",
     "it-byte-stream": "^1.0.1",
     "it-pair": "^2.0.6",

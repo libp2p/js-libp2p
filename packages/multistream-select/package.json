@@ -60,7 +60,6 @@
     "@libp2p/interface": "^1.1.0",
     "it-length-prefixed": "^9.0.3",
     "it-length-prefixed-stream": "^1.1.1",
-    "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "p-defer": "^4.0.0",
     "race-signal": "^1.0.2",
@@ -75,6 +74,7 @@
     "it-all": "^3.0.3",
     "it-drain": "^3.0.5",
     "it-pair": "^2.0.6",
+    "it-pipe": "^3.0.1",
     "p-timeout": "^6.0.0"
   }
 }

@@ -61,7 +61,6 @@
     "@libp2p/interface": "^1.1.0",
     "@libp2p/peer-collections": "^5.1.2",
     "@libp2p/peer-id": "^4.0.3",
-    "@libp2p/peer-id-factory": "^4.0.2",
     "@libp2p/peer-record": "^7.0.3",
     "@multiformats/multiaddr": "^12.1.10",
     "interface-datastore": "^8.2.0",
@@ -74,6 +73,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.3",
+    "@libp2p/peer-id-factory": "^4.0.2",
     "@types/sinon": "^17.0.0",
     "aegir": "^41.0.2",
     "datastore-core": "^9.1.1",
