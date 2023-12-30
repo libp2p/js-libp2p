@@ -104,43 +104,6 @@ export class DialQueue {
     this.queue.addEventListener('error', (event) => {
       this.log.error('error in dial queue', event.detail)
     })
-
-    // TODO: remove
-    setInterval(() => {
-      const now = Date.now()
-      const where = new Map<string, number>()
-      let index = 0
-
-      console.info(now, `----- dial queue ${this.queue.running}/${this.queue.size} ------`)
-
-      for (const job of this.queue.queue) {
-        if (job.timeline.started != null) {
-          const running = Date.now() - job.timeline.started
-          // @ts-ignore
-          job.timeline.running = running
-
-          continue
-        }
-
-        job.recipients.forEach(recipient => {
-          if (recipient.where == null) {
-            return
-          }
-
-          where.set(recipient.where, (where.get(recipient.where) ?? 0) + 1)
-        })
-
-       // if (running > 10000) {
-          console.info(now, index, job)
-        //}
-
-        index++
-      }
-
-      console.info(now, where)
-
-      console.info(now, '-----')
-    }, 10000).unref()
   }
 
   start (): void {
