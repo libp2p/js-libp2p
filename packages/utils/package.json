@@ -116,14 +116,12 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@libp2p/interface": "^1.1.0",
-    "@libp2p/peer-collections": "^5.1.2",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.1",
     "it-pushable": "^3.2.2",
     "it-stream-types": "^2.0.1",
-    "p-queue": "^8.0.0",
     "private-ip": "^3.0.1",
     "race-signal": "^1.0.1",
     "uint8arraylist": "^2.4.3"

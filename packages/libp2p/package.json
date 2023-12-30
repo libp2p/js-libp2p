@@ -111,7 +111,6 @@
     "merge-options": "^3.0.4",
     "multiformats": "^13.0.0",
     "p-defer": "^4.0.0",
-    "p-queue": "^8.0.0",
     "private-ip": "^3.0.1",
     "rate-limiter-flexible": "^4.0.0",
     "uint8arraylist": "^2.4.3",
