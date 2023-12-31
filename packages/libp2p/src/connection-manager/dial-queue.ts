@@ -1,5 +1,5 @@
 /* eslint-disable max-depth */
-import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
+import { CodeError, AggregateCodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { Queue, type QueueAddOptions } from '@libp2p/utils/queue'
@@ -214,11 +214,13 @@ export class DialQueue {
 
       try {
         let dialed = 0
+        const errors: Error[] = []
 
         for (const address of addrsToDial) {
           if (dialed === this.maxPeerAddrsToDial) {
             this.log('dialed %d addresses for %p, not trying any others', dialed, peerId)
-            break
+
+            throw new CodeError('Peer had more than maxPeerAddrsToDial', codes.ERR_TOO_MANY_ADDRESSES)
           }
 
           dialed++
@@ -252,10 +254,16 @@ export class DialQueue {
             if (signal.aborted) {
               throw new CodeError(err.message, ERR_TIMEOUT)
             }
+
+            errors.push(err)
           }
         }
 
-        throw new CodeError('All multiaddr dials failed', codes.ERR_TRANSPORT_DIAL_FAILED)
+        if (errors.length === 1) {
+          throw errors[0]
+        }
+
+        throw new AggregateCodeError(errors, 'All multiaddr dials failed', codes.ERR_TRANSPORT_DIAL_FAILED)
       } finally {
         // clean up abort signals/controllers
         signal.clear()

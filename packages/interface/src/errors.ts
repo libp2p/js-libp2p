@@ -33,6 +33,22 @@ export class CodeError<T extends Record<string, any> = Record<string, never>> ex
   }
 }
 
+export class AggregateCodeError<T extends Record<string, any> = Record<string, never>> extends AggregateError {
+  public readonly props: T
+
+  constructor (
+    errors: Error[],
+    message: string,
+    public readonly code: string,
+    props?: T
+  ) {
+    super(errors, message)
+
+    this.name = props?.name ?? 'AggregateCodeError'
+    this.props = props ?? {} as T // eslint-disable-line @typescript-eslint/consistent-type-assertions
+  }
+}
+
 export class UnexpectedPeerError extends Error {
   public code: string
 
