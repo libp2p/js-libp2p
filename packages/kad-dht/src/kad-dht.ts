@@ -1,6 +1,7 @@
 import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import drain from 'it-drain'
 import map from 'it-map'
+import parallel from 'it-parallel'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -21,8 +22,27 @@ import {
   removePrivateAddressesMapper
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper } from './index.js'
-import type { ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
+import type { AbortOptions, ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
+
+async function * ensurePeerInfoHasMultiaddrs (source: AsyncGenerator<PeerInfo>, peerRouting: PeerRouting, log: Logger, options: AbortOptions = {}): AsyncGenerator<() => Promise<PeerInfo | undefined>, void, undefined> {
+  yield * map(source, prov => {
+    return async () => {
+      if (prov.multiaddrs.length > 0) {
+        return prov
+      }
+
+      try {
+        return await peerRouting.findPeer(prov.id, {
+          ...options,
+          useCache: false
+        })
+      } catch (err) {
+        log.error('could not find peer', err)
+      }
+    }
+  })
+}
 
 /**
  * Wrapper class to convert events into returned values
@@ -30,10 +50,14 @@ import type { CID } from 'multiformats/cid'
 class DHTContentRouting implements ContentRouting {
   private readonly dht: KadDHTInterface
   private readonly peerInfoMapper: PeerInfoMapper
+  private readonly peerRouting: PeerRouting
+  private readonly log: Logger
 
-  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper) {
+  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper, peerRouting: PeerRouting, log: Logger) {
     this.dht = dht
     this.peerInfoMapper = peerInfoMapper
+    this.peerRouting = peerRouting
+    this.log = log
   }
 
   async provide (cid: CID, options: RoutingOptions = {}): Promise<void> {
@@ -49,8 +73,19 @@ class DHTContentRouting implements ContentRouting {
         }
       }
     }
+    for await (let peerInfo of parallel(ensurePeerInfoHasMultiaddrs(source(), this.peerRouting, this.log, options))) {
+      if (peerInfo == null) {
+        continue
+      }
 
-    yield * map(source(), peerInfo => this.peerInfoMapper(peerInfo))
+      peerInfo = this.peerInfoMapper(peerInfo)
+
+      if (peerInfo.multiaddrs.length === 0) {
+        continue
+      }
+
+      yield peerInfo
+    }
   }
 
   async put (key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void> {
@@ -74,10 +109,12 @@ class DHTContentRouting implements ContentRouting {
 class DHTPeerRouting implements PeerRouting {
   private readonly dht: KadDHTInterface
   private readonly peerInfoMapper: PeerInfoMapper
+  private readonly log: Logger
 
-  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper) {
+  constructor (dht: KadDHTInterface, peerInfoMapper: PeerInfoMapper, log: Logger) {
     this.dht = dht
     this.peerInfoMapper = peerInfoMapper
+    this.log = log
   }
 
   async findPeer (peerId: PeerId, options: RoutingOptions = {}): Promise<PeerInfo> {
@@ -104,7 +141,19 @@ class DHTPeerRouting implements PeerRouting {
       }
     }
 
-    yield * map(source(), peerInfo => this.peerInfoMapper(peerInfo))
+    for await (let peerInfo of parallel(ensurePeerInfoHasMultiaddrs(source(), this, this.log, options))) {
+      if (peerInfo == null) {
+        continue
+      }
+
+      peerInfo = this.peerInfoMapper(peerInfo)
+
+      if (peerInfo.multiaddrs.length === 0) {
+        continue
+      }
+
+      yield peerInfo
+    }
   }
 }
 
@@ -298,8 +347,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       })
     })
 
-    this.dhtPeerRouting = new DHTPeerRouting(this, this.peerInfoMapper)
-    this.dhtContentRouting = new DHTContentRouting(this, this.peerInfoMapper)
+    this.dhtPeerRouting = new DHTPeerRouting(this, this.peerInfoMapper, this.log)
+    this.dhtContentRouting = new DHTContentRouting(this, this.peerInfoMapper, this.dhtPeerRouting, this.log)
 
     // if client mode has not been explicitly specified, auto-switch to server
     // mode when the node's peer data is updated with publicly dialable
