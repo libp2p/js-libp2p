@@ -93,8 +93,6 @@ describe('QueryManager', () => {
 
   function createQueryFunction (topology: Topology): QueryFunc {
     const queryFunc: QueryFunc = async function * (context) {
-      context.signal.throwIfAborted()
-
       const { peer } = context
 
       const res = topology[peer.toString()]
