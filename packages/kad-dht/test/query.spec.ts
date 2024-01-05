@@ -93,6 +93,8 @@ describe('QueryManager', () => {
 
   function createQueryFunction (topology: Topology): QueryFunc {
     const queryFunc: QueryFunc = async function * (context) {
+      context.signal.throwIfAborted()
+
       const { peer } = context
 
       const res = topology[peer.toString()]
@@ -885,11 +887,11 @@ describe('QueryManager', () => {
     // 4 -> 3 [delay] -> 2 [pathComplete]
     const topology = createTopology({
       // quick value path
-      0: { value: uint8ArrayFromString('true') },
+      0: { delay: 10, value: uint8ArrayFromString('true') },
       1: { closerPeers: [0] },
       // slow value path
       2: { value: uint8ArrayFromString('true') },
-      3: { delay: 100, closerPeers: [2] },
+      3: { delay: 1000, closerPeers: [2] },
       4: { closerPeers: [3] }
     })
 
@@ -906,6 +908,9 @@ describe('QueryManager', () => {
 
     // should have aborted query on slow path
     expect(topology[peers[3].toString()]).to.have.nested.property('context.signal.aborted', true)
+
+    // should not have visited the next peer on the slow path
+    expect(topology[peers[4].toString()]).to.not.have.property('context', true)
 
     await manager.stop()
   })
