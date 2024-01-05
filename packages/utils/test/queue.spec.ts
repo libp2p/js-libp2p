@@ -160,6 +160,17 @@ describe('queue', () => {
     expect(queue).to.have.property('size', 0)
   })
 
+  it('aborts .onEmpty()', async () => {
+    const queue = new Queue({ concurrency: 2 })
+
+    void queue.add(async () => delay(1000))
+
+    await expect(queue.onEmpty({
+      signal: AbortSignal.timeout(10)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
+  })
+
   it('.onIdle()', async () => {
     const queue = new Queue({ concurrency: 2 })
 
@@ -189,6 +200,17 @@ describe('queue', () => {
 
     expect(queue).to.have.property('size', 0)
     expect(queue).to.have.property('queued', 0)
+  })
+
+  it('aborts .onIdle()', async () => {
+    const queue = new Queue({ concurrency: 2 })
+
+    void queue.add(async () => delay(1000))
+
+    await expect(queue.onIdle({
+      signal: AbortSignal.timeout(10)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
   })
 
   it('.onSizeLessThan()', async () => {
@@ -222,6 +244,17 @@ describe('queue', () => {
     expect(queue).to.have.property('size', 0)
     expect(queue).to.have.property('queued', 0)
     expect(queue).to.have.property('running', 0)
+  })
+
+  it('aborts .onSizeLessThan()', async () => {
+    const queue = new Queue({ concurrency: 2 })
+
+    void queue.add(async () => delay(1000))
+
+    await expect(queue.onSizeLessThan(1, {
+      signal: AbortSignal.timeout(10)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
   })
 
   it('.onIdle() - no pending', async () => {

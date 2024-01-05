@@ -1,5 +1,6 @@
 import { AbortError, CodeError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
+import { raceEvent } from 'race-event'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 
@@ -227,13 +228,13 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
    *
    * @returns A promise that settles when the queue becomes empty.
    */
-  async onEmpty (): Promise<void> {
+  async onEmpty (options?: AbortOptions): Promise<void> {
     // Instantly resolve if the queue is empty
     if (this.size === 0) {
       return
     }
 
-    await this.onEvent('empty')
+    await raceEvent(this, 'empty', options?.signal)
   }
 
   /**
@@ -247,13 +248,15 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
    * could still be up to `concurrency` jobs already running that this call does
    * not include in its calculation.
    */
-  async onSizeLessThan (limit: number): Promise<void> {
+  async onSizeLessThan (limit: number, options?: AbortOptions): Promise<void> {
     // Instantly resolve if the queue is empty.
     if (this.size < limit) {
       return
     }
 
-    await this.onEvent('next', () => this.size < limit)
+    await raceEvent(this, 'next', options?.signal, {
+      filter: () => this.size < limit
+    })
   }
 
   /**
@@ -264,28 +267,13 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
    * @returns A promise that settles when the queue becomes empty, and all
    * promises have completed; `queue.size === 0 && queue.pending === 0`.
    */
-  async onIdle (): Promise<void> {
+  async onIdle (options?: AbortOptions): Promise<void> {
     // Instantly resolve if none pending and if nothing else is queued
     if (this.pending === 0 && this.size === 0) {
       return
     }
 
-    await this.onEvent('idle')
-  }
-
-  private async onEvent (event: keyof QueueEvents<JobReturnType>, filter?: () => boolean): Promise<void> {
-    return new Promise(resolve => {
-      const listener = (): void => {
-        if (filter != null && !filter()) {
-          return
-        }
-
-        this.removeEventListener(event, listener)
-        resolve()
-      }
-
-      this.addEventListener(event, listener)
-    })
+    await raceEvent(this, 'idle', options?.signal)
   }
 
   /**
