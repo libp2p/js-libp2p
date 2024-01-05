@@ -19,7 +19,7 @@ import { QueryManager, type QueryManagerInit } from '../src/query/manager.js'
 import { convertBuffer } from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { QueryFunc } from '../src/query/types.js'
+import type { QueryContext, QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
 import type { PeerId } from '@libp2p/interface'
 
@@ -29,12 +29,9 @@ interface TopologyEntry {
   value?: Uint8Array
   closerPeers?: number[]
   event: QueryEvent
+  context?: QueryContext
 }
-type Topology = Record<string, {
-  delay?: number | undefined
-  error?: Error | undefined
-  event: QueryEvent
-}>
+type Topology = Record<string, TopologyEntry>
 
 describe('QueryManager', () => {
   let ourPeerId: PeerId
@@ -55,7 +52,7 @@ describe('QueryManager', () => {
   }
 
   function createTopology (opts: Record<number, { delay?: number, error?: Error, value?: Uint8Array, closerPeers?: number[] }>): Topology {
-    const topology: Record<string, { delay?: number, error?: Error, event: QueryEvent }> = {}
+    const topology: Topology = {}
 
     Object.keys(opts).forEach(key => {
       const id = parseInt(key)
@@ -94,9 +91,12 @@ describe('QueryManager', () => {
     return topology
   }
 
-  function createQueryFunction (topology: Record<string, { delay?: number, event: QueryEvent }>): QueryFunc {
-    const queryFunc: QueryFunc = async function * ({ peer }) {
+  function createQueryFunction (topology: Topology): QueryFunc {
+    const queryFunc: QueryFunc = async function * (context) {
+      const { peer } = context
+
       const res = topology[peer.toString()]
+      res.context = context
 
       if (res.delay != null) {
         await delay(res.delay)
@@ -867,6 +867,45 @@ describe('QueryManager', () => {
     }, {
       from: peers[6]
     }])
+
+    await manager.stop()
+  })
+
+  it('should abort the query if we break out of the loop early', async () => {
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger()
+    }, {
+      ...defaultInit(),
+      disjointPaths: 2
+    })
+    await manager.start()
+
+    // 1 -> 0 [pathComplete]
+    // 4 -> 3 [delay] -> 2 [pathComplete]
+    const topology = createTopology({
+      // quick value path
+      0: { value: uint8ArrayFromString('true') },
+      1: { closerPeers: [0] },
+      // slow value path
+      2: { value: uint8ArrayFromString('true') },
+      3: { delay: 100, closerPeers: [2] },
+      4: { closerPeers: [3] }
+    })
+
+    routingTable.closestPeers.returns([peers[1], peers[4]])
+
+    for await (const event of manager.run(key, createQueryFunction(topology))) {
+      if (event.name === 'VALUE') {
+        expect(event.from.toString()).to.equal(peers[0].toString())
+
+        // break out of loop early
+        break
+      }
+    }
+
+    // should have aborted query on slow path
+    expect(topology[peers[3].toString()]).to.have.nested.property('context.signal.aborted', true)
 
     await manager.stop()
   })
