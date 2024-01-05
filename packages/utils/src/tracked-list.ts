@@ -1,10 +1,5 @@
 import type { Metrics } from '@libp2p/interface'
 
-export interface TrackedListInit {
-  name: string
-  metrics: Metrics
-}
-
 export interface CreateTrackedListInit {
   /**
    * The metric name to use
