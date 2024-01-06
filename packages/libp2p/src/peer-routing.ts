@@ -22,7 +22,7 @@ export class DefaultPeerRouting implements PeerRouting {
   private readonly peerStore: PeerStore
   private readonly routers: PeerRouting[]
 
-  constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit) {
+  constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-routing')
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -57,10 +57,12 @@ export class DefaultPeerRouting implements PeerRouting {
         continue
       }
 
-      // ensure we have the addresses for a given peer
-      await this.peerStore.merge(peer.id, {
-        multiaddrs: peer.multiaddrs
-      })
+      // store the addresses for the peer if found
+      if (peer.multiaddrs.length > 0) {
+        await this.peerStore.merge(peer.id, {
+          multiaddrs: peer.multiaddrs
+        })
+      }
 
       return peer
     }
@@ -105,21 +107,16 @@ export class DefaultPeerRouting implements PeerRouting {
         }
       }()
     )) {
-      // the peer was yielded by a content router without multiaddrs and we
-      // failed to load them
       if (peer == null) {
         continue
       }
 
-      // skip peers without addresses
-      if (peer.multiaddrs.length === 0) {
-        continue
+      // store the addresses for the peer if found
+      if (peer.multiaddrs.length > 0) {
+        await this.peerStore.merge(peer.id, {
+          multiaddrs: peer.multiaddrs
+        })
       }
-
-      // ensure we have the addresses for a given peer
-      await this.peerStore.merge(peer.id, {
-        multiaddrs: peer.multiaddrs
-      })
 
       // deduplicate peers
       if (seen.has(peer.id)) {
