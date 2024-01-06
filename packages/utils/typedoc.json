@@ -12,6 +12,7 @@
     "./src/peer-queue.ts",
     "./src/queue/index.ts",
     "./src/stream-to-ma-conn.ts",
+    "./src/tracked-list.ts",
     "./src/tracked-map.ts",
   ]
 }
