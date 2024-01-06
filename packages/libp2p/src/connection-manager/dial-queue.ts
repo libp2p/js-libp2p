@@ -16,7 +16,7 @@ import {
   LAST_DIAL_FAILURE_KEY
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
-import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore } from '@libp2p/interface'
+import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 export interface PendingDialTarget {
@@ -57,6 +57,7 @@ interface DialQueueComponents {
   peerId: PeerId
   metrics?: Metrics
   peerStore: PeerStore
+  peerRouting: PeerRouting
   transportManager: TransportManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
@@ -64,10 +65,7 @@ interface DialQueueComponents {
 
 export class DialQueue {
   public queue: Queue<Connection, DialQueueJobOptions>
-  private readonly peerId: PeerId
-  private readonly peerStore: PeerStore
-  private readonly connectionGater: ConnectionGater
-  private readonly transportManager: TransportManager
+  private readonly components: DialQueueComponents
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
   private readonly dialTimeout: number
@@ -82,10 +80,7 @@ export class DialQueue {
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
 
-    this.peerId = components.peerId
-    this.peerStore = components.peerStore
-    this.connectionGater = components.connectionGater
-    this.transportManager = components.transportManager
+    this.components = components
     this.shutDownController = new AbortController()
 
     setMaxListeners(Infinity, this.shutDownController.signal)
@@ -218,7 +213,7 @@ export class DialQueue {
 
         for (const address of addrsToDial) {
           if (dialed === this.maxPeerAddrsToDial) {
-            this.log('dialed %d addresses for %p, not trying any others', dialed, peerId)
+            this.log('dialed maxPeerAddrsToDial (%d) addresses for %p, not trying any others', dialed, peerId)
 
             throw new CodeError('Peer had more than maxPeerAddrsToDial', codes.ERR_TOO_MANY_ADDRESSES)
           }
@@ -226,7 +221,7 @@ export class DialQueue {
           dialed++
 
           try {
-            const conn = await this.transportManager.dial(address.multiaddr, {
+            const conn = await this.components.transportManager.dial(address.multiaddr, {
               ...options,
               signal
             })
@@ -240,7 +235,7 @@ export class DialQueue {
             if (peerId != null) {
               // record the failed dial
               try {
-                await this.peerStore.patch(peerId, {
+                await this.components.peerStore.patch(peerId, {
                   metadata: {
                     [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
                   }
@@ -299,19 +294,20 @@ export class DialQueue {
 
     // if a peer id or multiaddr(s) with a peer id, make sure it isn't our peer id and that we are allowed to dial it
     if (peerId != null) {
-      if (this.peerId.equals(peerId)) {
+      if (this.components.peerId.equals(peerId)) {
         throw new CodeError('Tried to dial self', codes.ERR_DIALED_SELF)
       }
 
-      if ((await this.connectionGater.denyDialPeer?.(peerId)) === true) {
+      if ((await this.components.connectionGater.denyDialPeer?.(peerId)) === true) {
         throw new CodeError('The dial request is blocked by gater.allowDialPeer', codes.ERR_PEER_DIAL_INTERCEPTED)
       }
 
-      // if just a peer id was passed, load available multiaddrs for this peer from the address book
+      // if just a peer id was passed, load available multiaddrs for this peer
+      // from the peer store
       if (addrs.length === 0) {
         this.log('loading multiaddrs for %p', peerId)
         try {
-          const peer = await this.peerStore.get(peerId)
+          const peer = await this.components.peerStore.get(peerId)
           addrs.push(...peer.addresses)
           this.log('loaded multiaddrs for %p', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
         } catch (err: any) {
@@ -320,9 +316,31 @@ export class DialQueue {
           }
         }
       }
+
+      // if we still don't have any addresses for this peer, try a lookup
+      // using the peer routing
+      if (addrs.length === 0) {
+        this.log('looking up multiaddrs for %p in the peer routing', peerId)
+
+        try {
+          const peerInfo = await this.components.peerRouting.findPeer(peerId)
+
+          this.log('found multiaddrs for %p in the peer routing', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
+
+          addrs.push(...peerInfo.multiaddrs.map(multiaddr => ({
+            multiaddr,
+            isCertified: false
+          })))
+        } catch (err: any) {
+          if (err.code !== codes.ERR_NO_ROUTERS_AVAILABLE) {
+            this.log.error('looking up multiaddrs for %p in the peer routing failed', peerId, err)
+          }
+        }
+      }
     }
 
-    // resolve addresses - this can result in a one-to-many translation when dnsaddrs are resolved
+    // resolve addresses - this can result in a one-to-many translation when
+    // dnsaddrs are resolved
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
         const result = await resolveMultiaddrs(addr.multiaddr, {
@@ -367,7 +385,7 @@ export class DialQueue {
 
     const filteredAddrs = resolvedAddresses.filter(addr => {
       // filter out any multiaddrs that we do not have transports for
-      if (this.transportManager.transportForMultiaddr(addr.multiaddr) == null) {
+      if (this.components.transportManager.transportForMultiaddr(addr.multiaddr) == null) {
         return false
       }
 
@@ -407,7 +425,7 @@ export class DialQueue {
     const gatedAdrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
-      if (this.connectionGater.denyDialMultiaddr != null && await this.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
+      if (this.components.connectionGater.denyDialMultiaddr != null && await this.components.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
         continue
       }
 

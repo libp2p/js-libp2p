@@ -10,7 +10,7 @@ import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
 import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable, PendingDialStatus } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable, PendingDialStatus, PeerRouting } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
 
@@ -82,8 +82,9 @@ export interface ConnectionManagerInit {
   maxParallelDials?: number
 
   /**
-   * Maximum number of addresses allowed for a given peer - if a peer has more
-   * addresses than this then the dial will fail. (default: 25)
+   * Maximum number of addresses allowed for a given peer before giving up
+   *
+   * @default 25
    */
   maxPeerAddrsToDial?: number
 
@@ -144,6 +145,7 @@ export interface DefaultConnectionManagerComponents {
   peerId: PeerId
   metrics?: Metrics
   peerStore: PeerStore
+  peerRouting: PeerRouting
   transportManager: TransportManager
   connectionGater: ConnectionGater
   events: TypedEventTarget<Libp2pEvents>
@@ -233,14 +235,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       allow: this.allow
     })
 
-    this.dialQueue = new DialQueue({
-      peerId: components.peerId,
-      metrics: components.metrics,
-      peerStore: components.peerStore,
-      transportManager: components.transportManager,
-      connectionGater: components.connectionGater,
-      logger: components.logger
-    }, {
+    this.dialQueue = new DialQueue(components, {
       addressSorter: init.addressSorter ?? defaultAddressSort,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,

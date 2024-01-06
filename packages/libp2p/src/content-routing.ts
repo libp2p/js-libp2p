@@ -1,9 +1,8 @@
 import { CodeError } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
-import parallel from 'it-parallel'
 import { codes, messages } from './errors.js'
-import type { AbortOptions, ComponentLogger, ContentRouting, Logger, PeerInfo, PeerRouting, PeerStore, RoutingOptions, Startable } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, ContentRouting, PeerInfo, PeerRouting, PeerStore, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 export interface CompoundContentRoutingInit {
@@ -17,13 +16,11 @@ export interface CompoundContentRoutingComponents {
 }
 
 export class CompoundContentRouting implements ContentRouting, Startable {
-  private readonly log: Logger
   private readonly routers: ContentRouting[]
   private started: boolean
   private readonly components: CompoundContentRoutingComponents
 
   constructor (components: CompoundContentRoutingComponents, init: CompoundContentRoutingInit) {
-    this.log = components.logger.forComponent('libp2p:content-routing')
     this.routers = init.routers ?? []
     this.started = false
     this.components = components
@@ -52,31 +49,8 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     const self = this
     const seen = new PeerSet()
 
-    for await (const peer of parallel(
-      async function * () {
-        const source = merge(
-          ...self.routers.map(router => router.findProviders(key, options))
-        )
-
-        for await (let peer of source) {
-          yield async () => {
-            // find multiaddrs if they are missing
-            if (peer.multiaddrs.length === 0) {
-              try {
-                peer = await self.components.peerRouting.findPeer(peer.id, {
-                  ...options,
-                  useCache: false
-                })
-              } catch (err) {
-                self.log.error('could not find peer multiaddrs', err)
-                return
-              }
-            }
-
-            return peer
-          }
-        }
-      }()
+    for await (const peer of merge(
+      ...self.routers.map(router => router.findProviders(key, options))
     )) {
       // the peer was yielded by a content router without multiaddrs and we
       // failed to load them
@@ -84,15 +58,12 @@ export class CompoundContentRouting implements ContentRouting, Startable {
         continue
       }
 
-      // skip peers without addresses
-      if (peer.multiaddrs.length === 0) {
-        continue
+      // store the addresses for the peer if found
+      if (peer.multiaddrs.length > 0) {
+        await this.components.peerStore.merge(peer.id, {
+          multiaddrs: peer.multiaddrs
+        })
       }
-
-      // ensure we have the addresses for a given peer
-      await this.components.peerStore.merge(peer.id, {
-        multiaddrs: peer.multiaddrs
-      })
 
       // deduplicate peers
       if (seen.has(peer.id)) {

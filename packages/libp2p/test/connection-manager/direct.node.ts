@@ -31,6 +31,7 @@ import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { DefaultPeerRouting } from '../../src/peer-routing.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { TransportManager } from '@libp2p/interface-internal'
@@ -75,6 +76,7 @@ describe('dialing (direct, TCP)', () => {
     remoteTM.add(tcp()({
       logger: defaultLogger()
     }))
+    remoteComponents.peerRouting = new DefaultPeerRouting(remoteComponents)
 
     const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
@@ -92,6 +94,7 @@ describe('dialing (direct, TCP)', () => {
       inboundUpgradeTimeout: 1000
     })
     localComponents.addressManager = new DefaultAddressManager(localComponents)
+    localComponents.peerRouting = new DefaultPeerRouting(localComponents)
     localTM = localComponents.transportManager = new DefaultTransportManager(localComponents)
     localTM.add(tcp()({
       logger: defaultLogger()

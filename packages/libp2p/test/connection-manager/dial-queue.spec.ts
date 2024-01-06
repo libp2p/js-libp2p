@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { CodeError } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -11,13 +12,15 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
-import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerStore, Transport } from '@libp2p/interface'
+import { matchMultiaddr } from '../fixtures/matchers.js'
+import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('dial queue', () => {
   let components: {
     peerId: PeerId
     peerStore: StubbedInstance<PeerStore>
+    peerRouting: StubbedInstance<PeerRouting>
     transportManager: StubbedInstance<TransportManager>
     connectionGater: StubbedInstance<ConnectionGater>
     logger: ComponentLogger
@@ -30,6 +33,7 @@ describe('dial queue', () => {
     components = {
       peerId,
       peerStore: stubInterface<PeerStore>(),
+      peerRouting: stubInterface<PeerRouting>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>(),
       logger: peerLogger(peerId)
@@ -78,6 +82,54 @@ describe('dial queue', () => {
 
     // prevent playwright-core error Error: Cannot find parent object page@... to create handle@...
     await expect(deferredConn.promise).to.eventually.be.undefined()
+  })
+
+  it('should load addresses from the peer routing when peer id is not in the peer store', async () => {
+    const peerId = await createEd25519PeerId()
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
+
+    components.peerStore.get.withArgs(peerId).rejects(new CodeError('Not found', 'ERR_NOT_FOUND'))
+    components.peerRouting.findPeer.withArgs(peerId).resolves({
+      id: peerId,
+      multiaddrs: [
+        ma
+      ]
+    })
+
+    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(peerId)).to.eventually.equal(connection)
+  })
+
+  it('should load addresses from the peer routing when none are present in the peer store', async () => {
+    const peerId = await createEd25519PeerId()
+    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
+
+    components.peerStore.get.withArgs(peerId).resolves({
+      id: peerId,
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map(),
+      addresses: []
+    })
+    components.peerRouting.findPeer.withArgs(peerId).resolves({
+      id: peerId,
+      multiaddrs: [
+        ma
+      ]
+    })
+
+    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(peerId)).to.eventually.equal(connection)
   })
 
   it('should end when a single multiaddr dials succeeds even when a final dial fails', async () => {
