@@ -76,13 +76,21 @@
       "types": "./dist/src/multiaddr/is-private.d.ts",
       "import": "./dist/src/multiaddr/is-private.js"
     },
-    "./peer-job-queue": {
-      "types": "./dist/src/peer-job-queue.d.ts",
-      "import": "./dist/src/peer-job-queue.js"
+    "./queue": {
+      "types": "./dist/src/queue/index.d.ts",
+      "import": "./dist/src/queue/index.js"
+    },
+    "./peer-queue": {
+      "types": "./dist/src/peer-queue.d.ts",
+      "import": "./dist/src/peer-queue.js"
     },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
+    },
+    "./tracked-list": {
+      "types": "./dist/src/tracked-list.d.ts",
+      "import": "./dist/src/tracked-list.js"
     },
     "./tracked-map": {
       "types": "./dist/src/tracked-map.d.ts",
@@ -121,6 +129,7 @@
     "it-stream-types": "^2.0.1",
     "p-defer": "^4.0.0",
     "private-ip": "^3.0.1",
+    "race-event": "^1.1.0",
     "race-signal": "^1.0.1",
     "uint8arraylist": "^2.4.3"
   },

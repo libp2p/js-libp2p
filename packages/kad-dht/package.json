@@ -84,6 +84,7 @@
     "private-ip": "^3.0.1",
     "progress-events": "^1.0.0",
     "protons-runtime": "^5.0.0",
+    "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.0",
     "uint8arraylist": "^2.4.3",
     "uint8arrays": "^5.0.0"
