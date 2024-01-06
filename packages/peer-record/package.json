@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.2",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "protons": "^7.3.0"
   }
 }

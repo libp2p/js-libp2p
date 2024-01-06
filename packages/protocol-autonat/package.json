@@ -54,6 +54,7 @@
     "@libp2p/interface": "^1.1.0",
     "@libp2p/interface-internal": "^1.0.4",
     "@libp2p/peer-id": "^4.0.3",
+    "@libp2p/peer-id-factory": "^4.0.2",
     "@multiformats/multiaddr": "^12.1.10",
     "it-first": "^3.0.3",
     "it-length-prefixed": "^9.0.3",
@@ -66,8 +67,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.3",
-    "@libp2p/peer-id-factory": "^4.0.2",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "it-all": "^3.0.3",
     "it-pushable": "^3.2.1",
     "protons": "^7.3.0",
