@@ -117,7 +117,7 @@
     "@libp2p/websockets": "^8.0.9",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr-matcher": "^1.1.0",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",

@@ -63,7 +63,7 @@
     "@libp2p/logger": "^4.0.3",
     "@libp2p/peer-id-factory": "^4.0.2",
     "@multiformats/multiaddr": "^12.1.10",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "protons": "^7.3.0",
     "sinon": "^17.0.0"
   }

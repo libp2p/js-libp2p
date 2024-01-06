@@ -97,7 +97,7 @@
     "@types/lodash.random": "^3.2.6",
     "@types/lodash.range": "^3.2.6",
     "@types/which": "^3.0.0",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "datastore-core": "^9.0.1",
     "datastore-level": "^10.0.0",
     "delay": "^6.0.0",

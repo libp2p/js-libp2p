@@ -113,7 +113,7 @@
     "@libp2p/utils": "^5.1.1",
     "@multiformats/multiaddr": "^12.1.10",
     "abortable-iterator": "^5.0.1",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.2",
     "it-drain": "^3.0.2",
