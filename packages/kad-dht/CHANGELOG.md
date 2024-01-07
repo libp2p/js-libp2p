@@ -84,6 +84,33 @@
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
     * @libp2p/peer-store bumped from ^10.0.3 to ^10.0.4
 
+## [12.0.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.1...kad-dht-v12.0.2) (2024-01-06)
+
+
+### Bug Fixes
+
+* do not find peer when DHT yields peers without multiaddrs ([#2344](https://github.com/libp2p/js-libp2p/issues/2344)) ([d011f61](https://github.com/libp2p/js-libp2p/commit/d011f61304433a647431163592e7a0171010bc2a))
+* ensure dht query is aborted on early exit ([#2341](https://github.com/libp2p/js-libp2p/issues/2341)) ([388d02b](https://github.com/libp2p/js-libp2p/commit/388d02b3366ed2d9918102e6119bdf4bf133886e))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/interface-internal bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/peer-collections bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/utils bumped from ^5.1.1 to ^5.2.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-id-factory bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-store bumped from ^10.0.4 to ^10.0.5
+
 ## [12.0.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v11.0.8...kad-dht-v12.0.0) (2023-12-20)
 
 

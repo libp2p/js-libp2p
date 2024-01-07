@@ -41,6 +41,25 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
 
+## [1.0.8](https://github.com/libp2p/js-libp2p/compare/ping-v1.0.7...ping-v1.0.8) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/interface-internal bumped from ^1.0.4 to ^1.0.5
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-id-factory bumped from ^4.0.2 to ^4.0.3
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p/compare/ping-v1.0.3...ping-v1.0.4) (2023-12-02)
 
 
