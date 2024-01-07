@@ -45,7 +45,7 @@ const node = await createLibp2p({
   services: {
     aminoDHT: kadDHT({
       protocol: '/ipfs/kad/1.0.0',
-      addressFilter: removePrivateAddressesMapper
+      peerInfoMapper: removePrivateAddressesMapper
     })
   }
 })
@@ -71,7 +71,7 @@ const node = await createLibp2p({
   services: {
     lanDHT: kadDHT({
       protocol: '/ipfs/lan/kad/1.0.0',
-      addressFilter: removePublicAddressesMapper,
+      peerInfoMapper: removePublicAddressesMapper,
       clientMode: false
     })
   }

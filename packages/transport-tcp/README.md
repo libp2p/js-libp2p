@@ -11,7 +11,7 @@ A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based
 
 ## Example
 
-```js
+```TypeScript
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
