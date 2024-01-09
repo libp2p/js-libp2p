@@ -391,8 +391,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * libp2p interface and is useful for testing and debugging.
  */
 export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
-  options.peerId ??= await createEd25519PeerId()
-  options.privateKey ??= await unmarshalPrivateKey(options.peerId.privateKey as Uint8Array)
+  const peerId = options.peerId ??= await createEd25519PeerId()
+  
+  if (peerId.privateKey == null) {
+    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
+  }
+  
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
 
   return new Libp2pNode(await validateConfig(options))
 }
