@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { contentRoutingSymbol } from '@libp2p/interface'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
@@ -13,9 +14,8 @@ describe('getPublicKey', () => {
   let router: StubbedInstance<ContentRouting & ContentRoutingProvider>
 
   beforeEach(async () => {
-    router = stubInterface<ContentRouting & ContentRoutingProvider>({
-      [contentRoutingSymbol]: router
-    })
+    router = stubInterface<ContentRouting & ContentRoutingProvider>()
+    router[contentRoutingSymbol] = router
 
     node = await createLibp2p({
       services: {
@@ -57,14 +57,21 @@ describe('getPublicKey', () => {
   it('should query content routing when the key is not in the keystore', async () => {
     const otherPeer = await createRSAPeerId()
 
-    if (otherPeer.publicKey == null) {
-      throw new Error('Public key was missing')
-    }
+    router.get.callsFake(async () => {
+      if (otherPeer.publicKey == null) {
+        throw new Error('Public key was missing')
+      }
 
-    router.get.resolves(otherPeer.publicKey)
+      return Promise.resolve(otherPeer.publicKey)
+    })
 
-    const key = await node.getPublicKey(otherPeer)
+    // create a copy of the RSA key, this will not have the public key
+    const otherPeerWithoutPublicKey = peerIdFromString(otherPeer.toString())
+    expect(otherPeerWithoutPublicKey).to.have.property('publicKey', undefined)
+
+    const key = await node.getPublicKey(otherPeerWithoutPublicKey)
 
     expect(otherPeer.publicKey).to.equalBytes(key)
+    expect(router.get.called).to.be.true('routing was not queried')
   })
 })
