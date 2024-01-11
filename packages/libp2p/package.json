@@ -103,7 +103,6 @@
     "merge-options": "^3.0.4",
     "multiformats": "^13.0.0",
     "private-ip": "^3.0.1",
-    "rate-limiter-flexible": "^4.0.0",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {

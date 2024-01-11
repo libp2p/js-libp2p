@@ -1,9 +1,9 @@
 import { CodeError, KEEP_ALIVE } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
+import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { RateLimiterMemory } from 'rate-limiter-flexible'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
@@ -167,7 +167,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   public readonly dialQueue: DialQueue
   public readonly autoDial: AutoDial
   public readonly connectionPruner: ConnectionPruner
-  private readonly inboundConnectionRateLimiter: RateLimiterMemory
+  private readonly inboundConnectionRateLimiter: RateLimiter
 
   private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
@@ -206,7 +206,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
 
     // controls individual peers trying to dial us too quickly
-    this.inboundConnectionRateLimiter = new RateLimiterMemory({
+    this.inboundConnectionRateLimiter = new RateLimiter({
       points: init.inboundConnectionThreshold ?? defaultOptions.inboundConnectionThreshold,
       duration: 1
     })
