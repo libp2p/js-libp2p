@@ -1,23 +1,22 @@
 import { CodeError } from '@libp2p/interface'
-import randomBytes from '../random-bytes.js'
 import { pbkdf2Async } from '@noble/hashes/pbkdf2'
 import { sha512 } from '@noble/hashes/sha512'
 import * as asn1js from 'asn1js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { RsaPrivateKey, unmarshalRsaPrivateKey } from './rsa-class.js'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import randomBytes from '../random-bytes.js'
 import webcrypto from '../webcrypto.js'
-import * as asn1 from 'asn1js'
+import { type RsaPrivateKey, unmarshalRsaPrivateKey } from './rsa-class.js'
 
 /**
  * Convert a PKCS#1 in ASN1 DER format to a JWK key
  */
 export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
-  const { result } = asn1.fromBER(bytes)
+  const { result } = asn1js.fromBER(bytes)
 
   // @ts-expect-error this looks fragile but DER is a canonical format so we are
   // safe to have deeply property chains like this
-  const values: Array<asn1.Integer> = result.valueBlock.value
+  const values: asn1js.Integer[] = result.valueBlock.value
 
   const key = {
     n: uint8ArrayToString(bnToBuf(values[1].toBigInt()), 'base64url'),
@@ -43,17 +42,17 @@ export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
     throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
 
-  const root = new asn1.Sequence({
+  const root = new asn1js.Sequence({
     value: [
-      new asn1.Integer({ value: 0 }),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.n, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.e, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.d, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.p, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.q, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.dp, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.dq, 'base64url'))),
-      asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.qi, 'base64url')))
+      new asn1js.Integer({ value: 0 }),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.n, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.e, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.d, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.p, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.q, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.dp, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.dq, 'base64url'))),
+      asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.qi, 'base64url')))
     ]
   })
 
@@ -66,11 +65,11 @@ export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
  * Convert a PKCIX in ASN1 DER format to a JWK key
  */
 export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
-  const { result } = asn1.fromBER(bytes)
+  const { result } = asn1js.fromBER(bytes)
 
   // @ts-expect-error this looks fragile but DER is a canonical format so we are
   // safe to have deeply property chains like this
-  const values: Array<asn1.Integer> = result.valueBlock.value[1].valueBlock.value[0].valueBlock.value
+  const values: asn1js.Integer[] = result.valueBlock.value[1].valueBlock.value[0].valueBlock.value
 
   return {
     kty: 'RSA',
@@ -87,24 +86,24 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
     throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
   }
 
-  const root = new asn1.Sequence({
+  const root = new asn1js.Sequence({
     value: [
-      new asn1.Sequence({
+      new asn1js.Sequence({
         value: [
           // rsaEncryption
-          new asn1.ObjectIdentifier({
+          new asn1js.ObjectIdentifier({
             value: '1.2.840.113549.1.1.1'
           }),
-          new asn1.Null()
+          new asn1js.Null()
         ]
       }),
-      // this appears to be a bug in asn1.js - this should really be a Sequence
+      // this appears to be a bug in asn1js.js - this should really be a Sequence
       // and not a BitString but it generates the same bytes as node-forge so 🤷‍♂️
-      new asn1.BitString({
-        valueHex: new asn1.Sequence({
+      new asn1js.BitString({
+        valueHex: new asn1js.Sequence({
           value: [
-            asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.n, 'base64url'))),
-            asn1.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.e, 'base64url')))
+            asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.n, 'base64url'))),
+            asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.e, 'base64url')))
           ]
         }).toBER()
       })
@@ -116,20 +115,21 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   return new Uint8Array(der, 0, der.byteLength)
 }
 
-function bnToBuf (bn: bigint) {
-  var hex = bn.toString(16);
-  if (hex.length % 2) {
-    hex = '0' + hex
+function bnToBuf (bn: bigint): Uint8Array {
+  let hex = bn.toString(16)
+
+  if (hex.length % 2 > 0) {
+    hex = `0${hex}`
   }
 
-  var len = hex.length / 2
-  var u8 = new Uint8Array(len)
+  const len = hex.length / 2
+  const u8 = new Uint8Array(len)
 
-  var i = 0
-  var j = 0
+  let i = 0
+  let j = 0
 
   while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j+2), 16)
+    u8[i] = parseInt(hex.slice(j, j + 2), 16)
     i += 1
     j += 2
   }
@@ -141,10 +141,12 @@ function bufToBn (u8: Uint8Array): bigint {
   const hex: string[] = []
 
   u8.forEach(function (i) {
-    var h = i.toString(16)
-    if (h.length % 2) {
-      h = '0' + h
+    let h = i.toString(16)
+
+    if (h.length % 2 > 0) {
+      h = `0${h}`
     }
+
     hex.push(h)
   })
 
@@ -165,13 +167,15 @@ export async function exportToPem (privateKey: RsaPrivateKey, password: string):
       new asn1js.Integer({ value: 0 }),
 
       // privateKeyAlgorithm
-      new asn1js.Sequence({ value: [
+      new asn1js.Sequence({
+        value: [
         // rsaEncryption OID
-        new asn1js.ObjectIdentifier({
-          value: '1.2.840.113549.1.1.1'
-        }),
-        new asn1js.Null()
-      ]}),
+          new asn1js.ObjectIdentifier({
+            value: '1.2.840.113549.1.1.1'
+          }),
+          new asn1js.Null()
+        ]
+      }),
 
       // PrivateKey
       new asn1js.OctetString({
@@ -271,9 +275,9 @@ export async function exportToPem (privateKey: RsaPrivateKey, password: string):
   const finalWrapperArr = new Uint8Array(finalWrapperBuf, 0, finalWrapperBuf.byteLength)
 
   return [
-    `-----BEGIN ENCRYPTED PRIVATE KEY-----`,
+    '-----BEGIN ENCRYPTED PRIVATE KEY-----',
     ...uint8ArrayToString(finalWrapperArr, 'base64pad').split(/(.{64})/).filter(Boolean),
-    `-----END ENCRYPTED PRIVATE KEY-----`
+    '-----END ENCRYPTED PRIVATE KEY-----'
   ].join('\n')
 }
 
@@ -343,7 +347,7 @@ function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Ar
   const scheme = encryptionAlgorithm.valueBlock.value[0].toString()
 
   if (scheme !== 'OBJECT IDENTIFIER : 1.2.840.113549.1.5.13') {
-    throw new CodeError('Only pkcs5PBES2 encrypted private keys are supported ' + scheme, 'ERR_INVALID_PARAMS')
+    throw new CodeError('Only pkcs5PBES2 encrypted private keys are supported', 'ERR_INVALID_PARAMS')
   }
 
   const keyDerivationFunc = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[0]

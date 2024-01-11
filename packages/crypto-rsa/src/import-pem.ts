@@ -1,12 +1,12 @@
+import { supportedKeys } from '@libp2p/crypto/keys'
+import { CodeError } from '@libp2p/interface'
 // @ts-expect-error types are missing
 import forge from 'node-forge/lib/forge.js'
 import 'node-forge/lib/sha512.js'
-import type { RsaPrivateKey } from '@libp2p/crypto/keys'
-import { CodeError } from '@libp2p/interface'
-import { supportedKeys } from '@libp2p/crypto/keys'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { RsaPrivateKey } from '@libp2p/crypto/keys'
 
-export function importPEM (encryptedKey: string, password: string): Promise<RsaPrivateKey> {
+export async function importPEM (encryptedKey: string, password: string): Promise<RsaPrivateKey> {
   // Only rsa supports pem right now
   const key = forge.pki.decryptRsaPrivateKey(encryptedKey, password)
   if (key === null) {

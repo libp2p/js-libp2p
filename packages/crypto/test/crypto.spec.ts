@@ -44,9 +44,6 @@ describe('libp2p-crypto', function () {
       throw new Error('Wrong key type unmarshalled')
     }
 
-    console.info('key1', await key.id())
-    console.info('key2', await key2.id())
-
     expect(key2.equals(key)).to.be.true()
     expect(key2.public.equals(key.public)).to.be.true()
   })

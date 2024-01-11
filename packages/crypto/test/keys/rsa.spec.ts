@@ -5,10 +5,10 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as crypto from '../../src/index.js'
 import { MAX_RSA_KEY_SIZE, RsaPrivateKey, RsaPublicKey } from '../../src/keys/rsa-class.js'
+import { importFromPem } from '../../src/keys/rsa-utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
 import { RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
-import { importFromPem } from '../../src/keys/rsa-utils.js'
 
 const rsa = crypto.keys.supportedKeys.rsa
 

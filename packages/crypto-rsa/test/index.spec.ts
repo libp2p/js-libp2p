@@ -1,10 +1,10 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
+import * as crypto from '@libp2p/crypto'
+import { RsaPrivateKey } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as rsa from '../src/index.js'
-import * as crypto from '@libp2p/crypto'
-import { RsaPrivateKey } from '@libp2p/crypto/keys'
 
 describe('RSA', function () {
   this.timeout(20 * 1000)
@@ -44,7 +44,7 @@ describe('RSA', function () {
 
   describe('export and import', () => {
     it('password protected PKCS #8', async () => {
-      const pem = await rsa.exportPEM(key, 'my secret')
+      const pem = rsa.exportPEM(key, 'my secret')
       expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
       const clone = await rsa.importPEM(pem, 'my secret')
 
@@ -57,7 +57,7 @@ describe('RSA', function () {
     })
 
     it('defaults to PKCS #8', async () => {
-      const pem = await rsa.exportPEM(key, 'another secret')
+      const pem = rsa.exportPEM(key, 'another secret')
       expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
       const clone = await rsa.importPEM(pem, 'another secret')
 
@@ -70,7 +70,7 @@ describe('RSA', function () {
     })
 
     it('needs correct password', async () => {
-      const pem = await rsa.exportPEM(key, 'another secret')
+      const pem = rsa.exportPEM(key, 'another secret')
       try {
         await rsa.importPEM(pem, 'not the secret')
       } catch (err) {
