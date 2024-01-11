@@ -38,6 +38,50 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.0.3 to ^5.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.7 to ^5.0.8
+
+## [8.0.10](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.9...websockets-v8.0.10) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/utils bumped from ^5.1.1 to ^5.2.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+
+## [8.0.9](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.8...websockets-v8.0.9) (2023-12-28)
+
+
+### Bug Fixes
+
+* update websockets tests ([#2337](https://github.com/libp2p/js-libp2p/issues/2337)) ([28587d2](https://github.com/libp2p/js-libp2p/commit/28587d24f41f8342d9db30d83e6010def55d4268))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/utils bumped from ^5.1.0 to ^5.1.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.8 to ^5.1.0
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+
 ## [8.0.7](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.6...websockets-v8.0.7) (2023-12-10)
 
 

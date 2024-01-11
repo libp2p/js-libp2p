@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
 
 describe('Consume peer record', () => {
   let libp2p: Libp2pNode
 
   beforeEach(async () => {
-    const peerId = await createPeerId()
+    const peerId = await createEd25519PeerId()
     libp2p = await createLibp2pNode({
       peerId,
       transports: [

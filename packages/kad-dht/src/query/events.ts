@@ -1,22 +1,22 @@
 import { CustomEvent } from '@libp2p/interface'
-import { MESSAGE_TYPE_LOOKUP } from '../message/index.js'
-import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, QueryOptions } from '../index.js'
-import type { Message } from '../message/dht.js'
+import { MessageType } from '../message/dht.js'
+import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
 import type { Libp2pRecord } from '../record/index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 export interface QueryEventFields {
   to: PeerId
-  type: Message.MessageType
+  type: MessageType
 }
 
-export function sendQueryEvent (fields: QueryEventFields, options: QueryOptions = {}): SendQueryEvent {
+export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptions = {}): SendQueryEvent {
   const event: SendQueryEvent = {
     ...fields,
     name: 'SEND_QUERY',
     type: 0,
     messageName: fields.type,
-    messageType: MESSAGE_TYPE_LOOKUP.indexOf(fields.type.toString())
+    messageType: MessageType[fields.type]
   }
 
   options.onProgress?.(new CustomEvent('kad-dht:query:send-query', { detail: event }))
@@ -26,13 +26,13 @@ export function sendQueryEvent (fields: QueryEventFields, options: QueryOptions 
 
 export interface PeerResponseEventField {
   from: PeerId
-  messageType: Message.MessageType
+  messageType: MessageType
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
 }
 
-export function peerResponseEvent (fields: PeerResponseEventField, options: QueryOptions = {}): PeerResponseEvent {
+export function peerResponseEvent (fields: PeerResponseEventField, options: ProgressOptions = {}): PeerResponseEvent {
   const event: PeerResponseEvent = {
     ...fields,
     name: 'PEER_RESPONSE',
@@ -52,7 +52,7 @@ export interface FinalPeerEventFields {
   peer: PeerInfo
 }
 
-export function finalPeerEvent (fields: FinalPeerEventFields, options: QueryOptions = {}): FinalPeerEvent {
+export function finalPeerEvent (fields: FinalPeerEventFields, options: ProgressOptions = {}): FinalPeerEvent {
   const event: FinalPeerEvent = {
     ...fields,
     name: 'FINAL_PEER',
@@ -69,7 +69,7 @@ export interface ErrorEventFields {
   error: Error
 }
 
-export function queryErrorEvent (fields: ErrorEventFields, options: QueryOptions = {}): QueryErrorEvent {
+export function queryErrorEvent (fields: ErrorEventFields, options: ProgressOptions = {}): QueryErrorEvent {
   const event: QueryErrorEvent = {
     ...fields,
     name: 'QUERY_ERROR',
@@ -86,7 +86,7 @@ export interface ProviderEventFields {
   providers: PeerInfo[]
 }
 
-export function providerEvent (fields: ProviderEventFields, options: QueryOptions = {}): ProviderEvent {
+export function providerEvent (fields: ProviderEventFields, options: ProgressOptions = {}): ProviderEvent {
   const event: ProviderEvent = {
     ...fields,
     name: 'PROVIDER',
@@ -103,7 +103,7 @@ export interface ValueEventFields {
   value: Uint8Array
 }
 
-export function valueEvent (fields: ValueEventFields, options: QueryOptions = {}): ValueEvent {
+export function valueEvent (fields: ValueEventFields, options: ProgressOptions = {}): ValueEvent {
   const event: ValueEvent = {
     ...fields,
     name: 'VALUE',
@@ -119,7 +119,7 @@ export interface PeerEventFields {
   peer: PeerId
 }
 
-export function addPeerEvent (fields: PeerEventFields, options: QueryOptions = {}): AddPeerEvent {
+export function addPeerEvent (fields: PeerEventFields, options: ProgressOptions = {}): AddPeerEvent {
   const event: AddPeerEvent = {
     ...fields,
     name: 'ADD_PEER',
@@ -135,7 +135,7 @@ export interface DialPeerEventFields {
   peer: PeerId
 }
 
-export function dialPeerEvent (fields: DialPeerEventFields, options: QueryOptions = {}): DialPeerEvent {
+export function dialPeerEvent (fields: DialPeerEventFields, options: ProgressOptions = {}): DialPeerEvent {
   const event: DialPeerEvent = {
     ...fields,
     name: 'DIAL_PEER',

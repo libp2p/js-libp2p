@@ -2,21 +2,23 @@
 
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { peerIdFromBytes } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
+import { type Message, MessageType } from '../../../src/message/dht.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { Providers } from '../../../src/providers.js'
 import { GetProvidersHandler, type GetProvidersHandlerComponents } from '../../../src/rpc/handlers/get-providers.js'
+import { passthroughMapper } from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
 import { createValues, type Value } from '../../utils/create-values.js'
 import type { Libp2pEvents, PeerId, PeerInfo, PeerStore } from '@libp2p/interface'
 
-const T = MESSAGE_TYPE.GET_PROVIDERS
+const T = MessageType.GET_PROVIDERS
 
 describe('rpc - handlers - GetProviders', () => {
   let peerId: PeerId
@@ -53,19 +55,30 @@ describe('rpc - handlers - GetProviders', () => {
     handler = new GetProvidersHandler(components, {
       peerRouting,
       providers,
-      lan: false
+      logPrefix: '',
+      peerInfoMapper: passthroughMapper
     })
   })
 
   it('errors with an invalid key ', async () => {
-    const msg = new Message(T, uint8ArrayFromString('hello'), 0)
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('hello'),
+      closer: [],
+      providers: []
+    }
 
     await expect(handler.handle(sourcePeer, msg)).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CID')
   })
 
   it('responds with providers and closer peers', async () => {
     const v = values[0]
-    const msg = new Message(T, v.cid.bytes, 0)
+    const msg: Message = {
+      type: T,
+      key: v.cid.bytes,
+      closer: [],
+      providers: []
+    }
 
     const closer: PeerInfo[] = [{
       id: closerPeer,
@@ -102,9 +115,9 @@ describe('rpc - handlers - GetProviders', () => {
     }
 
     expect(response.key).to.be.eql(v.cid.bytes)
-    expect(response.providerPeers).to.have.lengthOf(1)
-    expect(response.providerPeers[0].id.toString()).to.equal(provider[0].id.toString())
-    expect(response.closerPeers).to.have.lengthOf(1)
-    expect(response.closerPeers[0].id.toString()).to.equal(closer[0].id.toString())
+    expect(response.providers).to.have.lengthOf(1)
+    expect(peerIdFromBytes(response.providers[0].id).toString()).to.equal(provider[0].id.toString())
+    expect(response.closer).to.have.lengthOf(1)
+    expect(peerIdFromBytes(response.closer[0].id).toString()).to.equal(closer[0].id.toString())
   })
 })

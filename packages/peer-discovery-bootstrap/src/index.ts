@@ -7,7 +7,7 @@
  *
  * Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
  *
- * ```JavaScript
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { bootstrap } from '@libp2p/bootstrap'
  * import { tcp } from 'libp2p/tcp'
@@ -42,7 +42,7 @@
  * const libp2p = await createLibp2p(options)
  *
  * libp2p.on('peer:discovery', function (peerId) {
- *   console.this.log('found peer: ', peerId.toB58String())
+ *   console.log('found peer: ', peerId.toB58String())
  * })
  * ```
  */

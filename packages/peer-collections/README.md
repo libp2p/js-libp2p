@@ -11,6 +11,71 @@ We can't use PeerIds as collection keys because collection keys are compared usi
 
 PeerIds cache stringified versions of themselves so this should be a cheap operation.
 
+Tracked versions are also available which report their current size to the libp2p Metrics collector.
+
+## Example - Peer lists
+
+```TypeScript
+import { peerList } from '@libp2p/peer-collections'
+
+const list = peerList()
+list.push(peerId)
+```
+
+## Example - Tracked peer lists
+
+```TypeScript
+import { trackedPeerList } from '@libp2p/peer-collections'
+import { createLibp2p } from 'libp2p'
+
+const libp2p = await createLibp2p()
+
+const list = trackedPeerList({ name: 'my_metric_name', metrics: libp2p.metrics })
+list.push(peerId)
+```
+
+## Example - Peer maps
+
+```TypeScript
+import { peerMap } from '@libp2p/peer-collections'
+
+const map = peerMap<string>()
+map.set(peerId, 'value')
+```
+
+## Example - Tracked peer maps
+
+```TypeScript
+import { trackedPeerMap } from '@libp2p/peer-collections'
+import { createLibp2p } from 'libp2p'
+
+const libp2p = await createLibp2p()
+
+const list = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
+map.set(peerId, 'value')
+```
+
+## Example - Peer sets
+
+```TypeScript
+import { peerSet } from '@libp2p/peer-collections'
+
+const set = peerSet()
+set.add(peerId)
+```
+
+## Example - Tracked peer sets
+
+```TypeScript
+import { trackedPeerSet } from '@libp2p/peer-collections'
+import { createLibp2p } from 'libp2p'
+
+const libp2p = await createLibp2p()
+
+const list = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
+map.add(peerId)
+```
+
 # Install
 
 ```console

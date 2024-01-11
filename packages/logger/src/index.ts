@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { logger } from '@libp2p/logger'
  *
  * const log = logger('libp2p:my:component:name')

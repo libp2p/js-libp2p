@@ -14,7 +14,7 @@ import { DefaultConnectionManager, type DefaultConnectionManagerComponents } fro
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { AbortOptions, Connection, ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
+import type { AbortOptions, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
@@ -28,6 +28,7 @@ function defaultComponents (peerId: PeerId): DefaultConnectionManagerComponents 
   return {
     peerId,
     peerStore: stubInterface<PeerStore>(),
+    peerRouting: stubInterface<PeerRouting>(),
     transportManager: stubInterface<TransportManager>(),
     connectionGater: stubInterface<ConnectionGater>(),
     events: new TypedEventEmitter(),

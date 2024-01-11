@@ -12,7 +12,7 @@ import type { PeerId } from '@libp2p/interface'
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
  *
  * const set = peerSet()

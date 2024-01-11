@@ -1,20 +1,26 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { kadDHT } from '@libp2p/kad-dht'
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { createLibp2p } from 'libp2p'
+import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { createLibp2p } from '../../../src/index.js'
-import { createPeerId } from '../../fixtures/creators/peer.js'
-import { subsystemMulticodecs } from './utils.js'
 import type { Libp2p, PeerId } from '@libp2p/interface'
-import type { DualKadDHT } from '@libp2p/kad-dht'
+import type { KadDHT } from '@libp2p/kad-dht'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Libp2pOptions } from 'libp2p'
+
+export const subsystemMulticodecs = [
+  '/test/kad/1.0.0',
+  '/other/1.0.0'
+]
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const remoteListenAddr = multiaddr('/ip4/127.0.0.1/tcp/8001')
@@ -34,14 +40,14 @@ async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2p): Promise<Mul
 describe('DHT subsystem operates correctly', () => {
   let peerId: PeerId
   let remotePeerId: PeerId
-  let libp2p: Libp2p<{ dht: DualKadDHT }>
-  let remoteLibp2p: Libp2p<{ dht: DualKadDHT }>
+  let libp2p: Libp2p<{ dht: KadDHT }>
+  let remoteLibp2p: Libp2p<{ dht: KadDHT }>
   let remAddr: Multiaddr
 
   beforeEach(async () => {
     [peerId, remotePeerId] = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -64,6 +70,8 @@ describe('DHT subsystem operates correctly', () => {
         ],
         services: {
           dht: kadDHT({
+            protocol: subsystemMulticodecs[0],
+            peerInfoMapper: passthroughMapper,
             allowQueryWithZeroPeers: true
           })
         }
@@ -86,6 +94,8 @@ describe('DHT subsystem operates correctly', () => {
         ],
         services: {
           dht: kadDHT({
+            protocol: subsystemMulticodecs[0],
+            peerInfoMapper: passthroughMapper,
             allowQueryWithZeroPeers: true
           })
         }
@@ -118,8 +128,10 @@ describe('DHT subsystem operates correctly', () => {
       expect(stream).to.exist()
 
       return Promise.all([
-        pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
+        // @ts-expect-error private field
+        pWaitFor(() => libp2p.services.dht.routingTable.size === 1),
+        // @ts-expect-error private field
+        pWaitFor(() => remoteLibp2p.services.dht.routingTable.size === 1)
       ])
     })
 
@@ -129,8 +141,10 @@ describe('DHT subsystem operates correctly', () => {
 
       await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
       await Promise.all([
-        pWaitFor(() => libp2p.services.dht.lan.routingTable.size === 1),
-        pWaitFor(() => remoteLibp2p.services.dht.lan.routingTable.size === 1)
+        // @ts-expect-error private field
+        pWaitFor(() => libp2p.services.dht.routingTable.size === 1),
+        // @ts-expect-error private field
+        pWaitFor(() => remoteLibp2p.services.dht.routingTable.size === 1)
       ])
 
       await libp2p.contentRouting.put(key, value)
@@ -138,5 +152,71 @@ describe('DHT subsystem operates correctly', () => {
       const fetchedValue = await remoteLibp2p.contentRouting.get(key)
       expect(fetchedValue).to.equalBytes(value)
     })
+  })
+
+  it('kad-dht should discover other peers', async () => {
+    const remotePeerId1 = await createEd25519PeerId()
+    const remotePeerId2 = await createEd25519PeerId()
+
+    const deferred = pDefer()
+
+    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: KadDHT }> => ({
+      peerId,
+      addresses: {
+        listen: [
+          listenAddr.toString()
+        ]
+      },
+      services: {
+        dht: kadDHT({
+          protocol: subsystemMulticodecs[0],
+          peerInfoMapper: passthroughMapper,
+          allowQueryWithZeroPeers: true
+        })
+      }
+    })
+
+    const localConfig = getConfig(peerId)
+
+    libp2p = await createLibp2p(localConfig)
+
+    const remoteLibp2p1 = await createLibp2p(getConfig(remotePeerId1))
+    const remoteLibp2p2 = await createLibp2p(getConfig(remotePeerId2))
+
+    libp2p.addEventListener('peer:discovery', (evt) => {
+      const { id } = evt.detail
+
+      if (id.equals(remotePeerId1)) {
+        libp2p.removeEventListener('peer:discovery')
+        deferred.resolve()
+      }
+    })
+
+    await Promise.all([
+      libp2p.start(),
+      remoteLibp2p1.start(),
+      remoteLibp2p2.start()
+    ])
+
+    await libp2p.peerStore.patch(remotePeerId1, {
+      multiaddrs: remoteLibp2p1.getMultiaddrs()
+    })
+    await remoteLibp2p2.peerStore.patch(remotePeerId1, {
+      multiaddrs: remoteLibp2p1.getMultiaddrs()
+    })
+
+    // Topology:
+    // A -> B
+    // C -> B
+    await Promise.all([
+      libp2p.dial(remotePeerId1),
+      remoteLibp2p2.dial(remotePeerId1)
+    ])
+
+    await deferred.promise
+    return Promise.all([
+      remoteLibp2p1.stop(),
+      remoteLibp2p2.stop()
+    ])
   })
 })

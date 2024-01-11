@@ -1,9 +1,8 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { type ClearableSignal, anySignal } from 'any-signal'
 import { type ObjectSchema, array, number, object, string } from 'yup'
-import { validateMultiaddr } from '../config/helpers.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_INTERVAL, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, INBOUND_UPGRADE_TIMEOUT, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { validateMultiaddr } from '../config/helpers'
+import { MIN_CONNECTIONS, MAX_CONNECTIONS, MAX_PARALLEL_DIALS } from './constants'
+import { AUTO_DIAL_INTERVAL, AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, MAX_PEER_ADDRS_TO_DIAL, DIAL_TIMEOUT, INBOUND_UPGRADE_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_INCOMING_PENDING_CONNECTIONS } from './constants.defaults'
 import type { ConnectionManagerInit } from '.'
 import type { LoggerOptions } from '@libp2p/interface'
 
@@ -50,24 +49,6 @@ async function resolveRecord (ma: Multiaddr, options: AbortOptions & LoggerOptio
     options.log.error(`multiaddr ${ma.toString()} could not be resolved`, err)
     return []
   }
-}
-
-export function combineSignals (...signals: Array<AbortSignal | undefined>): ClearableSignal {
-  const sigs: AbortSignal[] = []
-
-  for (const sig of signals) {
-    if (sig != null) {
-      setMaxListeners(Infinity, sig)
-      sigs.push(sig)
-    }
-  }
-
-  // let any signal abort the dial
-  const signal = anySignal(sigs)
-
-  setMaxListeners(Infinity, signal)
-
-  return signal
 }
 
 export const validateConnectionManagerConfig = (opts: ConnectionManagerInit): ObjectSchema<Record<string, unknown>> => {

@@ -27,7 +27,6 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
 import type { Libp2p, Connection, PeerId } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -301,8 +300,8 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createPeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createEd25519PeerId()).toString()}`)
     ])).to.eventually.rejected
       .with.property('code', 'ERR_INVALID_PARAMETERS')
   })
@@ -313,7 +312,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
     ])).to.eventually.rejected
       .with.property('code', 'ERR_INVALID_PARAMETERS')
@@ -321,7 +320,7 @@ describe('dialing (direct, WebSockets)', () => {
     // Perform dial
     await expect(connectionManager.openConnection([
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createPeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`)
     ])).to.eventually.rejected
       .with.property('code', 'ERR_INVALID_PARAMETERS')
   })
@@ -332,7 +331,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
   let peerId: PeerId
 
   beforeEach(async () => {
-    peerId = await createPeerId()
+    peerId = await createEd25519PeerId()
   })
 
   afterEach(async () => {

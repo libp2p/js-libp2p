@@ -5,6 +5,84 @@
 
 > JavaScript implementation of the Kad-DHT for libp2p
 
+# About
+
+This module implements the [libp2p Kademlia spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md) in TypeScript.
+
+The Kademlia DHT allow for several operations such as finding peers, searching for providers of DHT records, etc.
+
+## Example - Using with libp2p
+
+```TypeScript
+import { kadDHT } from '@libp2p/kad-dht'
+import { createLibp2p } from 'libp2p'
+import { peerIdFromString } from '@libp2p/peer-id'
+
+const node = await createLibp2p({
+  services: {
+    dht: kadDHT()
+  }
+})
+
+const peerId = peerIdFromString('QmFoo')
+const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+
+console.info(peerInfo) // peer id, multiaddrs
+```
+
+## Example - Connecting to the IPFS Amino DHT
+
+The [Amino DHT](https://blog.ipfs.tech/2023-09-amino-refactoring/) is a public-good DHT used by IPFS to fetch content, find peers, etc.
+
+If you are trying to access content on the public internet, this is the implementation you want.
+
+```TypeScript
+import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+import { createLibp2p } from 'libp2p'
+import { peerIdFromString } from '@libp2p/peer-id'
+
+const node = await createLibp2p({
+  services: {
+    aminoDHT: kadDHT({
+      protocol: '/ipfs/kad/1.0.0',
+      peerInfoMapper: removePrivateAddressesMapper
+    })
+  }
+})
+
+const peerId = peerIdFromString('QmFoo')
+const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+
+console.info(peerInfo) // peer id, multiaddrs
+```
+
+## Example - Connecting to a LAN-only DHT
+
+This DHT only works with privately dialable peers.
+
+This is for use when peers are on the local area network.
+
+```TypeScript
+import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { createLibp2p } from 'libp2p'
+import { peerIdFromString } from '@libp2p/peer-id'
+
+const node = await createLibp2p({
+  services: {
+    lanDHT: kadDHT({
+      protocol: '/ipfs/lan/kad/1.0.0',
+      peerInfoMapper: removePublicAddressesMapper,
+      clientMode: false
+    })
+  }
+})
+
+const peerId = peerIdFromString('QmFoo')
+const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+
+console.info(peerInfo) // peer id, multiaddrs
+```
+
 # Install
 
 ```console

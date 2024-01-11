@@ -2,6 +2,7 @@
 
 import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -13,7 +14,7 @@ import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
-import { createNode, createPeerId } from '../fixtures/creators/peer.js'
+import { createNode } from '../fixtures/creators/peer.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
@@ -26,8 +27,8 @@ describe('Connection Manager', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -122,8 +123,8 @@ describe('libp2p.connections', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 

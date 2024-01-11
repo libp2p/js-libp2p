@@ -28,7 +28,7 @@
     "@libp2p/mplex": "^10.0.0",
     "@libp2p/prometheus-metrics": "^3.0.0",
     "@libp2p/tcp": "^9.0.0",
-    "aegir": "^41.0.2",
+    "aegir": "^42.0.0",
     "libp2p": "^1.0.0",
     "prom-client": "^15.0.0"
   },

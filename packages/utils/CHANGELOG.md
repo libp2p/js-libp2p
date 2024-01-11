@@ -26,6 +26,51 @@
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
     * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/peer-collections bumped from ^5.1.1 to ^5.1.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.1.1...utils-v5.2.0) (2024-01-06)
+
+
+### Features
+
+* add tracked list to utils ([#2338](https://github.com/libp2p/js-libp2p/issues/2338)) ([581574d](https://github.com/libp2p/js-libp2p/commit/581574d6d6d94e2d44530f1c959fd1fcededf095))
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.2 to ^4.0.3
+
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.0.3...utils-v5.1.0) (2023-12-19)
+
+
+### Features
+
+* allow joining jobs in peer queues ([#2316](https://github.com/libp2p/js-libp2p/issues/2316)) ([9eff7ef](https://github.com/libp2p/js-libp2p/commit/9eff7eff0ea6f54bc6c24a8bc4736ba0e2807c8b))
+
+
+### Bug Fixes
+
+* remove results map on job queue clear ([#2320](https://github.com/libp2p/js-libp2p/issues/2320)) ([230afea](https://github.com/libp2p/js-libp2p/commit/230afea4b2919486bd8d61d9f0923a7761a6d2a0))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.0.0...utils-v5.0.1) (2023-11-30)
 
 
