@@ -1,15 +1,18 @@
 /**
  * @packageDocumentation
  *
- * Exposes an interface to AES encryption (formerly Rijndael), as defined in U.S. Federal Information Processing Standards Publication 197.
+ * WebCrypto does not support streaming encryption - https://github.com/w3c/webcrypto/issues/73
+ *
+ * In browsers this module uses `node-forge` to expose a streaming interface to AES encryption (formerly Rijndael), as defined in U.S. Federal Information Processing Standards Publication 197.
+ *
+ * In node.js it uses the regular streaming API exported by the `crypto` module.
  *
  * This uses `CTR` mode.
  *
- * /**
  * @example
  *
  * ```js
- * import { create } from '@libp2p/crypto/aes'
+ * import { create } from '@libp2p/crypto-aes-ctr'
  *
  * // Setting up Key and IV
  *

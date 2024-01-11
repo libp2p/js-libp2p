@@ -2,10 +2,10 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import * as crypto from '../../src/index.js'
-import fixtures from './../fixtures/aes.js'
-import goFixtures from './../fixtures/go-aes.js'
-import type { AESCipher } from '../../src/aes/index.js'
+import * as aes from '../src/index.js'
+import fixtures from './fixtures/aes.js'
+import goFixtures from './fixtures/go-aes.js'
+import type { AESCipher } from '../src/index.js'
 
 const bytes = [{
   length: 16,
@@ -24,7 +24,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = crypto.aes.create(key, iv)
+      const cipher = aes.create(key, iv)
 
       await encryptAndDecrypt(cipher)
       await encryptAndDecrypt(cipher)
@@ -42,7 +42,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = crypto.aes.create(key, iv)
+      const cipher = aes.create(key, iv)
       // @ts-expect-error cannot index fixtures like this
       const fixture = fixtures[length]
 
@@ -71,7 +71,7 @@ describe('AES-CTR', () => {
       const iv = new Uint8Array(16)
       iv.fill(1)
 
-      const cipher = crypto.aes.create(key, iv)
+      const cipher = aes.create(key, iv)
       // @ts-expect-error cannot index fixtures like this
       const fixture = goFixtures[length]
 
@@ -90,7 +90,7 @@ describe('AES-CTR', () => {
   it('checks key length', () => {
     const key = new Uint8Array(5)
     const iv = new Uint8Array(16)
-    return expect(() => crypto.aes.create(key, iv)).to.throw().with.property('code', 'ERR_INVALID_KEY_LENGTH')
+    return expect(() => aes.create(key, iv)).to.throw().with.property('code', 'ERR_INVALID_KEY_LENGTH')
   })
 })
 
