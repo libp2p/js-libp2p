@@ -1,8 +1,8 @@
 import { type AbortOptions, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { type ObjectSchema, array, number, object, string } from 'yup'
-import { validateMultiaddr } from '../config/helpers'
-import { MIN_CONNECTIONS, MAX_CONNECTIONS, MAX_PARALLEL_DIALS } from './constants'
-import { AUTO_DIAL_INTERVAL, AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, MAX_PEER_ADDRS_TO_DIAL, DIAL_TIMEOUT, INBOUND_UPGRADE_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_INCOMING_PENDING_CONNECTIONS } from './constants.defaults'
+import { validateMultiaddr } from '../config/helpers.js'
+import { AUTO_DIAL_INTERVAL, AUTO_DIAL_CONCURRENCY, AUTO_DIAL_PRIORITY, MAX_PEER_ADDRS_TO_DIAL, DIAL_TIMEOUT, INBOUND_UPGRADE_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_INCOMING_PENDING_CONNECTIONS } from './constants.defaults.js'
+import { MIN_CONNECTIONS, MAX_CONNECTIONS, MAX_PARALLEL_DIALS } from './constants.js'
 import type { ConnectionManagerInit } from '.'
 import type { LoggerOptions } from '@libp2p/interface'
 
