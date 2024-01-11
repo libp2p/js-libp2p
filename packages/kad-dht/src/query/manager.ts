@@ -1,7 +1,8 @@
-import { AbortError, TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
+import { raceSignal } from 'race-signal'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
@@ -127,7 +128,16 @@ export class QueryManager implements Startable {
       }
     }
 
-    const signal = anySignal([this.shutDownController.signal, options.signal])
+    // if the user breaks out of a for..await of loop iterating over query
+    // results we need to cancel any in-flight network requests
+    const queryEarlyExitController = new AbortController()
+    setMaxListeners(Infinity, queryEarlyExitController.signal)
+
+    const signal = anySignal([
+      this.shutDownController.signal,
+      queryEarlyExitController.signal,
+      options.signal
+    ])
 
     // this signal will get listened to for every invocation of queryFunc
     // so make sure we don't make a lot of noise in the logs
@@ -138,19 +148,13 @@ export class QueryManager implements Startable {
     // query a subset of peers up to `kBucketSize / 2` in length
     const startTime = Date.now()
     const cleanUp = new TypedEventEmitter<CleanUpEvents>()
+    let queryFinished = false
 
     try {
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
         log('waiting for initial query-self query before continuing')
 
-        await Promise.race([
-          new Promise((resolve, reject) => {
-            signal.addEventListener('abort', () => {
-              reject(new AbortError('Query was aborted before self-query ran'))
-            })
-          }),
-          this.initialQuerySelfHasRun.promise
-        ])
+        await raceSignal(this.initialQuerySelfHasRun.promise, signal)
 
         this.initialQuerySelfHasRun = undefined
       }
@@ -192,12 +196,14 @@ export class QueryManager implements Startable {
 
       // Execute the query along each disjoint path and yield their results as they become available
       for await (const event of merge(...paths)) {
-        yield event
-
         if (event.name === 'QUERY_ERROR') {
-          log('error', event.error)
+          log.error('query error', event.error)
         }
+
+        yield event
       }
+
+      queryFinished = true
     } catch (err: any) {
       if (!this.running && err.code === 'ERR_QUERY_ABORTED') {
         // ignore query aborted errors that were thrown during query manager shutdown
@@ -205,6 +211,11 @@ export class QueryManager implements Startable {
         throw err
       }
     } finally {
+      if (!queryFinished) {
+        log('query exited early')
+        queryEarlyExitController.abort()
+      }
+
       signal.clear()
 
       this.queries--

@@ -1,6 +1,6 @@
 import { CodeError, TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
-import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { pbStream } from 'it-protobuf-stream'
 import { Message, MessageType } from '../message/dht.js'
 import * as utils from '../utils.js'
@@ -44,7 +44,7 @@ export interface RoutingTableEvents {
 export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implements Startable {
   public kBucketSize: number
   public kb?: KBucket
-  public pingQueue: PeerJobQueue
+  public pingQueue: PeerQueue<boolean>
 
   private readonly log: Logger
   private readonly components: RoutingTableComponents
@@ -56,8 +56,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   private readonly tagValue: number
   private readonly metrics?: {
     routingTableSize: Metric
-    pingQueueSize: Metric
-    pingRunning: Metric
   }
 
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
@@ -75,23 +73,18 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.tagName = tagName ?? KAD_CLOSE_TAG_NAME
     this.tagValue = tagValue ?? KAD_CLOSE_TAG_VALUE
 
-    const updatePingQueueSizeMetric = (): void => {
-      this.metrics?.pingQueueSize.update(this.pingQueue.size)
-      this.metrics?.pingRunning.update(this.pingQueue.pending)
-    }
-
-    this.pingQueue = new PeerJobQueue({ concurrency: this.pingConcurrency })
-    this.pingQueue.addListener('add', updatePingQueueSizeMetric)
-    this.pingQueue.addListener('next', updatePingQueueSizeMetric)
-    this.pingQueue.addListener('error', err => {
-      this.log.error('error pinging peer', err)
+    this.pingQueue = new PeerQueue({
+      concurrency: this.pingConcurrency,
+      metricName: `${logPrefix.replaceAll(':', '_')}_ping_queue`,
+      metrics: this.components.metrics
+    })
+    this.pingQueue.addEventListener('error', evt => {
+      this.log.error('error pinging peer', evt.detail)
     })
 
     if (this.components.metrics != null) {
       this.metrics = {
-        routingTableSize: this.components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_routing_table_size`),
-        pingQueueSize: this.components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_ping_queue_size`),
-        pingRunning: this.components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_ping_running`)
+        routingTableSize: this.components.metrics.registerMetric(`${logPrefix.replaceAll(':', '_')}_routing_table_size`)
       }
     }
   }
@@ -204,8 +197,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     const results = await Promise.all(
       oldContacts.map(async oldContact => {
         // if a previous ping wants us to ping this contact, re-use the result
-        if (this.pingQueue.hasJob(oldContact.peer)) {
-          return this.pingQueue.joinJob(oldContact.peer)
+        const pingJob = this.pingQueue.find(oldContact.peer)
+
+        if (pingJob != null) {
+          return pingJob.join()
         }
 
         return this.pingQueue.add(async () => {

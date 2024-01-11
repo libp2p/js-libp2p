@@ -12,7 +12,7 @@ interface BasePeerId {
   toString(): string
   toCID(): CID
   toBytes(): Uint8Array
-  equals(other: PeerId | Uint8Array | string): boolean
+  equals(other?: PeerId | Uint8Array | string): boolean
 }
 
 export interface RSAPeerId extends BasePeerId {

@@ -39,7 +39,7 @@
  *   services: {
  *     aminoDHT: kadDHT({
  *       protocol: '/ipfs/kad/1.0.0',
- *       addressFilter: removePrivateAddressesMapper
+ *       peerInfoMapper: removePrivateAddressesMapper
  *     })
  *   }
  * })
@@ -65,7 +65,7 @@
  *   services: {
  *     lanDHT: kadDHT({
  *       protocol: '/ipfs/lan/kad/1.0.0',
- *       addressFilter: removePublicAddressesMapper,
+ *       peerInfoMapper: removePublicAddressesMapper,
  *       clientMode: false
  *     })
  *   }

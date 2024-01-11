@@ -82,7 +82,7 @@ class MockMetrics implements Metrics {
   registerMetric (name: string, opts: CalculatedMetricOptions): void
   registerMetric (name: string, opts?: MetricOptions): Metric
   registerMetric (name: string, opts: any): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -101,7 +101,7 @@ class MockMetrics implements Metrics {
   registerCounter (name: string, opts: CalculatedMetricOptions): void
   registerCounter (name: string, opts?: MetricOptions): Metric
   registerCounter (name: string, opts: any): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -120,7 +120,7 @@ class MockMetrics implements Metrics {
   registerMetricGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
   registerMetricGroup (name: string, opts?: MetricOptions): MetricGroup
   registerMetricGroup (name: string, opts: any): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -139,7 +139,7 @@ class MockMetrics implements Metrics {
   registerCounterGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
   registerCounterGroup (name: string, opts?: MetricOptions): MetricGroup
   registerCounterGroup (name: string, opts: any): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 

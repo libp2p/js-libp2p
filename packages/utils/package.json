@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -76,13 +76,21 @@
       "types": "./dist/src/multiaddr/is-private.d.ts",
       "import": "./dist/src/multiaddr/is-private.js"
     },
-    "./peer-job-queue": {
-      "types": "./dist/src/peer-job-queue.d.ts",
-      "import": "./dist/src/peer-job-queue.js"
+    "./queue": {
+      "types": "./dist/src/queue/index.d.ts",
+      "import": "./dist/src/queue/index.js"
+    },
+    "./peer-queue": {
+      "types": "./dist/src/peer-queue.d.ts",
+      "import": "./dist/src/peer-queue.js"
     },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
+    },
+    "./tracked-list": {
+      "types": "./dist/src/tracked-list.d.ts",
+      "import": "./dist/src/tracked-list.js"
     },
     "./tracked-map": {
       "types": "./dist/src/tracked-map.d.ts",
@@ -111,29 +119,28 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
-    "@libp2p/interface": "^1.0.2",
-    "@libp2p/peer-collections": "^5.1.1",
+    "@libp2p/interface": "^1.1.1",
+    "@libp2p/logger": "^4.0.4",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.1",
     "it-pushable": "^3.2.2",
     "it-stream-types": "^2.0.1",
-    "p-queue": "^8.0.0",
+    "p-defer": "^4.0.0",
     "private-ip": "^3.0.1",
+    "race-event": "^1.1.0",
     "race-signal": "^1.0.1",
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "@libp2p/logger": "^4.0.2",
-    "@libp2p/peer-id-factory": "^4.0.1",
-    "aegir": "^41.0.2",
+    "@libp2p/peer-id-factory": "^4.0.3",
+    "aegir": "^42.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.3",
     "it-drain": "^3.0.5",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "p-defer": "^4.0.0",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0",
     "uint8arrays": "^5.0.0"

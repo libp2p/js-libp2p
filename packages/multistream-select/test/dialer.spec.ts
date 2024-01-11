@@ -45,7 +45,8 @@ describe('Dialer', () => {
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
       void mss.select(outgoingStream, protocol, {
-        log: logger('mss:test-outgoing')
+        log: logger('mss:test-outgoing'),
+        negotiateFully: false
       })
 
       // have to interact with the stream to start protocol negotiation
@@ -126,13 +127,14 @@ describe('Dialer', () => {
     })
   })
 
-  describe('dialer.lazySelect', () => {
-    it('should lazily select a single protocol', async () => {
+  describe('dialer optimistic select', () => {
+    it('should optimistically select a single protocol when negotiateFully is false', async () => {
       const protocol = '/echo/1.0.0'
       const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
 
       const selection = await mss.select(outgoingStream, [protocol], {
-        log: logger('mss:test-lazy')
+        log: logger('mss:test-optimistic'),
+        negotiateFully: false
       })
       expect(selection.protocol).to.equal(protocol)
 
@@ -150,6 +152,28 @@ describe('Dialer', () => {
         Uint8Array.from([12]),
         uint8ArrayFromString(`${protocol}\n`),
         ...input).subarray())
+    })
+
+    it('should not optimistically select a single protocol when negotiateFully is true', async () => {
+      const protocols = ['/echo/1.0.0']
+      const selectedProtocol = protocols[protocols.length - 1]
+      const [outgoingStream, incomingStream] = duplexPair<Uint8Array>()
+
+      void mss.handle(incomingStream, [selectedProtocol], {
+        log: logger('mss:test-incoming')
+      })
+
+      const selection = await mss.select(outgoingStream, protocols, {
+        log: logger('mss:test-un-optimistic'),
+        negotiateFully: true
+      })
+      expect(selection.protocol).to.equal(selectedProtocol)
+
+      // Ensure stream is usable after selection
+      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      void pipe(input, selection.stream)
+      const output = await all(incomingStream.source)
+      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })
   })
 })

@@ -115,7 +115,11 @@ class PeerIdImpl {
   /**
    * Checks the equality of `this` peer against a given PeerId
    */
-  equals (id: PeerId | Uint8Array | string): boolean {
+  equals (id?: PeerId | Uint8Array | string): boolean {
+    if (id == null) {
+      return false
+    }
+
     if (id instanceof Uint8Array) {
       return uint8ArrayEquals(this.multihash.bytes, id)
     } else if (typeof id === 'string') {

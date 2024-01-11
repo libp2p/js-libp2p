@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "1.0.2",
+  "version": "1.1.1",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
@@ -71,7 +71,7 @@
     "uint8arraylist": "^2.4.3"
   },
   "devDependencies": {
-    "aegir": "^41.0.2"
+    "aegir": "^42.0.0"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"
