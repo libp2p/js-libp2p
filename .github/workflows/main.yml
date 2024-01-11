@@ -34,9 +34,7 @@ jobs:
     - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
-    ## TODO: remove fixed typescript version once https://github.com/TypeStrong/ts-node/issues/2076 is resolved as it affects typescript-docs-verifier
-    - run: cd doc && npm install && npm run doc-check
-
+    - run: cd doc && npm run doc-check
   test-node:
     needs: build
     runs-on: ${{ matrix.os }}
