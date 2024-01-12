@@ -24,9 +24,6 @@
       "path": "../interface-internal"
     },
     {
-      "path": "../kad-dht"
-    },
-    {
       "path": "../logger"
     },
     {
@@ -34,12 +31,6 @@
     },
     {
       "path": "../peer-collections"
-    },
-    {
-      "path": "../peer-discovery-bootstrap"
-    },
-    {
-      "path": "../peer-discovery-mdns"
     },
     {
       "path": "../peer-id"
@@ -52,9 +43,6 @@
     },
     {
       "path": "../protocol-identify"
-    },
-    {
-      "path": "../pubsub-floodsub"
     },
     {
       "path": "../stream-multiplexer-mplex"

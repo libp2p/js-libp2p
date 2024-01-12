@@ -64,10 +64,10 @@
     "@libp2p/interface": "^1.1.1",
     "@libp2p/utils": "^5.2.0",
     "it-pipe": "^3.0.1",
-    "it-pushable": "^3.2.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "uint8-varint": "^2.0.0",
-    "uint8arraylist": "^2.4.3",
+    "uint8-varint": "^2.0.2",
+    "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
@@ -79,9 +79,9 @@
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.3",
-    "it-drain": "^3.0.3",
+    "it-drain": "^3.0.5",
     "it-foreach": "^2.0.2",
-    "it-map": "^3.0.3",
+    "it-map": "^3.0.4",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"

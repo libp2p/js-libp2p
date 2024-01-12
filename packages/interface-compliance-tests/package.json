@@ -11,6 +11,10 @@
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "keywords": [
     "interface",
     "libp2p"
@@ -121,8 +125,8 @@
     "it-ndjson": "^1.0.3",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "it-protobuf-stream": "^1.0.2",
-    "it-pushable": "^3.2.1",
+    "it-protobuf-stream": "^1.1.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "it-to-buffer": "^4.0.2",
     "merge-options": "^3.0.4",
@@ -132,7 +136,7 @@
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.0.0",
     "sinon": "^17.0.0",
-    "uint8arraylist": "^2.4.3",
+    "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {

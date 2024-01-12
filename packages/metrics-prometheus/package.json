@@ -51,7 +51,7 @@
     "it-foreach": "^2.0.3",
     "it-stream-types": "^2.0.1",
     "prom-client": "^15.0.0",
-    "uint8arraylist": "^2.4.3"
+    "uint8arraylist": "^2.4.7"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.1.1",
@@ -59,7 +59,7 @@
     "@libp2p/peer-id-factory": "^4.0.3",
     "@multiformats/multiaddr": "^12.1.10",
     "aegir": "^42.0.0",
-    "it-drain": "^3.0.3",
+    "it-drain": "^3.0.5",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0"
   }
