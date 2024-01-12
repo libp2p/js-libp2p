@@ -84,6 +84,10 @@
       "types": "./dist/src/peer-queue.d.ts",
       "import": "./dist/src/peer-queue.js"
     },
+    "./rate-limiter": {
+      "types": "./dist/src/rate-limiter.d.ts",
+      "import": "./dist/src/rate-limiter.js"
+    },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
@@ -119,6 +123,7 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
+    "delay": "^6.0.0",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/logger": "^4.0.4",
     "@multiformats/multiaddr": "^12.1.10",
