@@ -21,22 +21,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -66,7 +50,7 @@
     "@libp2p/interface": "^1.1.1",
     "@libp2p/peer-collections": "^5.1.4",
     "@multiformats/multiaddr": "^12.1.10",
-    "uint8arraylist": "^2.4.3"
+    "uint8arraylist": "^2.4.7"
   },
   "devDependencies": {
     "aegir": "^42.0.0"

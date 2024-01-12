@@ -76,13 +76,13 @@
       "types": "./dist/src/multiaddr/is-private.d.ts",
       "import": "./dist/src/multiaddr/is-private.js"
     },
-    "./queue": {
-      "types": "./dist/src/queue/index.d.ts",
-      "import": "./dist/src/queue/index.js"
-    },
     "./peer-queue": {
       "types": "./dist/src/peer-queue.d.ts",
       "import": "./dist/src/peer-queue.js"
+    },
+    "./queue": {
+      "types": "./dist/src/queue/index.d.ts",
+      "import": "./dist/src/queue/index.js"
     },
     "./rate-limiter": {
       "types": "./dist/src/rate-limiter.d.ts",
@@ -123,20 +123,20 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
-    "delay": "^6.0.0",
     "@libp2p/interface": "^1.1.1",
     "@libp2p/logger": "^4.0.4",
     "@multiformats/multiaddr": "^12.1.10",
     "@multiformats/multiaddr-matcher": "^1.1.0",
+    "delay": "^6.0.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.1",
-    "it-pushable": "^3.2.2",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "p-defer": "^4.0.0",
     "private-ip": "^3.0.1",
     "race-event": "^1.1.0",
-    "race-signal": "^1.0.1",
-    "uint8arraylist": "^2.4.3"
+    "race-signal": "^1.0.2",
+    "uint8arraylist": "^2.4.7"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.4",

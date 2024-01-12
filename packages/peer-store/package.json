@@ -68,19 +68,19 @@
     "mortice": "^3.0.1",
     "multiformats": "^13.0.0",
     "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3",
+    "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.4",
     "@libp2p/peer-id-factory": "^4.0.4",
-    "@types/sinon": "^17.0.0",
+    "@types/sinon": "^17.0.2",
     "aegir": "^42.0.0",
     "datastore-core": "^9.1.1",
     "delay": "^6.0.0",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "protons": "^7.3.0",
-    "sinon": "^17.0.0"
+    "sinon": "^17.0.1"
   }
 }

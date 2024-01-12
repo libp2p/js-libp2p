@@ -90,7 +90,7 @@
     "aegir": "^42.0.0",
     "is-loopback-addr": "^2.0.1",
     "it-all": "^3.0.3",
-    "it-drain": "^3.0.3",
+    "it-drain": "^3.0.5",
     "it-goodbye": "^4.0.1",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",

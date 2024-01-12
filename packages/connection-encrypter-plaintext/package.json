@@ -56,7 +56,7 @@
     "it-protobuf-stream": "^1.1.1",
     "it-stream-types": "^2.0.1",
     "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3"
+    "uint8arraylist": "^2.4.7"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.1.2",
@@ -65,6 +65,6 @@
     "@multiformats/multiaddr": "^12.1.10",
     "aegir": "^42.0.0",
     "protons": "^7.3.0",
-    "sinon": "^17.0.0"
+    "sinon": "^17.0.1"
   }
 }

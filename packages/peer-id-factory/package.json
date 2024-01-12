@@ -61,7 +61,7 @@
     "@libp2p/interface": "^1.1.1",
     "@libp2p/peer-id": "^4.0.4",
     "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3",
+    "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
