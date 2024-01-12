@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto-aes-ctr",
-  "version": "3.0.4",
+  "version": "0.0.0",
   "description": "Streaming AES-CTR for node and browsers",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto-aes-ctr#readme",
