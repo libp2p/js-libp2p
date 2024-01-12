@@ -34,6 +34,9 @@
     },
     {
       "path": "../peer-store"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

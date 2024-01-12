@@ -62,6 +62,22 @@
     * @libp2p/interface-compliance-tests bumped from ^5.0.8 to ^5.1.0
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
 
+## [10.0.11](https://github.com/libp2p/js-libp2p/compare/mplex-v10.0.10...mplex-v10.0.11) (2024-01-12)
+
+
+### Bug Fixes
+
+* replace rate-limiter ([#2356](https://github.com/libp2p/js-libp2p/issues/2356)) ([ddaa59a](https://github.com/libp2p/js-libp2p/commit/ddaa59a600c031fe1f41ba2097ebfcfd74eff598))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.1 to ^5.1.2
+
 ## [10.0.10](https://github.com/libp2p/js-libp2p/compare/mplex-v10.0.9...mplex-v10.0.10) (2024-01-06)
 
 

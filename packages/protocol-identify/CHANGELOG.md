@@ -51,6 +51,15 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.5 to ^1.0.6
+    * @libp2p/peer-record bumped from ^7.0.4 to ^7.0.5
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+
 ## [1.0.9](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.8...identify-v1.0.9) (2024-01-06)
 
 

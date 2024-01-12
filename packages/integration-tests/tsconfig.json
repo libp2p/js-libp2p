@@ -12,6 +12,9 @@
       "path": "../connection-encrypter-plaintext"
     },
     {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface"
     },
     {
@@ -21,7 +24,19 @@
       "path": "../interface-internal"
     },
     {
+      "path": "../kad-dht"
+    },
+    {
       "path": "../libp2p"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-discovery-bootstrap"
+    },
+    {
+      "path": "../peer-discovery-mdns"
     },
     {
       "path": "../peer-id"
@@ -40,6 +55,9 @@
     },
     {
       "path": "../protocol-ping"
+    },
+    {
+      "path": "../pubsub-floodsub"
     },
     {
       "path": "../stream-multiplexer-mplex"

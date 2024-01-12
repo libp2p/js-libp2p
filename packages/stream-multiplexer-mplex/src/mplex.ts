@@ -1,8 +1,8 @@
 import { CodeError } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
+import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { pipe } from 'it-pipe'
 import { type Pushable, pushable } from 'it-pushable'
-import { RateLimiterMemory } from 'rate-limiter-flexible'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { Decoder } from './decode.js'
 import { encode } from './encode.js'
@@ -59,7 +59,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   private readonly _init: MplexStreamMuxerInit
   private readonly _source: Pushable<Message>
   private readonly closeController: AbortController
-  private readonly rateLimiter: RateLimiterMemory
+  private readonly rateLimiter: RateLimiter
   private readonly closeTimeout: number
   private readonly logger: ComponentLogger
 
@@ -114,7 +114,7 @@ export class MplexStreamMuxer implements StreamMuxer {
      */
     this.closeController = new AbortController()
 
-    this.rateLimiter = new RateLimiterMemory({
+    this.rateLimiter = new RateLimiter({
       points: init.disconnectThreshold ?? DISCONNECT_THRESHOLD,
       duration: 1
     })
