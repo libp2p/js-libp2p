@@ -368,7 +368,7 @@ function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Ar
     iterations = Number((pbkdf2Params.valueBlock.value[1] as asn1js.Integer).toBigInt())
     keySize = Number((pbkdf2Params.valueBlock.value[2]).toBigInt())
   } else if (pbkdf2Params.valueBlock.value.length === 2) {
-    throw new CodeError('Could not derive key size and iterations from PEM file - please use @libp2p/crypto-rsa to re-import your key', 'ERR_INVALID_PARAMS')
+    throw new CodeError('Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key', 'ERR_INVALID_PARAMS')
   }
 
   const encryptionScheme = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[1]

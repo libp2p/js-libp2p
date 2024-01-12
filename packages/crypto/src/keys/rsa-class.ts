@@ -115,7 +115,7 @@ export class RsaPrivateKey {
    * derived from the password.
    *
    * To export it as a password protected PEM file, please use the `exportPEM`
-   * function from `@libp2p/crypto-rsa`.
+   * function from `@libp2p/rsa`.
    */
   async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> {
     if (format === 'pkcs-8') {
