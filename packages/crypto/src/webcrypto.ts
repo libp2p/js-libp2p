@@ -2,8 +2,8 @@
 
 import { webcrypto } from 'crypto'
 
-// Check native crypto exists and is enabled (In insecure context `self.crypto`
-// exists but `self.crypto.subtle` does not).
+// globalThis `SubtleCrypto` shipped in node.js 19.x, Electron currently uses
+// v18.x so this override file is necessary until Electron updates
 export default {
   get (win = globalThis) {
     return webcrypto
