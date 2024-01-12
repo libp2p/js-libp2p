@@ -17,6 +17,17 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [4.0.0](https://github.com/libp2p/js-libp2p/compare/crypto-v3.0.4...crypto-v4.0.0) (2024-01-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Legacy RSA operations are now in @libp2p/rsa, streaming AES-CTR ciphers are in @libp2p/aes-ctr
+
+### Bug Fixes
+
+* remove node-forge dependency from @libp2p/crypto ([#2355](https://github.com/libp2p/js-libp2p/issues/2355)) ([856ccd7](https://github.com/libp2p/js-libp2p/commit/856ccd7082a42ad0c33486e9b6885452aa886c64))
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p/compare/crypto-v3.0.3...crypto-v3.0.4) (2024-01-06)
 
 
