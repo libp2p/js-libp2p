@@ -312,10 +312,16 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return peer.publicKey
     }
 
-    const peerInfo = await this.peerStore.get(peer)
+    try {
+      const peerInfo = await this.peerStore.get(peer)
 
-    if (peerInfo.id.publicKey != null) {
-      return peerInfo.id.publicKey
+      if (peerInfo.id.publicKey != null) {
+        return peerInfo.id.publicKey
+      }
+    } catch (err: any) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     }
 
     const peerKey = uint8ArrayConcat([
@@ -325,6 +331,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
+
     // ensure the returned key is valid
     unmarshalPublicKey(bytes)
 

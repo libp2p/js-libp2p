@@ -36,6 +36,20 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.0...utils-v5.2.1) (2024-01-12)
+
+
+### Bug Fixes
+
+* replace rate-limiter ([#2356](https://github.com/libp2p/js-libp2p/issues/2356)) ([ddaa59a](https://github.com/libp2p/js-libp2p/commit/ddaa59a600c031fe1f41ba2097ebfcfd74eff598))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+
 ## [5.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.1.1...utils-v5.2.0) (2024-01-06)
 
 

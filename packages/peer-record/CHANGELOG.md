@@ -39,6 +39,15 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.4 to ^4.0.0
+    * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+
 ## [7.0.4](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.3...peer-record-v7.0.4) (2024-01-06)
 
 

@@ -49,8 +49,8 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^3.0.0",
-    "@libp2p/interface": "^1.0.0",
+    "@libp2p/crypto": "^3.0.4",
+    "@libp2p/interface": "^1.1.1",
     "it-byte-stream": "^1.0.5",
     "it-map": "^3.0.4",
     "it-pair": "^2.0.6",
@@ -61,9 +61,9 @@
     "xsalsa20": "^1.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.0.0",
-    "@libp2p/logger": "^4.0.0",
-    "@libp2p/peer-id-factory": "^4.0.1",
+    "@libp2p/interface-compliance-tests": "^5.1.1",
+    "@libp2p/logger": "^4.0.4",
+    "@libp2p/peer-id-factory": "^4.0.3",
     "@multiformats/multiaddr": "^12.1.10",
     "@types/xsalsa20": "^1.1.0",
     "aegir": "^42.0.0",
