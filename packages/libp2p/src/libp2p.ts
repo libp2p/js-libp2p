@@ -392,12 +392,12 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  */
 export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
   const peerId = options.peerId ??= await createEd25519PeerId()
-  
+
   if (peerId.privateKey == null) {
     throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
   }
-  
-  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
+
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
 
   return new Libp2pNode(await validateConfig(options))
 }
