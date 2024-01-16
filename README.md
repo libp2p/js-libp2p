@@ -47,12 +47,6 @@ If you are looking for the documentation of the latest release, you can view the
 
 **Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
 
-**For security related issues** please file a [private security vulnerability report](https://github.com/libp2p/js-libp2p/security/advisories/new). Please do not file a public issue on GitHub.
-
-**For js-libp2p specific questions** please use the [GitHub Discussions forum](https://github.com/libp2p/js-libp2p/discussions).
-
-**For synchronous discussions** feel free to join the [open maintainer calls](https://lu.ma/js-libp2p).
-
 ## Table of contents <!-- omit in toc -->
 
 - [Background](#background)
