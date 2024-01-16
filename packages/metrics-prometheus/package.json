@@ -62,5 +62,6 @@
     "it-drain": "^3.0.5",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.0"
-  }
+  },
+  "sideEffects": false
 }

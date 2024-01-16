@@ -100,5 +100,6 @@
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
-  }
+  },
+  "sideEffects": false
 }

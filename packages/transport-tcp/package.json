@@ -71,5 +71,6 @@
     "p-defer": "^4.0.0",
     "sinon": "^17.0.1",
     "uint8arrays": "^5.0.0"
-  }
+  },
+  "sideEffects": false
 }

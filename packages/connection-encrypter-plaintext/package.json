@@ -66,5 +66,6 @@
     "aegir": "^42.0.0",
     "protons": "^7.3.0",
     "sinon": "^17.0.1"
-  }
+  },
+  "sideEffects": false
 }

@@ -71,5 +71,6 @@
   },
   "react-native": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
-  }
+  },
+  "sideEffects": false
 }

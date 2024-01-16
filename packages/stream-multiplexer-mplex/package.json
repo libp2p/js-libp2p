@@ -85,5 +85,6 @@
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
-  }
+  },
+  "sideEffects": false
 }

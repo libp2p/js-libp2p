@@ -106,5 +106,6 @@
     "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js",
     "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1-browser.js",
     "./dist/src/webcrypto.js": "./dist/src/webcrypto-browser.js"
-  }
+  },
+  "sideEffects": false
 }

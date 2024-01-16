@@ -77,5 +77,6 @@
     "p-wait-for": "^5.0.2",
     "protons": "^7.3.0",
     "sinon": "^17.0.1"
-  }
+  },
+  "sideEffects": false
 }

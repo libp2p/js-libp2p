@@ -119,5 +119,6 @@
   },
   "browser": {
     "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"
-  }
+  },
+  "sideEffects": false
 }
