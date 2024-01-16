@@ -102,7 +102,6 @@
     "it-parallel": "^3.0.6",
     "merge-options": "^3.0.4",
     "multiformats": "^13.0.0",
-    "private-ip": "^3.0.1",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {

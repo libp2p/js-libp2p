@@ -138,7 +138,6 @@
     "it-stream-types": "^2.0.1",
     "netmask": "^2.0.2",
     "p-defer": "^4.0.0",
-    "private-ip": "^3.0.1",
     "race-event": "^1.1.0",
     "race-signal": "^1.0.2",
     "uint8arraylist": "^2.4.7"

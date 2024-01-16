@@ -81,7 +81,6 @@
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-queue": "^8.0.0",
-    "private-ip": "^3.0.1",
     "progress-events": "^1.0.0",
     "protons-runtime": "^5.0.0",
     "race-signal": "^1.0.2",
