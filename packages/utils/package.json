@@ -149,5 +149,6 @@
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0",
     "uint8arrays": "^5.0.0"
-  }
+  },
+  "sideEffects": false
 }

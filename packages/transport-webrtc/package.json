@@ -101,5 +101,6 @@
   },
   "react-native": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.react-native.js"
-  }
+  },
+  "sideEffects": false
 }

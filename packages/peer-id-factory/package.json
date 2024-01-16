@@ -68,5 +68,6 @@
     "aegir": "^42.0.0",
     "multiformats": "^13.0.0",
     "protons": "^7.3.0"
-  }
+  },
+  "sideEffects": false
 }

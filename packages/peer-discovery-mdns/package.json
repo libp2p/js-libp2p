@@ -65,5 +65,6 @@
     "aegir": "^42.0.0",
     "p-wait-for": "^5.0.2",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

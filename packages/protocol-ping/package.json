@@ -65,5 +65,6 @@
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

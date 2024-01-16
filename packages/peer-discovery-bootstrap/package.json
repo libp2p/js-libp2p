@@ -63,5 +63,6 @@
     "@libp2p/logger": "^4.0.4",
     "aegir": "^42.0.0",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

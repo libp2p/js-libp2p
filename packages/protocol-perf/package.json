@@ -64,5 +64,6 @@
     "it-last": "^3.0.3",
     "it-pair": "^2.0.6",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }
