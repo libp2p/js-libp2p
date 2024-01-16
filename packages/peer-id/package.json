@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Implementation of @libp2p/interface-peer-id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id#readme",
@@ -53,7 +53,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.1",
+    "@libp2p/interface": "^1.1.2",
     "multiformats": "^13.0.0",
     "uint8arrays": "^5.0.0"
   },
