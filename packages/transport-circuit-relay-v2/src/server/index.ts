@@ -4,9 +4,12 @@ import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
 import pDefer from 'p-defer'
+import { object, number } from 'yup'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
+  DEFAULT_MAX_INBOUND_STREAMS,
+  DEFAULT_MAX_OUTBOUND_STREAMS,
   MAX_CONNECTIONS,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
@@ -15,7 +18,7 @@ import {
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
 import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } from './advert-service.js'
-import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
+import { ReservationStore, reservationStoreConfigValidator, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
 import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
@@ -86,9 +89,13 @@ export interface RelayServerEvents {
   'relay:advert:error': CustomEvent<Error>
 }
 
-const defaults = {
-  maxOutboundStopStreams: MAX_CONNECTIONS
-}
+const configValidator = object({
+  hopTimeout: number().integer().min(0).default(DEFAULT_HOP_TIMEOUT),
+  reservations: reservationStoreConfigValidator,
+  maxInboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+  maxOutboundHopStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS),
+  maxOutboundStopStreams: number().integer().min(0).default(MAX_CONNECTIONS)
+})
 
 class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
   private readonly registrar: Registrar
@@ -113,6 +120,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   constructor (components: CircuitRelayServerComponents, init: CircuitRelayServerInit = {}) {
     super()
 
+    const config = configValidator.validateSync(init)
+
     this.log = components.logger.forComponent('libp2p:circuit-relay:server')
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -121,11 +130,11 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
-    this.hopTimeout = init?.hopTimeout ?? DEFAULT_HOP_TIMEOUT
+    this.hopTimeout = config.hopTimeout
     this.shutdownController = new AbortController()
-    this.maxInboundHopStreams = init.maxInboundHopStreams
-    this.maxOutboundHopStreams = init.maxOutboundHopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
+    this.maxInboundHopStreams = config.maxInboundHopStreams
+    this.maxOutboundHopStreams = config.maxOutboundHopStreams
+    this.maxOutboundStopStreams = config.maxOutboundStopStreams
 
     setMaxListeners(Infinity, this.shutdownController.signal)
 

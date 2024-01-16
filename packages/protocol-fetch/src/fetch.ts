@@ -2,13 +2,12 @@ import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, se
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
+import { object, number, string } from 'yup'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
-
-const DEFAULT_TIMEOUT = 10000
 
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
@@ -16,22 +15,37 @@ const DEFAULT_TIMEOUT = 10000
  * a given key.  Each lookup function must act on a distinct part of the overall key space, defined
  * by a fixed prefix that all keys that should be routed to that lookup function will start with.
  */
+
+const configValidator = object({
+  timeout: number().integer().default(TIMEOUT),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  protocolPrefix: string().default(PROTOCOL_PREFIX)
+})
+
 export class Fetch implements Startable, FetchInterface {
   public readonly protocol: string
   private readonly components: FetchComponents
   private readonly lookupFunctions: Map<string, LookupFunction>
+  private readonly timeout: number
+  private readonly maxInboundStreams: number
+  private readonly maxOutboundStreams: number
   private started: boolean
-  private readonly init: FetchInit
   private readonly log: Logger
 
   constructor (components: FetchComponents, init: FetchInit = {}) {
     this.log = components.logger.forComponent('libp2p:fetch')
     this.started = false
     this.components = components
-    this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.lookupFunctions = new Map() // Maps key prefix to value lookup function
     this.handleMessage = this.handleMessage.bind(this)
-    this.init = init
+
+    const config = configValidator.validateSync(init)
+
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
   }
 
   async start (): Promise<void> {
@@ -44,8 +58,8 @@ export class Fetch implements Startable, FetchInterface {
           this.log.error(err)
         })
     }, {
-      maxInboundStreams: this.init.maxInboundStreams,
-      maxOutboundStreams: this.init.maxOutboundStreams
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
     })
     this.started = true
   }
@@ -72,7 +86,7 @@ export class Fetch implements Startable, FetchInterface {
 
     // create a timeout if no abort signal passed
     if (signal == null) {
-      const timeout = this.init.timeout ?? DEFAULT_TIMEOUT
+      const timeout = this.timeout
       this.log('using default timeout of %d ms', timeout)
       signal = AbortSignal.timeout(timeout)
 
@@ -138,7 +152,7 @@ export class Fetch implements Startable, FetchInterface {
    */
   async handleMessage (data: IncomingStreamData): Promise<void> {
     const { stream } = data
-    const signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
+    const signal = AbortSignal.timeout(this.timeout)
 
     try {
       const pb = pbStream(stream)

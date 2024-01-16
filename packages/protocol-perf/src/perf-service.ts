@@ -1,9 +1,18 @@
 import { pushable } from 'it-pushable'
+import { boolean, number, object, string } from 'yup'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+
+const configValidator = object({
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  protocolName: string().default(PROTOCOL_NAME),
+  writeBlockSize: number().integer().min(1).default(WRITE_BLOCK_SIZE),
+  runOnTransientConnection: boolean().default(RUN_ON_TRANSIENT_CONNECTION)
+})
 
 export class Perf implements Startable, PerfInterface {
   private readonly log: Logger
@@ -20,12 +29,15 @@ export class Perf implements Startable, PerfInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:perf')
     this.started = false
-    this.protocol = init.protocolName ?? PROTOCOL_NAME
-    this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
+
+    const config = configValidator.validateSync(init)
+
+    this.protocol = config.protocolName
+    this.writeBlockSize = config.writeBlockSize
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.runOnTransientConnection = config.runOnTransientConnection
     this.databuf = new ArrayBuffer(this.writeBlockSize)
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
   }
 
   async start (): Promise<void> {

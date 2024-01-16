@@ -2,6 +2,8 @@ import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
+import { number, object } from 'yup'
+import { DCUTR_DIAL_PRIORITY, DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS, DEFAULT_RETRIES, DEFAULT_TIMEOUT, MAX_DCUTR_MESSAGE_SIZE } from './constants.js'
 import { HolePunch } from './pb/message.js'
 import { isPublicAndDialable } from './utils.js'
 import { multicodec } from './index.js'
@@ -9,19 +11,14 @@ import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Logger, Connection, Stream, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
-// https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
-const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
-// ensure the dial has a high priority to jump to the head of the dial queue
-const DCUTR_DIAL_PRIORITY = 100
-
-const defaultValues = {
+const configValidator = object({
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
-  timeout: 5000,
+  timeout: number().integer().min(0).default(DEFAULT_TIMEOUT),
   // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
-  retries: 3,
-  maxInboundStreams: 1,
-  maxOutboundStreams: 1
-}
+  retries: number().integer().min(0).default(DEFAULT_RETRIES),
+  maxInboundStreams: number().integer().min(0).default(DEFAULT_MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(DEFAULT_MAX_OUTBOUND_STREAMS)
+})
 
 export class DefaultDCUtRService implements Startable {
   private started: boolean
@@ -46,10 +43,12 @@ export class DefaultDCUtRService implements Startable {
     this.connectionManager = components.connectionManager
     this.transportManager = components.transportManager
 
-    this.timeout = init.timeout ?? defaultValues.timeout
-    this.retries = init.retries ?? defaultValues.retries
-    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
-    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
+    const config = configValidator.validateSync(init)
+
+    this.timeout = config.timeout
+    this.retries = config.retries
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
   }
 
   isStarted (): boolean {
@@ -363,7 +362,7 @@ export class DefaultDCUtRService implements Startable {
         }
 
         output.push(ma)
-      } catch {}
+      } catch { }
     }
 
     return output

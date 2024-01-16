@@ -4,7 +4,8 @@ import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
+import { number, object } from 'yup'
+import { DEFAULT_DISCOVER_RELAYS, DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
@@ -71,6 +72,13 @@ export interface ReservationStoreEvents {
   'relay:removed': CustomEvent<PeerId>
 }
 
+const configValidator = object({
+  discoverRelays: number().integer().min(0).default(DEFAULT_DISCOVER_RELAYS),
+  maxReservationQueueLength: number().integer().min(0).default(DEFAULT_MAX_RESERVATION_QUEUE_LENGTH),
+  reservationCompletionTimeout: number().integer().min(0).default(DEFAULT_RESERVATION_COMPLETION_TIMEOUT),
+  reservationConcurrency: number().integer().min(0).default(DEFAULT_RESERVATION_CONCURRENCY)
+})
+
 export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> implements Startable {
   private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
@@ -95,9 +103,12 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.peerStore = components.peerStore
     this.events = components.events
     this.reservations = new PeerMap()
-    this.maxDiscoveredRelays = init?.discoverRelays ?? 0
-    this.maxReservationQueueLength = init?.maxReservationQueueLength ?? 100
-    this.reservationCompletionTimeout = init?.reservationCompletionTimeout ?? 10000
+
+    const config = configValidator.validateSync(init)
+
+    this.maxDiscoveredRelays = config.discoverRelays
+    this.maxReservationQueueLength = config.maxReservationQueueLength
+    this.reservationCompletionTimeout = config.reservationCompletionTimeout
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously

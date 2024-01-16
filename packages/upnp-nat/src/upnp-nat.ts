@@ -4,14 +4,28 @@ import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import isPrivateIp from 'private-ip'
 import { isBrowser } from 'wherearewe'
+import { boolean, number, object, string } from 'yup'
 import type { UPnPNATComponents, UPnPNATInit } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 
 const DEFAULT_TTL = 7200
 
+const DEFAULT_KEEP_ALIVE = true
+
 function highPort (min = 1024, max = 65535): number {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
+
+const validIPRegex = /^(?:(?:^|\.)(?:\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){4}$/
+
+const configValidator = object({
+  externalAddress: string().matches(validIPRegex, 'Invalid IP address'),
+  localAddress: string().matches(validIPRegex, 'Invalid IP address'),
+  description: string(),
+  ttl: number().integer().min(0).default(DEFAULT_TTL),
+  keepAlive: boolean().default(DEFAULT_KEEP_ALIVE),
+  gateway: string().optional()
+})
 
 export class UPnPNAT implements Startable {
   private readonly components: UPnPNATComponents
@@ -27,15 +41,17 @@ export class UPnPNAT implements Startable {
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.components = components
-
-    this.log = components.logger.forComponent('libp2p:upnp-nat')
     this.started = false
-    this.externalAddress = init.externalAddress
-    this.localAddress = init.localAddress
-    this.description = init.description ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${this.components.peerId.toString()}`
-    this.ttl = init.ttl ?? DEFAULT_TTL
-    this.keepAlive = init.keepAlive ?? true
-    this.gateway = init.gateway
+
+    const config = configValidator.validateSync(init)
+    this.log = components.logger.forComponent('libp2p:upnp-nat')
+
+    this.externalAddress = config.externalAddress
+    this.localAddress = config.localAddress
+    this.description = config.description ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${this.components.peerId.toString()}`
+    this.keepAlive = config.keepAlive
+    this.gateway = config.gateway
+    this.ttl = config.ttl
 
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, ERR_INVALID_PARAMETERS)

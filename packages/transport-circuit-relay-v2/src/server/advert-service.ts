@@ -1,5 +1,6 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import pRetry from 'p-retry'
+import { number, object } from 'yup'
 import {
   DEFAULT_ADVERT_BOOT_DELAY,
   ERR_NO_ROUTERS_AVAILABLE,
@@ -28,6 +29,10 @@ export interface AdvertServiceEvents {
   'advert:error': CustomEvent<Error>
 }
 
+const configValidator = object({
+  bootDelay: number().integer().min(0).default(DEFAULT_ADVERT_BOOT_DELAY)
+})
+
 export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implements Startable {
   private readonly contentRouting: ContentRouting
   private timeout?: any
@@ -43,8 +48,11 @@ export class AdvertService extends TypedEventEmitter<AdvertServiceEvents> implem
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:advert-service')
     this.contentRouting = components.contentRouting
-    this.bootDelay = init?.bootDelay ?? DEFAULT_ADVERT_BOOT_DELAY
     this.started = false
+
+    const config = configValidator.validateSync(init)
+
+    this.bootDelay = config.bootDelay
   }
 
   isStarted (): boolean {

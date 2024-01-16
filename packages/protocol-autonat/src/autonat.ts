@@ -8,6 +8,7 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import isPrivateIp from 'private-ip'
+import { number, object, string } from 'yup'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -23,6 +24,15 @@ import type { IncomingStreamData } from '@libp2p/interface-internal'
 // https://github.com/libp2p/specs/blob/master/autonat/README.md#autonat-protocol
 const REQUIRED_SUCCESSFUL_DIALS = 4
 
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  timeout: number().integer().default(TIMEOUT),
+  startupDelay: number().integer().default(STARTUP_DELAY),
+  refreshInterval: number().integer().default(REFRESH_INTERVAL),
+  maxInboundStreams: number().integer().default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().default(MAX_OUTBOUND_STREAMS)
+})
+
 export class AutoNATService implements Startable {
   private readonly components: AutoNATComponents
   private readonly startupDelay: number
@@ -36,15 +46,17 @@ export class AutoNATService implements Startable {
   private readonly log: Logger
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
+    const config = configValidator.validateSync(init)
+
     this.components = components
     this.log = components.logger.forComponent('libp2p:autonat')
     this.started = false
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? TIMEOUT
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.startupDelay = init.startupDelay ?? STARTUP_DELAY
-    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.startupDelay = config.startupDelay
+    this.refreshInterval = config.refreshInterval
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
@@ -382,7 +394,7 @@ export class AutoNATService implements Startable {
       const networkSegments: string[] = []
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
-        let onAbort = (): void => {}
+        let onAbort = (): void => { }
 
         try {
           this.log('asking %p to verify multiaddr', peer.id)

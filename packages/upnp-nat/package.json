@@ -55,7 +55,8 @@
     "@libp2p/utils": "^5.2.1",
     "@multiformats/multiaddr": "^12.1.10",
     "private-ip": "^3.0.1",
-    "wherearewe": "^2.0.1"
+    "wherearewe": "^2.0.1",
+    "yup": "^1.3.2"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.4",

@@ -9,34 +9,41 @@ import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
+import { boolean, number, object, string } from 'yup'
 import {
   IDENTIFY_PROTOCOL_VERSION,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION,
-  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
+  MAX_INBOUND_STREAMS,
+  MAX_OUTBOUND_STREAMS,
+  MAX_IDENTIFY_MESSAGE_SIZE,
+  TIMEOUT,
+  RUN_ON_CONNECTION_OPEN as DEFAULT_RUN_ON_CONNECTION_OPEN,
+  PROTOCOL_PREFIX,
+  RUN_ON_TRANSIENT_CONNECTION as DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS,
+  MAX_PUSH_INCOMING_STREAMS,
+  MAX_PUSH_OUTGOING_STREAMS,
+  MAX_OBSERVED_ADDRESSES
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, AbortOptions, Logger, Connection, Stream, TypedEventTarget, PeerId, Peer, PeerData, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 
-// https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L52
-const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
-
-const defaultValues = {
-  protocolPrefix: 'ipfs',
-  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/identify/id.go#L48
-  timeout: 60000,
-  maxInboundStreams: 1,
-  maxOutboundStreams: 1,
-  maxPushIncomingStreams: 1,
-  maxPushOutgoingStreams: 1,
-  maxObservedAddresses: 10,
-  maxIdentifyMessageSize: 8192,
-  runOnConnectionOpen: true,
-  runOnTransientConnection: true
-}
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  timeout: number().integer().min(0).default(TIMEOUT),
+  maxIdentifyMessageSize: number().integer().min(0).default(MAX_IDENTIFY_MESSAGE_SIZE),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxPushIncomingStreams: number().integer().min(0).default(MAX_PUSH_INCOMING_STREAMS),
+  maxPushOutgoingStreams: number().integer().min(0).default(MAX_PUSH_OUTGOING_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  maxObservedAddresses: number().integer().min(0).default(MAX_OBSERVED_ADDRESSES),
+  runOnConnectionOpen: boolean().default(DEFAULT_RUN_ON_CONNECTION_OPEN),
+  runOnTransientConnection: boolean().default(DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS)
+})
 
 export class Identify implements Startable, IdentifyInterface {
   private readonly identifyProtocolStr: string
@@ -61,9 +68,12 @@ export class Identify implements Startable, IdentifyInterface {
   private readonly maxObservedAddresses: number
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
+  private readonly runOnConnectionOpen: boolean
   private readonly log: Logger
 
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
+    const config = configValidator.validateSync(init)
+
     this.started = false
     this.peerId = components.peerId
     this.peerStore = components.peerStore
@@ -73,24 +83,25 @@ export class Identify implements Startable, IdentifyInterface {
     this.events = components.events
     this.log = components.logger.forComponent('libp2p:identify')
 
-    this.identifyProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
-    this.identifyPushProtocolStr = `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? defaultValues.timeout
-    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
-    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
-    this.maxPushIncomingStreams = init.maxPushIncomingStreams ?? defaultValues.maxPushIncomingStreams
-    this.maxPushOutgoingStreams = init.maxPushOutgoingStreams ?? defaultValues.maxPushOutgoingStreams
-    this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? defaultValues.maxIdentifyMessageSize
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
-    this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
+    this.identifyProtocolStr = `/${config.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`
+    this.identifyPushProtocolStr = `/${config.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.maxPushIncomingStreams = config.maxPushIncomingStreams
+    this.maxPushOutgoingStreams = config.maxPushOutgoingStreams
+    this.maxIdentifyMessageSize = config.maxIdentifyMessageSize
+    this.maxObservedAddresses = config.maxObservedAddresses
+    this.runOnTransientConnection = config.runOnTransientConnection
+    this.runOnConnectionOpen = config.runOnConnectionOpen
 
     // Store self host metadata
     this.host = {
-      protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      protocolVersion: `${config.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
       agentVersion: init.agentVersion ?? `${components.nodeInfo.name}/${components.nodeInfo.version}`
     }
 
-    if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
+    if (this.runOnConnectionOpen) {
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
@@ -308,7 +319,7 @@ export class Identify implements Startable, IdentifyInterface {
     this.log('our observed address is %a', cleanObservedAddr)
 
     if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
+      this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses)) {
       this.log('storing our observed address %a', cleanObservedAddr)
       this.addressManager.addObservedAddr(cleanObservedAddr)
     }

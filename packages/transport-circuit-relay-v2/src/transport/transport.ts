@@ -5,7 +5,8 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import { CIRCUIT_PROTO_CODE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { object, number } from 'yup'
+import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVER_RELAYS, DEFAULT_STOP_TIMEOUT, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
@@ -38,11 +39,12 @@ interface ConnectOptions {
   disconnectOnFailure: boolean
 }
 
-const defaults = {
-  maxInboundStopStreams: MAX_CONNECTIONS,
-  maxOutboundStopStreams: MAX_CONNECTIONS,
-  stopTimeout: 30000
-}
+const configValidator = object({
+  discoverRelays: number().min(0).integer().default(DEFAULT_DISCOVER_RELAYS),
+  maxInboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+  maxOutboundStopStreams: number().min(0).integer().default(MAX_CONNECTIONS),
+  stopTimeout: number().min(0).integer().default(DEFAULT_STOP_TIMEOUT)
+})
 
 export class CircuitRelayTransport implements Transport {
   private readonly discovery?: RelayDiscovery
@@ -63,6 +65,8 @@ export class CircuitRelayTransport implements Transport {
   private readonly log: Logger
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
+    const config = configValidator.validateSync(init)
+
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport')
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -73,11 +77,11 @@ export class CircuitRelayTransport implements Transport {
     this.upgrader = components.upgrader
     this.addressManager = components.addressManager
     this.connectionGater = components.connectionGater
-    this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
-    this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
+    this.maxInboundStopStreams = config.maxInboundStopStreams
+    this.maxOutboundStopStreams = config.maxOutboundStopStreams
+    this.stopTimeout = config.stopTimeout
 
-    if (init.discoverRelays != null && init.discoverRelays > 0) {
+    if (config.discoverRelays > 0) {
       this.discovery = new RelayDiscovery(components)
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')

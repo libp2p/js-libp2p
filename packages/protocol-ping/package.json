@@ -55,7 +55,8 @@
     "@multiformats/multiaddr": "^12.1.10",
     "it-first": "^3.0.3",
     "it-pipe": "^3.0.1",
-    "uint8arrays": "^5.0.0"
+    "uint8arrays": "^5.0.0",
+    "yup": "^1.3.2"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.4",

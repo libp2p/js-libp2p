@@ -3,11 +3,20 @@ import { CodeError, ERR_TIMEOUT } from '@libp2p/interface'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
+import { boolean, number, object, string } from 'yup'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK, DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+
+const configValidator = object({
+  protocolPrefix: string().default(PROTOCOL_PREFIX),
+  timeout: number().integer().min(0).default(TIMEOUT),
+  maxInboundStreams: number().integer().min(0).default(MAX_INBOUND_STREAMS),
+  maxOutboundStreams: number().integer().min(0).default(MAX_OUTBOUND_STREAMS),
+  runOnTransientConnection: boolean().default(DEFAULT_RUN_ON_TRANSIENT_CONNECTIONS)
+})
 
 export class PingService implements Startable, PingServiceInterface {
   public readonly protocol: string
@@ -23,11 +32,14 @@ export class PingService implements Startable, PingServiceInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:ping')
     this.started = false
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
-    this.timeout = init.timeout ?? TIMEOUT
-    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? true
+
+    const config = configValidator.validateSync(init)
+
+    this.protocol = `/${config.protocolPrefix}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
+    this.timeout = config.timeout
+    this.maxInboundStreams = config.maxInboundStreams
+    this.maxOutboundStreams = config.maxOutboundStreams
+    this.runOnTransientConnection = config.runOnTransientConnection
 
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -80,7 +92,7 @@ export class PingService implements Startable, PingServiceInterface {
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
-    let onAbort = (): void => {}
+    let onAbort = (): void => { }
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout)
