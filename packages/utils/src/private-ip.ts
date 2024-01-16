@@ -32,7 +32,7 @@ const NETMASK_RANGES = PRIVATE_IP_RANGES.map(ipRange => new Netmask(ipRange))
 
 function ipv4Check (ipAddr: string): boolean {
   for (const r of NETMASK_RANGES) {
-    if (r.contains(ipAddr) === true) return true
+    if (r.contains(ipAddr)) return true
   }
 
   return false
