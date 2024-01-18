@@ -228,6 +228,7 @@ jobs:
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           release-type: node
+          manifest-file: .release-please-manifest.json
           config-file: .release-please.json
       - uses: actions/checkout@v3
         with:
