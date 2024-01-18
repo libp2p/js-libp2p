@@ -54,7 +54,6 @@
     "@libp2p/interface-internal": "^1.0.7",
     "@libp2p/utils": "^5.2.2",
     "@multiformats/multiaddr": "^12.1.10",
-    "private-ip": "^3.0.1",
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
