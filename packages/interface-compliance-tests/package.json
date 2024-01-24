@@ -60,6 +60,10 @@
       "types": "./dist/src/is-valid-tick.d.ts",
       "import": "./dist/src/is-valid-tick.js"
     },
+    "./matchers": {
+      "types": "./dist/src/matchers.d.ts",
+      "import": "./dist/src/matchers.js"
+    },
     "./mocks": {
       "types": "./dist/src/mocks/index.d.ts",
       "import": "./dist/src/mocks/index.js"
