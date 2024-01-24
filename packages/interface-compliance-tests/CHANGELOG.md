@@ -69,6 +69,20 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.3...interface-compliance-tests-v5.2.0) (2024-01-24)
+
+
+### Features
+
+* add sinon matchers for PeerIds and Multiaddrs to test module ([#2373](https://github.com/libp2p/js-libp2p/issues/2373)) ([2e464c0](https://github.com/libp2p/js-libp2p/commit/2e464c09993c919f66a465d8c0ed511f6a9e9c90))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+
 ## [5.1.3](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.2...interface-compliance-tests-v5.1.3) (2024-01-16)
 
 

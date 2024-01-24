@@ -95,6 +95,29 @@
     * @libp2p/tcp bumped from ^9.0.5 to ^9.0.6
     * @libp2p/websockets bumped from ^8.0.5 to ^8.0.6
 
+## [1.2.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.2.0...libp2p-v1.2.1) (2024-01-24)
+
+
+### Bug Fixes
+
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-store bumped from ^10.0.7 to ^10.0.8
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.12 to ^1.0.13
+    * @libp2p/identify bumped from ^1.0.11 to ^1.0.12
+    * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
+    * @libp2p/mplex bumped from ^10.0.12 to ^10.0.13
+    * @libp2p/plaintext bumped from ^1.0.12 to ^1.0.13
+    * @libp2p/tcp bumped from ^9.0.12 to ^9.0.13
+    * @libp2p/websockets bumped from ^8.0.12 to ^8.0.13
+
 ## [1.2.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.1.2...libp2p-v1.2.0) (2024-01-16)
 
 

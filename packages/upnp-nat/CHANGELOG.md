@@ -58,6 +58,20 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [1.0.11](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.0.10...upnp-nat-v1.0.11) (2024-01-24)
+
+
+### Bug Fixes
+
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+
 ## [1.0.10](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.0.9...upnp-nat-v1.0.10) (2024-01-16)
 
 

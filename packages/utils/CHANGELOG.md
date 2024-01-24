@@ -36,6 +36,14 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.3](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.2...utils-v5.2.3) (2024-01-24)
+
+
+### Bug Fixes
+
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+* allow typing job options in peer queue ([#2372](https://github.com/libp2p/js-libp2p/issues/2372)) ([74fb567](https://github.com/libp2p/js-libp2p/commit/74fb5671dc5184182a2d6c9c4e7d33f43e43d7b6))
+
 ## [5.2.2](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.1...utils-v5.2.2) (2024-01-16)
 
 

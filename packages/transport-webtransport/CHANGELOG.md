@@ -90,6 +90,16 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * libp2p bumped from ^1.1.1 to ^1.1.2
 
+## [4.0.17](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.16...webtransport-v4.0.17) (2024-01-24)
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.2.0 to ^1.2.1
+
 ## [4.0.16](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.15...webtransport-v4.0.16) (2024-01-16)
 
 
