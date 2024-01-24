@@ -155,6 +155,23 @@
     * @libp2p/webtransport bumped from ^4.0.14 to ^4.0.15
     * libp2p bumped from ^1.1.1 to ^1.1.2
 
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/multidim-interop-v2.0.16...multidim-interop-v2.0.17) (2024-01-24)
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.12 to ^1.0.13
+    * @libp2p/identify bumped from ^1.0.11 to ^1.0.12
+    * @libp2p/mplex bumped from ^10.0.12 to ^10.0.13
+    * @libp2p/tcp bumped from ^9.0.12 to ^9.0.13
+    * @libp2p/webrtc bumped from ^4.0.16 to ^4.0.17
+    * @libp2p/websockets bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/webtransport bumped from ^4.0.16 to ^4.0.17
+    * libp2p bumped from ^1.2.0 to ^1.2.1
+
 ## [2.0.16](https://github.com/libp2p/js-libp2p/compare/multidim-interop-v2.0.15...multidim-interop-v2.0.16) (2024-01-16)
 
 

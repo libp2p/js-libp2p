@@ -82,6 +82,14 @@
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^9.0.7 to ^9.0.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
+
 ## [9.0.8](https://github.com/libp2p/js-libp2p/compare/floodsub-v9.0.7...floodsub-v9.0.8) (2024-01-16)
 
 

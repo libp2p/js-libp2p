@@ -97,6 +97,23 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * @libp2p/peer-store bumped from ^10.0.5 to ^10.0.6
 
+## [12.0.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.4...kad-dht-v12.0.5) (2024-01-24)
+
+
+### Bug Fixes
+
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
+    * @libp2p/peer-store bumped from ^10.0.7 to ^10.0.8
+
 ## [12.0.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.3...kad-dht-v12.0.4) (2024-01-16)
 
 

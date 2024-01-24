@@ -63,6 +63,12 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+
 ## [9.0.7](https://github.com/libp2p/js-libp2p/compare/pubsub-v9.0.6...pubsub-v9.0.7) (2024-01-16)
 
 

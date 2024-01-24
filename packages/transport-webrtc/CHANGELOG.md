@@ -100,6 +100,21 @@
     * @libp2p/websockets bumped from ^8.0.10 to ^8.0.11
     * libp2p bumped from ^1.1.1 to ^1.1.2
 
+## [4.0.17](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.16...webrtc-v4.0.17) (2024-01-24)
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.12 to ^1.0.13
+    * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
+    * @libp2p/websockets bumped from ^8.0.12 to ^8.0.13
+    * libp2p bumped from ^1.2.0 to ^1.2.1
+
 ## [4.0.16](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.15...webrtc-v4.0.16) (2024-01-16)
 
 
