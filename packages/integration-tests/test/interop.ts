@@ -14,6 +14,7 @@ import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
+import { tls } from '@libp2p/tls'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -48,8 +49,8 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
   }
 
-  if (options.noise === true) {
-    opts.push('-noise=true')
+  if (options.encryption != null) {
+    opts.push(`-${options.encryption}=true`)
   }
 
   if (options.dht === true) {
@@ -133,6 +134,12 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   const services: ServiceFactoryMap = {
     identify: identify()
+  }
+
+  if (options.encryption === 'noise') {
+    opts.connectionEncryption?.push(noise())
+  } else if (options.encryption === 'tls') {
+    opts.connectionEncryption?.push(tls())
   }
 
   if (options.muxer === 'mplex') {
