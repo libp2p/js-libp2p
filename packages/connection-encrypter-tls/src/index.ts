@@ -19,13 +19,13 @@
  */
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
-import { UnexpectedPeerError } from '@libp2p/interface'
+import { CodeError } from '@libp2p/interface'
 // @ts-expect-error no types
 import itToStream from 'it-to-stream'
 // @ts-expect-error no types
 import streamToIt from 'stream-to-it'
 import { generateCertificate, verifyPeerCertificate } from './utils.js'
-import type { ComponentLogger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, Logger } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -45,13 +45,13 @@ export interface TLSInit {
 
 class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
-  // private readonly log: Logger
-  // private readonly timeout: number
+  private readonly log: Logger
+  private readonly timeout: number
 
-  // constructor (components: TLSComponents, init: TLSInit = {}) {
-  //   this.log = components.logger.forComponent('libp2p:tls')
-  //   this.timeout = init.timeout ?? 1000
-  // }
+  constructor (components: TLSComponents, init: TLSInit = {}) {
+    this.log = components.logger.forComponent('libp2p:tls')
+    this.timeout = init.timeout ?? 1000
+  }
 
   async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
     return this._encrypt(localId, conn, false, remoteId)
@@ -68,53 +68,69 @@ class TLS implements ConnectionEncrypter {
     const opts: TLSSocketOptions = {
       ...await generateCertificate(localId),
       isServer,
-      // require clients to send certificates
-      requestCert: true,
-      // accept self-signed certificates from clients
-      rejectUnauthorized: false,
       // require TLS 1.3 or later
-      minVersion: 'TLSv1.3'
+      minVersion: 'TLSv1.3',
+      // accept self-signed certificates
+      rejectUnauthorized: false
     }
 
     let socket: TLSSocket
 
     if (isServer) {
-      socket = new TLSSocket(itToStream.duplex(conn), opts)
+      socket = new TLSSocket(itToStream.duplex(conn, {
+        server: isServer,
+        autoDestroy: false
+      }), {
+        ...opts,
+        // require clients to send certificates
+        requestCert: true
+      })
     } else {
       socket = connect({
-        socket: itToStream.duplex(conn),
+        socket: itToStream.duplex(conn, {
+          server: isServer,
+          autoDestroy: false
+        }),
         ...opts
       })
     }
 
+    // @ts-expect-error no other way to prevent the TLS socket readable throwing on destroy?
+    socket._readableState.autoDestroy = false
+
     return new Promise((resolve, reject) => {
-      function verifyRemote (): void {
+      const abortTimeout = setTimeout(() => {
+        socket.destroy(new CodeError('Handshake timeout', 'ERR_HANDSHAKE_TIMEOUT'))
+      }, this.timeout)
+
+      const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
         verifyPeerCertificate(remote.raw, remoteId)
           .then(remotePeer => {
-            if (remoteId?.equals(remotePeer) === false) {
-              throw new UnexpectedPeerError()
-            }
-
-            const outputStream = streamToIt.duplex(socket)
-            conn.source = outputStream.source
-            conn.sink = outputStream.sink
+            this.log('remote certificate ok, remote peer %p', remotePeer)
 
             resolve({
               remotePeer,
-              conn
+              conn: streamToIt.duplex(socket, {
+                server: isServer
+              })
             })
           })
           .catch(err => {
             reject(err)
           })
+          .finally(() => {
+            clearTimeout(abortTimeout)
+          })
       }
 
       socket.on('error', err => {
         reject(err)
+        clearTimeout(abortTimeout)
       })
       socket.on('secure', (evt) => {
+        this.log('verifying remote certificate')
         verifyRemote()
       })
     })
@@ -122,5 +138,5 @@ class TLS implements ConnectionEncrypter {
 }
 
 export function tls (init?: TLSInit): (components: TLSComponents) => ConnectionEncrypter {
-  return (components) => new TLS()
+  return (components) => new TLS(components, init)
 }
