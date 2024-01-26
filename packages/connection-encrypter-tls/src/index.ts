@@ -66,6 +66,7 @@ class TLS implements ConnectionEncrypter {
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',
+      maxVersion: 'TLSv1.3',
       // accept self-signed certificates
       rejectUnauthorized: false
     }
@@ -85,9 +86,6 @@ class TLS implements ConnectionEncrypter {
         ...opts
       })
     }
-
-    // @ts-expect-error no other way to prevent the TLS socket readable throwing on destroy?
-    socket._readableState.autoDestroy = false
 
     return new Promise((resolve, reject) => {
       const abortTimeout = setTimeout(() => {
