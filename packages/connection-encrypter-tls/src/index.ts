@@ -20,11 +20,7 @@
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
 import { CodeError } from '@libp2p/interface'
-// @ts-expect-error no types
-import itToStream from 'it-to-stream'
-// @ts-expect-error no types
-import streamToIt from 'stream-to-it'
-import { generateCertificate, verifyPeerCertificate } from './utils.js'
+import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import type { ComponentLogger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, Logger } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -77,20 +73,15 @@ class TLS implements ConnectionEncrypter {
     let socket: TLSSocket
 
     if (isServer) {
-      socket = new TLSSocket(itToStream.duplex(conn, {
-        server: isServer,
-        autoDestroy: false
-      }), {
+      // @ts-expect-error docs say this is fine?
+      socket = new TLSSocket(itToStream(conn), {
         ...opts,
         // require clients to send certificates
         requestCert: true
       })
     } else {
       socket = connect({
-        socket: itToStream.duplex(conn, {
-          server: isServer,
-          autoDestroy: false
-        }),
+        socket: itToStream(conn),
         ...opts
       })
     }
@@ -112,9 +103,10 @@ class TLS implements ConnectionEncrypter {
 
             resolve({
               remotePeer,
-              conn: streamToIt.duplex(socket, {
-                server: isServer
-              })
+              conn: {
+                ...conn,
+                ...streamToIt(socket)
+              }
             })
           })
           .catch(err => {

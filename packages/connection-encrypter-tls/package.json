@@ -55,10 +55,9 @@
     "@peculiar/webcrypto": "^1.4.5",
     "@peculiar/x509": "^1.9.6",
     "asn1js": "^3.0.5",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "it-to-stream": "^1.0.0",
     "protons-runtime": "^5.0.0",
-    "stream-to-it": "^0.2.4",
     "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.1"
   },
