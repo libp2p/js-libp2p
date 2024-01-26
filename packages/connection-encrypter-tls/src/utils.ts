@@ -10,7 +10,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { KeyType, PublicKey } from '../src/pb/index.js'
-import type { PeerId, PublicKey as Libp2pPublicKey } from '@libp2p/interface'
+import type { PeerId, PublicKey as Libp2pPublicKey, Logger } from '@libp2p/interface'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -22,23 +22,38 @@ const CERT_VALIDITY_PERIOD_FROM = 60 * 60 * 1000 // ~1 hour
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L24C28-L24C44
 const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
-export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId): Promise<PeerId> {
+export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
   const x509Cert = new x509.X509Certificate(rawCertificate)
 
   if (x509Cert.notBefore.getTime() > now) {
+    log?.error('the certificate was not valid yet')
     throw new CodeError('The certificate is not valid yet', 'ERR_INVALID_CERTIFICATE')
   }
 
   if (x509Cert.notAfter.getTime() < now) {
+    log?.error('the certificate has expired')
     throw new CodeError('The certificate has expired', 'ERR_INVALID_CERTIFICATE')
   }
 
-  // TODO: assert chain is only one certificate long
+  const certSignatureValid = await x509Cert.verify()
+
+  if (!certSignatureValid) {
+    log?.error('certificate self signature was invalid')
+    throw new InvalidCryptoExchangeError('Invalid certificate self signature')
+  }
+
+  const certIsSelfSigned = await x509Cert.isSelfSigned()
+
+  if (!certIsSelfSigned) {
+    log?.error('certificate must be self signed')
+    throw new InvalidCryptoExchangeError('Certificate must be self signed')
+  }
 
   const libp2pPublicKeyExtension = x509Cert.extensions[0]
 
   if (libp2pPublicKeyExtension == null || libp2pPublicKeyExtension.type !== LIBP2P_PUBLIC_KEY_EXTENSION) {
+    log?.error('the certificate did not include the libp2p public key extension')
     throw new CodeError('The certificate did not include the libp2p public key extension', 'ERR_INVALID_CERTIFICATE')
   }
 
@@ -58,6 +73,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   } else if (remotePublicKey.type === KeyType.RSA) {
     remoteLibp2pPublicKey = supportedKeys.rsa.unmarshalRsaPublicKey(remotePublicKeyData)
   } else {
+    log?.error('unknown or unsupported key type', remotePublicKey.type)
     throw new InvalidCryptoExchangeError('Unknown or unsupported key type')
   }
 
@@ -67,6 +83,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   const result = await remoteLibp2pPublicKey.verify(dataToVerify, new Uint8Array(remoteSignature, 0, remoteSignature.byteLength))
 
   if (!result) {
+    log?.error('invalid libp2p signature')
     throw new InvalidCryptoExchangeError('Could not verify signature')
   }
 
@@ -74,6 +91,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   const remotePeerId = await peerIdFromKeys(marshalled)
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
+    log?.error('invalid peer id')
     throw new UnexpectedPeerError()
   }
 

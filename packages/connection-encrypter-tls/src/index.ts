@@ -106,7 +106,7 @@ class TLS implements ConnectionEncrypter {
       const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
-        verifyPeerCertificate(remote.raw, remoteId)
+        verifyPeerCertificate(remote.raw, remoteId, this.log)
           .then(remotePeer => {
             this.log('remote certificate ok, remote peer %p', remotePeer)
 
