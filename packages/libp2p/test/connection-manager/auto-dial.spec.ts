@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type Connection, type PeerId, type PeerStore, type Peer } from '@libp2p/interface'
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -16,7 +17,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { defaultComponents } from '../../src/components.js'
 import { AutoDial } from '../../src/connection-manager/auto-dial.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
-import { matchPeerId } from '../fixtures/matchers.js'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 describe('auto-dial', () => {

@@ -1,4 +1,4 @@
-import isPrivate from 'private-ip'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
 import type { ConnectionGater } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -14,7 +14,7 @@ export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
       const tuples = multiaddr.stringTuples()
 
       if (tuples[0][0] === 4 || tuples[0][0] === 41) {
-        return Boolean(isPrivate(`${tuples[0][1]}`))
+        return Boolean(isPrivateIp(`${tuples[0][1]}`))
       }
 
       return false

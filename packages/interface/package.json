@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
@@ -21,22 +21,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -64,11 +48,11 @@
   },
   "dependencies": {
     "@multiformats/multiaddr": "^12.1.10",
-    "it-pushable": "^3.2.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.0.0",
     "progress-events": "^1.0.0",
-    "uint8arraylist": "^2.4.3"
+    "uint8arraylist": "^2.4.7"
   },
   "devDependencies": {
     "aegir": "^42.0.0"
@@ -78,5 +62,6 @@
   },
   "react-native": {
     "./dist/src/events.js": "./dist/src/events.browser.js"
-  }
+  },
+  "sideEffects": false
 }

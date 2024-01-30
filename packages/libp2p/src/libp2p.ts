@@ -1,4 +1,4 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { contentRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -67,6 +67,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.services = {}
     const components = this.components = defaultComponents({
       peerId: init.peerId,
+      privateKey: init.privateKey,
       nodeInfo: init.nodeInfo ?? {
         name: pkg.name,
         version: pkg.version
@@ -397,7 +398,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * libp2p interface and is useful for testing and debugging.
  */
 export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
-  options.peerId ??= await createEd25519PeerId()
+  const peerId = options.peerId ??= await createEd25519PeerId()
 
-  return new Libp2pNode(validateConfig(options))
+  if (peerId.privateKey == null) {
+    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
+  }
+
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
+
+  return new Libp2pNode(await validateConfig(options))
 }

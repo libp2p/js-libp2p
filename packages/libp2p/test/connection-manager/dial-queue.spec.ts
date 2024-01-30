@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { CodeError } from '@libp2p/interface'
+import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -12,7 +13,6 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
-import { matchMultiaddr } from '../fixtures/matchers.js'
 import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 

@@ -21,6 +21,29 @@
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^3.0.4 to ^4.0.0
+
+## [4.0.5](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.0.4...peer-id-factory-v4.0.5) (2024-01-16)
+
+
+### Bug Fixes
+
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/peer-id bumped from ^4.0.4 to ^4.0.5
+
 ## [4.0.3](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.0.2...peer-id-factory-v4.0.3) (2024-01-06)
 
 

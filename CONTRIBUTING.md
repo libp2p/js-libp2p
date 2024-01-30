@@ -8,4 +8,8 @@
 
 🤲 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed in [README.md](./README.md), without any additional terms or conditions.
 
+🔒 For security related issues please file a [private security vulnerability report](https://github.com/libp2p/js-libp2p/security/advisories/new). Please do not file a public issue on GitHub.
+
+🗣️ For js-libp2p specific questions please use the [GitHub Discussions forum](https://github.com/libp2p/js-libp2p/discussions).
+
 🙏 Thank you!

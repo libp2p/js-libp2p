@@ -83,6 +83,43 @@
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
     * libp2p bumped from ^1.0.12 to ^1.1.0
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+    * libp2p bumped from ^1.1.1 to ^1.1.2
+
+## [4.0.17](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.16...webtransport-v4.0.17) (2024-01-24)
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.2.0 to ^1.2.1
+
+## [4.0.16](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.15...webtransport-v4.0.16) (2024-01-16)
+
+
+### Bug Fixes
+
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/peer-id bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-id-factory bumped from ^4.0.4 to ^4.0.5
+    * libp2p bumped from ^1.1.2 to ^1.2.0
+
 ## [4.0.14](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.13...webtransport-v4.0.14) (2024-01-06)
 
 

@@ -214,7 +214,7 @@ jobs:
       test-firefox-webworker,
       test-electron-main,
       test-electron-renderer,
-      test-interop,
+      test-interop ,
       transport-interop
     ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -223,23 +223,12 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - uses: google-github-actions/release-please-action@v3
+      - uses: google-github-actions/release-please-action@v4
         id: release
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
-          command: manifest
-          release-type: node
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
-          changelog-types: |
-            [
-              { "type": "feat", "section": "Features", "hidden": false },
-              { "type": "fix", "section": "Bug Fixes", "hidden": false },
-              { "type": "chore", "section": "Trivial Changes", "hidden": false },
-              { "type": "docs", "section": "Documentation", "hidden": false },
-              { "type": "deps", "section": "Dependencies", "hidden": false },
-              { "type": "refactor", "section": "Refactors", "hidden": false }
-            ]
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -252,7 +241,7 @@ jobs:
         with:
           docker-token: ${{ secrets.DOCKER_TOKEN }}
           docker-username: ${{ secrets.DOCKER_USERNAME }}
-      - if: ${{ steps.release.outputs.releases_created }}
+      - if: ${{ steps.release.outputs.releases_created == 'true' }}
         name: Run release version
         run: |
           git update-index --assume-unchanged packages/libp2p/src/version.ts
@@ -260,7 +249,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - if: ${{ !steps.release.outputs.releases_created }}
+      - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
         run: |
             git update-index --assume-unchanged packages/libp2p/src/version.ts

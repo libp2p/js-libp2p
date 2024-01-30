@@ -19,7 +19,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport } from '@libp2p/interface'
+import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
@@ -35,6 +35,11 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * peerId instance (it will be created if not provided)
    */
   peerId: PeerId
+
+  /**
+   * Private key associated with the peerId
+   */
+  privateKey: PrivateKey
 
   /**
    * Metadata about the node - implementation name, version number, etc

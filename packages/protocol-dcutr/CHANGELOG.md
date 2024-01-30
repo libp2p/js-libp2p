@@ -32,6 +32,42 @@
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
     * @libp2p/interface-internal bumped from ^1.0.3 to ^1.0.4
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.5 to ^1.0.6
+
+## [1.0.10](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.9...dcutr-v1.0.10) (2024-01-24)
+
+
+### Bug Fixes
+
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+
+## [1.0.9](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.8...dcutr-v1.0.9) (2024-01-16)
+
+
+### Bug Fixes
+
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/interface-internal bumped from ^1.0.6 to ^1.0.7
+
 ## [1.0.7](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.6...dcutr-v1.0.7) (2024-01-06)
 
 

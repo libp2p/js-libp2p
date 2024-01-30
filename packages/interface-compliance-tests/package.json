@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-compliance-tests",
-  "version": "5.1.1",
+  "version": "5.2.0",
   "description": "Compliance tests for JS libp2p interfaces",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-compliance-tests#readme",
@@ -10,6 +10,10 @@
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "interface",
@@ -55,6 +59,10 @@
     "./is-valid-tick": {
       "types": "./dist/src/is-valid-tick.d.ts",
       "import": "./dist/src/is-valid-tick.js"
+    },
+    "./matchers": {
+      "types": "./dist/src/matchers.d.ts",
+      "import": "./dist/src/matchers.js"
     },
     "./mocks": {
       "types": "./dist/src/mocks/index.d.ts",
@@ -103,14 +111,14 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.1",
-    "@libp2p/interface-internal": "^1.0.5",
-    "@libp2p/logger": "^4.0.4",
-    "@libp2p/multistream-select": "^5.1.1",
-    "@libp2p/peer-collections": "^5.1.3",
-    "@libp2p/peer-id": "^4.0.4",
-    "@libp2p/peer-id-factory": "^4.0.3",
-    "@libp2p/utils": "^5.2.0",
+    "@libp2p/interface": "^1.1.2",
+    "@libp2p/interface-internal": "^1.0.7",
+    "@libp2p/logger": "^4.0.5",
+    "@libp2p/multistream-select": "^5.1.2",
+    "@libp2p/peer-collections": "^5.1.5",
+    "@libp2p/peer-id": "^4.0.5",
+    "@libp2p/peer-id-factory": "^4.0.5",
+    "@libp2p/utils": "^5.2.3",
     "@multiformats/multiaddr": "^12.1.10",
     "abortable-iterator": "^5.0.1",
     "aegir": "^42.0.0",
@@ -121,8 +129,8 @@
     "it-ndjson": "^1.0.3",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "it-protobuf-stream": "^1.0.2",
-    "it-pushable": "^3.2.1",
+    "it-protobuf-stream": "^1.1.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "it-to-buffer": "^4.0.2",
     "merge-options": "^3.0.4",
@@ -132,7 +140,7 @@
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.0.0",
     "sinon": "^17.0.0",
-    "uint8arraylist": "^2.4.3",
+    "uint8arraylist": "^2.4.7",
     "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
