@@ -86,15 +86,19 @@ A tracked metric can be created by calling either `registerMetric` on the metric
 ```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-const metric = metrics.registerMetric('my_metric', {
+const metric = node.metrics?.registerMetric('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 // set a value
 metric.update(5)
@@ -119,10 +123,14 @@ A metric that is expensive to calculate can be created by passing a `calculate` 
 ```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-metrics.registerMetric('my_metric', {
+node.metrics?.registerMetric('my_metric', {
   async calculate () {
     return 5
   }
@@ -134,15 +142,19 @@ If several metrics should be grouped together (e.g. for graphing purposes) `regi
 ```TypeScript
 import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-const metric = metrics.registerMetricGroup('my_metric', {
+const metric = node.metrics?.registerMetricGroup('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 metric.update({
   key1: 1,
@@ -176,7 +188,6 @@ Metrics implementations will allow extracting the values for presentation in an 
 ```TypeScript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
-
 import client from 'prom-client'
 import { createServer } from 'http'
 

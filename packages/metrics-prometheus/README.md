@@ -9,7 +9,7 @@
 
 Configure your libp2p node with Prometheus metrics:
 
-```js
+```typescript
 import { createLibp2p } from 'libp2p'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -20,7 +20,7 @@ const node = await createLibp2p({
 
 Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
 
-```js
+```typescript
 import client from 'prom-client'
 
 async handler (request, h) {
@@ -69,95 +69,6 @@ libp2p_kad_dht_lan_query_time_seconds
 
 ```
 rate(libp2p_tcp_dialer_errors_total[30s])
-```
-
-## Example
-
-```typescript
-import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-
-const metrics = prometheusMetrics()()
-const myMetric = metrics.registerMetric({
- name: 'my_metric',
- label: 'my_label',
- help: 'my help text'
-})
-
-myMetric.update(1)
-```
-
-## Example
-
-A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
-
-```typescript
-import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-
-const metrics = prometheusMetrics()()
-const myMetric = metrics.registerMetric({
- name: 'my_metric',
- label: 'my_label',
- help: 'my help text',
- calculate: async () => {
-  // do something expensive
-   return 1
- }
-})
-```
-
-## Example
-
-If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
-
-```typescript
-import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-
-const metrics = prometheusMetrics()()
-const myMetricGroup = metrics.registerMetricGroup({
- name: 'my_metric_group',
- label: 'my_label',
- help: 'my help text'
-})
-
-myMetricGroup.increment({ my_label: 'my_value' })
-```
-
-There are specific metric groups for tracking libp2p connections and streams:
-
-## Example
-
-Track a newly opened multiaddr connection:
-
-```typescript
-import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { createLibp2p } from 'libp2p'
-
-const metrics = prometheusMetrics()()
-
-const libp2p = await createLibp2p({
-   metrics: metrics,
-  })
-// set up a multiaddr connection
-const connection = await libp2p.dial('multiaddr')
-const connections = metrics.trackMultiaddrConnection(connection)
-```
-
-## Example
-
-Track a newly opened stream:
-
-```typescript
-import { prometheusMetrics } from '@libp2p/prometheus-metrics'
-import { createLibp2p } from 'libp2p'
-
-const metrics = prometheusMetrics()()
-
-const libp2p = await createLibp2p({
-  metrics: metrics,
-})
-
-const stream = await connection.newStream('/my/protocol')
-const streams = metrics.trackProtocolStream(stream)
 ```
 
 # Install

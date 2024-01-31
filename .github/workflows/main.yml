@@ -21,6 +21,7 @@ jobs:
         directories: |
           ./interop/dist
           ./interop/node_modules
+          ./doc/node_modules
 
   check:
     needs: build
@@ -33,8 +34,7 @@ jobs:
     - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
-    - run: npm run --if-present doc-check
-
+    - run: cd doc && npm run doc-check
   test-node:
     needs: build
     runs-on: ${{ matrix.os }}
