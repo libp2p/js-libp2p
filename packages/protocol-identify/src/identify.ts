@@ -36,7 +36,8 @@ const defaultValues = {
   maxIdentifyMessageSize: 8192,
   runOnConnectionOpen: true,
   runOnSelfUpdate: true,
-  runOnTransientConnection: true
+  runOnTransientConnection: true,
+  disableIdentifyPush: false
 }
 
 export class Identify implements Startable, IdentifyInterface {
@@ -60,6 +61,7 @@ export class Identify implements Startable, IdentifyInterface {
   private readonly maxPushOutgoingStreams: number
   private readonly maxIdentifyMessageSize: number
   private readonly maxObservedAddresses: number
+  private readonly disableIdentifyPush: boolean
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly runOnTransientConnection: boolean
   private readonly log: Logger
@@ -84,6 +86,7 @@ export class Identify implements Startable, IdentifyInterface {
     this.maxIdentifyMessageSize = init.maxIdentifyMessageSize ?? defaultValues.maxIdentifyMessageSize
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
     this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
+    this.disableIdentifyPush = init.disableIdentifyPush ?? defaultValues.disableIdentifyPush
 
     // Store self host metadata
     this.host = {
@@ -99,7 +102,7 @@ export class Identify implements Startable, IdentifyInterface {
       })
     }
 
-    if (init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate) {
+    if ((init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate) && !this.disableIdentifyPush) {
       // When self peer record changes, trigger identify-push
       components.events.addEventListener('self:peer:update', (evt) => {
         void this.push().catch(err => { this.log.error(err) })
@@ -141,22 +144,28 @@ export class Identify implements Startable, IdentifyInterface {
       maxOutboundStreams: this.maxOutboundStreams,
       runOnTransientConnection: this.runOnTransientConnection
     })
-    await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
-      void this._handlePush(data).catch(err => {
-        this.log.error(err)
+
+    if (!this.disableIdentifyPush) {
+      await this.registrar.handle(this.identifyPushProtocolStr, (data) => {
+        void this._handlePush(data).catch(err => {
+          this.log.error(err)
+        })
+      }, {
+        maxInboundStreams: this.maxPushIncomingStreams,
+        maxOutboundStreams: this.maxPushOutgoingStreams,
+        runOnTransientConnection: this.runOnTransientConnection
       })
-    }, {
-      maxInboundStreams: this.maxPushIncomingStreams,
-      maxOutboundStreams: this.maxPushOutgoingStreams,
-      runOnTransientConnection: this.runOnTransientConnection
-    })
+    }
 
     this.started = true
   }
 
   async stop (): Promise<void> {
     await this.registrar.unhandle(this.identifyProtocolStr)
-    await this.registrar.unhandle(this.identifyPushProtocolStr)
+
+    if (!this.disableIdentifyPush) {
+      await this.registrar.unhandle(this.identifyPushProtocolStr)
+    }
 
     this.started = false
   }
@@ -221,6 +230,9 @@ export class Identify implements Startable, IdentifyInterface {
   async push (): Promise<void> {
     // Do not try to push if we are not running
     if (!this.isStarted()) {
+      return
+    }
+    if (this.disableIdentifyPush) {
       return
     }
 

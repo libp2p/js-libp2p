@@ -68,6 +68,11 @@ export interface IdentifyInit {
    * Whether to run on connections with data or duration limits (default: true)
    */
   runOnTransientConnection?: boolean
+
+  /**
+   * Whether to completely disable identify-push (default: false)
+   */
+  disableIdentifyPush?: boolean
 }
 
 export interface IdentifyComponents {
