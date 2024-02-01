@@ -60,6 +60,11 @@ export interface IdentifyInit {
   runOnConnectionOpen?: boolean
 
   /**
+   * Whether to automatically dial identify-push on self updates (default: true)
+   */
+  runOnSelfUpdate?: boolean
+
+  /**
    * Whether to run on connections with data or duration limits (default: true)
    */
   runOnTransientConnection?: boolean

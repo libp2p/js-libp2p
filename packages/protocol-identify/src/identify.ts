@@ -35,6 +35,7 @@ const defaultValues = {
   maxObservedAddresses: 10,
   maxIdentifyMessageSize: 8192,
   runOnConnectionOpen: true,
+  runOnSelfUpdate: true,
   runOnTransientConnection: true
 }
 
@@ -98,10 +99,12 @@ export class Identify implements Startable, IdentifyInterface {
       })
     }
 
-    // When self peer record changes, trigger identify-push
-    components.events.addEventListener('self:peer:update', (evt) => {
-      void this.push().catch(err => { this.log.error(err) })
-    })
+    if (init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate) {
+      // When self peer record changes, trigger identify-push
+      components.events.addEventListener('self:peer:update', (evt) => {
+        void this.push().catch(err => { this.log.error(err) })
+      })
+    }
 
     // Append user agent version to default AGENT_VERSION depending on the environment
     if (this.host.agentVersion === `${components.nodeInfo.name}/${components.nodeInfo.version}`) {
