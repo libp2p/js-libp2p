@@ -11,6 +11,7 @@
   "packages": {
     "interop": {},
     "packages/connection-encrypter-plaintext": {},
+    "packages/connection-encrypter-tls": {},
     "packages/crypto": {},
     "packages/interface": {},
     "packages/interface-compliance-tests": {},
