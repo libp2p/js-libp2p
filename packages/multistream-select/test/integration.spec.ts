@@ -128,7 +128,7 @@ describe('Dialer and Listener integration', () => {
     // the listener handles the incoming stream
     void mss.handle(pair[1], otherProtocol, {
       log: logger('mss:test')
-    })
+    }).catch(() => {})
 
     // should fail when we interact with the stream
     const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
