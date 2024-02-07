@@ -54,17 +54,17 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.1.2",
-    "@multiformats/multiaddr": "^12.1.10",
+    "@multiformats/multiaddr": "^12.1.14",
     "debug": "^4.3.4",
-    "interface-datastore": "^8.2.0",
-    "multiformats": "^13.0.0"
+    "interface-datastore": "^8.2.10",
+    "multiformats": "^13.0.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^4.0.5",
-    "@types/debug": "^4.1.7",
-    "aegir": "^42.0.0",
+    "@types/debug": "^4.1.12",
+    "aegir": "^42.2.3",
     "sinon": "^17.0.1",
-    "uint8arrays": "^5.0.0"
+    "uint8arrays": "^5.0.1"
   },
   "sideEffects": false
 }

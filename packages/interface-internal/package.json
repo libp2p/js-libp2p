@@ -49,11 +49,11 @@
   "dependencies": {
     "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-collections": "^5.1.5",
-    "@multiformats/multiaddr": "^12.1.10",
-    "uint8arraylist": "^2.4.7"
+    "@multiformats/multiaddr": "^12.1.14",
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.0.0"
+    "aegir": "^42.2.3"
   },
   "sideEffects": false
 }

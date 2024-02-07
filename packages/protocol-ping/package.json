@@ -52,16 +52,16 @@
     "@libp2p/crypto": "^4.0.1",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/interface-internal": "^1.0.7",
-    "@multiformats/multiaddr": "^12.1.10",
-    "it-first": "^3.0.3",
+    "@multiformats/multiaddr": "^12.1.14",
+    "it-first": "^3.0.4",
     "it-pipe": "^3.0.1",
-    "uint8arrays": "^5.0.0"
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.0.0",
-    "it-byte-stream": "^1.0.1",
+    "aegir": "^42.2.3",
+    "it-byte-stream": "^1.0.7",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "sinon-ts": "^2.0.0"

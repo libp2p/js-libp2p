@@ -64,16 +64,16 @@
     "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-id": "^4.0.5",
     "@libp2p/utils": "^5.2.3",
-    "@multiformats/multiaddr": "^12.1.10",
-    "protons-runtime": "^5.0.0",
-    "uint8-varint": "^2.0.2",
-    "uint8arraylist": "^2.4.7",
-    "uint8arrays": "^5.0.0"
+    "@multiformats/multiaddr": "^12.1.14",
+    "protons-runtime": "^5.4.0",
+    "uint8-varint": "^2.0.4",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.0.0",
-    "protons": "^7.3.0"
+    "aegir": "^42.2.3",
+    "protons": "^7.5.0"
   },
   "sideEffects": false
 }
