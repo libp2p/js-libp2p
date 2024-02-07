@@ -283,13 +283,12 @@ export abstract class AbstractStream implements Stream {
 
     this.status = 'closing'
 
-    await Promise.all([
-      this.closeRead(options),
-      this.closeWrite(options)
-    ])
-
     // wait for read and write ends to close
-    await raceSignal(this.closed.promise, options?.signal)
+    await raceSignal(Promise.all([
+      this.closeWrite(options),
+      this.closeRead(options),
+      this.closed.promise
+    ]), options?.signal)
 
     this.status = 'closed'
 
