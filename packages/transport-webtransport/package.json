@@ -52,17 +52,17 @@
     "@chainsafe/libp2p-noise": "^15.0.0",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-id": "^4.0.5",
-    "@multiformats/multiaddr": "^12.1.10",
-    "@multiformats/multiaddr-matcher": "^1.1.0",
+    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr-matcher": "^1.1.2",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^13.0.0",
-    "uint8arraylist": "^2.4.7",
-    "uint8arrays": "^5.0.0"
+    "multiformats": "^13.0.1",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.0.0",
+    "aegir": "^42.2.3",
     "libp2p": "^1.2.1",
     "p-defer": "^4.0.0"
   },

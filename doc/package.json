@@ -25,13 +25,13 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-yamux": "^6.0.1",
-    "@libp2p/interface": "^1.1.1",
-    "@libp2p/mplex": "^10.0.10",
-    "@libp2p/prometheus-metrics": "^3.0.0",
-    "@libp2p/tcp": "^9.0.10",
-    "aegir": "^42.0.0",
-    "libp2p": "^1.1.1",
-    "prom-client": "^15.0.0"
+    "@libp2p/interface": "^1.1.2",
+    "@libp2p/mplex": "^10.0.13",
+    "@libp2p/prometheus-metrics": "^3.0.13",
+    "@libp2p/tcp": "^9.0.13",
+    "aegir": "^42.2.3",
+    "libp2p": "^1.2.1",
+    "prom-client": "^15.1.0"
   },
   "private": true
 }
