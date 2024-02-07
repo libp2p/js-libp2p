@@ -62,7 +62,6 @@ export class TLS implements ConnectionEncrypter {
     let socket: TLSSocket
 
     if (isServer) {
-      // @ts-expect-error docs say this is fine?
       socket = new TLSSocket(itToStream(conn), {
         ...opts,
         // require clients to send certificates
