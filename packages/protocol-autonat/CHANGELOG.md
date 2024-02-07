@@ -49,6 +49,12 @@
     * @libp2p/interface-internal bumped from ^1.0.5 to ^1.0.6
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p/compare/autonat-v1.0.10...autonat-v1.0.11) (2024-02-07)
 
 

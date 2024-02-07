@@ -97,6 +97,15 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * @libp2p/peer-store bumped from ^10.0.5 to ^10.0.6
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
+    * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
+
 ## [12.0.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.5...kad-dht-v12.0.6) (2024-02-07)
 
 

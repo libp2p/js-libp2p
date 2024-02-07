@@ -69,6 +69,12 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+
 ## [9.0.9](https://github.com/libp2p/js-libp2p/compare/pubsub-v9.0.8...pubsub-v9.0.9) (2024-02-07)
 
 
