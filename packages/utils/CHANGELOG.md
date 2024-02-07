@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.4](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.3...utils-v5.2.4) (2024-02-07)
+
+
+### Bug Fixes
+
+* abort slow sending streams ([#2395](https://github.com/libp2p/js-libp2p/issues/2395)) ([2370d1c](https://github.com/libp2p/js-libp2p/commit/2370d1c3940fe3b0f2b6021800a2398f708f31d1))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.5 to ^4.0.6
+
 ## [5.2.3](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.2...utils-v5.2.3) (2024-01-24)
 
 

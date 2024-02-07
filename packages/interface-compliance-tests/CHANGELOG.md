@@ -69,6 +69,32 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
 
+## [5.3.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.2.0...interface-compliance-tests-v5.3.0) (2024-02-07)
+
+
+### Features
+
+* add tls connection encrypter ([#2377](https://github.com/libp2p/js-libp2p/issues/2377)) ([537d356](https://github.com/libp2p/js-libp2p/commit/537d356edf329f244b3b7a76d20a69e66cf3d203))
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/interface-internal bumped from ^1.0.7 to ^1.0.8
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/multistream-select bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-collections bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id-factory bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/utils bumped from ^5.2.3 to ^5.2.4
+
 ## [5.2.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.3...interface-compliance-tests-v5.2.0) (2024-01-24)
 
 
