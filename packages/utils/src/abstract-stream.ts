@@ -342,17 +342,10 @@ export abstract class AbstractStream implements Stream {
         await raceSignal(this.sendingData.promise, options.signal)
       }
 
-      // stop reading from the source passed to `.sink` in the microtask queue
-      // - this lets any data queued by the user in the current tick get read
-      // before we exit
-      await new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          this.log.trace('aborting source passed to .sink')
-          this.sinkController.abort()
-          raceSignal(this.sinkEnd.promise, options.signal)
-            .then(resolve, reject)
-        })
-      })
+      // stop reading from the source passed to `.sink`
+      this.log.trace('aborting source passed to .sink')
+      this.sinkController.abort()
+      await raceSignal(this.sinkEnd.promise, options.signal)
     }
 
     this.writeStatus = 'closed'
