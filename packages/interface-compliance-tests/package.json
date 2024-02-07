@@ -124,6 +124,7 @@
     "aegir": "^42.2.3",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
+    "it-byte-stream": "^1.0.8",
     "it-drain": "^3.0.5",
     "it-map": "^3.0.5",
     "it-ndjson": "^1.0.5",
