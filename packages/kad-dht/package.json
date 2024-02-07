@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "12.0.5",
+  "version": "12.0.6",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
@@ -56,12 +56,12 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^4.0.1",
-    "@libp2p/interface": "^1.1.2",
-    "@libp2p/interface-internal": "^1.0.7",
-    "@libp2p/peer-collections": "^5.1.5",
-    "@libp2p/peer-id": "^4.0.5",
-    "@libp2p/utils": "^5.2.3",
+    "@libp2p/crypto": "^4.0.2",
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/interface-internal": "^1.0.8",
+    "@libp2p/peer-collections": "^5.1.6",
+    "@libp2p/peer-id": "^4.0.6",
+    "@libp2p/utils": "^5.2.4",
     "@multiformats/multiaddr": "^12.1.14",
     "@types/sinon": "^17.0.3",
     "any-signal": "^4.1.1",
@@ -89,10 +89,10 @@
     "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.2.0",
-    "@libp2p/logger": "^4.0.5",
-    "@libp2p/peer-id-factory": "^4.0.5",
-    "@libp2p/peer-store": "^10.0.8",
+    "@libp2p/interface-compliance-tests": "^5.3.0",
+    "@libp2p/logger": "^4.0.6",
+    "@libp2p/peer-id-factory": "^4.0.6",
+    "@libp2p/peer-store": "^10.0.9",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.3",

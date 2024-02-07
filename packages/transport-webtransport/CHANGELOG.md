@@ -90,6 +90,25 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * libp2p bumped from ^1.1.1 to ^1.1.2
 
+## [4.0.18](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.17...webtransport-v4.0.18) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/peer-id bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id-factory bumped from ^4.0.5 to ^4.0.6
+    * libp2p bumped from ^1.2.1 to ^1.2.2
+
 ## [4.0.17](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.16...webtransport-v4.0.17) (2024-01-24)
 
 

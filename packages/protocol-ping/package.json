@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/ping",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Implementation of Ping Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-ping#readme",
@@ -49,17 +49,17 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^4.0.1",
-    "@libp2p/interface": "^1.1.2",
-    "@libp2p/interface-internal": "^1.0.7",
+    "@libp2p/crypto": "^4.0.2",
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/interface-internal": "^1.0.8",
     "@multiformats/multiaddr": "^12.1.14",
     "it-first": "^3.0.4",
     "it-pipe": "^3.0.1",
     "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^4.0.5",
-    "@libp2p/peer-id-factory": "^4.0.5",
+    "@libp2p/logger": "^4.0.6",
+    "@libp2p/peer-id-factory": "^4.0.6",
     "aegir": "^42.2.3",
     "it-byte-stream": "^1.0.7",
     "it-pair": "^2.0.6",
