@@ -54,11 +54,11 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.1.2",
-    "multiformats": "^13.0.0",
-    "uint8arrays": "^5.0.0"
+    "multiformats": "^13.0.1",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "aegir": "^42.0.0"
+    "aegir": "^42.2.3"
   },
   "sideEffects": false
 }

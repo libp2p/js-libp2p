@@ -49,17 +49,17 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^1.0.12",
+    "@achingbrain/nat-port-mapper": "^1.0.13",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/interface-internal": "^1.0.7",
     "@libp2p/utils": "^5.2.3",
-    "@multiformats/multiaddr": "^12.1.10",
+    "@multiformats/multiaddr": "^12.1.14",
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.0.0",
+    "aegir": "^42.2.3",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

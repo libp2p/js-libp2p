@@ -61,17 +61,17 @@
     "@libp2p/crypto": "^4.0.1",
     "@libp2p/interface": "^1.1.2",
     "@libp2p/peer-id": "^4.0.5",
-    "interface-datastore": "^8.2.0",
+    "interface-datastore": "^8.2.10",
     "merge-options": "^3.0.4",
-    "multiformats": "^13.0.0",
+    "multiformats": "^13.0.1",
     "sanitize-filename": "^1.6.3",
-    "uint8arrays": "^5.0.0"
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.5",
     "@libp2p/peer-id-factory": "^4.0.5",
-    "aegir": "^42.0.0",
-    "datastore-core": "^9.1.1"
+    "aegir": "^42.2.3",
+    "datastore-core": "^9.2.7"
   },
   "sideEffects": false
 }

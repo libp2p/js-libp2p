@@ -49,25 +49,25 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^3.0.4",
-    "@libp2p/interface": "^1.1.1",
-    "it-byte-stream": "^1.0.5",
-    "it-map": "^3.0.4",
+    "@libp2p/crypto": "^4.0.1",
+    "@libp2p/interface": "^1.1.2",
+    "it-byte-stream": "^1.0.7",
+    "it-map": "^3.0.5",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
-    "uint8arraylist": "^2.4.7",
-    "uint8arrays": "^5.0.0",
-    "xsalsa20": "^1.1.0"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1",
+    "xsalsa20": "^1.2.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.1.1",
-    "@libp2p/logger": "^4.0.4",
-    "@libp2p/peer-id-factory": "^4.0.3",
-    "@multiformats/multiaddr": "^12.1.10",
-    "@types/xsalsa20": "^1.1.0",
-    "aegir": "^42.0.0",
-    "it-all": "^3.0.3"
+    "@libp2p/interface-compliance-tests": "^5.2.0",
+    "@libp2p/logger": "^4.0.5",
+    "@libp2p/peer-id-factory": "^4.0.5",
+    "@multiformats/multiaddr": "^12.1.14",
+    "@types/xsalsa20": "^1.1.3",
+    "aegir": "^42.2.3",
+    "it-all": "^3.0.4"
   },
   "sideEffects": false
 }
