@@ -201,12 +201,22 @@ describe('abstract stream', () => {
   it('should wait for sending data to finish when closing gracefully', async () => {
     const sendStarted = pDefer()
     let timeFinished: number = 0
+    const wasAbortedBeforeSendingFinished = pDefer()
+    const wasAbortedAfterSendingFinished = pDefer()
 
     // stub send method to simulate slow sending
-    stream.sendData = async () => {
+    stream.sendData = async (data, options) => {
       sendStarted.resolve()
       await delay(1000)
       timeFinished = Date.now()
+
+      // slow send has finished, make sure we weren't aborted before we were
+      // done sending data
+      wasAbortedBeforeSendingFinished.resolve(options?.signal?.aborted)
+
+      // save a reference to the signal, should be aborted after
+      // `stream.close()` returns
+      wasAbortedAfterSendingFinished.resolve(options?.signal)
     }
     const data = [
       Uint8Array.from([0, 1, 2, 3, 4])
@@ -222,6 +232,8 @@ describe('abstract stream', () => {
 
     // should have waited for send to complete
     expect(Date.now()).to.be.greaterThanOrEqual(timeFinished)
+    await expect(wasAbortedBeforeSendingFinished.promise).to.eventually.be.false()
+    await expect(wasAbortedAfterSendingFinished.promise).to.eventually.have.property('aborted', true)
   })
 
   it('should abort close due to timeout with slow sender', async () => {
