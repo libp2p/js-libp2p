@@ -182,7 +182,7 @@ export abstract class AbstractStream implements Stream {
 
           const res = this.sendData(data, options)
 
-          if (isPromise(res)) { // eslint-disable-line max-depth
+          if (isPromise(res)) {
             this.sendingData = pDefer()
             await res
             this.sendingData.resolve()
