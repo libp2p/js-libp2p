@@ -77,7 +77,7 @@
     "@libp2p/utils": "^5.2.3",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.1.10",
-    "@multiformats/multiaddr-to-uri": "^9.0.2",
+    "@multiformats/multiaddr-to-uri": "^10.0.1",
     "@types/ws": "^8.5.4",
     "it-ws": "^6.1.0",
     "p-defer": "^4.0.0",
