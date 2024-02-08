@@ -69,6 +69,12 @@
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
     * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+
 ## [5.3.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.2.0...interface-compliance-tests-v5.3.0) (2024-02-07)
 
 

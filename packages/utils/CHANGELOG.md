@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.5](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.4...utils-v5.2.5) (2024-02-07)
+
+
+### Bug Fixes
+
+* give send data a chance to complete before closing stream ([#2399](https://github.com/libp2p/js-libp2p/issues/2399)) ([0c7bbbb](https://github.com/libp2p/js-libp2p/commit/0c7bbbb077d7961570d3cfb42fe431da6de57ede))
+
 ## [5.2.4](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.3...utils-v5.2.4) (2024-02-07)
 
 
