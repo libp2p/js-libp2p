@@ -15,7 +15,7 @@ Libp2p provides an all-purpose data container called **envelope**. It was create
 
 This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
 
-You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the envelope in [RFC 0002 - Signed Envelopes](https://github.com/libp2p/specs/blob/master/RFC/0002-signed-envelopes.md). For the original discussion about it you can look at the PR that was used to create it: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
 ## Example
 
@@ -74,7 +74,7 @@ Libp2p peer records were created to enable the distribution of verifiable addres
 
 A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, a timestamp per the spec, so that we can verify the most recent record.
 
-You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the Peer Record in [RFC 0003 - Peer Routing Records](https://github.com/libp2p/specs/blob/master/RFC/0003-routing-records.md). For the original discussion about it you can view the PR that created the RFC: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
 ## Example
 
