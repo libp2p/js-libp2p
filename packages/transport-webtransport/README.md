@@ -9,6 +9,18 @@
 
 A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
 
+>
+> ⚠️ **Note**
+>
+> This WebTransport implementation currently only allows dialing to other
+> nodes. It does not yet allow listening for incoming dials. This feature
+> requires QUIC support to land in Node JS first.
+>
+> QUIC support in Node JS is actively being worked on.
+> You can keep an eye on the progress by watching the
+> [related issues on the Node JS issue tracker](https://github.com/nodejs/node/labels/quic)
+>
+
 ## Example
 
 ```js
