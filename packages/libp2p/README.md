@@ -163,6 +163,7 @@ List of packages currently in existence for libp2p
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="150" /></a>
     <a href="https://github.com/orbitdb/orbitdb"><img src="https://avatars.githubusercontent.com/u/25079463?s=200&v=4" alt="OrbitDB logo" width="150" /></a>
     <a href="https://waku.org/"><img src="https://avatars.githubusercontent.com/u/107703624?s=200&v=4" alt="Waku" width="150" /></a>
+    <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
   </p>
 </div>
 
