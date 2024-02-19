@@ -16,10 +16,10 @@ describe('interface-transport compliance', () => {
         logger: defaultLogger()
       })
       const addrs = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
+        multiaddr('/ip4/127.0.0.1/tcp/9096/ws'),
+        multiaddr('/ip4/127.0.0.1/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9098/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9099/wss')
       ]
 
       let delayMs = 0
