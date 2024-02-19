@@ -1,9 +1,8 @@
 import { keys } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { Message, MESSAGE_TYPE } from '../message/index.js'
+import { MessageType } from '../message/dht.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
 import {
   queryErrorEvent,
@@ -14,40 +13,40 @@ import { Libp2pRecord } from '../record/index.js'
 import { verifyRecord } from '../record/validators.js'
 import * as utils from '../utils.js'
 import type { KadDHTComponents, DHTRecord, DialPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
+import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { Logger } from '@libp2p/logger'
+import type { Logger, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 
 export interface PeerRoutingInit {
   routingTable: RoutingTable
   network: Network
   validators: Validators
   queryManager: QueryManager
-  lan: boolean
+  logPrefix: string
 }
 
 export class PeerRouting {
-  private readonly components: KadDHTComponents
   private readonly log: Logger
   private readonly routingTable: RoutingTable
   private readonly network: Network
   private readonly validators: Validators
   private readonly queryManager: QueryManager
+  private readonly peerStore: PeerStore
+  private readonly peerId: PeerId
 
   constructor (components: KadDHTComponents, init: PeerRoutingInit) {
-    const { routingTable, network, validators, queryManager, lan } = init
+    const { routingTable, network, validators, queryManager, logPrefix } = init
 
-    this.components = components
     this.routingTable = routingTable
     this.network = network
     this.validators = validators
     this.queryManager = queryManager
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:peer-routing`)
+    this.peerStore = components.peerStore
+    this.peerId = components.peerId
+    this.log = components.logger.forComponent(`${logPrefix}:peer-routing`)
   }
 
   /**
@@ -62,7 +61,7 @@ export class PeerRouting {
       this.log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.components.peerStore.get(p)
+        peerData = await this.peerStore.get(p)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -72,7 +71,7 @@ export class PeerRouting {
 
     if (peerData == null) {
       try {
-        peerData = await this.components.peerStore.get(peer)
+        peerData = await this.peerStore.get(peer)
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {
           throw err
@@ -85,8 +84,7 @@ export class PeerRouting {
 
       return {
         id: peerData.id,
-        multiaddrs: peerData.addresses.map((address) => address.multiaddr),
-        protocols: []
+        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
       }
     }
 
@@ -96,15 +94,19 @@ export class PeerRouting {
   /**
    * Get a value via rpc call for the given parameters
    */
-  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
-    const msg = new Message(MESSAGE_TYPE.GET_VALUE, key, 0)
+  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+    const msg: Partial<Message> = {
+      type: MessageType.GET_VALUE,
+      key
+    }
+
     yield * this.network.sendRequest(peer, msg, options)
   }
 
   /**
    * Get the public key directly from a node
    */
-  async * getPublicKeyFromNode (peer: PeerId, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
+  async * getPublicKeyFromNode (peer: PeerId, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     const pkKey = utils.keyForPublicKey(peer)
 
     for await (const event of this._getValueSingle(peer, pkKey, options)) {
@@ -132,56 +134,63 @@ export class PeerRouting {
   /**
    * Search for a peer with the given ID
    */
-  async * findPeer (id: PeerId, options: QueryOptions = {}): AsyncGenerator<FinalPeerEvent | QueryEvent> {
+  async * findPeer (id: PeerId, options: RoutingOptions = {}): AsyncGenerator<FinalPeerEvent | QueryEvent> {
     this.log('findPeer %p', id)
 
-    // Try to find locally
-    const pi = await this.findPeerLocal(id)
+    if (options.useCache !== false) {
+      // Try to find locally
+      const pi = await this.findPeerLocal(id)
 
-    // already got it
-    if (pi != null) {
-      this.log('found local')
-      yield finalPeerEvent({
-        from: this.components.peerId,
-        peer: pi
-      }, options)
-      return
-    }
-
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
-
-    const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
-      const request = new Message(MESSAGE_TYPE.FIND_NODE, id.toBytes(), 0)
-
-      for await (const event of self.network.sendRequest(peer, request, {
-        ...options,
-        signal
-      })) {
-        yield event
-
-        if (event.name === 'PEER_RESPONSE') {
-          const match = event.closer.find((p) => p.id.equals(id))
-
-          // found the peer
-          if (match != null) {
-            yield finalPeerEvent({ from: event.from, peer: match }, options)
-          }
-        }
+      // already got it
+      if (pi != null) {
+        this.log('found local')
+        yield finalPeerEvent({
+          from: this.peerId,
+          peer: pi
+        }, options)
+        return
       }
     }
 
     let foundPeer = false
 
-    for await (const event of this.queryManager.run(id.toBytes(), findPeerQuery, options)) {
-      if (event.name === 'FINAL_PEER') {
-        foundPeer = true
+    if (options.useNetwork !== false) {
+      const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+
+      const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
+        const request: Partial<Message> = {
+          type: MessageType.FIND_NODE,
+          key: id.toBytes()
+        }
+
+        for await (const event of self.network.sendRequest(peer, request, {
+          ...options,
+          signal
+        })) {
+          yield event
+
+          if (event.name === 'PEER_RESPONSE') {
+            const match = event.closer.find((p) => p.id.equals(id))
+
+            // found the peer
+            if (match != null) {
+              yield finalPeerEvent({ from: event.from, peer: match }, options)
+            }
+          }
+        }
       }
 
-      yield event
+      for await (const event of this.queryManager.run(id.toBytes(), findPeerQuery, options)) {
+        if (event.name === 'FINAL_PEER') {
+          foundPeer = true
+        }
+
+        yield event
+      }
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.components.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
+      yield queryErrorEvent({ from: this.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
     }
   }
 
@@ -200,7 +209,10 @@ export class PeerRouting {
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal }) {
       self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
-      const request = new Message(MESSAGE_TYPE.FIND_NODE, key, 0)
+      const request: Partial<Message> = {
+        type: MessageType.FIND_NODE,
+        key
+      }
 
       yield * self.network.sendRequest(peer, request, {
         ...options,
@@ -220,14 +232,13 @@ export class PeerRouting {
 
     for (const peerId of peers.peers) {
       try {
-        const peer = await this.components.peerStore.get(peerId)
+        const peer = await this.peerStore.get(peerId)
 
         yield finalPeerEvent({
-          from: this.components.peerId,
+          from: this.peerId,
           peer: {
             id: peerId,
-            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-            protocols: peer.protocols
+            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
           }
         }, options)
       } catch (err: any) {
@@ -244,7 +255,7 @@ export class PeerRouting {
    *
    * Note: The peerStore is updated with new addresses found for the given peer.
    */
-  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: AbortOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
+  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
     for await (const event of this._getValueSingle(peer, key, options)) {
       if (event.name === 'PEER_RESPONSE') {
         if (event.record != null) {
@@ -292,12 +303,11 @@ export class PeerRouting {
       }
 
       try {
-        const peer = await this.components.peerStore.get(peerId)
+        const peer = await this.peerStore.get(peerId)
 
         output.push({
           id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr),
-          protocols: peer.protocols
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })
       } catch (err: any) {
         if (err.code !== 'ERR_NOT_FOUND') {

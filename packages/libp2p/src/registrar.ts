@@ -1,16 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
 import merge from 'merge-options'
 import { codes } from './errors.js'
-import type { IdentifyResult, Libp2pEvents, PeerUpdate } from '@libp2p/interface'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal/registrar'
-
-const log = logger('libp2p:registrar')
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
+import type { ConnectionManager, StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
+import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
@@ -20,17 +13,20 @@ export interface RegistrarComponents {
   connectionManager: ConnectionManager
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 /**
  * Responsible for notifying registered protocols of events in the network.
  */
 export class DefaultRegistrar implements Registrar {
+  private readonly log: Logger
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
 
   constructor (components: RegistrarComponents) {
+    this.log = components.logger.forComponent('libp2p:registrar')
     this.topologies = new Map()
     this.handlers = new Map()
     this.components = components
@@ -178,7 +174,7 @@ export class DefaultRegistrar implements Registrar {
           return
         }
 
-        log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
+        this.log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
       })
   }
 

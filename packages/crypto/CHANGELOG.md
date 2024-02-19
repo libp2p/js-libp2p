@@ -5,6 +5,122 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.5 ([#320](https://github.com/libp2p/js-libp2p-crypto/issues/320)) ([f0b4c06](https://github.com/libp2p/js-libp2p-crypto/commit/f0b4c068a23d78b1376865c6adf6cce21ab91196))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+
+## [4.0.2](https://github.com/libp2p/js-libp2p/compare/crypto-v4.0.1...crypto-v4.0.2) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/crypto-v4.0.0...crypto-v4.0.1) (2024-01-16)
+
+
+### Bug Fixes
+
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+
+## [4.0.0](https://github.com/libp2p/js-libp2p/compare/crypto-v3.0.4...crypto-v4.0.0) (2024-01-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Legacy RSA operations are now in @libp2p/rsa, streaming AES-CTR ciphers are in @libp2p/aes-ctr
+
+### Bug Fixes
+
+* remove node-forge dependency from @libp2p/crypto ([#2355](https://github.com/libp2p/js-libp2p/issues/2355)) ([856ccd7](https://github.com/libp2p/js-libp2p/commit/856ccd7082a42ad0c33486e9b6885452aa886c64))
+
+## [3.0.4](https://github.com/libp2p/js-libp2p/compare/crypto-v3.0.3...crypto-v3.0.4) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/crypto-v3.0.0...crypto-v3.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+
+## [3.0.0](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.8...crypto-v3.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove unnecessary async from crypto methods (#1963)
+
+### Features
+
+* support streaming hashes for key sign/verify ([#2255](https://www.github.com/libp2p/js-libp2p/issues/2255)) ([ac7bc38](https://www.github.com/libp2p/js-libp2p/commit/ac7bc3839ae3d8253e9141c52be2c7c0c66a1d60))
+
+
+### Bug Fixes
+
+* allow keys to do sync sign/verify ([#2258](https://www.github.com/libp2p/js-libp2p/issues/2258)) ([dd7d17c](https://www.github.com/libp2p/js-libp2p/commit/dd7d17cc478dfcba02211a47789439b7d7ab9627))
+
+
+### Code Refactoring
+
+* remove unnecessary async from crypto methods ([#1963](https://www.github.com/libp2p/js-libp2p/issues/1963)) ([e2267d4](https://www.github.com/libp2p/js-libp2p/commit/e2267d437eeda3d964c77874ec757768d838981a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+
+### [2.0.8](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.7...crypto-v2.0.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+
 ### [2.0.7](https://www.github.com/libp2p/js-libp2p/compare/crypto-v2.0.6...crypto-v2.0.7) (2023-11-03)
 
 

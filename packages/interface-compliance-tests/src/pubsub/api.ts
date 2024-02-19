@@ -1,4 +1,4 @@
-import { isStartable, start, stop } from '@libp2p/interface/startable'
+import { isStartable, start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -9,7 +9,7 @@ import { mockNetwork } from '../mocks/index.js'
 import { createComponents } from './utils.js'
 import type { PubSubArgs, PubSubComponents } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { PubSub } from '@libp2p/interface/pubsub'
+import type { PubSub } from '@libp2p/interface'
 
 const topic = 'foo'
 const data = uint8ArrayFromString('bar')
@@ -48,7 +48,6 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
 
       await start(...Object.values(components))
 
-      expect(pubsub.isStarted()).to.equal(true)
       expect(components.registrar.register).to.have.property('callCount', 1)
     })
 
@@ -62,7 +61,6 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
       await start(...Object.values(components))
       await stop(...Object.values(components))
 
-      expect(pubsub.isStarted()).to.equal(false)
       expect(components.registrar.unregister).to.have.property('callCount', 1)
     })
 

@@ -7,7 +7,7 @@ export default {
   test: {
     before: async () => {
       const { createLibp2p } = await import('libp2p')
-      const { circuitRelayServer } = await import('libp2p/circuit-relay')
+      const { circuitRelayServer } = await import('@libp2p/circuit-relay-v2')
       const { webSockets } = await import('@libp2p/websockets')
       const { noise } = await import('@chainsafe/libp2p-noise')
       const { yamux } = await import('@chainsafe/libp2p-yamux')

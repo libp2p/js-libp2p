@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerIdFromString } from '@libp2p/peer-id'
  * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
  *
@@ -14,8 +14,8 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface/errors'
-import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, symbol, type PeerId } from '@libp2p/interface/peer-id'
+import { CodeError } from '@libp2p/interface'
+import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, peerIdSymbol, type PeerId } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { bases } from 'multiformats/basics'
 import { CID } from 'multiformats/cid'
@@ -85,7 +85,7 @@ class PeerIdImpl {
     return `PeerId(${this.toString()})`
   }
 
-  readonly [symbol] = true
+  readonly [peerIdSymbol] = true
 
   toString (): string {
     if (this.string == null) {
@@ -115,7 +115,11 @@ class PeerIdImpl {
   /**
    * Checks the equality of `this` peer against a given PeerId
    */
-  equals (id: PeerId | Uint8Array | string): boolean {
+  equals (id?: PeerId | Uint8Array | string): boolean {
+    if (id == null) {
+      return false
+    }
+
     if (id instanceof Uint8Array) {
       return uint8ArrayEquals(this.multihash.bytes, id)
     } else if (typeof id === 'string') {

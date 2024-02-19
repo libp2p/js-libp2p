@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/websockets",
-  "version": "7.0.11",
+  "version": "8.0.15",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/transport-websockets#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -69,33 +73,33 @@
     "test:electron-main": "aegir test -t electron-main -f ./dist/test/node.js --cov"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.5",
-    "@libp2p/logger": "^3.0.5",
-    "@libp2p/utils": "^4.0.6",
-    "@multiformats/mafmt": "^12.1.2",
-    "@multiformats/multiaddr": "^12.1.5",
-    "@multiformats/multiaddr-to-uri": "^9.0.2",
-    "@types/ws": "^8.5.4",
-    "abortable-iterator": "^5.0.1",
-    "it-ws": "^6.0.0",
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/utils": "^5.2.5",
+    "@multiformats/mafmt": "^12.1.6",
+    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr-to-uri": "^10.0.1",
+    "@types/ws": "^8.5.10",
+    "it-ws": "^6.1.1",
     "p-defer": "^4.0.0",
     "wherearewe": "^2.0.1",
-    "ws": "^8.12.1"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.1.3",
-    "aegir": "^41.0.2",
-    "is-loopback-addr": "^2.0.1",
-    "it-all": "^3.0.1",
-    "it-drain": "^3.0.2",
-    "it-goodbye": "^4.0.1",
+    "@libp2p/interface-compliance-tests": "^5.3.1",
+    "@libp2p/logger": "^4.0.6",
+    "aegir": "^42.2.3",
+    "is-loopback-addr": "^2.0.2",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5",
+    "it-goodbye": "^4.0.6",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.2",
-    "uint8arraylist": "^2.3.2",
-    "uint8arrays": "^4.0.4"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
-  }
+  },
+  "sideEffects": false
 }

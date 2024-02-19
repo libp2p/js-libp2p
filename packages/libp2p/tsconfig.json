@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../connection-encrypter-plaintext"
+    },
+    {
       "path": "../crypto"
     },
     {
@@ -21,12 +24,6 @@
       "path": "../interface-internal"
     },
     {
-      "path": "../kad-dht"
-    },
-    {
-      "path": "../keychain"
-    },
-    {
       "path": "../logger"
     },
     {
@@ -36,28 +33,22 @@
       "path": "../peer-collections"
     },
     {
-      "path": "../peer-discovery-bootstrap"
-    },
-    {
-      "path": "../peer-discovery-mdns"
-    },
-    {
       "path": "../peer-id"
     },
     {
       "path": "../peer-id-factory"
     },
     {
-      "path": "../peer-record"
-    },
-    {
       "path": "../peer-store"
     },
     {
-      "path": "../pubsub-floodsub"
+      "path": "../protocol-identify"
     },
     {
       "path": "../stream-multiplexer-mplex"
+    },
+    {
+      "path": "../transport-circuit-relay-v2"
     },
     {
       "path": "../transport-tcp"

@@ -63,9 +63,8 @@
  * ```
  */
 
-import { AbortError, CodeError } from '@libp2p/interface/errors'
-import { type Transport, type MultiaddrFilter, symbol, type CreateListenerOptions, type DialOptions, type Listener } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
+import { AbortError, CodeError } from '@libp2p/interface'
+import { type Transport, type MultiaddrFilter, transportSymbol, type CreateListenerOptions, type DialOptions, type Listener, type AbortOptions, type ComponentLogger, type Logger, type Connection } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
@@ -73,14 +72,10 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 import type { ClientOptions } from 'ws'
-
-const log = logger('libp2p:websockets')
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   filter?: MultiaddrFilter
@@ -88,27 +83,37 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   server?: Server
 }
 
-class WebSockets implements Transport {
-  private readonly init?: WebSocketsInit
+export interface WebSocketsComponents {
+  logger: ComponentLogger
+}
 
-  constructor (init?: WebSocketsInit) {
+class WebSockets implements Transport {
+  private readonly log: Logger
+  private readonly init?: WebSocketsInit
+  private readonly logger: ComponentLogger
+
+  constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
+    this.log = components.logger.forComponent('libp2p:websockets')
+    this.logger = components.logger
     this.init = init
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/websockets'
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
-    log('dialing %s', ma)
+    this.log('dialing %s', ma)
     options = options ?? {}
 
     const socket = await this._connect(ma, options)
-    const maConn = socketToMaConn(socket, ma)
-    log('new outbound connection %s', maConn.remoteAddr)
+    const maConn = socketToMaConn(socket, ma, {
+      logger: this.logger
+    })
+    this.log('new outbound connection %s', maConn.remoteAddr)
 
     const conn = await options.upgrader.upgradeOutbound(maConn)
-    log('outbound connection %s upgraded', maConn.remoteAddr)
+    this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
@@ -117,7 +122,7 @@ class WebSockets implements Transport {
       throw new AbortError()
     }
     const cOpts = ma.toOptions()
-    log('dialing %s:%s', cOpts.host, cOpts.port)
+    this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
     const errorPromise = pDefer()
     const rawSocket = connect(toUri(ma), this.init)
@@ -126,14 +131,14 @@ class WebSockets implements Transport {
       // information about what happened
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
-      log.error('connection error:', err)
+      this.log.error('connection error:', err)
       errorPromise.reject(err)
     })
 
     if (options.signal == null) {
       await Promise.race([rawSocket.connected(), errorPromise.promise])
 
-      log('connected %s', ma)
+      this.log('connected %s', ma)
       return rawSocket
     }
 
@@ -143,7 +148,7 @@ class WebSockets implements Transport {
       onAbort = () => {
         reject(new AbortError())
         rawSocket.close().catch(err => {
-          log.error('error closing raw socket', err)
+          this.log.error('error closing raw socket', err)
         })
       }
 
@@ -163,7 +168,7 @@ class WebSockets implements Transport {
       }
     }
 
-    log('connected %s', ma)
+    this.log('connected %s', ma)
     return rawSocket
   }
 
@@ -173,7 +178,12 @@ class WebSockets implements Transport {
    * `upgrader.upgradeInbound`
    */
   createListener (options: CreateListenerOptions): Listener {
-    return createListener({ ...this.init, ...options })
+    return createListener({
+      logger: this.logger
+    }, {
+      ...this.init,
+      ...options
+    })
   }
 
   /**
@@ -197,8 +207,8 @@ class WebSockets implements Transport {
   }
 }
 
-export function webSockets (init: WebSocketsInit = {}): (components?: any) => Transport {
-  return () => {
-    return new WebSockets(init)
+export function webSockets (init: WebSocketsInit = {}): (components: WebSocketsComponents) => Transport {
+  return (components) => {
+    return new WebSockets(components, init)
   }
 }

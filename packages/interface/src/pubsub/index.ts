@@ -1,5 +1,5 @@
 import type { Stream } from '../connection/index.js'
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'

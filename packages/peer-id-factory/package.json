@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/peer-id-factory",
-  "version": "3.0.7",
+  "version": "4.0.6",
   "description": "Create PeerId instances",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-id-factory#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -53,16 +57,17 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^2.0.7",
-    "@libp2p/interface": "^0.1.5",
-    "@libp2p/peer-id": "^3.0.5",
-    "multiformats": "^12.0.1",
-    "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "@libp2p/crypto": "^4.0.2",
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/peer-id": "^4.0.6",
+    "protons-runtime": "^5.4.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "aegir": "^41.0.2",
-    "protons": "^7.0.2"
-  }
+    "aegir": "^42.2.3",
+    "multiformats": "^13.0.1",
+    "protons": "^7.5.0"
+  },
+  "sideEffects": false
 }

@@ -4,8 +4,9 @@
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
@@ -18,7 +19,7 @@ import waitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
-import type { Listener, Transport } from '@libp2p/interface/transport'
+import type { Listener, Transport } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 import './compliance.node.js'
@@ -46,7 +47,9 @@ const upgrader = mockUpgrader({
 
 describe('instantiate the transport', () => {
   it('create', () => {
-    const ws = webSockets()()
+    const ws = webSockets()({
+      logger: defaultLogger()
+    })
     expect(ws).to.exist()
   })
 })
@@ -55,7 +58,9 @@ describe('listen', () => {
   it('should close connections when stopping the listener', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
 
-    const ws = webSockets()()
+    const ws = webSockets()({
+      logger: defaultLogger()
+    })
     const listener = ws.createListener({
       handler: (conn) => {
         void conn.newStream([protocol]).then(async (stream) => {
@@ -83,7 +88,9 @@ describe('listen', () => {
     let listener: Listener
 
     beforeEach(() => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
     })
 
     afterEach(async () => {
@@ -199,7 +206,9 @@ describe('listen', () => {
     const ma = multiaddr('/ip6/::1/tcp/9091/ws')
 
     beforeEach(() => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
     })
 
     it('listen, check for promise', async () => {
@@ -245,7 +254,9 @@ describe('dial', () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws')
 
     beforeEach(async () => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
       listener = ws.createListener({ upgrader })
       await listener.listen(ma)
     })
@@ -281,7 +292,9 @@ describe('dial', () => {
 
     it('should resolve port 0', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
-      const ws = webSockets()()
+      const ws = webSockets()({
+        logger: defaultLogger()
+      })
 
       // Create a Promise that resolves when a connection is handled
       const deferred = defer()
@@ -311,7 +324,9 @@ describe('dial', () => {
     const ma = multiaddr('/ip4/0.0.0.0/tcp/0/ws')
 
     beforeEach(async () => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -338,7 +353,12 @@ describe('dial', () => {
 
       // Dial first no loopback address
       const conn = await ws.dial(addrs[0], { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       await expect(pipe(
@@ -361,7 +381,9 @@ describe('dial', () => {
         cert: fs.readFileSync('./test/fixtures/certificate.pem'),
         key: fs.readFileSync('./test/fixtures/key.pem')
       })
-      ws = webSockets({ websocket: { rejectUnauthorized: false }, server })()
+      ws = webSockets({ websocket: { rejectUnauthorized: false }, server })({
+        logger: defaultLogger()
+      })
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -387,7 +409,12 @@ describe('dial', () => {
 
     it('dial ip4', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       const res = await pipe(s, stream, toBuffers, s)
@@ -403,7 +430,9 @@ describe('dial', () => {
     const ma = multiaddr('/ip6/::1/tcp/9091/ws')
 
     beforeEach(async () => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
       listener = ws.createListener({
         handler: (conn) => {
           void conn.newStream([protocol]).then(async (stream) => {
@@ -419,7 +448,12 @@ describe('dial', () => {
 
     it('dial ip6', async () => {
       const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({ source: [uint8ArrayFromString('hey')], sink: all })
+      const s = goodbye({
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
+        sink: all
+      })
       const stream = await conn.newStream([protocol])
 
       await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
@@ -430,7 +464,9 @@ describe('dial', () => {
       const conn = await ws.dial(ma, { upgrader })
 
       const s = goodbye({
-        source: [uint8ArrayFromString('hey')],
+        source: (async function * () {
+          yield uint8ArrayFromString('hey')
+        })(),
         sink: all
       })
       const stream = await conn.newStream([protocol])
@@ -445,7 +481,9 @@ describe('filter addrs', () => {
 
   describe('default filter addrs with only dns', () => {
     before(() => {
-      ws = webSockets()()
+      ws = webSockets()({
+        logger: defaultLogger()
+      })
     })
 
     it('should filter out invalid WS addresses', function () {
@@ -513,7 +551,9 @@ describe('filter addrs', () => {
 
   describe('custom filter addrs', () => {
     before(() => {
-      ws = webSockets()({ filter: filters.all })
+      ws = webSockets({ filter: filters.all })({
+        logger: defaultLogger()
+      })
     })
 
     it('should fail invalid WS addresses', function () {

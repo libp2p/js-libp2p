@@ -1,7 +1,7 @@
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Used to transfer signed peer data across the network
 
@@ -13,13 +13,13 @@ Libp2p nodes need to store data in a public location (e.g. a DHT), or rely on po
 
 Libp2p provides an all-purpose data container called **envelope**. It was created to enable the distribution of verifiable records, which we can prove originated from the addressed peer itself. The envelope includes a signature of the data, so that its authenticity is verified.
 
-This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
+This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
 
 You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
-## Example
+## Example - Creating a peer record
 
-Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record) implementation and prepare it for being exchanged:
+Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
 
 ```js
 // interface-record implementation example with the "libp2p-example" namespace
@@ -48,7 +48,7 @@ const e = await PeerEnvelope.seal(rec, peerId)
 const wireData = e.marshal()
 ```
 
-## Example
+## Example - Consuming a peer record
 
 Consume a received envelope (`wireData`) and transform it back to a record:
 

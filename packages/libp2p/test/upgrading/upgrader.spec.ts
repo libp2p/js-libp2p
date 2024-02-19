@@ -1,11 +1,13 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -21,21 +23,12 @@ import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { circuitRelayTransport } from '../../src/circuit-relay/index.js'
 import { type Components, defaultComponents } from '../../src/components.js'
 import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
-import { plaintext } from '../../src/insecure/index.js'
-import { preSharedKey } from '../../src/pnet/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import swarmKey from '../fixtures/swarm.key.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection, ConnectionProtector, Stream } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter, SecuredConnection } from '@libp2p/interface/connection-encrypter'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
-import type { Upgrader } from '@libp2p/interface/transport'
+import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader } from '@libp2p/interface'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -80,9 +73,9 @@ describe('Upgrader', () => {
     })
     localComponents.peerStore = new PersistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
-    localMuxerFactory = mplex()()
-    localYamuxerFactory = yamux()()
-    localConnectionEncrypter = plaintext()()
+    localMuxerFactory = mplex()(localComponents)
+    localYamuxerFactory = yamux()(localComponents)
+    localConnectionEncrypter = plaintext()(localComponents)
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
         localConnectionEncrypter
@@ -107,9 +100,9 @@ describe('Upgrader', () => {
     })
     remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
-    remoteMuxerFactory = mplex()()
-    remoteYamuxerFactory = yamux()()
-    remoteConnectionEncrypter = plaintext()()
+    remoteMuxerFactory = mplex()(remoteComponents)
+    remoteYamuxerFactory = yamux()(remoteComponents)
+    remoteConnectionEncrypter = plaintext()(remoteComponents)
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
         remoteConnectionEncrypter
@@ -173,14 +166,14 @@ describe('Upgrader', () => {
     // No available muxers
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
@@ -206,9 +199,12 @@ describe('Upgrader', () => {
   it('should use a private connection protector when provided', async () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
-    const protector = preSharedKey({
-      psk: uint8ArrayFromString(swarmKey)
-    })()
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     const protectorProtectSpy = sinon.spy(protector, 'protect')
 
     localComponents.connectionProtector = protector
@@ -284,19 +280,19 @@ describe('Upgrader', () => {
 
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
-        yamux()()
+        yamux()(localComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(remoteComponents)
       ],
       muxers: [
-        yamux()()
+        yamux()(remoteComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -344,22 +340,31 @@ describe('Upgrader', () => {
       }
     }
 
+    class OtherOtherMuxerFactory implements StreamMuxerFactory {
+      protocol = '/muxer-local-other'
+
+      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
+        return new OtherMuxer()
+      }
+    }
+
     localUpgrader = new DefaultUpgrader(localComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
-        new OtherMuxerFactory()
+        new OtherMuxerFactory(),
+        new OtherOtherMuxerFactory()
       ],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()()
+        plaintext()(localComponents)
       ],
       muxers: [
-        yamux()(),
-        mplex()()
+        yamux()(localComponents),
+        mplex()(localComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
@@ -389,9 +394,10 @@ describe('Upgrader', () => {
     expect(connections).to.have.length(2)
 
     // Create a few streams, at least 1 in each direction
-    await connections[0].newStream('/echo/1.0.0')
-    await connections[1].newStream('/echo/1.0.0')
-    await connections[0].newStream('/echo/1.0.0')
+    // use multiple protocols to trigger regular multistream select
+    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
+    await connections[1].newStream(['/echo/1.0.0', '/echo/1.0.1'])
+    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
     connections.forEach(conn => {
       expect(conn.streams).to.have.length(3)
     })
@@ -494,7 +500,7 @@ describe('Upgrader', () => {
       })
     }
 
-    await expect(connections[0].newStream('/echo/1.0.0', {
+    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'], {
       signal
     }))
       .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
@@ -513,7 +519,7 @@ describe('Upgrader', () => {
     expect(connections[0].streams).to.have.lengthOf(0)
     expect(connections[1].streams).to.have.lengthOf(0)
 
-    await expect(connections[0].newStream('/echo/1.0.0'))
+    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1']))
       .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
 
     // wait for remote to close
@@ -557,7 +563,7 @@ describe('Upgrader', () => {
 
     expect(connections).to.have.length(2)
 
-    const stream = await connections[0].newStream('/echo/1.0.0')
+    const stream = await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
     expect(stream).to.have.property('protocol', '/echo/1.0.0')
 
     const hello = uint8ArrayFromString('hello there!')
@@ -615,6 +621,12 @@ describe('libp2p.upgrader', () => {
   it('should create an Upgrader', async () => {
     const deferred = pDefer<Components>()
 
+    const protector: ConnectionProtector = {
+      async protect (connection) {
+        return connection
+      }
+    }
+
     libp2p = await createLibp2p({
       peerId: peers[0],
       transports: [
@@ -627,9 +639,7 @@ describe('libp2p.upgrader', () => {
       connectionEncryption: [
         plaintext()
       ],
-      connectionProtector: preSharedKey({
-        psk: uint8ArrayFromString(swarmKey)
-      }),
+      connectionProtector: () => protector,
       services: {
         test: (components: any) => {
           deferred.resolve(components)
@@ -699,7 +709,7 @@ describe('libp2p.upgrader', () => {
     ])
     const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteComponents.upgrader as DefaultUpgrader, '_onStream')
 
-    const stream = await localConnection.newStream(['/echo/1.0.0'])
+    const stream = await localConnection.newStream(['/echo/1.0.0', '/echo/1.0.1'])
     expect(stream).to.include.keys(['id', 'sink', 'source'])
 
     const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
@@ -789,7 +799,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux()
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -808,7 +818,7 @@ describe('libp2p.upgrader', () => {
         webSockets()
       ],
       streamMuxers: [
-        yamux()
+        mplex()
       ],
       connectionEncryption: [
         plaintext()
@@ -847,11 +857,13 @@ describe('libp2p.upgrader', () => {
 
     expect(streamCount).to.equal(0)
 
-    await localToRemote.newStream(protocol)
+    await localToRemote.newStream([protocol, '/other/1.0.0'])
 
     expect(streamCount).to.equal(1)
 
-    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+    const s = await localToRemote.newStream(protocol)
+
+    await expect(drain(s.source)).to.eventually.be.rejected()
       .with.property('code', 'ERR_STREAM_RESET')
   })
 
@@ -923,7 +935,7 @@ describe('libp2p.upgrader', () => {
 
     expect(streamCount).to.equal(0)
 
-    await localToRemote.newStream(protocol)
+    await localToRemote.newStream([protocol, '/other/1.0.0'])
 
     expect(streamCount).to.equal(1)
 
@@ -997,7 +1009,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(0)
 
     for (let i = 0; i < limit; i++) {
-      await localToRemote.newStream(protocol, {
+      await localToRemote.newStream([protocol, '/other/1.0.0'], {
         maxOutboundStreams: limit
       })
     }

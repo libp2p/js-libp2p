@@ -1,5 +1,5 @@
 import type { Connection, MultiaddrConnection } from '../connection/index.js'
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { AbortOptions } from '../index.js'
 import type { StreamMuxerFactory } from '../stream-muxer/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -28,7 +28,7 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
   close(): Promise<void>
 }
 
-export const symbol = Symbol.for('@libp2p/transport')
+export const transportSymbol = Symbol.for('@libp2p/transport')
 
 export interface ConnectionHandler { (connection: Connection): void }
 
@@ -55,7 +55,7 @@ export interface Transport {
   /**
    * Used by the isTransport function
    */
-  [symbol]: true
+  [transportSymbol]: true
 
   /**
    * Dial a given multiaddr.
@@ -74,7 +74,7 @@ export interface Transport {
 }
 
 export function isTransport (other: any): other is Transport {
-  return other != null && Boolean(other[symbol])
+  return other != null && Boolean(other[transportSymbol])
 }
 
 /**

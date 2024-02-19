@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { mapIterable } from './util.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 /**
  * We can't use PeerIds as set entries because set entries are
@@ -12,7 +12,7 @@ import type { PeerId } from '@libp2p/interface/peer-id'
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
  *
  * const set = peerSet()
@@ -121,4 +121,8 @@ export class PeerSet {
 
     return output
   }
+}
+
+export function peerSet (): PeerSet {
+  return new PeerSet()
 }

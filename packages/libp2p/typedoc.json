@@ -1,13 +1,6 @@
 {
   "entryPoints": [
     "./src/index.ts",
-    "./src/autonat/index.ts",
-    "./src/circuit-relay/index.ts",
-    "./src/fetch/index.ts",
-    "./src/identify/index.ts",
-    "./src/insecure/index.ts",
-    "./src/ping/index.ts",
-    "./src/pnet/index.ts",
-    "./src/upnp-nat/index.ts"
+    "./src/version.ts"
   ]
 }

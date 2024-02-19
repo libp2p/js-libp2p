@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import * as cborg from 'cborg'
 import randomBytes from 'iso-random-stream/src/random.js'
@@ -13,7 +14,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
 import { createStream } from '../src/stream.js'
-import { messageWithBytes } from './fixtures/utils.js'
+import { arrayToGenerator, messageWithBytes } from './fixtures/utils.js'
 import type { Message } from '../src/message-types.js'
 import type { MplexStream } from '../src/stream.js'
 
@@ -71,8 +72,8 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
 
     initiator.sourcePush(msgToBuffer(msg))
   }
-  const initiator = createStream({ id, send: mockInitiatorSend, type: 'initiator' })
-  const receiver = createStream({ id, send: mockReceiverSend, type: 'receiver' })
+  const initiator = createStream({ id, send: mockInitiatorSend, type: 'initiator', logger: defaultLogger() })
+  const receiver = createStream({ id, send: mockReceiverSend, type: 'receiver', logger: defaultLogger() })
   const input = new Array(n).fill(0).map((_, i) => new Uint8ArrayList(Uint8Array.from([i])))
 
   void pipe(
@@ -95,7 +96,7 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
 
   try {
     await pipe(
-      input,
+      arrayToGenerator(input),
       initiator,
       (source) => map(source, buf => {
         const msg: Message = bufferToMessage(buf)
@@ -127,7 +128,7 @@ describe('stream', () => {
     const msgs: Message[] = []
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
-    const stream = createStream({ id, send: mockSend })
+    const stream = createStream({ id, send: mockSend, logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -142,7 +143,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
-    const stream = createStream({ id, name, send: mockSend })
+    const stream = createStream({ id, name, send: mockSend, logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -158,7 +159,7 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const deferred = defer()
-    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend })
+    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend, logger: defaultLogger() })
 
     const error = new Error('boom')
     stream.abort(error)
@@ -173,7 +174,7 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const deferred = defer()
-    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend })
+    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend, logger: defaultLogger() })
 
     stream.reset()
 
@@ -187,7 +188,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
+    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -208,7 +209,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
+    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -229,7 +230,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
+    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -246,7 +247,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
+    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -263,7 +264,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator' })
+    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
     const error = new Error(`Boom ${Date.now()}`)
     const input = {
       [Symbol.iterator]: function * () {
@@ -289,7 +290,7 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver' })
+    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
     const error = new Error(`Boom ${Date.now()}`)
     const input = {
       [Symbol.iterator]: function * () {
@@ -365,6 +366,7 @@ describe('stream', () => {
     ])
 
     expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
+      MessageTypes.MESSAGE_RECEIVER,
       MessageTypes.MESSAGE_RECEIVER
     ])
   })
@@ -393,7 +395,8 @@ describe('stream', () => {
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
-      MessageTypes.MESSAGE_INITIATOR
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.CLOSE_INITIATOR
     ])
 
     // Recipient reset after two messages
@@ -429,6 +432,7 @@ describe('stream', () => {
 
     // Reset after two messages
     expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
+      MessageTypes.MESSAGE_RECEIVER,
       MessageTypes.MESSAGE_RECEIVER
     ])
   })
@@ -457,7 +461,8 @@ describe('stream', () => {
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
       MessageTypes.MESSAGE_INITIATOR,
-      MessageTypes.MESSAGE_INITIATOR
+      MessageTypes.MESSAGE_INITIATOR,
+      MessageTypes.CLOSE_INITIATOR
     ])
 
     // Recipient reset after two messages
@@ -481,7 +486,7 @@ describe('stream', () => {
     const name = id.toString()
     const deferred = defer()
     const onEnd = (err?: any): void => { err != null ? deferred.reject(err) : deferred.resolve() }
-    const stream = createStream({ id, name, send, onEnd })
+    const stream = createStream({ id, name, send, onEnd, logger: defaultLogger() })
     const input = randomInput()
 
     void pipe(
@@ -500,7 +505,7 @@ describe('stream', () => {
     const id = randomInt(1000)
     const deferred = defer()
     const onEnd = (err?: any): void => { err != null ? deferred.reject(err) : deferred.resolve() }
-    const stream = createStream({ id, send, onEnd })
+    const stream = createStream({ id, send, onEnd, logger: defaultLogger() })
     const input = randomInput()
 
     pipe(
@@ -524,7 +529,7 @@ describe('stream', () => {
     }
     const maxMsgSize = 10
     const id = randomInt(1000)
-    const stream = createStream({ id, send, maxMsgSize })
+    const stream = createStream({ id, send, maxMsgSize, logger: defaultLogger() })
 
     await pipe(
       [
@@ -542,7 +547,7 @@ describe('stream', () => {
   it('should error on double sink', async () => {
     const send = async (): Promise<void> => {}
     const id = randomInt(1000)
-    const stream = createStream({ id, send })
+    const stream = createStream({ id, send, logger: defaultLogger() })
 
     // first sink is ok
     void stream.sink([])
@@ -555,7 +560,7 @@ describe('stream', () => {
   it('should error on double sink after sink has ended', async () => {
     const send = async (): Promise<void> => {}
     const id = randomInt(1000)
-    const stream = createStream({ id, send })
+    const stream = createStream({ id, send, logger: defaultLogger() })
 
     // first sink is ok
     await stream.sink([])
@@ -571,7 +576,7 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const maxMsgSize = 10
-    const stream = createStream({ id, name, send: mockSend, maxMsgSize })
+    const stream = createStream({ id, name, send: mockSend, maxMsgSize, logger: defaultLogger() })
     const input = [
       new Uint8Array(1024).map(() => randomInt(0, 255))
     ]

@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
-import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface/pubsub'
+import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PeerStreams } from '@libp2p/pubsub/peer-streams'
@@ -24,7 +25,8 @@ describe('floodsub', () => {
 
     floodsub = new FloodSub({
       peerId: await createEd25519PeerId(),
-      registrar: mockRegistrar()
+      registrar: mockRegistrar(),
+      logger: defaultLogger()
     }, {
       emitSelf: true,
       globalSignaturePolicy: StrictNoSign
@@ -47,6 +49,8 @@ describe('floodsub', () => {
     let callCount = 0
 
     const peerStream = new PeerStreams({
+      logger: defaultLogger()
+    }, {
       id: otherPeer,
       protocol: 'test'
     })
@@ -120,6 +124,8 @@ describe('floodsub', () => {
     const sender = await createEd25519PeerId()
 
     const peerStream = new PeerStreams({
+      logger: defaultLogger()
+    }, {
       id: sender,
       protocol: 'test'
     })

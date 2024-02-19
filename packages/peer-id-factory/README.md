@@ -1,13 +1,13 @@
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Create PeerId instances
 
 # About
 
-Generate, import, and export PeerIDs, for use with [IPFS](https://github.com/ipfs/ipfs).
+Generate, import, and export PeerIDs.
 
 A Peer ID is the SHA-256 [multihash](https://github.com/multiformats/multihash) of a public key.
 
@@ -15,7 +15,7 @@ The public key is a base64 encoded string of a protobuf containing an RSA DER bu
 
 ## Example
 
-```JavaScript
+```TypeScript
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 const peerId = await createEd25519PeerId()

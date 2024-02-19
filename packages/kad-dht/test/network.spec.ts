@@ -4,21 +4,18 @@ import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MESSAGE_TYPE } from '../src/message/index.js'
+import { Message, MessageType } from '../src/message/dht.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { DefaultDualKadDHT } from '../src/dual-kad-dht.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { KadDHT } from '../src/kad-dht.js'
+import type { Connection, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Sink, Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('Network', () => {
-  let dht: DefaultDualKadDHT
+  let dht: KadDHT
   let tdht: TestDHT
 
   before(async function () {
@@ -33,13 +30,16 @@ describe('Network', () => {
 
   describe('sendRequest', () => {
     it('send and response echo', async () => {
-      const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
+      const msg: Partial<Message> = {
+        type: MessageType.PING,
+        key: uint8ArrayFromString('hello')
+      }
 
-      const events = await all(dht.lan.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
-      expect(response).to.have.property('messageType', MESSAGE_TYPE.PING)
+      expect(response).to.have.property('messageType', MessageType.PING)
     })
 
     it('send and response different messages', async () => {
@@ -51,7 +51,10 @@ describe('Network', () => {
         }
       }
 
-      const msg = new Message(MESSAGE_TYPE.PING, uint8ArrayFromString('hello'), 0)
+      const msg: Partial<Message> = {
+        type: MessageType.PING,
+        key: uint8ArrayFromString('hello')
+      }
 
       // mock it
       dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
@@ -59,29 +62,20 @@ describe('Network', () => {
         const connection: Connection = {
           newStream: async (protocols: string | string[]) => {
             const protocol = Array.isArray(protocols) ? protocols[0] : protocols
-            const msg = new Message(MESSAGE_TYPE.FIND_NODE, uint8ArrayFromString('world'), 0)
-
-            const data = await pipe(
-              [msg.serialize()],
-              (source) => lp.encode(source),
-              source => map(source, arr => new Uint8ArrayList(arr)),
-              async (source) => all(source)
-            )
+            const msg: Partial<Message> = {
+              type: MessageType.FIND_NODE,
+              key: uint8ArrayFromString('world')
+            }
 
             const source = (async function * () {
-              const array = data
-
-              yield * array
+              yield lp.encode.single(Message.encode(msg))
             })()
 
             const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-              const res = await pipe(
-                source,
-                (source) => lp.decode(source),
-                async (source) => all(source)
-              )
-              expect(Message.deserialize(res[0]).type).to.eql(MESSAGE_TYPE.PING)
-              finish()
+              for await (const buf of lp.decode(source)) {
+                expect(Message.decode(buf).type).to.eql(MessageType.PING)
+                finish()
+              }
             }
 
             const stream = mockStream({ source, sink })
@@ -96,12 +90,12 @@ describe('Network', () => {
         return connection
       }
 
-      const events = await all(dht.lan.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
 
-      expect(response).to.have.property('messageType', MESSAGE_TYPE.FIND_NODE)
+      expect(response).to.have.property('messageType', MessageType.FIND_NODE)
       finish()
 
       return defer.promise

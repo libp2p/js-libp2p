@@ -11,6 +11,147 @@
 
 * **dev:** bump aegir from 38.1.8 to 39.0.10 ([#36](https://github.com/libp2p/js-libp2p-peer-collections/issues/36)) ([9fa3de6](https://github.com/libp2p/js-libp2p-peer-collections/commit/9fa3de6d85dbe1ade54fda86b597ed9ffe6d71d5))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+
+## [5.1.6](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.5...peer-collections-v5.1.6) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/peer-id bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.5 to ^4.0.6
+
+## [5.1.5](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.4...peer-collections-v5.1.5) (2024-01-16)
+
+
+### Bug Fixes
+
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/peer-id bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.4 to ^4.0.5
+
+## [5.1.3](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.2...peer-collections-v5.1.3) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/peer-id bumped from ^4.0.3 to ^4.0.4
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.2 to ^4.0.3
+
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.0.0...peer-collections-v5.1.0) (2023-12-06)
+
+
+### Features
+
+* add versions of peer lists/sets/maps that report their sizes ([#2300](https://github.com/libp2p/js-libp2p/issues/2300)) ([57944fa](https://github.com/libp2p/js-libp2p/commit/57944fa494c1f7df4bb07d1cc58c5f7e95229bc2))
+
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.10...peer-collections-v5.0.0) (2023-12-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires libp2p v1
+
+### Bug Fixes
+
+* release majors of modules that had patches during v1.0 ([#2286](https://github.com/libp2p/js-libp2p/issues/2286)) ([738dd40](https://github.com/libp2p/js-libp2p/commit/738dd40f1e1b8ed1b83693763cc91c218ec2b41b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.10 to ^4.0.0
+
+## [4.0.10](https://github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.9...peer-collections-v4.0.10) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/peer-id bumped from ^4.0.0 to ^4.0.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.9 to ^3.0.10
+
+### [4.0.9](https://www.github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.8...peer-collections-v4.0.9) (2023-11-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.8 to ^3.0.9
+
+### [4.0.8](https://www.github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.7...peer-collections-v4.0.8) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^3.0.7 to ^3.0.8
+
 ### [4.0.7](https://www.github.com/libp2p/js-libp2p/compare/peer-collections-v4.0.6...peer-collections-v4.0.7) (2023-11-03)
 
 

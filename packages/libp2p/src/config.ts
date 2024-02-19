@@ -1,5 +1,5 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { FaultTolerance } from '@libp2p/interface/transport'
+import { CodeError, FaultTolerance } from '@libp2p/interface'
+import { peerIdFromKeys } from '@libp2p/peer-id'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
@@ -26,15 +26,15 @@ const DefaultConfig: Partial<Libp2pInit> = {
   }
 }
 
-export function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Libp2pInit<T> {
+export async function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: RecursivePartial<Libp2pInit<T>>): Promise<Libp2pInit<T>> {
   const resultingOptions: Libp2pInit<T> = mergeOptions(DefaultConfig, opts)
-
-  if (resultingOptions.transports == null || resultingOptions.transports.length < 1) {
-    throw new CodeError(messages.ERR_TRANSPORTS_REQUIRED, codes.ERR_TRANSPORTS_REQUIRED)
-  }
 
   if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) { // eslint-disable-line no-undef
     throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes.ERR_PROTECTOR_REQUIRED)
+  }
+
+  if (!(await peerIdFromKeys(resultingOptions.privateKey.public.bytes, resultingOptions.privateKey.bytes)).equals(resultingOptions.peerId)) {
+    throw new CodeError('Private key doesn\'t match peer id', codes.ERR_INVALID_KEY)
   }
 
   return resultingOptions

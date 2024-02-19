@@ -121,25 +121,24 @@ If you want to know more about libp2p connection encryption, you should read the
 
 While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Adding a multiplexer to your configuration will allow libp2p to run several of its internal protocols, like Identify, as well as allow your application to easily run any number of protocols over a single connection.
 
-Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules, js-libp2p currently only supports `@libp2p/mplex`, so we will use that here. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
+Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `@libp2p/mplex` and add it to your libp2p node as follows in the next example.
+You can install `@chainsafe/libp2p-yamux` and add it to your libp2p node as follows in the next example.
 
 ```sh
-npm install @libp2p/mplex
+npm install @chainsafe/libp2p-yamux
 ```
 
-```js
+```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [yamux(), mplex()]
+  streamMuxers: [yamux()]
 })
 ```
 
@@ -155,11 +154,11 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
 
-```js
+```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
+import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   // libp2p nodes are started by default, pass false to override this
@@ -169,7 +168,7 @@ const node = await createLibp2p({
   },
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [yamux(), mplex()]
+  streamMuxers: [yamux()]
 })
 
 // start libp2p
@@ -209,13 +208,11 @@ npm install @libp2p/bootstrap
 
 We can provide specific configurations for each protocol within a `config.peerDiscovery` property in the options as shown below.
 
-```js
+```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
-
 import { bootstrap } from '@libp2p/bootstrap'
 
 // Known peers addresses
@@ -227,7 +224,7 @@ const bootstrapMultiaddrs = [
 const node = await createLibp2p({
   transports: [webSockets()],
   connectionEncryption: [noise()],
-  streamMuxers: [yamux(), mplex()],
+  streamMuxers: [yamux()],
   peerDiscovery: [
     bootstrap({
       list: bootstrapMultiaddrs, // provide array of multiaddrs
@@ -240,7 +237,7 @@ node.addEventListener('peer:discovery', (evt) => {
 })
 
 node.addEventListener('peer:connect', (evt) => {
-  console.log('Connected to %s', evt.detail.remotePeer.toString()) // Log connected peer
+  console.log('Connected to %s', evt.detail.toString()) // Log connected peer
 })
 ```
 
@@ -279,6 +276,6 @@ localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-
 There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
 
-[transport]: https://github.com/libp2p/js-interfaces/tree/master/src/transport
-[crypto]: https://github.com/libp2p/js-interfaces/tree/master/src/crypto
-[streamMuxer]: https://github.com/libp2p/js-interfaces/tree/master/src/stream-muxer
+[transport]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport
+[crypto]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto
+[streamMuxer]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer

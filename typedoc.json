@@ -2,7 +2,8 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "libp2p",
   "exclude": [
+    "doc",
     "interop",
-    "doc"
+    "packages/integration-tests"
   ]
 }

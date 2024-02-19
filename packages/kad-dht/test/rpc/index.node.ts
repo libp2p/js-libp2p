@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start } from '@libp2p/interface/startable'
+import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -12,21 +12,19 @@ import map from 'it-map'
 import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
-import { stubInterface } from 'ts-sinon'
+import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MESSAGE_TYPE } from '../../src/message/index.js'
+import { Message, MessageType } from '../../src/message/dht.js'
 import { PeerRouting } from '../../src/peer-routing/index.js'
 import { Providers } from '../../src/providers.js'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import { RPC, type RPCComponents } from '../../src/rpc/index.js'
+import { passthroughMapper } from '../../src/utils.js'
 import { createPeerId } from '../utils/create-peer-id.js'
 import type { Validators } from '../../src/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
+import type { Libp2pEvents, Connection, PeerId, PeerStore } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 import type { Duplex, Source } from 'it-stream-types'
 
@@ -47,7 +45,8 @@ describe('rpc', () => {
       peerId,
       datastore,
       peerStore: stubInterface<PeerStore>(),
-      addressManager: stubInterface<AddressManager>()
+      addressManager: stubInterface<AddressManager>(),
+      logger: defaultLogger()
     }
     components.peerStore = new PersistentPeerStore({
       ...components,
@@ -66,25 +65,29 @@ describe('rpc', () => {
       providers,
       peerRouting,
       validators,
-      lan: false
+      logPrefix: '',
+      peerInfoMapper: passthroughMapper
     })
   })
 
   it('calls back with the response', async () => {
     const defer = pDefer()
-    const msg = new Message(MESSAGE_TYPE.GET_VALUE, uint8ArrayFromString('hello'), 5)
+    const msg: Partial<Message> = {
+      type: MessageType.GET_VALUE,
+      key: uint8ArrayFromString('hello')
+    }
 
     const validateMessage = (res: Uint8ArrayList[]): void => {
-      const msg = Message.deserialize(res[0])
+      const msg = Message.decode(res[0])
       expect(msg).to.have.property('key').eql(uint8ArrayFromString('hello'))
-      expect(msg).to.have.property('closerPeers').eql([])
+      expect(msg).to.have.property('closer').eql([])
       defer.resolve()
     }
 
     peerRouting.getCloserPeersOffline.resolves([])
 
     const source = pipe(
-      [msg.serialize()],
+      [Message.encode(msg)],
       (source) => lp.encode(source),
       source => map(source, arr => new Uint8ArrayList(arr)),
       (source) => all(source)

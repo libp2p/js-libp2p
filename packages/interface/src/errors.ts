@@ -33,6 +33,22 @@ export class CodeError<T extends Record<string, any> = Record<string, never>> ex
   }
 }
 
+export class AggregateCodeError<T extends Record<string, any> = Record<string, never>> extends AggregateError {
+  public readonly props: T
+
+  constructor (
+    errors: Error[],
+    message: string,
+    public readonly code: string,
+    props?: T
+  ) {
+    super(errors, message)
+
+    this.name = props?.name ?? 'AggregateCodeError'
+    this.props = props ?? {} as T // eslint-disable-line @typescript-eslint/consistent-type-assertions
+  }
+}
+
 export class UnexpectedPeerError extends Error {
   public code: string
 
@@ -65,3 +81,10 @@ export class InvalidCryptoTransmissionError extends Error {
 
   static readonly code = 'ERR_INVALID_CRYPTO_TRANSMISSION'
 }
+
+// Error codes
+
+export const ERR_TIMEOUT = 'ERR_TIMEOUT'
+export const ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS'
+export const ERR_NOT_FOUND = 'ERR_NOT_FOUND'
+export const ERR_INVALID_MESSAGE = 'ERR_INVALID_MESSAGE'

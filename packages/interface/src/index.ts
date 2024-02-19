@@ -16,8 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { TypedEventTarget } from './events.js'
-import type { KeyChain } from './keychain/index.js'
+import type { TypedEventTarget } from './event-target.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -28,6 +27,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index
 import type { Topology } from './topology/index.js'
 import type { Listener } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -104,6 +104,23 @@ export interface IdentifyResult {
    * The connection that the identify protocol ran over
    */
   connection: Connection
+}
+
+/**
+ * Logger component for libp2p
+ */
+export interface Logger {
+  (formatter: any, ...args: any[]): void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
+  enabled: boolean
+}
+
+/**
+ * Peer logger component for libp2p
+ */
+export interface ComponentLogger {
+  forComponent(name: string): Logger
 }
 
 /**
@@ -305,6 +322,8 @@ export interface PendingDial {
   multiaddrs: Multiaddr[]
 }
 
+export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -378,20 +397,6 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   contentRouting: ContentRouting
 
   /**
-   * The keychain contains the keys used by the current node, and can create new
-   * keys, export them, import them, etc.
-   *
-   * @example
-   *
-   * ```js
-   * const keyInfo = await libp2p.keychain.createKey('new key')
-   * console.info(keyInfo)
-   * // { id: '...', name: 'new key' }
-   * ```
-   */
-  keychain: KeyChain
-
-  /**
    * The metrics subsystem allows recording values to assess the health/performance
    * of the running node.
    *
@@ -407,6 +412,16 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * ```
    */
   metrics?: Metrics
+
+  /**
+   * The logger used by this libp2p node
+   */
+  logger: ComponentLogger
+
+  /**
+   * The current status of the libp2p node
+   */
+  status: Libp2pStatus
 
   /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
@@ -606,6 +621,21 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
 }
 
 /**
+ * Metadata about the current node
+ */
+export interface NodeInfo {
+  /**
+   * The implementation name
+   */
+  name: string
+
+  /**
+   * The implementation version
+   */
+  version: string
+}
+
+/**
  * An object that contains an AbortSignal as
  * the optional `signal` property.
  *
@@ -627,6 +657,13 @@ export interface AbortOptions {
 }
 
 /**
+ * An object that contains a Logger as the `log` property.
+ */
+export interface LoggerOptions {
+  log: Logger
+}
+
+/**
  * Returns a new type with all fields marked optional.
  *
  * Borrowed from the tsdef module.
@@ -634,3 +671,48 @@ export interface AbortOptions {
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
 }
+
+/**
+ * When a routing operation involves reading values, these options allow
+ * controlling where the values are read from. By default libp2p will check
+ * local caches but may not use the network if a valid local value is found,
+ * these options allow tuning that behaviour.
+ */
+export interface RoutingOptions extends AbortOptions, ProgressOptions {
+  /**
+   * Pass `false` to not use the network
+   *
+   * @default true
+   */
+  useNetwork?: boolean
+
+  /**
+   * Pass `false` to not use cached values
+   *
+   * @default true
+   */
+  useCache?: boolean
+}
+
+export * from './connection/index.js'
+export * from './connection-encrypter/index.js'
+export * from './connection-gater/index.js'
+export * from './content-routing/index.js'
+export * from './keys/index.js'
+export * from './metrics/index.js'
+export * from './peer-discovery/index.js'
+export * from './peer-id/index.js'
+export * from './peer-info/index.js'
+export * from './peer-routing/index.js'
+export * from './peer-store/index.js'
+export * from './peer-store/tags.js'
+export * from './pubsub/index.js'
+export * from './record/index.js'
+export * from './stream-handler/index.js'
+export * from './stream-muxer/index.js'
+export * from './topology/index.js'
+export * from './transport/index.js'
+export * from './errors.js'
+export * from './event-target.js'
+export * from './events.js'
+export * from './startable.js'

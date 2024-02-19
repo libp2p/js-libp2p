@@ -12,7 +12,7 @@ interface BasePeerId {
   toString(): string
   toCID(): CID
   toBytes(): Uint8Array
-  equals(other: PeerId | Uint8Array | string): boolean
+  equals(other?: PeerId | Uint8Array | string): boolean
 }
 
 export interface RSAPeerId extends BasePeerId {
@@ -32,8 +32,8 @@ export interface Secp256k1PeerId extends BasePeerId {
 
 export type PeerId = RSAPeerId | Ed25519PeerId | Secp256k1PeerId
 
-export const symbol = Symbol.for('@libp2p/peer-id')
+export const peerIdSymbol = Symbol.for('@libp2p/peer-id')
 
 export function isPeerId (other: any): other is PeerId {
-  return other != null && Boolean(other[symbol])
+  return other != null && Boolean(other[peerIdSymbol])
 }

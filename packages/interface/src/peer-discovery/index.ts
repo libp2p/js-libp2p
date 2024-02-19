@@ -1,4 +1,4 @@
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { PeerInfo } from '../peer-info/index.js'
 
 /**
@@ -20,7 +20,15 @@ import type { PeerInfo } from '../peer-info/index.js'
  * }
  * ```
  */
-export const peerDiscovery = Symbol.for('@libp2p/peer-discovery')
+export const peerDiscoverySymbol = Symbol.for('@libp2p/peer-discovery')
+
+/**
+ * Implementers of this interface can provide a PeerDiscovery implementation to
+ * interested callers.
+ */
+export interface PeerDiscoveryProvider {
+  [peerDiscoverySymbol]: PeerDiscovery
+}
 
 export interface PeerDiscoveryEvents {
   'peer': CustomEvent<PeerInfo>

@@ -1,49 +1,74 @@
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Implementation of Perf Protocol
 
 # About
 
-The `performanceService` implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which is used to measure performance within and across libp2p implementations
-addresses.
+The PerfService implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
 
 ## Example
 
 ```typescript
-import { createLibp2p } from 'libp2p'
-import { perfService } from '@libp2p/perf'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
+import { tcp } from '@libp2p/tcp'
+import { createLibp2p, type Libp2p } from 'libp2p'
+import { plaintext } from '@libp2p/plaintext'
+import { perf, type Perf } from '@libp2p/perf'
 
-const node = await createLibp2p({
-  service: [
-    perfService()
-  ]
-})
+const ONE_MEG = 1024 * 1024
+const UPLOAD_BYTES = ONE_MEG * 1024
+const DOWNLOAD_BYTES = ONE_MEG * 1024
+
+async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
+  return createLibp2p({
+    addresses: {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0'
+      ]
+    },
+    transports: [
+      tcp()
+    ],
+    connectionEncryption: [
+      noise(), plaintext()
+    ],
+    streamMuxers: [
+      yamux(), mplex()
+    ],
+    services: {
+      perf: perf()
+    }
+  })
+}
+
+const libp2p1 = await createNode()
+const libp2p2 = await createNode()
+
+for await (const output of libp2p1.services.perf.measurePerformance(libp2p2.getMultiaddrs()[0], UPLOAD_BYTES, DOWNLOAD_BYTES)) {
+  console.info(output)
+}
+
+await libp2p1.stop()
+await libp2p2.stop()
 ```
 
-The `measurePerformance` function can be used to measure the latency and throughput of a connection.
-server.  This will not work in browsers.
+# Install
 
-## Example
+```console
+$ npm i @libp2p/perf
+```
 
-```typescript
-import { createLibp2p } from 'libp2p'
-import { perfService } from 'libp2p/perf'
+## Browser `<script>` tag
 
-const node = await createLibp2p({
-  services: [
-    perf: perfService()
-  ]
-})
+Loading this module through a script tag will make it's exports available as `Libp2pPerf` in the global namespace.
 
-const connection = await node.dial(multiaddr(multiaddrAddress))
-
-const startTime = Date.now()
-
-await node.services.perf.measurePerformance(startTime, connection, BigInt(uploadBytes), BigInt(downloadBytes))
-
+```html
+<script src="https://unpkg.com/@libp2p/perf/dist/index.min.js"></script>
 ```
 
 # API Docs

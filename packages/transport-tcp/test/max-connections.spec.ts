@@ -1,7 +1,8 @@
 import net from 'node:net'
 import { promisify } from 'node:util'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { tcp } from '../src/index.js'
@@ -19,7 +20,9 @@ describe('maxConnections', () => {
     const port = 9900
 
     const seenRemoteConnections = new Set<string>()
-    const transport = tcp({ maxConnections })()
+    const transport = tcp({ maxConnections })({
+      logger: defaultLogger()
+    })
 
     const upgrader = mockUpgrader({
       events: new TypedEventEmitter()

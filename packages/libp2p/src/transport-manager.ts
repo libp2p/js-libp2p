@@ -1,19 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { trackedMap } from '@libp2p/interface/metrics/tracked-map'
-import { FaultTolerance } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
+import { CodeError, FaultTolerance } from '@libp2p/interface'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { codes } from './errors.js'
-import type { Libp2pEvents, AbortOptions } from '@libp2p/interface'
-import type { Connection } from '@libp2p/interface/connection'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { Startable } from '@libp2p/interface/startable'
-import type { Listener, Transport, Upgrader } from '@libp2p/interface/transport'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:transports')
 
 export interface TransportManagerInit {
   faultTolerance?: FaultTolerance
@@ -24,9 +14,11 @@ export interface DefaultTransportManagerComponents {
   addressManager: AddressManager
   upgrader: Upgrader
   events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
 }
 
 export class DefaultTransportManager implements TransportManager, Startable {
+  private readonly log: Logger
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
@@ -34,6 +26,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   private started: boolean
 
   constructor (components: DefaultTransportManagerComponents, init: TransportManagerInit = {}) {
+    this.log = components.logger.forComponent('libp2p:transports')
     this.components = components
     this.started = false
     this.transports = new Map<string, Transport>()
@@ -58,7 +51,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       throw new CodeError(`There is already a transport with the tag ${tag}`, codes.ERR_DUPLICATE_TRANSPORT)
     }
 
-    log('adding transport %s', tag)
+    this.log('adding transport %s', tag)
 
     this.transports.set(tag, transport)
 
@@ -88,7 +81,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   async stop (): Promise<void> {
     const tasks = []
     for (const [key, listeners] of this.listeners) {
-      log('closing listeners for %s', key)
+      this.log('closing listeners for %s', key)
       while (listeners.length > 0) {
         const listener = listeners.pop()
 
@@ -101,7 +94,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     await Promise.all(tasks)
-    log('all listeners closed')
+    this.log('all listeners closed')
     for (const key of this.listeners.keys()) {
       this.listeners.set(key, [])
     }
@@ -182,7 +175,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     if (addrs == null || addrs.length === 0) {
-      log('no addresses were provided for listening, this node is dial only')
+      this.log('no addresses were provided for listening, this node is dial only')
       return
     }
 
@@ -194,7 +187,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
-        log('creating listener for %s on %a', key, addr)
+        this.log('creating listener for %s on %a', key, addr)
         const listener = transport.createListener({
           upgrader: this.components.upgrader
         })
@@ -253,7 +246,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
         throw new CodeError(message, codes.ERR_NO_VALID_ADDRESSES)
       }
-      log(`libp2p in dial mode only: ${message}`)
+      this.log(`libp2p in dial mode only: ${message}`)
     }
   }
 
@@ -263,11 +256,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
    */
   async remove (key: string): Promise<void> {
     const listeners = this.listeners.get(key) ?? []
-    log.trace('removing transport %s', key)
+    this.log.trace('removing transport %s', key)
 
     // Close any running listeners
     const tasks = []
-    log.trace('closing listeners for %s', key)
+    this.log.trace('closing listeners for %s', key)
     while (listeners.length > 0) {
       const listener = listeners.pop()
 

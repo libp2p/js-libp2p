@@ -1,4 +1,4 @@
-import type { AbortOptions } from '../index.js'
+import type { AbortOptions, Logger } from '../index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
@@ -169,6 +169,11 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    * The current status of the writable end of the stream
    */
   writeStatus: WriteStatus
+
+  /**
+   * The stream logger
+   */
+  log: Logger
 }
 
 export interface NewStreamOptions extends AbortOptions {
@@ -182,8 +187,37 @@ export interface NewStreamOptions extends AbortOptions {
   /**
    * Opt-in to running over a transient connection - one that has time/data limits
    * placed on it.
+   *
+   * @default false
    */
   runOnTransientConnection?: boolean
+
+  /**
+   * By default when negotiating a protocol the dialer writes then protocol name
+   * then reads the response.
+   *
+   * When a only a single protocol is being negotiated on an outbound stream,
+   * and the stream is written to before being read from, we can optimistically
+   * write the protocol name and the first chunk of data together in the first
+   * message.
+   *
+   * Reading and handling the protocol response is done asynchronously, which
+   * means we can skip a round trip on writing to newly opened streams which
+   * significantly reduces the time-to-first-byte on a stream.
+   *
+   * The side-effect of this is that the underlying stream won't negotiate the
+   * protocol until either data is written to or read from the stream so it will
+   * not be opened on the remote until this is done.
+   *
+   * Pass `false` here to optimistically write the protocol name and first chunk
+   * of data in the first message.
+   *
+   * If multiple protocols are being negotiated, negotiation is always completed
+   * in full before the stream is returned so this option has no effect.
+   *
+   * @default true
+   */
+  negotiateFully?: boolean
 }
 
 export type ConnectionStatus = 'open' | 'closing' | 'closed'
@@ -268,12 +302,17 @@ export interface Connection {
    * Immediately close the connection, any queued data will be discarded
    */
   abort(err: Error): void
+
+  /**
+   * The connection logger
+   */
+  log: Logger
 }
 
-export const symbol = Symbol.for('@libp2p/connection')
+export const connectionSymbol = Symbol.for('@libp2p/connection')
 
 export function isConnection (other: any): other is Connection {
-  return other != null && Boolean(other[symbol])
+  return other != null && Boolean(other[connectionSymbol])
 }
 
 export interface ConnectionProtector {
@@ -308,7 +347,7 @@ export interface MultiaddrConnectionTimeline {
  * a peer. It is a low-level primitive and is the raw connection
  * without encryption or stream multiplexing.
  */
-export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>> {
+export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
   /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
@@ -329,4 +368,9 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array>, 
    * When connection lifecycle events occurred
    */
   timeline: MultiaddrConnectionTimeline
+
+  /**
+   * The multiaddr connection logger
+   */
+  log: Logger
 }

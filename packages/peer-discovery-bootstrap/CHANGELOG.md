@@ -9,6 +9,197 @@
 
 * update @libp2p/interface-peer-discovery to 2.0.0 ([#176](https://github.com/libp2p/js-libp2p-bootstrap/issues/176)) ([1954e75](https://github.com/libp2p/js-libp2p-bootstrap/commit/1954e75fa4b1e6b3b42f885f663f989fd0e422ab))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.1 to ^5.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.2 to ^5.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.3 to ^5.0.4
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.4 to ^5.0.5
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.5 to ^5.0.6
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.7 to ^5.0.8
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.8 to ^5.1.0
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.1 to ^5.1.2
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
+
+## [10.0.14](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.13...bootstrap-v10.0.14) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/peer-id bumped from ^4.0.5 to ^4.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.2.0 to ^5.3.0
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+
+## [10.0.12](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.11...bootstrap-v10.0.12) (2024-01-16)
+
+
+### Bug Fixes
+
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/peer-id bumped from ^4.0.4 to ^4.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/logger bumped from ^4.0.4 to ^4.0.5
+
+## [10.0.10](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.9...bootstrap-v10.0.10) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/peer-id bumped from ^4.0.3 to ^4.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+
+## [10.0.1](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.0...bootstrap-v10.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/peer-id bumped from ^4.0.0 to ^4.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/logger bumped from ^4.0.0 to ^4.0.1
+
+## [10.0.0](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.12...bootstrap-v10.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Bug Fixes
+
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* use logging component everywhere ([#2228](https://www.github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://www.github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+    * @libp2p/peer-id bumped from ^3.0.6 to ^4.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.5 to ^5.0.0
+    * @libp2p/logger bumped from ^3.1.0 to ^4.0.0
+
+### [9.0.12](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.11...bootstrap-v9.0.12) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+    * @libp2p/logger bumped from ^3.0.5 to ^3.1.0
+    * @libp2p/peer-id bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.4 to ^4.1.5
+
+### [9.0.11](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.10...bootstrap-v9.0.11) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^4.1.3 to ^4.1.4
+
 ### [9.0.10](https://www.github.com/libp2p/js-libp2p/compare/bootstrap-v9.0.9...bootstrap-v9.0.10) (2023-11-03)
 
 

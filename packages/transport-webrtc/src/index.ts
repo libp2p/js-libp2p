@@ -32,7 +32,7 @@
 import { WebRTCTransport } from './private-to-private/transport.js'
 import { WebRTCDirectTransport, type WebRTCTransportDirectInit, type WebRTCDirectTransportComponents } from './private-to-public/transport.js'
 import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {
   /**
@@ -66,6 +66,12 @@ export interface DataChannelOptions {
    * controls how long we wait for the acknowledgement in ms (default: 5s)
    */
   closeTimeout?: number
+
+  /**
+   * When sending the first data message, if the channel is not in the "open"
+   * state, wait this long for the "open" event to fire.
+   */
+  openTimeout?: number
 }
 
 /**

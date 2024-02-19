@@ -1,4 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 6] */
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -16,8 +17,7 @@ import {
   PubsubImplementation,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Message, PubSubRPC } from '@libp2p/interface/pubsub'
+import type { PeerId, Message, PubSubRPC } from '@libp2p/interface'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'test-topic'
@@ -31,7 +31,8 @@ describe('pubsub base implementation', () => {
       const peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol],
         emitSelf: true
@@ -104,7 +105,8 @@ describe('pubsub base implementation', () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
           peerId,
-          registrar: new MockRegistrar()
+          registrar: new MockRegistrar(),
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
@@ -136,13 +138,15 @@ describe('pubsub base implementation', () => {
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
-          registrar: registrarA
+          registrar: registrarA,
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
-          registrar: registrarB
+          registrar: registrarB,
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
@@ -206,7 +210,8 @@ describe('pubsub base implementation', () => {
         const peerId = await createPeerId()
         pubsub = new PubsubImplementation({
           peerId,
-          registrar: new MockRegistrar()
+          registrar: new MockRegistrar(),
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
@@ -242,13 +247,15 @@ describe('pubsub base implementation', () => {
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
-          registrar: registrarA
+          registrar: registrarA,
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
-          registrar: registrarB
+          registrar: registrarB,
+          logger: defaultLogger()
         }, {
           multicodecs: [protocol]
         })
@@ -336,7 +343,8 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })
@@ -365,7 +373,8 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })
@@ -411,7 +420,9 @@ describe('pubsub base implementation', () => {
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
-      const peer = new PeerStreams({ id: peerId, protocol: 'a-protocol' })
+      const peer = new PeerStreams({
+        logger: defaultLogger()
+      }, { id: peerId, protocol: 'a-protocol' })
       const id = peer.id
 
       const set = new PeerSet()
@@ -436,7 +447,8 @@ describe('pubsub base implementation', () => {
       peerId = await createPeerId()
       pubsub = new PubsubImplementation({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })
@@ -450,6 +462,8 @@ describe('pubsub base implementation', () => {
       sinon.spy(pubsub, 'validate')
 
       const peerStream = new PeerStreams({
+        logger: defaultLogger()
+      }, {
         id: await createEd25519PeerId(),
         protocol: 'test'
       })
@@ -480,6 +494,8 @@ describe('pubsub base implementation', () => {
       sinon.spy(pubsub, 'validate')
 
       const peerStream = new PeerStreams({
+        logger: defaultLogger()
+      }, {
         id: await createEd25519PeerId(),
         protocol: 'test'
       })

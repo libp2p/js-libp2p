@@ -1,13 +1,9 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { isPeerId } from '@libp2p/interface/peer-id'
-import { logger } from '@libp2p/logger'
+import { CodeError, isPeerId } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { codes } from './errors.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:get-peer')
 
 export interface PeerAddress {
   peerId?: PeerId
@@ -35,7 +31,6 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
     // ensure PeerId is either not set or is consistent
     peer.forEach(ma => {
       if (!isMultiaddr(ma)) {
-        log.error('multiaddr %s was invalid', ma)
         throw new CodeError('Invalid Multiaddr', codes.ERR_INVALID_MULTIADDR)
       }
 

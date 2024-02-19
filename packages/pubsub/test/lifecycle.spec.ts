@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import sinon from 'sinon'
@@ -9,9 +10,8 @@ import {
   MockRegistrar,
   mockIncomingStreamEvent
 } from './utils/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface/pubsub'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { PeerId, PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 class PubsubProtocol extends PubSubBaseProtocol {
@@ -53,7 +53,8 @@ describe('pubsub base lifecycle', () => {
 
       pubsub = new PubsubProtocol({
         peerId,
-        registrar: sinonMockRegistrar
+        registrar: sinonMockRegistrar,
+        logger: defaultLogger()
       }, {
         multicodecs: ['/pubsub/1.0.0']
       })
@@ -112,13 +113,15 @@ describe('pubsub base lifecycle', () => {
 
       pubsubA = new PubsubImplementation({
         peerId: peerIdA,
-        registrar: registrarA
+        registrar: registrarA,
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })
       pubsubB = new PubsubImplementation({
         peerId: peerIdB,
-        registrar: registrarB
+        registrar: registrarB,
+        logger: defaultLogger()
       }, {
         multicodecs: [protocol]
       })

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Docs for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/doc#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/doc#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -19,18 +19,19 @@
       "sourceType": "module"
     }
   },
+  "exports": {},
   "scripts": {
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@chainsafe/libp2p-yamux": "^5.0.0",
-    "@libp2p/interface": "^0.1.0",
-    "@libp2p/mplex": "^9.0.0",
-    "@libp2p/prometheus-metrics": "^2.0.0",
-    "@libp2p/tcp": "^8.0.0",
-    "aegir": "^41.0.2",
-    "libp2p": "^0.46.0",
-    "prom-client": "^15.0.0"
+    "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@libp2p/interface": "^1.1.2",
+    "@libp2p/mplex": "^10.0.13",
+    "@libp2p/prometheus-metrics": "^3.0.13",
+    "@libp2p/tcp": "^9.0.13",
+    "aegir": "^42.2.3",
+    "libp2p": "^1.2.1",
+    "prom-client": "^15.1.0"
   },
   "private": true
 }

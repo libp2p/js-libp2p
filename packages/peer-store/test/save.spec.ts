@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerUpdate, type PeerId, type PeerData } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -12,9 +13,6 @@ import sinon from 'sinon'
 import { codes } from '../src/errors.js'
 import { PersistentPeerStore } from '../src/index.js'
 import { Peer as PeerPB } from '../src/pb/peer.js'
-import type { Libp2pEvents, PeerUpdate } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerData } from '@libp2p/interface/peer-store'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
@@ -29,7 +27,12 @@ describe('save', () => {
     peerId = await createEd25519PeerId()
     otherPeerId = await createEd25519PeerId()
     events = new TypedEventEmitter()
-    peerStore = new PersistentPeerStore({ peerId, events, datastore: new MemoryDatastore() })
+    peerStore = new PersistentPeerStore({
+      peerId,
+      events,
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
+    })
   })
 
   it('throws invalid parameters error if invalid PeerId is provided', async () => {

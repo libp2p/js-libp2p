@@ -1,6 +1,5 @@
-import { noise as Noise } from '@chainsafe/libp2p-noise'
-import { type CreateListenerOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
+import { noise } from '@chainsafe/libp2p-noise'
+import { type CreateListenerOptions, transportSymbol, type Transport, type Listener, type ComponentLogger, type Logger, type Connection, type CounterGroup, type Metrics, type PeerId } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -17,12 +16,7 @@ import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
 import type { DataChannelOptions } from '../index.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:webrtc:transport')
 
 /**
  * The time to wait, in milliseconds, for the data channel handshake to complete
@@ -49,6 +43,7 @@ export const CERTHASH_CODE: number = protocols('certhash').code
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
   metrics?: Metrics
+  logger: ComponentLogger
 }
 
 export interface WebRTCMetrics {
@@ -60,10 +55,12 @@ export interface WebRTCTransportDirectInit {
 }
 
 export class WebRTCDirectTransport implements Transport {
+  private readonly log: Logger
   private readonly metrics?: WebRTCMetrics
   private readonly components: WebRTCDirectTransportComponents
   private readonly init: WebRTCTransportDirectInit
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
+    this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
     if (components.metrics != null) {
@@ -81,7 +78,7 @@ export class WebRTCDirectTransport implements Transport {
    */
   async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
     const rawConn = await this._connect(ma, options)
-    log('dialing address: %a', ma)
+    this.log('dialing address: %a', ma)
     return rawConn
   }
 
@@ -107,7 +104,7 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Symbol.for('@libp2p/transport')
    */
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   /**
    * Connect to a peer using a multiaddr
@@ -144,7 +141,7 @@ export class WebRTCDirectTransport implements Transport {
         const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
         const handshakeTimeout = setTimeout(() => {
           const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-          log.error(error)
+          this.log.error(error)
           this.metrics?.dialerEvents.increment({ open_error: true })
           reject(dataChannelError('data', error))
         }, HANDSHAKE_TIMEOUT_MS)
@@ -159,7 +156,7 @@ export class WebRTCDirectTransport implements Transport {
           clearTimeout(handshakeTimeout)
           const errorTarget = event.target?.toString() ?? 'not specified'
           const error = `Error opening a data channel for handshaking: ${errorTarget}`
-          log.error(error)
+          this.log.error(error)
           // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
           this.metrics?.dialerEvents.increment({ unknown_error: true })
           reject(dataChannelError('data', error))
@@ -192,9 +189,14 @@ export class WebRTCDirectTransport implements Transport {
 
       // Since we use the default crypto interface and do not use a static key or early data,
       // we pass in undefined for these parameters.
-      const noise = Noise({ prologueBytes: fingerprintsPrologue })()
+      const connectionEncrypter = noise({ prologueBytes: fingerprintsPrologue })(this.components)
 
-      const wrappedChannel = createStream({ channel: handshakeDataChannel, direction: 'inbound', ...(this.init.dataChannel ?? {}) })
+      const wrappedChannel = createStream({
+        channel: handshakeDataChannel,
+        direction: 'inbound',
+        logger: this.components.logger,
+        ...(this.init.dataChannel ?? {})
+      })
       const wrappedDuplex = {
         ...wrappedChannel,
         sink: wrappedChannel.sink.bind(wrappedChannel),
@@ -209,7 +211,7 @@ export class WebRTCDirectTransport implements Transport {
 
       // Creating the connection before completion of the noise
       // handshake ensures that the stream opening callback is set up
-      const maConn = new WebRTCMultiaddrConnection({
+      const maConn = new WebRTCMultiaddrConnection(this.components, {
         peerConnection,
         remoteAddr: ma,
         timeline: {
@@ -226,7 +228,7 @@ export class WebRTCDirectTransport implements Transport {
           case 'disconnected':
           case 'closed':
             maConn.close().catch((err) => {
-              log.error('error closing connection', err)
+              this.log.error('error closing connection', err)
             }).finally(() => {
               // Remove the event listener once the connection is closed
               controller.abort()
@@ -240,11 +242,15 @@ export class WebRTCDirectTransport implements Transport {
       // Track opened peer connection
       this.metrics?.dialerEvents.increment({ peer_connection: true })
 
-      const muxerFactory = new DataChannelMuxerFactory({ peerConnection, metrics: this.metrics?.dialerEvents, dataChannelOptions: this.init.dataChannel })
+      const muxerFactory = new DataChannelMuxerFactory(this.components, {
+        peerConnection,
+        metrics: this.metrics?.dialerEvents,
+        dataChannelOptions: this.init.dataChannel
+      })
 
       // For outbound connections, the remote is expected to start the noise handshake.
       // Therefore, we need to secure an inbound noise connection from the remote.
-      await noise.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+      await connectionEncrypter.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
 
       return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
     } catch (err) {
@@ -262,7 +268,9 @@ export class WebRTCDirectTransport implements Transport {
       throw invalidArgument('no local certificate')
     }
 
-    const localFingerprint = sdp.getLocalFingerprint(pc)
+    const localFingerprint = sdp.getLocalFingerprint(pc, {
+      log: this.log
+    })
     if (localFingerprint == null) {
       throw invalidArgument('no local fingerprint found')
     }

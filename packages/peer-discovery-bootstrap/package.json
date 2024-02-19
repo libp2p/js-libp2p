@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/bootstrap",
-  "version": "9.0.10",
+  "version": "10.0.15",
   "description": "Peer discovery via a list of bootstrap peers",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-discovery-bootstrap#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -49,15 +53,16 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.5",
-    "@libp2p/logger": "^3.0.5",
-    "@libp2p/peer-id": "^3.0.5",
-    "@multiformats/mafmt": "^12.1.2",
-    "@multiformats/multiaddr": "^12.1.5"
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/peer-id": "^4.0.6",
+    "@multiformats/mafmt": "^12.1.6",
+    "@multiformats/multiaddr": "^12.1.14"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.1.3",
-    "aegir": "^41.0.2",
+    "@libp2p/interface-compliance-tests": "^5.3.1",
+    "@libp2p/logger": "^4.0.6",
+    "aegir": "^42.2.3",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

@@ -1,4 +1,4 @@
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 /**
  * Count how many peers are in b but are not in a

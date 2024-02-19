@@ -1,5 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface/events'
+import { CustomEvent, TypedEventEmitter } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
@@ -11,9 +11,8 @@ import { isValidTick } from '../is-valid-tick.js'
 import { mockUpgrader, mockRegistrar } from '../mocks/index.js'
 import type { TransportTestFixtures } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { Transport, Upgrader } from '@libp2p/interface/transport'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Connection, Transport, Upgrader } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export default (common: TestSetup<TransportTestFixtures>): void => {

@@ -1,16 +1,13 @@
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { multiaddr, type Multiaddr, protocols } from '@multiformats/multiaddr'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { LoggerOptions, PeerInfo } from '@libp2p/interface'
 import type { Answer, StringAnswer, TxtAnswer } from 'dns-packet'
 import type { MulticastDNS, QueryPacket, ResponsePacket } from 'multicast-dns'
 
-const log = logger('libp2p:mdns:query')
-
-export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number): ReturnType<typeof setInterval> {
+export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: number, options?: LoggerOptions): ReturnType<typeof setInterval> {
   const query = (): void => {
-    log.trace('query', serviceTag)
+    options?.log.trace('query', serviceTag)
 
     mdns.query({
       questions: [{
@@ -25,7 +22,7 @@ export function queryLAN (mdns: MulticastDNS, serviceTag: string, interval: numb
   return setInterval(query, interval)
 }
 
-export function gotResponse (rsp: ResponsePacket, localPeerName: string, serviceTag: string): PeerInfo | undefined {
+export function gotResponse (rsp: ResponsePacket, localPeerName: string, serviceTag: string, options?: LoggerOptions): PeerInfo | undefined {
   if (rsp.answers == null) {
     return
   }
@@ -70,21 +67,20 @@ export function gotResponse (rsp: ResponsePacket, localPeerName: string, service
     if (peerId == null) {
       throw new Error("Multiaddr doesn't contain PeerId")
     }
-    log('peer found %p', peerId)
+    options?.log('peer found %p', peerId)
 
     return {
       id: peerIdFromString(peerId),
-      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(protocols('p2p').code)),
-      protocols: []
+      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(protocols('p2p').code))
     }
   } catch (e) {
-    log.error('failed to parse mdns response', e)
+    options?.log.error('failed to parse mdns response', e)
   }
 }
 
-export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean): void {
+export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string, multiaddrs: Multiaddr[], serviceTag: string, broadcast: boolean, options?: LoggerOptions): void {
   if (!broadcast) {
-    log('not responding to mDNS query as broadcast mode is false')
+    options?.log('not responding to mDNS query as broadcast mode is false')
     return
   }
 
@@ -113,13 +109,13 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string
         // TXT record fields have a max data length of 255 bytes
         // see 6.1 - https://www.ietf.org/rfc/rfc6763.txt
         if (data.length > 255) {
-          log('multiaddr %a is too long to use in mDNS query response', addr)
+          options?.log('multiaddr %a is too long to use in mDNS query response', addr)
           return
         }
 
         // spec mandates multiaddr contains peer id
         if (addr.getPeerId() == null) {
-          log('multiaddr %a did not have a peer ID so cannot be used in mDNS query response', addr)
+          options?.log('multiaddr %a did not have a peer ID so cannot be used in mDNS query response', addr)
           return
         }
 
@@ -132,7 +128,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string
         })
       })
 
-    log.trace('responding to query')
+    options?.log.trace('responding to query')
     mdns.respond(answers)
   }
 }

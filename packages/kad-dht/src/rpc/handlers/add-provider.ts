@@ -1,27 +1,32 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
-import type { Message } from '../../message/index.js'
+import type { Message } from '../../message/dht.js'
 import type { Providers } from '../../providers'
 import type { DHTMessageHandler } from '../index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
-const log = logger('libp2p:kad-dht:rpc:handlers:add-provider')
+export interface AddProviderComponents {
+  logger: ComponentLogger
+}
 
 export interface AddProviderHandlerInit {
   providers: Providers
+  logPrefix: string
 }
 
 export class AddProviderHandler implements DHTMessageHandler {
   private readonly providers: Providers
+  private readonly log: Logger
 
-  constructor (init: AddProviderHandlerInit) {
-    const { providers } = init
-    this.providers = providers
+  constructor (components: AddProviderComponents, init: AddProviderHandlerInit) {
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:add-provider`)
+    this.providers = init.providers
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
-    log('start')
+    this.log('start')
 
     if (msg.key == null || msg.key.length === 0) {
       throw new CodeError('Missing key', 'ERR_MISSING_KEY')
@@ -35,26 +40,26 @@ export class AddProviderHandler implements DHTMessageHandler {
       throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
     }
 
-    if (msg.providerPeers == null || msg.providerPeers.length === 0) {
-      log.error('no providers found in message')
+    if (msg.providers == null || msg.providers.length === 0) {
+      this.log.error('no providers found in message')
     }
 
     await Promise.all(
-      msg.providerPeers.map(async (pi) => {
+      msg.providers.map(async (pi) => {
         // Ignore providers not from the originator
-        if (!pi.id.equals(peerId)) {
-          log('invalid provider peer %p from %p', pi.id, peerId)
+        if (!peerId.equals(pi.id)) {
+          this.log('invalid provider peer %p from %p', pi.id, peerId)
           return
         }
 
         if (pi.multiaddrs.length < 1) {
-          log('no valid addresses for provider %p. Ignore', peerId)
+          this.log('no valid addresses for provider %p. Ignore', peerId)
           return
         }
 
-        log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => m.toString()))
+        this.log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
 
-        await this.providers.addProvider(cid, pi.id)
+        await this.providers.addProvider(cid, peerIdFromBytes(pi.id))
       })
     )
 

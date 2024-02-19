@@ -5,6 +5,102 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.1.3](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.2...interface-v1.1.3) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+## [1.1.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.1...interface-v1.1.2) (2024-01-16)
+
+
+### Bug Fixes
+
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+## [1.1.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.0...interface-v1.1.1) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.2...interface-v1.1.0) (2023-12-28)
+
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+
+
+### Bug Fixes
+
+* make peerid optional in peerid.equals ([#2335](https://github.com/libp2p/js-libp2p/issues/2335)) ([f1c1167](https://github.com/libp2p/js-libp2p/commit/f1c116746ab82b15b93a7875ed1b05861b8c0d32))
+
+## [1.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.1...interface-v1.0.2) (2023-12-10)
+
+
+### Bug Fixes
+
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+
+## [1.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.0.0...interface-v1.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* add status property ([#2269](https://github.com/libp2p/js-libp2p/issues/2269)) ([a32e70b](https://github.com/libp2p/js-libp2p/commit/a32e70bac126a0746dff9f7c87a4d6211a00fa7a))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+## [1.0.0](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.6...interface-v1.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* removed EventEmitter re-export - please use TypedEventEmitter instead
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/upnp-nat` should be updated to `@libp2p/upnp-nat`
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+* move autonat into separate package (#2107)
+* remove libp2p.keychain (#2084)
+* remove min/max from topologies (#2158)
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://www.github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://www.github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* support streaming hashes for key sign/verify ([#2255](https://www.github.com/libp2p/js-libp2p/issues/2255)) ([ac7bc38](https://www.github.com/libp2p/js-libp2p/commit/ac7bc3839ae3d8253e9141c52be2c7c0c66a1d60))
+
+
+### Bug Fixes
+
+* allow keys to do sync sign/verify ([#2258](https://www.github.com/libp2p/js-libp2p/issues/2258)) ([dd7d17c](https://www.github.com/libp2p/js-libp2p/commit/dd7d17cc478dfcba02211a47789439b7d7ab9627))
+* remove event emitter type from interfaces ([#2196](https://www.github.com/libp2p/js-libp2p/issues/2196)) ([f3ec538](https://www.github.com/libp2p/js-libp2p/commit/f3ec538451afe105a5a4513d66832965ad63debe))
+* remove min/max from topologies ([#2158](https://www.github.com/libp2p/js-libp2p/issues/2158)) ([511359a](https://www.github.com/libp2p/js-libp2p/commit/511359a86235e7abe65887dce7262b34a53bad5a))
+* remove protocols from PeerInfo ([#2166](https://www.github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://www.github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+
+
+### Code Refactoring
+
+* extract DCUtR into separate module ([#2220](https://www.github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://www.github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract UPnP NAT into separate module ([#2217](https://www.github.com/libp2p/js-libp2p/issues/2217)) ([f29b73f](https://www.github.com/libp2p/js-libp2p/commit/f29b73f781afcea36cba0589aafdd81e1852e194))
+* move autonat into separate package ([#2107](https://www.github.com/libp2p/js-libp2p/issues/2107)) ([b0e8f06](https://www.github.com/libp2p/js-libp2p/commit/b0e8f06f0dcdbda0e367186b093e42e8bff3ee27))
+* remove isStarted method from Startable ([#2145](https://www.github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://www.github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+* remove libp2p.keychain ([#2084](https://www.github.com/libp2p/js-libp2p/issues/2084)) ([125c84b](https://www.github.com/libp2p/js-libp2p/commit/125c84bb8a30ac986fb5aed0a4de23bc806d3aea))
+
+### [0.1.6](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.5...interface-v0.1.6) (2023-11-07)
+
+
+### Features
+
+* add component logger ([#2198](https://www.github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://www.github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://www.github.com/libp2p/js-libp2p/issues/2105)
+
 ### [0.1.5](https://www.github.com/libp2p/js-libp2p/compare/interface-v0.1.4...interface-v0.1.5) (2023-11-03)
 
 

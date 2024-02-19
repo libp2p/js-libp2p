@@ -1,15 +1,10 @@
-import { logger } from '@libp2p/logger'
 import { createStream } from './stream.js'
 import { drainAndClose, nopSink, nopSource } from './util.js'
 import type { DataChannelOptions } from './index.js'
-import type { Stream } from '@libp2p/interface/connection'
-import type { CounterGroup } from '@libp2p/interface/metrics'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { ComponentLogger, Logger, Stream, CounterGroup, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const log = logger('libp2p:webrtc:muxer')
 
 const PROTOCOL = '/webrtc'
 
@@ -32,6 +27,10 @@ export interface DataChannelMuxerFactoryInit {
   dataChannelOptions?: DataChannelOptions
 }
 
+export interface DataChannelMuxerFactoryComponents {
+  logger: ComponentLogger
+}
+
 interface BufferedStream {
   stream: Stream
   channel: RTCDataChannel
@@ -48,15 +47,29 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private bufferedStreams: BufferedStream[] = []
   private readonly metrics?: CounterGroup
   private readonly dataChannelOptions?: DataChannelOptions
+  private readonly components: DataChannelMuxerFactoryComponents
+  private readonly log: Logger
 
-  constructor (init: DataChannelMuxerFactoryInit) {
+  constructor (components: DataChannelMuxerFactoryComponents, init: DataChannelMuxerFactoryInit) {
+    this.components = components
     this.peerConnection = init.peerConnection
     this.metrics = init.metrics
     this.protocol = init.protocol ?? PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
+    this.log = components.logger.forComponent('libp2p:webrtc:datachannelmuxerfactory')
 
     // store any datachannels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
+      this.log.trace('incoming early datachannel with channel id %d and label "%s"', channel.id)
+
+      // 'init' channel is only used during connection establishment
+      if (channel.label === 'init') {
+        this.log.trace('closing early init channel')
+        channel.close()
+
+        return
+      }
+
       // @ts-expect-error fields are set below
       const bufferedStream: BufferedStream = {}
 
@@ -66,6 +79,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
         onEnd: (err) => {
           bufferedStream.onEnd(err)
         },
+        logger: components.logger,
         ...this.dataChannelOptions
       })
 
@@ -80,7 +94,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   }
 
   createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
-    return new DataChannelMuxer({
+    return new DataChannelMuxer(this.components, {
       ...init,
       peerConnection: this.peerConnection,
       dataChannelOptions: this.dataChannelOptions,
@@ -95,6 +109,10 @@ export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit, Strea
   streams: BufferedStream[]
 }
 
+export interface DataChannelMuxerComponents {
+  logger: ComponentLogger
+}
+
 /**
  * A libp2p data channel stream muxer
  */
@@ -105,11 +123,15 @@ export class DataChannelMuxer implements StreamMuxer {
   public streams: Stream[]
   public protocol: string
 
+  private readonly log: Logger
   private readonly peerConnection: RTCPeerConnection
   private readonly dataChannelOptions: DataChannelOptions
   private readonly metrics?: CounterGroup
+  private readonly logger: ComponentLogger
 
-  constructor (readonly init: DataChannelMuxerInit) {
+  constructor (components: DataChannelMuxerComponents, readonly init: DataChannelMuxerInit) {
+    this.log = components.logger.forComponent('libp2p:webrtc:muxer')
+    this.logger = components.logger
     this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
     this.protocol = init.protocol ?? PROTOCOL
@@ -123,12 +145,24 @@ export class DataChannelMuxer implements StreamMuxer {
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
     this.peerConnection.ondatachannel = ({ channel }) => {
+      this.log.trace('incoming datachannel with channel id %d', channel.id)
+
+      // 'init' channel is only used during connection establishment
+      if (channel.label === 'init') {
+        this.log.trace('closing init channel')
+        channel.close()
+
+        return
+      }
+
       const stream = createStream({
         channel,
         direction: 'inbound',
         onEnd: () => {
+          this.log('incoming channel %s ended with state %s', channel.id, channel.readyState)
           this.#onStreamEnd(stream, channel)
         },
+        logger: this.logger,
         ...this.dataChannelOptions
       })
 
@@ -147,6 +181,7 @@ export class DataChannelMuxer implements StreamMuxer {
       queueMicrotask(() => {
         this.init.streams.forEach(bufferedStream => {
           bufferedStream.onEnd = () => {
+            this.log('incoming early channel %s ended with state %s', bufferedStream.channel.id, bufferedStream.channel.readyState)
             this.#onStreamEnd(bufferedStream.stream, bufferedStream.channel)
           }
 
@@ -158,8 +193,14 @@ export class DataChannelMuxer implements StreamMuxer {
   }
 
   #onStreamEnd (stream: Stream, channel: RTCDataChannel): void {
-    log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
-    drainAndClose(channel, `${stream.direction} ${stream.id} ${stream.protocol}`, this.dataChannelOptions.drainTimeout)
+    this.log.trace('stream %s %s %s onEnd', stream.direction, stream.id, stream.protocol)
+    drainAndClose(
+      channel,
+      `${stream.direction} ${stream.id} ${stream.protocol}`,
+      this.dataChannelOptions.drainTimeout, {
+        log: this.log
+      }
+    )
     this.streams = this.streams.filter(s => s.id !== stream.id)
     this.metrics?.increment({ stream_end: true })
     this.init?.onStreamEnd?.(stream)
@@ -200,12 +241,17 @@ export class DataChannelMuxer implements StreamMuxer {
   newStream (): Stream {
     // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
+
+    this.log.trace('opened outgoing datachannel with channel id %s', channel.id)
+
     const stream = createStream({
       channel,
       direction: 'outbound',
       onEnd: () => {
+        this.log('outgoing channel %s ended with state %s', channel.id, channel.readyState)
         this.#onStreamEnd(stream, channel)
       },
+      logger: this.logger,
       ...this.dataChannelOptions
     })
     this.streams.push(stream)

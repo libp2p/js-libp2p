@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerStore } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -8,10 +9,7 @@ import delay from 'delay'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { type AddressFilter, DefaultAddressManager } from '../../src/address-manager/index.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddreses = ['/dns4/peer.io']
@@ -34,7 +32,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -48,7 +47,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses
@@ -68,7 +68,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses,
@@ -88,7 +89,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -106,7 +108,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: [
@@ -127,7 +130,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       announceFilter: stubInterface<AddressFilter>()
     })
@@ -150,7 +154,8 @@ describe('Address Manager', () => {
         getAddrs: Sinon.stub().returns([])
       }),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     })
 
     am.confirmObservedAddr(multiaddr(ma))
@@ -170,7 +175,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -188,7 +194,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager: stubInterface<TransportManager>(),
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     })
 
     expect(am.getObservedAddrs()).to.be.empty()
@@ -207,7 +214,8 @@ describe('Address Manager', () => {
       peerId,
       transportManager,
       peerStore,
-      events
+      events,
+      logger: defaultLogger()
     }, {
       listen: [ma],
       announce: []

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger, logger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -7,7 +8,7 @@ import { pair } from 'it-pair'
 import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { streamToMaConnection } from '../src/stream-to-ma-conn.js'
-import type { Stream } from '@libp2p/interface/connection'
+import type { Stream } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -26,7 +27,8 @@ function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
     id: `muxed-stream-${Math.random()}`,
     status: 'open',
     readStatus: 'ready',
-    writeStatus: 'ready'
+    writeStatus: 'ready',
+    log: logger('muxed-stream')
   }
 
   return muxedStream
@@ -42,7 +44,8 @@ describe('Convert stream into a multiaddr connection', () => {
     const maConn = streamToMaConnection({
       stream: toMuxedStream(stream),
       localAddr,
-      remoteAddr
+      remoteAddr,
+      logger: defaultLogger()
     })
 
     expect(maConn).to.exist()
@@ -62,12 +65,15 @@ describe('Convert stream into a multiaddr connection', () => {
     const maConn = streamToMaConnection({
       stream: toMuxedStream(stream),
       localAddr,
-      remoteAddr
+      remoteAddr,
+      logger: defaultLogger()
     })
 
     const data = uint8ArrayFromString('hey')
     const streamData = await pipe(
-      [data],
+      async function * () {
+        yield data
+      },
       maConn,
       async (source) => all(source)
     )

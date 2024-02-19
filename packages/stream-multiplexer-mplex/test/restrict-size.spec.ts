@@ -6,7 +6,6 @@ import all from 'it-all'
 import drain from 'it-drain'
 import each from 'it-foreach'
 import { pipe } from 'it-pipe'
-import toBuffer from 'it-to-buffer'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { encode } from '../src/encode.js'
 import { type Message, MessageTypes } from '../src/message-types.js'
@@ -16,11 +15,11 @@ describe('restrict size', () => {
   it('should throw when size is too big', async () => {
     const maxSize = 32
 
-    const input: Message[][] = [
-      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) }],
-      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }],
-      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) }],
-      [{ id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }]
+    const input: Message[] = [
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) },
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) },
+      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }
     ]
 
     const output: Message[] = []
@@ -38,9 +37,9 @@ describe('restrict size', () => {
     } catch (err: any) {
       expect(err).to.have.property('code', 'ERR_MSG_TOO_BIG')
       expect(output).to.have.length(3)
-      expect(output[0]).to.deep.equal(input[0][0])
-      expect(output[1]).to.deep.equal(input[1][0])
-      expect(output[2]).to.deep.equal(input[2][0])
+      expect(output[0]).to.deep.equal(input[0])
+      expect(output[1]).to.deep.equal(input[1])
+      expect(output[2]).to.deep.equal(input[2])
       return
     }
     throw new Error('did not restrict size')
@@ -51,7 +50,7 @@ describe('restrict size', () => {
       id: 4,
       type: MessageTypes.CLOSE_RECEIVER
     }
-    const input: Message[][] = [[message]]
+    const input: Message[] = [message]
 
     const output = await pipe(
       input,
@@ -59,14 +58,14 @@ describe('restrict size', () => {
       decode(32),
       async (source) => all(source)
     )
-    expect(output).to.deep.equal(input[0])
+    expect(output).to.deep.equal(input)
   })
 
   it('should throw when unprocessed message queue size is too big', async () => {
     const maxMessageSize = 32
     const maxUnprocessedMessageQueueSize = 64
 
-    const input: Message[][] = [[
+    const input: Message[] = [
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
@@ -74,7 +73,7 @@ describe('restrict size', () => {
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
       { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }
-    ]]
+    ]
 
     const output: Message[] = []
 
@@ -84,7 +83,7 @@ describe('restrict size', () => {
         encode,
         async function * (source) {
           // make one big buffer
-          yield toBuffer(source)
+          yield new Uint8ArrayList(...(await all(source))).subarray()
         },
         decode(maxMessageSize, maxUnprocessedMessageQueueSize),
         (source) => each(source, chunk => {

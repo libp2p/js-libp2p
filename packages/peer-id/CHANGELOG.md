@@ -5,6 +5,109 @@
 
 * update README.md ([#59](https://github.com/libp2p/js-libp2p-peer-id/issues/59)) ([aba6483](https://github.com/libp2p/js-libp2p-peer-id/commit/aba6483dad028ee5c24bfc01135b77568666cfd3))
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+
+## [4.0.6](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.5...peer-id-v4.0.6) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+
+## [4.0.5](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.4...peer-id-v4.0.5) (2024-01-16)
+
+
+### Bug Fixes
+
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+
+## [4.0.4](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.3...peer-id-v4.0.4) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+
+## [4.0.3](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.2...peer-id-v4.0.3) (2023-12-28)
+
+
+### Bug Fixes
+
+* make peerid optional in peerid.equals ([#2335](https://github.com/libp2p/js-libp2p/issues/2335)) ([f1c1167](https://github.com/libp2p/js-libp2p/commit/f1c116746ab82b15b93a7875ed1b05861b8c0d32))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.0...peer-id-v4.0.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.0 to ^1.0.1
+
+## [4.0.0](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v3.0.6...peer-id-v4.0.0) (2023-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+
+### Code Refactoring
+
+* extract identify service into separate module ([#2219](https://www.github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://www.github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.6 to ^1.0.0
+
+### [3.0.6](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v3.0.5...peer-id-v3.0.6) (2023-11-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^0.1.5 to ^0.1.6
+
 ### [3.0.5](https://www.github.com/libp2p/js-libp2p/compare/peer-id-v3.0.4...peer-id-v3.0.5) (2023-11-03)
 
 

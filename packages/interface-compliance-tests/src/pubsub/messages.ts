@@ -1,4 +1,4 @@
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
@@ -7,7 +7,7 @@ import { mockNetwork } from '../mocks/index.js'
 import { createComponents } from './utils.js'
 import type { PubSubArgs, PubSubComponents } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Message, PubSub } from '@libp2p/interface/pubsub'
+import type { Message, PubSub } from '@libp2p/interface'
 
 const topic = 'foo'
 const data = uint8ArrayFromString('bar')

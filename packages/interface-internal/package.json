@@ -1,9 +1,9 @@
 {
   "name": "@libp2p/interface-internal",
-  "version": "0.1.8",
+  "version": "1.0.8",
   "description": "Interfaces implemented by internal libp2p components",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/interface-internal#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -11,28 +11,16 @@
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "keywords": [
     "interface",
     "libp2p"
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -43,26 +31,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./address-manager": {
-      "types": "./dist/src/address-manager/index.d.ts",
-      "import": "./dist/src/address-manager/index.js"
-    },
-    "./connection-manager": {
-      "types": "./dist/src/connection-manager/index.d.ts",
-      "import": "./dist/src/connection-manager/index.js"
-    },
-    "./record": {
-      "types": "./dist/src/record/index.d.ts",
-      "import": "./dist/src/record/index.js"
-    },
-    "./registrar": {
-      "types": "./dist/src/registrar/index.d.ts",
-      "import": "./dist/src/registrar/index.js"
-    },
-    "./transport-manager": {
-      "types": "./dist/src/transport-manager/index.d.ts",
-      "import": "./dist/src/transport-manager/index.js"
     }
   },
   "eslintConfig": {
@@ -79,12 +47,13 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.5",
-    "@libp2p/peer-collections": "^4.0.7",
-    "@multiformats/multiaddr": "^12.1.5",
-    "uint8arraylist": "^2.4.3"
+    "@libp2p/interface": "^1.1.3",
+    "@libp2p/peer-collections": "^5.1.6",
+    "@multiformats/multiaddr": "^12.1.14",
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^41.0.2"
-  }
+    "aegir": "^42.2.3"
+  },
+  "sideEffects": false
 }

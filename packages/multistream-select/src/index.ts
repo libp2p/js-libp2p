@@ -21,27 +21,26 @@
  */
 
 import { PROTOCOL_ID } from './constants.js'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Duplex, Source } from 'it-stream-types'
+import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
+import type { LengthPrefixedStreamOpts } from 'it-length-prefixed-stream'
 
 export { PROTOCOL_ID }
 
-export interface ProtocolStream<TSource, TSink = TSource, RSink = Promise<void>> {
-  stream: Duplex<AsyncGenerator<TSource>, Source<TSink>, RSink>
+export interface ProtocolStream<Stream> {
+  stream: Stream
   protocol: string
 }
 
-export interface ByteArrayInit extends AbortOptions {
-  writeBytes: true
+export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Partial<LengthPrefixedStreamOpts> {
+  /**
+   * When false, and only a single protocol is being negotiated, use optimistic
+   * select to send both the protocol name and the first data buffer in the
+   * initial message, saving a round trip for connection establishment.
+   *
+   * @default true
+   */
+  negotiateFully?: boolean
 }
 
-export interface ByteListInit extends AbortOptions {
-  writeBytes?: false
-}
-
-export interface MultistreamSelectInit extends AbortOptions {
-  writeBytes?: boolean
-}
-
-export { select, lazySelect } from './select.js'
+export { select } from './select.js'
 export { handle } from './handle.js'

@@ -10,26 +10,27 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import 'node-forge/lib/asn1.js'
-import 'node-forge/lib/pbe.js'
-import { CodeError } from '@libp2p/interface/errors'
-// @ts-expect-error types are missing
-import forge from 'node-forge/lib/forge.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { CodeError } from '@libp2p/interface'
 import * as Ed25519 from './ed25519-class.js'
 import generateEphemeralKeyPair from './ephemeral-keys.js'
 import { importer } from './importer.js'
 import { keyStretcher } from './key-stretcher.js'
 import * as keysPBM from './keys.js'
 import * as RSA from './rsa-class.js'
+import { importFromPem } from './rsa-utils.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey } from '@libp2p/interface/keys'
+import type { PrivateKey, PublicKey } from '@libp2p/interface'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }
 export { keysPBM }
 
 export type KeyTypes = 'RSA' | 'Ed25519' | 'secp256k1'
+
+export { RsaPrivateKey, RsaPublicKey, MAX_RSA_KEY_SIZE } from './rsa-class.js'
+export { Ed25519PrivateKey, Ed25519PublicKey } from './ed25519-class.js'
+export { Secp256k1PrivateKey, Secp256k1PublicKey } from './secp256k1-class.js'
+export type { JWKKeyPair } from './interface.js'
 
 export const supportedKeys = {
   rsa: RSA,
@@ -144,12 +145,9 @@ export async function importKey (encryptedKey: string, password: string): Promis
     // Ignore and try the old pem decrypt
   }
 
-  // Only rsa supports pem right now
-  const key = forge.pki.decryptRsaPrivateKey(encryptedKey, password)
-  if (key === null) {
-    throw new CodeError('Cannot read the key, most likely the password is wrong or not a RSA key', 'ERR_CANNOT_DECRYPT_PEM')
+  if (!encryptedKey.includes('BEGIN')) {
+    throw new CodeError('Encrypted key was not a libp2p-key or a PEM file', 'ERR_INVALID_IMPORT_FORMAT')
   }
-  let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
-  der = uint8ArrayFromString(der.getBytes(), 'ascii')
-  return supportedKeys.rsa.unmarshalRsaPrivateKey(der)
+
+  return importFromPem(encryptedKey, password)
 }

@@ -1,4 +1,4 @@
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
@@ -11,7 +11,7 @@ import { createComponents } from './utils.js'
 import type { PubSubArgs } from './index.js'
 import type { TestSetup } from '../index.js'
 import type { MockNetworkComponents } from '../mocks/index.js'
-import type { Message, PubSub } from '@libp2p/interface/pubsub'
+import type { Message, PubSub } from '@libp2p/interface'
 
 export default (common: TestSetup<PubSub, PubSubArgs>): void => {
   describe('pubsub connection handlers', () => {

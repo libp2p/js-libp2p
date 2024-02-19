@@ -30,9 +30,9 @@ describe('enable server mode', () => {
 
   testCases.forEach(([name, addr, result]) => {
     it(name, async function () {
-      const dht = await tdht.spawn()
+      const dht = await tdht.spawn({ clientMode: undefined })
 
-      await expect(dht.getMode()).to.eventually.equal('client')
+      expect(dht.getMode()).to.equal('client')
 
       dht.components.events.safeDispatchEvent('self:peer:update', {
         detail: {
@@ -53,7 +53,7 @@ describe('enable server mode', () => {
 
       await delay(100)
 
-      await expect(dht.getMode()).to.eventually.equal(result, `did not change to "${result}" mode after updating with address ${addr}`)
+      expect(dht.getMode()).to.equal(result, `did not change to "${result}" mode after updating with address ${addr}`)
 
       dht.components.events.safeDispatchEvent('self:peer:update', {
         detail: {
@@ -68,7 +68,7 @@ describe('enable server mode', () => {
 
       await delay(100)
 
-      await expect(dht.getMode()).to.eventually.equal('client', `did not reset to client mode after updating with address ${addr}`)
+      expect(dht.getMode()).to.equal('client', `did not reset to client mode after updating with address ${addr}`)
     })
   })
 })

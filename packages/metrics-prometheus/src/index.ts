@@ -3,7 +3,7 @@
  *
  * Configure your libp2p node with Prometheus metrics:
  *
- * ```js
+ * ```typescript
  * import { createLibp2p } from 'libp2p'
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
  *
@@ -14,7 +14,7 @@
  *
  * Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
  *
- * ```js
+ * ```typescript
  * import client from 'prom-client'
  *
  * async handler (request, h) {
@@ -64,109 +64,17 @@
  * ```
  * rate(libp2p_tcp_dialer_errors_total[30s])
  * ```
- *
- * @example
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetric = metrics.registerMetric({
- *  name: 'my_metric',
- *  label: 'my_label',
- *  help: 'my help text'
- * })
- *
- * myMetric.update(1)
- * ```
- *
- * @example
- *
- * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetric = metrics.registerMetric({
- *  name: 'my_metric',
- *  label: 'my_label',
- *  help: 'my help text',
- *  calculate: async () => {
- *   // do something expensive
- *    return 1
- *  }
- * })
- * ```
- *
- * @example
- *
- * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetricGroup = metrics.registerMetricGroup({
- *  name: 'my_metric_group',
- *  label: 'my_label',
- *  help: 'my help text'
- * })
- *
- * myMetricGroup.increment({ my_label: 'my_value' })
- * ```
- *
- * There are specific metric groups for tracking libp2p connections and streams:
- *
- * @example
- *
- * Track a newly opened multiaddr connection:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- * import { createLibp2p } from 'libp2p'
- *
- * const metrics = prometheusMetrics()()
- *
- * const libp2p = await createLibp2p({
- *    metrics: metrics,
- *   })
- * // set up a multiaddr connection
- * const connection = await libp2p.dial('multiaddr')
- * const connections = metrics.trackMultiaddrConnection(connection)
- * ```
- *
- * @example
- *
- * Track a newly opened stream:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- * import { createLibp2p } from 'libp2p'
- *
- * const metrics = prometheusMetrics()()
- *
- * const libp2p = await createLibp2p({
- *   metrics: metrics,
- * })
- *
- * const stream = await connection.newStream('/my/protocol')
- * const streams = metrics.trackProtocolStream(stream)
- * ```
  */
 
-import { logger } from '@libp2p/logger'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
 import { PrometheusMetricGroup } from './metric-group.js'
 import { PrometheusMetric } from './metric.js'
-import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
-import type { CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface/metrics'
-import type { Duplex, Source } from 'it-stream-types'
-
-const log = logger('libp2p:prometheus-metrics')
+import type { ComponentLogger, Logger, MultiaddrConnection, Stream, Connection, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 // prom-client metrics are global
 const metrics = new Map<string, any>()
@@ -201,28 +109,34 @@ export interface PrometheusCalculatedMetricOptions<T=number> extends CalculatedM
   registry?: Registry
 }
 
+export interface PrometheusMetricsComponents {
+  logger: ComponentLogger
+}
+
 class PrometheusMetrics implements Metrics {
+  private readonly log: Logger
   private transferStats: Map<string, number>
   private readonly registry?: Registry
 
-  constructor (init?: Partial<PrometheusMetricsInit>) {
+  constructor (components: PrometheusMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
+    this.log = components.logger.forComponent('libp2p:prometheus-metrics')
     this.registry = init?.registry
 
     if (init?.preserveExistingMetrics !== true) {
-      log('Clearing existing metrics')
+      this.log('Clearing existing metrics')
       metrics.clear()
       ;(this.registry ?? register).clear()
     }
 
     if (init?.collectDefaultMetrics !== false) {
-      log('Collecting default metrics')
+      this.log('Collecting default metrics')
       collectDefaultMetrics({ ...init?.defaultMetrics, register: this.registry ?? init?.defaultMetrics?.register })
     }
 
     // holds global and per-protocol sent/received stats
     this.transferStats = new Map()
 
-    log('Collecting data transfer metrics')
+    this.log('Collecting data transfer metrics')
     this.registerCounterGroup('libp2p_data_transfer_bytes_total', {
       label: 'protocol',
       calculate: () => {
@@ -239,7 +153,7 @@ class PrometheusMetrics implements Metrics {
       }
     })
 
-    log('Collecting memory metrics')
+    this.log('Collecting memory metrics')
     this.registerMetricGroup('nodejs_memory_usage_bytes', {
       label: 'memory',
       calculate: () => {
@@ -264,7 +178,7 @@ class PrometheusMetrics implements Metrics {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<Source<any>>, name: string): void {
+  _track (stream: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, name: string): void {
     const self = this
 
     const sink = stream.sink
@@ -304,7 +218,7 @@ class PrometheusMetrics implements Metrics {
     let metric = metrics.get(name)
 
     if (metrics.has(name)) {
-      log('Reuse existing metric', name)
+      this.log('Reuse existing metric', name)
 
       if (opts.calculate != null) {
         metric.addCalculator(opts.calculate)
@@ -313,7 +227,7 @@ class PrometheusMetrics implements Metrics {
       return metrics.get(name)
     }
 
-    log('Register metric', name)
+    this.log('Register metric', name)
     metric = new PrometheusMetric(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metric)
@@ -333,7 +247,7 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      log('Reuse existing metric group', name)
+      this.log('Reuse existing metric group', name)
 
       if (opts.calculate != null) {
         metricGroup.addCalculator(opts.calculate)
@@ -342,7 +256,7 @@ class PrometheusMetrics implements Metrics {
       return metricGroup
     }
 
-    log('Register metric group', name)
+    this.log('Register metric group', name)
     metricGroup = new PrometheusMetricGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metricGroup)
@@ -362,7 +276,7 @@ class PrometheusMetrics implements Metrics {
     let counter = metrics.get(name)
 
     if (counter != null) {
-      log('Reuse existing counter', name)
+      this.log('Reuse existing counter', name)
 
       if (opts.calculate != null) {
         counter.addCalculator(opts.calculate)
@@ -371,7 +285,7 @@ class PrometheusMetrics implements Metrics {
       return metrics.get(name)
     }
 
-    log('Register counter', name)
+    this.log('Register counter', name)
     counter = new PrometheusCounter(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counter)
@@ -391,7 +305,7 @@ class PrometheusMetrics implements Metrics {
     let counterGroup = metrics.get(name)
 
     if (counterGroup != null) {
-      log('Reuse existing counter group', name)
+      this.log('Reuse existing counter group', name)
 
       if (opts.calculate != null) {
         counterGroup.addCalculator(opts.calculate)
@@ -400,7 +314,7 @@ class PrometheusMetrics implements Metrics {
       return counterGroup
     }
 
-    log('Register counter group', name)
+    this.log('Register counter group', name)
     counterGroup = new PrometheusCounterGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counterGroup)
@@ -411,8 +325,8 @@ class PrometheusMetrics implements Metrics {
   }
 }
 
-export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): () => Metrics {
-  return () => {
-    return new PrometheusMetrics(init)
+export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): (components: PrometheusMetricsComponents) => Metrics {
+  return (components) => {
+    return new PrometheusMetrics(components, init)
   }
 }
