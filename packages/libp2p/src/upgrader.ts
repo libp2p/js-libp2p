@@ -671,7 +671,7 @@ export class DefaultUpgrader implements Upgrader {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      connection.log('encrypting outbound connection to %p using %p', remotePeerId)
+      connection.log('encrypting outbound connection to %p using %s', remotePeerId, encrypter)
 
       return {
         ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),

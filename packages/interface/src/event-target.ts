@@ -1,3 +1,5 @@
+import { setMaxListeners } from './events.js'
+
 export interface EventCallback<EventType> { (evt: EventType): void }
 export interface EventObject<EventType> { handleEvent: EventCallback<EventType> }
 export type EventHandler<EventType> = EventCallback<EventType> | EventObject<EventType>
@@ -33,6 +35,14 @@ export interface TypedEventTarget <EventMap extends Record<string, any>> extends
  */
 export class TypedEventEmitter<EventMap extends Record<string, any>> extends EventTarget implements TypedEventTarget<EventMap> {
   #listeners = new Map<any, Listener[]>()
+
+  constructor () {
+    super()
+
+    // silence MaxListenersExceededWarning warning on Node.js, this is a red
+    // herring almost all of the time
+    setMaxListeners(Infinity, this)
+  }
 
   listenerCount (type: string): number {
     const listeners = this.#listeners.get(type)

@@ -79,10 +79,9 @@ export class DialQueue {
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
-
     this.components = components
-    this.shutDownController = new AbortController()
 
+    this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
@@ -103,6 +102,7 @@ export class DialQueue {
 
   start (): void {
     this.shutDownController = new AbortController()
+    setMaxListeners(Infinity, this.shutDownController.signal)
   }
 
   /**
