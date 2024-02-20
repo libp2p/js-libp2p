@@ -5,9 +5,10 @@
  *
  * @example
  *
- * ```js
- * import { createLibp2pNode } from 'libp2p'
- * import { webSockets } from '@libp2p/webrtc-direct'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { webSockets } from '@libp2p/websockets'
+ * import { multiaddr } from '@multiformats/multiaddr'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -16,7 +17,9 @@
  * //... other config
  * })
  * await node.start()
- * await node.dial('/ip4/127.0.0.1/tcp/9090/ws')
+ *
+ * const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+ * await node.dial(ma)
  * ```
  *
  * ## Filters
@@ -36,28 +39,19 @@
  * - `filters.dnsWsOrWss`
  *   - Returns all DNS based addresses, both with `ws` or `wss`.
  *
- * @example
+ * @example Allow dialing insecure WebSockets
  *
- * ```js
- * import { createLibp2pNode } from 'libp2p'
- * import { websockets } from '@libp2p/websockets'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { webSockets } from '@libp2p/websockets'
  * import filters from '@libp2p/websockets/filters'
- * import { mplex } from '@libp2p/mplex'
- * import { noise } from '@libp2p/noise'
  *
- * const transportKey = Websockets.prototype[Symbol.toStringTag]
- * const node = await Libp2p.create({
- *   transport: [
- *     websockets({
+ * const node = await createLibp2p({
+ *   transports: [
+ *     webSockets({
  *       // connect to all sockets, even insecure ones
  *       filter: filters.all
  *     })
- *   ],
- *   streamMuxers: [
- *     mplex()
- *   ],
- *   connectionEncryption: [
- *     noise()
  *   ]
  * })
  * ```

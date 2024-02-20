@@ -174,7 +174,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const topic = 'topic'
    * const validateMessage = (msgTopic, msg) => {
    *   const input = uint8ArrayToString(msg.data)
@@ -194,7 +194,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
   /**
    * Gets a list of topics the node is subscribed to.
    *
-   * ```js
+   * ```TypeScript
    * const topics = libp2p.pubsub.getTopics()
    * ```
    */
@@ -205,7 +205,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const topic = 'topic'
    * const handler = (msg) => {
    *   if (msg.topic === topic) {
@@ -224,7 +224,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const topic = 'topic'
    * const handler = (msg) => {
    *   // msg.data - pubsub data received
@@ -241,7 +241,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peerIds = libp2p.pubsub.getSubscribers(topic)
    * ```
    */
@@ -252,7 +252,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const topic = 'topic'
    * const data = uint8ArrayFromString('data')
    *

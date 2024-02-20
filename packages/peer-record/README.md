@@ -38,49 +38,32 @@ You can read further about the envelope in [RFC 0002 - Signed Envelopes](https:/
 
 Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
 
-```js
-// interface-record implementation example with the "libp2p-example" namespace
-import { PeerRecord } from '@libp2p/peer-record'
-import { fromString } from 'uint8arrays/from-string'
+```TypeScript
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
-class ExampleRecord extends PeerRecord {
-  constructor () {
-    super ('libp2p-example', fromString('0302', 'hex'))
-  }
+const peerId = await createEd25519PeerId()
 
-  marshal () {}
+const record = new PeerRecord({
+  peerId,
+  // ...other data
+})
 
-  equals (other) {}
-}
-
-ExampleRecord.createFromProtobuf = () => {}
-```
-
-```js
-import { PeerEnvelope } from '@libp2p/peer-record'
-import { ExampleRecord } from './example-record.js'
-
-const rec = new ExampleRecord()
-const e = await PeerEnvelope.seal(rec, peerId)
-const wireData = e.marshal()
+const envelope = await RecordEnvelope.seal(record, peerId)
+const wireData = envelope.marshal()
 ```
 
 ## Example - Consuming a peer record
 
-Consume a received envelope (`wireData`) and transform it back to a record:
+Consume a received envelope `wireData` and transform it back to a record:
 
-```js
-import { PeerEnvelope } from '@libp2p/peer-record'
-import { ExampleRecord } from './example-record.js'
+```TypeScript
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 
-const domain = 'libp2p-example'
-let e
+const wireData = Uint8Array.from([0, 1, 2, 3, 4])
+const envelope = await RecordEnvelope.openAndCertify(wireData, PeerRecord.DOMAIN)
 
-try {
-  e = await PeerEnvelope.openAndCertify(wireData, domain)
-} catch (err) {}
-
-const rec = ExampleRecord.createFromProtobuf(e.payload)
+const record = PeerRecord.createFromProtobuf(envelope.payload)
 ```
 
 ## Peer Record
@@ -97,12 +80,19 @@ You can read further about the Peer Record in [RFC 0003 - Peer Routing Records](
 
 Create a new Peer Record
 
-```js
+```TypeScript
 import { PeerRecord } from '@libp2p/peer-record'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
 
-const pr = new PeerRecord({
-  peerId: node.peerId,
-  multiaddrs: node.multiaddrs
+const peerId = await createEd25519PeerId()
+
+const record = new PeerRecord({
+  peerId: peerId,
+  multiaddrs: [
+    multiaddr('/ip4/...'),
+    multiaddr('/ip4/...')
+  ]
 })
 ```
 
@@ -110,10 +100,11 @@ const pr = new PeerRecord({
 
 Create a Peer Record from a protobuf
 
-```js
+```TypeScript
 import { PeerRecord } from '@libp2p/peer-record'
 
-const pr = PeerRecord.createFromProtobuf(data)
+const data = Uint8Array.from([0, 1, 2, 3, 4])
+const record = PeerRecord.createFromProtobuf(data)
 ```
 
 ## Libp2p Flows

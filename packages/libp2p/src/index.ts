@@ -118,7 +118,7 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    *
    * Browsers:
    *
-   * ```javascript
+   * ```TypeScript
    * localStorage.setItem('debug', '*libp2p:*')
    * ```
    */
@@ -137,7 +137,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'

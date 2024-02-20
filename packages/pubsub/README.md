@@ -28,11 +28,27 @@ A set of components to be extended in order to create a pubsub implementation.
 
 ## Example
 
-```javascript
+```TypeScript
 import { PubSubBaseProtocol } from '@libp2p/pubsub'
+import type { PubSubRPC, PublishResult, PubSubRPCMessage, PeerId, Message } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 class MyPubsubImplementation extends PubSubBaseProtocol {
-  // .. extra methods here
+  decodeRpc (bytes: Uint8Array | Uint8ArrayList): PubSubRPC {
+    throw new Error('Not implemented')
+  }
+
+  encodeRpc (rpc: PubSubRPC): Uint8Array {
+    throw new Error('Not implemented')
+  }
+
+  encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
+    throw new Error('Not implemented')
+  }
+
+  async publishMessage (sender: PeerId, message: Message): Promise<PublishResult> {
+    throw new Error('Not implemented')
+  }
 }
 ```
 

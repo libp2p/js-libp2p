@@ -8,7 +8,7 @@ import type { PeerInfo } from '../peer-info/index.js'
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { peerDiscovery, PeerDiscovery } from '@libp2p/peer-discovery'
  *
  * class MyPeerDiscoverer implements PeerDiscovery {

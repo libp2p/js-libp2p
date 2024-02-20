@@ -78,9 +78,9 @@ export interface Fetch {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
-   * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+   * libp2p.services.fetch.registerLookupFunction('/prefix', (key) => { ... })
    * ```
    */
   registerLookupFunction(prefix: string, lookup: LookupFunction): void
@@ -91,9 +91,9 @@ export interface Fetch {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
-   * libp2p.fetchService.unregisterLookupFunction('/prefix')
+   * libp2p.services.fetch.unregisterLookupFunction('/prefix')
    * ```
    */
   unregisterLookupFunction(prefix: string, lookup?: LookupFunction): void

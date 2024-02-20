@@ -68,7 +68,7 @@ node -e "import('@libp2p/pnet').then(({ generateKey }) => generateKey(process.st
 
 ### Programmatically
 
-```js
+```TypeScript
 import fs from 'fs'
 import { generateKey } from '@libp2p/pnet'
 

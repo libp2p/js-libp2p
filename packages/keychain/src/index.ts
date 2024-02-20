@@ -13,10 +13,10 @@
  *
  * The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
  *
- * ```js
+ * ```JSON
  * {
- *   name: 'rsa-key',
- *   id: 'QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW'
+ *   "name": "rsa-key",
+ *   "id": "QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW"
  * }
  * ```
  *
@@ -30,9 +30,9 @@
  *
  * The default options for generating the derived encryption key are in the `dek` object.  This, along with the passPhrase, is the input to a `PBKDF2` function.
  *
- * ```js
+ * ```TypeScript
  * const defaultOptions = {
- * // See https://cryptosense.com/parameter-choice-for-pbkdf2/
+ *   // See https://cryptosense.com/parameter-choice-for-pbkdf2/
  *   dek: {
  *     keyLength: 512 / 8,
  *     iterationCount: 1000,
@@ -41,6 +41,7 @@
  *   }
  * }
  * ```
+ *
  * ![key storage](./doc/private-key.png?raw=true)
  *
  * ## Physical storage
@@ -90,7 +91,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
    * ```
@@ -102,7 +103,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
    * const keyInfo = await libp2p.keychain.importKey('keyTestImport', pemKey, 'password123')
@@ -115,7 +116,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const keyInfo = await libp2p.keychain.importPeer('keyTestImport', peerIdFromString('12D3Foo...'))
    * ```
    */
@@ -126,7 +127,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peerId = await libp2p.keychain.exportPeerId('key-name')
    * ```
    */
@@ -137,7 +138,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * ```
    */
@@ -148,7 +149,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const keyInfos = await libp2p.keychain.listKeys()
    * ```
    */
@@ -159,7 +160,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const keyInfo = await libp2p.keychain.removeKey('keyTest')
    * ```
@@ -171,7 +172,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
    * ```
@@ -183,7 +184,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
    * ```
@@ -195,7 +196,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
    * const keyInfo2 = await libp2p.keychain.findKeyByName('keyTest')
    * ```
@@ -207,7 +208,7 @@ export interface Keychain {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.keychain.rotateKeychainPass('oldPassword', 'newPassword')
    * ```
    */

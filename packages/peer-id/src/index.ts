@@ -136,7 +136,7 @@ class PeerIdImpl {
    * https://nodejs.org/api/util.html#utilinspectcustom
    *
    * @example
-   * ```js
+   * ```TypeScript
    * import { peerIdFromString } from '@libp2p/peer-id'
    *
    * console.info(peerIdFromString('QmFoo'))

@@ -12,10 +12,10 @@
  *
  * Each function should be imported directly.
  *
- * ```js
- * import ipAndPortToMultiaddr from '@libp2p/utils/ip-port-to-multiaddr'
+ * ```TypeScript
+ * import { ipPortToMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
  *
- * const ma = ipAndPortToMultiaddr('127.0.0.1', 9000)
+ * const ma = ipPortToMultiaddr('127.0.0.1', 9000)
  * ```
  */
 

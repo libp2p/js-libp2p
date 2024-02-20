@@ -24,51 +24,54 @@
  *
  * A query is sent to discover the libp2p nodes on the local network
  *
- * ```js
+ * ```JSON
  * {
- *    type: 'query',
- *    questions: [ { name: '_p2p._udp.local', type: 'PTR' } ]
+ *    "type": "query",
+ *    "questions": [{
+ *      "name": "_p2p._udp.local",
+ *      "type": "PTR"
+ *    }]
  * }
  * ```
  *
  * When a query is detected, each libp2p node sends an answer about itself
  *
- * ```js
+ * ```JSON
  * [{
- *   name: '_p2p._udp.local',
- *   type: 'PTR',
- *   class: 'IN',
- *   ttl: 120,
- *   data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local'
+ *   "name": "_p2p._udp.local",
+ *   "type": "PTR",
+ *   "class": "IN",
+ *   "ttl": 120,
+ *   "data": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local"
  * }, {
- *   name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
- *   type: 'SRV',
- *   class: 'IN',
- *   ttl: 120,
- *   data: {
- *     priority: 10,
- *     weight: 1,
- *     port: '20002',
- *     target: 'LAPTOP-G5LJ7VN9'
+ *   "name": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local",
+ *   "type": "SRV",
+ *   "class": "IN",
+ *   "ttl": 120,
+ *   "data": {
+ *     "priority": 10,
+ *     "weight": 1,
+ *     "port": "20002",
+ *     "target": "LAPTOP-G5LJ7VN9"
  *   }
  * }, {
- *   name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
- *   type: 'TXT',
- *   class: 'IN',
- *   ttl: 120,
- *   data: ['QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK']
+ *   "name": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local",
+ *   "type": "TXT",
+ *   "class": "IN",
+ *   "ttl": 120,
+ *   "data": ["QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK"]
  * }, {
- *   name: 'LAPTOP-G5LJ7VN9',
- *   type: 'A',
- *   class: 'IN',
- *   ttl: 120,
- *   data: '127.0.0.1'
+ *   "name": "LAPTOP-G5LJ7VN9",
+ *   "type": "A",
+ *   "class": "IN",
+ *   "ttl": 120,
+ *   "data": "127.0.0.1"
  * }, {
- *   name: 'LAPTOP-G5LJ7VN9',
- *   type: 'AAAA',
- *   class: 'IN',
- *   ttl: 120,
- *   data: '::1'
+ *   "name": "LAPTOP-G5LJ7VN9",
+ *   "type": "AAAA",
+ *   "class": "IN",
+ *   "ttl": 120,
+ *   "data": "::1"
  * }]
  * ```
  */

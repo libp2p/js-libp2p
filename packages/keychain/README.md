@@ -36,10 +36,10 @@ repo and examine the changes made.
 
 The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
 
-```js
+```JSON
 {
-  name: 'rsa-key',
-  id: 'QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW'
+  "name": "rsa-key",
+  "id": "QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW"
 }
 ```
 
@@ -53,9 +53,9 @@ A private key is stored as an encrypted PKCS 8 structure in the PEM format. It i
 
 The default options for generating the derived encryption key are in the `dek` object.  This, along with the passPhrase, is the input to a `PBKDF2` function.
 
-```js
+```TypeScript
 const defaultOptions = {
-// See https://cryptosense.com/parameter-choice-for-pbkdf2/
+  // See https://cryptosense.com/parameter-choice-for-pbkdf2/
   dek: {
     keyLength: 512 / 8,
     iterationCount: 1000,

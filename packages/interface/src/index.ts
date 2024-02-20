@@ -136,7 +136,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:discovery', (event) => {
    *    const peerInfo = event.detail
    *    // ...
@@ -150,7 +150,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:connect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -166,7 +166,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:disconnect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -182,7 +182,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:identify', (event) => {
    *   const identifyResult = event.detail
    *   // ...
@@ -210,7 +210,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('self:peer:update', (event) => {
    *   const { peer } = event.detail
    *   // ...
@@ -251,7 +251,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has started
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('start', (event) => {
    *   console.info(libp2p.isStarted()) // true
    * })
@@ -262,7 +262,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has stopped
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('stop', (event) => {
    *   console.info(libp2p.isStarted()) // false
    * })
@@ -277,7 +277,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const node = await createLibp2p({
  *   // ...other options
  *   services: {
@@ -336,7 +336,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * console.info(libp2p.peerId)
    * // PeerId(12D3Foo...)
    * ````
@@ -349,7 +349,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peer = await libp2p.peerStore.get(peerId)
    * console.info(peer)
    * // { id: PeerId(12D3Foo...), addresses: [] ... }
@@ -363,7 +363,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
    * console.info(peerInfo)
    * // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -371,7 +371,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.peerRouting.getClosestPeers(key)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -387,7 +387,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.contentRouting.findProviders(cid)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -402,7 +402,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const metric = libp2p.metrics.registerMetric({
    *   'my-metric'
    * })
@@ -433,7 +433,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const listenMa = libp2p.getMultiaddrs()
    * // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
    * ```
@@ -445,7 +445,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const protocols = libp2p.getProtocols()
    * // [ '/ipfs/ping/1.0.0', '/ipfs/id/1.0.0' ]
    * ```
@@ -458,7 +458,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const connection of libp2p.getConnections()) {
    *   console.log(peerId, connection.remoteAddr.toString())
    *   // Logs the PeerId string and the observed remote multiaddr of each Connection
@@ -472,7 +472,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const pendingDial of libp2p.getDialQueue()) {
    *   console.log(pendingDial)
    * }
@@ -493,7 +493,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
@@ -514,7 +514,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * import { pipe } from 'it-pipe'
    *
    * const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
@@ -534,7 +534,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
@@ -549,7 +549,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const handler = ({ connection, stream, protocol }) => {
    *   // use stream or connection according to the needs
    * }
@@ -568,7 +568,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
@@ -580,7 +580,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register('/echo/1.0.0', {
    *   onConnect: (peer, connection) => {
    *     // handle connect
@@ -599,7 +599,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register(...)
    *
    * libp2p.unregister(id)
@@ -641,7 +641,7 @@ export interface NodeInfo {
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const controller = new AbortController()
  *
  * aLongRunningOperation({
