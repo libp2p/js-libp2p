@@ -1,3 +1,5 @@
+# @libp2p/mdns
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,26 +9,38 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 A peer discover mechanism that uses [mDNS](https://datatracker.ietf.org/doc/html/rfc6762) to discover peers on the local network.
 
-## Example
+## Example - Use with libp2p
 
 ```TypeScript
+import { createLibp2p } from 'libp2p'
 import { mdns } from '@libp2p/mdns'
 
-const options = {
+const libp2p = await createLibp2p({
   peerDiscovery: [
     mdns()
   ]
-}
-
-const libp2p = await createLibp2p(options)
-
-libp2p.on('peer:discovery', function (peerId) {
-  console.log('found peer: ', peerId.toB58String())
 })
 
-await libp2p.start()
+libp2p.addEventListener('peer:discovery', (evt) => {
+  console.log('found peer: ', evt.detail.toString())
+})
 ```
 
 ## MDNS messages

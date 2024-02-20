@@ -43,19 +43,20 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i @libp2p/utils",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build"
   },
   "dependencies": {
     "@multiformats/multiaddr": "^12.1.14",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "progress-events": "^1.0.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.2.3"
+    "aegir": "^42.2.4"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"

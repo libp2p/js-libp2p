@@ -1,3 +1,5 @@
+# @libp2p/peer-record
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,6 +9,21 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 Libp2p nodes need to store data in a public location (e.g. a DHT), or rely on potentially untrustworthy intermediaries to relay information over its lifetime. Accordingly, libp2p nodes need to be able to verify that the data came from a specific peer and that it hasn't been tampered with.
 
 ## Envelope
@@ -15,7 +32,7 @@ Libp2p provides an all-purpose data container called **envelope**. It was create
 
 This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
 
-You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the envelope in [RFC 0002 - Signed Envelopes](https://github.com/libp2p/specs/blob/master/RFC/0002-signed-envelopes.md). For the original discussion about it you can look at the PR that was used to create it: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
 ## Example - Creating a peer record
 
@@ -74,7 +91,7 @@ Libp2p peer records were created to enable the distribution of verifiable addres
 
 A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, a timestamp per the spec, so that we can verify the most recent record.
 
-You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the Peer Record in [RFC 0003 - Peer Routing Records](https://github.com/libp2p/specs/blob/master/RFC/0003-routing-records.md). For the original discussion about it you can view the PR that created the RFC: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
 ## Example
 

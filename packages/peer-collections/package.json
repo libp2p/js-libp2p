@@ -43,6 +43,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -59,7 +60,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.6",
     "@types/sinon": "^17.0.3",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   },

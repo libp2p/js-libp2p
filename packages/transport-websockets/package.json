@@ -63,6 +63,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
@@ -87,7 +88,7 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.3.1",
     "@libp2p/logger": "^4.0.6",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "is-loopback-addr": "^2.0.2",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
@@ -96,7 +97,7 @@
     "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.2",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"

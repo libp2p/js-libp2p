@@ -5,6 +5,8 @@ dist
 node_modules
 package-lock.json
 yarn.lock
+.tmp-compiled-docs
+tsconfig-doc-check.aegir.json
 
 # IDE
 .DS_Store

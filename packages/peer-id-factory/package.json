@@ -46,6 +46,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "generate": "protons src/proto.proto",
     "build": "aegir build",
     "test": "aegir test",
@@ -62,11 +63,11 @@
     "@libp2p/peer-id": "^4.0.6",
     "protons-runtime": "^5.4.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "aegir": "^42.2.3",
-    "multiformats": "^13.0.1",
+    "aegir": "^42.2.4",
+    "multiformats": "^13.1.0",
     "protons": "^7.5.0"
   },
   "sideEffects": false

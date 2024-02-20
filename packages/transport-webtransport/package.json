@@ -43,6 +43,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test -t browser -t webworker",
     "test:chrome": "aegir test -t browser --cov",
@@ -55,14 +56,14 @@
     "@multiformats/multiaddr": "^12.1.14",
     "@multiformats/multiaddr-matcher": "^1.1.2",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.6",
     "@libp2p/peer-id-factory": "^4.0.6",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "libp2p": "^1.2.3",
     "p-defer": "^4.0.0"
   },

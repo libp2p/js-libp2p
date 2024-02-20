@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^15.0.0",
-    "@chainsafe/libp2p-yamux": "^6.0.1",
+    "@chainsafe/libp2p-yamux": "^6.0.2",
     "@libp2p/circuit-relay-v2": "^1.0.15",
     "@libp2p/identify": "^1.0.14",
     "@libp2p/mplex": "^10.0.15",
@@ -67,7 +67,7 @@
     "@libp2p/webtransport": "^4.0.19",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.1.14",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "libp2p": "^1.2.3",
     "redis": "^4.6.13"
   },
