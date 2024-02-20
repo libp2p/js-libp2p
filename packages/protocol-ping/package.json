@@ -46,7 +46,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "dep-check": "aegir dep-check"
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
   },
   "dependencies": {
     "@libp2p/crypto": "^4.0.2",
@@ -55,13 +56,13 @@
     "@multiformats/multiaddr": "^12.1.14",
     "it-first": "^3.0.4",
     "it-pipe": "^3.0.1",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.6",
     "@libp2p/peer-id-factory": "^4.0.6",
-    "aegir": "^42.2.3",
-    "it-byte-stream": "^1.0.7",
+    "aegir": "^42.2.4",
+    "it-byte-stream": "^1.0.8",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "sinon-ts": "^2.0.0"

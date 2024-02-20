@@ -1,3 +1,5 @@
+# @libp2p/dcutr
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -6,6 +8,21 @@
 > Implementation of the DCUtR Protocol
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 Direct Connection Upgrade through Relay (DCUtR) is a protocol that allows two
 nodes to connect to each other who would otherwise be prevented doing so due
@@ -19,10 +36,11 @@ at precisely the same moment.
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { tcp } from '@libp2p/tcp'
 import { identify } from '@libp2p/identify'
 import { dcutr } from '@libp2p/dcutr'
+import { multiaddr } from '@multiformats/multiaddr'
 
 const node = await createLibp2p({
   transports: [
@@ -37,7 +55,8 @@ const node = await createLibp2p({
 
 // QmTarget is a peer that is behind a NAT, supports TCP and has a relay
 // reservation
-await node.dial('/ip4/.../p2p/QmRelay/p2p-circuit/p2p/QmTarget')
+const ma = multiaddr('/ip4/.../p2p/QmRelay/p2p-circuit/p2p/QmTarget')
+await node.dial(ma)
 
 // after a while the connection should automatically get upgraded to a
 // direct connection (e.g. non-transient)
@@ -51,7 +70,7 @@ while (true) {
     console.info('have relayed connection')
 
     // wait a few seconds to see if it's succeeded yet
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => resolve(), 5000)
     })
   }

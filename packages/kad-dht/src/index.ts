@@ -14,12 +14,14 @@
  *
  * const node = await createLibp2p({
  *   services: {
- *     dht: kadDHT()
+ *     dht: kadDHT({
+ *       // DHT options
+ *     })
  *   }
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
@@ -45,7 +47,7 @@
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
@@ -72,7 +74,7 @@
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```

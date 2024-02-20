@@ -53,7 +53,8 @@
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
-    "dep-check": "aegir dep-check"
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
   },
   "dependencies": {
     "@libp2p/crypto": "^4.0.2",
@@ -66,7 +67,7 @@
     "@types/sinon": "^17.0.3",
     "any-signal": "^4.1.1",
     "hashlru": "^2.3.0",
-    "interface-datastore": "^8.2.10",
+    "interface-datastore": "^8.2.11",
     "it-drain": "^3.0.5",
     "it-length": "^3.0.4",
     "it-length-prefixed": "^9.0.4",
@@ -77,7 +78,7 @@
     "it-protobuf-stream": "^1.1.2",
     "it-pushable": "^3.2.3",
     "it-take": "^3.0.4",
-    "multiformats": "^13.0.1",
+    "multiformats": "^13.1.0",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-queue": "^8.0.1",
@@ -86,7 +87,7 @@
     "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.3.1",
@@ -96,9 +97,9 @@
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.3",
-    "aegir": "^42.2.3",
-    "datastore-core": "^9.2.7",
-    "datastore-level": "^10.1.6",
+    "aegir": "^42.2.4",
+    "datastore-core": "^9.2.8",
+    "datastore-level": "^10.1.7",
     "delay": "^6.0.0",
     "execa": "^8.0.1",
     "it-all": "^3.0.4",

@@ -12,21 +12,23 @@
  * @example Configuring libp2p to use floodsub
  *
  * ```TypeScript
- * import { createLibp2pNode } from 'libp2p'
+ * import { createLibp2p } from 'libp2p'
  * import { floodsub } from '@libp2p/floodsub'
  *
- * const node = await createLibp2pNode({
- *   pubsub: floodsub()
+ * const node = await createLibp2p({
+ *   services: {
+ *     pubsub: floodsub()
+ *   }
  *   //... other options
  * })
  * await node.start()
  *
- * node.pubsub.subscribe('fruit')
- * node.pubsub.addEventListener('message', (evt) => {
+ * node.services.pubsub.subscribe('fruit')
+ * node.services.pubsub.addEventListener('message', (evt) => {
  *   console.log(evt)
  * })
  *
- * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+ * node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
  * ```
  */
 

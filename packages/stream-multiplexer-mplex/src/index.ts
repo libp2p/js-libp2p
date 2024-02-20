@@ -7,7 +7,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { mplex } from '@libp2p/mplex'
  * import { pipe } from 'it-pipe'
  *

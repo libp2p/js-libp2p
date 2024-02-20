@@ -45,7 +45,7 @@
  *
  * ### Programmatically
  *
- * ```js
+ * ```TypeScript
  * import fs from 'fs'
  * import { generateKey } from '@libp2p/pnet'
  *

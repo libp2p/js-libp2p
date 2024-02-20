@@ -195,7 +195,7 @@ export class Fetch implements Startable, FetchInterface {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
    * ```
@@ -214,7 +214,7 @@ export class Fetch implements Startable, FetchInterface {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * libp2p.fetchService.unregisterLookupFunction('/prefix')
    * ```

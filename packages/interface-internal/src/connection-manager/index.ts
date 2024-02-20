@@ -23,7 +23,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connections = libp2p.connectionManager.get(peerId)
    * // []
    * ```
@@ -35,7 +35,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
    * ```
    */
@@ -46,7 +46,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connection = await libp2p.connectionManager.openConnection(peerId)
    * ```
    */
@@ -75,7 +75,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const dials = libp2p.connectionManager.getDialQueue()
    * ```
    */

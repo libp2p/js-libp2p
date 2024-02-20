@@ -9,7 +9,7 @@ import type { CID } from 'multiformats/cid'
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { contentRoutingSymbol, ContentRouting } from '@libp2p/content-routing'
  *
  * class MyContentRouter implements ContentRouting {
@@ -38,7 +38,7 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * await contentRouting.provide(cid)
    * ```
@@ -50,7 +50,7 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // Iterate over the providers found for the given cid
    * for await (const provider of contentRouting.findProviders(cid)) {
    *  console.log(provider.id, provider.multiaddrs)
@@ -65,7 +65,7 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * const key = '/key'
    * const value = uint8ArrayFromString('oh hello there')
@@ -80,7 +80,7 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    *
    * const key = '/key'

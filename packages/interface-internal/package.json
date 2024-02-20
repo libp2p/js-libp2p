@@ -44,6 +44,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build"
   },
   "dependencies": {
@@ -53,7 +54,7 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.2.3"
+    "aegir": "^42.2.4"
   },
   "sideEffects": false
 }

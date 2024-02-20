@@ -10,6 +10,7 @@
  * ```typescript
  * import { createLibp2p } from 'libp2p'
  * import { fetch } from '@libp2p/fetch'
+ * import { peerIdFromString } from '@libp2p/peer-id'
  *
  * const libp2p = await createLibp2p({
  *   services: {
@@ -17,19 +18,26 @@
  *   }
  * })
  *
- * // Given a key (as a string) returns a value (as a Uint8Array), or null if the key isn't found.
- * // All keys must be prefixed my the same prefix, which will be used to find the appropriate key
- * // lookup function.
- * async function my_subsystem_key_lookup(key) {
+ * // Given a key (as a string) returns a value (as a Uint8Array), or undefined
+ * // if the key isn't found.
+ * // All keys must be prefixed my the same prefix, which will be used to find
+ * // the appropriate key lookup function.
+ * async function my_subsystem_key_lookup (key: string): Promise<Uint8Array | undefined> {
  *   // app specific callback to lookup key-value pairs.
+ *   return Uint8Array.from([0, 1, 2, 3, 4])
  * }
  *
- * // Enable this peer to respond to fetch requests for keys that begin with '/my_subsystem_key_prefix/'
- * libp2p.fetch.registerLookupFunction('/my_subsystem_key_prefix/', my_subsystem_key_lookup)
+ * // Enable this peer to respond to fetch requests for keys that begin with
+ * // '/my_subsystem_key_prefix/'
+ * libp2p.services.fetch.registerLookupFunction('/my_subsystem_key_prefix/', my_subsystem_key_lookup)
  *
  * const key = '/my_subsystem_key_prefix/{...}'
- * const peerDst = PeerId.parse('Qmfoo...') // or Multiaddr instance
- * const value = await libp2p.fetch(peerDst, key)
+ * const peerDst = peerIdFromString('Qmfoo...')
+ *
+ * // Load the value from the remote peer, timing out after 10s
+ * const value = await libp2p.services.fetch.fetch(peerDst, key, {
+ *   signal: AbortSignal.timeout(10_000)
+ * })
  * ```
  */
 
@@ -70,9 +78,9 @@ export interface Fetch {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
-   * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
+   * libp2p.services.fetch.registerLookupFunction('/prefix', (key) => { ... })
    * ```
    */
   registerLookupFunction(prefix: string, lookup: LookupFunction): void
@@ -83,9 +91,9 @@ export interface Fetch {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
-   * libp2p.fetchService.unregisterLookupFunction('/prefix')
+   * libp2p.services.fetch.unregisterLookupFunction('/prefix')
    * ```
    */
   unregisterLookupFunction(prefix: string, lookup?: LookupFunction): void

@@ -1,3 +1,5 @@
+# @libp2p/mdns
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,77 +9,92 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 A peer discover mechanism that uses [mDNS](https://datatracker.ietf.org/doc/html/rfc6762) to discover peers on the local network.
 
-## Example
+## Example - Use with libp2p
 
 ```TypeScript
+import { createLibp2p } from 'libp2p'
 import { mdns } from '@libp2p/mdns'
 
-const options = {
+const libp2p = await createLibp2p({
   peerDiscovery: [
     mdns()
   ]
-}
-
-const libp2p = await createLibp2p(options)
-
-libp2p.on('peer:discovery', function (peerId) {
-  console.log('found peer: ', peerId.toB58String())
 })
 
-await libp2p.start()
+libp2p.addEventListener('peer:discovery', (evt) => {
+  console.log('found peer: ', evt.detail.toString())
+})
 ```
 
 ## MDNS messages
 
 A query is sent to discover the libp2p nodes on the local network
 
-```js
+```JSON
 {
-   type: 'query',
-   questions: [ { name: '_p2p._udp.local', type: 'PTR' } ]
+   "type": "query",
+   "questions": [{
+     "name": "_p2p._udp.local",
+     "type": "PTR"
+   }]
 }
 ```
 
 When a query is detected, each libp2p node sends an answer about itself
 
-```js
+```JSON
 [{
-  name: '_p2p._udp.local',
-  type: 'PTR',
-  class: 'IN',
-  ttl: 120,
-  data: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local'
+  "name": "_p2p._udp.local",
+  "type": "PTR",
+  "class": "IN",
+  "ttl": 120,
+  "data": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local"
 }, {
-  name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
-  type: 'SRV',
-  class: 'IN',
-  ttl: 120,
-  data: {
-    priority: 10,
-    weight: 1,
-    port: '20002',
-    target: 'LAPTOP-G5LJ7VN9'
+  "name": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local",
+  "type": "SRV",
+  "class": "IN",
+  "ttl": 120,
+  "data": {
+    "priority": 10,
+    "weight": 1,
+    "port": "20002",
+    "target": "LAPTOP-G5LJ7VN9"
   }
 }, {
-  name: 'QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local',
-  type: 'TXT',
-  class: 'IN',
-  ttl: 120,
-  data: ['QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK']
+  "name": "QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK._p2p._udp.local",
+  "type": "TXT",
+  "class": "IN",
+  "ttl": 120,
+  "data": ["QmNPubsDWATVngE3d5WDSNe7eVrFLuk38qb9t6vdLnu2aK"]
 }, {
-  name: 'LAPTOP-G5LJ7VN9',
-  type: 'A',
-  class: 'IN',
-  ttl: 120,
-  data: '127.0.0.1'
+  "name": "LAPTOP-G5LJ7VN9",
+  "type": "A",
+  "class": "IN",
+  "ttl": 120,
+  "data": "127.0.0.1"
 }, {
-  name: 'LAPTOP-G5LJ7VN9',
-  type: 'AAAA',
-  class: 'IN',
-  ttl: 120,
-  data: '::1'
+  "name": "LAPTOP-G5LJ7VN9",
+  "type": "AAAA",
+  "class": "IN",
+  "ttl": 120,
+  "data": "::1"
 }]
 ```
 

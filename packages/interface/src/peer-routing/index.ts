@@ -9,7 +9,7 @@ import type { PeerInfo } from '../peer-info/index.js'
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { peerRouting, PeerRouting } from '@libp2p/peer-routing'
  *
  * class MyPeerRouter implements PeerRouting {
@@ -37,7 +37,7 @@ export interface PeerRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * const peer = await peerRouting.findPeer(peerId, options)
    * ```
@@ -50,7 +50,7 @@ export interface PeerRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // Iterate over the closest peers found for the given key
    * for await (const peer of peerRouting.getClosestPeers(key)) {
    *   console.log(peer.id, peer.multiaddrs)

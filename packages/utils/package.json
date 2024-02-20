@@ -116,6 +116,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -138,14 +139,14 @@
     "it-stream-types": "^2.0.1",
     "netmask": "^2.0.2",
     "p-defer": "^4.0.0",
-    "race-event": "^1.1.0",
+    "race-event": "^1.2.0",
     "race-signal": "^1.0.2",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.6",
     "@types/netmask": "^2.0.5",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
@@ -153,7 +154,7 @@
     "it-pipe": "^3.0.1",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^5.0.2"
   },
   "sideEffects": false
 }

@@ -34,7 +34,8 @@ jobs:
     - uses: ipfs/aegir/actions/cache-node-modules@master
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
-    - run: cd doc && npm run doc-check
+    - run: npm run --if-present docs:no-publish
+    - run: npm run --if-present doc-check
   test-node:
     needs: build
     runs-on: ${{ matrix.os }}

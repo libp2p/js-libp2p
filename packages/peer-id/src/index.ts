@@ -9,7 +9,7 @@
  * import { peerIdFromString } from '@libp2p/peer-id'
  * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
  *
- * console.log(peer.toCid()) // CID(bafzaa...)
+ * console.log(peer.toCID()) // CID(bafzaa...)
  * console.log(peer.toString()) // "12D3K..."
  * ```
  */
@@ -136,7 +136,7 @@ class PeerIdImpl {
    * https://nodejs.org/api/util.html#utilinspectcustom
    *
    * @example
-   * ```js
+   * ```TypeScript
    * import { peerIdFromString } from '@libp2p/peer-id'
    *
    * console.info(peerIdFromString('QmFoo'))

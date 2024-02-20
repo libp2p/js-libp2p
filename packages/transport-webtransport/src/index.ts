@@ -13,12 +13,12 @@
  *
  * @example
  *
- * ```js
- * import { createLibp2pNode } from 'libp2p'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
  * import { webTransport } from '@libp2p/webtransport'
- * import { noise } from 'libp2p-noise'
+ * import { noise } from '@chainsafe/libp2p-noise'
  *
- * const node = await createLibp2pNode({
+ * const node = await createLibp2p({
  *   transports: [
  *     webTransport()
  *   ],

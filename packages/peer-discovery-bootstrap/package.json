@@ -43,6 +43,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -61,7 +62,7 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.3.1",
     "@libp2p/logger": "^4.0.6",
-    "aegir": "^42.2.3",
+    "aegir": "^42.2.4",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

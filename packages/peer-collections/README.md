@@ -1,3 +1,5 @@
+# @libp2p/peer-collections
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -6,6 +8,21 @@
 > Stores values against a peer id
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 We can't use PeerIds as collection keys because collection keys are compared using same-value-zero equality, so this is just a group of collections that stringifies PeerIds before storing them.
 
@@ -17,6 +34,9 @@ Tracked versions are also available which report their current size to the libp2
 
 ```TypeScript
 import { peerList } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+const peerId = await createEd25519PeerId()
 
 const list = peerList()
 list.push(peerId)
@@ -26,9 +46,11 @@ list.push(peerId)
 
 ```TypeScript
 import { trackedPeerList } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { createLibp2p } from 'libp2p'
 
 const libp2p = await createLibp2p()
+const peerId = await createEd25519PeerId()
 
 const list = trackedPeerList({ name: 'my_metric_name', metrics: libp2p.metrics })
 list.push(peerId)
@@ -38,6 +60,9 @@ list.push(peerId)
 
 ```TypeScript
 import { peerMap } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+const peerId = await createEd25519PeerId()
 
 const map = peerMap<string>()
 map.set(peerId, 'value')
@@ -48,10 +73,12 @@ map.set(peerId, 'value')
 ```TypeScript
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { createLibp2p } from 'libp2p'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 const libp2p = await createLibp2p()
+const peerId = await createEd25519PeerId()
 
-const list = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
+const map = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
 map.set(peerId, 'value')
 ```
 
@@ -59,6 +86,9 @@ map.set(peerId, 'value')
 
 ```TypeScript
 import { peerSet } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+const peerId = await createEd25519PeerId()
 
 const set = peerSet()
 set.add(peerId)
@@ -69,11 +99,13 @@ set.add(peerId)
 ```TypeScript
 import { trackedPeerSet } from '@libp2p/peer-collections'
 import { createLibp2p } from 'libp2p'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
 const libp2p = await createLibp2p()
+const peerId = await createEd25519PeerId()
 
-const list = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
-map.add(peerId)
+const set = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
+set.add(peerId)
 ```
 
 # Install
