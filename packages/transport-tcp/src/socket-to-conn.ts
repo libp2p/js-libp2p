@@ -141,6 +141,12 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         }
       }
 
+      const abortSignalListener = (): void => {
+        socket.destroy(new CodeError('Destroying socket after timeout', 'ERR_CLOSE_TIMEOUT'))
+      }
+
+      options.signal?.addEventListener('abort', abortSignalListener)
+
       try {
         log('%s closing socket', lOptsStr)
         await new Promise<void>((resolve, reject) => {
@@ -181,6 +187,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         })
       } catch (err: any) {
         this.abort(err)
+      } finally {
+        options.signal?.removeEventListener('abort', abortSignalListener)
       }
     },
 
