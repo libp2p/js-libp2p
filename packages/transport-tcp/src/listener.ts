@@ -17,8 +17,9 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 async function attemptClose (maConn: MultiaddrConnection, options: LoggerOptions): Promise<void> {
   try {
     await maConn.close()
-  } catch (err) {
+  } catch (err: any) {
     options.log.error('an error occurred closing the connection', err)
+    maConn.abort(err)
   }
 }
 
