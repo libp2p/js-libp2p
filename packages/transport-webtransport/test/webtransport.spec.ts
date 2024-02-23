@@ -4,8 +4,11 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import map from 'it-map'
+import toBuffer from 'it-to-buffer'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { webTransport } from '../src/index.js'
+import { randomBytes } from './fixtures/random-bytes.js'
 
 describe('libp2p-webtransport', () => {
   let node: Libp2p
@@ -47,8 +50,7 @@ describe('libp2p-webtransport', () => {
       // we can use the builtin ping system
       const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
 
-      const data = new Uint8Array(32)
-      globalThis.crypto.getRandomValues(data)
+      const data = randomBytes(32)
 
       const pong = new Promise<void>((resolve, reject) => {
         (async () => {
@@ -133,25 +135,29 @@ describe('libp2p-webtransport', () => {
     const maStr: string = process.env.serverAddr
     const ma = multiaddr(maStr)
 
-    async function * gen (): AsyncGenerator<Uint8Array, void, unknown> {
-      yield new Uint8Array([0])
-      yield new Uint8Array([1, 2, 3, 4])
-      yield new Uint8Array([5, 6, 7])
-      yield new Uint8Array([8, 9, 10, 11])
-      yield new Uint8Array([12, 13, 14, 15])
+    const data = [
+      Uint8Array.from([0]),
+      Uint8Array.from([1, 2, 3, 4]),
+      Uint8Array.from([5, 6, 7]),
+      Uint8Array.from([8, 9, 10, 11]),
+      Uint8Array.from([12, 13, 14, 15])
+    ]
+
+    async function * gen (): AsyncGenerator<Uint8Array, void, undefined> {
+      yield * data
     }
 
     const stream = await node.dialProtocol(ma, 'echo')
 
+    expect(stream.timeline.closeWrite).to.be.undefined()
+
     await stream.sink(gen())
 
-    let expectedNextNumber = 0
-    for await (const chunk of stream.source) {
-      for (const byte of chunk.subarray()) {
-        expect(byte).to.equal(expectedNextNumber++)
-      }
-    }
-    expect(expectedNextNumber).to.equal(16)
+    expect(stream.writeStatus).to.equal('closed')
+    expect(stream.timeline.closeWrite).to.be.greaterThan(0)
+
+    // should have read all of the bytes
+    await expect(toBuffer(map(stream.source, buf => buf.subarray()))).to.eventually.deep.equal(toBuffer(data))
 
     // Close read, we've should have closed the write side during sink
     await stream.closeRead()

@@ -42,36 +42,53 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check",
+    "dep-check": "aegir dep-check -i @fails-components/webtransport-transport-http3-quiche",
     "doc-check": "aegir doc-check",
     "build": "aegir build",
-    "test": "aegir test -t browser -t webworker",
+    "test": "aegir test",
+    "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
-    "test:chrome-webworker": "aegir test -t webworker"
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^15.0.0",
+    "@fails-components/webtransport": "^1.0.10",
+    "@fails-components/webtransport-transport-http3-quiche": "^1.0.10",
     "@libp2p/interface": "^1.1.3",
     "@libp2p/peer-id": "^4.0.6",
+    "@libp2p/utils": "^5.2.5",
     "@multiformats/multiaddr": "^12.1.14",
     "@multiformats/multiaddr-matcher": "^1.1.2",
+    "browser-readablestream-to-it": "^2.0.5",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
+    "race-signal": "^1.0.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
+    "@libp2p/interface-compliance-tests": "^5.3.1",
     "@libp2p/logger": "^4.0.6",
     "@libp2p/peer-id-factory": "^4.0.6",
+    "@noble/hashes": "^1.3.3",
     "aegir": "^42.2.4",
+    "it-map": "^3.0.5",
+    "it-to-buffer": "^4.0.5",
     "libp2p": "^1.2.3",
-    "p-defer": "^4.0.0"
+    "node-forge": "^1.3.1",
+    "p-defer": "^4.0.0",
+    "sinon": "^17.0.1"
   },
   "browser": {
-    "./dist/src/listener.js": "./dist/src/listener.browser.js"
+    "./dist/src/listener.js": "./dist/src/listener.browser.js",
+    "./dist/src/webtransport.js": "./dist/src/webtransport.browser.js",
+    "./dist/test/certificate.js": "./dist/test/certificate.browser.js"
   },
   "react-native": {
-    "./dist/src/listener.js": "./dist/src/listener.browser.js"
+    "./dist/src/listener.js": "./dist/src/listener.browser.js",
+    "./dist/src/webtransport.js": "./dist/src/webtransport.browser.js",
+    "./dist/test/fixtures/certificate.js": "./dist/test/fixtures/certificate.browser.js"
   },
   "sideEffects": false
 }
