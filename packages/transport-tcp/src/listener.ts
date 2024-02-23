@@ -327,18 +327,15 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   }
 
   async close (): Promise<void> {
-    await Promise.all([
-      // close the server - n.b. the non-async portion of this happens before
-      // we try to close connections so `this.status` is updated and the 'close'
-      // event can be emitted for each listener
-      this.pause(true),
+    const err = new CodeError('Listener is closing', 'ERR_LISTENER_CLOSING')
 
-      // close connections
-      ...Array.from(this.connections.values())
-        .map(async maConn => attemptClose(maConn, {
-          log: this.log
-        }))
-    ])
+    // forcibly close each connection
+    this.connections.forEach(conn => {
+      conn.abort(err)
+    })
+
+    // shut down the server socket, permanently
+    await this.pause(true)
   }
 
   /**

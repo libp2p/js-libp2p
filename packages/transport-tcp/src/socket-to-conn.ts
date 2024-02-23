@@ -153,6 +153,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
+
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -196,6 +197,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       log('%s socket abort due to error', lOptsStr, err)
 
       socket.destroy(err)
+
+      if (maConn.timeline.close == null) {
+        maConn.timeline.close = Date.now()
+      }
     },
 
     log
