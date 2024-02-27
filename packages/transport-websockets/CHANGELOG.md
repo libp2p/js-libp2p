@@ -70,6 +70,30 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [8.0.16](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.15...websockets-v8.0.16) (2024-02-27)
+
+
+### Bug Fixes
+
+* silence max listeners warning ([#2417](https://github.com/libp2p/js-libp2p/issues/2417)) ([bedfd0a](https://github.com/libp2p/js-libp2p/commit/bedfd0aa20a83e0823744c298007ef58a76a26ae))
+* tcp server close race condition ([#2421](https://github.com/libp2p/js-libp2p/issues/2421)) ([f0d2b52](https://github.com/libp2p/js-libp2p/commit/f0d2b52d0c7a0ecb8f3d6c98069131354fe93bd0))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/utils bumped from ^5.2.5 to ^5.2.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.1 to ^5.3.2
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+
 ## [8.0.14](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.13...websockets-v8.0.14) (2024-02-07)
 
 

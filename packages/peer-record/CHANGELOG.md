@@ -60,6 +60,26 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.10](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.9...peer-record-v7.0.10) (2024-02-27)
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* add links to finished RFCs to docs for peer-record ([#2412](https://github.com/libp2p/js-libp2p/issues/2412)) ([b1b77ad](https://github.com/libp2p/js-libp2p/commit/b1b77adb49f9705cd8ed0dbd639016c82a639d51))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/peer-id bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/utils bumped from ^5.2.5 to ^5.2.6
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.6 to ^4.0.7
+
 ## [7.0.8](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.7...peer-record-v7.0.8) (2024-02-07)
 
 

@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.1.4](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.3...interface-v1.1.4) (2024-02-27)
+
+
+### Bug Fixes
+
+* silence max listeners warning ([#2417](https://github.com/libp2p/js-libp2p/issues/2417)) ([bedfd0a](https://github.com/libp2p/js-libp2p/commit/bedfd0aa20a83e0823744c298007ef58a76a26ae))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+
 ## [1.1.3](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.2...interface-v1.1.3) (2024-02-07)
 
 

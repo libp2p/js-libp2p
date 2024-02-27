@@ -110,6 +110,43 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.2.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.2.3...libp2p-v1.2.4) (2024-02-27)
+
+
+### Bug Fixes
+
+* silence max listeners warning ([#2417](https://github.com/libp2p/js-libp2p/issues/2417)) ([bedfd0a](https://github.com/libp2p/js-libp2p/commit/bedfd0aa20a83e0823744c298007ef58a76a26ae))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* add Peerbit logo ([#2402](https://github.com/libp2p/js-libp2p/issues/2402)) ([fb7c51c](https://github.com/libp2p/js-libp2p/commit/fb7c51c3c03c462ac4d2b42b32be95cd008c81fc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/interface-internal bumped from ^1.0.8 to ^1.0.9
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/multistream-select bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-collections bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-id bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id-factory bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-store bumped from ^10.0.10 to ^10.0.11
+    * @libp2p/utils bumped from ^5.2.5 to ^5.2.6
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.15 to ^1.0.16
+    * @libp2p/identify bumped from ^1.0.14 to ^1.0.15
+    * @libp2p/interface-compliance-tests bumped from ^5.3.1 to ^5.3.2
+    * @libp2p/mplex bumped from ^10.0.15 to ^10.0.16
+    * @libp2p/plaintext bumped from ^1.0.15 to ^1.0.16
+    * @libp2p/tcp bumped from ^9.0.15 to ^9.0.16
+    * @libp2p/websockets bumped from ^8.0.15 to ^8.0.16
+
 ## [1.2.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.2.1...libp2p-v1.2.2) (2024-02-07)
 
 

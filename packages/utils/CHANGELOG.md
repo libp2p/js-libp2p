@@ -36,6 +36,23 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.6](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.5...utils-v5.2.6) (2024-02-27)
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.6 to ^4.0.7
+
 ## [5.2.5](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.4...utils-v5.2.5) (2024-02-07)
 
 
