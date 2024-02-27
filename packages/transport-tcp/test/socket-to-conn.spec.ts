@@ -418,7 +418,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // remote didn't read our data
-    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_READ_TIMEOUT')
+    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_CLOSE_TIMEOUT')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')
