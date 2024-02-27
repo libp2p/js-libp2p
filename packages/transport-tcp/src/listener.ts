@@ -329,7 +329,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   async close (): Promise<void> {
     const err = new CodeError('Listener is closing', 'ERR_LISTENER_CLOSING')
 
-    // forcibly close each connection
+    // synchronously close each connection
     this.connections.forEach(conn => {
       conn.abort(err)
     })
