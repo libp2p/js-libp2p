@@ -51,10 +51,11 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-chrome:
     needs: build
@@ -66,10 +67,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-chrome-webworker:
     needs: build
@@ -81,10 +83,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-firefox:
     needs: build
@@ -96,10 +99,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-firefox-webworker:
     needs: build
@@ -111,10 +115,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-webkit:
     needs: build
@@ -127,10 +132,11 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-electron-main:
     needs: build
@@ -142,10 +148,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-electron-renderer:
     needs: build
@@ -157,10 +164,11 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-interop:
     needs: build
