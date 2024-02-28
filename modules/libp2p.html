@@ -29,7 +29,22 @@
 <blockquote>
 <p>JavaScript implementation of libp2p, a modular peer to peer network stack</p>
 </blockquote>
-<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><p>Use the <code>createLibp2p</code> function to create a libp2p node.</p>
+<a id="md:about" class="tsd-anchor"></a><h1><a href="#md:about">About</a></h1><!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the  section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+<p>Use the <code>createLibp2p</code> function to create a libp2p node.</p>
 <a id="md:example" class="tsd-anchor"></a><h2><a href="#md:example">Example</a></h2><pre><code class="language-typescript"><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">createLibp2p</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;libp2p&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">node</span><span class="hl-1"> = </span><span class="hl-4">await</span><span class="hl-1"> </span><span class="hl-0">createLibp2p</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">// ...other options</span><br/><span class="hl-1">})</span>
 </code><button>Copy</button></pre>
 <a id="md:background" class="tsd-anchor"></a><h1><a href="#md:background">Background</a></h1><p>libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.</p>
@@ -321,6 +336,7 @@
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="150" /></a>
     <a href="https://github.com/orbitdb/orbitdb"><img src="https://avatars.githubusercontent.com/u/25079463?s=200&v=4" alt="OrbitDB logo" width="150" /></a>
     <a href="https://waku.org/"><img src="https://avatars.githubusercontent.com/u/107703624?s=200&v=4" alt="Waku" width="150" /></a>
+    <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
   </p>
 </div>
 
