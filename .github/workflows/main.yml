@@ -205,7 +205,7 @@ jobs:
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: package locks
           path: |
