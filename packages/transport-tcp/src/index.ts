@@ -5,70 +5,38 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { multiaddr } from '@multiformats/multiaddr'
- * import { pipe } from 'it-pipe'
- * import all from 'it-all'
  *
- * // A simple upgrader that just returns the MultiaddrConnection
- * const upgrader = {
- *   upgradeInbound: async maConn => maConn,
- *   upgradeOutbound: async maConn => maConn
- * }
- *
- * const transport = tcp()()
- *
- * const listener = transport.createListener({
- *   upgrader,
- *   handler: (socket) => {
- *     console.log('new connection opened')
- *     pipe(
- *       ['hello', ' ', 'World!'],
- *       socket
- *     )
- *   }
+ * const node = await createLibp2p({
+ *   transports: [
+ *     tcp()
+ *   ]
  * })
  *
- * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
- * await listener.listen(addr)
- * console.log('listening')
+ * const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
  *
- * const socket = await transport.dial(addr, { upgrader })
- * const values = await pipe(
- *   socket,
- *   all
- * )
- * console.log(`Value: ${values.toString()}`)
+ * // dial a TCP connection, timing out after 10 seconds
+ * const connection = await node.dial(ma, {
+ *   signal: AbortSignal.timeout(10_000)
+ * })
  *
- * // Close connection after reading
- * await listener.close()
- * ```
- *
- * Outputs:
- *
- * ```sh
- * listening
- * new connection opened
- * Value: hello World!
+ * // use connection...
  * ```
  */
 
 import net from 'net'
-import { AbortError, CodeError } from '@libp2p/interface/errors'
-import { type CreateListenerOptions, type DialOptions, symbol, type Transport, type Listener } from '@libp2p/interface/transport'
-import { logger } from '@libp2p/logger'
+import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { CounterGroup, Metrics } from '@libp2p/interface/metrics'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
-
-const log = logger('libp2p:tcp')
 
 export interface TCPOptions {
   /**
@@ -103,15 +71,40 @@ export interface TCPOptions {
    * Open server (start listening for new connections) if connections fall below a limit.
    */
   closeServerOnMaxConnections?: CloseServerOnMaxConnectionsOpts
+
+  /**
+   * Options passed to `net.connect` for every opened TCP socket
+   */
+  dialOpts?: TCPSocketOptions
+
+  /**
+   * Options passed to every `net.createServer` for every TCP server
+   */
+  listenOpts?: TCPSocketOptions
 }
 
 /**
  * Expose a subset of net.connect options
  */
 export interface TCPSocketOptions extends AbortOptions {
+  /**
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
+   */
   noDelay?: boolean
+
+  /**
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
+   */
   keepAlive?: boolean
+
+  /**
+   * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
+   */
   keepAliveInitialDelay?: number
+
+  /**
+   * @see https://nodejs.org/api/net.html#new-netsocketoptions
+   */
   allowHalfOpen?: boolean
 }
 
@@ -125,6 +118,7 @@ export interface TCPCreateListenerOptions extends CreateListenerOptions, TCPSock
 
 export interface TCPComponents {
   metrics?: Metrics
+  logger: ComponentLogger
 }
 
 export interface TCPMetrics {
@@ -135,8 +129,10 @@ class TCP implements Transport {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
+  private readonly log: Logger
 
   constructor (components: TCPComponents, options: TCPOptions = {}) {
+    this.log = components.logger.forComponent('libp2p:tcp')
     this.opts = options
     this.components = components
 
@@ -150,44 +146,46 @@ class TCP implements Transport {
     }
   }
 
-  readonly [symbol] = true
+  readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/tcp'
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
+    options.noDelay = options.noDelay ?? true
 
     // options.signal destroys the socket before 'connect' event
     const socket = await this._connect(ma, options)
 
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
-      log('socket error', err)
+      this.log('socket error', err)
     })
 
     const maConn = toMultiaddrConnection(socket, {
       remoteAddr: ma,
       socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
       socketCloseTimeout: this.opts.socketCloseTimeout,
-      metrics: this.metrics?.dialerEvents
+      metrics: this.metrics?.dialerEvents,
+      logger: this.components.logger
     })
 
     const onAbort = (): void => {
       maConn.close().catch(err => {
-        log.error('Error closing maConn after abort', err)
+        this.log.error('Error closing maConn after abort', err)
       })
     }
     options.signal?.addEventListener('abort', onAbort, { once: true })
 
-    log('new outbound connection %s', maConn.remoteAddr)
+    this.log('new outbound connection %s', maConn.remoteAddr)
     const conn = await options.upgrader.upgradeOutbound(maConn)
-    log('outbound connection %s upgraded', maConn.remoteAddr)
+    this.log('outbound connection %s upgraded', maConn.remoteAddr)
 
     options.signal?.removeEventListener('abort', onAbort)
 
     if (options.signal?.aborted === true) {
       conn.close().catch(err => {
-        log.error('Error closing conn after abort', err)
+        this.log.error('Error closing conn after abort', err)
       })
 
       throw new AbortError()
@@ -203,13 +201,16 @@ class TCP implements Transport {
 
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
-      const cOpts = multiaddrToNetConfig(ma) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
-      const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
+      const cOpts = multiaddrToNetConfig(ma, {
+        ...(this.opts.dialOpts ?? {}),
+        ...options
+      }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-      log('dialing %j', cOpts)
+      this.log('dialing %a', ma)
       const rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
+        const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
         err.message = `connection error ${cOptsStr}: ${err.message}`
         this.metrics?.dialerEvents.increment({ error: true })
 
@@ -217,7 +218,7 @@ class TCP implements Transport {
       }
 
       const onTimeout = (): void => {
-        log('connection timeout %s', cOptsStr)
+        this.log('connection timeout %a', ma)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
         const err = new CodeError(`connection timeout after ${Date.now() - start}ms`, 'ERR_CONNECT_TIMEOUT')
@@ -226,13 +227,13 @@ class TCP implements Transport {
       }
 
       const onConnect = (): void => {
-        log('connection opened %j', cOpts)
+        this.log('connection opened %a', ma)
         this.metrics?.dialerEvents.increment({ connect: true })
         done()
       }
 
       const onAbort = (): void => {
-        log('connection aborted %j', cOpts)
+        this.log('connection aborted %a', ma)
         this.metrics?.dialerEvents.increment({ abort: true })
         rawSocket.destroy()
         done(new AbortError())
@@ -271,13 +272,15 @@ class TCP implements Transport {
    */
   createListener (options: TCPCreateListenerOptions): Listener {
     return new TCPListener({
+      ...(this.opts.listenOpts ?? {}),
       ...options,
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
       closeServerOnMaxConnections: this.opts.closeServerOnMaxConnections,
       socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
       socketCloseTimeout: this.opts.socketCloseTimeout,
-      metrics: this.components.metrics
+      metrics: this.components.metrics,
+      logger: this.components.logger
     })
   }
 
@@ -301,8 +304,8 @@ class TCP implements Transport {
   }
 }
 
-export function tcp (init: TCPOptions = {}): (components?: TCPComponents) => Transport {
-  return (components: TCPComponents = {}) => {
+export function tcp (init: TCPOptions = {}): (components: TCPComponents) => Transport {
+  return (components: TCPComponents) => {
     return new TCP(components, init)
   }
 }

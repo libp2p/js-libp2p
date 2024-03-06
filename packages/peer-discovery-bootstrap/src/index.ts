@@ -7,58 +7,36 @@
  *
  * Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
  *
- * ```JavaScript
+ * @example Configuring a list of bootstrap nodes
+ *
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { bootstrap } from '@libp2p/bootstrap'
- * import { tcp } from 'libp2p/tcp'
- * import { noise } from '@libp2p/noise'
- * import { mplex } from '@libp2p/mplex'
  *
- * let options = {
- *   transports: [
- *     tcp()
- *   ],
- *   streamMuxers: [
- *     mplex()
- *   ],
- *   connectionEncryption: [
- *     noise()
- *   ],
+ * const libp2p = await createLibp2p({
  *   peerDiscovery: [
  *     bootstrap({
- *       list: [ // a list of bootstrap peer multiaddrs to connect to on node startup
- *         "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
- *         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
- *         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa"
- *       ],
- *       timeout: 1000, // in ms,
- *       tagName: 'bootstrap',
- *       tagValue: 50,
- *       tagTTL: 120000 // in ms
+ *       list: [
+ *         // a list of bootstrap peer multiaddrs to connect to on node startup
+ *         '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+ *         '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+ *         '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+ *       ]
  *     })
  *   ]
- * }
+ * })
  *
- * const libp2p = await createLibp2p(options)
- *
- * libp2p.on('peer:discovery', function (peerId) {
- *   console.log('found peer: ', peerId.toB58String())
+ * libp2p.addEventListener('peer:discovery', (evt) => {
+ *   console.log('found peer: ', evt.detail.toString())
  * })
  * ```
  */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { logger } from '@libp2p/logger'
+import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Startable } from '@libp2p/interface/startable'
-
-const log = logger('libp2p:bootstrap')
+import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
 
 const DEFAULT_BOOTSTRAP_TAG_NAME = 'bootstrap'
 const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
@@ -94,6 +72,7 @@ export interface BootstrapInit {
 
 export interface BootstrapComponents {
   peerStore: PeerStore
+  logger: ComponentLogger
 }
 
 /**
@@ -102,6 +81,7 @@ export interface BootstrapComponents {
 class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
   static tag = 'bootstrap'
 
+  private readonly log: Logger
   private timer?: ReturnType<typeof setTimeout>
   private readonly list: PeerInfo[]
   private readonly timeout: number
@@ -115,12 +95,13 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     super()
 
     this.components = components
+    this.log = components.logger.forComponent('libp2p:bootstrap')
     this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT
     this.list = []
 
     for (const candidate of options.list) {
       if (!P2P.matches(candidate)) {
-        log.error('Invalid multiaddr')
+        this.log.error('Invalid multiaddr')
         continue
       }
 
@@ -128,14 +109,13 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       const peerIdStr = ma.getPeerId()
 
       if (peerIdStr == null) {
-        log.error('Invalid bootstrap multiaddr without peer id')
+        this.log.error('Invalid bootstrap multiaddr without peer id')
         continue
       }
 
       const peerData: PeerInfo = {
         id: peerIdFromString(peerIdStr),
-        multiaddrs: [ma],
-        protocols: []
+        multiaddrs: [ma]
       }
 
       this.list.push(peerData)
@@ -144,7 +124,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     this._init = options
   }
 
-  readonly [peerDiscovery] = this
+  readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
 
@@ -160,11 +140,11 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       return
     }
 
-    log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
+    this.log('Starting bootstrap node discovery, discovering peers after %s ms', this.timeout)
     this.timer = setTimeout(() => {
       void this._discoverBootstrapPeers()
         .catch(err => {
-          log.error(err)
+          this.log.error(err)
         })
     }, this.timeout)
   }

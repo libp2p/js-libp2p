@@ -7,7 +7,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { mplex } from '@libp2p/mplex'
  * import { pipe } from 'it-pipe'
  *
@@ -31,8 +31,8 @@
  * ```
  */
 
-import { MplexStreamMuxer } from './mplex.js'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
+import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export interface MplexInit {
   /**
@@ -51,18 +51,6 @@ export interface MplexInit {
    * (default: 4MB)
    */
   maxUnprocessedMessageQueueSize?: number
-
-  /**
-   * Each byte array written into a multiplexed stream is converted to one or
-   * more messages which are sent as byte arrays to the remote node. Sending
-   * lots of small messages can be expensive - use this setting to batch up
-   * the serialized bytes of all messages sent during the current tick up to
-   * this limit to send in one go similar to Nagle's algorithm. N.b. you
-   * should benchmark your application carefully when using this setting as it
-   * may cause the opposite of the desired effect. Omit this setting to send
-   * all messages as they become available. (default: undefined)
-   */
-  minSendBytes?: number
 
   /**
    * The maximum number of multiplexed streams that can be open at any
@@ -96,19 +84,21 @@ export interface MplexInit {
 class Mplex implements StreamMuxerFactory {
   public protocol = '/mplex/6.7.0'
   private readonly _init: MplexInit
+  private readonly components: MplexComponents
 
-  constructor (init: MplexInit = {}) {
+  constructor (components: MplexComponents, init: MplexInit = {}) {
+    this.components = components
     this._init = init
   }
 
   createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
-    return new MplexStreamMuxer({
+    return new MplexStreamMuxer(this.components, {
       ...init,
       ...this._init
     })
   }
 }
 
-export function mplex (init: MplexInit = {}): () => StreamMuxerFactory {
-  return () => new Mplex(init)
+export function mplex (init: MplexInit = {}): (components: MplexComponents) => StreamMuxerFactory {
+  return (components) => new Mplex(components, init)
 }

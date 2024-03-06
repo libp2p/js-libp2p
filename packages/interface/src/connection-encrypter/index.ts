@@ -1,5 +1,7 @@
+import type { MultiaddrConnection } from '../connection/index.js'
 import type { PeerId } from '../peer-id/index.js'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
  * A libp2p connection encrypter module must be compliant to this interface
@@ -13,18 +15,18 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound(localPeer: PeerId, connection: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remotePeer?: PeerId): Promise<SecuredConnection<Extension>>
+  secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localPeer: PeerId, connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound(localPeer: PeerId, connection: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>, remotePeer?: PeerId): Promise<SecuredConnection<Extension>>
+  secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localPeer: PeerId, connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
 }
 
-export interface SecuredConnection<Extension = unknown> {
-  conn: Duplex<AsyncGenerator<Uint8Array>, Source<Uint8Array>, Promise<void>>
+export interface SecuredConnection<Stream = any, Extension = unknown> {
+  conn: Stream
   remoteExtensions?: Extension
   remotePeer: PeerId
 }

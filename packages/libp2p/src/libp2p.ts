@@ -1,19 +1,12 @@
-import { setMaxListeners } from 'events'
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { type ContentRouting, contentRouting } from '@libp2p/interface/content-routing'
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
-import { type PeerRouting, peerRouting } from '@libp2p/interface/peer-routing'
-import { DefaultKeyChain } from '@libp2p/keychain'
-import { logger } from '@libp2p/logger'
+import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { contentRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
-import mergeOptions from 'merge-options'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
@@ -21,41 +14,35 @@ import { defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
-import { CompoundContentRouting } from './content-routing/index.js'
+import { CompoundContentRouting } from './content-routing.js'
 import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
+import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { Libp2pEvents, PendingDial, ServiceMap, AbortOptions } from '@libp2p/interface'
-import type { Connection, NewStreamOptions, Stream } from '@libp2p/interface/connection'
-import type { KeyChain } from '@libp2p/interface/keychain'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal/registrar'
-import type { Datastore } from 'interface-datastore'
-
-const log = logger('libp2p')
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
+import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
   public peerRouting: PeerRouting
-  public keychain: KeyChain
   public metrics?: Metrics
   public services: T
+  public logger: ComponentLogger
+  public status: Libp2pStatus
 
   public components: Components
-  #started: boolean
+  private readonly log: Logger
 
   constructor (init: Libp2pInit<T>) {
     super()
+
+    this.status = 'stopped'
 
     // event bus - components can listen to this emitter to be notified of system events
     // and also cause them to be emitted
@@ -70,17 +57,22 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return internalResult || externalResult
     }
 
-    try {
-      // This emitter gets listened to a lot
-      setMaxListeners?.(Infinity, events)
-    } catch {}
+    // This emitter gets listened to a lot
+    setMaxListeners(Infinity, events)
 
-    this.#started = false
     this.peerId = init.peerId
+    this.logger = init.logger ?? defaultLogger()
+    this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
     const components = this.components = defaultComponents({
       peerId: init.peerId,
+      privateKey: init.privateKey,
+      nodeInfo: init.nodeInfo ?? {
+        name: pkg.name,
+        version: pkg.version
+      },
+      logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
       connectionGater: connectionGater(init.connectionGater)
@@ -101,8 +93,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       if (evt.detail.previous == null) {
         const peerInfo: PeerInfo = {
           id: evt.detail.peer.id,
-          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr),
-          protocols: evt.detail.peer.protocols
+          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr)
         }
 
         components.events.safeDispatchEvent('peer:discovery', { detail: peerInfo })
@@ -133,13 +124,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     // Addresses {listen, announce, noAnnounce}
     this.configureComponent('addressManager', new DefaultAddressManager(this.components, init.addresses))
 
-    // Create keychain
-    const keychainOpts = DefaultKeyChain.generateOptions()
-    this.keychain = this.configureComponent('keyChain', new DefaultKeyChain(this.components, {
-      ...keychainOpts,
-      ...init.keychain
-    }))
-
     // Peer routers
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)))
     this.peerRouting = this.components.peerRouting = this.configureComponent('peerRouting', new DefaultPeerRouting(this.components, {
@@ -162,7 +146,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     })
 
     // Transport modules
-    init.transports.forEach((fn, index) => {
+    init.transports?.forEach((fn, index) => {
       this.components.transportManager.add(this.configureComponent(`transport-${index}`, fn(this.components)))
     })
 
@@ -173,26 +157,26 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         const service: any = createService(this.components)
 
         if (service == null) {
-          log.error('service factory %s returned null or undefined instance', name)
+          this.log.error('service factory %s returned null or undefined instance', name)
           continue
         }
 
         this.services[name as keyof T] = service
         this.configureComponent(name, service)
 
-        if (service[contentRouting] != null) {
-          log('registering service %s for content routing', name)
-          contentRouters.push(service[contentRouting])
+        if (service[contentRoutingSymbol] != null) {
+          this.log('registering service %s for content routing', name)
+          contentRouters.push(service[contentRoutingSymbol])
         }
 
-        if (service[peerRouting] != null) {
-          log('registering service %s for peer routing', name)
-          peerRouters.push(service[peerRouting])
+        if (service[peerRoutingSymbol] != null) {
+          this.log('registering service %s for peer routing', name)
+          peerRouters.push(service[peerRoutingSymbol])
         }
 
-        if (service[peerDiscovery] != null) {
-          log('registering service %s for peer discovery', name)
-          service[peerDiscovery].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
+        if (service[peerDiscoverySymbol] != null) {
+          this.log('registering service %s for peer discovery', name)
+          service[peerDiscoverySymbol].addEventListener?.('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
         }
@@ -202,7 +186,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   private configureComponent <T> (name: string, component: T): T {
     if (component == null) {
-      log.error('component %s was null or undefined', name)
+      this.log.error('component %s was null or undefined', name)
     }
 
     this.components[name] = component
@@ -214,30 +198,26 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Starts the libp2p node and all its subsystems
    */
   async start (): Promise<void> {
-    if (this.#started) {
+    if (this.status !== 'stopped') {
       return
     }
 
-    this.#started = true
+    this.status = 'starting'
 
-    log('libp2p is starting')
-
-    const keys = await this.keychain.listKeys()
-
-    if (keys.find(key => key.name === 'self') == null) {
-      log('importing self key into keychain')
-      await this.keychain.importPeer('self', this.components.peerId)
-    }
+    this.log('libp2p is starting')
 
     try {
       await this.components.beforeStart?.()
       await this.components.start()
       await this.components.afterStart?.()
 
+      this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
-      log('libp2p has started')
+      this.log('libp2p has started')
     } catch (err: any) {
-      log.error('An error occurred starting libp2p', err)
+      this.log.error('An error occurred starting libp2p', err)
+      // set status to 'started' so this.stop() will stop any running components
+      this.status = 'started'
       await this.stop()
       throw err
     }
@@ -247,24 +227,21 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Stop the libp2p node by closing its listeners and open connections
    */
   async stop (): Promise<void> {
-    if (!this.#started) {
+    if (this.status !== 'started') {
       return
     }
 
-    log('libp2p is stopping')
+    this.log('libp2p is stopping')
 
-    this.#started = false
+    this.status = 'stopping'
 
     await this.components.beforeStop?.()
     await this.components.stop()
     await this.components.afterStop?.()
 
+    this.status = 'stopped'
     this.safeDispatchEvent('stop', { detail: this })
-    log('libp2p has stopped')
-  }
-
-  isStarted (): boolean {
-    return this.#started
+    this.log('libp2p has stopped')
   }
 
   getConnections (peerId?: PeerId): Connection[] {
@@ -286,7 +263,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    return this.components.connectionManager.openConnection(peer, options)
+    return this.components.connectionManager.openConnection(peer, {
+      // ensure any userland dials take top priority in the queue
+      priority: 75,
+      ...options
+    })
   }
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
@@ -325,16 +306,22 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
    * Get the public key for the given peer id
    */
   async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
-    log('getPublicKey %p', peer)
+    this.log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
       return peer.publicKey
     }
 
-    const peerInfo = await this.peerStore.get(peer)
+    try {
+      const peerInfo = await this.peerStore.get(peer)
 
-    if (peerInfo.id.publicKey != null) {
-      return peerInfo.id.publicKey
+      if (peerInfo.id.publicKey != null) {
+        return peerInfo.id.publicKey
+      }
+    } catch (err: any) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     }
 
     const peerKey = uint8ArrayConcat([
@@ -344,6 +331,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
+
     // ensure the returned key is valid
     unmarshalPublicKey(bytes)
 
@@ -394,15 +382,14 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
-      log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      this.log.error(new Error(codes.ERR_DISCOVERED_SELF))
       return
     }
 
     void this.components.peerStore.merge(peer.id, {
-      multiaddrs: peer.multiaddrs,
-      protocols: peer.protocols
+      multiaddrs: peer.multiaddrs
     })
-      .catch(err => { log.error(err) })
+      .catch(err => { this.log.error(err) })
   }
 }
 
@@ -410,30 +397,14 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T>): Promise<Libp2pNode<T>> {
-  if (options.peerId == null) {
-    const datastore = options.datastore as Datastore | undefined
+export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
+  const peerId = options.peerId ??= await createEd25519PeerId()
 
-    if (datastore != null) {
-      try {
-        // try load the peer id from the keychain
-        const keyChain = new DefaultKeyChain({
-          datastore
-        }, mergeOptions(DefaultKeyChain.generateOptions(), options.keychain))
-
-        options.peerId = await keyChain.exportPeerId('self')
-      } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
-        }
-      }
-    }
+  if (peerId.privateKey == null) {
+    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
   }
 
-  if (options.peerId == null) {
-    // no peer id in the keychain, create a new peer id
-    options.peerId = await createEd25519PeerId()
-  }
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
 
-  return new Libp2pNode(validateConfig(options))
+  return new Libp2pNode(await validateConfig(options))
 }

@@ -22,7 +22,7 @@ export function multiaddrToNetConfig (addr: Multiaddr, config: NetConfig = {}): 
   }
 
   // tcp listening
-  return { ...addr.toOptions(), ...config }
+  return { ...config, ...addr.toOptions() }
 }
 
 export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number): Multiaddr[] {

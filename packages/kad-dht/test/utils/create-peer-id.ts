@@ -1,5 +1,5 @@
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import type { Ed25519PeerId } from '@libp2p/interface/peer-id'
+import type { Ed25519PeerId } from '@libp2p/interface'
 
 /**
  * Creates multiple PeerIds

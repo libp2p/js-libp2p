@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
-import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
@@ -14,7 +14,7 @@ describe('Listening', () => {
   let libp2p: Libp2pNode
 
   before(async () => {
-    peerId = await createPeerId()
+    peerId = await createEd25519PeerId()
   })
 
   after(async () => {

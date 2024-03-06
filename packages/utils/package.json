@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/utils",
-  "version": "4.0.5",
+  "version": "5.2.6",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/utils#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -40,6 +44,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abstract-stream": {
+      "types": "./dist/src/abstract-stream.d.ts",
+      "import": "./dist/src/abstract-stream.js"
+    },
     "./address-sort": {
       "types": "./dist/src/address-sort.d.ts",
       "import": "./dist/src/address-sort.js"
@@ -48,9 +56,17 @@
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"
     },
+    "./close-source": {
+      "types": "./dist/src/close-source.d.ts",
+      "import": "./dist/src/close-source.js"
+    },
     "./ip-port-to-multiaddr": {
       "types": "./dist/src/ip-port-to-multiaddr.d.ts",
       "import": "./dist/src/ip-port-to-multiaddr.js"
+    },
+    "./is-promise": {
+      "types": "./dist/src/is-promise.d.ts",
+      "import": "./dist/src/is-promise.js"
     },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
@@ -60,9 +76,33 @@
       "types": "./dist/src/multiaddr/is-private.d.ts",
       "import": "./dist/src/multiaddr/is-private.js"
     },
+    "./peer-queue": {
+      "types": "./dist/src/peer-queue.d.ts",
+      "import": "./dist/src/peer-queue.js"
+    },
+    "./private-ip": {
+      "types": "./dist/src/private-ip.d.ts",
+      "import": "./dist/src/private-ip.js"
+    },
+    "./queue": {
+      "types": "./dist/src/queue/index.d.ts",
+      "import": "./dist/src/queue/index.js"
+    },
+    "./rate-limiter": {
+      "types": "./dist/src/rate-limiter.d.ts",
+      "import": "./dist/src/rate-limiter.js"
+    },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
       "import": "./dist/src/stream-to-ma-conn.js"
+    },
+    "./tracked-list": {
+      "types": "./dist/src/tracked-list.d.ts",
+      "import": "./dist/src/tracked-list.js"
+    },
+    "./tracked-map": {
+      "types": "./dist/src/tracked-map.d.ts",
+      "import": "./dist/src/tracked-map.js"
     }
   },
   "eslintConfig": {
@@ -76,6 +116,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -87,20 +128,33 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/logger": "^3.0.4",
-    "@multiformats/multiaddr": "^12.1.5",
-    "@multiformats/multiaddr-matcher": "^1.0.1",
-    "is-loopback-addr": "^2.0.1",
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/logger": "^4.0.7",
+    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr-matcher": "^1.1.2",
+    "delay": "^6.0.0",
+    "get-iterator": "^2.0.1",
+    "is-loopback-addr": "^2.0.2",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "private-ip": "^3.0.0",
-    "uint8arraylist": "^2.4.3"
+    "netmask": "^2.0.2",
+    "p-defer": "^4.0.0",
+    "race-event": "^1.2.0",
+    "race-signal": "^1.0.2",
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^41.0.2",
-    "it-all": "^3.0.1",
+    "@libp2p/peer-id-factory": "^4.0.7",
+    "@types/netmask": "^2.0.5",
+    "aegir": "^42.2.4",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "uint8arrays": "^4.0.4"
-  }
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0",
+    "uint8arrays": "^5.0.2"
+  },
+  "sideEffects": false
 }

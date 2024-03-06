@@ -1,6 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 6] */
-import { TopicValidatorResult } from '@libp2p/interface/pubsub'
-import { start, stop } from '@libp2p/interface/startable'
+import { TopicValidatorResult, start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
@@ -11,7 +10,7 @@ import { mockNetwork } from '../mocks/index.js'
 import { createComponents, waitForSubscriptionUpdate } from './utils.js'
 import type { PubSubArgs, PubSubComponents } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Message, PubSub } from '@libp2p/interface/pubsub'
+import type { Message, PubSub } from '@libp2p/interface'
 
 const topic = 'foo'
 
@@ -73,7 +72,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
         expect(psA.getTopics()).to.deep.equal([topic])
         expect(psB.getPeers()).to.have.lengthOf(1)
         expect(psB.getSubscribers(topic).map(p => p.toString())).to.deep.equal([componentsA.peerId.toString()])
-        expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+        expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
         expect(changedSubs).to.have.lengthOf(1)
         expect(changedSubs[0].topic).to.equal(topic)
         expect(changedSubs[0].subscribe).to.equal(true)
@@ -243,7 +242,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
           const { peerId: changedPeerId, subscriptions: changedSubs } = evt.detail
           expect(psB.getPeers()).to.have.lengthOf(1)
           expect(psB.getTopics()).to.be.empty()
-          expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+          expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
           expect(changedSubs).to.have.lengthOf(1)
           expect(changedSubs[0].topic).to.equal(topic)
           expect(changedSubs[0].subscribe).to.equal(true)
@@ -252,7 +251,7 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
           const { peerId: changedPeerId, subscriptions: changedSubs } = evt.detail
           expect(psB.getPeers()).to.have.lengthOf(1)
           expect(psB.getTopics()).to.be.empty()
-          expect(changedPeerId).to.deep.equal(psB.getPeers()[0])
+          expect(changedPeerId.toString()).to.equal(psB.getPeers()[0].toString())
           expect(changedSubs).to.have.lengthOf(1)
           expect(changedSubs[0].topic).to.equal(topic)
           expect(changedSubs[0].subscribe).to.equal(false)

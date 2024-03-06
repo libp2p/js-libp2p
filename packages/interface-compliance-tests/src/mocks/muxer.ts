@@ -1,5 +1,5 @@
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/interface/stream-muxer/stream'
 import { type Logger, logger } from '@libp2p/logger'
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import { abortableSource } from 'abortable-iterator'
 import map from 'it-map'
 import * as ndjson from 'it-ndjson'
@@ -8,9 +8,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { AbortOptions } from '@libp2p/interface'
-import type { Direction, Stream } from '@libp2p/interface/connection'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface/stream-muxer'
+import type { AbortOptions, Direction, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 
 let muxers = 0
@@ -249,14 +247,27 @@ class MockMuxer implements StreamMuxer {
       return
     }
 
-    this.log('closing muxed streams')
+    const signal = options?.signal ?? AbortSignal.timeout(10)
 
-    await Promise.all(
-      this.streams.map(async s => s.close())
-    )
+    try {
+      // try to gracefully close all streams
+      await Promise.all(
+        this.streams.map(async s => s.close({
+          signal
+        }))
+      )
 
-    this.closeController.abort()
-    this.input.end()
+      this.input.end()
+
+      // try to gracefully close the muxer
+      await this.input.onEmpty({
+        signal
+      })
+
+      this.closeController.abort()
+    } catch (err: any) {
+      this.abort(err)
+    }
   }
 
   abort (err: Error): void {

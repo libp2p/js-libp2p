@@ -1,16 +1,12 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 // @ts-expect-error no types
 import toIterable from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
-import type { CounterGroup } from '@libp2p/interface/metrics'
+import type { ComponentLogger, MultiaddrConnection, CounterGroup } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
-
-const log = logger('libp2p:tcp:socket')
 
 interface ToConnectionOptions {
   listeningAddr?: Multiaddr
@@ -20,6 +16,7 @@ interface ToConnectionOptions {
   socketCloseTimeout?: number
   metrics?: CounterGroup
   metricPrefix?: string
+  logger: ComponentLogger
 }
 
 /**
@@ -27,6 +24,7 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
+  const log = options.logger.forComponent('libp2p:tcp:socket')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
@@ -98,14 +96,22 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   const maConn: MultiaddrConnection = {
     async sink (source) {
       try {
-        await sink(source)
+        await sink((async function * () {
+          for await (const buf of source) {
+            if (buf instanceof Uint8Array) {
+              yield buf
+            } else {
+              yield buf.subarray()
+            }
+          }
+        })())
       } catch (err: any) {
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
           // If the source errored the socket will already have been destroyed by
           // toIterable.duplex(). If the socket errored it will already be
           // destroyed. There's nothing to do here except log the error & return.
-          log(err)
+          log.error('%s error in sink', lOptsStr, err)
         }
       }
 
@@ -126,7 +132,20 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         return
       }
 
-      options.signal = options.signal ?? AbortSignal.timeout(closeTimeout)
+      if (options.signal == null) {
+        const signal = AbortSignal.timeout(closeTimeout)
+
+        options = {
+          ...options,
+          signal
+        }
+      }
+
+      const abortSignalListener = (): void => {
+        socket.destroy(new CodeError('Destroying socket after timeout', 'ERR_CLOSE_TIMEOUT'))
+      }
+
+      options.signal?.addEventListener('abort', abortSignalListener)
 
       try {
         log('%s closing socket', lOptsStr)
@@ -134,6 +153,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
+
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -168,6 +188,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         })
       } catch (err: any) {
         this.abort(err)
+      } finally {
+        options.signal?.removeEventListener('abort', abortSignalListener)
       }
     },
 
@@ -175,7 +197,13 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       log('%s socket abort due to error', lOptsStr, err)
 
       socket.destroy(err)
-    }
+
+      if (maConn.timeline.close == null) {
+        maConn.timeline.close = Date.now()
+      }
+    },
+
+    log
   }
 
   return maConn

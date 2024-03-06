@@ -8,48 +8,47 @@
   ],
   "rows": [
     "libp2p",
-    ["libp2p/js-libp2p", "libp2p", "master", "main.yml"],
-    ["libp2p/js-libp2p-interfaces", "@libp2p/interface", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p", "libp2p", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/interface", "@libp2p/interface", "main", "main.yml"],
 
     "transports",
-    ["libp2p/js-libp2p-tcp", "@libp2p/tcp", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-webrtc", "@libp2p/webrtc", "main", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-websockets", "@libp2p/websockets", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-webtransport", "@libp2p/webtransport", "main", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/transport-tcp", "@libp2p/tcp", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/transport-webrtc", "@libp2p/webrtc", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/transport-websockets", "@libp2p/websockets", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/transport-webtransport", "@libp2p/webtransport", "main", "main.yml"],
 
     "secure channels",
     ["ChainSafe/js-libp2p-noise", "@chainsafe/libp2p-noise", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext", "@libp2p/plaintext", "main", "main.yml"],
 
     "stream multiplexers",
-    ["libp2p/js-libp2p-mplex", "@libp2p/mplex", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex", "@libp2p/mplex", "main", "main.yml"],
     ["ChainSafe/js-libp2p-yamux", "@chainsafe/libp2p-yamux", "master", "js-test-and-release.yml"],
 
     "peer discovery",
-    ["libp2p/js-libp2p-bootstrap", "@libp2p/bootstrap", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-mdns", "@libp2p/mdns", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap", "@libp2p/bootstrap", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/kad-dht", "@libp2p/kad-dht", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns", "@libp2p/mdns", "main", "main.yml"],
     ["ChainSafe/discv5", "@chainsafe/discv5", "master", "test_and_release.yml"],
 
     "content routing",
-    ["libp2p/js-reframe-content-routing", "@libp2p/reframe-content-routing", "main", "js-test-and-release.yml"],
-    ["libp2p/js-ipni-content-routing", "@libp2p/ipni-content-routing", "main", "js-test-and-release.yml"],
+    ["libp2p/js-http-v1-content-routing", "@libp2p/http-v1-content-routing", "main", "js-test-and-release.yml"],
     ["libp2p/js-libp2p-delegated-content-routing", "@libp2p/delegated-content-routing", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/kad-dht", "@libp2p/kad-dht", "main", "main.yml"],
 
     "peer routing",
     ["libp2p/js-libp2p-delegated-peer-routing", "@libp2p/delegated-peer-routing", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-kad-dht", "@libp2p/kad-dht", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/kad-dht", "@libp2p/kad-dht", "main", "main.yml"],
 
     "utilities",
-    ["libp2p/js-libp2p-crypto", "@libp2p/crypto", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/crypto", "@libp2p/crypto", "main", "main.yml"],
 
     "data types",
-    ["libp2p/js-libp2p-peer-id", "@libp2p/peer-id", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-record", "@libp2p/record", "master", "js-test-and-release.yml"],
-    ["libp2p/js-libp2p-peer-record", "@libp2p/peer-record", "master", "js-test-and-release.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/peer-id", "@libp2p/peer-id", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/peer-record", "@libp2p/peer-record", "main", "main.yml"],
 
     "pubsub",
     ["ChainSafe/js-libp2p-gossipsub", "@ChainSafe/libp2p-gossipsub", "master", "main.yml"],
-    ["libp2p/js-libp2p-floodsub", "@libp2p/floodsub", "master", "js-test-and-release.yml"]
+    ["libp2p/js-libp2p/tree/main/packages/pubsub-floodsub", "@libp2p/floodsub", "main", "main.yml"]
   ]
 }

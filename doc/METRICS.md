@@ -16,8 +16,6 @@ Metrics allow you to gather run time statistics on your libp2p node.
 - See the [API](./API.md) for Metrics usage. Metrics in libp2p do not emit events, as such applications wishing to read Metrics will need to do so actively. This ensures that the system is not unnecessarily firing update notifications.
 - For large installations you may wish to combine the statistics with a visualizer such as [Graphana](https://grafana.com/)
 
-There are two types of metrics [`StreamMetrics`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L66-L115) and [`ComponentMetrics`](https://github.com/libp2p/js-libp2p-interfaces/blob/master/packages/interface-metrics/src/index.ts#L183-L193). `StreamMetrics` track data in and out of streams, `ComponentMetrics` allow system components to record metrics that are of interest to the observer.
-
 Although designed to primarily integrate with tools such as [Prometheus](https://prometheus.io/) it does not introduce any dependencies that require you to use any particular tool to store or graph metrics.
 
 ## Tracking
@@ -28,9 +26,9 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 
 ### Enable metrics
 
-First enable metrics tracking by supplying a [Metrics](https://www.npmjs.com/package/@libp2p/interface-metrics) implementation:
+First enable metrics tracking by supplying a [Metrics](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/metrics/index.ts#L150) implementation:
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 
@@ -63,8 +61,8 @@ const node = await createLibp2p({
 
 To define component metrics first get a reference to the metrics object:
 
-```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+```TypeScript
+import type { Metrics } from '@libp2p/interface'
 
 interface MyClassComponents {
   metrics: Metrics
@@ -85,18 +83,22 @@ class MyClass {
 
 A tracked metric can be created by calling either `registerMetric` on the metrics object:
 
-```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+```TypeScript
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-const metric = metrics.registerMetric('my_metric', {
+const metric = node.metrics?.registerMetric('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 // set a value
 metric.update(5)
@@ -118,13 +120,17 @@ stopTimer()
 
 A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
 
-```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+```TypeScript
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-metrics.registerMetric('my_metric', {
+node.metrics?.registerMetric('my_metric', {
   async calculate () {
     return 5
   }
@@ -133,18 +139,22 @@ metrics.registerMetric('my_metric', {
 
 If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
 
-```ts
-import type { Metrics } from '@libp2p/interface/metrics'
+```TypeScript
+import type { Metrics } from '@libp2p/interface'
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
+import { createLibp2p } from 'libp2p'
 
-const metrics: Metrics = prometheusMetrics()()
+const node = await createLibp2p({
+  metrics: prometheusMetrics()
+  //... other config
+})
 
-const metric = metrics.registerMetricGroup('my_metric', {
+const metric = node.metrics?.registerMetricGroup('my_metric', {
   // an optional label
   label: 'label',
   // optional help text
   help: 'help'
-})
+})!
 
 metric.update({
   key1: 1,
@@ -175,10 +185,9 @@ stopTimer()
 Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [docs](https://libp2p.github.io/js-libp2p-prometheus-metrics/)
 
 
-```ts
+```TypeScript
 import { prometheusMetrics } from '@libp2p/prometheus-metrics'
 import { createLibp2p } from 'libp2p'
-
 import client from 'prom-client'
 import { createServer } from 'http'
 

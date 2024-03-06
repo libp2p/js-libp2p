@@ -2,10 +2,11 @@
 
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { webSockets } from '@libp2p/websockets'
 import * as filter from '@libp2p/websockets/filters'
-import { WebRTC } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import map from 'it-map'
@@ -13,13 +14,10 @@ import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p } from 'libp2p'
-import { circuitRelayTransport } from 'libp2p/circuit-relay'
 import pDefer from 'p-defer'
 import pRetry from 'p-retry'
 import { webRTC } from '../src/index.js'
-import type { Libp2p } from '@libp2p/interface'
-import type { Connection, Stream } from '@libp2p/interface/connection'
-import type { StreamHandler } from '@libp2p/interface/stream-handler'
+import type { Libp2p, Connection, Stream, StreamHandler } from '@libp2p/interface'
 
 async function createNode (): Promise<Libp2p> {
   return createLibp2p({
@@ -60,7 +58,7 @@ describe('basics', () => {
 
   async function connectNodes (): Promise<Connection> {
     const remoteAddr = remoteNode.getMultiaddrs()
-      .filter(ma => WebRTC.matches(ma)).pop()
+      .filter(ma => WebRTC.exactMatch(ma)).pop()
 
     if (remoteAddr == null) {
       throw new Error('Remote peer could not listen on relay')
@@ -120,6 +118,15 @@ describe('basics', () => {
 
     // asset that we got the right data
     expect(output).to.equalBytes(toBuffer(input))
+  })
+
+  it('reports remote addresses correctly', async () => {
+    const initatorConnection = await connectNodes()
+    expect(initatorConnection.remoteAddr.toString()).to.equal(`${process.env.RELAY_MULTIADDR}/p2p-circuit/webrtc/p2p/${remoteNode.peerId}`)
+
+    const receiverConnections = remoteNode.getConnections(localNode.peerId)
+      .filter(conn => conn.remoteAddr.toString() === `/webrtc/p2p/${localNode.peerId}`)
+    expect(receiverConnections).to.have.lengthOf(1)
   })
 
   it('can send a large file', async () => {
@@ -233,15 +240,16 @@ describe('basics', () => {
       runOnTransientConnection: true
     })
 
+    // close the write end immediately
+    const p = stream.closeWrite()
+
     const remoteStream = await getRemoteStream.promise
     // close the readable end of the remote stream
     await remoteStream.closeRead()
 
     // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-    const remoteInputStream = pushable()
+    const remoteInputStream = pushable<Uint8Array>()
     void remoteStream.sink(remoteInputStream)
-
-    const p = stream.closeWrite()
 
     // wait for remote to receive local close-write
     await pRetry(() => {
@@ -293,14 +301,14 @@ describe('basics', () => {
       runOnTransientConnection: true
     })
 
+    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+    const p = stream.sink([])
+
     const remoteStream = await getRemoteStream.promise
     // close the readable end of the remote stream
     await remoteStream.closeRead()
     // readable end should finish
     await drain(remoteStream.source)
-
-    // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-    const p = stream.sink([])
 
     // wait for remote to receive local close-write
     await pRetry(() => {

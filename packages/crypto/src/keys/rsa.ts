@@ -1,9 +1,11 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../random-bytes.js'
 import * as utils from './rsa-utils.js'
 import type { JWKKeyPair } from './interface.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = promisify(crypto.generateKeyPair)
 
@@ -42,30 +44,34 @@ export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair>
 
 export { randomBytes as getRandomValues }
 
-export async function hashAndSign (key: JsonWebKey, msg: Uint8Array): Promise<Uint8Array> {
-  return crypto.createSign('RSA-SHA256')
-    .update(msg)
-    // @ts-expect-error node types are missing jwk as a format
-    .sign({ format: 'jwk', key })
-}
+export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+  const hash = crypto.createSign('RSA-SHA256')
 
-export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
-  return crypto.createVerify('RSA-SHA256')
-    .update(msg)
-    // @ts-expect-error node types are missing jwk as a format
-    .verify({ format: 'jwk', key }, sig)
-}
+  if (msg instanceof Uint8Array) {
+    hash.update(msg)
+  } else {
+    for (const buf of msg) {
+      hash.update(buf)
+    }
+  }
 
-const padding = crypto.constants.RSA_PKCS1_PADDING
-
-export function encrypt (key: JsonWebKey, bytes: Uint8Array): Uint8Array {
   // @ts-expect-error node types are missing jwk as a format
-  return crypto.publicEncrypt({ format: 'jwk', key, padding }, bytes)
+  return hash.sign({ format: 'jwk', key })
 }
 
-export function decrypt (key: JsonWebKey, bytes: Uint8Array): Uint8Array {
+export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+  const hash = crypto.createVerify('RSA-SHA256')
+
+  if (msg instanceof Uint8Array) {
+    hash.update(msg)
+  } else {
+    for (const buf of msg) {
+      hash.update(buf)
+    }
+  }
+
   // @ts-expect-error node types are missing jwk as a format
-  return crypto.privateDecrypt({ format: 'jwk', key, padding }, bytes)
+  return hash.verify({ format: 'jwk', key }, sig)
 }
 
 export function keySize (jwk: JsonWebKey): number {
@@ -74,6 +80,6 @@ export function keySize (jwk: JsonWebKey): number {
   } else if (jwk.n == null) {
     throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
   }
-  const modulus = Buffer.from(jwk.n, 'base64')
+  const modulus = uint8ArrayFromString(jwk.n, 'base64url')
   return modulus.length * 8
 }

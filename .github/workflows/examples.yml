@@ -13,8 +13,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
@@ -37,16 +37,19 @@ jobs:
           - name: js-libp2p-example-circuit-relay
             repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
             deps:
+              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
+              - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-connection-encryption
             repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
             deps:
+              - '@libp2p/plaintext@$PWD/packages/connection-encrypter-plaintext'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - 'libp2p@$PWD/packages/libp2p'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master

@@ -1,10 +1,12 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { start } from '@libp2p/interface/startable'
+import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import all from 'it-all'
+import { pipe } from 'it-pipe'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -12,13 +14,12 @@ import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
-import { createNode, createPeerId } from '../fixtures/creators/peer.js'
+import { createNode } from '../fixtures/creators/peer.js'
+import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('Connection Manager', () => {
   let libp2p: Libp2p
@@ -26,8 +27,8 @@ describe('Connection Manager', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -122,8 +123,8 @@ describe('libp2p.connections', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -401,6 +402,9 @@ describe('libp2p.connections', () => {
           peerId: peerIds[1],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          services: {
+            echo: echo()
           }
         })
       })
@@ -591,16 +595,23 @@ describe('libp2p.connections', () => {
           },
           connectionGater: {
             denyInboundUpgradedConnection
+          },
+          services: {
+            echo: echo()
           }
         })
       })
       await remoteLibp2p.peerStore.patch(libp2p.peerId, {
         multiaddrs: libp2p.getMultiaddrs()
       })
-      await remoteLibp2p.dial(libp2p.peerId)
+      const connection = await remoteLibp2p.dial(libp2p.peerId)
+      const stream = await connection.newStream(ECHO_PROTOCOL)
+      const input = [Uint8Array.from([0])]
+      const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
       expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
 
     it('intercept outbound upgraded', async () => {
@@ -620,10 +631,14 @@ describe('libp2p.connections', () => {
       await libp2p.peerStore.patch(remoteLibp2p.peerId, {
         multiaddrs: remoteLibp2p.getMultiaddrs()
       })
-      await libp2p.dial(remoteLibp2p.peerId)
+      const connection = await libp2p.dial(remoteLibp2p.peerId)
+      const stream = await connection.newStream(ECHO_PROTOCOL)
+      const input = [Uint8Array.from([0])]
+      const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
       expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
   })
 })

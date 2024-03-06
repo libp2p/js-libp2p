@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/peer-collections",
-  "version": "4.0.6",
+  "version": "5.1.7",
   "description": "Stores values against a peer id",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-collections#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -39,6 +43,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -49,11 +54,15 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/peer-id": "^3.0.4"
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/peer-id": "^4.0.7"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^3.0.6",
-    "aegir": "^41.0.2"
-  }
+    "@libp2p/peer-id-factory": "^4.0.7",
+    "@types/sinon": "^17.0.3",
+    "aegir": "^42.2.4",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0"
+  },
+  "sideEffects": false
 }

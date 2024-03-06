@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { noise } from '@chainsafe/libp2p-noise'
  * import { multiaddr } from '@multiformats/multiaddr'
@@ -15,24 +15,37 @@
  * import { webRTC } from '@libp2p/webrtc'
  *
  * const node = await createLibp2p({
- *   transports: [webRTC()],
- *   connectionEncryption: [noise()],
+ *   transports: [
+ *     webRTC()
+ *   ],
+ *   connectionEncryption: [
+ *     noise()
+ *   ]
  * })
  *
  * await node.start()
  *
- * const ma =  multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
- * const stream = await node.dialProtocol(ma, ['/my-protocol/1.0.0'])
- * const message = `Hello js-libp2p-webrtc\n`
- * const response = await pipe([fromString(message)], stream, async (source) => await first(source))
- * const responseDecoded = toString(response.slice(0, response.length))
+ * const ma = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
+ * const stream = await node.dialProtocol(ma, '/my-protocol/1.0.0', {
+ *   signal: AbortSignal.timeout(10_000)
+ * })
+ *
+ * await pipe(
+ *   [fromString(`Hello js-libp2p-webrtc\n`)],
+ *   stream,
+ *   async function (source) {
+ *     for await (const buf of source) {
+ *       console.info(toString(buf.subarray()))
+ *     }
+ *   }
+ * )
  * ```
  */
 
 import { WebRTCTransport } from './private-to-private/transport.js'
 import { WebRTCDirectTransport, type WebRTCTransportDirectInit, type WebRTCDirectTransportComponents } from './private-to-public/transport.js'
 import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {
   /**
@@ -66,6 +79,12 @@ export interface DataChannelOptions {
    * controls how long we wait for the acknowledgement in ms (default: 5s)
    */
   closeTimeout?: number
+
+  /**
+   * When sending the first data message, if the channel is not in the "open"
+   * state, wait this long for the "open" event to fire.
+   */
+  openTimeout?: number
 }
 
 /**

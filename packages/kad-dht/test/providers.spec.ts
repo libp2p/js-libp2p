@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
@@ -8,7 +9,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Providers } from '../src/providers.js'
 import { createPeerIds } from './utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { PeerId } from '@libp2p/interface'
 
 describe('Providers', () => {
   let peers: PeerId[]
@@ -25,7 +26,8 @@ describe('Providers', () => {
 
   it('simple add and get of providers', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
     })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -42,7 +44,8 @@ describe('Providers', () => {
 
   it('duplicate add of provider is deduped', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
     })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -63,7 +66,8 @@ describe('Providers', () => {
 
   it('more providers than space in the lru cache', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
     }, {
       cacheSize: 10
     })
@@ -85,7 +89,8 @@ describe('Providers', () => {
 
   it('expires', async () => {
     providers = new Providers({
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
     }, {
       cleanupInterval: 100,
       provideValidity: 200

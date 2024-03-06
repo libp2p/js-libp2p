@@ -2,11 +2,8 @@ import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface/pubsub'
-import type { Topology } from '@libp2p/interface/topology'
-import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord } from '@libp2p/interface-internal/registrar'
+import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology } from '@libp2p/interface'
+import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord } from '@libp2p/interface-internal'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = await PeerIdFactory.createEd25519PeerId()
@@ -136,7 +133,8 @@ export const ConnectionPair = (): [Connection, Connection] => {
         ...d0,
         protocol: protocol[0],
         closeWrite: async () => {}
-      })
+      }),
+      streams: []
     },
     {
       // @ts-expect-error incomplete implementation
@@ -144,7 +142,8 @@ export const ConnectionPair = (): [Connection, Connection] => {
         ...d1,
         protocol: protocol[0],
         closeWrite: async () => {}
-      })
+      }),
+      streams: []
     }
   ]
 }

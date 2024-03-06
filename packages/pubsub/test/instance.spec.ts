@@ -1,8 +1,9 @@
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { PubSubBaseProtocol } from '../src/index.js'
 import { MockRegistrar } from './utils/index.js'
-import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface/pubsub'
+import type { PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 class PubsubProtocol extends PubSubBaseProtocol {
@@ -41,7 +42,8 @@ describe('pubsub instance', () => {
     expect(() => {
       return new PubsubProtocol({
         peerId,
-        registrar: new MockRegistrar()
+        registrar: new MockRegistrar(),
+        logger: defaultLogger()
       }, { // eslint-disable-line no-new
         multicodecs: ['/pubsub/1.0.0']
       })

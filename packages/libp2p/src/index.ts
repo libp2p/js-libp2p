@@ -19,18 +19,7 @@ import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, RecursivePartial } from '@libp2p/interface'
-import type { ConnectionProtector } from '@libp2p/interface/connection'
-import type { ConnectionEncrypter } from '@libp2p/interface/connection-encrypter'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerDiscovery } from '@libp2p/interface/peer-discovery'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerRouting } from '@libp2p/interface/peer-routing'
-import type { StreamMuxerFactory } from '@libp2p/interface/stream-muxer'
-import type { Transport } from '@libp2p/interface/transport'
-import type { KeyChainInit } from '@libp2p/keychain'
+import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { Datastore } from 'interface-datastore'
 
@@ -46,6 +35,16 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * peerId instance (it will be created if not provided)
    */
   peerId: PeerId
+
+  /**
+   * Private key associated with the peerId
+   */
+  privateKey: PrivateKey
+
+  /**
+   * Metadata about the node - implementation name, version number, etc
+   */
+  nodeInfo: NodeInfo
 
   /**
    * Addresses for transport listening and to advertise to the network
@@ -80,14 +79,9 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
   peerStore: PersistentPeerStoreInit
 
   /**
-   * keychain configuration
-   */
-  keychain: KeyChainInit
-
-  /**
    * An array that must include at least 1 compliant transport
    */
-  transports: Array<(components: Components) => Transport>
+  transports?: Array<(components: Components) => Transport>
   streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
   connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
   peerDiscovery?: Array<(components: Components) => PeerDiscovery>
@@ -108,6 +102,27 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * Arbitrary libp2p modules
    */
   services: ServiceFactoryMap<T>
+
+  /**
+   * An optional logging implementation that can be used to write runtime logs.
+   *
+   * Set the `DEBUG` env var or the `debug` key on LocalStorage to see logs.
+   *
+   * @example
+   *
+   * Node.js:
+   *
+   * ```console
+   * $ DEBUG="*libp2p:*" node myscript.js
+   * ```
+   *
+   * Browsers:
+   *
+   * ```TypeScript
+   * localStorage.setItem('debug', '*libp2p:*')
+   * ```
+   */
+  logger?: ComponentLogger
 }
 
 export type { Libp2p }
@@ -122,7 +137,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
@@ -140,7 +155,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  * const libp2p = await createLibp2p(options)
  * ```
  */
-export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T>): Promise<Libp2p<T>> {
+export async function createLibp2p <T extends ServiceMap = { x: Record<string, unknown> }> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
   const node = await createLibp2pNode(options)
 
   if (options.start !== false) {

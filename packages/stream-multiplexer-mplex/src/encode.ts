@@ -1,7 +1,6 @@
-import batchedBytes from 'it-batched-bytes'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { allocUnsafe } from './alloc-unsafe.js'
+import { allocUnsafe } from 'uint8arrays/alloc'
 import { type Message, MessageTypes } from './message-types.js'
 import type { Source } from 'it-stream-types'
 
@@ -56,29 +55,10 @@ const encoder = new Encoder()
 /**
  * Encode and yield one or more messages
  */
-export async function * encode (source: Source<Message[]>, minSendBytes: number = 0): AsyncGenerator<Uint8Array, void, undefined> {
-  if (minSendBytes == null || minSendBytes === 0) {
-    // just send the messages
-    for await (const messages of source) {
-      const list = new Uint8ArrayList()
-
-      for (const msg of messages) {
-        encoder.write(msg, list)
-      }
-
-      yield list.subarray()
-    }
-
-    return
+export async function * encode (source: Source<Message>): AsyncGenerator<Uint8Array | Uint8ArrayList, void, undefined> {
+  for await (const message of source) {
+    const list = new Uint8ArrayList()
+    encoder.write(message, list)
+    yield list
   }
-
-  // batch messages up for sending
-  yield * batchedBytes(source, {
-    size: minSendBytes,
-    serialize: (obj, list) => {
-      for (const m of obj) {
-        encoder.write(m, list)
-      }
-    }
-  })
 }

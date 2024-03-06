@@ -16,8 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { TypedEventTarget } from './events.js'
-import type { KeyChain } from './keychain/index.js'
+import type { TypedEventTarget } from './event-target.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -28,6 +27,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index
 import type { Topology } from './topology/index.js'
 import type { Listener } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -99,6 +99,28 @@ export interface IdentifyResult {
    * If sent by the remote peer this is the deserialized signed peer record
    */
   signedPeerRecord?: SignedPeerRecord
+
+  /**
+   * The connection that the identify protocol ran over
+   */
+  connection: Connection
+}
+
+/**
+ * Logger component for libp2p
+ */
+export interface Logger {
+  (formatter: any, ...args: any[]): void
+  error(formatter: any, ...args: any[]): void
+  trace(formatter: any, ...args: any[]): void
+  enabled: boolean
+}
+
+/**
+ * Peer logger component for libp2p
+ */
+export interface ComponentLogger {
+  forComponent(name: string): Logger
 }
 
 /**
@@ -114,7 +136,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:discovery', (event) => {
    *    const peerInfo = event.detail
    *    // ...
@@ -128,7 +150,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:connect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -144,7 +166,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:disconnect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -160,7 +182,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:identify', (event) => {
    *   const identifyResult = event.detail
    *   // ...
@@ -188,7 +210,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('self:peer:update', (event) => {
    *   const { peer } = event.detail
    *   // ...
@@ -229,7 +251,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has started
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('start', (event) => {
    *   console.info(libp2p.isStarted()) // true
    * })
@@ -240,7 +262,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has stopped
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('stop', (event) => {
    *   console.info(libp2p.isStarted()) // false
    * })
@@ -255,7 +277,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const node = await createLibp2p({
  *   // ...other options
  *   services: {
@@ -300,6 +322,8 @@ export interface PendingDial {
   multiaddrs: Multiaddr[]
 }
 
+export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -312,7 +336,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * console.info(libp2p.peerId)
    * // PeerId(12D3Foo...)
    * ````
@@ -325,7 +349,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peer = await libp2p.peerStore.get(peerId)
    * console.info(peer)
    * // { id: PeerId(12D3Foo...), addresses: [] ... }
@@ -339,7 +363,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
    * console.info(peerInfo)
    * // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -347,7 +371,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.peerRouting.getClosestPeers(key)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -363,7 +387,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.contentRouting.findProviders(cid)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -373,26 +397,12 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   contentRouting: ContentRouting
 
   /**
-   * The keychain contains the keys used by the current node, and can create new
-   * keys, export them, import them, etc.
-   *
-   * @example
-   *
-   * ```js
-   * const keyInfo = await libp2p.keychain.createKey('new key')
-   * console.info(keyInfo)
-   * // { id: '...', name: 'new key' }
-   * ```
-   */
-  keychain: KeyChain
-
-  /**
    * The metrics subsystem allows recording values to assess the health/performance
    * of the running node.
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const metric = libp2p.metrics.registerMetric({
    *   'my-metric'
    * })
@@ -404,6 +414,16 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   metrics?: Metrics
 
   /**
+   * The logger used by this libp2p node
+   */
+  logger: ComponentLogger
+
+  /**
+   * The current status of the libp2p node
+   */
+  status: Libp2pStatus
+
+  /**
    * Get a deduplicated list of peer advertising multiaddrs by concatenating
    * the listen addresses used by transports with any configured
    * announce addresses as well as observed addresses reported by peers.
@@ -413,7 +433,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const listenMa = libp2p.getMultiaddrs()
    * // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
    * ```
@@ -425,7 +445,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const protocols = libp2p.getProtocols()
    * // [ '/ipfs/ping/1.0.0', '/ipfs/id/1.0.0' ]
    * ```
@@ -438,7 +458,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const connection of libp2p.getConnections()) {
    *   console.log(peerId, connection.remoteAddr.toString())
    *   // Logs the PeerId string and the observed remote multiaddr of each Connection
@@ -452,7 +472,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const pendingDial of libp2p.getDialQueue()) {
    *   console.log(pendingDial)
    * }
@@ -473,7 +493,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
@@ -494,7 +514,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * import { pipe } from 'it-pipe'
    *
    * const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
@@ -514,7 +534,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
@@ -529,7 +549,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const handler = ({ connection, stream, protocol }) => {
    *   // use stream or connection according to the needs
    * }
@@ -548,7 +568,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
@@ -560,7 +580,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register('/echo/1.0.0', {
    *   onConnect: (peer, connection) => {
    *     // handle connect
@@ -579,7 +599,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register(...)
    *
    * libp2p.unregister(id)
@@ -601,12 +621,27 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
 }
 
 /**
+ * Metadata about the current node
+ */
+export interface NodeInfo {
+  /**
+   * The implementation name
+   */
+  name: string
+
+  /**
+   * The implementation version
+   */
+  version: string
+}
+
+/**
  * An object that contains an AbortSignal as
  * the optional `signal` property.
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const controller = new AbortController()
  *
  * aLongRunningOperation({
@@ -622,6 +657,13 @@ export interface AbortOptions {
 }
 
 /**
+ * An object that contains a Logger as the `log` property.
+ */
+export interface LoggerOptions {
+  log: Logger
+}
+
+/**
  * Returns a new type with all fields marked optional.
  *
  * Borrowed from the tsdef module.
@@ -629,3 +671,48 @@ export interface AbortOptions {
 export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
 }
+
+/**
+ * When a routing operation involves reading values, these options allow
+ * controlling where the values are read from. By default libp2p will check
+ * local caches but may not use the network if a valid local value is found,
+ * these options allow tuning that behaviour.
+ */
+export interface RoutingOptions extends AbortOptions, ProgressOptions {
+  /**
+   * Pass `false` to not use the network
+   *
+   * @default true
+   */
+  useNetwork?: boolean
+
+  /**
+   * Pass `false` to not use cached values
+   *
+   * @default true
+   */
+  useCache?: boolean
+}
+
+export * from './connection/index.js'
+export * from './connection-encrypter/index.js'
+export * from './connection-gater/index.js'
+export * from './content-routing/index.js'
+export * from './keys/index.js'
+export * from './metrics/index.js'
+export * from './peer-discovery/index.js'
+export * from './peer-id/index.js'
+export * from './peer-info/index.js'
+export * from './peer-routing/index.js'
+export * from './peer-store/index.js'
+export * from './peer-store/tags.js'
+export * from './pubsub/index.js'
+export * from './record/index.js'
+export * from './stream-handler/index.js'
+export * from './stream-muxer/index.js'
+export * from './topology/index.js'
+export * from './transport/index.js'
+export * from './errors.js'
+export * from './event-target.js'
+export * from './events.js'
+export * from './startable.js'

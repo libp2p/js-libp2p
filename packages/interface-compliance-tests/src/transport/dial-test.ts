@@ -1,5 +1,4 @@
-import { AbortError } from '@libp2p/interface/errors'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
@@ -10,8 +9,8 @@ import { isValidTick } from '../is-valid-tick.js'
 import { mockUpgrader, mockRegistrar } from '../mocks/index.js'
 import type { TransportTestFixtures, Connector } from './index.js'
 import type { TestSetup } from '../index.js'
-import type { Listener, Transport, Upgrader } from '@libp2p/interface/transport'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export default (common: TestSetup<TransportTestFixtures>): void => {

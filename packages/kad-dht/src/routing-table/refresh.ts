@@ -1,5 +1,4 @@
 import { randomBytes } from '@libp2p/crypto'
-import { logger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import length from 'it-length'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -8,18 +7,21 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Logger } from '@libp2p/logger'
+import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 /**
  * Cannot generate random KadIds longer than this + 1
  */
 const MAX_COMMON_PREFIX_LENGTH = 15
 
+export interface RoutingTableRefreshComponents {
+  logger: ComponentLogger
+}
+
 export interface RoutingTableRefreshInit {
   peerRouting: PeerRouting
   routingTable: RoutingTable
-  lan: boolean
+  logPrefix: string
   refreshInterval?: number
   refreshQueryTimeout?: number
 }
@@ -37,9 +39,9 @@ export class RoutingTableRefresh {
   private readonly commonPrefixLengthRefreshedAt: Date[]
   private refreshTimeoutId?: ReturnType<typeof setTimeout>
 
-  constructor (init: RoutingTableRefreshInit) {
-    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
-    this.log = logger(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
+  constructor (components: RoutingTableRefreshComponents, init: RoutingTableRefreshInit) {
+    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, logPrefix } = init
+    this.log = components.logger.forComponent(`${logPrefix}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL
@@ -145,7 +147,7 @@ export class RoutingTableRefresh {
       maxCommonPrefix = MAX_COMMON_PREFIX_LENGTH
     }
 
-    const dates = []
+    const dates: Date[] = []
 
     for (let i = 0; i <= maxCommonPrefix; i++) {
       // defaults to the zero value if we haven't refreshed it yet.

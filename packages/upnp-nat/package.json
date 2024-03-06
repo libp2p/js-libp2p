@@ -1,0 +1,67 @@
+{
+  "name": "@libp2p/upnp-nat",
+  "version": "1.0.14",
+  "description": "UPnP NAT hole punching",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/upnp-nat#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "build": "aegir build --no-bundle",
+    "test": "aegir test -t node -t electron-main",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@achingbrain/nat-port-mapper": "^1.0.13",
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface-internal": "^1.0.9",
+    "@libp2p/utils": "^5.2.6",
+    "@multiformats/multiaddr": "^12.1.14",
+    "wherearewe": "^2.0.1"
+  },
+  "devDependencies": {
+    "@libp2p/logger": "^4.0.7",
+    "@libp2p/peer-id-factory": "^4.0.7",
+    "aegir": "^42.2.4",
+    "sinon-ts": "^2.0.0"
+  },
+  "sideEffects": false
+}

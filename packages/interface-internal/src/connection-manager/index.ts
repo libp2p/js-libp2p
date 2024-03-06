@@ -1,6 +1,4 @@
-import type { AbortOptions, PendingDial } from '@libp2p/interface'
-import type { Connection, MultiaddrConnection } from '@libp2p/interface/connection'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -25,7 +23,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connections = libp2p.connectionManager.get(peerId)
    * // []
    * ```
@@ -37,7 +35,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
    * ```
    */
@@ -48,7 +46,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connection = await libp2p.connectionManager.openConnection(peerId)
    * ```
    */
@@ -77,7 +75,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const dials = libp2p.connectionManager.getDialQueue()
    * ```
    */

@@ -31,7 +31,13 @@
       "path": "../peer-id-factory"
     },
     {
+      "path": "../transport-circuit-relay-v2"
+    },
+    {
       "path": "../transport-websockets"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

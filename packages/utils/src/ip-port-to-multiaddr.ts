@@ -1,9 +1,6 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-
-const log = logger('libp2p:ip-port-to-multiaddr')
 
 export const Errors = {
   ERR_INVALID_IP_PARAMETER: 'ERR_INVALID_IP_PARAMETER',
@@ -35,7 +32,5 @@ export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr
     return multiaddr(`/ip6/${ip}/tcp/${port}`)
   }
 
-  const errMsg = `invalid ip:port for creating a multiaddr: ${ip}:${port}`
-  log.error(errMsg)
-  throw new CodeError(errMsg, Errors.ERR_INVALID_IP)
+  throw new CodeError(`invalid ip:port for creating a multiaddr: ${ip}:${port}`, Errors.ERR_INVALID_IP)
 }

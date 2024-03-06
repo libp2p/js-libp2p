@@ -3,7 +3,7 @@ import { pipe } from 'it-pipe'
 import tests from '../../src/connection/index.js'
 import { connectionPair } from '../../src/mocks/connection.js'
 import { mockRegistrar } from '../../src/mocks/registrar.js'
-import type { Connection } from '@libp2p/interface/connection'
+import type { Connection } from '@libp2p/interface'
 
 describe('mock connection compliance tests', () => {
   let connections: Connection[] = []

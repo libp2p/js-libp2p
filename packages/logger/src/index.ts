@@ -1,24 +1,27 @@
 /**
  * @packageDocumentation
  *
- * A map that reports it's size to the libp2p [Metrics](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/libp2p-interfaces/src/metrics#readme) system.
- *
- * If metrics are disabled a regular map is used.
+ * A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { logger } from '@libp2p/logger'
  *
  * const log = logger('libp2p:my:component:name')
  *
- * log('something happened: %s', 'it was ok')
- * log.error('something bad happened: %o', err)
+ * try {
+ *   // an operation
+ *   log('something happened: %s', 'it was ok')
+ * } catch (err) {
+ *   log.error('something bad happened: %o', err)
+ * }
  *
- * log('with this peer: %p', aPeerId)
- * log('and this base58btc: %b', aUint8Array)
- * log('and this base32: %t', aUint8Array)
- *  ```
+ * log('with this peer: %p', {})
+ * log('and this base58btc: %b', Uint8Array.from([0, 1, 2, 3]))
+ * log('and this base32: %t', Uint8Array.from([4, 5, 6, 7]))
+ * ```
+ *
  * ```console
  * $ DEBUG=libp2p:* node index.js
  * something happened: it was ok
@@ -33,7 +36,8 @@ import debug from 'debug'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
-import type { PeerId } from '@libp2p/interface/peer-id'
+import { truncatePeerId } from './utils.js'
+import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -80,6 +84,10 @@ export interface Logger {
   enabled: boolean
 }
 
+export interface ComponentLogger {
+  forComponent(name: string): Logger
+}
+
 function createDisabledLogger (namespace: string): debug.Debugger {
   const logger = (): void => {}
   logger.enabled = false
@@ -93,6 +101,94 @@ function createDisabledLogger (namespace: string): debug.Debugger {
   return logger
 }
 
+export interface PeerLoggerOptions {
+  prefixLength: number
+  suffixLength: number
+}
+
+/**
+ * Create a component logger that will prefix any log messages with a truncated
+ * peer id.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { peerLogger } from '@libp2p/logger'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const peerId = peerIdFromString('12D3FooBar')
+ * const logger = peerLogger(peerId)
+ *
+ * const log = logger.forComponent('my-component')
+ * log.info('hello world')
+ * // logs "12…oBar:my-component hello world"
+ * ```
+ */
+export function peerLogger (peerId: PeerId, options: Partial<PeerLoggerOptions> = {}): ComponentLogger {
+  return prefixLogger(truncatePeerId(peerId, options))
+}
+
+/**
+ * Create a component logger that will prefix any log messages with the passed
+ * string.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { prefixLogger } from '@libp2p/logger'
+ *
+ * const logger = prefixLogger('my-node')
+ *
+ * const log = logger.forComponent('my-component')
+ * log.info('hello world')
+ * // logs "my-node:my-component hello world"
+ * ```
+ */
+export function prefixLogger (prefix: string): ComponentLogger {
+  return {
+    forComponent (name: string) {
+      return logger(`${prefix}:${name}`)
+    }
+  }
+}
+
+/**
+ * Create a component logger
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { defaultLogger } from '@libp2p/logger'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const logger = defaultLogger()
+ *
+ * const log = logger.forComponent('my-component')
+ * log.info('hello world')
+ * // logs "my-component hello world"
+ * ```
+ */
+export function defaultLogger (): ComponentLogger {
+  return {
+    forComponent (name: string) {
+      return logger(name)
+    }
+  }
+}
+
+/**
+ * Creates a logger for the passed component name.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { logger } from '@libp2p/logger'
+ *
+ * const log = logger('my-component')
+ * log.info('hello world')
+ * // logs "my-component hello world"
+ * ```
+ */
 export function logger (name: string): Logger {
   // trace logging is a no-op by default
   let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)

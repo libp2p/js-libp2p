@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/mplex",
-  "version": "9.0.9",
+  "version": "10.0.16",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/stream-multiplexer-mplex#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS",
@@ -46,6 +50,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
     "test": "aegir test",
@@ -57,34 +62,30 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/logger": "^3.0.4",
-    "abortable-iterator": "^5.0.1",
-    "benchmark": "^2.1.4",
-    "it-batched-bytes": "^2.0.2",
-    "it-pushable": "^3.2.0",
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/utils": "^5.2.6",
+    "it-pipe": "^3.0.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "rate-limiter-flexible": "^3.0.0",
-    "uint8-varint": "^2.0.0",
-    "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "uint8-varint": "^2.0.4",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^4.1.2",
-    "aegir": "^41.0.2",
-    "cborg": "^4.0.3",
+    "@libp2p/interface-compliance-tests": "^5.3.2",
+    "@libp2p/logger": "^4.0.7",
+    "aegir": "^42.2.4",
+    "benchmark": "^2.1.4",
+    "cborg": "^4.0.9",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^3.0.1",
-    "it-drain": "^3.0.2",
-    "it-foreach": "^2.0.2",
-    "it-map": "^3.0.3",
-    "it-pipe": "^3.0.1",
-    "it-to-buffer": "^4.0.1",
+    "it-all": "^3.0.4",
+    "it-drain": "^3.0.5",
+    "it-foreach": "^2.0.6",
+    "it-map": "^3.0.5",
+    "it-pair": "^2.0.6",
     "p-defer": "^4.0.0",
     "random-int": "^3.0.0"
   },
-  "browser": {
-    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
-  }
+  "sideEffects": false
 }

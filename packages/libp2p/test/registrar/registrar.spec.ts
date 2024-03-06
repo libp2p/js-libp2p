@@ -1,12 +1,14 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { CodeError } from '@libp2p/interface/errors'
-import { TypedEventEmitter, type TypedEventTarget } from '@libp2p/interface/events'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type ConnectionGater, type PeerId, type PeerStore, type Topology } from '@libp2p/interface'
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -14,20 +16,9 @@ import pDefer from 'p-defer'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { type Components, defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes } from '../../src/errors.js'
-import { plaintext } from '../../src/insecure/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
-import { matchPeerId } from '../fixtures/match-peer-id.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Topology } from '@libp2p/interface/topology'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 const protocol = '/test/1.0.0'
 
@@ -38,7 +29,7 @@ describe('registrar', () => {
   let libp2p: Libp2pNode
 
   before(async () => {
-    peerId = await createPeerId()
+    peerId = await createEd25519PeerId()
   })
 
   describe('errors', () => {
@@ -93,7 +84,8 @@ describe('registrar', () => {
         peerId,
         connectionManager,
         peerStore,
-        events
+        events,
+        logger: defaultLogger()
       })
     })
 
@@ -141,7 +133,7 @@ describe('registrar', () => {
       const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
       // return connection from connection manager
-      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+      connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
 
       const topology: Topology = {
         onConnect: (peerId, connection) => {
@@ -170,8 +162,12 @@ describe('registrar', () => {
       })
 
       // remote peer connects
-      events.safeDispatchEvent('peer:connect', {
-        detail: remotePeerId
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
+        }
       })
       await onConnectDefer.promise
 
@@ -206,12 +202,13 @@ describe('registrar', () => {
       // Register protocol
       await registrar.register(protocol, topology)
 
-      // No details before identify
-      peerStore.get.withArgs(matchPeerId(conn.remotePeer)).rejects(new CodeError('Not found', codes.ERR_NOT_FOUND))
-
       // remote peer connects
-      events.safeDispatchEvent('peer:connect', {
-        detail: remotePeerId
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
+        }
       })
 
       // Can get details after identify
@@ -259,6 +256,140 @@ describe('registrar', () => {
       })
 
       await onDisconnectDefer.promise
+    })
+
+    it('should not call topology handlers for transient connection', async () => {
+      const onConnectDefer = pDefer()
+      const onDisconnectDefer = pDefer()
+
+      // Setup connections before registrar
+      const remotePeerId = await createEd25519PeerId()
+      const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+
+      // connection is transient
+      conn.transient = true
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+
+      const topology: Topology = {
+        onConnect: () => {
+          onConnectDefer.reject(new Error('Topolgy onConnect called for transient connection'))
+        },
+        onDisconnect: () => {
+          onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for transient connection'))
+        }
+      }
+
+      // Register topology for protocol
+      await registrar.register(protocol, topology)
+
+      // remote peer connects
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
+        }
+      })
+
+      await expect(Promise.any([
+        onConnectDefer.promise,
+        onDisconnectDefer.promise,
+        new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 1000)
+        })
+      ])).to.eventually.not.be.rejected()
+    })
+
+    it('should call topology onConnect handler for transient connection when explicitly requested', async () => {
+      const onConnectDefer = pDefer()
+
+      // Setup connections before registrar
+      const remotePeerId = await createEd25519PeerId()
+      const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+
+      // connection is transient
+      conn.transient = true
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+
+      const topology: Topology = {
+        notifyOnTransient: true,
+        onConnect: () => {
+          onConnectDefer.resolve()
+        }
+      }
+
+      // Register topology for protocol
+      await registrar.register(protocol, topology)
+
+      // remote peer connects
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: conn
+        }
+      })
+
+      await expect(onConnectDefer.promise).to.eventually.be.undefined()
+    })
+
+    it('should call topology handlers for non-transient connection opened after transient connection', async () => {
+      const onConnectDefer = pDefer()
+      let callCount = 0
+
+      const topology: Topology = {
+        notifyOnTransient: true,
+        onConnect: () => {
+          callCount++
+
+          if (callCount === 2) {
+            onConnectDefer.resolve()
+          }
+        }
+      }
+
+      // Register topology for protocol
+      await registrar.register(protocol, topology)
+
+      // Setup connections before registrar
+      const remotePeerId = await createEd25519PeerId()
+      const transientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+      transientConnection.transient = true
+
+      const nonTransientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+      nonTransientConnection.transient = false
+
+      // return connection from connection manager
+      connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([
+        transientConnection,
+        nonTransientConnection
+      ])
+
+      // remote peer connects over transient connection
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: transientConnection
+        }
+      })
+
+      // remote peer opens non-transient connection
+      events.safeDispatchEvent('peer:identify', {
+        detail: {
+          peerId: remotePeerId,
+          protocols: [protocol],
+          connection: nonTransientConnection
+        }
+      })
+
+      await expect(onConnectDefer.promise).to.eventually.be.undefined()
     })
 
     it('should be able to register and unregister a handler', async () => {

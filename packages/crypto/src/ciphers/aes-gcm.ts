@@ -14,7 +14,7 @@ export function create (opts?: CreateOptions): AESCipher {
   const iterations = opts?.iterations ?? 32767
   const algorithmTagLength = opts?.algorithmTagLength ?? 16
 
-  async function encryptWithKey (data: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
+  function encryptWithKey (data: Uint8Array, key: Uint8Array): Uint8Array {
     const nonce = crypto.randomBytes(nonceLength)
 
     // Create the cipher instance.
@@ -43,7 +43,7 @@ export function create (opts?: CreateOptions): AESCipher {
     const key = crypto.pbkdf2Sync(password, salt, iterations, keyLength, digest)
 
     // Encrypt and prepend salt.
-    return uint8ArrayConcat([salt, await encryptWithKey(Uint8Array.from(data), key)])
+    return uint8ArrayConcat([salt, encryptWithKey(Uint8Array.from(data), key)])
   }
 
   /**
@@ -53,7 +53,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * this decryption cipher must be the same as those used to create
    * the encryption cipher.
    */
-  async function decryptWithKey (ciphertextAndNonce: Uint8Array, key: Uint8Array): Promise<Uint8Array> {
+  function decryptWithKey (ciphertextAndNonce: Uint8Array, key: Uint8Array): Uint8Array {
     // Create Uint8Arrays of nonce, ciphertext and tag.
     const nonce = ciphertextAndNonce.subarray(0, nonceLength)
     const ciphertext = ciphertextAndNonce.subarray(nonceLength, ciphertextAndNonce.length - algorithmTagLength)

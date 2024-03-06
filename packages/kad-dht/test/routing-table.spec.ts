@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface/events'
+import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -9,22 +10,22 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
+import drain from 'it-drain'
 import { pipe } from 'it-pipe'
 import random from 'lodash.random'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
-import { stubInterface } from 'ts-sinon'
-import { PROTOCOL_DHT } from '../src/constants.js'
+import { stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { PROTOCOL } from '../src/constants.js'
+import { Message, MessageType } from '../src/message/dht.js'
 import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
+import type { Libp2pEvents, PeerId, PeerStore, Stream } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -38,7 +39,8 @@ describe('Routing Table', () => {
     components = {
       peerId: await createPeerId(),
       connectionManager: stubInterface<ConnectionManager>(),
-      peerStore: stubInterface<PeerStore>()
+      peerStore: stubInterface<PeerStore>(),
+      logger: defaultLogger()
     }
     components.connectionManager = mockConnectionManager({
       ...components,
@@ -52,8 +54,8 @@ describe('Routing Table', () => {
     })
 
     table = new RoutingTable(components, {
-      lan: false,
-      protocol: PROTOCOL_DHT
+      logPrefix: '',
+      protocol: PROTOCOL
     })
     await table.start()
   })
@@ -139,17 +141,6 @@ describe('Routing Table', () => {
   })
 
   it('favours old peers that respond to pings', async () => {
-    let fn: (() => Promise<any>) | undefined
-
-    // execute queued functions immediately
-    // @ts-expect-error incomplete implementation
-    table.pingQueue = {
-      add: async (f: () => Promise<any>) => {
-        fn = f
-      },
-      clear: () => {}
-    }
-
     const peerIds = [
       peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5'),
       peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi6')
@@ -164,8 +155,6 @@ describe('Routing Table', () => {
       peer: peerIds[1]
     }
 
-    table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
-
     if (table.kb == null) {
       throw new Error('kbucket not defined')
     }
@@ -173,25 +162,31 @@ describe('Routing Table', () => {
     // add the old peer
     table.kb.add(oldPeer)
 
+    const stream = stubInterface<Stream>({
+      source: (async function * () {
+        yield new Uint8ArrayList(Uint8Array.from([2]), Message.encode({
+          type: MessageType.PING
+        }))
+      })(),
+      sink: async function (source) {
+        await drain(source)
+      }
+    })
+
     // simulate connection succeeding
-    const newStreamStub = sinon.stub().withArgs(PROTOCOL_DHT).resolves({ close: sinon.stub() })
+    const newStreamStub = sinon.stub().withArgs(PROTOCOL).resolves(stream)
     const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
       newStream: newStreamStub
     })
     components.connectionManager.openConnection = openConnectionStub
 
-    if (fn == null) {
-      throw new Error('nothing added to queue')
-    }
-
-    // perform the ping
-    await fn()
+    await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
 
     expect(openConnectionStub.calledOnce).to.be.true()
     expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
 
     expect(newStreamStub.callCount).to.equal(1)
-    expect(newStreamStub.calledWith(PROTOCOL_DHT)).to.be.true()
+    expect(newStreamStub.calledWith(PROTOCOL)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.id)).to.be.undefined()
@@ -201,17 +196,6 @@ describe('Routing Table', () => {
   })
 
   it('evicts oldest peer that does not respond to ping', async () => {
-    let fn: (() => Promise<any>) | undefined
-
-    // execute queued functions immediately
-    // @ts-expect-error incomplete implementation
-    table.pingQueue = {
-      add: async (f: () => Promise<any>) => {
-        fn = f
-      },
-      clear: () => {}
-    }
-
     const peerIds = [
       peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5'),
       peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi6')
@@ -226,7 +210,9 @@ describe('Routing Table', () => {
       peer: peerIds[1]
     }
 
-    table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
+    // libp2p fails to dial the old peer
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).rejects(new Error('Could not dial peer'))
+    components.connectionManager.openConnection = openConnectionStub
 
     if (table.kb == null) {
       throw new Error('kbucket not defined')
@@ -235,16 +221,8 @@ describe('Routing Table', () => {
     // add the old peer
     table.kb.add(oldPeer)
 
-    // libp2p fails to dial the old peer
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).rejects(new Error('Could not dial peer'))
-    components.connectionManager.openConnection = openConnectionStub
-
-    if (fn == null) {
-      throw new Error('nothing added to queue')
-    }
-
-    // perform the ping
-    await fn()
+    await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
+    await table.pingQueue.onIdle()
 
     expect(openConnectionStub.callCount).to.equal(1)
     expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()

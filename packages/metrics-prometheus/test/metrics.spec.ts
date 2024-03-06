@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
@@ -7,7 +8,9 @@ describe('metrics', () => {
   it('should set a metric', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.update(metricValue)
 
@@ -18,7 +21,9 @@ describe('metrics', () => {
 
   it('should increment a metric without a value', async () => {
     const metricName = randomMetricName()
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.increment()
 
@@ -28,7 +33,9 @@ describe('metrics', () => {
   it('should increment a metric with a value', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.increment(metricValue)
 
@@ -37,7 +44,9 @@ describe('metrics', () => {
 
   it('should decrement a metric without a value', async () => {
     const metricName = randomMetricName()
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.decrement()
 
@@ -47,7 +56,9 @@ describe('metrics', () => {
   it('should decrement a metric with a value', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.decrement(metricValue)
 
@@ -57,7 +68,9 @@ describe('metrics', () => {
   it('should calculate a metric', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerMetric(metricName, {
       calculate: () => {
         return metricValue
@@ -70,7 +83,9 @@ describe('metrics', () => {
   it('should promise to calculate a metric', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     metrics.registerMetric(metricName, {
       calculate: async () => {
         return metricValue
@@ -83,7 +98,9 @@ describe('metrics', () => {
   it('should reset a metric', async () => {
     const metricName = randomMetricName()
     const metricValue = 5
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric = metrics.registerMetric(metricName)
     metric.update(metricValue)
 
@@ -99,7 +116,9 @@ describe('metrics', () => {
     const metricLabel = randomMetricName('label_')
     const metricValue1 = 5
     const metricValue2 = 7
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
     const metric1 = metrics.registerMetric(metricName, {
       label: metricLabel
     })

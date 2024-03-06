@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encode } from '../src/encode.js'
 import { mplex } from '../src/index.js'
@@ -20,7 +20,9 @@ describe('mplex', () => {
     const maxOutboundStreams = 10
     const factory = mplex({
       maxOutboundStreams
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer()
 
     // max out the streams for this connection
@@ -40,36 +42,38 @@ describe('mplex', () => {
     const factory = mplex({
       maxInboundStreams,
       disconnectThreshold: Infinity
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer()
-    const stream = pushable()
+    const stream = pushable<Uint8ArrayList | Uint8Array>()
 
     // max out the streams for this connection
     for (let i = 0; i < maxInboundStreams; i++) {
-      const source: NewStreamMessage[][] = [[{
+      const source: NewStreamMessage[] = [{
         id: i,
         type: 0,
         data: new Uint8ArrayList(uint8ArrayFromString('17'))
-      }]]
+      }]
 
-      const data = uint8ArrayConcat(await all(encode(source)))
+      const data = new Uint8ArrayList(...(await all(encode(source))))
 
       stream.push(data)
     }
 
     // simulate a new incoming stream
-    const source: NewStreamMessage[][] = [[{
+    const source: NewStreamMessage[] = [{
       id: 11,
       type: 0,
       data: new Uint8ArrayList(uint8ArrayFromString('17'))
-    }]]
+    }]
 
-    const data = uint8ArrayConcat(await all(encode(source)))
+    const data = new Uint8ArrayList(...(await all(encode(source))))
 
     stream.push(data)
     stream.end()
 
-    const bufs: Uint8Array[] = []
+    const bufs: Array<Uint8Array | Uint8ArrayList> = []
     const sinkDone = pDefer()
 
     void Promise.resolve().then(async () => {
@@ -95,13 +99,13 @@ describe('mplex', () => {
     const id = 17
 
     // simulate a new incoming stream that sends lots of data
-    const input: Source<Message[]> = (async function * send () {
+    const input: Source<Message> = (async function * send () {
       const newStreamMessage: NewStreamMessage = {
         id,
         type: MessageTypes.NEW_STREAM,
         data: new Uint8ArrayList(new Uint8Array(1024))
       }
-      yield [newStreamMessage]
+      yield newStreamMessage
 
       await delay(10)
 
@@ -111,7 +115,7 @@ describe('mplex', () => {
           type: MessageTypes.MESSAGE_INITIATOR,
           data: new Uint8ArrayList(new Uint8Array(1024 * 1000))
         }
-        yield [dataMessage]
+        yield dataMessage
 
         sent++
 
@@ -124,13 +128,15 @@ describe('mplex', () => {
         id,
         type: MessageTypes.CLOSE_INITIATOR
       }
-      yield [closeMessage]
+      yield closeMessage
     })()
 
     // create the muxer
     const factory = mplex({
       maxStreamBufferSize
-    })()
+    })({
+      logger: defaultLogger()
+    })
     const muxer = factory.createStreamMuxer({
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up
@@ -172,61 +178,5 @@ describe('mplex', () => {
     await muxerFinished.promise
     expect(messages).to.have.nested.property('[0].id', id)
     expect(messages).to.have.nested.property('[0].type', MessageTypes.RESET_RECEIVER)
-  })
-
-  it('should batch bytes to send', async () => {
-    const minSendBytes = 10
-
-    // input bytes, smaller than batch size
-    const input: Uint8Array[] = [
-      Uint8Array.from([0, 1, 2, 3, 4]),
-      Uint8Array.from([0, 1, 2, 3, 4]),
-      Uint8Array.from([0, 1, 2, 3, 4])
-    ]
-
-    // create the muxer
-    const factory = mplex({
-      minSendBytes
-    })()
-    const muxer = factory.createStreamMuxer({})
-
-    // collect outgoing mplex messages
-    const muxerFinished = pDefer()
-    let output: Uint8Array[] = []
-    void Promise.resolve().then(async () => {
-      output = await all(muxer.source)
-      muxerFinished.resolve()
-    })
-
-    // create a stream
-    const stream = await muxer.newStream()
-    const streamFinished = pDefer()
-    // send messages over the stream
-    void Promise.resolve().then(async () => {
-      await stream.sink(async function * () {
-        yield * input
-      }())
-      await stream.close()
-      streamFinished.resolve()
-    })
-
-    // wait for all data to be sent over the stream
-    await streamFinished.promise
-
-    // close the muxer
-    await muxer.sink([])
-
-    // wait for all output to be collected
-    await muxerFinished.promise
-
-    // last message is unbatched
-    const closeMessage = output.pop()
-    expect(closeMessage).to.have.lengthOf(2)
-
-    // all other messages should be above or equal to the batch size
-    expect(output).to.have.lengthOf(2)
-    for (const buf of output) {
-      expect(buf).to.have.length.that.is.at.least(minSendBytes)
-    }
   })
 })

@@ -2,6 +2,7 @@
 
 import os from 'os'
 import path from 'path'
+import { defaultLogger } from '@libp2p/logger'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { LevelDatastore } from 'datastore-level'
 import { Providers } from '../src/providers.js'
@@ -27,7 +28,8 @@ describe('Providers', () => {
     const store = new LevelDatastore(p)
     await store.open()
     providers = new Providers({
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      logger: defaultLogger()
     }, {
       cacheSize: 10
     })

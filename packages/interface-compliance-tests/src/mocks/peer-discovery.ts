@@ -1,9 +1,7 @@
-import { TypedEventEmitter } from '@libp2p/interface/events'
-import { peerDiscovery } from '@libp2p/interface/peer-discovery'
+import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { PeerDiscovery, PeerDiscoveryEvents } from '@libp2p/interface/peer-discovery'
-import type { PeerInfo } from '@libp2p/interface/peer-info'
+import type { PeerDiscovery, PeerDiscoveryEvents, PeerInfo } from '@libp2p/interface'
 
 interface MockDiscoveryInit {
   discoveryDelay?: number
@@ -24,7 +22,7 @@ export class MockDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implem
     this._isRunning = false
   }
 
-  readonly [peerDiscovery] = this
+  readonly [peerDiscoverySymbol] = this
 
   start (): void {
     this._isRunning = true
@@ -49,8 +47,7 @@ export class MockDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implem
           this.safeDispatchEvent<PeerInfo>('peer', {
             detail: {
               id: peerId,
-              multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/8000')],
-              protocols: []
+              multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/8000')]
             }
           })
         }, this.options.discoveryDelay ?? 1000)

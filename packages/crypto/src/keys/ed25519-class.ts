@@ -1,12 +1,14 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { isPromise } from '../util.js'
 import * as crypto from './ed25519.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Ed25519PublicKey {
   private readonly _key: Uint8Array
@@ -15,7 +17,7 @@ export class Ed25519PublicKey {
     this._key = ensureKey(key, crypto.publicKeyLength)
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -34,10 +36,14 @@ export class Ed25519PublicKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 }
 
@@ -52,7 +58,7 @@ export class Ed25519PrivateKey {
     this._publicKey = ensureKey(publicKey, crypto.publicKeyLength)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -76,7 +82,14 @@ export class Ed25519PrivateKey {
   }
 
   async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+    const p = sha256.digest(this.bytes)
+    let bytes: Uint8Array
+
+    if (isPromise(p)) {
+      ({ bytes } = await p)
+    } else {
+      bytes = p.bytes
+    }
 
     return bytes
   }
@@ -128,12 +141,12 @@ export function unmarshalEd25519PublicKey (bytes: Uint8Array): Ed25519PublicKey 
 }
 
 export async function generateKeyPair (): Promise<Ed25519PrivateKey> {
-  const { privateKey, publicKey } = await crypto.generateKey()
+  const { privateKey, publicKey } = crypto.generateKey()
   return new Ed25519PrivateKey(privateKey, publicKey)
 }
 
 export async function generateKeyPairFromSeed (seed: Uint8Array): Promise<Ed25519PrivateKey> {
-  const { privateKey, publicKey } = await crypto.generateKeyFromSeed(seed)
+  const { privateKey, publicKey } = crypto.generateKeyFromSeed(seed)
   return new Ed25519PrivateKey(privateKey, publicKey)
 }
 

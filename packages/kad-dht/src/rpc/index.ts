@@ -1,19 +1,18 @@
-import { type Logger, logger } from '@libp2p/logger'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import { Message, MESSAGE_TYPE } from '../message/index.js'
+import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
 import { FindNodeHandler, type FindNodeHandlerComponents } from './handlers/find-node.js'
 import { GetProvidersHandler, type GetProvidersHandlerComponents } from './handlers/get-providers.js'
 import { GetValueHandler, type GetValueHandlerComponents } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
 import { PutValueHandler, type PutValueHandlerComponents } from './handlers/put-value.js'
-import type { Validators } from '../index.js'
+import type { PeerInfoMapper, Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing'
 import type { Providers } from '../providers'
 import type { RoutingTable } from '../routing-table'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
+import type { Logger, PeerId } from '@libp2p/interface'
+import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -24,7 +23,8 @@ export interface RPCInit {
   providers: Providers
   peerRouting: PeerRouting
   validators: Validators
-  lan: boolean
+  logPrefix: string
+  peerInfoMapper: PeerInfoMapper
 }
 
 export interface RPCComponents extends GetValueHandlerComponents, PutValueHandlerComponents, FindNodeHandlerComponents, GetProvidersHandlerComponents {
@@ -37,17 +37,17 @@ export class RPC {
   private readonly log: Logger
 
   constructor (components: RPCComponents, init: RPCInit) {
-    const { providers, peerRouting, validators, lan } = init
+    const { providers, peerRouting, validators, logPrefix, peerInfoMapper } = init
 
-    this.log = logger('libp2p:kad-dht:rpc')
+    this.log = components.logger.forComponent(`${logPrefix}:rpc`)
     this.routingTable = init.routingTable
     this.handlers = {
-      [MESSAGE_TYPE.GET_VALUE]: new GetValueHandler(components, { peerRouting }),
-      [MESSAGE_TYPE.PUT_VALUE]: new PutValueHandler(components, { validators }),
-      [MESSAGE_TYPE.FIND_NODE]: new FindNodeHandler(components, { peerRouting, lan }),
-      [MESSAGE_TYPE.ADD_PROVIDER]: new AddProviderHandler({ providers }),
-      [MESSAGE_TYPE.GET_PROVIDERS]: new GetProvidersHandler(components, { peerRouting, providers, lan }),
-      [MESSAGE_TYPE.PING]: new PingHandler()
+      [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, { peerRouting, logPrefix }),
+      [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, { validators, logPrefix }),
+      [MessageType.FIND_NODE.toString()]: new FindNodeHandler(components, { peerRouting, logPrefix, peerInfoMapper }),
+      [MessageType.ADD_PROVIDER.toString()]: new AddProviderHandler(components, { providers, logPrefix }),
+      [MessageType.GET_PROVIDERS.toString()]: new GetProvidersHandler(components, { peerRouting, providers, logPrefix, peerInfoMapper }),
+      [MessageType.PING.toString()]: new PingHandler(components, { logPrefix })
     }
   }
 
@@ -94,13 +94,13 @@ export class RPC {
         async function * (source) {
           for await (const msg of source) {
             // handle the message
-            const desMessage = Message.deserialize(msg)
+            const desMessage = Message.decode(msg)
             self.log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 
             // Not all handlers will return a response
             if (res != null) {
-              yield res.serialize()
+              yield Message.encode(res)
             }
           }
         },

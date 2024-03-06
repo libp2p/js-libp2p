@@ -1,15 +1,19 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "9.0.7",
+  "version": "10.0.11",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/master/packages/peer-store#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "IPFS"
@@ -43,6 +47,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "generate": "protons src/pb/*.proto",
     "build": "aegir build",
     "test": "aegir test",
@@ -54,29 +59,30 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^0.1.4",
-    "@libp2p/logger": "^3.0.4",
-    "@libp2p/peer-collections": "^4.0.6",
-    "@libp2p/peer-id": "^3.0.4",
-    "@libp2p/peer-id-factory": "^3.0.6",
-    "@libp2p/peer-record": "^6.0.7",
-    "@multiformats/multiaddr": "^12.1.5",
-    "interface-datastore": "^8.2.0",
-    "it-all": "^3.0.2",
-    "mortice": "^3.0.1",
-    "multiformats": "^12.0.1",
-    "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/peer-collections": "^5.1.7",
+    "@libp2p/peer-id": "^4.0.7",
+    "@libp2p/peer-record": "^7.0.10",
+    "@multiformats/multiaddr": "^12.1.14",
+    "interface-datastore": "^8.2.11",
+    "it-all": "^3.0.4",
+    "mortice": "^3.0.4",
+    "multiformats": "^13.1.0",
+    "protons-runtime": "^5.4.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
-    "@types/sinon": "^10.0.15",
-    "aegir": "^41.0.2",
-    "datastore-core": "^9.1.1",
+    "@libp2p/logger": "^4.0.7",
+    "@libp2p/peer-id-factory": "^4.0.7",
+    "@types/sinon": "^17.0.3",
+    "aegir": "^42.2.4",
+    "datastore-core": "^9.2.8",
     "delay": "^6.0.0",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
-    "protons": "^7.0.2",
-    "sinon": "^17.0.0"
-  }
+    "protons": "^7.5.0",
+    "sinon": "^17.0.1"
+  },
+  "sideEffects": false
 }

@@ -2,21 +2,24 @@
 
 import http from 'http'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
 import type { WebSocketListenerInit } from '../src/listener.js'
-import type { Listener } from '@libp2p/interface/transport'
+import type { Listener } from '@libp2p/interface'
 
 describe('interface-transport compliance', () => {
   tests({
     async setup () {
-      const ws = webSockets({ filter: filters.all })()
+      const ws = webSockets({ filter: filters.all })({
+        logger: defaultLogger()
+      })
       const addrs = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
+        multiaddr('/ip4/127.0.0.1/tcp/9096/ws'),
+        multiaddr('/ip4/127.0.0.1/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9097/wss')
       ]
 
       let delayMs = 0

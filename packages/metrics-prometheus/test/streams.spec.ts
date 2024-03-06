@@ -1,4 +1,5 @@
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -7,7 +8,7 @@ import { pipe } from 'it-pipe'
 import defer from 'p-defer'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
-import type { Connection } from '@libp2p/interface/connection'
+import type { Connection } from '@libp2p/interface'
 
 describe('streams', () => {
   let connectionA: Connection
@@ -40,16 +41,18 @@ describe('streams', () => {
       deferred.resolve()
     })
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track outgoing stream
     metrics.trackMultiaddrConnection(outbound)
 
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await outbound.sink([
-      data
-    ])
+    await outbound.sink(async function * () {
+      yield data
+    }())
 
     // wait for all bytes to be received
     await deferred.promise
@@ -70,16 +73,18 @@ describe('streams', () => {
       remotePeer
     })
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track incoming stream
     metrics.trackMultiaddrConnection(inbound)
 
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
-    await outbound.sink([
-      data
-    ])
+    await outbound.sink(async function * () {
+      yield data
+    }())
 
     // process all the bytes
     void pipe(inbound, drain).then(() => {
@@ -110,7 +115,9 @@ describe('streams', () => {
     ;[connectionA, connectionB] = connectionPair(peerA, peerB)
     const aToB = await connectionA.newStream(protocol)
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     // track outgoing stream
     metrics.trackProtocolStream(aToB, connectionA)
@@ -146,7 +153,9 @@ describe('streams', () => {
       registrar: mockRegistrar()
     }
 
-    const metrics = prometheusMetrics()()
+    const metrics = prometheusMetrics()({
+      logger: defaultLogger()
+    })
 
     ;[connectionA, connectionB] = connectionPair(peerA, peerB)
 

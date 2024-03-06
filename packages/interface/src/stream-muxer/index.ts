@@ -1,6 +1,6 @@
 import type { Direction, Stream } from '../connection/index.js'
 import type { AbortOptions } from '../index.js'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface StreamMuxerFactory {
@@ -18,7 +18,7 @@ export interface StreamMuxerFactory {
 /**
  * A libp2p stream muxer
  */
-export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
+export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
   /**
    * The protocol used to select this muxer during connection opening
    */

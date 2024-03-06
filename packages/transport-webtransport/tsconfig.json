@@ -19,6 +19,9 @@
     },
     {
       "path": "../peer-id"
+    },
+    {
+      "path": "../peer-id-factory"
     }
   ]
 }

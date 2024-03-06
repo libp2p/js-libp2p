@@ -1,22 +1,19 @@
-import { CodeError } from '@libp2p/interface/errors'
 import { anySignal } from 'any-signal'
-import defer from 'p-defer'
 import Queue from 'p-queue'
 import { toString } from 'uint8arrays/to-string'
 import { xor } from 'uint8arrays/xor'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
+import { queueToGenerator } from './utils.js'
 import type { CleanUpEvents } from './manager.js'
-import type { QueryEvent, QueryOptions } from '../index.js'
+import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Logger } from '@libp2p/logger'
+import type { Logger, TypedEventTarget, PeerId, RoutingOptions } from '@libp2p/interface'
 import type { PeerSet } from '@libp2p/peer-collections'
 
 const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
-export interface QueryPathOptions extends QueryOptions {
+export interface QueryPathOptions extends RoutingOptions {
   /**
    * What are we trying to find
    */
@@ -182,73 +179,5 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   queryPeer(startingPeer, await convertPeerId(startingPeer))
 
   // yield results as they come in
-  yield * toGenerator(queue, signal, cleanUp, log)
-}
-
-async function * toGenerator (queue: Queue, signal: AbortSignal, cleanUp: TypedEventTarget<CleanUpEvents>, log: Logger): AsyncGenerator<QueryEvent, void, undefined> {
-  let deferred = defer()
-  let running = true
-  const results: QueryEvent[] = []
-
-  const cleanup = (): void => {
-    if (!running) {
-      return
-    }
-
-    log('clean up queue, results %d, queue size %d, pending tasks %d', results.length, queue.size, queue.pending)
-
-    running = false
-    queue.clear()
-    results.splice(0, results.length)
-  }
-
-  queue.on('completed', result => {
-    results.push(result)
-    deferred.resolve()
-  })
-  queue.on('error', err => {
-    log('queue error', err)
-    cleanup()
-    deferred.reject(err)
-  })
-  queue.on('idle', () => {
-    log('queue idle')
-    running = false
-    deferred.resolve()
-  })
-
-  // clear the queue and throw if the query is aborted
-  signal.addEventListener('abort', () => {
-    log('abort queue')
-    const wasRunning = running
-    cleanup()
-
-    if (wasRunning) {
-      deferred.reject(new CodeError('Query aborted', 'ERR_QUERY_ABORTED'))
-    }
-  })
-
-  // the user broke out of the loop early, ensure we resolve the deferred result
-  // promise and clear the queue of any remaining jobs
-  cleanUp.addEventListener('cleanup', () => {
-    cleanup()
-    deferred.resolve()
-  })
-
-  while (running) { // eslint-disable-line no-unmodified-loop-condition
-    await deferred.promise
-    deferred = defer()
-
-    // yield all available results
-    while (results.length > 0) {
-      const result = results.shift()
-
-      if (result != null) {
-        yield result
-      }
-    }
-  }
-
-  // yield any remaining results
-  yield * results
+  yield * queueToGenerator(queue, signal, cleanUp, log)
 }

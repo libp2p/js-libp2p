@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -9,8 +10,7 @@ import { pipe } from 'it-pipe'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import { webSockets } from '../src/index.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { Transport } from '@libp2p/interface/transport'
+import type { Connection, Transport } from '@libp2p/interface'
 
 const protocol = '/echo/1.0.0'
 
@@ -20,7 +20,9 @@ describe('libp2p-websockets', () => {
   let conn: Connection
 
   beforeEach(async () => {
-    ws = webSockets()()
+    ws = webSockets()({
+      logger: defaultLogger()
+    })
     conn = await ws.dial(ma, {
       upgrader: mockUpgrader({
         events: new TypedEventEmitter()
@@ -93,6 +95,8 @@ describe('libp2p-websockets', () => {
   })
 
   it('.createServer throws in browser', () => {
-    expect(webSockets()().createListener).to.throw()
+    expect(webSockets()({
+      logger: defaultLogger()
+    }).createListener).to.throw()
   })
 })

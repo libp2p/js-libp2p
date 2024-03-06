@@ -1,4 +1,3 @@
-import { logger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import cache from 'hashlru'
 import { Key } from 'interface-datastore/key'
@@ -11,27 +10,32 @@ import {
   PROVIDERS_LRU_CACHE_SIZE,
   PROVIDER_KEY_PREFIX
 } from './constants.js'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { Startable } from '@libp2p/interface/startable'
+import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats'
 
-const log = logger('libp2p:kad-dht:providers')
-
 export interface ProvidersInit {
+  /**
+   * @default 256
+   */
   cacheSize?: number
   /**
    * How often invalid records are cleaned. (in seconds)
+   *
+   * @default 5400
    */
   cleanupInterval?: number
   /**
    * How long is a provider valid for. (in seconds)
+   *
+   * @default 86400
    */
   provideValidity?: number
 }
 
 export interface ProvidersComponents {
   datastore: Datastore
+  logger: ComponentLogger
 }
 
 /**
@@ -47,7 +51,8 @@ export interface ProvidersComponents {
  * access is fast there is an LRU cache in front of that.
  */
 export class Providers implements Startable {
-  private readonly components: ProvidersComponents
+  private readonly log: Logger
+  private readonly datastore: Datastore
   private readonly cache: ReturnType<typeof cache>
   private readonly cleanupInterval: number
   private readonly provideValidity: number
@@ -58,7 +63,8 @@ export class Providers implements Startable {
   constructor (components: ProvidersComponents, init: ProvidersInit = {}) {
     const { cacheSize, cleanupInterval, provideValidity } = init
 
-    this.components = components
+    this.log = components.logger.forComponent('libp2p:kad-dht:providers')
+    this.datastore = components.datastore
     this.cleanupInterval = cleanupInterval ?? PROVIDERS_CLEANUP_INTERVAL
     this.provideValidity = provideValidity ?? PROVIDERS_VALIDITY
     this.cache = cache(cacheSize ?? PROVIDERS_LRU_CACHE_SIZE)
@@ -83,7 +89,7 @@ export class Providers implements Startable {
     this.cleaner = setInterval(
       () => {
         this._cleanup().catch(err => {
-          log.error(err)
+          this.log.error(err)
         })
       },
       this.cleanupInterval
@@ -112,10 +118,10 @@ export class Providers implements Startable {
       let count = 0
       let deleteCount = 0
       const deleted = new Map<string, Set<string>>()
-      const batch = this.components.datastore.batch()
+      const batch = this.datastore.batch()
 
       // Get all provider entries from the datastore
-      const query = this.components.datastore.query({ prefix: PROVIDER_KEY_PREFIX })
+      const query = this.datastore.query({ prefix: PROVIDER_KEY_PREFIX })
 
       for await (const entry of query) {
         try {
@@ -126,7 +132,7 @@ export class Providers implements Startable {
           const delta = now - time
           const expired = delta > this.provideValidity
 
-          log('comparing: %d - %d = %d > %d %s', now, time, delta, this.provideValidity, expired ? '(expired)' : '')
+          this.log('comparing: %d - %d = %d > %d %s', now, time, delta, this.provideValidity, expired ? '(expired)' : '')
 
           if (expired) {
             deleteCount++
@@ -137,16 +143,16 @@ export class Providers implements Startable {
           }
           count++
         } catch (err: any) {
-          log.error(err.message)
+          this.log.error(err.message)
         }
       }
 
       // Commit the deletes to the datastore
       if (deleted.size > 0) {
-        log('deleting %d / %d entries', deleteCount, count)
+        this.log('deleting %d / %d entries', deleteCount, count)
         await batch.commit()
       } else {
-        log('nothing to delete')
+        this.log('nothing to delete')
       }
 
       // Clear expired entries from the cache
@@ -167,7 +173,7 @@ export class Providers implements Startable {
         }
       }
 
-      log('Cleanup successful (%dms)', Date.now() - start)
+      this.log('Cleanup successful (%dms)', Date.now() - start)
     })
   }
 
@@ -179,7 +185,7 @@ export class Providers implements Startable {
     let provs: Map<string, Date> = this.cache.get(cacheKey)
 
     if (provs == null) {
-      provs = await loadProviders(this.components.datastore, cid)
+      provs = await loadProviders(this.datastore, cid)
       this.cache.set(cacheKey, provs)
     }
 
@@ -191,17 +197,17 @@ export class Providers implements Startable {
    */
   async addProvider (cid: CID, provider: PeerId): Promise<void> {
     await this.syncQueue.add(async () => {
-      log('%p provides %s', provider, cid)
+      this.log('%p provides %s', provider, cid)
       const provs = await this._getProvidersMap(cid)
 
-      log('loaded %s provs', provs.size)
+      this.log('loaded %s provs', provs.size)
       const now = new Date()
       provs.set(provider.toString(), now)
 
       const dsKey = makeProviderKey(cid)
       this.cache.set(dsKey, provs)
 
-      await writeProviderEntry(this.components.datastore, cid, provider, now)
+      await writeProviderEntry(this.datastore, cid, provider, now)
     })
   }
 
@@ -210,7 +216,7 @@ export class Providers implements Startable {
    */
   async getProviders (cid: CID): Promise<PeerId[]> {
     return this.syncQueue.add(async () => {
-      log('get providers for %s', cid)
+      this.log('get providers for %s', cid)
       const provs = await this._getProvidersMap(cid)
 
       return [...provs.keys()].map(peerIdStr => {

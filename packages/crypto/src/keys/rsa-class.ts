@@ -1,16 +1,15 @@
-import { CodeError } from '@libp2p/interface/errors'
+import { CodeError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
-// @ts-expect-error types are missing
-import forge from 'node-forge/lib/forge.js'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import 'node-forge/lib/sha512.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isPromise } from '../util.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
 import type { Multibase } from 'multiformats'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
-export const MAX_KEY_SIZE = 8192
+export const MAX_RSA_KEY_SIZE = 8192
 
 export class RsaPublicKey {
   private readonly _key: JsonWebKey
@@ -19,7 +18,7 @@ export class RsaPublicKey {
     this._key = key
   }
 
-  async verify (data: Uint8Array, sig: Uint8Array): Promise<boolean> {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
     return crypto.hashAndVerify(this._key, sig, data)
   }
 
@@ -34,18 +33,18 @@ export class RsaPublicKey {
     }).subarray()
   }
 
-  encrypt (bytes: Uint8Array): Uint8Array {
-    return crypto.encrypt(this._key, bytes)
-  }
-
-  equals (key: any): boolean {
+  equals (key: any): boolean | boolean {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 }
 
@@ -62,7 +61,7 @@ export class RsaPrivateKey {
     return crypto.getRandomValues(16)
   }
 
-  async sign (message: Uint8Array): Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
     return crypto.hashAndSign(this._key, message)
   }
 
@@ -72,10 +71,6 @@ export class RsaPrivateKey {
     }
 
     return new RsaPublicKey(this._publicKey)
-  }
-
-  decrypt (bytes: Uint8Array): Uint8Array {
-    return crypto.decrypt(this._key, bytes)
   }
 
   marshal (): Uint8Array {
@@ -93,10 +88,14 @@ export class RsaPrivateKey {
     return uint8ArrayEquals(this.bytes, key.bytes)
   }
 
-  async hash (): Promise<Uint8Array> {
-    const { bytes } = await sha256.digest(this.bytes)
+  hash (): Uint8Array | Promise<Uint8Array> {
+    const p = sha256.digest(this.bytes)
 
-    return bytes
+    if (isPromise(p)) {
+      return p.then(({ bytes }) => bytes)
+    }
+
+    return p.bytes
   }
 
   /**
@@ -112,21 +111,15 @@ export class RsaPrivateKey {
   }
 
   /**
-   * Exports the key into a password protected PEM format
+   * Exports the key as libp2p-key - a aes-gcm encrypted value with the key
+   * derived from the password.
+   *
+   * To export it as a password protected PEM file, please use the `exportPEM`
+   * function from `@libp2p/rsa`.
    */
   async export (password: string, format = 'pkcs-8'): Promise<Multibase<'m'>> {
     if (format === 'pkcs-8') {
-      const buffer = new forge.util.ByteBuffer(this.marshal())
-      const asn1 = forge.asn1.fromDer(buffer)
-      const privateKey = forge.pki.privateKeyFromAsn1(asn1)
-
-      const options = {
-        algorithm: 'aes256',
-        count: 10000,
-        saltSize: 128 / 8,
-        prfAlgorithm: 'sha512'
-      }
-      return forge.pki.encryptRsaPrivateKey(privateKey, password, options)
+      return crypto.utils.exportToPem(this, password)
     } else if (format === 'libp2p-key') {
       return exporter(this.bytes, password)
     } else {
@@ -138,7 +131,7 @@ export class RsaPrivateKey {
 export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPrivateKey> {
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
 
-  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+  if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
     throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
   }
 
@@ -150,7 +143,7 @@ export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPri
 export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
   const jwk = crypto.utils.pkixToJwk(bytes)
 
-  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+  if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
     throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
   }
 
@@ -158,7 +151,7 @@ export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
 }
 
 export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
-  if (crypto.keySize(jwk) > MAX_KEY_SIZE) {
+  if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
     throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
   }
 
@@ -168,7 +161,7 @@ export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
 }
 
 export async function generateKeyPair (bits: number): Promise<RsaPrivateKey> {
-  if (bits > MAX_KEY_SIZE) {
+  if (bits > MAX_RSA_KEY_SIZE) {
     throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
   }
 

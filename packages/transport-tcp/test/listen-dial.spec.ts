@@ -1,7 +1,8 @@
 import os from 'os'
 import path from 'path'
-import { TypedEventEmitter } from '@libp2p/interface/events'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -9,8 +10,7 @@ import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { tcp } from '../src/index.js'
-import type { MultiaddrConnection } from '@libp2p/interface/connection'
-import type { Transport, Upgrader } from '@libp2p/interface/transport'
+import type { MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
@@ -20,7 +20,9 @@ describe('listen', () => {
   let upgrader: Upgrader
 
   beforeEach(() => {
-    transport = tcp()()
+    transport = tcp()({
+      logger: defaultLogger()
+    })
     upgrader = mockUpgrader({
       events: new TypedEventEmitter()
     })
@@ -178,7 +180,9 @@ describe('dial', () => {
       events: new TypedEventEmitter()
     })
 
-    transport = tcp()()
+    transport = tcp()({
+      logger: defaultLogger()
+    })
   })
 
   it('dial on IPv4', async () => {

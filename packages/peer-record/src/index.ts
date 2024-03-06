@@ -7,57 +7,40 @@
  *
  * Libp2p provides an all-purpose data container called **envelope**. It was created to enable the distribution of verifiable records, which we can prove originated from the addressed peer itself. The envelope includes a signature of the data, so that its authenticity is verified.
  *
- * This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
+ * This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
  *
- * You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+ * You can read further about the envelope in [RFC 0002 - Signed Envelopes](https://github.com/libp2p/specs/blob/master/RFC/0002-signed-envelopes.md). For the original discussion about it you can look at the PR that was used to create it: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
  *
- * @example
+ * @example Creating a peer record
  *
- * Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p-interfaces/tree/master/src/record) implementation and prepare it for being exchanged:
+ * Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
  *
- * ```js
- * // interface-record implementation example with the "libp2p-example" namespace
- * import { PeerRecord } from '@libp2p/peer-record'
- * import { fromString } from 'uint8arrays/from-string'
+ * ```TypeScript
+ * import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
  *
- * class ExampleRecord extends PeerRecord {
- *   constructor () {
- *     super ('libp2p-example', fromString('0302', 'hex'))
- *   }
+ * const peerId = await createEd25519PeerId()
  *
- *   marshal () {}
+ * const record = new PeerRecord({
+ *   peerId,
+ *   // ...other data
+ * })
  *
- *   equals (other) {}
- * }
- *
- * ExampleRecord.createFromProtobuf = () => {}
+ * const envelope = await RecordEnvelope.seal(record, peerId)
+ * const wireData = envelope.marshal()
  * ```
  *
- * ```js
- * import { PeerEnvelope } from '@libp2p/peer-record'
- * import { ExampleRecord } from './example-record.js'
+ * @example Consuming a peer record
  *
- * const rec = new ExampleRecord()
- * const e = await PeerEnvelope.seal(rec, peerId)
- * const wireData = e.marshal()
- * ```
+ * Consume a received envelope `wireData` and transform it back to a record:
  *
- * @example
+ * ```TypeScript
+ * import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
  *
- * Consume a received envelope (`wireData`) and transform it back to a record:
+ * const wireData = Uint8Array.from([0, 1, 2, 3, 4])
+ * const envelope = await RecordEnvelope.openAndCertify(wireData, PeerRecord.DOMAIN)
  *
- * ```js
- * import { PeerEnvelope } from '@libp2p/peer-record'
- * import { ExampleRecord } from './example-record.js'
- *
- * const domain = 'libp2p-example'
- * let e
- *
- * try {
- *   e = await PeerEnvelope.openAndCertify(wireData, domain)
- * } catch (err) {}
- *
- * const rec = ExampleRecord.createFromProtobuf(e.payload)
+ * const record = PeerRecord.createFromProtobuf(envelope.payload)
  * ```
  *
  * ## Peer Record
@@ -68,18 +51,25 @@
  *
  * A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, a timestamp per the spec, so that we can verify the most recent record.
  *
- * You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+ * You can read further about the Peer Record in [RFC 0003 - Peer Routing Records](https://github.com/libp2p/specs/blob/master/RFC/0003-routing-records.md). For the original discussion about it you can view the PR that created the RFC: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
  *
  * @example
  *
  * Create a new Peer Record
  *
- * ```js
+ * ```TypeScript
  * import { PeerRecord } from '@libp2p/peer-record'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { multiaddr } from '@multiformats/multiaddr'
  *
- * const pr = new PeerRecord({
- *   peerId: node.peerId,
- *   multiaddrs: node.multiaddrs
+ * const peerId = await createEd25519PeerId()
+ *
+ * const record = new PeerRecord({
+ *   peerId: peerId,
+ *   multiaddrs: [
+ *     multiaddr('/ip4/...'),
+ *     multiaddr('/ip4/...')
+ *   ]
  * })
  * ```
  *
@@ -87,10 +77,11 @@
  *
  * Create a Peer Record from a protobuf
  *
- * ```js
+ * ```TypeScript
  * import { PeerRecord } from '@libp2p/peer-record'
  *
- * const pr = PeerRecord.createFromProtobuf(data)
+ * const data = Uint8Array.from([0, 1, 2, 3, 4])
+ * const record = PeerRecord.createFromProtobuf(data)
  * ```
  *
  * ## Libp2p Flows

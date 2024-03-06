@@ -1,11 +1,28 @@
+# @libp2p/bootstrap
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
-[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=master\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amaster)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Peer discovery via a list of bootstrap peers
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 The configured bootstrap peers will be discovered after the configured timeout. This will ensure there are some peers in the peer store for the node to use to discover other peers.
 
@@ -13,42 +30,27 @@ They will be tagged with a tag with the name `'bootstrap'` tag, the value `50` a
 
 Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
 
-```JavaScript
+## Example - Configuring a list of bootstrap nodes
+
+```TypeScript
 import { createLibp2p } from 'libp2p'
 import { bootstrap } from '@libp2p/bootstrap'
-import { tcp } from 'libp2p/tcp'
-import { noise } from '@libp2p/noise'
-import { mplex } from '@libp2p/mplex'
 
-let options = {
-  transports: [
-    tcp()
-  ],
-  streamMuxers: [
-    mplex()
-  ],
-  connectionEncryption: [
-    noise()
-  ],
+const libp2p = await createLibp2p({
   peerDiscovery: [
     bootstrap({
-      list: [ // a list of bootstrap peer multiaddrs to connect to on node startup
-        "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
-        "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
-        "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa"
-      ],
-      timeout: 1000, // in ms,
-      tagName: 'bootstrap',
-      tagValue: 50,
-      tagTTL: 120000 // in ms
+      list: [
+        // a list of bootstrap peer multiaddrs to connect to on node startup
+        '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+      ]
     })
   ]
-}
+})
 
-const libp2p = await createLibp2p(options)
-
-libp2p.on('peer:discovery', function (peerId) {
-  console.log('found peer: ', peerId.toB58String())
+libp2p.addEventListener('peer:discovery', (evt) => {
+  console.log('found peer: ', evt.detail.toString())
 })
 ```
 

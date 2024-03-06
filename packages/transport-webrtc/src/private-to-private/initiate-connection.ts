@@ -1,20 +1,14 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { logger } from '@libp2p/logger'
+import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
-import { parseRemoteAddress, readCandidatesUntilConnected, resolveOnConnected } from './util.js'
+import { readCandidatesUntilConnected } from './util.js'
 import type { DataChannelOptions } from '../index.js'
-import type { Connection } from '@libp2p/interface/connection'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { IncomingStreamData } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
-
-const log = logger('libp2p:webrtc:initiate-connection')
+import type { LoggerOptions, Connection } from '@libp2p/interface'
+import type { ConnectionManager, IncomingStreamData, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface IncomingStreamOpts extends IncomingStreamData {
   rtcConfiguration?: RTCConfiguration
@@ -22,7 +16,7 @@ export interface IncomingStreamOpts extends IncomingStreamData {
   signal: AbortSignal
 }
 
-export interface ConnectOptions {
+export interface ConnectOptions extends LoggerOptions {
   peerConnection: RTCPeerConnection
   multiaddr: Multiaddr
   connectionManager: ConnectionManager
@@ -32,8 +26,8 @@ export interface ConnectOptions {
   metrics?: WebRTCTransportMetrics
 }
 
-export async function initiateConnection ({ peerConnection, signal, metrics, multiaddr: ma, connectionManager, transportManager }: ConnectOptions): Promise<{ remoteAddress: Multiaddr }> {
-  const { baseAddr, peerId } = splitAddr(ma)
+export async function initiateConnection ({ peerConnection, signal, metrics, multiaddr: ma, connectionManager, transportManager, log }: ConnectOptions): Promise<{ remoteAddress: Multiaddr }> {
+  const { baseAddr } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
 
@@ -70,17 +64,8 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
     })
 
     const messageStream = pbStream(stream).pb(Message)
-    const connectedPromise: DeferredPromise<void> = pDefer()
-    const sdpAbortedListener = (): void => {
-      connectedPromise.reject(new CodeError('SDP handshake aborted', 'ERR_SDP_HANDSHAKE_ABORTED'))
-    }
 
     try {
-      resolveOnConnected(peerConnection, connectedPromise)
-
-      // reject the connectedPromise if the signal aborts
-      signal?.addEventListener('abort', sdpAbortedListener)
-
       // we create the channel so that the RTCPeerConnection has a component for
       // which to collect candidates. The label is not relevant to connection
       // initiation but can be useful for debugging
@@ -107,11 +92,14 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
           })
       }
       peerConnection.onicecandidateerror = (event) => {
-        log('initiator ICE candidate error', event)
+        log.error('initiator ICE candidate error', event)
       }
 
       // create an offer
-      const offerSdp = await peerConnection.createOffer()
+      const offerSdp = await peerConnection.createOffer().catch(err => {
+        log.error('could not execute createOffer', err)
+        throw new CodeError('Failed to set createOffer', 'ERR_SDP_HANDSHAKE_FAILED')
+      })
 
       log.trace('initiator send SDP offer %s', offerSdp.sdp)
 
@@ -132,7 +120,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       })
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
-        throw new CodeError('remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new CodeError('Remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
       }
 
       log.trace('initiator receive SDP answer %s', answerMessage.data)
@@ -145,9 +133,10 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
 
       log.trace('initiator read candidates until connected')
 
-      await readCandidatesUntilConnected(connectedPromise, peerConnection, messageStream, {
+      await readCandidatesUntilConnected(peerConnection, messageStream, {
         direction: 'initiator',
-        signal
+        signal,
+        log
       })
 
       log.trace('initiator connected, closing init channel')
@@ -158,20 +147,16 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
         signal
       })
 
-      const remoteAddress = parseRemoteAddress(peerConnection.currentRemoteDescription?.sdp ?? '')
-
-      log.trace('initiator connected to remote address %s', remoteAddress)
+      log.trace('initiator connected to remote address %s', ma)
 
       return {
-        remoteAddress: multiaddr(remoteAddress).encapsulate(`/p2p/${peerId.toString()}`)
+        remoteAddress: ma
       }
     } catch (err: any) {
       peerConnection.close()
       stream.abort(err)
       throw err
     } finally {
-      // remove event listeners
-      signal?.removeEventListener('abort', sdpAbortedListener)
       peerConnection.onicecandidate = null
       peerConnection.onicecandidateerror = null
     }

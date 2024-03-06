@@ -1,23 +1,14 @@
-import { CodeError } from '@libp2p/interface/errors'
-import { isStartable, type Startable } from '@libp2p/interface/startable'
-import type { Libp2pEvents } from '@libp2p/interface'
-import type { ConnectionProtector } from '@libp2p/interface/connection'
-import type { ConnectionGater } from '@libp2p/interface/connection-gater'
-import type { ContentRouting } from '@libp2p/interface/content-routing'
-import type { TypedEventTarget } from '@libp2p/interface/events'
-import type { Metrics } from '@libp2p/interface/metrics'
-import type { PeerId } from '@libp2p/interface/peer-id'
-import type { PeerRouting } from '@libp2p/interface/peer-routing'
-import type { PeerStore } from '@libp2p/interface/peer-store'
-import type { Upgrader } from '@libp2p/interface/transport'
-import type { AddressManager } from '@libp2p/interface-internal/address-manager'
-import type { ConnectionManager } from '@libp2p/interface-internal/connection-manager'
-import type { Registrar } from '@libp2p/interface-internal/registrar'
-import type { TransportManager } from '@libp2p/interface-internal/transport-manager'
+import { CodeError } from '@libp2p/interface'
+import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type PrivateKey, type Upgrader } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
+import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
+  privateKey: PrivateKey
+  nodeInfo: NodeInfo
+  logger: ComponentLogger
   events: TypedEventTarget<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
@@ -35,6 +26,9 @@ export interface Components extends Record<string, any>, Startable {
 
 export interface ComponentsInit {
   peerId?: PeerId
+  privateKey?: PrivateKey
+  nodeInfo?: NodeInfo
+  logger?: ComponentLogger
   events?: TypedEventTarget<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
@@ -59,6 +53,10 @@ class DefaultComponents implements Startable {
 
     for (const [key, value] of Object.entries(init)) {
       this.components[key] = value
+    }
+
+    if (this.components.logger == null) {
+      this.components.logger = defaultLogger()
     }
   }
 

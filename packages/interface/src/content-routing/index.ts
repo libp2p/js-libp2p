@@ -1,4 +1,4 @@
-import type { AbortOptions } from '../index.js'
+import type { RoutingOptions } from '../index.js'
 import type { PeerInfo } from '../peer-info/index.js'
 import type { CID } from 'multiformats/cid'
 
@@ -9,11 +9,11 @@ import type { CID } from 'multiformats/cid'
  *
  * @example
  *
- * ```js
- * import { contentRouting, ContentRouting } from '@libp2p/content-routing'
+ * ```TypeScript
+ * import { contentRoutingSymbol, ContentRouting } from '@libp2p/content-routing'
  *
  * class MyContentRouter implements ContentRouting {
- *   get [contentRouting] () {
+ *   get [contentRoutingSymbol] () {
  *     return this
  *   }
  *
@@ -21,7 +21,15 @@ import type { CID } from 'multiformats/cid'
  * }
  * ```
  */
-export const contentRouting = Symbol.for('@libp2p/content-routing')
+export const contentRoutingSymbol = Symbol.for('@libp2p/content-routing')
+
+/**
+ * Implementers of this interface can provide a ContentRouting implementation to
+ * interested callers.
+ */
+export interface ContentRoutingProvider {
+  [contentRoutingSymbol]: ContentRouting
+}
 
 export interface ContentRouting {
   /**
@@ -30,26 +38,26 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * await contentRouting.provide(cid)
    * ```
    */
-  provide(cid: CID, options?: AbortOptions): Promise<void>
+  provide(cid: CID, options?: RoutingOptions): Promise<void>
 
   /**
    * Find the providers of the passed CID.
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // Iterate over the providers found for the given cid
    * for await (const provider of contentRouting.findProviders(cid)) {
    *  console.log(provider.id, provider.multiaddrs)
    * }
    * ```
    */
-  findProviders(cid: CID, options?: AbortOptions): AsyncIterable<PeerInfo>
+  findProviders(cid: CID, options?: RoutingOptions): AsyncIterable<PeerInfo>
 
   /**
    * Puts a value corresponding to the passed key in a way that can later be
@@ -57,7 +65,7 @@ export interface ContentRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * const key = '/key'
    * const value = uint8ArrayFromString('oh hello there')
@@ -65,19 +73,19 @@ export interface ContentRouting {
    * await contentRouting.put(key, value)
    * ```
    */
-  put(key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void>
+  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): Promise<void>
 
   /**
    * Retrieves a value from the network corresponding to the passed key.
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    *
    * const key = '/key'
    * const value = await contentRouting.get(key)
    * ```
    */
-  get(key: Uint8Array, options?: AbortOptions): Promise<Uint8Array>
+  get(key: Uint8Array, options?: RoutingOptions): Promise<Uint8Array>
 }
