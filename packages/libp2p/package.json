@@ -96,7 +96,7 @@
     "@libp2p/peer-store": "^10.0.11",
     "@libp2p/utils": "^5.2.6",
     "@multiformats/dns": "^1.0.1",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.0",
     "any-signal": "^4.1.1",
     "datastore-core": "^9.2.8",
     "interface-datastore": "^8.2.11",
