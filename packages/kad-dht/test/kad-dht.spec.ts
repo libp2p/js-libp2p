@@ -15,8 +15,7 @@ import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as c from '../src/constants.js'
-import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '../src/index.js'
-import { MessageType as PBMessageType } from '../src/message/dht.js'
+import { EventTypes, MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import { Libp2pRecord } from '../src/record/index.js'
 import * as kadUtils from '../src/utils.js'
@@ -25,6 +24,7 @@ import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
+import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 import type { KadDHT } from '../src/kad-dht.js'
 import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -475,7 +475,7 @@ describe('KadDHT', () => {
 
       for (const [peerId, msg] of calls) {
         expect(idsB58).includes(peerId.toString())
-        expect(msg.type).equals(PBMessageType.ADD_PROVIDER)
+        expect(msg.type).equals(MessageType.ADD_PROVIDER)
         expect(valuesBuffs).includes(msg.key)
         expect(msg.providers.length).equals(1)
         expect(peerIdFromBytes(msg.providers[0].id).toString()).equals(idsB58[3])
