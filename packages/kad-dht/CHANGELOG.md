@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [12.0.9](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.8...kad-dht-v12.0.9) (2024-03-11)
+
+
+### Bug Fixes
+
+* typescript enums need to be value-compatible ([#2433](https://github.com/libp2p/js-libp2p/issues/2433)) ([83ef371](https://github.com/libp2p/js-libp2p/commit/83ef3717e6f55c12606b145d519ae83ff64c6227))
+
 ## [12.0.8](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.7...kad-dht-v12.0.8) (2024-02-27)
 
 
