@@ -1,13 +1,12 @@
 import { CustomEvent } from '@libp2p/interface'
-import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
-import type { MessageType as PbMessageType } from '../message/dht.js'
+import type { MessageType, SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
 import type { Libp2pRecord } from '../record/index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface QueryEventFields {
   to: PeerId
-  type: PbMessageType
+  type: MessageType
 }
 
 export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptions = {}): SendQueryEvent {
@@ -26,7 +25,7 @@ export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptio
 
 export interface PeerResponseEventFields {
   from: PeerId
-  messageType: PbMessageType
+  messageType: MessageType
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
