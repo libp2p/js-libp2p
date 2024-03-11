@@ -81,6 +81,7 @@
  */
 
 import { KadDHT as KadDHTClass } from './kad-dht.js'
+import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
 import type { ProvidersInit } from './providers.js'
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
@@ -109,14 +110,7 @@ export enum EventTypes {
 /**
  * The types of messages sent to peers during DHT queries
  */
-export enum MessageType {
-  PUT_VALUE = 0,
-  GET_VALUE,
-  ADD_PROVIDER,
-  GET_PROVIDERS,
-  FIND_NODE,
-  PING
-}
+export { MessageType }
 
 export type MessageName = keyof typeof MessageType
 

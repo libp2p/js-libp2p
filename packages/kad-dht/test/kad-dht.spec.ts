@@ -15,7 +15,7 @@ import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as c from '../src/constants.js'
-import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '../src/index.js'
+import { EventTypes, type FinalPeerEvent, type QueryEvent, type ValueEvent } from '../src/index.js'
 import { MessageType as PBMessageType } from '../src/message/dht.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import { Libp2pRecord } from '../src/record/index.js'
@@ -431,7 +431,7 @@ describe('KadDHT', () => {
       // Simulate going out to the network and returning the record
       sinon.stub(dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
         yield peerResponseEvent({
-          messageType: MessageType.GET_VALUE,
+          messageType: PBMessageType.GET_VALUE,
           from: peer,
           record: rec
         })

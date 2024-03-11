@@ -1,13 +1,13 @@
 import { CustomEvent } from '@libp2p/interface'
-import { MessageType } from '../message/dht.js'
 import type { SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
+import type { MessageType as PbMessageType } from '../message/dht.js'
 import type { Libp2pRecord } from '../record/index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
 export interface QueryEventFields {
   to: PeerId
-  type: MessageType
+  type: PbMessageType
 }
 
 export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptions = {}): SendQueryEvent {
@@ -16,7 +16,7 @@ export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptio
     name: 'SEND_QUERY',
     type: 0,
     messageName: fields.type,
-    messageType: MessageType[fields.type]
+    messageType: fields.type
   }
 
   options.onProgress?.(new CustomEvent('kad-dht:query:send-query', { detail: event }))
@@ -24,15 +24,15 @@ export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptio
   return event
 }
 
-export interface PeerResponseEventField {
+export interface PeerResponseEventFields {
   from: PeerId
-  messageType: MessageType
+  messageType: PbMessageType
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
 }
 
-export function peerResponseEvent (fields: PeerResponseEventField, options: ProgressOptions = {}): PeerResponseEvent {
+export function peerResponseEvent (fields: PeerResponseEventFields, options: ProgressOptions = {}): PeerResponseEvent {
   const event: PeerResponseEvent = {
     ...fields,
     name: 'PEER_RESPONSE',
