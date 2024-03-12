@@ -18,6 +18,7 @@ import {
 import { resolveMultiaddrs } from './utils.js'
 import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { DNS } from '@multiformats/dns'
 
 export interface PendingDialTarget {
   resolve(value: any): void
@@ -61,6 +62,7 @@ interface DialQueueComponents {
   transportManager: TransportManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
+  dns?: DNS
 }
 
 export class DialQueue {
@@ -344,6 +346,7 @@ export class DialQueue {
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
         const result = await resolveMultiaddrs(addr.multiaddr, {
+          dns: this.components.dns,
           ...options,
           log: this.log
         })

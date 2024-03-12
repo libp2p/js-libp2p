@@ -3,6 +3,8 @@
 import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { dns } from '@multiformats/dns'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -389,6 +391,30 @@ describe('libp2p.connections', () => {
         force: true
       })
       expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(2)
+    })
+
+    it('should use custom DNS resolver', async () => {
+      const resolver = sinon.stub()
+
+      libp2p = await createNode({
+        config: createBaseOptions({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          dns: dns({
+            resolvers: {
+              '.': resolver
+            }
+          })
+        })
+      })
+
+      const ma = multiaddr('/dnsaddr/example.com/tcp/12345')
+      const err = new Error('Could not resolve')
+
+      resolver.withArgs('_dnsaddr.example.com').rejects(err)
+
+      await expect(libp2p.dial(ma)).to.eventually.be.rejectedWith(err)
     })
   })
 

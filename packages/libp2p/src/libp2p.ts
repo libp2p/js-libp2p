@@ -75,7 +75,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
-      connectionGater: connectionGater(init.connectionGater)
+      connectionGater: connectionGater(init.connectionGater),
+      dns: init.dns
     })
 
     this.peerStore = this.configureComponent('peerStore', new PersistentPeerStore(components, {
