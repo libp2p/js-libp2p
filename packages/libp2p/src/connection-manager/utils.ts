@@ -1,17 +1,11 @@
 import { resolvers } from '@multiformats/multiaddr'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { DNS } from '@multiformats/dns'
-import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
-
-export interface ResolveOptions extends AbortOptions, LoggerOptions {
-  dns?: DNS
-  maxRecursiveDepth?: number
-}
+import type { Multiaddr, ResolveOptions } from '@multiformats/multiaddr'
 
 /**
- * Resolve multiaddr recursively
+ * Recursively resolve DNSADDR multiaddrs
  */
-export async function resolveMultiaddrs (ma: Multiaddr, options: ResolveOptions): Promise<Multiaddr[]> {
+export async function resolveMultiaddrs (ma: Multiaddr, options: ResolveOptions & LoggerOptions): Promise<Multiaddr[]> {
   // check multiaddr resolvers
   let resolvable = false
 
