@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.3.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.2.4...libp2p-v1.3.0) (2024-03-12)
+
+
+### Features
+
+* support custom DNS resolvers ([#2435](https://github.com/libp2p/js-libp2p/issues/2435)) ([f39ce5f](https://github.com/libp2p/js-libp2p/commit/f39ce5f13b56e2a18c7939b9d2ab38aa7e326d15))
+
 ## [1.2.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.2.3...libp2p-v1.2.4) (2024-02-27)
 
 
