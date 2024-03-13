@@ -31,6 +31,7 @@
     "packages/peer-store": {},
     "packages/protocol-autonat": {},
     "packages/protocol-dcutr": {},
+    "packages/protocol-echo": {},
     "packages/protocol-fetch": {},
     "packages/protocol-identify": {},
     "packages/protocol-perf": {},
