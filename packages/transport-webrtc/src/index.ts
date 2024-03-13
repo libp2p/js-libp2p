@@ -17,6 +17,10 @@
  *
  * WebRTC Direct uses a technique known as [SDP munging](https://webrtchacks.com/not-a-guide-to-sdp-munging/) to skip the handshake step, instead encoding enough information in the connection request that the responder can derive what would have been in the handshake messages and so requires no third parties to establish a connection.
  *
+ * A WebRTC Direct multiaddr also includes a certhash of the target peer - this is used to allow opening a connection to the remote, which would otherwise be denied due to use of a self-signed certificate.
+ *
+ * In both cases, once the connection is established a [Noise handshake](https://noiseprotocol.org/noise.html) is carried out to ensure that the remote peer has the private key that corresponds to the public key that makes up their PeerId, giving you both encryption and authentication.
+ *
  * ## Support
  *
  * WebRTC is supported in both Node.js and browsers.

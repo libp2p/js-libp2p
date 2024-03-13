@@ -39,8 +39,8 @@
   "scripts": {
     "generate": "protons src/private-to-private/pb/message.proto src/pb/message.proto",
     "build": "aegir build",
-    "test": "aegir test -t node -t browser",
-    "test:node": "aegir test -t node --cov",
+    "test": "aegir test -t node -t browser -- --exit",
+    "test:node": "aegir test -t node --cov -- --exit",
     "test:chrome": "aegir test -t browser --cov",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "lint": "aegir lint",
@@ -65,7 +65,7 @@
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
     "multihashes": "^4.0.3",
-    "node-datachannel": "^0.5.4",
+    "node-datachannel": "^0.5.3",
     "p-defer": "^4.0.0",
     "p-event": "^6.0.0",
     "p-timeout": "^6.1.2",
@@ -73,8 +73,7 @@
     "race-signal": "^1.0.2",
     "react-native-webrtc": "^118.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2",
-    "why-is-node-running": "^2.2.2"
+    "uint8arrays": "^5.0.2"
   },
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^6.0.2",
