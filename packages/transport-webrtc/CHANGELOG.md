@@ -111,6 +111,13 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.22](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.21...webrtc-v4.0.22) (2024-03-13)
+
+
+### Documentation
+
+* update webrtc readme to show difference between transports ([#2441](https://github.com/libp2p/js-libp2p/issues/2441)) ([fad3074](https://github.com/libp2p/js-libp2p/commit/fad3074b843cae69289c6da94f3797d59879ec1c))
+
 ## [4.0.21](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.20...webrtc-v4.0.21) (2024-03-12)
 
 
