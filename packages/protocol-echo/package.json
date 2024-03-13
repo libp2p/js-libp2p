@@ -1,0 +1,69 @@
+{
+  "name": "@libp2p/echo",
+  "version": "0.0.0",
+  "description": "Implementation of an Echo protocol",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "start": "node dist/src/main.js",
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "generate": "protons ./src/pb/index.proto",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^1.1.4",
+    "@libp2p/interface-internal": "^1.0.9",
+    "it-pipe": "^3.0.1"
+  },
+  "devDependencies": {
+    "@libp2p/logger": "^4.0.7",
+    "aegir": "^42.2.4",
+    "it-all": "^3.0.4",
+    "it-pair": "^2.0.6",
+    "sinon": "^17.0.1",
+    "sinon-ts": "^2.0.0",
+    "uint8arraylist": "^2.4.8"
+  },
+  "sideEffects": false
+}
