@@ -111,7 +111,7 @@
  *   await delay(1000)
  * }
  *
- * // the listener has Circuit Relay, WebSocket and WebRTC transports to dial
+ * // the dialer has Circuit Relay, WebSocket and WebRTC transports to dial
  * // the listener via the relay, complete the SDP handshake and establish a
  * // direct WebRTC connection
  * const dialer = await createLibp2p({
