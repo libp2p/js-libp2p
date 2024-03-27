@@ -16,13 +16,14 @@
 
 import { createLibp2pNode } from './libp2p.js'
 import type { AddressManagerInit } from './address-manager/index.js'
-import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
 import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
+
+export type { Components } from './components.js'
 
 export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
   [Property in keyof T]: (components: Components) => T[Property]
