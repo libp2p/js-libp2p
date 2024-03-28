@@ -23,8 +23,12 @@ const LIBP2P_PUBLIC_KEY_EXTENSION = '1.3.6.1.4.1.53594.1.1'
 const CERT_PREFIX = 'libp2p-tls-handshake:'
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L265
 const CERT_VALIDITY_PERIOD_FROM = 60 * 60 * 1000 // ~1 hour
+
+// N.b. have to keep expiry date before 2050 - when https://github.com/PeculiarVentures/x509/issues/73
+// is fixed we can revert to 100 years
+const CERT_VALIDITY_PERIOD_TO = 10 * 365 * 24 * 60 * 60 * 1000 // ~10 years
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L24C28-L24C44
-const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
+// const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
 export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
