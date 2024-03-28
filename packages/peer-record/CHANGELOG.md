@@ -60,6 +60,20 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.11](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.10...peer-record-v7.0.11) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/utils bumped from ^5.2.6 to ^5.2.7
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+
 ## [7.0.10](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.9...peer-record-v7.0.10) (2024-02-27)
 
 
