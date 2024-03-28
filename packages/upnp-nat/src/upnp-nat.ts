@@ -1,4 +1,4 @@
-import { upnpNat, type NatAPI } from '@achingbrain/nat-port-mapper'
+import { upnpNat, type NatAPI, type MapPortOptions } from '@achingbrain/nat-port-mapper'
 import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
@@ -8,6 +8,8 @@ import type { UPnPNATComponents, UPnPNATInit } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 
 const DEFAULT_TTL = 7200
+
+export type { NatAPI, MapPortOptions }
 
 function highPort (min = 1024, max = 65535): number {
   return Math.floor(Math.random() * (max - min + 1) + min)
