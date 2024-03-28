@@ -7,7 +7,7 @@ import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
 import { pbStream } from 'it-protobuf-stream'
 import { stubInterface } from 'sinon-ts'
-import { Identify } from '../src/identify.js'
+import { IdentifyPush } from '../src/identify.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
 import { identifyPushStream, type StubbedIdentifyComponents } from './fixtures/index.js'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
@@ -15,7 +15,7 @@ import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/inter
 
 describe('identify (push)', () => {
   let components: StubbedIdentifyComponents
-  let identify: Identify
+  let identify: IdentifyPush
 
   beforeEach(async () => {
     components = {
@@ -38,7 +38,7 @@ describe('identify (push)', () => {
   })
 
   it('should register for identify push protocol on start', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
@@ -47,7 +47,7 @@ describe('identify (push)', () => {
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
@@ -94,7 +94,7 @@ describe('identify (push)', () => {
   })
 
   it('should handle incoming push', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
@@ -135,7 +135,7 @@ describe('identify (push)', () => {
   })
 
   it('should time out during push identify', async () => {
-    identify = new Identify(components, {
+    identify = new IdentifyPush(components, {
       timeout: 10
     })
 
