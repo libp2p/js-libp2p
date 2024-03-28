@@ -58,7 +58,7 @@
     "@libp2p/ping": "^1.0.11",
     "@libp2p/plaintext": "^1.0.15",
     "@libp2p/tcp": "^9.0.15",
-    "@libp2p/tls": "^0.0.0",
+    "@libp2p/tls": "^1.0.2",
     "@libp2p/webrtc": "^4.0.19",
     "@libp2p/websockets": "^8.0.15",
     "@multiformats/mafmt": "^12.1.6",
