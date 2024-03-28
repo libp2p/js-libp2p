@@ -38,11 +38,11 @@ export class TLS implements ConnectionEncrypter {
   }
 
   async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, false, remoteId)
+    return this._encrypt(localId, conn, true, remoteId)
   }
 
   async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, true, remoteId)
+    return this._encrypt(localId, conn, false, remoteId)
   }
 
   /**
@@ -106,7 +106,7 @@ export class TLS implements ConnectionEncrypter {
         reject(err)
         clearTimeout(abortTimeout)
       })
-      socket.on('secure', (evt) => {
+      socket.once('secure', (evt) => {
         this.log('verifying remote certificate')
         verifyRemote()
       })
