@@ -115,7 +115,7 @@ Some available connection encryption protocols:
 - [@chainsafe/libp2p-noise](https://github.com/chainsafe/js-libp2p-noise)
 - [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/src/packages/connection-encrypter-plaintext/index.ts) (Not for production use)
 
-If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto).
+If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Connection Encrypter Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/connection-encrypter).
 
 If you want to know more about libp2p connection encryption, you should read the following content:
 
