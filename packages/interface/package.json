@@ -48,7 +48,7 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
@@ -56,7 +56,7 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.2.4"
+    "aegir": "^42.2.5"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"

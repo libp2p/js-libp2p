@@ -38,6 +38,7 @@
     "packages/protocol-ping": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
+    "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
     "packages/transport-circuit-relay-v2": {},
     "packages/transport-tcp": {},

@@ -1,3 +1,31 @@
+/**
+ * @packageDocumentation
+ *
+ * This is an implementation of the [routing record format](https://github.com/libp2p/specs/blob/b9efe152c29f93f7a87931c14d78ae11e7924d5a/kad-dht/README.md?plain=1#L408-L425) used by libp2p to store data.
+ *
+ * @example Deserialization
+ *
+ * ```TypeScript
+ * import { Libp2pRecord } from '@libp2p/record'
+ *
+ * const buf = Uint8Array.from([0, 1, 2, 3])
+ * const record = Libp2pRecord.deserialize(buf)
+ * ```
+ *
+ * @example Serialization
+ *
+ * ```TypeScript
+ * import { Libp2pRecord } from '@libp2p/record'
+ *
+ * const key = Uint8Array.from([0, 1, 2, 3])
+ * const value = Uint8Array.from([0, 1, 2, 3])
+ * const timeReceived = new Date()
+ *
+ * const record = new Libp2pRecord(key, value, timeReceived)
+ * const buf = record.serialize()
+ * ```
+ */
+
 import {
   Record
 } from './record.js'

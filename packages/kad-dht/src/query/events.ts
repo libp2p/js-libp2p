@@ -1,7 +1,7 @@
 import { CustomEvent } from '@libp2p/interface'
 import type { MessageType, SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
-import type { Libp2pRecord } from '../record/index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { Libp2pRecord } from '@libp2p/record'
 import type { ProgressOptions } from 'progress-events'
 
 export interface QueryEventFields {

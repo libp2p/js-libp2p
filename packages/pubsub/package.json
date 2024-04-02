@@ -96,16 +96,16 @@
     "multiformats": "^13.1.0",
     "p-queue": "^8.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.8",
     "@libp2p/peer-id-factory": "^4.0.8",
     "@types/sinon": "^17.0.3",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
     "protons-runtime": "^5.4.0",

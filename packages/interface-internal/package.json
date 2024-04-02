@@ -50,11 +50,11 @@
   "dependencies": {
     "@libp2p/interface": "^1.1.5",
     "@libp2p/peer-collections": "^5.1.8",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.2.4"
+    "aegir": "^42.2.5"
   },
   "sideEffects": false
 }

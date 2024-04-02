@@ -56,10 +56,10 @@
   "dependencies": {
     "@libp2p/interface": "^1.1.5",
     "multiformats": "^13.1.0",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
-    "aegir": "^42.2.4"
+    "aegir": "^42.2.5"
   },
   "sideEffects": false
 }
