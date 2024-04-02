@@ -54,13 +54,13 @@
   "dependencies": {
     "@libp2p/interface": "^1.1.5",
     "@libp2p/interface-internal": "^1.0.10",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "it-pushable": "^3.2.3"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.3.3",
     "@libp2p/logger": "^4.0.8",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "it-last": "^3.0.4",
     "it-pair": "^2.0.6",
     "sinon-ts": "^2.0.0"

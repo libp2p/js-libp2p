@@ -57,12 +57,12 @@
     "it-protobuf-stream": "^1.1.2",
     "protons-runtime": "^5.4.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.8",
     "@libp2p/peer-id-factory": "^4.0.8",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "it-pair": "^2.0.6",
     "protons": "^7.5.0",
     "sinon": "^17.0.1",

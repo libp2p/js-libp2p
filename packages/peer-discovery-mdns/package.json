@@ -54,7 +54,7 @@
     "@libp2p/interface-internal": "^1.0.10",
     "@libp2p/peer-id": "^4.0.8",
     "@libp2p/utils": "^5.2.7",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "@types/multicast-dns": "^7.2.4",
     "dns-packet": "^5.6.1",
     "multicast-dns": "^7.2.5"
@@ -63,7 +63,7 @@
     "@libp2p/interface-compliance-tests": "^5.3.3",
     "@libp2p/logger": "^4.0.8",
     "@libp2p/peer-id-factory": "^4.0.8",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "p-wait-for": "^5.0.2",
     "sinon-ts": "^2.0.0"
   },

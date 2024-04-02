@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Record {
@@ -42,10 +42,10 @@ export namespace Record {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          key: new Uint8Array(0),
-          value: new Uint8Array(0),
+          key: uint8ArrayAlloc(0),
+          value: uint8ArrayAlloc(0),
           timeReceived: ''
         }
 
@@ -55,18 +55,22 @@ export namespace Record {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.key = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.value = reader.bytes()
               break
-            case 5:
+            }
+            case 5: {
               obj.timeReceived = reader.string()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -81,7 +85,7 @@ export namespace Record {
     return encodeMessage(obj, Record.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Record => {
-    return decodeMessage(buf, Record.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record => {
+    return decodeMessage(buf, Record.codec(), opts)
   }
 }

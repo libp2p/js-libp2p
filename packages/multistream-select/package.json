@@ -62,15 +62,15 @@
     "it-length-prefixed": "^9.0.4",
     "it-length-prefixed-stream": "^1.1.6",
     "it-stream-types": "^2.0.1",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.8",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",

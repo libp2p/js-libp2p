@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^1.1.5",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "debug": "^4.3.4",
     "interface-datastore": "^8.2.11",
     "multiformats": "^13.1.0"
@@ -63,9 +63,9 @@
   "devDependencies": {
     "@libp2p/peer-id": "^4.0.8",
     "@types/debug": "^4.1.12",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "sinon": "^17.0.1",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "sideEffects": false
 }

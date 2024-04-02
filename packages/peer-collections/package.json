@@ -60,7 +60,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.0.8",
     "@types/sinon": "^17.0.3",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0"
   },

@@ -1,9 +1,9 @@
 {
   "name": "@libp2p/record",
   "version": "3.0.4",
-  "description": "JavaScript implementation of the Kad-DHT for libp2p",
+  "description": "libp2p record implementation",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/record#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/libp2p/js-libp2p.git"
@@ -46,7 +46,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "build": "aegir build",
-    "generate": "protons ./src/message/dht.proto",
+    "generate": "protons ./src/record.proto",
     "test": "aegir test",
     "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
@@ -64,13 +64,10 @@
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.3",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "multiformats": "^13.1.0",
     "protons": "^7.5.0",
-    "uint8arrays": "^5.0.2"
-  },
-  "browser": {
-    "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"
+    "uint8arrays": "^5.0.3"
   },
   "sideEffects": false
 }

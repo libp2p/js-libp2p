@@ -53,18 +53,18 @@
     "@libp2p/crypto": "^4.0.4",
     "@libp2p/interface": "^1.1.5",
     "@libp2p/interface-internal": "^1.0.10",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "it-first": "^3.0.4",
     "it-pipe": "^3.0.1",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.8",
     "@libp2p/peer-id-factory": "^4.0.8",
-    "aegir": "^42.2.4",
+    "aegir": "^42.2.5",
     "it-byte-stream": "^1.0.8",
     "it-pair": "^2.0.6",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

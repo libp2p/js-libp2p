@@ -1,4 +1,5 @@
 import { CodeError } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -11,7 +12,6 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { Libp2pRecord } from '@libp2p/record'
 import { bestRecord } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'

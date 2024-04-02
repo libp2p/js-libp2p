@@ -1,11 +1,11 @@
-# @libp2p/kad-dht
+# @libp2p/record
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-> JavaScript implementation of the Kad-DHT for libp2p
+> libp2p record implementation
 
 # About
 
@@ -24,101 +24,47 @@ repo and examine the changes made.
 
 -->
 
-This module implements the [libp2p Kademlia spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md) in TypeScript.
+This is an implementation of the [routing record format](https://github.com/libp2p/specs/blob/b9efe152c29f93f7a87931c14d78ae11e7924d5a/kad-dht/README.md?plain=1#L408-L425) used by libp2p to store data.
 
-The Kademlia DHT allow for several operations such as finding peers, searching for providers of DHT records, etc.
-
-## Example - Using with libp2p
+## Example - Deserialization
 
 ```TypeScript
-import { kadDHT } from '@libp2p/kad-dht'
-import { createLibp2p } from 'libp2p'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 
-const node = await createLibp2p({
-  services: {
-    dht: kadDHT({
-      // DHT options
-    })
-  }
-})
-
-const peerId = peerIdFromString('QmFoo')
-const peerInfo = await node.peerRouting.findPeer(peerId)
-
-console.info(peerInfo) // peer id, multiaddrs
+const buf = Uint8Array.from([0, 1, 2, 3])
+const record = Libp2pRecord.deserialize(buf)
 ```
 
-## Example - Connecting to the IPFS Amino DHT
-
-The [Amino DHT](https://blog.ipfs.tech/2023-09-amino-refactoring/) is a public-good DHT used by IPFS to fetch content, find peers, etc.
-
-If you are trying to access content on the public internet, this is the implementation you want.
+## Example - Serialization
 
 ```TypeScript
-import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
-import { createLibp2p } from 'libp2p'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 
-const node = await createLibp2p({
-  services: {
-    aminoDHT: kadDHT({
-      protocol: '/ipfs/kad/1.0.0',
-      peerInfoMapper: removePrivateAddressesMapper
-    })
-  }
-})
+const key = Uint8Array.from([0, 1, 2, 3])
+const value = Uint8Array.from([0, 1, 2, 3])
+const timeReceived = new Date()
 
-const peerId = peerIdFromString('QmFoo')
-const peerInfo = await node.peerRouting.findPeer(peerId)
-
-console.info(peerInfo) // peer id, multiaddrs
-```
-
-## Example - Connecting to a LAN-only DHT
-
-This DHT only works with privately dialable peers.
-
-This is for use when peers are on the local area network.
-
-```TypeScript
-import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
-import { createLibp2p } from 'libp2p'
-import { peerIdFromString } from '@libp2p/peer-id'
-
-const node = await createLibp2p({
-  services: {
-    lanDHT: kadDHT({
-      protocol: '/ipfs/lan/kad/1.0.0',
-      peerInfoMapper: removePublicAddressesMapper,
-      clientMode: false
-    })
-  }
-})
-
-const peerId = peerIdFromString('QmFoo')
-const peerInfo = await node.peerRouting.findPeer(peerId)
-
-console.info(peerInfo) // peer id, multiaddrs
+const record = new Libp2pRecord(key, value, timeReceived)
+const buf = record.serialize()
 ```
 
 # Install
 
 ```console
-$ npm i @libp2p/kad-dht
+$ npm i @libp2p/record
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pKadDht` in the global namespace.
+Loading this module through a script tag will make it's exports available as `Libp2pRecord` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@libp2p/kad-dht/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/record/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_kad_dht.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_record.html>
 
 # License
 

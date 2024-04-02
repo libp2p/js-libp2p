@@ -66,13 +66,13 @@
     "merge-options": "^3.0.4",
     "multiformats": "^13.1.0",
     "sanitize-filename": "^1.6.3",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.8",
     "@libp2p/peer-id-factory": "^4.0.8",
-    "aegir": "^42.2.4",
-    "datastore-core": "^9.2.8"
+    "aegir": "^42.2.5",
+    "datastore-core": "^9.2.9"
   },
   "sideEffects": false
 }
