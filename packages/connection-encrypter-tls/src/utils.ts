@@ -153,7 +153,7 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
   // workaround for https://github.com/PeculiarVentures/x509/issues/73
   notAfter.setMilliseconds(0)
 
-  const input = {
+  const selfCert = await x509.X509CertificateGenerator.createSelfSigned({
     // this should be a long, large, random(ish), positive integer
     serialNumber: generateSerialNumber(),
     notBefore: new Date(now - CERT_VALIDITY_PERIOD_FROM),
