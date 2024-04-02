@@ -58,7 +58,8 @@
   },
   "dependencies": {
     "protons-runtime": "^5.4.0",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
     "@types/lodash.random": "^3.2.9",
@@ -66,8 +67,7 @@
     "@types/which": "^3.0.3",
     "aegir": "^42.2.5",
     "multiformats": "^13.1.0",
-    "protons": "^7.5.0",
-    "uint8arrays": "^5.0.3"
+    "protons": "^7.5.0"
   },
   "sideEffects": false
 }
