@@ -24,11 +24,8 @@ const CERT_PREFIX = 'libp2p-tls-handshake:'
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L265
 const CERT_VALIDITY_PERIOD_FROM = 60 * 60 * 1000 // ~1 hour
 
-// N.b. have to keep expiry date before 2050 - when https://github.com/PeculiarVentures/x509/issues/73
-// is fixed we can revert to 100 years
-const CERT_VALIDITY_PERIOD_TO = 10 * 365 * 24 * 60 * 60 * 1000 // ~10 years
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L24C28-L24C44
-// const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
+const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
 export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
@@ -152,10 +149,15 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
     throw new CodeError('Unknown PeerId type', 'ERR_UNKNOWN_PEER_ID_TYPE')
   }
 
+  const notAfter = new Date(now + CERT_VALIDITY_PERIOD_TO)
+  // workaround for https://github.com/PeculiarVentures/x509/issues/73
+  notAfter.setMilliseconds(0)
+
   const selfCert = await x509.X509CertificateGenerator.createSelfSigned({
+    // this should be a long, large, random(ish), positive integer
     serialNumber: generateSerialNumber(),
     notBefore: new Date(now - CERT_VALIDITY_PERIOD_FROM),
-    notAfter: new Date(now + CERT_VALIDITY_PERIOD_TO),
+    notAfter,
     signingAlgorithm: alg,
     keys,
     extensions: [
