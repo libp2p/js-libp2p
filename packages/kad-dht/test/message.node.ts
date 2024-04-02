@@ -4,10 +4,10 @@ import fs from 'fs'
 import path from 'path'
 import { isPeerId } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import range from 'lodash.range'
 import { Message } from '../src/message/dht.js'
-import { Libp2pRecord } from '../src/record/index.js'
 
 describe('Message', () => {
   it('go-interop', () => {

@@ -90,7 +90,7 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent } from 'progress-events'
 
-export { Libp2pRecord as Record } from './record/index.js'
+export { Libp2pRecord as Record } from '@libp2p/record'
 export { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper }
 
 /**
