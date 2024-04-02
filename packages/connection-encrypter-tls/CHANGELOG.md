@@ -6,6 +6,14 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.4](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.3...tls-v1.0.4) (2024-04-02)
+
+
+### Bug Fixes
+
+* remove ms from TLS notAfter date ([#2464](https://github.com/libp2p/js-libp2p/issues/2464)) ([ab5f057](https://github.com/libp2p/js-libp2p/commit/ab5f05763148c0767c81c5bc49bfb9b2dee483ee))
+* tls serial number causes illegal padding error ([#2459](https://github.com/libp2p/js-libp2p/issues/2459)) ([cae8639](https://github.com/libp2p/js-libp2p/commit/cae863920f5d4652ef983614b6286c9895a8299e))
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.2...tls-v1.0.3) (2024-03-28)
 
 

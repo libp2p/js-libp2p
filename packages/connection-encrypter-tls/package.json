@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tls",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A connection encrypter that uses TLS 1.3",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-tls#readme",
