@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "9.0.15",
+  "version": "9.0.17",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp#readme",
@@ -56,22 +56,22 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.3",
-    "@libp2p/utils": "^5.2.5",
+    "@libp2p/interface": "^1.1.5",
+    "@libp2p/utils": "^5.2.7",
     "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@multiformats/multiaddr": "^12.2.1",
     "@types/sinon": "^17.0.3",
     "stream-to-it": "^0.2.4"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.3.1",
-    "@libp2p/logger": "^4.0.6",
-    "aegir": "^42.2.4",
+    "@libp2p/interface-compliance-tests": "^5.3.3",
+    "@libp2p/logger": "^4.0.8",
+    "aegir": "^42.2.5",
     "it-all": "^3.0.4",
     "it-pipe": "^3.0.1",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "sinon": "^17.0.1",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.0.3"
   },
   "sideEffects": false
 }

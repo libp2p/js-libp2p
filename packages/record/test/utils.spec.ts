@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
-import * as utils from '../../src/record/utils.js'
+import * as utils from '../src/utils.js'
 
 const dates = [{
   obj: new Date(Date.UTC(2016, 0, 1, 8, 22, 33, 392)),

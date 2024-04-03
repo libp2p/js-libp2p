@@ -96,6 +96,50 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.22](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.21...webtransport-v4.0.22) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+    * libp2p bumped from ^1.3.0 to ^1.3.1
+
+## [4.0.21](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.20...webtransport-v4.0.21) (2024-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.2.4 to ^1.3.0
+
+## [4.0.20](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.19...webtransport-v4.0.20) (2024-02-27)
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* add note about webtransport only supporting dial ([#2411](https://github.com/libp2p/js-libp2p/issues/2411)) ([8072a2e](https://github.com/libp2p/js-libp2p/commit/8072a2e597e58c4938acc5d5576af807bac0e0e6))
+* fix out of date webtransport example ([#2407](https://github.com/libp2p/js-libp2p/issues/2407)) ([e1c0137](https://github.com/libp2p/js-libp2p/commit/e1c01370b96d0fcf35ca6d5bdf6c440b163dcfb9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/peer-id bumped from ^4.0.6 to ^4.0.7
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id-factory bumped from ^4.0.6 to ^4.0.7
+    * libp2p bumped from ^1.2.3 to ^1.2.4
+
 ## [4.0.18](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.17...webtransport-v4.0.18) (2024-02-07)
 
 

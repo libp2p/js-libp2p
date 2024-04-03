@@ -2,12 +2,12 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 
 import { defaultLogger } from '@libp2p/logger'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Message, MessageType } from '../../../src/message/dht.js'
-import { Libp2pRecord } from '../../../src/record/index.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'

@@ -141,12 +141,19 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         }
       }
 
+      const abortSignalListener = (): void => {
+        socket.destroy(new CodeError('Destroying socket after timeout', 'ERR_CLOSE_TIMEOUT'))
+      }
+
+      options.signal?.addEventListener('abort', abortSignalListener)
+
       try {
         log('%s closing socket', lOptsStr)
         await new Promise<void>((resolve, reject) => {
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
+
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -181,6 +188,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         })
       } catch (err: any) {
         this.abort(err)
+      } finally {
+        options.signal?.removeEventListener('abort', abortSignalListener)
       }
     },
 
@@ -188,6 +197,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       log('%s socket abort due to error', lOptsStr, err)
 
       socket.destroy(err)
+
+      if (maConn.timeline.close == null) {
+        maConn.timeline.close = Date.now()
+      }
     },
 
     log

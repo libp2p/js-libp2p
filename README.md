@@ -137,9 +137,11 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-id-factory`](./packages/peer-id-factory) Create PeerId instances
 - [`/packages/peer-record`](./packages/peer-record) Used to transfer signed peer data across the network
 - [`/packages/peer-store`](./packages/peer-store) Stores information about peers libp2p knows on the network
-- [`/packages/protocol-perf`](./packages/protocol-perf) Implementation of Perf Protocol
+- [`/packages/protocol-echo`](./packages/protocol-echo) Implementation of an Echo protocol
+- [`/packages/protocol-perf`](./packages/protocol-perf) Implementation of the Perf protocol
 - [`/packages/pubsub`](./packages/pubsub) libp2p pubsub base class
 - [`/packages/pubsub-floodsub`](./packages/pubsub-floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
+- [`/packages/record`](./packages/record) libp2p record implementation
 - [`/packages/stream-multiplexer-mplex`](./packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
 - [`/packages/transport-tcp`](./packages/transport-tcp) A TCP transport for libp2p
 - [`/packages/transport-webrtc`](./packages/transport-webrtc) A libp2p transport using WebRTC connections

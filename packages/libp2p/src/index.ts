@@ -21,6 +21,7 @@ import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
 import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
+import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 
 export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
@@ -123,6 +124,13 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    * ```
    */
   logger?: ComponentLogger
+
+  /**
+   * An optional DNS resolver configuration. If omitted the default DNS resolver
+   * for the platform will be used which means `node:dns` on Node.js and
+   * DNS-JSON-over-HTTPS for browsers using Google and Cloudflare servers.
+   */
+  dns?: DNS
 }
 
 export type { Libp2p }

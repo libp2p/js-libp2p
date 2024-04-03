@@ -18,8 +18,8 @@ describe('interface-transport compliance', () => {
       const addrs = [
         multiaddr('/ip4/127.0.0.1/tcp/9096/ws'),
         multiaddr('/ip4/127.0.0.1/tcp/9097/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9098/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9099/wss')
+        multiaddr('/dns4/ipfs.io/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9097/wss')
       ]
 
       let delayMs = 0
