@@ -179,7 +179,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
   private onSocket (socket: net.Socket): void {
     if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
-      throw new CodeError('Server is is not listening yet', 'ERR_SERVER_NOT_RUNNING')
+      throw new CodeError('Server is not listening yet', 'ERR_SERVER_NOT_RUNNING')
     }
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
