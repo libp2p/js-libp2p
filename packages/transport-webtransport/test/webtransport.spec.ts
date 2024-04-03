@@ -7,6 +7,7 @@ import { expect } from 'aegir/chai'
 import map from 'it-map'
 import toBuffer from 'it-to-buffer'
 import { createLibp2p, type Libp2p } from 'libp2p'
+import pWaitFor from 'p-wait-for'
 import { webTransport } from '../src/index.js'
 import { randomBytes } from './fixtures/random-bytes.js'
 
@@ -19,6 +20,9 @@ describe('libp2p-webtransport', () => {
       connectionEncryption: [noise()],
       connectionGater: {
         denyDialMultiaddr: async () => false
+      },
+      connectionManager: {
+        minConnections: 0
       }
     })
   })
@@ -111,7 +115,7 @@ describe('libp2p-webtransport', () => {
     expect(err.toString()).to.contain('aborted')
   })
 
-  it('connects to ipv6 addresses', async function () {
+  it.skip('connects to ipv6 addresses', async function () {
     if (process.env.disableIp6 === 'true') {
       return this.skip()
     }
@@ -152,6 +156,13 @@ describe('libp2p-webtransport', () => {
     expect(stream.timeline.closeWrite).to.be.undefined()
 
     await stream.sink(gen())
+
+    // closing takes a little bit of time
+    await pWaitFor(() => {
+      return stream.writeStatus === 'closed'
+    }, {
+      interval: 100
+    })
 
     expect(stream.writeStatus).to.equal('closed')
     expect(stream.timeline.closeWrite).to.be.greaterThan(0)

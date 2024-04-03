@@ -19,15 +19,19 @@ class WebTransportStream extends AbstractStream {
 
     Promise.resolve().then(async () => {
       while (true) {
+        init.log('readData waiting for reader to be ready')
         const result = await this.reader.read()
 
+        init.log('readData read', result)
+
         if (result.done) {
-          init.log('remote closed read')
-          this.remoteCloseRead()
+          init.log('remote closed write')
+          this.remoteCloseWrite()
           return
         }
 
         if (result.value != null) {
+          init.log('push valud', new Uint8ArrayList(result.value))
           this.sourcePush(new Uint8ArrayList(result.value))
         }
       }
@@ -45,7 +49,7 @@ class WebTransportStream extends AbstractStream {
         init.log('writer close promise rejected', err)
       })
       .finally(() => {
-        this.remoteCloseWrite()
+        this.remoteCloseRead()
       })
   }
 
@@ -55,7 +59,9 @@ class WebTransportStream extends AbstractStream {
 
   async sendData (buf: Uint8ArrayList, options?: AbortOptions): Promise<void> {
     for await (const chunk of buf) {
+      this.log('sendData waiting for writer to be ready')
       await raceSignal(this.writer.ready, options?.signal)
+      this.log('sendData sending data', chunk)
       await raceSignal(this.writer.write(chunk), options?.signal)
     }
   }

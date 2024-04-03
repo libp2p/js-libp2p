@@ -59,6 +59,7 @@
     "@libp2p/peer-id": "^4.0.8",
     "@multiformats/multiaddr": "^12.2.1",
     "@multiformats/multiaddr-matcher": "^1.2.0",
+    "browser-readablestream-to-it": "^2.0.5",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
     "race-signal": "^1.0.2",

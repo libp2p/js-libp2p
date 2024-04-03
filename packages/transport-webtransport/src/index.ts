@@ -32,6 +32,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { AbortError, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
+import { raceSignal } from 'race-signal'
 import createListener from './listener.js'
 import { webtransportMuxer } from './muxer.js'
 import { inertDuplex } from './utils/inert-duplex.js'
@@ -193,7 +194,7 @@ class WebTransportTransport implements Transport {
           cleanUpWTSession('remote_close')
         })
 
-      if (!await this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes)) {
+      if (!await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)) {
         throw new Error('Failed to authenticate webtransport')
       }
 
