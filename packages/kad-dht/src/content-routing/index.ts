@@ -128,6 +128,7 @@ export class ContentRouting {
    */
   async * findProviders (key: CID, options: RoutingOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
     const toFind = this.routingTable.kBucketSize
+    let found = 0
     const target = key.multihash.bytes
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
@@ -158,11 +159,12 @@ export class ContentRouting {
 
       yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers }, options)
       yield providerEvent({ from: this.components.peerId, providers }, options)
-    }
 
-    // All done
-    if (provs.length >= toFind) {
-      return
+      found += providers.length
+
+      if (found >= toFind) {
+        return
+      }
     }
 
     /**
@@ -201,10 +203,12 @@ export class ContentRouting {
 
         if (newProviders.length > 0) {
           yield providerEvent({ from: event.from, providers: newProviders }, options)
-        }
 
-        if (providers.size === toFind) {
-          return
+          found += newProviders.length
+
+          if (found >= toFind) {
+            return
+          }
         }
       }
     }
