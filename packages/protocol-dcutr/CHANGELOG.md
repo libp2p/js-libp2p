@@ -44,6 +44,22 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [1.0.15](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.14...dcutr-v1.0.15) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/interface-internal bumped from ^1.0.10 to ^1.0.11
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+
 ## [1.0.14](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.13...dcutr-v1.0.14) (2024-03-28)
 
 

@@ -36,6 +36,28 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.2.8](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.7...utils-v5.2.8) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Documentation
+
+* update typos in Address Manager and comments ([#2468](https://github.com/libp2p/js-libp2p/issues/2468)) ([a2b41f7](https://github.com/libp2p/js-libp2p/commit/a2b41f7939806dfb9583a6d43ddd8764fc861baf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
 ## [5.2.7](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.6...utils-v5.2.7) (2024-03-28)
 
 
