@@ -106,6 +106,32 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [12.0.11](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.10...kad-dht-v12.0.11) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* count dht providers and abort when enough found ([#2470](https://github.com/libp2p/js-libp2p/issues/2470)) ([3e515f0](https://github.com/libp2p/js-libp2p/commit/3e515f007d685a35fe98ad9961fe1ccbb04f3e69))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/interface-internal bumped from ^1.0.10 to ^1.0.11
+    * @libp2p/peer-collections bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/record bumped from ^3.0.4 to ^4.0.0
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-store bumped from ^10.0.12 to ^10.0.13
+
 ## [12.0.10](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.9...kad-dht-v12.0.10) (2024-03-28)
 
 

@@ -21,6 +21,22 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [4.0.9](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.8...logger-v4.0.9) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+  * devDependencies
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+
 ## [4.0.8](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.7...logger-v4.0.8) (2024-03-28)
 
 
