@@ -48,7 +48,7 @@ export interface QueryOptions extends RoutingOptions {
 export class QueryManager implements Startable {
   public disjointPaths: number
   private readonly alpha: number
-  private readonly shutDownController: AbortController
+  private shutDownController: AbortController
   private running: boolean
   private queries: number
   private readonly logger: ComponentLogger
@@ -96,6 +96,11 @@ export class QueryManager implements Startable {
    */
   async start (): Promise<void> {
     this.running = true
+
+    // allow us to stop queries on shut down
+    this.shutDownController = new AbortController()
+    // make sure we don't make a lot of noise in the logs
+    setMaxListeners(Infinity, this.shutDownController.signal)
   }
 
   /**
@@ -131,7 +136,6 @@ export class QueryManager implements Startable {
     // if the user breaks out of a for..await of loop iterating over query
     // results we need to cancel any in-flight network requests
     const queryEarlyExitController = new AbortController()
-    setMaxListeners(Infinity, queryEarlyExitController.signal)
 
     const signal = anySignal([
       this.shutDownController.signal,
@@ -141,7 +145,7 @@ export class QueryManager implements Startable {
 
     // this signal will get listened to for every invocation of queryFunc
     // so make sure we don't make a lot of noise in the logs
-    setMaxListeners(Infinity, signal)
+    setMaxListeners(Infinity, signal, queryEarlyExitController.signal)
 
     const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 

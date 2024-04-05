@@ -1,3 +1,4 @@
+import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import Queue from 'p-queue'
 import { toString } from 'uint8arrays/to-string'
@@ -111,6 +112,9 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       }
 
       const compoundSignal = anySignal(signals)
+
+      // this signal can get listened to a lot
+      setMaxListeners(Infinity, compoundSignal)
 
       try {
         for await (const event of query({
