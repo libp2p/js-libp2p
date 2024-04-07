@@ -13,7 +13,8 @@ import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL,
-  LAST_DIAL_FAILURE_KEY
+  LAST_DIAL_FAILURE_KEY,
+  MAX_DIAL_QUEUE_LENGTH
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
 import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting } from '@libp2p/interface'
@@ -38,6 +39,7 @@ interface DialQueueJobOptions extends QueueAddOptions {
 interface DialerInit {
   addressSorter?: AddressSorter
   maxParallelDials?: number
+  maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
   resolvers?: Record<string, Resolver>
@@ -47,6 +49,7 @@ interface DialerInit {
 const defaultOptions = {
   addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
+  maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
   dialTimeout: DIAL_TIMEOUT,
   resolvers: {
@@ -70,6 +73,7 @@ export class DialQueue {
   private readonly components: DialQueueComponents
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
+  private readonly maxDialQueueLength: number
   private readonly dialTimeout: number
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
@@ -78,6 +82,7 @@ export class DialQueue {
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter ?? defaultOptions.addressSorter
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
+    this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions.maxDialQueueLength
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
@@ -184,6 +189,8 @@ export class DialQueue {
 
       return existingDial.join(options)
     }
+
+    await this.queue.onSizeLessThan(this.maxDialQueueLength, options)
 
     this.log('creating dial target for %p', peerId, multiaddrs.map(ma => ma.toString()))
 
