@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-// @ts-expect-error no types
-import toIterable from 'stream-to-it'
+import { duplex } from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { ComponentLogger, MultiaddrConnection, CounterGroup } from '@libp2p/interface'
@@ -55,7 +54,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   const lOpts = multiaddrToNetConfig(remoteAddr)
   const lOptsStr = lOpts.path ?? `${lOpts.host ?? ''}:${lOpts.port ?? ''}`
-  const { sink, source } = toIterable.duplex(socket)
+  const { sink, source } = duplex(socket)
 
   // by default there is no timeout
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
@@ -109,7 +108,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
           // If the source errored the socket will already have been destroyed by
-          // toIterable.duplex(). If the socket errored it will already be
+          // duplex(). If the socket errored it will already be
           // destroyed. There's nothing to do here except log the error & return.
           log.error('%s error in sink', lOptsStr, err)
         }
