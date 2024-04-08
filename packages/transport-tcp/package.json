@@ -61,7 +61,7 @@
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.2.1",
     "@types/sinon": "^17.0.3",
-    "stream-to-it": "^0.2.4"
+    "stream-to-it": "^1.0.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.3.4",
