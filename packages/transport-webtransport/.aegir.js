@@ -11,6 +11,7 @@ export default {
           exec('go build -o main main.go',
             { cwd: './go-libp2p-webtransport-server' },
             (error, stdout, stderr) => {
+              console.info('ok built')
               if (error) {
                 reject(error)
                 console.error(`exec error: ${error}`)

@@ -61,6 +61,7 @@ interface WebTransportListenerInit extends CreateListenerOptions {
   handler?(conn: Connection): void
   upgrader: Upgrader
   certificates: WebTransportCertificate[]
+  maxInboundStreams?: number
 }
 
 type Status = { started: false } | { started: true, listeningAddr: Multiaddr, peerId: string | null }
@@ -75,6 +76,7 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
   private readonly connections: Connection[]
   private readonly components: WebTransportListenerComponents
   private readonly log: Logger
+  private readonly maxInboundStreams: number
 
   private status: Status = { started: false }
 
@@ -88,9 +90,17 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
     this.handler = init.handler
     this.connections = []
     this.log = components.logger.forComponent('libp2p:webtransport:listener')
+    this.maxInboundStreams = init.maxInboundStreams ?? 1000
   }
 
   async onSession (session: WebTransportSession): Promise<void> {
+    if (!this._assertSupportsNoise(session)) {
+      session.close({
+        closeCode: 1,
+        reason: 'Unsupported encryption'
+      })
+    }
+
     const bidiReader = session.incomingBidirectionalStreams.getReader()
 
     // read one stream to do authentication
@@ -98,6 +108,7 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
     const bidistr = await bidiReader.read()
 
     if (bidistr.done) {
+      this.log.error('bidirectional stream reader ended before authentication stream received')
       return
     }
 
@@ -163,14 +174,14 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
           session,
           bidiReader,
           this.components.logger, {
-            maxInboundStreams: 1000
+            maxInboundStreams: this.maxInboundStreams
           })
       })
 
       this.log('upgrade complete, close authentication stream')
       // We're done with this authentication stream
       writer.close().catch((err: Error) => {
-        this.log.error('Failed to close authentication stream writer', err)
+        this.log.error('failed to close authentication stream writer', err)
       })
 
       this.connections.push(connection)
@@ -188,6 +199,10 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
         reason: err.message
       })
     }
+  }
+
+  _assertSupportsNoise (session: any): boolean {
+    return session?.userData?.search?.includes('type=noise')
   }
 
   getAddrs (): Multiaddr[] {

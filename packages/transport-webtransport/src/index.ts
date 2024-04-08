@@ -30,7 +30,7 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { AbortError, transportSymbol } from '@libp2p/interface'
+import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
 import createListener from './listener.js'
@@ -111,7 +111,7 @@ class WebTransportTransport implements Transport {
     this.log('dialing %s', ma)
     const localPeer = this.components.peerId
     if (localPeer === undefined) {
-      throw new Error('Need a local peerid')
+      throw new CodeError('Need a local peerid', 'ERR_INVALID_PARAMETERS')
     }
 
     options = options ?? {}
@@ -119,11 +119,11 @@ class WebTransportTransport implements Transport {
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
 
     if (remotePeer == null) {
-      throw new Error('Need a target peerid')
+      throw new CodeError('Need a target peerid', 'ERR_INVALID_PARAMETERS')
     }
 
     if (certhashes.length === 0) {
-      throw new Error('Expected multiaddr to contain certhashes')
+      throw new CodeError('Expected multiaddr to contain certhashes', 'ERR_INVALID_PARAMETERS')
     }
 
     let abortListener: (() => void) | undefined
@@ -142,7 +142,9 @@ class WebTransportTransport implements Transport {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
           value: certhash.digest
-        }))
+        })),
+        // @ts-expect-error undocumented option
+        quicheLogVerbose: 3
       })
 
       cleanUpWTSession = (metric: string) => {
@@ -178,10 +180,12 @@ class WebTransportTransport implements Transport {
         once: true
       })
 
+      this.log('wait for session to be ready')
       await Promise.race([
         wt.closed,
         wt.ready
       ])
+      this.log('session became ready')
 
       ready = true
       this.metrics?.dialerEvents.increment({ ready: true })
@@ -248,11 +252,14 @@ class WebTransportTransport implements Transport {
     }
   }
 
-  async authenticateWebTransport (wt: WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>): Promise<boolean> {
+  async authenticateWebTransport (wt: WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>, signal?: AbortSignal): Promise<boolean> {
+    if (signal?.aborted === true) {
+      throw new AbortError()
+    }
+
     const stream = await wt.createBidirectionalStream()
     const writer = stream.writable.getWriter()
     const reader = stream.readable.getReader()
-    await writer.ready
 
     const duplex = {
       source: (async function * () {
@@ -268,13 +275,15 @@ class WebTransportTransport implements Transport {
           }
         }
       })(),
-      sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
+      sink: async (source: Source<Uint8Array | Uint8ArrayList>) => {
         for await (const chunk of source) {
-          if (chunk instanceof Uint8Array) {
-            await writer.write(chunk)
-          } else {
-            await writer.write(chunk.subarray())
-          }
+          await raceSignal(writer.ready, signal)
+
+          const buf = chunk instanceof Uint8Array ? chunk : chunk.subarray()
+
+          writer.write(buf).catch(err => {
+            this.log.error('could not write chunk during authentication of WebTransport stream', err)
+          })
         }
       }
     }
@@ -303,7 +312,8 @@ class WebTransportTransport implements Transport {
   createListener (options: CreateListenerOptions): Listener {
     return createListener(this.components, {
       ...options,
-      certificates: this.config.certificates
+      certificates: this.config.certificates,
+      maxInboundStreams: this.config.maxInboundStreams
     })
   }
 

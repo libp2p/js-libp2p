@@ -63,6 +63,32 @@ class DefaultWebTransportServer extends TypedEventEmitter<WebTransportServerEven
     this.server.startServer()
     this.server.ready
       .then(() => {
+        this.server.setRequestCallback(async (args: any): Promise<any> => {
+          const url = args.header[':path']
+          const [path] = url.split('?')
+
+          if (this.server.sessionController[path] == null) {
+            return {
+              ...args,
+              path,
+              status: 404
+            }
+          }
+
+          return {
+            ...args,
+            path,
+            userData: {
+              search: url.substring(path.length)
+            },
+            header: {
+              ...args.header,
+              ':path': path
+            },
+            status: 200
+          }
+        })
+
         this.listening = true
         this.safeDispatchEvent('listening')
 
@@ -82,43 +108,30 @@ class DefaultWebTransportServer extends TypedEventEmitter<WebTransportServerEven
   }
 
   async _processIncomingSessions (): Promise<void> {
-    // FIXME: incompatible webtransport implementations
-    const paths = [
-      // Chrome
-      '/.well-known/libp2p-webtransport?type=noise',
+    const sessionStream = this.server.sessionStream('/.well-known/libp2p-webtransport')
+    const sessionReader = sessionStream.getReader()
 
-      // @fails-components/webtransport
-      '/.well-known/libp2p-webtransport'
-    ]
+    while (true) {
+      const { done, value: session } = await sessionReader.read()
 
-    await Promise.all(
-      paths.map(async path => {
-        const sessionStream = this.server.sessionStream(path)
-        const sessionReader = sessionStream.getReader()
+      if (done) {
+        this.log('session reader finished')
+        break
+      }
 
-        while (true) {
-          const { done, value: session } = await sessionReader.read()
+      this.log('new incoming session')
+      void Promise.resolve()
+        .then(async () => {
+          try {
+            await raceSignal(session.ready, AbortSignal.timeout(this.sessionTimeout))
+            this.log('session ready')
 
-          if (done) {
-            this.log('session reader finished')
-            break
+            this.safeDispatchEvent('session', { detail: session })
+          } catch (err) {
+            this.log.error('error waiting for session to become ready', err)
           }
-
-          this.log('new incoming session')
-          void Promise.resolve()
-            .then(async () => {
-              try {
-                await raceSignal(session.ready, AbortSignal.timeout(this.sessionTimeout))
-                this.log('session ready')
-
-                this.safeDispatchEvent('session', { detail: session })
-              } catch (err) {
-                this.log.error('error waiting for session to become ready', err)
-              }
-            })
-        }
-      })
-    )
+        })
+    }
   }
 }
 

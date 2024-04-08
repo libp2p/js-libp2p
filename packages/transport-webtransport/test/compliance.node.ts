@@ -15,13 +15,7 @@ describe('interface-transport compliance', () => {
         logger: defaultLogger()
       }
 
-      const certificates = await generateWebTransportCertificates([
-        { shortName: 'C', value: 'DE' },
-        { shortName: 'ST', value: 'Berlin' },
-        { shortName: 'L', value: 'Berlin' },
-        { shortName: 'O', value: 'webtransport Test Server' },
-        { shortName: 'CN', value: '127.0.0.1' }
-      ], [{
+      const certificates = await generateWebTransportCertificates([{
         // can be max 14 days according to the spec
         days: 13
       }, {
@@ -50,12 +44,12 @@ describe('interface-transport compliance', () => {
           const authenticateWebTransport = transport.authenticateWebTransport.bind(transport)
 
           // @ts-expect-error method is not part of transport interface
-          sinon.replace(transport, 'authenticateWebTransport', async (wt: WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>) => {
+          sinon.replace(transport, 'authenticateWebTransport', async (wt: WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>, signal?: AbortSignal) => {
             await new Promise<void>((resolve) => {
               setTimeout(() => { resolve() }, delayMs)
             })
 
-            return authenticateWebTransport(wt, localPeer, remotePeer, certhashes)
+            return authenticateWebTransport(wt, localPeer, remotePeer, certhashes, signal)
           })
         },
         restore () {

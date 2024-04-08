@@ -19,19 +19,14 @@ class WebTransportStream extends AbstractStream {
 
     Promise.resolve().then(async () => {
       while (true) {
-        init.log('readData waiting for reader to be ready')
         const result = await this.reader.read()
-
-        init.log('readData read', result)
 
         if (result.done) {
           init.log('remote closed write')
-          this.remoteCloseWrite()
           return
         }
 
         if (result.value != null) {
-          init.log('push valud', new Uint8ArrayList(result.value))
           this.sourcePush(new Uint8ArrayList(result.value))
         }
       }
@@ -40,10 +35,13 @@ class WebTransportStream extends AbstractStream {
         init.log.error('error reading from stream', err)
         this.abort(err)
       })
+      .finally(() => {
+        this.remoteCloseWrite()
+      })
 
     void this.writer.closed
       .then(() => {
-        init.log('remote closed write')
+        init.log('writer closed')
       })
       .catch((err) => {
         init.log('writer close promise rejected', err)
@@ -61,22 +59,23 @@ class WebTransportStream extends AbstractStream {
     for await (const chunk of buf) {
       this.log('sendData waiting for writer to be ready')
       await raceSignal(this.writer.ready, options?.signal)
-      this.log('sendData sending data', chunk)
-      await raceSignal(this.writer.write(chunk), options?.signal)
+
+      // the streams spec recommends not waiting for data to be sent
+      // https://streams.spec.whatwg.org/#example-manual-write-dont-await
+      this.writer.write(chunk)
+        .catch(err => {
+          this.log.error('error sending stream data', err)
+        })
     }
   }
 
   async sendReset (options?: AbortOptions): Promise<void> {
-    this.log('sendReset waiting for writer to be ready')
-    await raceSignal(this.writer.ready, options?.signal)
     this.log('sendReset aborting writer')
     await raceSignal(this.writer.abort(), options?.signal)
     this.log('sendReset aborted writer')
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    this.log('sendCloseWrite waiting for writer to be ready')
-    await raceSignal(this.writer.ready, options?.signal)
     this.log('sendCloseWrite closing writer')
     await raceSignal(this.writer.close(), options?.signal)
     this.log('sendCloseWrite closed writer')
