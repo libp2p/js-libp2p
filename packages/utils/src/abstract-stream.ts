@@ -50,12 +50,12 @@ export interface AbstractStreamInit {
   onCloseWrite?(): void
 
   /**
-   * Invoked when the the stream has been reset by the remote
+   * Invoked when the stream has been reset by the remote
    */
   onReset?(): void
 
   /**
-   * Invoked when the the stream has errored
+   * Invoked when the stream has errored
    */
   onAbort?(err: Error): void
 

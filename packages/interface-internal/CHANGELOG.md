@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [1.0.11](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.10...interface-internal-v1.0.11) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/peer-collections bumped from ^5.1.8 to ^5.1.9
+
 ## [1.0.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.9...interface-internal-v1.0.10) (2024-03-28)
 
 

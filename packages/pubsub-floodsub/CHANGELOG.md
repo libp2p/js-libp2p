@@ -98,6 +98,26 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.14](https://github.com/libp2p/js-libp2p/compare/floodsub-v9.0.13...floodsub-v9.0.14) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/pubsub bumped from ^9.0.12 to ^9.0.13
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-collections bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
 ## [9.0.13](https://github.com/libp2p/js-libp2p/compare/floodsub-v9.0.12...floodsub-v9.0.13) (2024-03-28)
 
 
