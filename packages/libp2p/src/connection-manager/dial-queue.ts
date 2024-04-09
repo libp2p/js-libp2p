@@ -190,7 +190,9 @@ export class DialQueue {
       return existingDial.join(options)
     }
 
-    await this.queue.onSizeLessThan(this.maxDialQueueLength, options)
+    if (this.queue.size >= this.maxDialQueueLength) {
+      throw new CodeError('Dial queue is full', 'ERR_DIAL_QUEUE_FULL')
+    }
 
     this.log('creating dial target for %p', peerId, multiaddrs.map(ma => ma.toString()))
 
