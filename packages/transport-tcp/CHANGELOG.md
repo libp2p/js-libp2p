@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.18...tcp-v9.0.19) (2024-04-09)
+
+
+### Dependencies
+
+* bump stream-to-it from 0.2.4 to 1.0.0 ([#2474](https://github.com/libp2p/js-libp2p/issues/2474)) ([2b2958f](https://github.com/libp2p/js-libp2p/commit/2b2958fe66be0985de8890a1260b162cc24effdd))
+
 ## [9.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.17...tcp-v9.0.18) (2024-04-05)
 
 
