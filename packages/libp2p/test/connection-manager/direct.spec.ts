@@ -27,7 +27,7 @@ import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { Libp2p, Connection, PeerId } from '@libp2p/interface'
+import type { Libp2p, Connection, PeerId, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -503,5 +503,32 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
       .to.eventually.be.rejected()
       .and.to.have.property('code', ErrorCodes.ERR_DIALED_SELF)
+  })
+
+  it('should limit the maximum dial queue size', async () => {
+    const transport = stubInterface<Transport>({
+      filter: (ma) => ma,
+      dial: async () => {
+        await delay(1000)
+        return stubInterface<Connection>()
+      }
+    })
+
+    libp2p = await createLibp2p({
+      peerId,
+      transports: [
+        () => transport
+      ],
+      connectionManager: {
+        maxDialQueueLength: 1,
+        maxParallelDials: 1
+      }
+    })
+
+    await expect(Promise.all([
+      libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1234')),
+      libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1235'))
+    ])).to.eventually.be.rejected
+      .with.property('code', 'ERR_DIAL_QUEUE_FULL')
   })
 })

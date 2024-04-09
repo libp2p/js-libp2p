@@ -57,3 +57,8 @@ export const MAX_INCOMING_PENDING_CONNECTIONS = 10
  * failed to dial.
  */
 export const LAST_DIAL_FAILURE_KEY = 'last-dial-failure'
+
+/**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxDialQueueLength
+ */
+export const MAX_DIAL_QUEUE_LENGTH = 500
