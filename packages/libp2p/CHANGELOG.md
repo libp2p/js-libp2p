@@ -110,6 +110,21 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.3.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.3.2...libp2p-v1.3.3) (2024-04-09)
+
+
+### Bug Fixes
+
+* decrease default dial timeout ([#2471](https://github.com/libp2p/js-libp2p/issues/2471)) ([936dbba](https://github.com/libp2p/js-libp2p/commit/936dbba108093503cb68ea248dd03c3f8ccde8e7))
+* limit max dial queue size ([#2472](https://github.com/libp2p/js-libp2p/issues/2472)) ([0cfcc4d](https://github.com/libp2p/js-libp2p/commit/0cfcc4da195f6eb5b98f5b549cd92607fc3b8aa9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/tcp bumped from ^9.0.18 to ^9.0.19
+
 ## [1.3.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.3.1...libp2p-v1.3.2) (2024-04-05)
 
 
