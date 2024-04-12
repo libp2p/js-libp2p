@@ -44,14 +44,63 @@ export interface JobMatcher<JobOptions extends QueueAddOptions = QueueAddOptions
   (options?: Partial<JobOptions>): boolean
 }
 
-export interface QueueEvents<JobReturnType> {
+export interface QueueJobSuccess<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+  job: Job<JobOptions, JobReturnType>
+  result: JobReturnType
+}
+
+export interface QueueJobFailure<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+  job: Job<JobOptions, JobReturnType>
+  error: Error
+}
+
+export interface QueueEvents<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+  /**
+   * A job is about to start running
+   */
   'active': CustomEvent
+
+  /**
+   * All jobs have finished and the queue is empty
+   */
   'idle': CustomEvent
+
+  /**
+   * The queue is empty, jobs may be running
+   */
   'empty': CustomEvent
+
+  /**
+   * A job was added to the queue
+   */
   'add': CustomEvent
+
+  /**
+   * A job has finished or failed
+   */
   'next': CustomEvent
+
+  /**
+   * A job has finished successfully
+   */
   'completed': CustomEvent<JobReturnType>
+
+  /**
+   * A job has failed
+   */
   'error': CustomEvent<Error>
+
+  /**
+   * Emitted just after `"completed", a job has finished successfully - this
+   * event gives access to the job and it's result
+   */
+  'success': CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
+
+  /**
+   * Emitted just after `"error", a job has failed - this event gives access to
+   * the job and the thrown error
+   */
+  'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
 // Port of lower_bound from https://en.cppreference.com/w/cpp/algorithm/lower_bound
@@ -81,7 +130,7 @@ function lowerBound<T> (array: readonly T[], value: T, comparator: (a: T, b: T) 
  * 1. Items remain at the head of the queue while they are running so `queue.size` includes `queue.pending` items - this is so interested parties can join the results of a queue item while it is running
  * 2. The options for a job are stored separately to the job in order for them to be modified while they are still in the queue
  */
-export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions = QueueAddOptions> extends TypedEventEmitter<QueueEvents<JobReturnType>> {
+export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions = QueueAddOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
@@ -189,11 +238,13 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
     const p = job.join(options)
       .then(result => {
         this.safeDispatchEvent('completed', { detail: result })
+        this.safeDispatchEvent('success', { detail: { job, result } })
 
         return result
       })
       .catch(err => {
         this.safeDispatchEvent('error', { detail: err })
+        this.safeDispatchEvent('failure', { detail: { job, error: err } })
 
         throw err
       })
