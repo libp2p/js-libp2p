@@ -1,10 +1,10 @@
 import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
 import os from 'os'
 import { defaultLogger } from '@libp2p/logger'
-import Sinon from 'sinon'
-import { expect } from 'aegir/chai'
 import { type ComponentLogger, type Logger } from '@libp2p/logger'
+import { expect } from 'aegir/chai'
 import defer from 'p-defer'
+import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
 
 async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
@@ -290,7 +290,7 @@ describe('socket-to-conn', () => {
   })
 
   it('should not close MultiaddrConnection twice', async () => {
-    const loggerStub = Sinon.stub();
+    const loggerStub = Sinon.stub()
     const logger: ComponentLogger = {
       forComponent: () => loggerStub as unknown as Logger
     };
@@ -302,7 +302,7 @@ describe('socket-to-conn', () => {
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout: 10,
-      logger: logger
+      logger
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -318,10 +318,12 @@ describe('socket-to-conn', () => {
     serverSocket.write('goodbye')
 
     // the 2nd call should return immediately
-    inboundMaConn.close()
-    inboundMaConn.close()
+    await Promise.all([
+      inboundMaConn.close(),
+      inboundMaConn.close()
+    ])
 
-    expect(loggerStub.calledWithMatch("socket is either closed, closing, or already destroyed")).to.be.true()
+    expect(loggerStub.calledWithMatch('socket is either closed, closing, or already destroyed')).to.be.true()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
