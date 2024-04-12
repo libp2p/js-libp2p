@@ -19,6 +19,17 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [5.1.7](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.6...multistream-select-v5.1.7) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+
 ## [5.1.6](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.5...multistream-select-v5.1.6) (2024-04-05)
 
 

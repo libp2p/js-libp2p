@@ -36,6 +36,23 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.8...utils-v5.3.0) (2024-04-12)
+
+
+### Features
+
+* add queue success and failure events ([#2481](https://github.com/libp2p/js-libp2p/issues/2481)) ([b17824a](https://github.com/libp2p/js-libp2p/commit/b17824a1d54ef83f32fc658cd7b7a623f809874c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
 ## [5.2.8](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.7...utils-v5.2.8) (2024-04-05)
 
 
