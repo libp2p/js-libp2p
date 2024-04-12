@@ -1,7 +1,9 @@
 import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
 import os from 'os'
 import { defaultLogger } from '@libp2p/logger'
+import Sinon from 'sinon'
 import { expect } from 'aegir/chai'
+import { type ComponentLogger, type Logger } from '@libp2p/logger'
 import defer from 'p-defer'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
 
@@ -276,6 +278,50 @@ describe('socket-to-conn', () => {
     serverSocket.write('goodbye')
 
     await inboundMaConn.close()
+
+    // server socket was closed for reading and writing
+    await expect(serverClosed.promise).to.eventually.be.true()
+
+    // the connection closing was recorded
+    expect(inboundMaConn.timeline.close).to.be.a('number')
+
+    // server socket is destroyed
+    expect(serverSocket.destroyed).to.be.true()
+  })
+
+  it('should not close MultiaddrConnection twice', async () => {
+    const loggerStub = Sinon.stub();
+    const logger: ComponentLogger = {
+      forComponent: () => loggerStub as unknown as Logger
+    };
+    ({ server, clientSocket, serverSocket } = await setup())
+
+    // promise that is resolved when our outgoing socket is closed
+    const serverClosed = defer<boolean>()
+
+    const inboundMaConn = toMultiaddrConnection(serverSocket, {
+      socketInactivityTimeout: 100,
+      socketCloseTimeout: 10,
+      logger: logger
+    })
+    expect(inboundMaConn.timeline.open).to.be.ok()
+    expect(inboundMaConn.timeline.close).to.not.be.ok()
+
+    clientSocket.once('error', () => {})
+
+    serverSocket.once('close', () => {
+      serverClosed.resolve(true)
+    })
+
+    // send some data between the client and server
+    clientSocket.write('hello')
+    serverSocket.write('goodbye')
+
+    // the 2nd call should return immediately
+    inboundMaConn.close()
+    inboundMaConn.close()
+
+    expect(loggerStub.calledWithMatch("socket is either closed, closing, or already destroyed")).to.be.true()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()

@@ -128,7 +128,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     async close (options: AbortOptions = {}) {
       if (status === 'closed' || status === 'closing' || socket.destroyed) {
-        log('%s socket was already destroyed or closed or closing', lOptsStr)
+        log('The %s socket is either closed, closing, or already destroyed', lOptsStr)
         return
       }
       status = 'closing'
