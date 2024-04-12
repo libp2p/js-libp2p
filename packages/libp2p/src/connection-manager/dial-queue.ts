@@ -5,6 +5,7 @@ import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { Queue, type QueueAddOptions } from '@libp2p/utils/queue'
 import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
@@ -17,7 +18,7 @@ import {
   MAX_DIAL_QUEUE_LENGTH
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
-import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting } from '@libp2p/interface'
+import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
 
@@ -455,5 +456,28 @@ export class DialQueue {
     this.log.trace('addresses for %p after filtering', peerId ?? 'unknown peer', sortedGatedAddrs.map(({ multiaddr }) => multiaddr.toString()))
 
     return sortedGatedAddrs
+  }
+
+  async isDialable (multiaddr: Multiaddr | Multiaddr[], options: IsDialableOptions = {}): Promise<boolean> {
+    if (!Array.isArray(multiaddr)) {
+      multiaddr = [multiaddr]
+    }
+
+    try {
+      const addresses = await this.calculateMultiaddrs(undefined, new Set(multiaddr.map(ma => ma.toString())), options)
+
+      if (options.runOnTransientConnection === false) {
+        // return true if any resolved multiaddrs are not relay addresses
+        return addresses.find(addr => {
+          return !Circuit.matches(addr.multiaddr)
+        }) != null
+      }
+
+      return true
+    } catch (err) {
+      this.log.trace('error calculating if multiaddr(s) were dialable', err)
+    }
+
+    return false
   }
 }
