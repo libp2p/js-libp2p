@@ -6,6 +6,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -23,7 +24,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -373,6 +374,26 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   unregister (id: string): void {
     this.components.registrar.unregister(id)
+  }
+
+  async isDialable(multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
+    const transport = this.components.transportManager.transportForMultiaddr(multiaddr)
+
+    if (transport == null) {
+      return false
+    }
+
+    const denied = await this.components.connectionGater.denyDialMultiaddr?.(multiaddr)
+
+    if (denied === true) {
+      return false
+    }
+
+    if (options.runOnTransientConnection === false && Circuit.matches(multiaddr)) {
+      return false
+    }
+
+    return true
   }
 
   /**
