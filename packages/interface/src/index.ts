@@ -324,7 +324,7 @@ export interface PendingDial {
 
 export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
 
-export interface IsDialableOptions {
+export interface IsDialableOptions extends AbortOptions {
   /**
    * If the dial attempt would open a protocol, and the multiaddr being dialed
    * is a circuit relay address, passing true here would cause the test to fail
@@ -630,8 +630,10 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * This means a relevant transport is configured, and the connection gater
    * would not block the dial attempt.
+   *
+   * This may involve resolving DNS addresses so you should pass an AbortSignal.
    */
-  isDialable(multiaddr: Multiaddr, options?: IsDialableOptions): Promise<boolean>
+  isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
 
   /**
    * A set of user defined services

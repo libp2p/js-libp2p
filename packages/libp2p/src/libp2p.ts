@@ -6,7 +6,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { Circuit } from '@multiformats/multiaddr-matcher'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -376,24 +375,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.components.registrar.unregister(id)
   }
 
-  async isDialable(multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
-    const transport = this.components.transportManager.transportForMultiaddr(multiaddr)
-
-    if (transport == null) {
-      return false
-    }
-
-    const denied = await this.components.connectionGater.denyDialMultiaddr?.(multiaddr)
-
-    if (denied === true) {
-      return false
-    }
-
-    if (options.runOnTransientConnection === false && Circuit.matches(multiaddr)) {
-      return false
-    }
-
-    return true
+  async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
+    return this.components.connectionManager.isDialable(multiaddr, options)
   }
 
   /**

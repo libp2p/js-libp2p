@@ -1,4 +1,4 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -80,4 +80,15 @@ export interface ConnectionManager {
    * ```
    */
   getDialQueue(): PendingDial[]
+
+  /**
+   * Given the current node configuration, returns a promise of `true` or
+   * `false` if the node would attempt to dial the passed multiaddr.
+   *
+   * This means a relevant transport is configured, and the connection gater
+   * would not block the dial attempt.
+   *
+   * This may involve resolving DNS addresses so you should pass an AbortSignal.
+   */
+  isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
 }
