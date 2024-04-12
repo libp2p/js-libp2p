@@ -7,7 +7,7 @@ import { expect } from 'aegir/chai'
 import { createLibp2p } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface'
 
-describe.only('core', () => {
+describe('core', () => {
   let libp2p: Libp2p
 
   afterEach(async () => {
@@ -53,7 +53,7 @@ describe.only('core', () => {
     })
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws'), {
-      runOnTransientConnection: true
+      runOnTransientConnection: false
     })).to.eventually.be.true()
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE2'), {
