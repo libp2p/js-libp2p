@@ -2,10 +2,10 @@
 
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
-import pDefer from 'p-defer'
-import { PeerQueue, type PeerQueueJobOptions } from '../src/peer-queue.js'
-import { raceEvent } from 'race-event'
 import delay from 'delay'
+import pDefer from 'p-defer'
+import { raceEvent } from 'race-event'
+import { PeerQueue, type PeerQueueJobOptions } from '../src/peer-queue.js'
 import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
 
 describe('peer queue', () => {
