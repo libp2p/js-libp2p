@@ -44,13 +44,17 @@ describe.only('core', () => {
     await expect(libp2p.isDialable(ma)).to.eventually.be.true()
   })
 
-  it('should test if a protocol is dialable', async () => {
+  it('should test if a protocol can run over a transient connection', async () => {
     libp2p = await createLibp2p({
       transports: [
         webSockets(),
         circuitRelayTransport()
       ]
     })
+
+    await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws'), {
+      runOnTransientConnection: true
+    })).to.eventually.be.true()
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE2'), {
       runOnTransientConnection: true
