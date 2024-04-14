@@ -2,7 +2,8 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import pDefer from 'p-defer'
-import { Queue } from '../src/queue/index.js'
+import { Queue, type QueueAddOptions } from '../src/queue/index.js'
+import { TestSignal } from './fixtures/test-signal.js'
 
 const fixture = Symbol('fixture')
 
@@ -715,5 +716,60 @@ describe('queue', () => {
     expect(started).to.equal(3)
     expect(collected).to.deep.equal([0, 1])
     expect(queue.size).to.equal(0)
+  })
+
+  it('cleans up listeners after all job recipients abort', async () => {
+    interface SlowJobQueueOptions extends QueueAddOptions {
+      slow: boolean
+    }
+
+    const queue = new Queue<number, SlowJobQueueOptions>({ concurrency: 1 })
+
+    void queue.add(async () => {
+      await delay(100)
+      return 1
+    }, {
+      slow: true
+    })
+
+    const signal = new TestSignal()
+
+    const jobResult = queue.add(async () => {
+      return 1
+    }, {
+      slow: false,
+      signal
+    })
+
+    expect(queue.size).to.equal(2)
+    expect(queue.queued).to.equal(1)
+    expect(queue.running).to.equal(1)
+
+    const slowJob = queue.queue.find(job => !job.options.slow)
+
+    expect(slowJob?.recipients).to.have.lengthOf(1)
+    expect(slowJob?.recipients[0].signal).to.equal(signal)
+
+    // listeners added
+    expect(signal.listenerCount('abort')).to.equal(2)
+
+    const err = new Error('Took too long')
+
+    // abort job stuck in queue
+    signal.abort(err)
+
+    // all listeners removed
+    expect(signal.listenerCount('abort')).to.equal(0)
+
+    // result rejects
+    await expect(jobResult).to.eventually.be.rejectedWith(err)
+
+    // counts updated
+    expect(queue.size).to.equal(1)
+    expect(queue.queued).to.equal(0)
+    expect(queue.running).to.equal(1)
+
+    // job not in queue any more
+    expect(queue.queue.find(job => !job.options.slow)).to.be.undefined()
   })
 })
