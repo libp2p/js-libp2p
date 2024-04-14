@@ -13,6 +13,10 @@ function randomInt (minimum: number, maximum: number): number {
   )
 }
 
+interface SlowJobQueueOptions extends QueueAddOptions {
+  slow: boolean
+}
+
 describe('queue', () => {
   it('adds', async () => {
     const queue = new Queue<symbol>({})
@@ -719,24 +723,16 @@ describe('queue', () => {
   })
 
   it('cleans up listeners after all job recipients abort', async () => {
-    interface SlowJobQueueOptions extends QueueAddOptions {
-      slow: boolean
-    }
-
-    const queue = new Queue<number, SlowJobQueueOptions>({ concurrency: 1 })
-
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
     void queue.add(async () => {
       await delay(100)
-      return 1
     }, {
       slow: true
     })
 
     const signal = new TestSignal()
 
-    const jobResult = queue.add(async () => {
-      return 1
-    }, {
+    const jobResult = queue.add(async () => {}, {
       slow: false,
       signal
     })
@@ -753,16 +749,62 @@ describe('queue', () => {
     // listeners added
     expect(signal.listenerCount('abort')).to.equal(2)
 
+    // abort job stuck in queue
+    signal.abort()
+
+    // all listeners removed
+    expect(signal.listenerCount('abort')).to.equal(0)
+
+    await expect(jobResult).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
+  })
+
+  it('rejects aborted jobs with the abort reason if supplied', async () => {
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
+    void queue.add(async () => {
+      await delay(100)
+    }, {
+      slow: true
+    })
+
+    const signal = new TestSignal()
+
+    const jobResult = queue.add(async () => {}, {
+      slow: false,
+      signal
+    })
+
     const err = new Error('Took too long')
 
     // abort job stuck in queue
     signal.abort(err)
 
-    // all listeners removed
-    expect(signal.listenerCount('abort')).to.equal(0)
-
     // result rejects
     await expect(jobResult).to.eventually.be.rejectedWith(err)
+  })
+
+  it('immediately removes aborted job', async () => {
+    const signal = new TestSignal()
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
+    void queue.add(async () => {
+      await delay(100)
+    }, {
+      slow: true
+    })
+    const jobResult = queue.add(async () => {}, {
+      slow: false,
+      signal
+    })
+
+    expect(queue.size).to.equal(2)
+    expect(queue.queued).to.equal(1)
+    expect(queue.running).to.equal(1)
+
+    // abort job stuck in queue
+    signal.abort()
+
+    await expect(jobResult).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
 
     // counts updated
     expect(queue.size).to.equal(1)

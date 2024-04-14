@@ -22,7 +22,7 @@ export class TestSignal extends TypedEventEmitter<TestSignalEvents> {
 
   }
 
-  abort (reason: any): void {
+  abort (reason?: any): void {
     this.aborted = true
     this.reason = reason
     this.safeDispatchEvent('abort')
