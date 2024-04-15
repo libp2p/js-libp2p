@@ -72,6 +72,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.20](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.19...plaintext-v1.0.20) (2024-04-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.0 to ^5.4.1
+
 ## [1.0.19](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.18...plaintext-v1.0.19) (2024-04-12)
 
 

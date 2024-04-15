@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.0...utils-v5.3.1) (2024-04-15)
+
+
+### Bug Fixes
+
+* ensure abort listeners are removed from queue jobs ([#2482](https://github.com/libp2p/js-libp2p/issues/2482)) ([f45dc5d](https://github.com/libp2p/js-libp2p/commit/f45dc5dc6f297c0df21262b644160653e83137a3))
+
 ## [5.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.8...utils-v5.3.0) (2024-04-12)
 
 
