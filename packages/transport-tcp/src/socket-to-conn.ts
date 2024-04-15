@@ -199,7 +199,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     abort: (err: Error) => {
       log('%s socket abort due to error', lOptsStr, err)
 
-      socket.destroy(err)
+      // the abortSignalListener may already destroyed the socket with an error
+      if (!socket.destroyed) {
+        socket.destroy(err)
+      }
 
       if (maConn.timeline.close == null) {
         maConn.timeline.close = Date.now()

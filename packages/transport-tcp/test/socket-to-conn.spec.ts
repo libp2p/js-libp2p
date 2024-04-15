@@ -1,7 +1,6 @@
 import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
 import os from 'os'
 import { defaultLogger } from '@libp2p/logger'
-import { type ComponentLogger, type Logger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import Sinon from 'sinon'
@@ -290,19 +289,27 @@ describe('socket-to-conn', () => {
   })
 
   it('should not close MultiaddrConnection twice', async () => {
-    const loggerStub = Sinon.stub()
-    const logger: ComponentLogger = {
-      forComponent: () => loggerStub as unknown as Logger
-    };
     ({ server, clientSocket, serverSocket } = await setup())
+    // proxyServerSocket.writableLength returns 100 which cause socket cannot be destroyed immediately
+    const proxyServerSocket = new Proxy(serverSocket, {
+      get(target, prop, receiver) {
+        if (prop === 'writableLength') {
+          return 100
+        }
+        return Reflect.get(target, prop, receiver)
+      }
+    })
 
+    // spy on `.destroy()` invocations
+    const serverSocketDestroySpy = Sinon.spy(serverSocket, 'destroy')
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
+    const socketCloseTimeout = 10;
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
+    const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
       socketInactivityTimeout: 100,
-      socketCloseTimeout: 10,
-      logger
+      socketCloseTimeout,
+      logger: defaultLogger()
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -317,13 +324,15 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    // the 2nd call should return immediately
-    await Promise.all([
-      inboundMaConn.close(),
-      inboundMaConn.close()
-    ])
+    const signal = AbortSignal.timeout(socketCloseTimeout);
+    const addEventListenerSpy = Sinon.spy(signal, 'addEventListener')
 
-    expect(loggerStub.calledWithMatch('socket is either closed, closing, or already destroyed')).to.be.true()
+    // the 2nd and 3rd call should return immediately
+    await Promise.all([
+      inboundMaConn.close({ signal }),
+      inboundMaConn.close({ signal }),
+      inboundMaConn.close({ signal })
+    ])
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -333,6 +342,10 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
+
+     // the server socket was only closed once
+     expect(serverSocketDestroySpy.callCount).to.equal(1)
+     expect(addEventListenerSpy.callCount).to.equal(1)
   })
 
   it('should destroy a socket by timeout when containing MultiaddrConnection is closed', async () => {
