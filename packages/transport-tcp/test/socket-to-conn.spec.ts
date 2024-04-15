@@ -292,7 +292,7 @@ describe('socket-to-conn', () => {
     ({ server, clientSocket, serverSocket } = await setup())
     // proxyServerSocket.writableLength returns 100 which cause socket cannot be destroyed immediately
     const proxyServerSocket = new Proxy(serverSocket, {
-      get(target, prop, receiver) {
+      get (target, prop, receiver) {
         if (prop === 'writableLength') {
           return 100
         }
@@ -304,7 +304,7 @@ describe('socket-to-conn', () => {
     const serverSocketDestroySpy = Sinon.spy(serverSocket, 'destroy')
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
-    const socketCloseTimeout = 10;
+    const socketCloseTimeout = 10
 
     const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
       socketInactivityTimeout: 100,
@@ -324,7 +324,7 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    const signal = AbortSignal.timeout(socketCloseTimeout);
+    const signal = AbortSignal.timeout(socketCloseTimeout)
     const addEventListenerSpy = Sinon.spy(signal, 'addEventListener')
 
     // the 2nd and 3rd call should return immediately
@@ -343,9 +343,9 @@ describe('socket-to-conn', () => {
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
 
-     // the server socket was only closed once
-     expect(serverSocketDestroySpy.callCount).to.equal(1)
-     expect(addEventListenerSpy.callCount).to.equal(1)
+    // the server socket was only closed once
+    expect(serverSocketDestroySpy.callCount).to.equal(1)
+    expect(addEventListenerSpy.callCount).to.equal(1)
   })
 
   it('should destroy a socket by timeout when containing MultiaddrConnection is closed', async () => {
