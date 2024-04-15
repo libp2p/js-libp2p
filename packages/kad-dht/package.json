@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "12.0.12",
+  "version": "12.0.13",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
@@ -63,7 +63,7 @@
     "@libp2p/peer-collections": "^5.1.10",
     "@libp2p/peer-id": "^4.0.10",
     "@libp2p/record": "^4.0.0",
-    "@libp2p/utils": "^5.3.0",
+    "@libp2p/utils": "^5.3.1",
     "@multiformats/multiaddr": "^12.2.1",
     "any-signal": "^4.1.1",
     "hashlru": "^2.3.0",
@@ -90,10 +90,10 @@
     "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.4.0",
+    "@libp2p/interface-compliance-tests": "^5.4.1",
     "@libp2p/logger": "^4.0.10",
     "@libp2p/peer-id-factory": "^4.0.10",
-    "@libp2p/peer-store": "^10.0.14",
+    "@libp2p/peer-store": "^10.0.15",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/sinon": "^17.0.3",

@@ -89,6 +89,22 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.21](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.20...tcp-v9.0.21) (2024-04-15)
+
+
+### Bug Fixes
+
+* close MultiaddrConnection once ([#2478](https://github.com/libp2p/js-libp2p/issues/2478)) ([08dabd3](https://github.com/libp2p/js-libp2p/commit/08dabd3906b1ac64a45a8a6c3d66d01fa08c5000))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.3.0 to ^5.3.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.0 to ^5.4.1
+
 ## [9.0.20](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.19...tcp-v9.0.20) (2024-04-12)
 
 
