@@ -6,6 +6,69 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.6](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.5...tls-v1.0.6) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/peer-id bumped from ^4.0.9 to ^4.0.10
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.4 to ^5.4.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
+## [1.0.5](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.4...tls-v1.0.5) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
+## [1.0.4](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.3...tls-v1.0.4) (2024-04-02)
+
+
+### Bug Fixes
+
+* remove ms from TLS notAfter date ([#2464](https://github.com/libp2p/js-libp2p/issues/2464)) ([ab5f057](https://github.com/libp2p/js-libp2p/commit/ab5f05763148c0767c81c5bc49bfb9b2dee483ee))
+* tls serial number causes illegal padding error ([#2459](https://github.com/libp2p/js-libp2p/issues/2459)) ([cae8639](https://github.com/libp2p/js-libp2p/commit/cae863920f5d4652ef983614b6286c9895a8299e))
+
+## [1.0.3](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.2...tls-v1.0.3) (2024-03-28)
+
+
+### Bug Fixes
+
+* reduce TLS cert validity time ([#2457](https://github.com/libp2p/js-libp2p/issues/2457)) ([bf720c0](https://github.com/libp2p/js-libp2p/commit/bf720c045163c94c94603eb3333c418101c20de0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.2 to ^5.3.3
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+
 ## [1.0.2](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.1...tls-v1.0.2) (2024-02-27)
 
 

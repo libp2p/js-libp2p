@@ -111,6 +111,104 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.26](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.25...webrtc-v4.0.26) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/interface-internal bumped from ^1.0.11 to ^1.1.0
+    * @libp2p/peer-id bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/utils bumped from ^5.2.8 to ^5.3.0
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.18 to ^1.0.19
+    * @libp2p/interface-compliance-tests bumped from ^5.3.4 to ^5.4.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/websockets bumped from ^8.0.18 to ^8.0.19
+    * libp2p bumped from ^1.3.3 to ^1.4.0
+
+## [4.0.25](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.24...webrtc-v4.0.25) (2024-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.3.2 to ^1.3.3
+
+## [4.0.24](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.23...webrtc-v4.0.24) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* bump node-datachannel from 0.5.5 to 0.6.0 ([#2469](https://github.com/libp2p/js-libp2p/issues/2469)) ([d446c6c](https://github.com/libp2p/js-libp2p/commit/d446c6c31bfd0bebdad6a80926e4c571278fdee0))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/interface-internal bumped from ^1.0.10 to ^1.0.11
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.17 to ^1.0.18
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/websockets bumped from ^8.0.17 to ^8.0.18
+    * libp2p bumped from ^1.3.1 to ^1.3.2
+
+## [4.0.23](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.22...webrtc-v4.0.23) (2024-03-28)
+
+
+### Bug Fixes
+
+* webrtc hook cleanup ([#2455](https://github.com/libp2p/js-libp2p/issues/2455)) ([1fc929c](https://github.com/libp2p/js-libp2p/commit/1fc929c1c2267750a595a6b37950f53c9d26b31c))
+
+
+### Documentation
+
+* change listener to dialler in webrtc example ([#2447](https://github.com/libp2p/js-libp2p/issues/2447)) ([a19a261](https://github.com/libp2p/js-libp2p/commit/a19a2616ad832d9a9359f49b23dac2b1a768066f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/interface-internal bumped from ^1.0.9 to ^1.0.10
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/utils bumped from ^5.2.6 to ^5.2.7
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.16 to ^1.0.17
+    * @libp2p/interface-compliance-tests bumped from ^5.3.2 to ^5.3.3
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/websockets bumped from ^8.0.16 to ^8.0.17
+    * libp2p bumped from ^1.3.0 to ^1.3.1
+
+## [4.0.22](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.21...webrtc-v4.0.22) (2024-03-13)
+
+
+### Documentation
+
+* update webrtc readme to show difference between transports ([#2441](https://github.com/libp2p/js-libp2p/issues/2441)) ([fad3074](https://github.com/libp2p/js-libp2p/commit/fad3074b843cae69289c6da94f3797d59879ec1c))
+
+## [4.0.21](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.20...webrtc-v4.0.21) (2024-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.2.4 to ^1.3.0
+
 ## [4.0.20](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.19...webrtc-v4.0.20) (2024-02-27)
 
 

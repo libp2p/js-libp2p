@@ -1,9 +1,9 @@
 import { CodeError } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import {
   MAX_RECORD_AGE
 } from '../../constants.js'
 import { MessageType } from '../../message/dht.js'
-import { Libp2pRecord } from '../../record/index.js'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
 import type { Message } from '../../message/dht.js'
 import type { PeerRouting } from '../../peer-routing/index.js'

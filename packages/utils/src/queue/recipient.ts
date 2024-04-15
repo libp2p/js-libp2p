@@ -17,7 +17,7 @@ export class JobRecipient<JobReturnType> {
   }
 
   onAbort (): void {
-    this.deferred.reject(new AbortError())
+    this.deferred.reject(this.signal?.reason ?? new AbortError())
   }
 
   cleanup (): void {

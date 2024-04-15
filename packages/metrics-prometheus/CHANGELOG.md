@@ -81,6 +81,50 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.19](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.18...prometheus-metrics-v3.0.19) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.4 to ^5.4.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
+## [3.0.18](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.17...prometheus-metrics-v3.0.18) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
+## [3.0.17](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.16...prometheus-metrics-v3.0.17) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.2 to ^5.3.3
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+
 ## [3.0.16](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.15...prometheus-metrics-v3.0.16) (2024-02-27)
 
 

@@ -48,6 +48,50 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [1.0.14](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.13...fetch-v1.0.14) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/interface-internal bumped from ^1.0.11 to ^1.1.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
+## [1.0.13](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.12...fetch-v1.0.13) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/interface-internal bumped from ^1.0.10 to ^1.0.11
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
+## [1.0.12](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.11...fetch-v1.0.12) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/interface-internal bumped from ^1.0.9 to ^1.0.10
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.10...fetch-v1.0.11) (2024-02-27)
 
 

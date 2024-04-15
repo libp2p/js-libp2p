@@ -89,6 +89,62 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.20](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.19...tcp-v9.0.20) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/utils bumped from ^5.2.8 to ^5.3.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.4 to ^5.4.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+
+## [9.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.18...tcp-v9.0.19) (2024-04-09)
+
+
+### Dependencies
+
+* bump stream-to-it from 0.2.4 to 1.0.0 ([#2474](https://github.com/libp2p/js-libp2p/issues/2474)) ([2b2958f](https://github.com/libp2p/js-libp2p/commit/2b2958fe66be0985de8890a1260b162cc24effdd))
+
+## [9.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.17...tcp-v9.0.18) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Documentation
+
+* update typos in Address Manager and comments ([#2468](https://github.com/libp2p/js-libp2p/issues/2468)) ([a2b41f7](https://github.com/libp2p/js-libp2p/commit/a2b41f7939806dfb9583a6d43ddd8764fc861baf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+
+## [9.0.17](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.16...tcp-v9.0.17) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/utils bumped from ^5.2.6 to ^5.2.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.2 to ^5.3.3
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+
 ## [9.0.16](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.15...tcp-v9.0.16) (2024-02-27)
 
 

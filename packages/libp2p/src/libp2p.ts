@@ -23,7 +23,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -75,7 +75,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
-      connectionGater: connectionGater(init.connectionGater)
+      connectionGater: connectionGater(init.connectionGater),
+      dns: init.dns
     })
 
     this.peerStore = this.configureComponent('peerStore', new PersistentPeerStore(components, {
@@ -372,6 +373,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   unregister (id: string): void {
     this.components.registrar.unregister(id)
+  }
+
+  async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
+    return this.components.connectionManager.isDialable(multiaddr, options)
   }
 
   /**

@@ -35,6 +35,47 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.1.10](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.9...peer-collections-v5.1.10) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/peer-id bumped from ^4.0.9 to ^4.0.10
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
+## [5.1.9](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.8...peer-collections-v5.1.9) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+
+## [5.1.8](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.7...peer-collections-v5.1.8) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+
 ## [5.1.7](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.6...peer-collections-v5.1.7) (2024-02-27)
 
 

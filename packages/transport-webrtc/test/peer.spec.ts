@@ -150,6 +150,9 @@ describe('webrtc basic', () => {
       handleIncomingStream(recipient)
     ]))
       .to.eventually.be.rejected.with.property('message', 'Oh noes!')
+
+    initiator.peerConnection.close()
+    recipient.peerConnection.close()
   })
 })
 
@@ -161,6 +164,9 @@ describe('webrtc receiver', () => {
 
     await stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
     await expect(receiverPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
+
+    initiator.peerConnection.close()
+    recipient.peerConnection.close()
   })
 })
 
@@ -184,6 +190,9 @@ describe('webrtc dialer', () => {
 
     await stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
+
+    initiator.peerConnection.close()
+    recipient.peerConnection.close()
   })
 
   it('should fail on receiving a candidate before an answer', async () => {
@@ -217,6 +226,9 @@ describe('webrtc dialer', () => {
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
     pc.close()
+
+    initiator.peerConnection.close()
+    recipient.peerConnection.close()
   })
 })
 

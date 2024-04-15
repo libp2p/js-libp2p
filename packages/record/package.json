@@ -1,0 +1,73 @@
+{
+  "name": "@libp2p/record",
+  "version": "4.0.0",
+  "description": "libp2p record implementation",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/record#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    },
+    "ignorePatterns": [
+      "src/message/dht.d.ts"
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "build": "aegir build",
+    "generate": "protons ./src/record.proto",
+    "test": "aegir test",
+    "test:node": "aegir test -t node --cov",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
+  },
+  "dependencies": {
+    "protons-runtime": "^5.4.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/lodash.random": "^3.2.9",
+    "@types/lodash.range": "^3.2.9",
+    "@types/which": "^3.0.3",
+    "aegir": "^42.2.5",
+    "multiformats": "^13.1.0",
+    "protons": "^7.5.0"
+  },
+  "sideEffects": false
+}
