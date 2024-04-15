@@ -243,6 +243,16 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
         return result
       })
       .catch(err => {
+        if (job.status === 'queued') {
+          // job was aborted before it started - remove the job from the queue
+          for (let i = 0; i < this.queue.length; i++) {
+            if (this.queue[i] === job) {
+              this.queue.splice(i, 1)
+              break
+            }
+          }
+        }
+
         this.safeDispatchEvent('error', { detail: err })
         this.safeDispatchEvent('failure', { detail: { job, error: err } })
 
