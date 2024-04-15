@@ -3,6 +3,7 @@ import os from 'os'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
+import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
 
 async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
@@ -285,6 +286,66 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
+  })
+
+  it('should not close MultiaddrConnection twice', async () => {
+    ({ server, clientSocket, serverSocket } = await setup())
+    // proxyServerSocket.writableLength returns 100 which cause socket cannot be destroyed immediately
+    const proxyServerSocket = new Proxy(serverSocket, {
+      get (target, prop, receiver) {
+        if (prop === 'writableLength') {
+          return 100
+        }
+        return Reflect.get(target, prop, receiver)
+      }
+    })
+
+    // spy on `.destroy()` invocations
+    const serverSocketDestroySpy = Sinon.spy(serverSocket, 'destroy')
+    // promise that is resolved when our outgoing socket is closed
+    const serverClosed = defer<boolean>()
+    const socketCloseTimeout = 10
+
+    const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
+      socketInactivityTimeout: 100,
+      socketCloseTimeout,
+      logger: defaultLogger()
+    })
+    expect(inboundMaConn.timeline.open).to.be.ok()
+    expect(inboundMaConn.timeline.close).to.not.be.ok()
+
+    clientSocket.once('error', () => {})
+
+    serverSocket.once('close', () => {
+      serverClosed.resolve(true)
+    })
+
+    // send some data between the client and server
+    clientSocket.write('hello')
+    serverSocket.write('goodbye')
+
+    const signal = AbortSignal.timeout(socketCloseTimeout)
+    const addEventListenerSpy = Sinon.spy(signal, 'addEventListener')
+
+    // the 2nd and 3rd call should return immediately
+    await Promise.all([
+      inboundMaConn.close({ signal }),
+      inboundMaConn.close({ signal }),
+      inboundMaConn.close({ signal })
+    ])
+
+    // server socket was closed for reading and writing
+    await expect(serverClosed.promise).to.eventually.be.true()
+
+    // the connection closing was recorded
+    expect(inboundMaConn.timeline.close).to.be.a('number')
+
+    // server socket is destroyed
+    expect(serverSocket.destroyed).to.be.true()
+
+    // the server socket was only closed once
+    expect(serverSocketDestroySpy.callCount).to.equal(1)
+    expect(addEventListenerSpy.callCount).to.equal(1)
   })
 
   it('should destroy a socket by timeout when containing MultiaddrConnection is closed', async () => {

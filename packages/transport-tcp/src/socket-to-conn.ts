@@ -23,6 +23,7 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
+  let status: 'open' | 'closing' | 'closed' = 'open'
   const log = options.logger.forComponent('libp2p:tcp:socket')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
@@ -126,10 +127,11 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     timeline: { open: Date.now() },
 
     async close (options: AbortOptions = {}) {
-      if (socket.destroyed) {
-        log('%s socket was already destroyed when trying to close', lOptsStr)
+      if (status === 'closed' || status === 'closing' || socket.destroyed) {
+        log('The %s socket is either closed, closing, or already destroyed', lOptsStr)
         return
       }
+      status = 'closing'
 
       if (options.signal == null) {
         const signal = AbortSignal.timeout(closeTimeout)
@@ -153,6 +155,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             // socket completely closed
             log('%s socket closed', lOptsStr)
 
+            status = 'closed'
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -163,6 +166,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
               maConn.timeline.close = Date.now()
             }
 
+            status = 'closed'
             reject(err)
           })
 
@@ -195,7 +199,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     abort: (err: Error) => {
       log('%s socket abort due to error', lOptsStr, err)
 
-      socket.destroy(err)
+      // the abortSignalListener may already destroyed the socket with an error
+      if (!socket.destroyed) {
+        socket.destroy(err)
+      }
 
       if (maConn.timeline.close == null) {
         maConn.timeline.close = Date.now()
