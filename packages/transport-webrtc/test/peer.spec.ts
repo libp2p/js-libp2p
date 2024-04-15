@@ -20,24 +20,28 @@ import type { ConnectionManager, TransportManager } from '@libp2p/interface-inte
 
 const browser = detect()
 
+interface Initiator {
+  multiaddr: Multiaddr
+  peerConnection: RTCPeerConnection
+  connectionManager: StubbedInstance<ConnectionManager>
+  transportManager: StubbedInstance<TransportManager>
+  connection: StubbedInstance<Connection>
+  stream: Stream
+  log: Logger
+}
+
+interface Recipient {
+  peerConnection: RTCPeerConnection
+  connection: StubbedInstance<Connection>
+  abortController: AbortController
+  signal: AbortSignal
+  stream: Stream
+  log: Logger
+}
+
 interface PrivateToPrivateComponents {
-  initiator: {
-    multiaddr: Multiaddr
-    peerConnection: RTCPeerConnection
-    connectionManager: StubbedInstance<ConnectionManager>
-    transportManager: StubbedInstance<TransportManager>
-    connection: StubbedInstance<Connection>
-    stream: Stream
-    log: Logger
-  }
-  recipient: {
-    peerConnection: RTCPeerConnection
-    connection: StubbedInstance<Connection>
-    abortController: AbortController
-    signal: AbortSignal
-    stream: Stream
-    log: Logger
-  }
+  initiator: Initiator
+  recipient: Recipient
 }
 
 async function getComponents (): Promise<PrivateToPrivateComponents> {
@@ -85,9 +89,16 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
 
 describe('webrtc basic', () => {
   const isFirefox = ((browser != null) && browser.name === 'firefox')
+  let initiator: Initiator
+  let recipient: Recipient
+
+  afterEach(() => {
+    initiator?.peerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
 
   it('should connect', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // no existing connection
     initiator.connectionManager.getConnections.returns([])
@@ -114,14 +125,11 @@ describe('webrtc basic', () => {
       expect(initiator.peerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 
   it('should survive aborting during connection', async () => {
+    ({ initiator, recipient } = await getComponents())
     const abortController = new AbortController()
-    const { initiator, recipient } = await getComponents()
 
     // no existing connection
     initiator.connectionManager.getConnections.returns([])
@@ -150,15 +158,20 @@ describe('webrtc basic', () => {
       handleIncomingStream(recipient)
     ]))
       .to.eventually.be.rejected.with.property('message', 'Oh noes!')
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 })
 
 describe('webrtc receiver', () => {
+  let initiator: Initiator
+  let recipient: Recipient
+
+  afterEach(() => {
+    initiator?.peerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
+
   it('should fail receiving on invalid sdp offer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
     const receiverPeerConnectionPromise = handleIncomingStream(recipient)
     const stream = pbStream(initiator.stream).pb(Message)
 
@@ -171,8 +184,16 @@ describe('webrtc receiver', () => {
 })
 
 describe('webrtc dialer', () => {
+  let initiator: Initiator
+  let recipient: Recipient
+
+  afterEach(() => {
+    initiator?.peerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
+
   it('should fail receiving on invalid sdp answer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // existing connection already exists
     initiator.connectionManager.getConnections.returns([
@@ -190,13 +211,10 @@ describe('webrtc dialer', () => {
 
     await stream.write({ type: Message.Type.SDP_ANSWER, data: 'bad' })
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 
   it('should fail on receiving a candidate before an answer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // existing connection already exists
     initiator.connectionManager.getConnections.returns([
@@ -226,9 +244,6 @@ describe('webrtc dialer', () => {
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
     pc.close()
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 })
 
