@@ -194,7 +194,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           }
         })
 
-        return await closePromise
+        await closePromise
       } catch (err: any) {
         this.abort(err)
       } finally {
