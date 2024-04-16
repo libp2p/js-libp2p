@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.22](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.21...tcp-v9.0.22) (2024-04-16)
+
+
+### Bug Fixes
+
+* use same promise when closing maconn multiple times ([#2487](https://github.com/libp2p/js-libp2p/issues/2487)) ([ea4f262](https://github.com/libp2p/js-libp2p/commit/ea4f26285ecf7babc361799a172dd4acbcca2a10))
+
 ## [9.0.21](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.20...tcp-v9.0.21) (2024-04-15)
 
 
