@@ -23,7 +23,7 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
-  let status: 'open' | 'closing' | 'closed' = 'open'
+  let closePromise: Promise<void> | null = null
   const log = options.logger.forComponent('libp2p:tcp:socket')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
@@ -127,11 +127,15 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     timeline: { open: Date.now() },
 
     async close (options: AbortOptions = {}) {
-      if (status === 'closed' || status === 'closing' || socket.destroyed) {
-        log('The %s socket is either closed, closing, or already destroyed', lOptsStr)
+      if (socket.destroyed) {
+        log('The %s socket is destroyed', lOptsStr)
         return
       }
-      status = 'closing'
+
+      if (closePromise != null) {
+        log('The %s socket is closed or closing', lOptsStr)
+        return closePromise
+      }
 
       if (options.signal == null) {
         const signal = AbortSignal.timeout(closeTimeout)
@@ -150,12 +154,11 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
       try {
         log('%s closing socket', lOptsStr)
-        await new Promise<void>((resolve, reject) => {
+        closePromise = new Promise<void>((resolve, reject) => {
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
 
-            status = 'closed'
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -165,9 +168,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             if (maConn.timeline.close == null) {
               maConn.timeline.close = Date.now()
             }
-
-            status = 'closed'
-            reject(err)
+            if (!socket.destroyed) {
+              reject(err)
+            }
+            // if socket is destroyed, 'closed' event will be emitted later to resolve the promise
           })
 
           // shorten inactivity timeout
@@ -189,6 +193,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             socket.destroy()
           }
         })
+
+        return await closePromise
       } catch (err: any) {
         this.abort(err)
       } finally {
