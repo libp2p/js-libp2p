@@ -76,7 +76,7 @@ export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, see
 /**
  * Converts a protobuf serialized public key into its representative object
  */
-export function unmarshalPublicKey <T extends KeyTypes>(buf: Uint8Array): PublicKey<T> {
+export function unmarshalPublicKey <T extends KeyTypes> (buf: Uint8Array): PublicKey<T> {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -104,7 +104,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function unmarshalPrivateKey <T extends KeyTypes>(buf: Uint8Array): Promise<PrivateKey<T>> {
+export async function unmarshalPrivateKey <T extends KeyTypes> (buf: Uint8Array): Promise<PrivateKey<T>> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
