@@ -49,7 +49,14 @@ describe('rpc - handlers - FindNode', () => {
     peerRouting.getCloserPeersOffline
       .withArgs(peerId.multihash.bytes, peerId)
       .resolves([{
-        id: targetPeer,
+        id: targetPeer, // closer peer
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          multiaddr('/ip4/221.4.67.0/tcp/4002')
+        ]
+      }, {
+        id: peerId, // self peer
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
