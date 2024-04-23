@@ -46,7 +46,7 @@ Aiming to support these type of nodes to find other peers and content in the net
 
 Currently, delegate nodes must be IPFS nodes as the IPFS HTTP API is leveraged by them to make routing queries.
 
-You can read on how to setup your own set of delegated nodes in [DELEGATE_NODES.md](./DELEGATE_NODES.md).
+You can read on how to setup your own set of delegated nodes in [DELEGATE_NODES.md](https://github.com/libp2p/js-libp2p/tree/main/doc/DELEGATE_NODES.md).
 
 ## Others
 

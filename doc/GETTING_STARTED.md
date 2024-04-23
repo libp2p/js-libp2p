@@ -28,7 +28,7 @@ npm install libp2p
 
 ## Configuring libp2p
 
-If you're new to libp2p, we recommend configuring your node in stages, as this can make troubleshooting configuration issues much easier. In this guide, we'll do just that. If you're more experienced with libp2p, you may wish to jump to the [Configuration readme](./CONFIGURATION.md).
+If you're new to libp2p, we recommend configuring your node in stages, as this can make troubleshooting configuration issues much easier. In this guide, we'll do just that. If you're more experienced with libp2p, you may wish to jump to the [Configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md).
 
 ### ESM
 
@@ -59,7 +59,7 @@ Now that we have libp2p installed, let's configure the minimum needed to get you
 
 Libp2p uses Transports to establish connections between peers over the network. Transports are the components responsible for performing the actual exchange of data between libp2p nodes. You can configure any number of Transports, but you only need 1 to start with. Supporting more Transports will improve the ability of your node to speak to a larger number of nodes on the network, as matching Transports are required for two nodes to communicate with one another.
 
-You should select Transports according to the runtime of your application; Node.js or the browser. You can see a list of some of the available Transports in the [configuration readme](./CONFIGURATION.md#transport). For this guide let's install `@libp2p/websockets`, as it can be used in both Node.js and the browser.
+You should select Transports according to the runtime of your application; Node.js or the browser. You can see a list of some of the available Transports in the [configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#transport). For this guide let's install `@libp2p/websockets`, as it can be used in both Node.js and the browser.
 
 Start by installing `@libp2p/websockets`:
 
@@ -67,7 +67,7 @@ Start by installing `@libp2p/websockets`:
 npm install @libp2p/websockets
 ```
 
-Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](./API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -91,7 +91,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](./CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@chainsafe/libp2p-noise` module.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@chainsafe/libp2p-noise` module.
 
 ```sh
 npm install @chainsafe/libp2p-noise
@@ -121,7 +121,7 @@ If you want to know more about libp2p connection encryption, you should read the
 
 While multiplexers are not strictly required, they are highly recommended as they improve the effectiveness and efficiency of connections for the various protocols libp2p runs. Adding a multiplexer to your configuration will allow libp2p to run several of its internal protocols, like Identify, as well as allow your application to easily run any number of protocols over a single connection.
 
-Looking at the [available stream multiplexing](./CONFIGURATION.md#stream-multiplexing) modules. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
+Looking at the [available stream multiplexing](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#stream-multiplexing) modules. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
 You can install `@chainsafe/libp2p-yamux` and add it to your libp2p node as follows in the next example.
 
@@ -152,7 +152,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 #### Running Libp2p
 
-Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](./API.md#start) and [`libp2p.stop()`](./API.md#stop) methods.
+Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -191,9 +191,9 @@ Once your libp2p node is running, it is time to get it connected to the public n
 
 Peer discovery is an important part of creating a well connected libp2p node. A static list of peers will often be used to join the network, but it's useful to couple other discovery mechanisms to ensure you're able to discover other peers that are important to your application.
 
-For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](./API.md#events) in the API doc to learn more.
+For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](https://github.com/libp2p/js-libp2p/tree/main/doc/API.md#events) in the API doc to learn more.
 
-Looking at the [available peer discovery](./CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
+Looking at the [available peer discovery](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
 - If you already know the addresses of some other network peers, you should consider using `@libp2p/bootstrap` as this is the easiest way of getting your peer into the network.
 - If it is likely that you will have other peers on your local network, `@libp2p/mdns` is a must if you're node is not running in the browser. It allows peers to discover each other when on the same local network.
 - A random walk approach can be used via `@libp2p/kad-dht`, to crawl the network and find new peers along the way.
@@ -273,7 +273,7 @@ localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-
 
 ## What is next
 
-There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](./CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
+There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
 
 [transport]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport
