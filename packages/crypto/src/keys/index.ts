@@ -76,7 +76,7 @@ export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, see
 /**
  * Converts a protobuf serialized public key into its representative object
  */
-export function unmarshalPublicKey (buf: Uint8Array): PublicKey<KeyTypes> {
+export function unmarshalPublicKey <T extends KeyTypes>(buf: Uint8Array): PublicKey<T> {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -104,7 +104,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey<KeyTypes>> {
+export async function unmarshalPrivateKey <T extends KeyTypes>(buf: Uint8Array): Promise<PrivateKey<T>> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -134,7 +134,7 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): U
  *
  * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
  */
-export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey<KeyTypes>> {
+export async function importKey <T extends KeyTypes> (encryptedKey: string, password: string): Promise<PrivateKey<T>> {
   try {
     const key = await importer(encryptedKey, password)
     return await unmarshalPrivateKey(key)
