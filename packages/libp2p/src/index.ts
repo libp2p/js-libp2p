@@ -29,7 +29,7 @@ export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string,
 }
 
 /**
- * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
+ * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
  */
 export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> }> {
   /**
