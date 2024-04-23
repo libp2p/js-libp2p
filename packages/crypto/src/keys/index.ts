@@ -55,11 +55,8 @@ function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k
 
 /**
  * Generates a keypair of the given type and bitsize
- *
- * @param type
- * @param bits -  Minimum of 1024
  */
-export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<PrivateKey> {
+export async function generateKeyPair <T extends KeyTypes> (type: T, bits?: number): Promise<PrivateKey<T>> {
   return typeToKey(type).generateKeyPair(bits ?? 2048)
 }
 
@@ -68,7 +65,7 @@ export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<P
  *
  * Seed is a 32 byte uint8array
  */
-export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array, bits?: number): Promise<PrivateKey> {
+export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, seed: Uint8Array, bits?: number): Promise<PrivateKey<T>> {
   if (type.toLowerCase() !== 'ed25519') {
     throw new CodeError('Seed key derivation is unimplemented for RSA or secp256k1', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
   }
@@ -79,7 +76,7 @@ export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array,
 /**
  * Converts a protobuf serialized public key into its representative object
  */
-export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
+export function unmarshalPublicKey (buf: Uint8Array): PublicKey<KeyTypes> {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -107,7 +104,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey> {
+export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey<KeyTypes>> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -137,7 +134,7 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): U
  *
  * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
  */
-export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey> {
+export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey<KeyTypes>> {
   try {
     const key = await importer(encryptedKey, password)
     return await unmarshalPrivateKey(key)

@@ -1,36 +1,34 @@
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-export type PeerIdType = 'RSA' | 'Ed25519' | 'secp256k1'
+export type PeerIdType = 'RSA' | 'Ed25519' | 'secp256k1' | string
 
-interface BasePeerId {
-  readonly type: PeerIdType
-  readonly multihash: MultihashDigest
-  readonly privateKey?: Uint8Array
+export interface RSAPeerId extends PeerId {
+  readonly type: 'RSA'
   readonly publicKey?: Uint8Array
+}
+
+export interface Ed25519PeerId extends PeerId {
+  readonly type: 'Ed25519'
+  readonly publicKey: Uint8Array
+}
+
+export interface Secp256k1PeerId extends PeerId {
+  readonly type: 'secp256k1'
+  readonly publicKey: Uint8Array
+}
+
+export interface PeerId {
+  type: PeerIdType
+  multihash: MultihashDigest
+  privateKey?: Uint8Array
+  publicKey?: Uint8Array
 
   toString(): string
   toCID(): CID
   toBytes(): Uint8Array
   equals(other?: PeerId | Uint8Array | string): boolean
 }
-
-export interface RSAPeerId extends BasePeerId {
-  readonly type: 'RSA'
-  readonly publicKey?: Uint8Array
-}
-
-export interface Ed25519PeerId extends BasePeerId {
-  readonly type: 'Ed25519'
-  readonly publicKey: Uint8Array
-}
-
-export interface Secp256k1PeerId extends BasePeerId {
-  readonly type: 'secp256k1'
-  readonly publicKey: Uint8Array
-}
-
-export type PeerId = RSAPeerId | Ed25519PeerId | Secp256k1PeerId
 
 export const peerIdSymbol = Symbol.for('@libp2p/peer-id')
 

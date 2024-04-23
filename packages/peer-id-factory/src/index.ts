@@ -25,7 +25,7 @@ import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicK
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerIdProto } from './proto.js'
-import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface'
+import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, KeyType } from '@libp2p/interface'
 
 export const createEd25519PeerId = async (): Promise<Ed25519PeerId> => {
   const key = await generateKeyPair('Ed25519')
@@ -60,11 +60,11 @@ export const createRSAPeerId = async (opts?: { bits: number }): Promise<RSAPeerI
   throw new Error(`Generated unexpected PeerId type "${id.type}"`)
 }
 
-export async function createFromPubKey (publicKey: PublicKey): Promise<PeerId> {
+export async function createFromPubKey <T extends KeyType > (publicKey: PublicKey<T>): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   return peerIdFromKeys(marshalPublicKey(publicKey))
 }
 
-export async function createFromPrivKey (privateKey: PrivateKey): Promise<PeerId> {
+export async function createFromPrivKey <T extends KeyType > (privateKey: PrivateKey<T>): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   return peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey))
 }
 
@@ -76,7 +76,7 @@ export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1P
   })
 }
 
-export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
+export async function createFromProtobuf (buf: Uint8Array): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   const {
     id,
     privKey,
@@ -90,7 +90,7 @@ export async function createFromProtobuf (buf: Uint8Array): Promise<PeerId> {
   )
 }
 
-export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }): Promise<PeerId> {
+export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   return createFromParts(
     uint8ArrayFromString(obj.id, 'base58btc'),
     obj.privKey != null ? uint8ArrayFromString(obj.privKey, 'base64pad') : undefined,
@@ -98,7 +98,7 @@ export async function createFromJSON (obj: { id: string, privKey?: string, pubKe
   )
 }
 
-async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pubKey?: Uint8Array): Promise<PeerId> {
+async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pubKey?: Uint8Array): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   if (privKey != null) {
     const key = await unmarshalPrivateKey(privKey)
 
