@@ -19,13 +19,13 @@ import * as keysPBM from './keys.js'
 import * as RSA from './rsa-class.js'
 import { importFromPem } from './rsa-utils.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey } from '@libp2p/interface'
+import type { PrivateKey, PublicKey, KeyType as KeyTypes } from '@libp2p/interface'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }
 export { keysPBM }
 
-export type KeyTypes = 'RSA' | 'Ed25519' | 'secp256k1'
+export type { KeyTypes }
 
 export { RsaPrivateKey, RsaPublicKey, MAX_RSA_KEY_SIZE } from './rsa-class.js'
 export { Ed25519PrivateKey, Ed25519PublicKey } from './ed25519-class.js'
