@@ -43,7 +43,6 @@
     "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
     "test:firefox": "aegir test -t browser -- --browser firefox",
-    "test:electron-main": "aegir test -t electron-main",
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "clean": "aegir clean",
