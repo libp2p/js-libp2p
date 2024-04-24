@@ -1,7 +1,8 @@
+import type { KeyType } from '../keys/index.js'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
-export type PeerIdType = 'RSA' | 'Ed25519' | 'secp256k1' | string
+export type PeerIdType = KeyType | string
 
 export interface RSAPeerId extends PeerId {
   readonly type: 'RSA'
