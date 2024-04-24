@@ -38,7 +38,7 @@ describe('rpc - handlers - FindNode', () => {
     })
   })
 
-  it('returns nodes close to self but not self, if asked for self', async () => {
+  it('returns nodes close to self but excludes self, if asked for self', async () => {
     const msg: Message = {
       type: T,
       key: peerId.multihash.bytes,
