@@ -17,6 +17,7 @@ import { DefaultConnectionManager } from './connection-manager/index.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
+import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
@@ -136,6 +137,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.contentRouting = this.components.contentRouting = this.configureComponent('contentRouting', new CompoundContentRouting(this.components, {
       routers: contentRouters
     }))
+
+    // Random walk
+    this.configureComponent('randomWalk', new RandomWalk(this.components))
 
     // Discovery modules
     ;(init.peerDiscovery ?? []).forEach((fn, index) => {
