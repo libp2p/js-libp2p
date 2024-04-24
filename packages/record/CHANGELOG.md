@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/record-v4.0.0...record-v4.0.1) (2024-04-24)
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p/compare/record-v3.0.4...record-v4.0.0) (2024-04-05)
 
 
