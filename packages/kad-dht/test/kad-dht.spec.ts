@@ -799,6 +799,37 @@ describe('KadDHT', () => {
 
       expect(res).to.not.be.empty()
     })
+
+    it('should not include itself in getClosestPeers PEER_RESPONSE', async function () {
+      this.timeout(240 * 1000)
+
+      const nDHTs = 30
+      const dhts = await Promise.all(
+        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
+      )
+
+      const connected: Array<Promise<void>> = []
+
+      for (let i = 0; i < dhts.length - 1; i++) {
+        connected.push(tdht.connect(dhts[i], dhts[(i + 1) % dhts.length]))
+      }
+
+      await Promise.all(connected)
+
+      const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toBytes()))
+      expect(res).to.not.be.empty()
+
+      // no peer should include itself in the response, only other peers that it
+      // knows who are closer
+      for (const event of res) {
+        if (event.name !== 'PEER_RESPONSE') {
+          continue
+        }
+
+        expect(event.closer.map(peer => peer.id.toString()))
+          .to.not.include(event.from.toString())
+      }
+    })
   })
 
   describe('errors', () => {

@@ -24,7 +24,6 @@ import { passthroughMapper } from '../../src/utils.js'
 import { createPeerId } from '../utils/create-peer-id.js'
 import type { Validators } from '../../src/index.js'
 import type { Libp2pEvents, Connection, PeerId, PeerStore } from '@libp2p/interface'
-import type { AddressManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 import type { Duplex, Source } from 'it-stream-types'
 
@@ -45,7 +44,6 @@ describe('rpc', () => {
       peerId,
       datastore,
       peerStore: stubInterface<PeerStore>(),
-      addressManager: stubInterface<AddressManager>(),
       logger: defaultLogger()
     }
     components.peerStore = new PersistentPeerStore({

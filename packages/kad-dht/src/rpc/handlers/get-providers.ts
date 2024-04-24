@@ -40,7 +40,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
     if (msg.key == null) {
-      throw new CodeError('Invalid FIND_NODE message received - key was missing', 'ERR_INVALID_MESSAGE')
+      throw new CodeError('Invalid GET_PROVIDERS message received - key was missing', 'ERR_INVALID_MESSAGE')
     }
 
     let cid
