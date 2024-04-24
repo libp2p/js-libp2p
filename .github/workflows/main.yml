@@ -138,6 +138,10 @@ jobs:
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
+      # https://github.com/actions/runner-images/issues/9733#issuecomment-2074590278
+      - run: |
+          sudo rm /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
       - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
