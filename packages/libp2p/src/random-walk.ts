@@ -2,9 +2,11 @@ import { randomBytes } from '@libp2p/crypto'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import pDefer, { type DeferredPromise } from 'p-defer'
+import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import type { ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
 import type { RandomWalk as RandomWalkInterface } from '@libp2p/interface-internal'
+import type { AbortOptions } from 'it-pushable'
 
 export interface RandomWalkComponents {
   peerRouting: PeerRouting
@@ -47,25 +49,15 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
     this.shutdownController.abort()
   }
 
-  async * walk (): AsyncGenerator<PeerInfo> {
+  async * walk (options?: AbortOptions): AsyncGenerator<PeerInfo> {
     if (!this.walking) {
       // start the query that causes walk:peer events to be emitted
       this.startWalk()
     }
 
     this.walkers++
-
-    // promise that returns a peer info from the walk:peer event
-    let deferred = pDefer<PeerInfo>()
-    const onPeer = (event: CustomEvent<PeerInfo>): void => {
-      deferred.resolve(event.detail)
-    }
-    const onError = (event: CustomEvent<Error>): void => {
-      deferred.reject(event.detail)
-    }
-
-    this.addEventListener('walk:peer', onPeer)
-    this.addEventListener('walk:error', onError)
+    const signal = anySignal([this.shutdownController.signal, options?.signal])
+    setMaxListeners(Infinity, signal)
 
     try {
       while (true) {
@@ -74,13 +66,14 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
         this.needNext = pDefer()
 
         // wait for a walk:peer or walk:error event
-        yield await deferred.promise
+        const event = await raceEvent<CustomEvent<PeerInfo>>(this, 'walk:peer', signal, {
+          errorEvent: 'walk:error'
+        })
 
-        deferred = pDefer()
+        yield event.detail
       }
     } finally {
-      this.removeEventListener('walk:peer', onPeer)
-      this.removeEventListener('walk:error', onError)
+      signal.clear()
       this.walkers--
 
       // stop the walk if no more consumers are interested

@@ -220,4 +220,13 @@ describe('random-walk', () => {
     expect(slowPeers).to.have.lengthOf(2)
     expect(fastPeers).to.have.lengthOf(5)
   })
+
+  it('should abort a slow query', async () => {
+    peerRouting.getClosestPeers.returns(slowIterator())
+
+    await expect(drain(randomwalk.walk({
+      signal: AbortSignal.timeout(10)
+    }))).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
+  })
 })
