@@ -48,11 +48,13 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
 
   async * walk (): AsyncGenerator<PeerInfo> {
     if (!this.walking) {
+      // start the query that causes walk:peer events to be emitted
       this.startWalk()
     }
 
     this.walkers++
 
+    // promise that returns a peer info from the walk:peer event
     let deferred = pDefer<PeerInfo>()
     const onPeer = (event: CustomEvent<PeerInfo>): void => {
       deferred.resolve(event.detail)
@@ -66,6 +68,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
         this.needNext?.resolve()
         this.needNext = pDefer()
 
+        // wait for a walk:peer event
         const peerInfo = await deferred.promise
         deferred = pDefer()
 
