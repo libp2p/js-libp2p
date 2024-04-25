@@ -81,7 +81,21 @@ describe('random-walk', () => {
     expect(yielded).to.equal(1)
   })
 
-  it('should keep walking until done', async () => {
+  it('should throw if walking fails', async () => {
+    const err = new Error('Oh no!')
+    const randomPeer1 = await createRandomPeerInfo()
+
+    peerRouting.getClosestPeers
+      .onFirstCall().returns(async function * () {
+        yield randomPeer1
+        throw err
+      }())
+      .onThirdCall().returns(slowIterator())
+
+    await expect(all(randomwalk.walk())).to.eventually.be.rejectedWith(err)
+  })
+
+  it('should keep walking until the consumer stops pulling', async () => {
     const randomPeer1 = await createRandomPeerInfo()
     const randomPeer2 = await createRandomPeerInfo()
 
@@ -92,7 +106,6 @@ describe('random-walk', () => {
       .onSecondCall().returns(async function * () {
         yield randomPeer2
       }())
-      .onThirdCall().returns(slowIterator())
 
     const peers = await all(take(randomwalk.walk(), 2))
 

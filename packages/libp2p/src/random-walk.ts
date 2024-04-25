@@ -13,6 +13,7 @@ export interface RandomWalkComponents {
 
 interface RandomWalkEvents {
   'walk:peer': CustomEvent<PeerInfo>
+  'walk:error': CustomEvent<Error>
 }
 
 export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements RandomWalkInterface, Startable {
@@ -59,8 +60,12 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
     const onPeer = (event: CustomEvent<PeerInfo>): void => {
       deferred.resolve(event.detail)
     }
+    const onError = (event: CustomEvent<Error>): void => {
+      deferred.reject(event.detail)
+    }
 
     this.addEventListener('walk:peer', onPeer)
+    this.addEventListener('walk:error', onError)
 
     try {
       while (true) {
@@ -68,7 +73,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
         this.needNext?.resolve()
         this.needNext = pDefer()
 
-        // wait for a walk:peer event
+        // wait for a walk:peer or walk:error event
         const peerInfo = await deferred.promise
         deferred = pDefer()
 
@@ -76,6 +81,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
       }
     } finally {
       this.removeEventListener('walk:peer', onPeer)
+      this.removeEventListener('walk:error', onError)
       this.walkers--
 
       // stop the walk if no more consumers are interested
@@ -123,6 +129,10 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
           }
         } catch (err) {
           this.log.error('randomwalk errored', err)
+
+          this.safeDispatchEvent('walk:error', {
+            detail: err
+          })
         }
       }
     })
