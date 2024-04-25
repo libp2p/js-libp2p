@@ -53,9 +53,9 @@ describe('random-walk', () => {
     const randomPeer = await createRandomPeerInfo()
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * () {
+      .onFirstCall().callsFake(async function * () {
         yield randomPeer
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     const peers = await all(take(randomwalk.walk(), 1))
@@ -67,13 +67,13 @@ describe('random-walk', () => {
     let yielded = 0
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+      .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
           options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
         }
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     await drain(take(randomwalk.walk(), 1))
@@ -86,10 +86,10 @@ describe('random-walk', () => {
     const randomPeer1 = await createRandomPeerInfo()
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * () {
+      .onFirstCall().callsFake(async function * () {
         yield randomPeer1
         throw err
-      }())
+      })
       .onThirdCall().returns(slowIterator())
 
     await expect(all(randomwalk.walk())).to.eventually.be.rejectedWith(err)
@@ -100,12 +100,12 @@ describe('random-walk', () => {
     const randomPeer2 = await createRandomPeerInfo()
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * () {
+      .onFirstCall().callsFake(async function * () {
         yield randomPeer1
-      }())
-      .onSecondCall().returns(async function * () {
+      })
+      .onSecondCall().callsFake(async function * () {
         yield randomPeer2
-      }())
+      })
 
     const peers = await all(take(randomwalk.walk(), 2))
 
@@ -117,13 +117,13 @@ describe('random-walk', () => {
 
   it('should join an existing random walk', async () => {
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+      .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
           options?.signal?.throwIfAborted()
           yield await createRandomPeerInfo()
           await delay(100)
         }
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     const [
@@ -141,13 +141,13 @@ describe('random-walk', () => {
     let yielded = 0
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+      .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
           options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
         }
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     await Promise.all([
@@ -162,13 +162,13 @@ describe('random-walk', () => {
     let yielded = 0
 
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+      .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
           options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
         }
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     await Promise.all([
@@ -184,12 +184,12 @@ describe('random-walk', () => {
 
   it('should unpause query if second consumer requires peers', async () => {
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+      .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
           options?.signal?.throwIfAborted()
           yield await createRandomPeerInfo()
         }
-      }())
+      })
       .onSecondCall().returns(slowIterator())
 
     const deferred = pDefer()
