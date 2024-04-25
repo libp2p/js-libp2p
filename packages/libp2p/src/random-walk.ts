@@ -74,10 +74,9 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
         this.needNext = pDefer()
 
         // wait for a walk:peer or walk:error event
-        const peerInfo = await deferred.promise
-        deferred = pDefer()
+        yield await deferred.promise
 
-        yield peerInfo
+        deferred = pDefer()
       }
     } finally {
       this.removeEventListener('walk:peer', onPeer)
