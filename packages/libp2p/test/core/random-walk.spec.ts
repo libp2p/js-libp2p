@@ -8,6 +8,7 @@ import all from 'it-all'
 import drain from 'it-drain'
 import map from 'it-map'
 import take from 'it-take'
+import pDefer from 'p-defer'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { RandomWalk as RandomWalkClass } from '../../src/random-walk.js'
 import type { PeerRouting, PeerInfo, AbortOptions } from '@libp2p/interface'
@@ -68,9 +69,9 @@ describe('random-walk', () => {
     peerRouting.getClosestPeers
       .onFirstCall().returns(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
+          options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
-          options?.signal?.throwIfAborted()
         }
       }())
       .onSecondCall().returns(slowIterator())
@@ -103,8 +104,9 @@ describe('random-walk', () => {
 
   it('should join an existing random walk', async () => {
     peerRouting.getClosestPeers
-      .onFirstCall().returns(async function * () {
+      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
+          options?.signal?.throwIfAborted()
           yield await createRandomPeerInfo()
           await delay(100)
         }
@@ -128,9 +130,9 @@ describe('random-walk', () => {
     peerRouting.getClosestPeers
       .onFirstCall().returns(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
+          options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
-          options?.signal?.throwIfAborted()
         }
       }())
       .onSecondCall().returns(slowIterator())
@@ -149,9 +151,9 @@ describe('random-walk', () => {
     peerRouting.getClosestPeers
       .onFirstCall().returns(async function * (key, options?: AbortOptions) {
         for (let i = 0; i < 100; i++) {
+          options?.signal?.throwIfAborted()
           yielded++
           yield await createRandomPeerInfo()
-          options?.signal?.throwIfAborted()
         }
       }())
       .onSecondCall().returns(slowIterator())
@@ -165,5 +167,44 @@ describe('random-walk', () => {
     ])
 
     expect(yielded).to.equal(7)
+  })
+
+  it('should unpause query if second consumer requires peers', async () => {
+    peerRouting.getClosestPeers
+      .onFirstCall().returns(async function * (key, options?: AbortOptions) {
+        for (let i = 0; i < 100; i++) {
+          options?.signal?.throwIfAborted()
+          yield await createRandomPeerInfo()
+        }
+      }())
+      .onSecondCall().returns(slowIterator())
+
+    const deferred = pDefer()
+
+    // one slow consumer starts
+    const slowPeersPromise = all(map(take(randomwalk.walk(), 2), async (peer, index) => {
+      if (index === 1) {
+        deferred.resolve()
+        await delay(100)
+      }
+
+      return peer
+    }))
+
+    // wait for slow consumer to have received the first peer
+    await deferred.promise
+
+    // start fast consumer
+    const [
+      slowPeers,
+      fastPeers
+    ] = await Promise.all([
+      slowPeersPromise,
+      all(take(randomwalk.walk(), 5))
+    ])
+
+    // both should hav got peers
+    expect(slowPeers).to.have.lengthOf(2)
+    expect(fastPeers).to.have.lengthOf(5)
   })
 })

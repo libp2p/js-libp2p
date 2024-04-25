@@ -62,13 +62,14 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
 
     try {
       while (true) {
+        // if another consumer has paused the query, start it again
+        this.needNext?.resolve()
         this.needNext = pDefer()
 
         const peerInfo = await deferred.promise
         deferred = pDefer()
 
         yield peerInfo
-        this.needNext.resolve()
       }
     } finally {
       this.removeEventListener('walk:peer', onPeer)
@@ -93,16 +94,18 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
     const signal = anySignal([this.walkController.signal, this.shutdownController.signal])
     setMaxListeners(Infinity, signal)
 
-    Promise.resolve().then(async () => {
-      const start = Date.now()
-      let found = 0
+    const start = Date.now()
+    let found = 0
 
+    Promise.resolve().then(async () => {
       this.log('start walk')
 
       // find peers until no more consumers are interested
       while (this.walkers > 0) {
         try {
           for await (const peer of this.peerRouting.getClosestPeers(randomBytes(32), { signal })) {
+            signal.throwIfAborted()
+
             this.log('found peer %p', peer.id)
             found++
             this.safeDispatchEvent('walk:peer', {
@@ -119,12 +122,13 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
           this.log.error('randomwalk errored', err)
         }
       }
-
-      this.log('finished walk, found %d peers after %dms', found, Date.now() - start)
-      this.walking = false
     })
       .catch(err => {
         this.log.error('randomwalk errored', err)
+      })
+      .finally(() => {
+        this.log('finished walk, found %d peers after %dms', found, Date.now() - start)
+        this.walking = false
       })
   }
 }
