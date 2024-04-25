@@ -1,4 +1,4 @@
-import type { AbortOptions, PeerInfo } from '@libp2p/interface'
+import type { PeerInfo } from '@libp2p/interface'
 
 /**
  * RandomWalk finds random peers on the network and dials them. Use this after
@@ -6,8 +6,7 @@ import type { AbortOptions, PeerInfo } from '@libp2p/interface'
  */
 export interface RandomWalk {
   /**
-   * Begin or join an existing walk. Abort the passed signal if you wish to
-   * abort the walk early.
+   * Begin or join an existing walk
    */
-  walk(options?: AbortOptions): AsyncGenerator<PeerInfo>
+  walk(): AsyncGenerator<PeerInfo>
 }
