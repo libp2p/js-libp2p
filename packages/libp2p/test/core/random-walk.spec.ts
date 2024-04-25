@@ -229,4 +229,30 @@ describe('random-walk', () => {
     }))).to.eventually.be.rejected
       .with.property('code', 'ABORT_ERR')
   })
+
+  it('should allow an impatient consumer to abort a slow query but other consumers to receive values', async () => {
+    peerRouting.getClosestPeers.callsFake(async function * (key, options?: AbortOptions) {
+      await delay(100)
+
+      for (let i = 0; i < 100; i++) {
+        options?.signal?.throwIfAborted()
+        yield await createRandomPeerInfo()
+      }
+    })
+
+    const results = await Promise.allSettled([
+      drain(randomwalk.walk({
+        signal: AbortSignal.timeout(10)
+      })),
+      all(take(randomwalk.walk({
+        signal: AbortSignal.timeout(5000)
+      }), 2))
+    ])
+
+    expect(results).to.have.nested.property('[0].status', 'rejected')
+    expect(results).to.have.nested.property('[0].reason.code', 'ABORT_ERR')
+
+    expect(results).to.have.nested.property('[1].status', 'fulfilled')
+    expect(results).to.have.nested.property('[1].value').with.lengthOf(2)
+  })
 })
