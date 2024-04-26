@@ -4,9 +4,8 @@ import { anySignal } from 'any-signal'
 import pDefer, { type DeferredPromise } from 'p-defer'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
-import type { ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
 import type { RandomWalk as RandomWalkInterface } from '@libp2p/interface-internal'
-import type { AbortOptions } from 'it-pushable'
 
 export interface RandomWalkComponents {
   peerRouting: PeerRouting
