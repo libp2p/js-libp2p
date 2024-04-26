@@ -8,8 +8,8 @@ import type { PeerId } from '@libp2p/interface'
 export class PeerFilter {
   private readonly filter: BloomFilter
 
-  constructor (bits: number) {
-    this.filter = BloomFilter.create(bits)
+  constructor (size: number, errorRate?: number) {
+    this.filter = BloomFilter.create(size, errorRate)
   }
 
   has (peerId: PeerId): boolean {
@@ -21,6 +21,6 @@ export class PeerFilter {
   }
 }
 
-export function peerFilter (bits: number): PeerFilter {
-  return new PeerFilter(bits)
+export function peerFilter (size: number): PeerFilter {
+  return new PeerFilter(size)
 }
