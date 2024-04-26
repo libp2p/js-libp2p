@@ -105,6 +105,9 @@
     "it-parallel": "^3.0.6",
     "merge-options": "^3.0.4",
     "multiformats": "^13.1.0",
+    "p-defer": "^4.0.1",
+    "race-event": "^1.3.0",
+    "race-signal": "^1.0.2",
     "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
@@ -121,11 +124,11 @@
     "delay": "^6.0.0",
     "it-all": "^3.0.4",
     "it-drain": "^3.0.5",
-    "it-map": "^3.0.5",
+    "it-map": "^3.1.0",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "p-defer": "^4.0.1",
+    "it-take": "^3.0.4",
     "p-event": "^6.0.1",
     "p-wait-for": "^5.0.2",
     "sinon": "^17.0.1",
