@@ -108,6 +108,20 @@ const set = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
 set.add(peerId)
 ```
 
+## Example - Peer filters
+
+```TypeScript
+import { peerFilter } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+const peerId = await createEd25519PeerId()
+
+const filter = peerFilter(1024)
+filter.has(peerId) // false
+filter.add(peerId)
+filter.has(peerId) // true
+```
+
 # Install
 
 ```console
