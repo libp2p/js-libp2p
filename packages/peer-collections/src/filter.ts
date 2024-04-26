@@ -2,7 +2,7 @@ import { BloomFilter } from '@libp2p/utils/bloom-filter'
 import type { PeerId } from '@libp2p/interface'
 
 /**
- * Uses a Bloom filter to implement a mechansim for deduplicatign PeerIds in a
+ * Uses a Bloom filter to implement a mechansim for deduplicating PeerIds in a
  * way that uses a fixed amount of memory.
  */
 export class PeerFilter {
