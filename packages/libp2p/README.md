@@ -86,15 +86,15 @@ It is complementary to the overarching libp2p project roadmap: <https://github.c
 
 ### Configuration
 
-For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
+For all the information on how you can configure libp2p see [CONFIGURATION.md](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md).
 
 ## Limits
 
-For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
+For help configuring your node to resist malicious network peers, see [LIMITS.md](https://github.com/libp2p/js-libp2p/blob/main/doc/LIMITS.md)
 
 ## Getting started
 
-If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
+If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide.
 
 ## Tutorials and Examples
 
@@ -200,8 +200,8 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

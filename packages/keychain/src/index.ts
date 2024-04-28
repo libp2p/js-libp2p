@@ -42,7 +42,7 @@
  * }
  * ```
  *
- * ![key storage](./doc/private-key.png?raw=true)
+ * ![key storage](https://github.com/libp2p/js-libp2p/blob/main/doc/private-key.png?raw=true)
  *
  * ## Physical storage
  *

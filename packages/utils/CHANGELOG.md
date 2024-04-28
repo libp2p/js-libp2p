@@ -36,6 +36,47 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.3.2](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.1...utils-v5.3.2) (2024-04-24)
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.2.0 to ^1.3.0
+    * @libp2p/logger bumped from ^4.0.10 to ^4.0.11
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.10 to ^4.1.0
+
+## [5.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.0...utils-v5.3.1) (2024-04-15)
+
+
+### Bug Fixes
+
+* ensure abort listeners are removed from queue jobs ([#2482](https://github.com/libp2p/js-libp2p/issues/2482)) ([f45dc5d](https://github.com/libp2p/js-libp2p/commit/f45dc5dc6f297c0df21262b644160653e83137a3))
+
+## [5.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.8...utils-v5.3.0) (2024-04-12)
+
+
+### Features
+
+* add queue success and failure events ([#2481](https://github.com/libp2p/js-libp2p/issues/2481)) ([b17824a](https://github.com/libp2p/js-libp2p/commit/b17824a1d54ef83f32fc658cd7b7a623f809874c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+
 ## [5.2.8](https://github.com/libp2p/js-libp2p/compare/utils-v5.2.7...utils-v5.2.8) (2024-04-05)
 
 

@@ -108,6 +108,20 @@ const set = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
 set.add(peerId)
 ```
 
+## Example - Peer filters
+
+```TypeScript
+import { peerFilter } from '@libp2p/peer-collections'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+
+const peerId = await createEd25519PeerId()
+
+const filter = peerFilter(1024)
+filter.has(peerId) // false
+filter.add(peerId)
+filter.has(peerId) // true
+```
+
 # Install
 
 ```console
@@ -130,8 +144,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/peer-collections/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/peer-collections/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

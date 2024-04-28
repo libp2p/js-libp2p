@@ -6,12 +6,13 @@ import { isPromise } from '../util.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
 import * as crypto from './rsa.js'
+import type { PublicKey, PrivateKey } from '@libp2p/interface'
 import type { Multibase } from 'multiformats'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const MAX_RSA_KEY_SIZE = 8192
 
-export class RsaPublicKey {
+export class RsaPublicKey implements PublicKey<'RSA'> {
   private readonly _key: JsonWebKey
 
   constructor (key: JsonWebKey) {
@@ -48,7 +49,7 @@ export class RsaPublicKey {
   }
 }
 
-export class RsaPrivateKey {
+export class RsaPrivateKey implements PrivateKey<'RSA'> {
   private readonly _key: JsonWebKey
   private readonly _publicKey: JsonWebKey
 
