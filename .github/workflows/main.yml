@@ -46,6 +46,10 @@ jobs:
       fail-fast: true
     steps:
       - uses: actions/checkout@v4
+      # needed for webtransport tests, remove after https://github.com/libp2p/js-libp2p/pull/2422
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: '1.22'
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
