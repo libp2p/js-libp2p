@@ -142,9 +142,7 @@ class WebTransportTransport implements Transport {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
           value: certhash.digest
-        })),
-        // @ts-expect-error undocumented option
-        quicheLogVerbose: 3
+        }))
       })
 
       cleanUpWTSession = (metric: string) => {
