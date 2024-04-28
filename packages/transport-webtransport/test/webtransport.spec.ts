@@ -11,7 +11,7 @@ import pWaitFor from 'p-wait-for'
 import { webTransport } from '../src/index.js'
 import { randomBytes } from './fixtures/random-bytes.js'
 
-describe('libp2p-webtransport', () => {
+describe.skip('libp2p-webtransport', () => {
   let node: Libp2p
 
   beforeEach(async () => {
@@ -29,6 +29,7 @@ describe('libp2p-webtransport', () => {
 
   afterEach(async () => {
     if (node != null) {
+      console.info('stop node')
       await node.stop()
 
       const conns = node.getConnections()

@@ -7,6 +7,7 @@ import toIt from 'browser-readablestream-to-it'
 import { base64url } from 'multiformats/bases/base64'
 import { createServer } from './create-server.js'
 import { webtransportMuxer } from './muxer.js'
+import { generateWebTransportCertificates } from './utils/generate-certificates.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import type { WebTransportServer } from './create-server.js'
 import type { WebTransportCertificate } from './index.js'
@@ -42,12 +43,12 @@ function getNetworkAddrs (family: string): string[] {
 
 const ProtoFamily = { ip4: 'IPv4', ip6: 'IPv6' }
 
-function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number, certificates: WebTransportCertificate[]): Multiaddr[] {
+function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number, certificates: WebTransportCertificate[] = []): Multiaddr[] {
   const certhashes = certificates.map(cert => {
     return `/certhash/${base64url.encode(cert.hash.bytes)}`
   }).join('')
 
-  const toMa = (ip: string): Multiaddr => multiaddr(`/${proto}/${ip}/udp/${port}/quic/webtransport${certhashes}`)
+  const toMa = (ip: string): Multiaddr => multiaddr(`/${proto}/${ip}/udp/${port}/quic-v1/webtransport${certhashes}`)
   return (isAnyAddr(ip) ? getNetworkAddrs(ProtoFamily[proto]) : [ip]).map(toMa)
 }
 
@@ -60,7 +61,7 @@ export interface WebTransportListenerComponents {
 interface WebTransportListenerInit extends CreateListenerOptions {
   handler?(conn: Connection): void
   upgrader: Upgrader
-  certificates: WebTransportCertificate[]
+  certificates?: WebTransportCertificate[]
   maxInboundStreams?: number
 }
 
@@ -68,7 +69,7 @@ type Status = { started: false } | { started: true, listeningAddr: Multiaddr, pe
 
 class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private server?: WebTransportServer
-  private readonly certificates: WebTransportCertificate[]
+  private certificates?: WebTransportCertificate[]
   private readonly peerId: PeerId
   private readonly upgrader: Upgrader
   private readonly handler?: (conn: Connection) => void
@@ -118,7 +119,7 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
 
     const encrypter = noise({
       extensions: {
-        webtransportCerthashes: this.certificates.map(cert => cert.hash.bytes)
+        webtransportCerthashes: this.certificates?.map(cert => cert.hash.bytes) ?? []
       }
     })(this.components)
     const duplex: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = {
@@ -232,6 +233,20 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
 
   async listen (ma: Multiaddr): Promise<void> {
     this.log('listen on multiaddr %s', ma)
+    let certificates = this.certificates
+
+    if (certificates == null || certificates.length === 0) {
+      this.log('generating certificates')
+
+      certificates = this.certificates = await generateWebTransportCertificates([{
+        // can be max 14 days according to the spec
+        days: 13
+      }, {
+        days: 13,
+        // start in 12 days time
+        start: new Date(Date.now() + (86400000 * 12))
+      }])
+    }
 
     const peerId = ma.getPeerId()
     const listeningAddr = peerId == null ? ma.decapsulateCode(CODE_P2P) : ma
@@ -243,9 +258,9 @@ class WebTransportListener extends TypedEventEmitter<ListenerEvents> implements 
     const server = this.server = createServer(this.components, {
       port: options.port,
       host: options.host,
-      secret: this.certificates[0].secret,
-      cert: this.certificates[0].pem,
-      privKey: this.certificates[0].privateKey
+      secret: certificates[0].secret,
+      cert: certificates[0].pem,
+      privKey: certificates[0].privateKey
     })
 
     server.addEventListener('listening', () => {

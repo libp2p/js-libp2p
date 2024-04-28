@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { base64url } from 'multiformats/bases/base64'
 import sinon from 'sinon'
 import { webTransport, type WebTransportComponents } from '../src/index.js'
-import { generateWebTransportCertificates } from './fixtures/certificate.js'
+import { generateWebTransportCertificates } from '../src/utils/generate-certificates.js'
 
 describe('interface-transport compliance', () => {
   tests({
