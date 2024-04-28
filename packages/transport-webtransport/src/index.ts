@@ -208,7 +208,7 @@ class WebTransportTransport implements Transport {
 
       maConn = {
         close: async () => {
-          this.log('Closing webtransport')
+          this.log('closing webtransport')
           cleanUpWTSession('close')
         },
         abort: (err: Error) => {
