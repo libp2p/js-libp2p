@@ -12,5 +12,9 @@ describe('peer-filter', () => {
     filter.add(peer)
 
     expect(filter.has(peer)).to.be.true()
+
+    filter.remove(peer)
+
+    expect(filter.has(peer)).to.be.false()
   })
 })

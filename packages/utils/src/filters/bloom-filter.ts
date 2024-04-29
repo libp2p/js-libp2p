@@ -4,6 +4,7 @@ import mur from 'murmurhash3js-revisited'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { alloc } from 'uint8arrays/alloc'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { Filter } from './index.js'
 
 const LN2_SQUARED = Math.LN2 * Math.LN2
 
@@ -13,16 +14,7 @@ export interface BloomFilterOptions {
   bits?: number
 }
 
-export class BloomFilter {
-  /**
-   * Create a `BloomFilter` with the smallest `bits` and `hashes` value for the
-   * specified item count and error rate.
-   */
-  static create (itemcount: number, errorRate: number = 0.005): BloomFilter {
-    const opts = optimize(itemcount, errorRate)
-    return new BloomFilter(opts)
-  }
-
+export class BloomFilter implements Filter {
   public readonly seeds: number[]
   public readonly bits: number
   public buffer: Uint8Array
@@ -111,9 +103,18 @@ export class BloomFilter {
   }
 }
 
-function optimize (itemcount: number, errorRate: number = 0.005): { bits: number, hashes: number } {
-  const bits = Math.round(-1 * itemcount * Math.log(errorRate) / LN2_SQUARED)
-  const hashes = Math.round((bits / itemcount) * Math.LN2)
+/**
+ * Create a `BloomFilter` with the smallest `bits` and `hashes` value for the
+ * specified item count and error rate.
+ */
+export function createBloomFilter (itemcount: number, errorRate: number = 0.005): Filter {
+  const opts = optimize(itemcount, errorRate)
+  return new BloomFilter(opts)
+}
+
+function optimize (itemCount: number, errorRate: number = 0.005): { bits: number, hashes: number } {
+  const bits = Math.round(-1 * itemCount * Math.log(errorRate) / LN2_SQUARED)
+  const hashes = Math.round((bits / itemCount) * Math.LN2)
 
   return { bits, hashes }
 }
