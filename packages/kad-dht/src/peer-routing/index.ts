@@ -319,7 +319,7 @@ export class PeerRouting {
     if (output.length > 0) {
       this.log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
     } else {
-      this.log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
+      this.log('getCloserPeersOffline could not find peer closer to %b than %p with %d peers in the routing table', key, closerThan, this.routingTable.size)
     }
 
     return output

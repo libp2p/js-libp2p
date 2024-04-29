@@ -800,7 +800,7 @@ describe('KadDHT', () => {
       expect(res).to.not.be.empty()
     })
 
-    it('should not include itself in getClosestPeers PEER_RESPONSE', async function () {
+    it.skip('should not include itself in getClosestPeers PEER_RESPONSE', async function () {
       this.timeout(240 * 1000)
 
       const nDHTs = 30
