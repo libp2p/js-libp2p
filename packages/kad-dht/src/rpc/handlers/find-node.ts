@@ -1,10 +1,13 @@
 import { CodeError } from '@libp2p/interface'
+import { protocols } from '@multiformats/multiaddr'
+import { equals as uint8ArrayEquals } from 'uint8arrays'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
 import type { Message } from '../../message/dht.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { DHTMessageHandler } from '../index.js'
 import type { ComponentLogger, Logger, PeerId, PeerInfo } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 
 export interface FindNodeHandlerInit {
   peerRouting: PeerRouting
@@ -14,6 +17,7 @@ export interface FindNodeHandlerInit {
 
 export interface FindNodeHandlerComponents {
   peerId: PeerId
+  addressManager: AddressManager
   logger: ComponentLogger
 }
 
@@ -21,6 +25,7 @@ export class FindNodeHandler implements DHTMessageHandler {
   private readonly peerRouting: PeerRouting
   private readonly peerInfoMapper: PeerInfoMapper
   private readonly peerId: PeerId
+  private readonly addressManager: AddressManager
   private readonly log: Logger
 
   constructor (components: FindNodeHandlerComponents, init: FindNodeHandlerInit) {
@@ -28,6 +33,7 @@ export class FindNodeHandler implements DHTMessageHandler {
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:find-node`)
     this.peerId = components.peerId
+    this.addressManager = components.addressManager
     this.peerRouting = peerRouting
     this.peerInfoMapper = init.peerInfoMapper
   }
@@ -44,13 +50,19 @@ export class FindNodeHandler implements DHTMessageHandler {
 
     const closer: PeerInfo[] = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
 
+    if (uint8ArrayEquals(this.peerId.toBytes(), msg.key)) {
+      closer.push({
+        id: this.peerId,
+        multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+      })
+    }
+
     const response: Message = {
       type: MessageType.FIND_NODE,
       clusterLevel: msg.clusterLevel,
       closer: closer
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
-        .filter(({ id }) => !id.equals(this.peerId))
         .map(peerInfo => ({
           id: peerInfo.id.toBytes(),
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
