@@ -100,8 +100,18 @@ export class WebRTCTransport implements Transport, Startable {
 
   readonly [transportSymbol] = true
 
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  /**
+   * Filter check for all Multiaddrs that this transport can listen on
+   */
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTC.exactMatch)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 
   /*

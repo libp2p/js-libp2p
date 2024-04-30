@@ -316,10 +316,25 @@ class WebTransportTransport implements Transport {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
+   * Filter check for all Multiaddrs that this transport can listen on
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(WebTransportMatcher.exactMatch)
+  listenFilter (): Multiaddr[] {
+    return []
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return multiaddrs.filter(ma => {
+      if (!WebTransportMatcher.exactMatch(ma)) {
+        return false
+      }
+
+      const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+
+      return url != null && remotePeer != null && certhashes.length > 0
+    })
   }
 }
 

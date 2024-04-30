@@ -231,7 +231,7 @@ export class AutoNATService implements Startable {
               return isNotOurHost
             })
             .filter(ma => {
-              const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
+              const isSupportedTransport = Boolean(self.components.transportManager.dialTransportForMultiaddr(ma))
 
               self.log.trace('transport for %a is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support

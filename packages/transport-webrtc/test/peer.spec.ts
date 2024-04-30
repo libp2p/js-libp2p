@@ -262,7 +262,7 @@ describe('webrtc filter', () => {
       multiaddr('/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/webrtc/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
     ]
 
-    expect(transport.filter(valid)).length(1)
+    expect(transport.dialFilter(valid)).length(1)
   })
 })
 
