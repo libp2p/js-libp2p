@@ -51,7 +51,7 @@ export class RoutingTableRefresh {
     this.refreshTable = this.refreshTable.bind(this)
   }
 
-  async start (): Promise<void> {
+  async afterStart (): Promise<void> {
     this.log(`refreshing routing table every ${this.refreshInterval}ms`)
     this.refreshTable(true)
   }
