@@ -1,14 +1,18 @@
+/* eslint-disable no-console */
 import { spawn, exec } from 'child_process'
-import { existsSync } from 'fs'
+import { existsSync } from 'node:fs'
+import os from 'node:os'
 import defer from 'p-defer'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
   test: {
-    async before() {
+    async before () {
+      const main = os.platform() === 'win32' ? 'main.exe' : 'main'
+
       if (!existsSync('./go-libp2p-webtransport-server/main')) {
         await new Promise((resolve, reject) => {
-          exec('go build -o main main.go',
+          exec(`go build -o ${main} main.go`,
             { cwd: './go-libp2p-webtransport-server' },
             (error, stdout, stderr) => {
               if (error) {
@@ -21,7 +25,7 @@ export default {
         })
       }
 
-      const server = spawn('./main', [], { cwd: './go-libp2p-webtransport-server', killSignal: 'SIGINT' })
+      const server = spawn(`./${main}`, [], { cwd: './go-libp2p-webtransport-server', killSignal: 'SIGINT' })
       server.stderr.on('data', (data) => {
         console.log('stderr:', data.toString())
       })
@@ -53,7 +57,7 @@ export default {
         }
       }
     },
-    async after(_, { server }) {
+    async after (_, { server }) {
       server.kill('SIGINT')
     }
   },
