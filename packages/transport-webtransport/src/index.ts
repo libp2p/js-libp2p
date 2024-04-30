@@ -196,7 +196,7 @@ class WebTransportTransport implements Transport {
           cleanUpWTSession('remote_close')
         })
 
-      const authenticated = await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)
+      authenticated = await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)
 
       if (!authenticated) {
         throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
@@ -221,8 +221,6 @@ class WebTransportTransport implements Transport {
         // This connection is never used directly since webtransport supports native streams.
         ...inertDuplex()
       }
-
-      authenticated = true
 
       return await options.upgrader.upgradeOutbound(maConn, {
         skipEncryption: true,
