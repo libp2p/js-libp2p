@@ -196,12 +196,10 @@ class WebTransportTransport implements Transport {
           cleanUpWTSession('remote_close')
         })
 
-      if (!await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)) {
-        throw new Error('Failed to authenticate webtransport')
-      }
+      const authenticated = await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)
 
-      if (options?.signal?.aborted === true) {
-        throw new AbortError()
+      if (!authenticated) {
+        throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
       }
 
       this.metrics?.dialerEvents.increment({ open: true })
