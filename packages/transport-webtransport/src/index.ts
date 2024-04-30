@@ -377,15 +377,23 @@ class WebTransportTransport implements Transport {
   /**
    * Filter check for all Multiaddrs that this transport can listen on
    */
-  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(WebTransportMatcher.exactMatch)
+  listenFilter (): Multiaddr[] {
+    return []
   }
 
   /**
    * Filter check for all Multiaddrs that this transport can dial
    */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return this.listenFilter(multiaddrs)
+    return multiaddrs.filter(ma => {
+      if (!WebTransportMatcher.exactMatch(ma)) {
+        return false
+      }
+
+      const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+
+      return url != null && remotePeer != null && certhashes.length > 0
+    })
   }
 }
 
