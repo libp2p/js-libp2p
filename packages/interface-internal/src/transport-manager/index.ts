@@ -31,9 +31,15 @@ export interface TransportManager {
   getListeners(): Listener[]
 
   /**
-   * Get the transport for a given multiaddr, if one has been configured
+   * Get the transport to dial a given multiaddr, if one has been configured
    */
-  transportForMultiaddr(ma: Multiaddr): Transport | undefined
+  dialTransportForMultiaddr(ma: Multiaddr): Transport | undefined
+
+  /**
+   * Get the transport to listen on a given multiaddr, if one has been
+   * configured
+   */
+  listenTransportForMultiaddr(ma: Multiaddr): Transport | undefined
 
   /**
    * Listen on the passed multiaddrs

@@ -398,7 +398,7 @@ export class DialQueue {
 
     const filteredAddrs = resolvedAddresses.filter(addr => {
       // filter out any multiaddrs that we do not have transports for
-      if (this.components.transportManager.transportForMultiaddr(addr.multiaddr) == null) {
+      if (this.components.transportManager.dialTransportForMultiaddr(addr.multiaddr) == null) {
         return false
       }
 
