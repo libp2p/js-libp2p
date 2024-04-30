@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-env mocha */
 
 import { noise } from '@chainsafe/libp2p-noise'
@@ -29,7 +28,6 @@ describe('libp2p-webtransport', () => {
 
   afterEach(async () => {
     if (node != null) {
-      console.info('stop node')
       await node.stop()
 
       const conns = node.getConnections()
