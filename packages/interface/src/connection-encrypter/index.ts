@@ -15,14 +15,14 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localPeer: PeerId, connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
+  secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localPeer: PeerId, connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
+  secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (connection: Stream, remotePeer?: PeerId): Promise<SecuredConnection<Stream, Extension>>
 }
 
 export interface SecuredConnection<Stream = any, Extension = unknown> {
