@@ -116,7 +116,7 @@ describe('libp2p-webtransport', () => {
     expect(err.toString()).to.contain('aborted')
   })
 
-  it.skip('connects to ipv6 addresses', async function () {
+  it('connects to ipv6 addresses', async function () {
     if (process.env.disableIp6 === 'true') {
       return this.skip()
     }
