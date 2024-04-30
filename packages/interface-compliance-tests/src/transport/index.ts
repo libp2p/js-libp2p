@@ -11,7 +11,8 @@ export interface Connector {
 }
 
 export interface TransportTestFixtures {
-  addrs: Multiaddr[]
+  listenAddrs: Multiaddr[]
+  dialAddrs: Multiaddr[]
   transport: Transport
   connector: Connector
 }

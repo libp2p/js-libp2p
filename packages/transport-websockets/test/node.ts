@@ -492,7 +492,7 @@ describe('filter addrs', () => {
       const ma3 = multiaddr('/ip6/::1/tcp/80')
       const ma4 = multiaddr('/dnsaddr/ipfs.io/tcp/80')
 
-      const valid = ws.filter([ma1, ma2, ma3, ma4])
+      const valid = ws.dialFilter([ma1, ma2, ma3, ma4])
       expect(valid.length).to.equal(0)
     })
 
@@ -501,7 +501,7 @@ describe('filter addrs', () => {
       const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws')
       const ma3 = multiaddr('/dnsaddr/ipfs.io/tcp/80/wss')
 
-      const valid = ws.filter([ma1, ma2, ma3])
+      const valid = ws.dialFilter([ma1, ma2, ma3])
       expect(valid.length).to.equal(3)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -512,7 +512,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -522,7 +522,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns4/ipfs.io/tcp/80/ws')
       const ma2 = multiaddr('/dns4/ipfs.io/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -532,7 +532,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws')
       const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -542,7 +542,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -562,7 +562,7 @@ describe('filter addrs', () => {
       const ma3 = multiaddr('/ip6/::1/tcp/80')
       const ma4 = multiaddr('/dnsaddr/ipfs.io/tcp/80')
 
-      const valid = ws.filter([ma1, ma2, ma3, ma4])
+      const valid = ws.dialFilter([ma1, ma2, ma3, ma4])
       expect(valid.length).to.equal(0)
     })
 
@@ -570,7 +570,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws')
       const ma2 = multiaddr('/ip4/127.0.0.1/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -580,7 +580,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/ip4/127.0.0.1/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/ip4/127.0.0.1/tcp/80/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -590,7 +590,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/ip6/::1/tcp/80/ws')
       const ma2 = multiaddr('/ip6/::1/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -600,7 +600,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/ip6/::1/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/ip6/::1/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -611,7 +611,7 @@ describe('filter addrs', () => {
       const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws')
       const ma3 = multiaddr('/dnsaddr/ipfs.io/tcp/80/wss')
 
-      const valid = ws.filter([ma1, ma2, ma3])
+      const valid = ws.dialFilter([ma1, ma2, ma3])
       expect(valid.length).to.equal(3)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -622,7 +622,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dnsaddr/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/dnsaddr/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -632,7 +632,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns4/ipfs.io/tcp/80/ws')
       const ma2 = multiaddr('/dns4/ipfs.io/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -642,7 +642,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws')
       const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -652,7 +652,7 @@ describe('filter addrs', () => {
       const ma1 = multiaddr('/dns6/ipfs.io/tcp/80/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
       const ma2 = multiaddr('/dns6/ipfs.io/tcp/443/wss/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2])
+      const valid = ws.dialFilter([ma1, ma2])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma2)
@@ -666,7 +666,7 @@ describe('filter addrs', () => {
       const mh5 = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw' +
         '/p2p-circuit/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma1, ma2, ma3, ma4, mh5])
+      const valid = ws.dialFilter([ma1, ma2, ma3, ma4, mh5])
       expect(valid.length).to.equal(2)
       expect(valid[0]).to.deep.equal(ma1)
       expect(valid[1]).to.deep.equal(ma4)
@@ -675,7 +675,7 @@ describe('filter addrs', () => {
     it('filter a single addr for this transport', () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
-      const valid = ws.filter([ma])
+      const valid = ws.dialFilter([ma])
       expect(valid.length).to.equal(1)
       expect(valid[0]).to.deep.equal(ma)
     })
