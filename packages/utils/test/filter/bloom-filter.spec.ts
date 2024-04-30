@@ -1,7 +1,7 @@
 // ported from xxbloom - https://github.com/ceejbot/xxbloom/blob/master/LICENSE
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { BloomFilter } from '../src/bloom-filter.js'
+import { BloomFilter, createBloomFilter } from '../../src/filters/bloom-filter.js'
 
 function hasBitsSet (buffer: Uint8Array): number {
   let isset = 0
@@ -33,27 +33,29 @@ describe('bloom-filter', () => {
     expect(filter.seeds[4]).to.equal(5)
   })
 
-  describe('createOptimal()', () => {
+  describe('createBloomFilter()', () => {
     it('creates a filter with good defaults', () => {
-      let filter = BloomFilter.create(95)
-      expect(filter.bits).to.equal(1048)
-      expect(filter.seeds.length).to.equal(8)
+      let filter = createBloomFilter(95)
+      expect(filter).to.have.property('bits', 1048)
+      expect(filter).to.have.property('seeds').with.lengthOf(8)
 
-      filter = BloomFilter.create(148)
-      expect(filter.bits).to.equal(1632)
-      expect(filter.seeds.length).to.equal(8)
+      filter = createBloomFilter(148)
+      expect(filter).to.have.property('bits', 1632)
+      expect(filter).to.have.property('seeds').with.lengthOf(8)
 
-      filter = BloomFilter.create(10)
-      expect(filter.bits).to.equal(110)
-      expect(filter.seeds.length).to.equal(8)
+      filter = createBloomFilter(10)
+      expect(filter).to.have.property('bits', 110)
+      expect(filter).to.have.property('seeds').with.lengthOf(8)
     })
 
-    it('createOptimal() lets you specify an error rate', () => {
-      let filter = BloomFilter.create(20000)
-      expect(filter.bits).to.equal(220555)
+    it('createBloomFilter() lets you specify an error rate', () => {
+      let filter = createBloomFilter(20000)
+      expect(filter).to.have.property('bits', 220555)
+      // @ts-expect-error private field
       const previous = filter.bits
 
-      filter = BloomFilter.create(20000, 0.2)
+      filter = createBloomFilter(20000, 0.2)
+      // @ts-expect-error private field
       expect(filter.bits).to.be.below(previous)
     })
   })
@@ -141,7 +143,7 @@ describe('bloom-filter', () => {
         return result
       }
 
-      const filter = BloomFilter.create(100)
+      const filter = createBloomFilter(100)
       const words: string[] = []
 
       for (let i = 0; i < 100; i++) {
