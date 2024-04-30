@@ -74,10 +74,13 @@
     "p-wait-for": "^5.0.2"
   },
   "browser": {
-    "./dist/src/listener.js": "./dist/src/listener.browser.js"
+    "./dist/src/listener.js": "./dist/src/listener.browser.js",
+    "./dist/src/webtransport.js": "./dist/src/webtransport.browser.js"
   },
   "react-native": {
-    "./dist/src/listener.js": "./dist/src/listener.browser.js"
+    "./dist/src/listener.js": "./dist/src/listener.browser.js",
+    "./dist/src/webtransport.js": "./dist/src/webtransport.browser.js",
+    "./dist/src/utils/generate-certificates.js": "./dist/src/utils/generate-certificates.browser.js"
   },
   "sideEffects": false
 }
