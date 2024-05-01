@@ -318,8 +318,8 @@ class WebTransportTransport implements Transport {
   /**
    * Filter check for all Multiaddrs that this transport can listen on
    */
-  listenFilter (): Multiaddr[] {
-    return []
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return multiaddrs.filter(ma => WebTransportMatcher.exactMatch(ma))
   }
 
   /**

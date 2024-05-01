@@ -30,7 +30,13 @@ describe('interface-transport compliance', () => {
       const transport = webTransport({
         certificates
       })(components)
-      const addrs = [
+      const listenAddrs = [
+        multiaddr('/ip4/127.0.0.1/udp/9091/quic-v1/webtransport'),
+        multiaddr('/ip4/127.0.0.1/udp/9092/quic-v1/webtransport'),
+        multiaddr('/ip4/127.0.0.1/udp/9093/quic-v1/webtransport'),
+        multiaddr('/ip6/::/udp/9094/quic-v1/webtransport')
+      ]
+      const dialAddrs = [
         multiaddr(`/ip4/127.0.0.1/udp/9091/quic-v1/webtransport/certhash/${certhash1}/certhash/${certhash2}/p2p/${components.peerId.toString()}`),
         multiaddr(`/ip4/127.0.0.1/udp/9092/quic-v1/webtransport/certhash/${certhash1}/certhash/${certhash2}/p2p/${components.peerId.toString()}`),
         multiaddr(`/ip4/127.0.0.1/udp/9093/quic-v1/webtransport/certhash/${certhash1}/certhash/${certhash2}/p2p/${components.peerId.toString()}`),
@@ -57,7 +63,7 @@ describe('interface-transport compliance', () => {
         }
       }
 
-      return { transport, addrs, connector }
+      return { transport, listenAddrs, dialAddrs, connector }
     },
     async teardown () {}
   })
