@@ -111,6 +111,31 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.30](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.29...webrtc-v4.0.30) (2024-05-01)
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+
+### Dependencies
+
+* bump node-datachannel from 0.7.0 to 0.8.0 ([#2504](https://github.com/libp2p/js-libp2p/issues/2504)) ([90cfd25](https://github.com/libp2p/js-libp2p/commit/90cfd25e29a5642575f8aef3c60750f04129e1e5))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/interface-internal bumped from ^1.1.1 to ^1.2.0
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.21 to ^1.0.22
+    * @libp2p/interface-compliance-tests bumped from ^5.4.2 to ^5.4.3
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/websockets bumped from ^8.0.21 to ^8.0.22
+    * libp2p bumped from ^1.4.3 to ^1.5.0
+
 ## [4.0.29](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.28...webrtc-v4.0.29) (2024-04-24)
 
 

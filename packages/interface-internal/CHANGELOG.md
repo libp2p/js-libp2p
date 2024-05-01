@@ -32,6 +32,26 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.1.1...interface-internal-v1.2.0) (2024-05-01)
+
+
+### Features
+
+* add random walk component ([#2501](https://github.com/libp2p/js-libp2p/issues/2501)) ([998fcaf](https://github.com/libp2p/js-libp2p/commit/998fcaf94889251817a3bbaaad9b654bebdf3a6e))
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-collections bumped from ^5.1.11 to ^5.2.0
+
 ## [1.1.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.1.0...interface-internal-v1.1.1) (2024-04-24)
 
 

@@ -36,6 +36,25 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.2...utils-v5.4.0) (2024-05-01)
+
+
+### Features
+
+* add bloom filter ([#2507](https://github.com/libp2p/js-libp2p/issues/2507)) ([e1923b0](https://github.com/libp2p/js-libp2p/commit/e1923b0a70c9b31b70e3f3f10cd1984daafe592a))
+* add cuckoo filter ([#2510](https://github.com/libp2p/js-libp2p/issues/2510)) ([3d7a9da](https://github.com/libp2p/js-libp2p/commit/3d7a9da1700a584ff2d1a3b252f084e0de7d0c82))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+
 ## [5.3.2](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.1...utils-v5.3.2) (2024-04-24)
 
 
