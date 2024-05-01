@@ -142,10 +142,10 @@ describe('identify', () => {
   })
 
   it('should limit incoming identify message sizes', async () => {
-    const maxIdentifyMessageSize = 100
+    const maxMessageSize = 100
 
     identify = new Identify(components, {
-      maxIdentifyMessageSize
+      maxMessageSize
     })
 
     await start(identify)
@@ -159,7 +159,7 @@ describe('identify', () => {
       await drain(source)
     })
 
-    void input.push(lp.encode.single(new Uint8Array(maxIdentifyMessageSize + 1)))
+    void input.push(lp.encode.single(new Uint8Array(maxMessageSize + 1)))
 
     // run identify
     await expect(identify.identify(connection))
@@ -354,7 +354,7 @@ describe('identify', () => {
     })
 
     // handle identify
-    void identify._handleIdentify({
+    void identify.handleProtocol({
       stream: incomingStream,
       connection: stubInterface<Connection>({
         remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA')
