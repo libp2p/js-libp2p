@@ -1,184 +1,110 @@
+import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, ComponentLogger, Direction, Stream } from '@libp2p/interface'
-import type { Source } from 'it-stream-types'
 
-export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {
-  const log = logger.forComponent(`libp2p:webtransport:stream:${direction}:${streamId}`)
-  const writer = bidiStream.writable.getWriter()
-  const reader = bidiStream.readable.getReader()
-  await writer.ready
+interface WebTransportStreamInit extends AbstractStreamInit {
+  bidiStream: WebTransportBidirectionalStream
+}
 
-  function cleanupStreamFromActiveStreams (): void {
-    const index = activeStreams.findIndex(s => s === stream)
-    if (index !== -1) {
-      activeStreams.splice(index, 1)
-      stream.timeline.close = Date.now()
-      onStreamEnd?.(stream)
-    }
-  }
+class WebTransportStream extends AbstractStream {
+  private readonly writer: WritableStreamDefaultWriter<Uint8Array>
+  private readonly reader: ReadableStreamDefaultReader<Uint8Array>
 
-  let writerClosed = false
-  let readerClosed = false;
-  (async function () {
-    const err: Error | undefined = await writer.closed.catch((err: Error) => err)
-    if (err != null) {
-      const msg = err.message
-      if (!(msg.includes('aborted by the remote server') || msg.includes('STOP_SENDING'))) {
-        log.error(`WebTransport writer closed unexpectedly: streamId=${streamId} err=${err.message}`)
-      }
-    }
-    writerClosed = true
-    if (writerClosed && readerClosed) {
-      cleanupStreamFromActiveStreams()
-    }
-  })().catch(() => {
-    log.error('WebTransport failed to cleanup closed stream')
-  });
+  constructor (init: WebTransportStreamInit) {
+    super(init)
 
-  (async function () {
-    const err: Error | undefined = await reader.closed.catch((err: Error) => err)
-    if (err != null) {
-      log.error(`WebTransport reader closed unexpectedly: streamId=${streamId} err=${err.message}`)
-    }
-    readerClosed = true
-    if (writerClosed && readerClosed) {
-      cleanupStreamFromActiveStreams()
-    }
-  })().catch(() => {
-    log.error('WebTransport failed to cleanup closed stream')
-  })
+    this.writer = init.bidiStream.writable.getWriter()
+    this.reader = init.bidiStream.readable.getReader()
 
-  let sinkSunk = false
-  const stream: Stream = {
-    id: streamId,
-    status: 'open',
-    writeStatus: 'ready',
-    readStatus: 'ready',
-    abort (err: Error) {
-      if (!writerClosed) {
-        writer.abort(err)
-          .catch(err => {
-            log.error('could not abort stream', err)
-          })
-        writerClosed = true
-      }
-      readerClosed = true
-
-      this.status = 'aborted'
-      this.writeStatus = 'closed'
-      this.readStatus = 'closed'
-
-      this.timeline.reset =
-        this.timeline.close =
-        this.timeline.closeRead =
-        this.timeline.closeWrite = Date.now()
-
-      cleanupStreamFromActiveStreams()
-    },
-    async close (options?: AbortOptions) {
-      this.status = 'closing'
-
-      await Promise.all([
-        stream.closeRead(options),
-        stream.closeWrite(options)
-      ])
-
-      cleanupStreamFromActiveStreams()
-
-      this.status = 'closed'
-      this.timeline.close = Date.now()
-    },
-
-    async closeRead (options?: AbortOptions) {
-      if (!readerClosed) {
-        this.readStatus = 'closing'
-
-        try {
-          await reader.cancel()
-        } catch (err: any) {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            writerClosed = true
-          }
-        }
-
-        this.timeline.closeRead = Date.now()
-        this.readStatus = 'closed'
-
-        readerClosed = true
-      }
-
-      if (writerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-
-    async closeWrite (options?: AbortOptions) {
-      if (!writerClosed) {
-        writerClosed = true
-
-        this.writeStatus = 'closing'
-
-        try {
-          await writer.close()
-        } catch (err: any) {
-          if (err.toString().includes('RESET_STREAM') === true) {
-            readerClosed = true
-          }
-        }
-
-        this.timeline.closeWrite = Date.now()
-        this.writeStatus = 'closed'
-      }
-
-      if (readerClosed) {
-        cleanupStreamFromActiveStreams()
-      }
-    },
-    direction,
-    timeline: { open: Date.now() },
-    metadata: {},
-    source: (async function * () {
+    Promise.resolve().then(async () => {
       while (true) {
-        const val = await reader.read()
-        if (val.done) {
-          readerClosed = true
-          if (writerClosed) {
-            cleanupStreamFromActiveStreams()
-          }
+        const result = await this.reader.read()
+
+        if (result.done) {
+          init.log('remote closed write')
           return
         }
 
-        yield new Uint8ArrayList(val.value)
-      }
-    })(),
-    sink: async function (source: Source<Uint8Array | Uint8ArrayList>) {
-      if (sinkSunk) {
-        throw new Error('sink already called on stream')
-      }
-      sinkSunk = true
-      try {
-        this.writeStatus = 'writing'
-
-        for await (const chunks of source) {
-          if (chunks instanceof Uint8Array) {
-            await writer.write(chunks)
-          } else {
-            for (const buf of chunks) {
-              await writer.write(buf)
-            }
-          }
+        if (result.value != null) {
+          this.sourcePush(new Uint8ArrayList(result.value))
         }
-
-        this.writeStatus = 'done'
-      } finally {
-        this.timeline.closeWrite = Date.now()
-        this.writeStatus = 'closed'
-
-        await stream.closeWrite()
       }
-    },
-    log
+    })
+      .catch(err => {
+        init.log.error('error reading from stream', err)
+        this.abort(err)
+      })
+      .finally(() => {
+        this.remoteCloseWrite()
+      })
+
+    void this.writer.closed
+      .then(() => {
+        init.log('writer closed')
+      })
+      .catch((err) => {
+        init.log('writer close promise rejected', err)
+      })
+      .finally(() => {
+        this.remoteCloseRead()
+      })
   }
+
+  sendNewStream (options?: AbortOptions | undefined): void {
+    // this is a no-op
+  }
+
+  async sendData (buf: Uint8ArrayList, options?: AbortOptions): Promise<void> {
+    for await (const chunk of buf) {
+      this.log('sendData waiting for writer to be ready')
+      await raceSignal(this.writer.ready, options?.signal)
+
+      // the streams spec recommends not waiting for data to be sent
+      // https://streams.spec.whatwg.org/#example-manual-write-dont-await
+      this.writer.write(chunk)
+        .catch(err => {
+          this.log.error('error sending stream data', err)
+        })
+    }
+  }
+
+  async sendReset (options?: AbortOptions): Promise<void> {
+    this.log('sendReset aborting writer')
+    await raceSignal(this.writer.abort(), options?.signal)
+    this.log('sendReset aborted writer')
+  }
+
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    this.log('sendCloseWrite closing writer')
+    await raceSignal(this.writer.close(), options?.signal)
+    this.log('sendCloseWrite closed writer')
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    this.log('sendCloseRead cancelling reader')
+    await raceSignal(this.reader.cancel(), options?.signal)
+    this.log('sendCloseRead cancelled reader')
+  }
+}
+
+export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {
+  const log = logger.forComponent(`libp2p:webtransport:stream:${direction}:${streamId}`)
+
+  const stream = new WebTransportStream({
+    bidiStream,
+    id: streamId,
+    direction,
+    log,
+    onEnd: () => {
+      const index = activeStreams.findIndex(s => s === stream)
+      if (index !== -1) {
+        activeStreams.splice(index, 1)
+      }
+
+      onStreamEnd?.(stream)
+    }
+  })
 
   return stream
 }
