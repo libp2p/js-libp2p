@@ -5,6 +5,7 @@ import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { Queue, type QueueAddOptions } from '@libp2p/utils/queue'
 import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { type ClearableSignal, anySignal } from 'any-signal'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
@@ -13,11 +14,13 @@ import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL,
-  LAST_DIAL_FAILURE_KEY
+  LAST_DIAL_FAILURE_KEY,
+  MAX_DIAL_QUEUE_LENGTH
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
-import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting } from '@libp2p/interface'
+import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { DNS } from '@multiformats/dns'
 
 export interface PendingDialTarget {
   resolve(value: any): void
@@ -37,6 +40,7 @@ interface DialQueueJobOptions extends QueueAddOptions {
 interface DialerInit {
   addressSorter?: AddressSorter
   maxParallelDials?: number
+  maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
   resolvers?: Record<string, Resolver>
@@ -46,6 +50,7 @@ interface DialerInit {
 const defaultOptions = {
   addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
+  maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
   dialTimeout: DIAL_TIMEOUT,
   resolvers: {
@@ -61,6 +66,7 @@ interface DialQueueComponents {
   transportManager: TransportManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
+  dns?: DNS
 }
 
 export class DialQueue {
@@ -68,6 +74,7 @@ export class DialQueue {
   private readonly components: DialQueueComponents
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
+  private readonly maxDialQueueLength: number
   private readonly dialTimeout: number
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
@@ -76,13 +83,13 @@ export class DialQueue {
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter ?? defaultOptions.addressSorter
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
+    this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions.maxDialQueueLength
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
-
     this.components = components
-    this.shutDownController = new AbortController()
 
+    this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
 
     for (const [key, value] of Object.entries(init.resolvers ?? {})) {
@@ -103,6 +110,7 @@ export class DialQueue {
 
   start (): void {
     this.shutDownController = new AbortController()
+    setMaxListeners(Infinity, this.shutDownController.signal)
   }
 
   /**
@@ -181,6 +189,10 @@ export class DialQueue {
       }
 
       return existingDial.join(options)
+    }
+
+    if (this.queue.size >= this.maxDialQueueLength) {
+      throw new CodeError('Dial queue is full', 'ERR_DIAL_QUEUE_FULL')
     }
 
     this.log('creating dial target for %p', peerId, multiaddrs.map(ma => ma.toString()))
@@ -344,6 +356,7 @@ export class DialQueue {
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
         const result = await resolveMultiaddrs(addr.multiaddr, {
+          dns: this.components.dns,
           ...options,
           log: this.log
         })
@@ -385,7 +398,7 @@ export class DialQueue {
 
     const filteredAddrs = resolvedAddresses.filter(addr => {
       // filter out any multiaddrs that we do not have transports for
-      if (this.components.transportManager.transportForMultiaddr(addr.multiaddr) == null) {
+      if (this.components.transportManager.dialTransportForMultiaddr(addr.multiaddr) == null) {
         return false
       }
 
@@ -443,5 +456,28 @@ export class DialQueue {
     this.log.trace('addresses for %p after filtering', peerId ?? 'unknown peer', sortedGatedAddrs.map(({ multiaddr }) => multiaddr.toString()))
 
     return sortedGatedAddrs
+  }
+
+  async isDialable (multiaddr: Multiaddr | Multiaddr[], options: IsDialableOptions = {}): Promise<boolean> {
+    if (!Array.isArray(multiaddr)) {
+      multiaddr = [multiaddr]
+    }
+
+    try {
+      const addresses = await this.calculateMultiaddrs(undefined, new Set(multiaddr.map(ma => ma.toString())), options)
+
+      if (options.runOnTransientConnection === false) {
+        // return true if any resolved multiaddrs are not relay addresses
+        return addresses.find(addr => {
+          return !Circuit.matches(addr.multiaddr)
+        }) != null
+      }
+
+      return true
+    } catch (err) {
+      this.log.trace('error calculating if multiaddr(s) were dialable', err)
+    }
+
+    return false
   }
 }

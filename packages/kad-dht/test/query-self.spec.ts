@@ -70,10 +70,8 @@ describe('Query Self', () => {
     })
 
     // should have registered a peer:add listener
-    // @ts-expect-error ts-sinon makes every property access a function and p-event checks this one first
-    expect(routingTable.on).to.have.property('callCount', 2)
-    // @ts-expect-error ts-sinon makes every property access a function and p-event checks this one first
-    expect(routingTable.on.getCall(0)).to.have.nested.property('args[0]', 'peer:add')
+    expect(routingTable.addEventListener).to.have.property('callCount', 2)
+    expect(routingTable.addEventListener.getCall(0)).to.have.nested.property('args[0]', 'peer:add')
 
     // self query results
     peerRouting.getClosestPeers.withArgs(peerId.toBytes()).returns(async function * () {
@@ -87,7 +85,7 @@ describe('Query Self', () => {
     }())
 
     // @ts-expect-error args[1] type could be an object
-    routingTable.on.getCall(0).args[1](new CustomEvent('peer:add', { detail: remotePeer }))
+    routingTable.addEventListener.getCall(0).args[1](new CustomEvent('peer:add', { detail: remotePeer }))
 
     // self-query should complete
     await querySelfPromise
@@ -118,7 +116,7 @@ describe('Query Self', () => {
     }())
 
     // @ts-expect-error args[1] type could be an object
-    routingTable.on.getCall(0).args[1](new CustomEvent('peer:add', { detail: remotePeer }))
+    routingTable.addEventListener.getCall(0).args[1](new CustomEvent('peer:add', { detail: remotePeer }))
 
     // both self-query promises should resolve
     await Promise.all([querySelfPromise1, querySelfPromise2])

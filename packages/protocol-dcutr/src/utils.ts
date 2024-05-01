@@ -13,7 +13,7 @@ export function isPublicAndDialable (ma: Multiaddr, transportManager: TransportM
     return false
   }
 
-  const transport = transportManager.transportForMultiaddr(ma)
+  const transport = transportManager.dialTransportForMultiaddr(ma)
 
   if (transport == null) {
     return false

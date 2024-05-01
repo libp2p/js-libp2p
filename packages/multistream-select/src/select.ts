@@ -28,7 +28,7 @@ export interface SelectStream extends Duplex<any, any, any> {
  * @returns A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { pipe } from 'it-pipe'
  * import * as mss from '@libp2p/multistream-select'
  * import { Mplex } from '@libp2p/mplex'

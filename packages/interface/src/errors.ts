@@ -9,6 +9,7 @@ export class AbortError extends Error {
 
   constructor (message: string = 'The operation was aborted') {
     super(message)
+    this.name = 'AbortError'
     this.code = AbortError.code
     this.type = AbortError.type
   }
@@ -54,6 +55,7 @@ export class UnexpectedPeerError extends Error {
 
   constructor (message = 'Unexpected Peer') {
     super(message)
+    this.name = 'UnexpectedPeerError'
     this.code = UnexpectedPeerError.code
   }
 
@@ -65,6 +67,7 @@ export class InvalidCryptoExchangeError extends Error {
 
   constructor (message = 'Invalid crypto exchange') {
     super(message)
+    this.name = 'InvalidCryptoExchangeError'
     this.code = InvalidCryptoExchangeError.code
   }
 
@@ -76,6 +79,7 @@ export class InvalidCryptoTransmissionError extends Error {
 
   constructor (message = 'Invalid crypto transmission') {
     super(message)
+    this.name = 'InvalidCryptoTransmissionError'
     this.code = InvalidCryptoTransmissionError.code
   }
 

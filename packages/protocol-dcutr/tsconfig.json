@@ -13,6 +13,9 @@
     },
     {
       "path": "../interface-internal"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

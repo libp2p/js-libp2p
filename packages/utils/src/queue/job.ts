@@ -56,6 +56,7 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
     // if all recipients have aborted the job, actually abort the job
     if (allAborted) {
       this.controller.abort(new AbortError())
+      this.cleanup()
     }
   }
 
@@ -99,6 +100,7 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
 
   cleanup (): void {
     this.recipients.forEach(recipient => {
+      recipient.cleanup()
       recipient.signal?.removeEventListener('abort', this.onAbort)
     })
   }

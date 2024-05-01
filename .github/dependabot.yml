@@ -9,3 +9,9 @@ updates:
   commit-message:
     prefix: "deps"
     prefix-development: "deps(dev)"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+  commit-message:
+    prefix: ci

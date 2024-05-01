@@ -44,7 +44,7 @@ describe('rpc - handlers - FindNode', () => {
     })
   })
 
-  it('returns self, if asked for self', async () => {
+  it('returns nodes close to self and includes self, if asked for self', async () => {
     const msg: Message = {
       type: T,
       key: peerId.multihash.bytes,
@@ -53,21 +53,36 @@ describe('rpc - handlers - FindNode', () => {
     }
 
     addressManager.getAddresses.returns([
-      multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${peerId.toString()}`),
-      multiaddr(`/ip4/192.168.1.5/tcp/4002/p2p/${peerId.toString()}`),
-      multiaddr(`/ip4/221.4.67.0/tcp/4002/p2p/${peerId.toString()}`)
+      multiaddr('/ip4/127.0.0.1/tcp/4002'),
+      multiaddr('/ip4/192.168.1.5/tcp/4002'),
+      multiaddr('/ip4/221.4.67.0/tcp/4002')
     ])
 
-    const response = await handler.handle(sourcePeer, msg)
+    peerRouting.getCloserPeersOffline
+      .withArgs(peerId.multihash.bytes, peerId)
+      .resolves([{
+        id: targetPeer, // closer peer
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/4002'),
+          multiaddr('/ip4/192.168.1.5/tcp/4002'),
+          multiaddr('/ip4/221.4.67.0/tcp/4002')
+        ]
+      }])
+
+    const response = await handler.handle(peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
     }
 
-    expect(response.closer).to.have.length(1)
+    expect(response.closer).to.have.length(2)
     const peer = response.closer[0]
 
-    expect(peerIdFromBytes(peer.id).toString()).to.equal(peerId.toString())
+    expect(peerIdFromBytes(peer.id).toString()).to.equal(targetPeer.toString())
+    expect(peer.multiaddrs).to.not.be.empty()
+
+    const self = response.closer[1]
+    expect(peerIdFromBytes(self.id).toString()).to.equal(peerId.toString())
   })
 
   it('returns closer peers', async () => {

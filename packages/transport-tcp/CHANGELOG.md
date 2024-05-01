@@ -81,6 +81,152 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.1.3 to ^5.2.0
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
+
+## [9.0.23](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.22...tcp-v9.0.23) (2024-04-24)
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.2.0 to ^1.3.0
+    * @libp2p/utils bumped from ^5.3.1 to ^5.3.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.1 to ^5.4.2
+    * @libp2p/logger bumped from ^4.0.10 to ^4.0.11
+
+## [9.0.22](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.21...tcp-v9.0.22) (2024-04-16)
+
+
+### Bug Fixes
+
+* use same promise when closing maconn multiple times ([#2487](https://github.com/libp2p/js-libp2p/issues/2487)) ([ea4f262](https://github.com/libp2p/js-libp2p/commit/ea4f26285ecf7babc361799a172dd4acbcca2a10))
+
+## [9.0.21](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.20...tcp-v9.0.21) (2024-04-15)
+
+
+### Bug Fixes
+
+* close MultiaddrConnection once ([#2478](https://github.com/libp2p/js-libp2p/issues/2478)) ([08dabd3](https://github.com/libp2p/js-libp2p/commit/08dabd3906b1ac64a45a8a6c3d66d01fa08c5000))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.3.0 to ^5.3.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.0 to ^5.4.1
+
+## [9.0.20](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.19...tcp-v9.0.20) (2024-04-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/utils bumped from ^5.2.8 to ^5.3.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.4 to ^5.4.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+
+## [9.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.18...tcp-v9.0.19) (2024-04-09)
+
+
+### Dependencies
+
+* bump stream-to-it from 0.2.4 to 1.0.0 ([#2474](https://github.com/libp2p/js-libp2p/issues/2474)) ([2b2958f](https://github.com/libp2p/js-libp2p/commit/2b2958fe66be0985de8890a1260b162cc24effdd))
+
+## [9.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.17...tcp-v9.0.18) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Documentation
+
+* update typos in Address Manager and comments ([#2468](https://github.com/libp2p/js-libp2p/issues/2468)) ([a2b41f7](https://github.com/libp2p/js-libp2p/commit/a2b41f7939806dfb9583a6d43ddd8764fc861baf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.3 to ^5.3.4
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+
+## [9.0.17](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.16...tcp-v9.0.17) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/utils bumped from ^5.2.6 to ^5.2.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.2 to ^5.3.3
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+
+## [9.0.16](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.15...tcp-v9.0.16) (2024-02-27)
+
+
+### Bug Fixes
+
+* tcp server close race condition ([#2421](https://github.com/libp2p/js-libp2p/issues/2421)) ([f0d2b52](https://github.com/libp2p/js-libp2p/commit/f0d2b52d0c7a0ecb8f3d6c98069131354fe93bd0))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/utils bumped from ^5.2.5 to ^5.2.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.3.1 to ^5.3.2
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+
+## [9.0.14](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.13...tcp-v9.0.14) (2024-02-07)
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/utils bumped from ^5.2.3 to ^5.2.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.2.0 to ^5.3.0
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+
 ## [9.0.12](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.11...tcp-v9.0.12) (2024-01-16)
 
 

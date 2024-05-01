@@ -20,11 +20,11 @@
  * import { uPnPNAT } from '@libp2p/upnp-nat'
  *
  * const node = await createLibp2p({
- *   addresses: [
+ *   addresses: {
  *     listen: [
  *       '/ip4/0.0.0.0/tcp/0'
  *     ]
- *   ],
+ *   },
  *   transports: [
  *     tcp()
  *   ],

@@ -14,12 +14,14 @@
  *
  * const node = await createLibp2p({
  *   services: {
- *     dht: kadDHT()
+ *     dht: kadDHT({
+ *       // DHT options
+ *     })
  *   }
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
@@ -45,7 +47,7 @@
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
@@ -72,13 +74,14 @@
  * })
  *
  * const peerId = peerIdFromString('QmFoo')
- * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
  */
 
 import { KadDHT as KadDHTClass } from './kad-dht.js'
+import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
 import type { ProvidersInit } from './providers.js'
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
@@ -87,7 +90,7 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent } from 'progress-events'
 
-export { Libp2pRecord as Record } from './record/index.js'
+export { Libp2pRecord as Record } from '@libp2p/record'
 export { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper }
 
 /**
@@ -107,14 +110,7 @@ export enum EventTypes {
 /**
  * The types of messages sent to peers during DHT queries
  */
-export enum MessageType {
-  PUT_VALUE = 0,
-  GET_VALUE,
-  ADD_PROVIDER,
-  GET_PROVIDERS,
-  FIND_NODE,
-  PING
-}
+export { MessageType }
 
 export type MessageName = keyof typeof MessageType
 

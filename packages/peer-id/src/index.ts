@@ -9,7 +9,7 @@
  * import { peerIdFromString } from '@libp2p/peer-id'
  * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
  *
- * console.log(peer.toCid()) // CID(bafzaa...)
+ * console.log(peer.toCID()) // CID(bafzaa...)
  * console.log(peer.toString()) // "12D3K..."
  * ```
  */
@@ -136,7 +136,7 @@ class PeerIdImpl {
    * https://nodejs.org/api/util.html#utilinspectcustom
    *
    * @example
-   * ```js
+   * ```TypeScript
    * import { peerIdFromString } from '@libp2p/peer-id'
    *
    * console.info(peerIdFromString('QmFoo'))
@@ -181,7 +181,7 @@ class Secp256k1PeerIdImpl extends PeerIdImpl implements Secp256k1PeerId {
   }
 }
 
-export function createPeerId (init: PeerIdInit): PeerId {
+export function createPeerId (init: PeerIdInit): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   if (init.type === 'RSA') {
     return new RSAPeerIdImpl(init)
   }
@@ -197,7 +197,7 @@ export function createPeerId (init: PeerIdInit): PeerId {
   throw new CodeError('Type must be "RSA", "Ed25519" or "secp256k1"', 'ERR_INVALID_PARAMETERS')
 }
 
-export function peerIdFromPeerId (other: any): PeerId {
+export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   if (other.type === 'RSA') {
     return new RSAPeerIdImpl(other)
   }
@@ -213,7 +213,7 @@ export function peerIdFromPeerId (other: any): PeerId {
   throw new CodeError('Not a PeerId', 'ERR_INVALID_PARAMETERS')
 }
 
-export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): PeerId {
+export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   decoder = decoder ?? baseDecoder
 
   if (str.charAt(0) === '1' || str.charAt(0) === 'Q') {
@@ -233,7 +233,7 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
   return peerIdFromBytes(baseDecoder.decode(str))
 }
 
-export function peerIdFromBytes (buf: Uint8Array): PeerId {
+export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   try {
     const multihash = Digest.decode(buf)
 
@@ -255,7 +255,7 @@ export function peerIdFromBytes (buf: Uint8Array): PeerId {
   throw new Error('Supplied PeerID CID is invalid')
 }
 
-export function peerIdFromCID (cid: CID): PeerId {
+export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   if (cid == null || cid.multihash == null || cid.version == null || (cid.version === 1 && cid.code !== LIBP2P_KEY_CODE)) {
     throw new Error('Supplied PeerID CID is invalid')
   }
@@ -279,7 +279,7 @@ export function peerIdFromCID (cid: CID): PeerId {
  * @param publicKey - A marshalled public key
  * @param privateKey - A marshalled private key
  */
-export async function peerIdFromKeys (publicKey: Uint8Array, privateKey?: Uint8Array): Promise<PeerId> {
+export async function peerIdFromKeys (publicKey: Uint8Array, privateKey?: Uint8Array): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   if (publicKey.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
     return new Ed25519PeerIdImpl({ multihash: Digest.create(identity.code, publicKey), privateKey })
   }

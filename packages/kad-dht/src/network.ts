@@ -1,4 +1,5 @@
 import { TypedEventEmitter } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import { pbStream } from 'it-protobuf-stream'
 import { CodeError } from 'protons-runtime'
 import { Message } from './message/dht.js'
@@ -9,7 +10,6 @@ import {
   peerResponseEvent,
   queryErrorEvent
 } from './query/events.js'
-import { Libp2pRecord } from './record/index.js'
 import type { KadDHTComponents, QueryEvent } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions } from '@libp2p/interface'
 

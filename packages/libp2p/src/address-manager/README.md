@@ -24,7 +24,7 @@ Scenarios for Announce Addresses include:
 
 When a libp2p node is created, the Address Manager will be populated from the provided addresses through the libp2p configuration. Once the node is started, the Transport Manager component will gather the listen addresses from the Address Manager, so that the libp2p transports can attempt to bind to them.
 
-Libp2p will use the the Address Manager as the source of truth when advertising the peers addresses. After all transports are ready, other libp2p components/subsystems will kickoff, namely the Identify Service and the DHT. Both of them will announce the node addresses to the other peers in the network. The announce addresses will have an important role here and will be gathered by libp2p to compute its current addresses to advertise everytime it is needed.
+Libp2p will use the Address Manager as the source of truth when advertising the peers addresses. After all transports are ready, other libp2p components/subsystems will kickoff, namely the Identify Service and the DHT. Both of them will announce the node addresses to the other peers in the network. The announce addresses will have an important role here and will be gathered by libp2p to compute its current addresses to advertise everytime it is needed.
 
 ## Future Considerations
 

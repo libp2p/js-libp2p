@@ -254,17 +254,21 @@ export class CircuitRelayTransport implements Transport {
   }
 
   /**
-   * Filter check for all Multiaddrs that this transport can dial on
-   *
-   * @param {Multiaddr[]} multiaddrs
-   * @returns {Multiaddr[]}
+   * Filter check for all Multiaddrs that this transport can listen on
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
       return mafmt.Circuit.matches(ma)
     })
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 
   /**

@@ -1,6 +1,7 @@
 import { keys } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MessageType } from '../message/dht.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
@@ -9,7 +10,6 @@ import {
   finalPeerEvent,
   valueEvent
 } from '../query/events.js'
-import { Libp2pRecord } from '../record/index.js'
 import { verifyRecord } from '../record/validators.js'
 import * as utils from '../utils.js'
 import type { KadDHTComponents, DHTRecord, DialPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
@@ -319,7 +319,7 @@ export class PeerRouting {
     if (output.length > 0) {
       this.log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
     } else {
-      this.log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
+      this.log('getCloserPeersOffline could not find peer closer to %b than %p with %d peers in the routing table', key, closerThan, this.routingTable.size)
     }
 
     return output

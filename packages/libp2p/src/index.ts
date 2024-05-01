@@ -21,6 +21,7 @@ import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { TransportManagerInit } from './transport-manager.js'
 import type { Libp2p, ServiceMap, RecursivePartial, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
+import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 
 export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string, unknown>> = {
@@ -28,7 +29,7 @@ export type ServiceFactoryMap<T extends Record<string, unknown> = Record<string,
 }
 
 /**
- * For Libp2p configurations and modules details read the [Configuration Document](./CONFIGURATION.md).
+ * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
  */
 export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> }> {
   /**
@@ -118,11 +119,18 @@ export interface Libp2pInit<T extends ServiceMap = { x: Record<string, unknown> 
    *
    * Browsers:
    *
-   * ```javascript
+   * ```TypeScript
    * localStorage.setItem('debug', '*libp2p:*')
    * ```
    */
   logger?: ComponentLogger
+
+  /**
+   * An optional DNS resolver configuration. If omitted the default DNS resolver
+   * for the platform will be used which means `node:dns` on Node.js and
+   * DNS-JSON-over-HTTPS for browsers using Google and Cloudflare servers.
+   */
+  dns?: DNS
 }
 
 export type { Libp2p }
@@ -137,7 +145,7 @@ export type Libp2pOptions<T extends ServiceMap = Record<string, unknown>> = Recu
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "1.1.2",
+  "version": "1.3.0",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
@@ -43,19 +43,20 @@
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "dep-check": "aegir dep-check -i @libp2p/utils",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build"
   },
   "dependencies": {
-    "@multiformats/multiaddr": "^12.1.10",
+    "@multiformats/multiaddr": "^12.2.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "multiformats": "^13.0.0",
+    "multiformats": "^13.1.0",
     "progress-events": "^1.0.0",
-    "uint8arraylist": "^2.4.7"
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.0.0"
+    "aegir": "^42.2.5"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"

@@ -1,6 +1,7 @@
 import { CodeError } from '@libp2p/interface'
 import { type Pushable, pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
+import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { closeSource } from './close-source.js'
@@ -49,12 +50,12 @@ export interface AbstractStreamInit {
   onCloseWrite?(): void
 
   /**
-   * Invoked when the the stream has been reset by the remote
+   * Invoked when the stream has been reset by the remote
    */
   onReset?(): void
 
   /**
-   * Invoked when the the stream has errored
+   * Invoked when the stream has errored
    */
   onAbort?(err: Error): void
 
@@ -104,6 +105,7 @@ export abstract class AbstractStream implements Stream {
   private readonly onReset?: () => void
   private readonly onAbort?: (err: Error) => void
   private readonly sendCloseWriteTimeout: number
+  private sendingData?: DeferredPromise<void>
 
   constructor (init: AbstractStreamInit) {
     this.sinkController = new AbortController()
@@ -180,8 +182,11 @@ export abstract class AbstractStream implements Stream {
 
           const res = this.sendData(data, options)
 
-          if (isPromise(res)) { // eslint-disable-line max-depth
+          if (isPromise(res)) {
+            this.sendingData = pDefer()
             await res
+            this.sendingData.resolve()
+            this.sendingData = undefined
           }
         }
       } finally {
@@ -283,13 +288,12 @@ export abstract class AbstractStream implements Stream {
 
     this.status = 'closing'
 
-    await Promise.all([
-      this.closeRead(options),
-      this.closeWrite(options)
-    ])
-
     // wait for read and write ends to close
-    await raceSignal(this.closed.promise, options?.signal)
+    await raceSignal(Promise.all([
+      this.closeWrite(options),
+      this.closeRead(options),
+      this.closed.promise
+    ]), options?.signal)
 
     this.status = 'closed'
 
@@ -333,17 +337,15 @@ export abstract class AbstractStream implements Stream {
     }
 
     if (this.writeStatus === 'writing') {
-      // stop reading from the source passed to `.sink` in the microtask queue
-      // - this lets any data queued by the user in the current tick get read
-      // before we exit
-      await new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          this.log.trace('aborting source passed to .sink')
-          this.sinkController.abort()
-          raceSignal(this.sinkEnd.promise, options.signal)
-            .then(resolve, reject)
-        })
-      })
+      // try to let sending outgoing data succeed
+      if (this.sendingData != null) {
+        await raceSignal(this.sendingData.promise, options.signal)
+      }
+
+      // stop reading from the source passed to `.sink`
+      this.log.trace('aborting source passed to .sink')
+      this.sinkController.abort()
+      await raceSignal(this.sinkEnd.promise, options.signal)
     }
 
     this.writeStatus = 'closed'

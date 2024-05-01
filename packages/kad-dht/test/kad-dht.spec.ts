@@ -3,6 +3,7 @@
 
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -15,16 +16,15 @@ import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as c from '../src/constants.js'
-import { EventTypes, type FinalPeerEvent, MessageType, type QueryEvent, type ValueEvent } from '../src/index.js'
-import { MessageType as PBMessageType } from '../src/message/dht.js'
+import { EventTypes, MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
-import { Libp2pRecord } from '../src/record/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerIds } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
+import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 import type { KadDHT } from '../src/kad-dht.js'
 import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
@@ -475,7 +475,7 @@ describe('KadDHT', () => {
 
       for (const [peerId, msg] of calls) {
         expect(idsB58).includes(peerId.toString())
-        expect(msg.type).equals(PBMessageType.ADD_PROVIDER)
+        expect(msg.type).equals(MessageType.ADD_PROVIDER)
         expect(valuesBuffs).includes(msg.key)
         expect(msg.providers.length).equals(1)
         expect(peerIdFromBytes(msg.providers[0].id).toString()).equals(idsB58[3])
@@ -798,6 +798,37 @@ describe('KadDHT', () => {
       const res = await all(filter(dhts[1].getClosestPeers(uint8ArrayFromString('foo')), event => event.name === 'FINAL_PEER'))
 
       expect(res).to.not.be.empty()
+    })
+
+    it.skip('should not include itself in getClosestPeers PEER_RESPONSE', async function () {
+      this.timeout(240 * 1000)
+
+      const nDHTs = 30
+      const dhts = await Promise.all(
+        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
+      )
+
+      const connected: Array<Promise<void>> = []
+
+      for (let i = 0; i < dhts.length - 1; i++) {
+        connected.push(tdht.connect(dhts[i], dhts[(i + 1) % dhts.length]))
+      }
+
+      await Promise.all(connected)
+
+      const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toBytes()))
+      expect(res).to.not.be.empty()
+
+      // no peer should include itself in the response, only other peers that it
+      // knows who are closer
+      for (const event of res) {
+        if (event.name !== 'PEER_RESPONSE') {
+          continue
+        }
+
+        expect(event.closer.map(peer => peer.id.toString()))
+          .to.not.include(event.from.toString())
+      }
     })
   })
 

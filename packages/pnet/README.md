@@ -1,4 +1,4 @@
-> Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
+# @libp2p/pnet
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
@@ -8,6 +8,21 @@
 > Implementation of Connection protection management via a shared secret
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 Connection protection management for libp2p leveraging PSK encryption via XSalsa20.
 
@@ -53,7 +68,7 @@ node -e "import('@libp2p/pnet').then(({ generateKey }) => generateKey(process.st
 
 ### Programmatically
 
-```js
+```TypeScript
 import fs from 'fs'
 import { generateKey } from '@libp2p/pnet'
 
@@ -85,8 +100,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/pnet/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/pnet/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

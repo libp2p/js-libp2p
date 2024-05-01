@@ -4,6 +4,7 @@
     "./src/connection/index.ts",
     "./src/connection-encryption/index.ts",
     "./src/is-valid-tick.ts",
+    "./src/matchers.ts",
     "./src/mocks/index.ts",
     "./src/peer-discovery/index.ts",
     "./src/peers.ts",

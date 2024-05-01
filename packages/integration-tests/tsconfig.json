@@ -12,6 +12,9 @@
       "path": "../connection-encrypter-plaintext"
     },
     {
+      "path": "../connection-encrypter-tls"
+    },
+    {
       "path": "../crypto"
     },
     {

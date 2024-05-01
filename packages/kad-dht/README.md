@@ -1,3 +1,5 @@
+# @libp2p/kad-dht
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -6,6 +8,21 @@
 > JavaScript implementation of the Kad-DHT for libp2p
 
 # About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
 
 This module implements the [libp2p Kademlia spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md) in TypeScript.
 
@@ -20,12 +37,14 @@ import { peerIdFromString } from '@libp2p/peer-id'
 
 const node = await createLibp2p({
   services: {
-    dht: kadDHT()
+    dht: kadDHT({
+      // DHT options
+    })
   }
 })
 
 const peerId = peerIdFromString('QmFoo')
-const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+const peerInfo = await node.peerRouting.findPeer(peerId)
 
 console.info(peerInfo) // peer id, multiaddrs
 ```
@@ -51,7 +70,7 @@ const node = await createLibp2p({
 })
 
 const peerId = peerIdFromString('QmFoo')
-const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+const peerInfo = await node.peerRouting.findPeer(peerId)
 
 console.info(peerInfo) // peer id, multiaddrs
 ```
@@ -78,7 +97,7 @@ const node = await createLibp2p({
 })
 
 const peerId = peerIdFromString('QmFoo')
-const peerInfo = await libp2p.peerRouting.findPeer(peerId)
+const peerInfo = await node.peerRouting.findPeer(peerId)
 
 console.info(peerInfo) // peer id, multiaddrs
 ```
@@ -105,8 +124,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/kad-dht/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/kad-dht/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

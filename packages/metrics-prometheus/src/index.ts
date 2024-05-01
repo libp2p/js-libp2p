@@ -14,10 +14,10 @@
  *
  * Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
  *
- * ```typescript
+ * ```JavaScript
  * import client from 'prom-client'
  *
- * async handler (request, h) {
+ * async function handler (request, h) {
  *   return h.response(await client.register.metrics())
  *     .type(client.register.contentType)
  * }
@@ -25,29 +25,29 @@
  *
  * All Prometheus metrics are global so there's no other work required to extract them.
  *
- * ### Queries
+ * ## Queries
  *
  * Some useful queries are:
  *
- * #### Data sent/received
+ * ### Data sent/received
  *
  * ```
  * rate(libp2p_data_transfer_bytes_total[30s])
  * ```
  *
- * #### CPU usage
+ * ### CPU usage
  *
  * ```
  * rate(process_cpu_user_seconds_total[30s]) * 100
  * ```
  *
- * #### Memory usage
+ * ### Memory usage
  *
  * ```
  * nodejs_memory_usage_bytes
  * ```
  *
- * #### DHT query time
+ * ### DHT query time
  *
  * ```
  * libp2p_kad_dht_wan_query_time_seconds
@@ -59,7 +59,7 @@
  * libp2p_kad_dht_lan_query_time_seconds
  * ```
  *
- * #### TCP transport dialer errors
+ * ### TCP transport dialer errors
  *
  * ```
  * rate(libp2p_tcp_dialer_errors_total[30s])

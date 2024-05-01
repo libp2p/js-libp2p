@@ -5,17 +5,32 @@
  *
  * @example
  *
- * ```javascript
+ * ```TypeScript
  * import { PubSubBaseProtocol } from '@libp2p/pubsub'
+ * import type { PubSubRPC, PublishResult, PubSubRPCMessage, PeerId, Message } from '@libp2p/interface'
+ * import type { Uint8ArrayList } from 'uint8arraylist'
  *
  * class MyPubsubImplementation extends PubSubBaseProtocol {
- *   // .. extra methods here
+ *   decodeRpc (bytes: Uint8Array | Uint8ArrayList): PubSubRPC {
+ *     throw new Error('Not implemented')
+ *   }
+ *
+ *   encodeRpc (rpc: PubSubRPC): Uint8Array {
+ *     throw new Error('Not implemented')
+ *   }
+ *
+ *   encodeMessage (rpc: PubSubRPCMessage): Uint8Array {
+ *     throw new Error('Not implemented')
+ *   }
+ *
+ *   async publishMessage (sender: PeerId, message: Message): Promise<PublishResult> {
+ *     throw new Error('Not implemented')
+ *   }
  * }
  * ```
  */
 
-import { CodeError, TypedEventEmitter, CustomEvent } from '@libp2p/interface'
-import { type PubSub, type Message, type StrictNoSign, type StrictSign, type PubSubInit, type PubSubEvents, type PeerStreams, type PubSubRPCMessage, type PubSubRPC, type PubSubRPCSubscription, type SubscriptionChangeData, type PublishResult, type TopicValidatorFn, TopicValidatorResult, type ComponentLogger, type Logger, type Connection, type PeerId } from '@libp2p/interface'
+import { CodeError, TypedEventEmitter, CustomEvent, TopicValidatorResult } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'
@@ -26,6 +41,7 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId } from '@libp2p/interface'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

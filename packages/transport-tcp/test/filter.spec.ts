@@ -28,7 +28,7 @@ describe('filter addrs', () => {
     const ma8 = multiaddr('/dnsaddr/libp2p.io/tcp/9090')
     const ma9 = multiaddr('/unix' + unix)
 
-    const valid = transport.filter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8, ma9])
+    const valid = transport.dialFilter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8, ma9])
     expect(valid.length).to.equal(5)
     expect(valid[0]).to.deep.equal(ma1)
     expect(valid[1]).to.deep.equal(ma4)
@@ -38,7 +38,7 @@ describe('filter addrs', () => {
   it('filter a single addr for this transport', () => {
     const ma1 = multiaddr(base + '/tcp/9090')
 
-    const valid = transport.filter([ma1])
+    const valid = transport.dialFilter([ma1])
     expect(valid.length).to.equal(1)
     expect(valid[0]).to.eql(ma1)
   })

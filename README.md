@@ -43,9 +43,9 @@ The documentation in the main branch may contain changes from a pre-release.
 
 If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
+**Want to get started?** Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
 
-**Want to update libp2p in your project?** Check our [migrations folder](./doc/migrations).
+**Want to update libp2p in your project?** Check our [migrations folder](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations).
 
 ## Table of contents <!-- omit in toc -->
 
@@ -102,15 +102,15 @@ npm install libp2p
 
 ### Configuration
 
-For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
+For all the information on how you can configure libp2p see [CONFIGURATION.md](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md).
 
 ### Limits
 
-For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
+For help configuring your node to resist malicious network peers, see [LIMITS.md](https://github.com/libp2p/js-libp2p/blob/main/doc/LIMITS.md)
 
 ### Getting started
 
-If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
+If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide.
 
 ### Tutorials and Examples
 
@@ -118,34 +118,36 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 
 ## Structure
 
-- [`/doc`](./doc) Docs for libp2p
-- [`/interop`](./interop) Multidimension Interop Test
-- [`/packages/crypto`](./packages/crypto) Crypto primitives for libp2p
-- [`/packages/interface`](./packages/interface) The interface implemented by a libp2p node
-- [`/packages/interface-compliance-tests`](./packages/interface-compliance-tests) Compliance tests for JS libp2p interfaces
-- [`/packages/interface-internal`](./packages/interface-internal) Interfaces implemented by internal libp2p components
-- [`/packages/kad-dht`](./packages/kad-dht) JavaScript implementation of the Kad-DHT for libp2p
-- [`/packages/keychain`](./packages/keychain) Key management and cryptographically protected messages
-- [`/packages/libp2p`](./packages/libp2p) JavaScript implementation of libp2p, a modular peer to peer network stack
-- [`/packages/logger`](./packages/logger) A logging component for use in js-libp2p modules
-- [`/packages/metrics-prometheus`](./packages/metrics-prometheus) Collect libp2p metrics for scraping by Prometheus or Graphana
-- [`/packages/multistream-select`](./packages/multistream-select) JavaScript implementation of multistream-select
-- [`/packages/peer-collections`](./packages/peer-collections) Stores values against a peer id
-- [`/packages/peer-discovery-bootstrap`](./packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
-- [`/packages/peer-discovery-mdns`](./packages/peer-discovery-mdns) Node.js libp2p mDNS discovery implementation for peer discovery
-- [`/packages/peer-id`](./packages/peer-id) Implementation of @libp2p/interface-peer-id
-- [`/packages/peer-id-factory`](./packages/peer-id-factory) Create PeerId instances
-- [`/packages/peer-record`](./packages/peer-record) Used to transfer signed peer data across the network
-- [`/packages/peer-store`](./packages/peer-store) Stores information about peers libp2p knows on the network
-- [`/packages/protocol-perf`](./packages/protocol-perf) Implementation of Perf Protocol
-- [`/packages/pubsub`](./packages/pubsub) libp2p pubsub base class
-- [`/packages/pubsub-floodsub`](./packages/pubsub-floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
-- [`/packages/stream-multiplexer-mplex`](./packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
-- [`/packages/transport-tcp`](./packages/transport-tcp) A TCP transport for libp2p
-- [`/packages/transport-webrtc`](./packages/transport-webrtc) A libp2p transport using WebRTC connections
-- [`/packages/transport-websockets`](./packages/transport-websockets) JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec
-- [`/packages/transport-webtransport`](./packages/transport-webtransport) JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec
-- [`/packages/utils`](./packages/utils) Package to aggregate shared logic and dependencies for the libp2p ecosystem
+- [`/doc`](https://github.com/libp2p/js-libp2p/blob/main/doc) Docs for libp2p
+- [`/interop`](https://github.com/libp2p/js-libp2p/tree/main/interop) Multidimension Interop Test
+- [`/packages/crypto`](https://github.com/libp2p/js-libp2p/tree/main/packages/crypto) Crypto primitives for libp2p
+- [`/packages/interface`](https://github.com/libp2p/js-libp2p/tree/main/packages/interface) The interface implemented by a libp2p node
+- [`/packages/interface-compliance-tests`](https://github.com/libp2p/js-libp2p/tree/main/packages/interface-compliance-tests) Compliance tests for JS libp2p interfaces
+- [`/packages/interface-internal`](https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal) Interfaces implemented by internal libp2p components
+- [`/packages/kad-dht`](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht) JavaScript implementation of the Kad-DHT for libp2p
+- [`/packages/keychain`](https://github.com/libp2p/js-libp2p/tree/main/packages/keychain) Key management and cryptographically protected messages
+- [`/packages/libp2p`](https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p) JavaScript implementation of libp2p, a modular peer to peer network stack
+- [`/packages/logger`](https://github.com/libp2p/js-libp2p/tree/main/packages/logger) A logging component for use in js-libp2p modules
+- [`/packages/metrics-prometheus`](https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-prometheus) Collect libp2p metrics for scraping by Prometheus or Graphana
+- [`/packages/multistream-select`](https://github.com/libp2p/js-libp2p/tree/main/packages/multistream-select) JavaScript implementation of multistream-select
+- [`/packages/peer-collections`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections) Stores values against a peer id
+- [`/packages/peer-discovery-bootstrap`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
+- [`/packages/peer-discovery-mdns`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) Node.js libp2p mDNS discovery implementation for peer discovery
+- [`/packages/peer-id`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id) Implementation of @libp2p/interface-peer-id
+- [`/packages/peer-id-factory`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory) Create PeerId instances
+- [`/packages/peer-record`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record) Used to transfer signed peer data across the network
+- [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
+- [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol
+- [`/packages/protocol-perf`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-perf) Implementation of the Perf protocol
+- [`/packages/pubsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub) libp2p pubsub base class
+- [`/packages/pubsub-floodsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub-floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
+- [`/packages/record`](https://github.com/libp2p/js-libp2p/tree/main/packages/record) libp2p record implementation
+- [`/packages/stream-multiplexer-mplex`](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
+- [`/packages/transport-tcp`](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp) A TCP transport for libp2p
+- [`/packages/transport-webrtc`](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc) A libp2p transport using WebRTC connections
+- [`/packages/transport-websockets`](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets) JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec
+- [`/packages/transport-webtransport`](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport) JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec
+- [`/packages/utils`](https://github.com/libp2p/js-libp2p/tree/main/packages/utils) Package to aggregate shared logic and dependencies for the libp2p ecosystem
 
 ## Development
 
@@ -223,6 +225,7 @@ List of packages currently in existence for libp2p
     <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
     <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia (IPFS in JavaScript) logo" width="150" /></a>
+    <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
   </p>
 </div>
 
@@ -230,7 +233,7 @@ And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
 
 ## Contribute
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/libp2p/js-libp2p/tree/main/CONTRIBUTING.md).
 
 ## API Docs
 
@@ -240,5 +243,5 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)

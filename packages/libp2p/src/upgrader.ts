@@ -471,7 +471,7 @@ export class DefaultUpgrader implements Upgrader {
           const streamCount = countStreams(protocol, 'outbound', connection)
 
           if (streamCount >= outgoingLimit) {
-            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
             throw err
@@ -671,7 +671,7 @@ export class DefaultUpgrader implements Upgrader {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      connection.log('encrypting outbound connection to %p using %p', remotePeerId)
+      connection.log('encrypting outbound connection to %p using %s', remotePeerId, encrypter)
 
       return {
         ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),

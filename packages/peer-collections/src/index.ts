@@ -11,6 +11,9 @@
  *
  * ```TypeScript
  * import { peerList } from '@libp2p/peer-collections'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ *
+ * const peerId = await createEd25519PeerId()
  *
  * const list = peerList()
  * list.push(peerId)
@@ -20,9 +23,11 @@
  *
  * ```TypeScript
  * import { trackedPeerList } from '@libp2p/peer-collections'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
  * import { createLibp2p } from 'libp2p'
  *
  * const libp2p = await createLibp2p()
+ * const peerId = await createEd25519PeerId()
  *
  * const list = trackedPeerList({ name: 'my_metric_name', metrics: libp2p.metrics })
  * list.push(peerId)
@@ -32,6 +37,9 @@
  *
  * ```TypeScript
  * import { peerMap } from '@libp2p/peer-collections'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ *
+ * const peerId = await createEd25519PeerId()
  *
  * const map = peerMap<string>()
  * map.set(peerId, 'value')
@@ -42,10 +50,12 @@
  * ```TypeScript
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
  *
  * const libp2p = await createLibp2p()
+ * const peerId = await createEd25519PeerId()
  *
- * const list = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
+ * const map = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
  * map.set(peerId, 'value')
  * ```
  *
@@ -53,6 +63,9 @@
  *
  * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ *
+ * const peerId = await createEd25519PeerId()
  *
  * const set = peerSet()
  * set.add(peerId)
@@ -63,17 +76,34 @@
  * ```TypeScript
  * import { trackedPeerSet } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
  *
  * const libp2p = await createLibp2p()
+ * const peerId = await createEd25519PeerId()
  *
- * const list = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
- * map.add(peerId)
+ * const set = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
+ * set.add(peerId)
+ * ```
+ *
+ * @example Peer filters
+ *
+ * ```TypeScript
+ * import { peerFilter } from '@libp2p/peer-collections'
+ * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ *
+ * const peerId = await createEd25519PeerId()
+ *
+ * const filter = peerFilter(1024)
+ * filter.has(peerId) // false
+ * filter.add(peerId)
+ * filter.has(peerId) // true
  * ```
  */
 
 export { PeerMap, peerMap } from './map.js'
 export { PeerSet, peerSet } from './set.js'
 export { PeerList, peerList } from './list.js'
+export { PeerFilter, peerFilter } from './filter.js'
 
 export { trackedPeerMap } from './tracked-map.js'
 export { trackedPeerSet } from './tracked-set.js'

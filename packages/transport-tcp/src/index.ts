@@ -6,51 +6,24 @@
  * @example
  *
  * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { multiaddr } from '@multiformats/multiaddr'
- * import { pipe } from 'it-pipe'
- * import all from 'it-all'
  *
- * // A simple upgrader that just returns the MultiaddrConnection
- * const upgrader = {
- *   upgradeInbound: async maConn => maConn,
- *   upgradeOutbound: async maConn => maConn
- * }
- *
- * const transport = tcp()()
- *
- * const listener = transport.createListener({
- *   upgrader,
- *   handler: (socket) => {
- *     console.log('new connection opened')
- *     pipe(
- *       ['hello', ' ', 'World!'],
- *       socket
- *     )
- *   }
+ * const node = await createLibp2p({
+ *   transports: [
+ *     tcp()
+ *   ]
  * })
  *
- * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
- * await listener.listen(addr)
- * console.log('listening')
+ * const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
  *
- * const socket = await transport.dial(addr, { upgrader })
- * const values = await pipe(
- *   socket,
- *   all
- * )
- * console.log(`Value: ${values.toString()}`)
+ * // dial a TCP connection, timing out after 10 seconds
+ * const connection = await node.dial(ma, {
+ *   signal: AbortSignal.timeout(10_000)
+ * })
  *
- * // Close connection after reading
- * await listener.close()
- * ```
- *
- * Outputs:
- *
- * ```sh
- * listening
- * new connection opened
- * Value: hello World!
+ * // use connection...
  * ```
  */
 
@@ -314,7 +287,7 @@ class TCP implements Transport {
   /**
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter(ma => {
@@ -328,6 +301,13 @@ class TCP implements Transport {
 
       return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))
     })
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 }
 
