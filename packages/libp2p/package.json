@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p#readme",
@@ -113,7 +113,7 @@
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^6.0.2",
     "@libp2p/circuit-relay-v2": "^1.0.22",
-    "@libp2p/identify": "^1.0.21",
+    "@libp2p/identify": "^2.0.0",
     "@libp2p/interface-compliance-tests": "^5.4.3",
     "@libp2p/mplex": "^10.0.22",
     "@libp2p/plaintext": "^1.0.22",

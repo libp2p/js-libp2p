@@ -76,6 +76,17 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.21...identify-v2.0.0) (2024-05-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* to support identify-push, the `identifyPush` module must be added as a libp2p service, similar to `identify`
+
+### Features
+
+* split identify and identify-push ([#2387](https://github.com/libp2p/js-libp2p/issues/2387)) ([9d13a2f](https://github.com/libp2p/js-libp2p/commit/9d13a2f6af4ed12166a10a8bc3c07da7f0023f88))
+
 ## [1.0.21](https://github.com/libp2p/js-libp2p/compare/identify-v1.0.20...identify-v1.0.21) (2024-05-01)
 
 

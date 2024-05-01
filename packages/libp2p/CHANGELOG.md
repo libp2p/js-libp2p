@@ -110,6 +110,15 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.5.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.5.0...libp2p-v1.5.1) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/identify bumped from ^1.0.21 to ^2.0.0
+
 ## [1.5.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.4.3...libp2p-v1.5.0) (2024-05-01)
 
 
