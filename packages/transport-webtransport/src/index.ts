@@ -196,8 +196,10 @@ class WebTransportTransport implements Transport {
           cleanUpWTSession('remote_close')
         })
 
-      if (!await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)) {
-        throw new Error('Failed to authenticate webtransport')
+      authenticated = await raceSignal(this.authenticateWebTransport(wt, localPeer, remotePeer, certhashes), options.signal)
+
+      if (!authenticated) {
+        throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
       }
 
       if (options?.signal?.aborted === true) {
@@ -223,8 +225,6 @@ class WebTransportTransport implements Transport {
         // This connection is never used directly since webtransport supports native streams.
         ...inertDuplex()
       }
-
-      authenticated = true
 
       return await options.upgrader.upgradeOutbound(maConn, {
         skipEncryption: true,
@@ -316,10 +316,25 @@ class WebTransportTransport implements Transport {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid webtransport addresses.
+   * Filter check for all Multiaddrs that this transport can listen on
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(WebTransportMatcher.exactMatch)
+  listenFilter (): Multiaddr[] {
+    return []
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return multiaddrs.filter(ma => {
+      if (!WebTransportMatcher.exactMatch(ma)) {
+        return false
+      }
+
+      const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+
+      return url != null && remotePeer != null && certhashes.length > 0
+    })
   }
 }
 

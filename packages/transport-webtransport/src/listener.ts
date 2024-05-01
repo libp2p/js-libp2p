@@ -58,7 +58,7 @@ export interface WebTransportListenerComponents {
   metrics?: Metrics
 }
 
-interface WebTransportListenerInit extends CreateListenerOptions {
+export interface WebTransportListenerInit extends CreateListenerOptions {
   handler?(conn: Connection): void
   upgrader: Upgrader
   certificates?: WebTransportCertificate[]

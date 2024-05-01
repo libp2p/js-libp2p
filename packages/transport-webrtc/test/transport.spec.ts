@@ -76,7 +76,7 @@ describe('WebRTCDirect Transport', () => {
 
     const t = new WebRTCDirectTransport(components)
 
-    expect(t.filter([
+    expect(t.listenFilter([
       ...valid,
       ...invalid
     ])).to.deep.equal(valid)

@@ -287,7 +287,7 @@ class TCP implements Transport {
   /**
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter(ma => {
@@ -301,6 +301,13 @@ class TCP implements Transport {
 
       return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))
     })
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 }
 

@@ -90,10 +90,17 @@ export class WebRTCDirectTransport implements Transport {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
+   * Filter check for all Multiaddrs that this transport can listen on
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTCDirect.exactMatch)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 
   /**

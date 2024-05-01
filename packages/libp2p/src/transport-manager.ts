@@ -106,7 +106,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
    * Dials the given Multiaddr over it's supported transport
    */
   async dial (ma: Multiaddr, options?: AbortOptions): Promise<Connection> {
-    const transport = this.transportForMultiaddr(ma)
+    const transport = this.dialTransportForMultiaddr(ma)
 
     if (transport == null) {
       throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
@@ -156,9 +156,22 @@ export class DefaultTransportManager implements TransportManager, Startable {
   /**
    * Finds a transport that matches the given Multiaddr
    */
-  transportForMultiaddr (ma: Multiaddr): Transport | undefined {
+  dialTransportForMultiaddr (ma: Multiaddr): Transport | undefined {
     for (const transport of this.transports.values()) {
-      const addrs = transport.filter([ma])
+      const addrs = transport.dialFilter([ma])
+
+      if (addrs.length > 0) {
+        return transport
+      }
+    }
+  }
+
+  /**
+   * Finds a transport that matches the given Multiaddr
+   */
+  listenTransportForMultiaddr (ma: Multiaddr): Transport | undefined {
+    for (const transport of this.transports.values()) {
+      const addrs = transport.listenFilter([ma])
 
       if (addrs.length > 0) {
         return transport
@@ -182,7 +195,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     const couldNotListen = []
 
     for (const [key, transport] of this.transports.entries()) {
-      const supportedAddrs = transport.filter(addrs)
+      const supportedAddrs = transport.listenFilter(addrs)
       const tasks = []
 
       // For each supported multiaddr, create a listener

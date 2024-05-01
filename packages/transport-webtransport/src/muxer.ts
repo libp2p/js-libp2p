@@ -1,7 +1,6 @@
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import type WebTransport from './webtransport.js'
-import type { WebTransportBidirectionalStream } from '@fails-components/webtransport'
 import type { ComponentLogger, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export interface WebTransportMuxerInit {
@@ -34,7 +33,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
           }
 
           if (activeStreams.length >= config.maxInboundStreams) {
-            log('too many inbound streams open, closing new incoming stream')
+            log(`too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`)
             // We've reached our limit, close this stream.
             wtStream.writable.close().catch((err: Error) => {
               log.error(`failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)

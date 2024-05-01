@@ -507,7 +507,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should limit the maximum dial queue size', async () => {
     const transport = stubInterface<Transport>({
-      filter: (ma) => ma,
+      dialFilter: (ma) => ma,
       dial: async () => {
         await delay(1000)
         return stubInterface<Connection>()

@@ -30,7 +30,7 @@ async function generateWebTransportCertificate (keyPair: CryptoKeyPair, options:
     keys: keyPair,
     extensions: [
       new x509.BasicConstraintsExtension(true),
-      new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.nonRepudiation | x509.KeyUsageFlags.keyEncipherment | x509.KeyUsageFlags.dataEncipherment | x509.KeyUsageFlags.keyCertSign, false),
+      new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.nonRepudiation | x509.KeyUsageFlags.keyEncipherment | x509.KeyUsageFlags.dataEncipherment | x509.KeyUsageFlags.keyCertSign, false)
       // new x509.SubjectAlternativeNameExtension([
       //  { type: 'ip', value: '127.0.0.1' }
       // ])

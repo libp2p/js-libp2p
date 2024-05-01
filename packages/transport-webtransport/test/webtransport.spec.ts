@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-env mocha */
 
 import { noise } from '@chainsafe/libp2p-noise'
