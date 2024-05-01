@@ -89,6 +89,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.0.24](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.23...tcp-v9.0.24) (2024-05-01)
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.2 to ^5.4.3
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+
 ## [9.0.23](https://github.com/libp2p/js-libp2p/compare/tcp-v9.0.22...tcp-v9.0.23) (2024-04-24)
 
 

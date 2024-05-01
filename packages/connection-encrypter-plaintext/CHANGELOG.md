@@ -72,6 +72,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.22](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.21...plaintext-v1.0.22) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.2 to ^5.4.3
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+
 ## [1.0.21](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.20...plaintext-v1.0.21) (2024-04-24)
 
 

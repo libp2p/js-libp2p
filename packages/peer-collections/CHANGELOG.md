@@ -35,6 +35,25 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.11...peer-collections-v5.2.0) (2024-05-01)
+
+
+### Features
+
+* add cuckoo filter ([#2510](https://github.com/libp2p/js-libp2p/issues/2510)) ([3d7a9da](https://github.com/libp2p/js-libp2p/commit/3d7a9da1700a584ff2d1a3b252f084e0de7d0c82))
+* add peer filter ([#2508](https://github.com/libp2p/js-libp2p/issues/2508)) ([4afd7a9](https://github.com/libp2p/js-libp2p/commit/4afd7a9c17b91a51f6d4e4aca442e3c2bf4a3834))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+
 ## [5.1.11](https://github.com/libp2p/js-libp2p/compare/peer-collections-v5.1.10...peer-collections-v5.1.11) (2024-04-24)
 
 
