@@ -44,7 +44,7 @@
     "@libp2p/dcutr": "^1.0.14",
     "@libp2p/fetch": "^1.0.12",
     "@libp2p/floodsub": "^9.0.13",
-    "@libp2p/identify": "^1.0.16",
+    "@libp2p/identify": "^2.0.0",
     "@libp2p/interface": "^1.1.5",
     "@libp2p/interface-compliance-tests": "^5.3.3",
     "@libp2p/interface-internal": "^1.0.10",
