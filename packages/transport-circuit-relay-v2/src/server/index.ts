@@ -417,11 +417,10 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       }
 
       this.log('stop request failed with code %d', response.status)
+      await safelyCloseStream(stream, options)
     } catch (err: any) {
       this.log.error('error parsing stop message response from %p', connection.remotePeer)
       stream?.abort(err)
-    } finally {
-      await safelyCloseStream(stream, options)
     }
   }
 

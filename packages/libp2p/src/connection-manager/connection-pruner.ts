@@ -1,6 +1,7 @@
 import { PeerMap } from '@libp2p/peer-collections'
+import { safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { MAX_CONNECTIONS } from './constants.js'
-import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore } from '@libp2p/interface'
+import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -56,14 +57,13 @@ export class ConnectionPruner {
   async maybePruneConnections (): Promise<void> {
     const connections = this.connectionManager.getConnections()
     const numConnections = connections.length
-    const toPrune = Math.max(numConnections - this.maxConnections, 0)
 
     this.log('checking max connections limit %d/%d', numConnections, this.maxConnections)
+
     if (numConnections <= this.maxConnections) {
       return
     }
 
-    this.log('max connections limit exceeded %d/%d, pruning %d connection(s)', numConnections, this.maxConnections, toPrune)
     const peerValues = new PeerMap<number>()
 
     // work out peer values
@@ -90,44 +90,10 @@ export class ConnectionPruner {
       }
     }
 
-    // sort by value, lowest to highest
-    const sortedConnections = connections.sort((a, b) => {
-      const peerAValue = peerValues.get(a.remotePeer) ?? 0
-      const peerBValue = peerValues.get(b.remotePeer) ?? 0
-
-      if (peerAValue > peerBValue) {
-        return 1
-      }
-
-      if (peerAValue < peerBValue) {
-        return -1
-      }
-
-      // close connections without streams first
-      if (a.streams.length === 0) {
-        return 1
-      }
-
-      if (b.streams.length === 0) {
-        return -1
-      }
-
-      // if the peers have an equal tag value then we want to close short-lived connections first
-      const connectionALifespan = a.timeline.open
-      const connectionBLifespan = b.timeline.open
-
-      if (connectionALifespan < connectionBLifespan) {
-        return 1
-      }
-
-      if (connectionALifespan > connectionBLifespan) {
-        return -1
-      }
-
-      return 0
-    })
+    const sortedConnections = this.sortConnections(connections, peerValues)
 
     // close some connections
+    const toPrune = Math.max(numConnections - this.maxConnections, 0)
     const toClose = []
 
     for (const connection of sortedConnections) {
@@ -150,15 +116,71 @@ export class ConnectionPruner {
     // close connections
     await Promise.all(
       toClose.map(async connection => {
-        try {
-          await connection.close()
-        } catch (err) {
-          this.log.error(err)
-        }
+        await safelyCloseConnectionIfUnused(connection, {
+          signal: AbortSignal.timeout(1000)
+        })
       })
     )
 
     // despatch prune event
     this.events.safeDispatchEvent('connection:prune', { detail: toClose })
+  }
+
+  sortConnections (connections: Connection[], peerValues: PeerMap<number>): Connection[] {
+    return connections
+      // sort by connection age, newest to oldest
+      .sort((a, b) => {
+        const connectionALifespan = a.timeline.open
+        const connectionBLifespan = b.timeline.open
+
+        if (connectionALifespan < connectionBLifespan) {
+          return 1
+        }
+
+        if (connectionALifespan > connectionBLifespan) {
+          return -1
+        }
+
+        return 0
+      })
+      // sort by direction, incoming first then outgoing
+      .sort((a, b) => {
+        if (a.direction === 'outbound' && b.direction === 'inbound') {
+          return 1
+        }
+
+        if (a.direction === 'inbound' && b.direction === 'outbound') {
+          return -1
+        }
+
+        return 0
+      })
+      // sort by number of streams, lowest to highest
+      .sort((a, b) => {
+        if (a.streams.length > b.streams.length) {
+          return 1
+        }
+
+        if (a.streams.length < b.streams.length) {
+          return -1
+        }
+
+        return 0
+      })
+      // sort by tag value, lowest to highest
+      .sort((a, b) => {
+        const peerAValue = peerValues.get(a.remotePeer) ?? 0
+        const peerBValue = peerValues.get(b.remotePeer) ?? 0
+
+        if (peerAValue > peerBValue) {
+          return 1
+        }
+
+        if (peerAValue < peerBValue) {
+          return -1
+        }
+
+        return 0
+      })
   }
 }

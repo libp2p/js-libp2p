@@ -174,7 +174,9 @@ describe('Routing Table', () => {
     })
 
     // simulate connection succeeding
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      streams: []
+    })
     connection.newStream.withArgs(PROTOCOL).resolves(stream)
     const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves(connection)
     components.connectionManager.openConnection = openConnectionStub

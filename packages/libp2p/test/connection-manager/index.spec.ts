@@ -139,7 +139,7 @@ describe('Connection Manager', () => {
     expect(lowestSpy).to.have.property('callCount', 1)
   })
 
-  it('should close shortest-lived connection if the tag values are equal', async () => {
+  it('should close the connection without streams if the tag values are equal', async () => {
     const max = 5
     libp2p = await createNode({
       config: createBaseOptions({

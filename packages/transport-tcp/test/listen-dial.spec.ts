@@ -75,7 +75,7 @@ describe('listen', () => {
     if (isCI != null) {
       return
     }
-    const mh = multiaddr('/ip6/::/tcp/9090')
+    const mh = multiaddr('/ip6/::/tcp/0')
     listener = transport.createListener({
       upgrader
     })
@@ -83,7 +83,7 @@ describe('listen', () => {
   })
 
   it('listen on any Interface', async () => {
-    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = multiaddr('/ip4/0.0.0.0/tcp/0')
     listener = transport.createListener({
       upgrader
     })
@@ -91,7 +91,7 @@ describe('listen', () => {
   })
 
   it('getAddrs', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/49832')
     listener = transport.createListener({
       upgrader
     })
@@ -114,7 +114,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on 0.0.0.0', async () => {
-    const mh = multiaddr('/ip4/0.0.0.0/tcp/9090')
+    const mh = multiaddr('/ip4/0.0.0.0/tcp/0')
     listener = transport.createListener({
       upgrader
     })
@@ -138,7 +138,7 @@ describe('listen', () => {
   })
 
   it('getAddrs from listening on ip6 \'::\'', async () => {
-    const mh = multiaddr('/ip6/::/tcp/9090')
+    const mh = multiaddr('/ip6/::/tcp/0')
     listener = transport.createListener({
       upgrader
     })
@@ -150,7 +150,7 @@ describe('listen', () => {
   })
 
   it('getAddrs preserves IPFS Id', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const mh = multiaddr('/ip4/127.0.0.1/tcp/24725/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     listener = transport.createListener({
       upgrader
     })
@@ -186,13 +186,15 @@ describe('dial', () => {
   })
 
   it('dial on IPv4', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/0')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
 
-    const conn = await transport.dial(ma, {
+    const addrs = listener.getAddrs()
+
+    const conn = await transport.dial(addrs[0], {
       upgrader
     })
     const stream = await conn.newStream([protocol])
@@ -213,12 +215,14 @@ describe('dial', () => {
       return
     }
 
-    const ma = multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/0')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
-    const conn = await transport.dial(ma, {
+    const addrs = listener.getAddrs()
+
+    const conn = await transport.dial(addrs[0], {
       upgrader
     })
     const stream = await conn.newStream([protocol])
@@ -260,7 +264,7 @@ describe('dial', () => {
     let handled: () => void
     const handledPromise = new Promise<void>(resolve => { handled = resolve })
 
-    const ma = multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/0')
 
     const listener = transport.createListener({
       handler: (conn) => {
@@ -295,7 +299,7 @@ describe('dial', () => {
     let handled: () => void
     const handledPromise = new Promise<void>(resolve => { handled = resolve })
 
-    const ma = multiaddr('/ip6/::/tcp/9090')
+    const ma = multiaddr('/ip6/::/tcp/0')
 
     const listener = transport.createListener({
       handler: () => {
@@ -316,13 +320,15 @@ describe('dial', () => {
   })
 
   it('dials on IPv4 with IPFS Id', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
+    const addrs = listener.getAddrs()
+    expect(addrs[0].getPeerId()).to.be.ok()
 
-    const conn = await transport.dial(ma, {
+    const conn = await transport.dial(addrs[0], {
       upgrader
     })
     const stream = await conn.newStream([protocol])
@@ -339,7 +345,7 @@ describe('dial', () => {
   })
 
   it('aborts during dial', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const maConnPromise = pDefer<MultiaddrConnection>()
 
     // @ts-expect-error missing return value
@@ -356,13 +362,14 @@ describe('dial', () => {
       upgrader
     })
     await listener.listen(ma)
+    const addrs = listener.getAddrs()
 
     const abortController = new AbortController()
 
     // abort once the upgrade process has started
     void maConnPromise.promise.then(() => { abortController.abort() })
 
-    await expect(transport.dial(ma, {
+    await expect(transport.dial(addrs[0], {
       upgrader,
       signal: abortController.signal
     })).to.eventually.be.rejected('The operation was aborted')
@@ -374,16 +381,17 @@ describe('dial', () => {
   })
 
   it('aborts before dial', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
+    const addrs = listener.getAddrs()
 
     const abortController = new AbortController()
     abortController.abort()
 
-    await expect(transport.dial(ma, {
+    await expect(transport.dial(addrs[0], {
       upgrader,
       signal: abortController.signal
     })).to.eventually.be.rejected('The operation was aborted')

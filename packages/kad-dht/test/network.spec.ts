@@ -84,7 +84,8 @@ describe('Network', () => {
               ...stream,
               protocol
             }
-          }
+          },
+          streams: []
         })
 
         return connection
