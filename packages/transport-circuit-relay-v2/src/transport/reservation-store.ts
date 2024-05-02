@@ -1,5 +1,6 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
@@ -274,7 +275,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       stream.abort(err)
       throw err
     } finally {
-      await stream.close()
+      await safelyCloseStream(stream, options)
     }
 
     if (response.status === Status.OK && (response.reservation != null)) {

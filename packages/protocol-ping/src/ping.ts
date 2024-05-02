@@ -1,11 +1,12 @@
 import { randomBytes } from '@libp2p/crypto'
 import { CodeError, ERR_TIMEOUT } from '@libp2p/interface'
+import { safelyCloseStream, safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
+import type { AbortOptions, Logger, Stream, PeerId, Startable, Connection } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -78,7 +79,7 @@ export class PingService implements Startable, PingServiceInterface {
 
     const start = Date.now()
     const data = randomBytes(PING_LENGTH)
-    const connection = await this.components.connectionManager.openConnection(peer, options)
+    let connection: Connection | undefined
     let stream: Stream | undefined
     let onAbort = (): void => {}
 
@@ -92,6 +93,7 @@ export class PingService implements Startable, PingServiceInterface {
     }
 
     try {
+      connection = await this.components.connectionManager.openConnection(peer, options)
       stream = await connection.newStream(this.protocol, {
         ...options,
         runOnTransientConnection: this.runOnTransientConnection
@@ -124,16 +126,15 @@ export class PingService implements Startable, PingServiceInterface {
 
       return ms
     } catch (err: any) {
-      this.log.error('error while pinging %p', connection.remotePeer, err)
+      this.log.error('error while pinging %p', peer, err)
 
       stream?.abort(err)
 
       throw err
     } finally {
       options.signal?.removeEventListener('abort', onAbort)
-      if (stream != null) {
-        await stream.close()
-      }
+      await safelyCloseStream(stream, options)
+      await safelyCloseConnectionIfUnused(connection, options)
     }
   }
 }

@@ -49,7 +49,9 @@ describe('ping', () => {
 
     const remotePeer = await createEd25519PeerId()
 
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      streams: []
+    })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
@@ -67,7 +69,9 @@ describe('ping', () => {
 
     const remotePeer = await createEd25519PeerId()
 
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      streams: []
+    })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
@@ -101,7 +105,9 @@ describe('ping', () => {
 
     const remotePeer = await createEd25519PeerId()
 
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      streams: []
+    })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
@@ -116,7 +122,9 @@ describe('ping', () => {
     // handle incoming ping stream
     handler({
       stream: incomingStream,
-      connection: stubInterface<Connection>()
+      connection: stubInterface<Connection>({
+        streams: []
+      })
     })
 
     const input = Uint8Array.from([0, 1, 2, 3, 4])

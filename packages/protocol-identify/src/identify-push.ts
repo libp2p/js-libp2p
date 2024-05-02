@@ -2,6 +2,7 @@
 
 import { setMaxListeners } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { protocols } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
@@ -72,14 +73,15 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
         yield async () => {
           let stream: Stream | undefined
           const signal = AbortSignal.timeout(self.timeout)
-
           setMaxListeners(Infinity, signal)
 
+          const options = {
+            signal,
+            runOnTransientConnection: self.runOnTransientConnection
+          }
+
           try {
-            stream = await connection.newStream(self.protocol, {
-              signal,
-              runOnTransientConnection: self.runOnTransientConnection
-            })
+            stream = await connection.newStream(self.protocol, options)
 
             const pb = pbStream(stream, {
               maxDataLength: self.maxMessageSize
@@ -91,17 +93,13 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
               protocols: supportedProtocols,
               agentVersion,
               protocolVersion
-            }, {
-              signal
-            })
-
-            await stream.close({
-              signal
-            })
+            }, options)
           } catch (err: any) {
             // Just log errors
             self.log.error('could not push identify update to peer', err)
             stream?.abort(err)
+          } finally {
+            await safelyCloseStream(stream, options)
           }
         }
       }
@@ -118,27 +116,30 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
   async handleProtocol (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
 
+    const signal = AbortSignal.timeout(this.timeout)
+    setMaxListeners(Infinity, signal)
+
+    const options = {
+      signal
+    }
+
     try {
       if (this.peerId.equals(connection.remotePeer)) {
         throw new Error('received push from ourselves?')
       }
 
-      const options = {
-        signal: AbortSignal.timeout(this.timeout)
-      }
-
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
-
       const message = await pb.read(options)
-      await stream.close(options)
 
       await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
     } catch (err: any) {
       this.log.error('received invalid message', err)
-      stream.abort(err)
+      stream?.abort(err)
       return
+    } finally {
+      await safelyCloseStream(stream, options)
     }
 
     this.log('handled push from %p', connection.remotePeer)

@@ -3,6 +3,7 @@
 import { CodeError, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
@@ -56,15 +57,13 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      const message = await pb.read(options)
-
-      await stream.close(options)
-
-      return message
+      return await pb.read(options)
     } catch (err: any) {
       this.log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
+    } finally {
+      await safelyCloseStream(stream, options)
     }
   }
 
@@ -113,8 +112,11 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const { connection, stream } = data
 
     const signal = AbortSignal.timeout(this.timeout)
-
     setMaxListeners(Infinity, signal)
+
+    const options = {
+      signal
+    }
 
     try {
       const publicKey = this.peerId.publicKey ?? new Uint8Array(0)
@@ -148,16 +150,12 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         signedPeerRecord,
         observedAddr,
         protocols: peerData.protocols
-      }, {
-        signal
-      })
-
-      await stream.close({
-        signal
-      })
+      }, options)
     } catch (err: any) {
       this.log.error('could not respond to identify request', err)
       stream.abort(err)
+    } finally {
+      await safelyCloseStream(stream, options)
     }
   }
 }

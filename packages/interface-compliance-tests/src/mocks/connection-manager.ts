@@ -75,6 +75,8 @@ class MockConnectionManager implements ConnectionManager, Startable {
   }
 
   getConnections (peerId?: PeerId): Connection[] {
+    this.connections = this.connections.filter(conn => conn.status === 'open')
+
     if (peerId != null) {
       return this.connections
         .filter(c => c.remotePeer.toString() === peerId.toString())
@@ -84,6 +86,8 @@ class MockConnectionManager implements ConnectionManager, Startable {
   }
 
   getConnectionsMap (): PeerMap<Connection[]> {
+    this.connections = this.connections.filter(conn => conn.status !== 'open')
+
     const map = new PeerMap<Connection[]>()
 
     for (const conn of this.connections) {

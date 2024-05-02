@@ -24,7 +24,7 @@ import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, ty
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents, PeerId, PeerStore, Stream } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, Stream, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('Routing Table', () => {
@@ -174,10 +174,9 @@ describe('Routing Table', () => {
     })
 
     // simulate connection succeeding
-    const newStreamStub = sinon.stub().withArgs(PROTOCOL).resolves(stream)
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
-      newStream: newStreamStub
-    })
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs(PROTOCOL).resolves(stream)
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves(connection)
     components.connectionManager.openConnection = openConnectionStub
 
     await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
@@ -185,8 +184,8 @@ describe('Routing Table', () => {
     expect(openConnectionStub.calledOnce).to.be.true()
     expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
 
-    expect(newStreamStub.callCount).to.equal(1)
-    expect(newStreamStub.calledWith(PROTOCOL)).to.be.true()
+    expect(connection.newStream.callCount).to.equal(1)
+    expect(connection.newStream.calledWith(PROTOCOL)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.id)).to.be.undefined()

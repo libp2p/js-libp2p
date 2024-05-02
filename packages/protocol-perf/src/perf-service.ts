@@ -1,3 +1,4 @@
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { pushable } from 'it-pushable'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
@@ -207,11 +208,12 @@ export class Perf implements Startable, PerfInterface {
       }
 
       this.log('performed %s to %p', this.protocol, connection.remotePeer)
-      await stream.close()
     } catch (err: any) {
       this.log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
       stream.abort(err)
       throw err
+    } finally {
+      await safelyCloseStream(stream, options)
     }
   }
 }

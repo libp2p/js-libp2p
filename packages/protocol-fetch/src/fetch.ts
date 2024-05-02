@@ -1,11 +1,12 @@
-import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
+import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, setMaxListeners } from '@libp2p/interface'
+import { safelyCloseConnectionIfUnused, safelyCloseStream } from '@libp2p/utils/close'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
+import type { AbortOptions, Logger, Stream, PeerId, Startable, Connection } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 const DEFAULT_TIMEOUT = 10000
@@ -37,9 +38,6 @@ export class Fetch implements Startable, FetchInterface {
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
-        .then(async () => {
-          await data.stream.close()
-        })
         .catch(err => {
           this.log.error(err)
         })
@@ -65,41 +63,38 @@ export class Fetch implements Startable, FetchInterface {
   async fetch (peer: PeerId, key: string, options: AbortOptions = {}): Promise<Uint8Array | undefined> {
     this.log('dialing %s to %p', this.protocol, peer)
 
-    const connection = await this.components.connectionManager.openConnection(peer, options)
-    let signal = options.signal
+    let connection: Connection | undefined
     let stream: Stream | undefined
-    let onAbort = (): void => {}
+    let signal = options.signal
 
     // create a timeout if no abort signal passed
     if (signal == null) {
       const timeout = this.init.timeout ?? DEFAULT_TIMEOUT
       this.log('using default timeout of %d ms', timeout)
       signal = AbortSignal.timeout(timeout)
-
       setMaxListeners(Infinity, signal)
     }
 
     try {
+      connection = await this.components.connectionManager.openConnection(peer, {
+        signal
+      })
       stream = await connection.newStream(this.protocol, {
         signal
       })
-
-      onAbort = () => {
-        stream?.abort(new CodeError('fetch timeout', ERR_TIMEOUT))
-      }
-
-      // make stream abortable
-      signal.addEventListener('abort', onAbort, { once: true })
 
       this.log('fetch %s', key)
 
       const pb = pbStream(stream)
       await pb.write({
         identifier: key
-      }, FetchRequest, options)
+      }, FetchRequest, {
+        signal
+      })
 
-      const response = await pb.read(FetchResponse, options)
-      await pb.unwrap().close(options)
+      const response = await pb.read(FetchResponse, {
+        signal
+      })
 
       switch (response.status) {
         case (FetchResponse.StatusCode.OK): {
@@ -124,10 +119,8 @@ export class Fetch implements Startable, FetchInterface {
       stream?.abort(err)
       throw err
     } finally {
-      signal.removeEventListener('abort', onAbort)
-      if (stream != null) {
-        await stream.close()
-      }
+      await safelyCloseStream(stream, options)
+      await safelyCloseConnectionIfUnused(connection, options)
     }
   }
 
@@ -139,12 +132,14 @@ export class Fetch implements Startable, FetchInterface {
   async handleMessage (data: IncomingStreamData): Promise<void> {
     const { stream } = data
     const signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
+    setMaxListeners(Infinity, signal)
+    const options = {
+      signal
+    }
 
     try {
       const pb = pbStream(stream)
-      const request = await pb.read(FetchRequest, {
-        signal
-      })
+      const request = await pb.read(FetchRequest, options)
 
       let response: FetchResponse
       const lookup = this._getLookupFunction(request.identifier)
@@ -164,16 +159,12 @@ export class Fetch implements Startable, FetchInterface {
         response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
       }
 
-      await pb.write(response, FetchResponse, {
-        signal
-      })
-
-      await pb.unwrap().close({
-        signal
-      })
+      await pb.write(response, FetchResponse, options)
     } catch (err: any) {
       this.log('error answering fetch request', err)
       stream.abort(err)
+    } finally {
+      await safelyCloseStream(stream, options)
     }
   }
 

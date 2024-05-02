@@ -1,4 +1,5 @@
 import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
@@ -203,9 +204,7 @@ export class DefaultDCUtRService implements Startable {
           throw err
         }
       } finally {
-        if (stream != null) {
-          await stream.close(options)
-        }
+        await safelyCloseStream(stream, options)
       }
     }
   }
@@ -340,7 +339,7 @@ export class DefaultDCUtRService implements Startable {
       this.log.error('incoming DCUtR from %p failed', relayedConnection.remotePeer, err)
       stream.abort(err)
     } finally {
-      await stream.close(options)
+      await safelyCloseStream(stream)
     }
   }
 

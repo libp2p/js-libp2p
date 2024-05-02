@@ -1,6 +1,6 @@
 import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { safelyCloseStream, safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import first from 'it-first'
@@ -8,6 +8,7 @@ import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
+import { pbStream } from 'it-protobuf-stream'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -15,7 +16,7 @@ import {
 } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
-import type { Logger, Connection, PeerId, PeerInfo, Startable } from '@libp2p/interface'
+import type { Logger, Connection, PeerId, PeerInfo, Startable, Stream } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
@@ -296,7 +297,13 @@ export class AutoNATService implements Startable {
               errorMessage = err.message
             } finally {
               if (connection != null) {
-                await connection.close()
+                try {
+                  await connection.close({
+                    signal
+                  })
+                } catch (err: any) {
+                  connection.abort(err)
+                }
               }
             }
           }
@@ -356,61 +363,50 @@ export class AutoNATService implements Startable {
 
     const signal = AbortSignal.timeout(this.timeout)
 
-    // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
-    // appearing in the console
+    // this controller may be used while dialing lots of peers so prevent
+    // MaxListenersExceededWarning appearing in the console
     setMaxListeners(Infinity, signal)
 
-    const self = this
+    const options = {
+      signal
+    }
 
     try {
       this.log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
-
-      const request = Message.encode({
-        type: Message.MessageType.DIAL,
-        dial: {
-          peer: {
-            id: this.components.peerId.toBytes(),
-            addrs: multiaddrs.map(map => map.bytes)
-          }
-        }
-      })
-      // find some random peers
-      const randomPeer = await createEd25519PeerId()
-      const randomCid = randomPeer.toBytes()
 
       const results: Record<string, { success: number, failure: number }> = {}
       const networkSegments: string[] = []
 
       const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
-        let onAbort = (): void => {}
+        if (!(await this.components.connectionManager.isDialable(peer.multiaddrs))) {
+          return
+        }
+
+        let connection: Connection | undefined
+        let stream: Stream | undefined
 
         try {
           this.log('asking %p to verify multiaddr', peer.id)
 
-          const connection = await self.components.connectionManager.openConnection(peer.id, {
+          connection = await this.components.connectionManager.openConnection(peer.id, {
             signal
           })
 
-          const stream = await connection.newStream(this.protocol, {
+          stream = await connection.newStream(this.protocol, {
             signal
           })
 
-          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', ERR_TIMEOUT)) }
-
-          signal.addEventListener('abort', onAbort, { once: true })
-
-          const buf = await pipe(
-            [request],
-            (source) => lp.encode(source),
-            stream,
-            (source) => lp.decode(source),
-            async (stream) => first(stream)
-          )
-          if (buf == null) {
-            this.log('no response received from %p', connection.remotePeer)
-            return undefined
-          }
-          const response = Message.decode(buf)
+          const pb = pbStream(stream).pb(Message)
+          await pb.write({
+            type: Message.MessageType.DIAL,
+            dial: {
+              peer: {
+                id: this.components.peerId.toBytes(),
+                addrs: multiaddrs.map(map => map.bytes)
+              }
+            }
+          }, options)
+          const response = await pb.read(options)
 
           if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
             this.log('invalid autonat response from %p', connection.remotePeer)
@@ -442,16 +438,16 @@ export class AutoNATService implements Startable {
           }
 
           return response.dialResponse
-        } catch (err) {
+        } catch (err: any) {
           this.log.error('error asking remote to verify multiaddr', err)
+          stream?.abort(err)
         } finally {
-          signal.removeEventListener('abort', onAbort)
+          await safelyCloseStream(stream, options)
+          await safelyCloseConnectionIfUnused(connection, options)
         }
       }
 
-      for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
-        signal
-      }), (peer) => async () => verifyAddress(peer)), {
+      for await (const dialResponse of parallel(map(this.components.randomWalk.walk(options), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
       })) {
         try {

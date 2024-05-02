@@ -103,6 +103,15 @@ export class ConnectionPruner {
         return -1
       }
 
+      // close connections without streams first
+      if (a.streams.length === 0) {
+        return 1
+      }
+
+      if (b.streams.length === 0) {
+        return -1
+      }
+
       // if the peers have an equal tag value then we want to close short-lived connections first
       const connectionALifespan = a.timeline.open
       const connectionBLifespan = b.timeline.open

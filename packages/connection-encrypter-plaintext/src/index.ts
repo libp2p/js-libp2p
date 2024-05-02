@@ -22,6 +22,7 @@
 
 import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
+import { createTimeoutOptions } from '@libp2p/utils/abort-options'
 import { pbStream } from 'it-protobuf-stream'
 import { Exchange, KeyType } from './pb/proto.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId } from '@libp2p/interface'
@@ -64,7 +65,7 @@ class Plaintext implements ConnectionEncrypter {
    * Encrypt connection
    */
   async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    const signal = AbortSignal.timeout(this.timeout)
+    const options = createTimeoutOptions(this.timeout)
     const pb = pbStream(conn).pb(Exchange)
 
     let type = KeyType.RSA
@@ -87,13 +88,9 @@ class Plaintext implements ConnectionEncrypter {
           Type: type,
           Data: localId.publicKey ?? new Uint8Array(0)
         }
-      }, {
-        signal
-      }),
+      }, options),
       // Get the Exchange message
-      pb.read({
-        signal
-      })
+      pb.read(options)
     ])
 
     let peerId

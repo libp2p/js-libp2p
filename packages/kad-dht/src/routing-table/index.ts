@@ -1,11 +1,13 @@
 import { CodeError, TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
+import { createTimeoutOptions } from '@libp2p/utils/abort-options'
+import { safelyCloseStream, safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { pbStream } from 'it-protobuf-stream'
 import { Message, MessageType } from '../message/dht.js'
 import * as utils from '../utils.js'
 import { KBucket, type PingEventDetails } from './k-bucket.js'
-import type { ComponentLogger, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
+import type { ComponentLogger, Connection, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
@@ -204,15 +206,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
         }
 
         return this.pingQueue.add(async () => {
+          let connection: Connection | undefined
           let stream: Stream | undefined
 
-          try {
-            const options = {
-              signal: AbortSignal.timeout(this.pingTimeout)
-            }
+          const options = createTimeoutOptions(this.pingTimeout)
 
+          try {
             this.log('pinging old contact %p', oldContact.peer)
-            const connection = await this.components.connectionManager.openConnection(oldContact.peer, options)
+            connection = await this.components.connectionManager.openConnection(oldContact.peer, options)
             stream = await connection.newStream(this.protocol, options)
 
             const pb = pbStream(stream)
@@ -220,8 +221,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
               type: MessageType.PING
             }, Message, options)
             const response = await pb.read(Message, options)
-
-            await pb.unwrap().close()
 
             if (response.type !== MessageType.PING) {
               throw new CodeError(`Incorrect message type received, expected PING got ${response.type}`, 'ERR_BAD_PING_RESPONSE')
@@ -242,6 +241,9 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             return false
           } finally {
             this.metrics?.routingTableSize.update(this.size)
+
+            await safelyCloseStream(stream, options)
+            await safelyCloseConnectionIfUnused(connection, options)
           }
         }, {
           peerId: oldContact.peer

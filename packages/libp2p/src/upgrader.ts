@@ -426,7 +426,7 @@ export class DefaultUpgrader implements Upgrader {
               connection.log.error('error handling incoming stream id %s', muxedStream.id, err.message, err.code, err.stack)
 
               if (muxedStream.timeline.close == null) {
-                await muxedStream.close()
+                muxedStream.abort(err)
               }
             })
         }

@@ -7,6 +7,7 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
@@ -17,8 +18,8 @@ import { AutoNATService } from '../src/autonat.js'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
 import { Message } from '../src/pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
-import type { Connection, Stream, PeerId, PeerInfo, PeerRouting, Transport } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Connection, Stream, PeerId, PeerInfo, Transport } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -34,14 +35,14 @@ const defaultInit: AutoNATServiceInit = {
 describe('autonat', () => {
   let service: any
   let components: AutoNATComponents
-  let peerRouting: StubbedInstance<PeerRouting>
+  let randomWalk: StubbedInstance<RandomWalk>
   let registrar: StubbedInstance<Registrar>
   let addressManager: StubbedInstance<AddressManager>
   let connectionManager: StubbedInstance<ConnectionManager>
   let transportManager: StubbedInstance<TransportManager>
 
   beforeEach(async () => {
-    peerRouting = stubInterface<PeerRouting>()
+    randomWalk = stubInterface<RandomWalk>()
     registrar = stubInterface<Registrar>()
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
@@ -52,7 +53,7 @@ describe('autonat', () => {
     components = {
       peerId: await createEd25519PeerId(),
       logger: defaultLogger(),
-      peerRouting,
+      randomWalk,
       registrar,
       addressManager,
       connectionManager,
@@ -82,23 +83,25 @@ describe('autonat', () => {
       }
 
       // stub connection to remote peer
-      const connection = stubInterface<Connection>()
+      const connection = stubInterface<Connection>({
+        streams: []
+      })
       connection.remoteAddr = multiaddr(`/ip4/${host}/tcp/28319/p2p/${peer.id.toString()}`)
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
       connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).callsFake(async () => {
         // stub autonat protocol stream
-        const stream = stubInterface<Stream>()
-
-        // stub autonat response
-        const response = Message.encode({
-          type: Message.MessageType.DIAL_RESPONSE,
-          dialResponse
+        const stream = stubInterface<Stream>({
+          source: (async function * () {
+            yield lp.encode.single(Message.encode({
+              type: Message.MessageType.DIAL_RESPONSE,
+              dialResponse
+            }))
+          }()),
+          sink: async (source) => {
+            await drain(source)
+          }
         })
-        stream.source = (async function * () {
-          yield lp.encode.single(response)
-        }())
-        stream.sink.returns(Promise.resolve())
 
         return stream
       })
@@ -126,9 +129,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -156,9 +161,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -195,9 +202,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -240,9 +249,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -287,9 +298,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -339,9 +352,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       await service.verifyExternalAddresses()
 
@@ -372,9 +387,11 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
+
+      connectionManager.isDialable.resolves(true)
 
       connectionManager.openConnection.reset()
       connectionManager.openConnection.callsFake(async (peer, options = {}) => {

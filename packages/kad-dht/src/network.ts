@@ -1,5 +1,6 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
+import { safelyCloseStream, safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { pbStream } from 'it-protobuf-stream'
 import { CodeError } from 'protons-runtime'
 import { Message } from './message/dht.js'
@@ -11,7 +12,7 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, Connection } from '@libp2p/interface'
 
 export interface NetworkInit {
   protocol: string
@@ -87,11 +88,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type }, options)
 
+    let connection: Connection | undefined
     let stream: Stream | undefined
 
     try {
-      const connection = await this.components.connectionManager.openConnection(to, options)
-      const stream = await connection.newStream(this.protocol, options)
+      connection = await this.components.connectionManager.openConnection(to, options)
+      stream = await connection.newStream(this.protocol, options)
 
       const response = await this._writeReadMessage(stream, msg, options)
 
@@ -106,9 +108,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       this.log.error('could not send %s to %p', msg.type, to, err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
-      if (stream != null) {
-        await stream.close()
-      }
+      await safelyCloseStream(stream, options)
+      await safelyCloseConnectionIfUnused(connection, options)
     }
   }
 
@@ -130,11 +131,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     yield dialPeerEvent({ peer: to }, options)
     yield sendQueryEvent({ to, type }, options)
 
+    let connection: Connection | undefined
     let stream: Stream | undefined
 
     try {
-      const connection = await this.components.connectionManager.openConnection(to, options)
-      const stream = await connection.newStream(this.protocol, options)
+      connection = await this.components.connectionManager.openConnection(to, options)
+      stream = await connection.newStream(this.protocol, options)
 
       await this._writeMessage(stream, msg, options)
 
@@ -142,9 +144,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     } catch (err: any) {
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
-      if (stream != null) {
-        await stream.close()
-      }
+      await safelyCloseStream(stream, options)
+      await safelyCloseConnectionIfUnused(connection, options)
     }
   }
 

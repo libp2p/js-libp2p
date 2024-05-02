@@ -1,6 +1,7 @@
 import { CodeError, setMaxListeners } from '@libp2p/interface'
 import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { codes } from '../error.js'
@@ -161,6 +162,10 @@ export class WebRTCTransport implements Transport, Startable {
 
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
+    setMaxListeners(Infinity, signal)
+    const options = {
+      signal
+    }
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
@@ -191,14 +196,11 @@ export class WebRTCTransport implements Transport, Startable {
         skipProtection: true,
         muxerFactory
       })
-
-      // close the stream if SDP messages have been exchanged successfully
-      await stream.close({
-        signal
-      })
     } catch (err: any) {
       stream.abort(err)
       throw err
+    } finally {
+      await safelyCloseStream(stream, options)
     }
   }
 

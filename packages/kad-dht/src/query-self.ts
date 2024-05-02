@@ -1,5 +1,4 @@
-import { setMaxListeners } from '@libp2p/interface'
-import { anySignal } from 'any-signal'
+import { createTimeoutOptions } from '@libp2p/utils/abort-options'
 import length from 'it-length'
 import { pipe } from 'it-pipe'
 import take from 'it-take'
@@ -106,19 +105,13 @@ export class QuerySelf implements Startable {
 
     if (this.started) {
       this.controller = new AbortController()
-      const timeoutSignal = AbortSignal.timeout(this.queryTimeout)
-      const signal = anySignal([this.controller.signal, timeoutSignal])
-
-      // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      setMaxListeners(Infinity, signal, this.controller.signal, timeoutSignal)
+      const options = createTimeoutOptions(this.queryTimeout, this.controller.signal)
 
       try {
         if (this.routingTable.size === 0) {
           this.log('routing table was empty, waiting for some peers before running query')
           // wait to discover at least one DHT peer
-          await pEvent(this.routingTable, 'peer:add', {
-            signal
-          })
+          await pEvent(this.routingTable, 'peer:add', options)
         }
 
         this.log('run self-query, look for %d peers timing out after %dms', this.count, this.queryTimeout)
@@ -126,7 +119,7 @@ export class QuerySelf implements Startable {
 
         const found = await pipe(
           this.peerRouting.getClosestPeers(this.peerId.toBytes(), {
-            signal,
+            ...options,
             isSelfQuery: true
           }),
           (source) => take(source, this.count),
@@ -137,7 +130,7 @@ export class QuerySelf implements Startable {
       } catch (err: any) {
         this.log.error('self-query error', err)
       } finally {
-        signal.clear()
+        options.signal.clear()
 
         if (this.initialQuerySelfHasRun != null) {
           this.initialQuerySelfHasRun.resolve()

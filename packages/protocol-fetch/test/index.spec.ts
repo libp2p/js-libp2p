@@ -37,7 +37,9 @@ function createStreams (components: StubbedFetchComponents, remotePeer?: PeerId)
   incomingStream.source = duplex[1].source
   incomingStream.sink.callsFake(async source => duplex[1].sink(source))
 
-  const connection = stubInterface<Connection>()
+  const connection = stubInterface<Connection>({
+    streams: []
+  })
 
   if (remotePeer != null) {
     connection.newStream.withArgs('/libp2p/fetch/0.0.1').resolves(outgoingStream)

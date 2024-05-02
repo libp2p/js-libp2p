@@ -1,6 +1,7 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, setMaxListeners } from '@libp2p/interface'
 import { transportSymbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader, type AbortOptions, type ComponentLogger, type Logger, type Connection, type Stream, type ConnectionGater, type PeerId, type PeerStore } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
+import { safelyCloseStream } from '@libp2p/utils/close'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -286,38 +287,35 @@ export class CircuitRelayTransport implements Transport {
     }
 
     const signal = AbortSignal.timeout(this.stopTimeout)
-    const pbstr = pbStream(stream).pb(StopMessage)
-    const request = await pbstr.read({
+    setMaxListeners(Infinity, signal)
+    const options = {
       signal
-    })
+    }
+
+    const pbstr = pbStream(stream).pb(StopMessage)
+    const request = await pbstr.read(options)
 
     this.log('new circuit relay v2 stop stream from %p with type %s', connection.remotePeer, request.type)
 
     if (request?.type === undefined) {
       this.log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
-      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
-        signal
-      })
-      await stream.close()
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, options)
+      await safelyCloseStream(stream, options)
       return
     }
 
     // Validate the STOP request has the required input
     if (request.type !== StopMessage.Type.CONNECT) {
       this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
-        signal
-      })
-      await stream.close()
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, options)
+      await safelyCloseStream(stream, options)
       return
     }
 
     if (!isValidStop(request)) {
       this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
-      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
-        signal
-      })
-      await stream.close()
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, options)
+      await safelyCloseStream(stream, options)
       return
     }
 
@@ -325,17 +323,13 @@ export class CircuitRelayTransport implements Transport {
 
     if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
       this.log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
-      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
-        signal
-      })
-      await stream.close()
+      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
+      await safelyCloseStream(stream, options)
       return
     }
 
     this.log.trace('sending success response to %p', connection.remotePeer)
-    await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
-      signal
-    })
+    await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, options)
 
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
     const localAddr = this.addressManager.getAddresses()[0]
