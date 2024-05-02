@@ -5,18 +5,23 @@
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { logger } from '@libp2p/logger'
  *
  * const log = logger('libp2p:my:component:name')
  *
- * log('something happened: %s', 'it was ok')
- * log.error('something bad happened: %o', err)
+ * try {
+ *   // an operation
+ *   log('something happened: %s', 'it was ok')
+ * } catch (err) {
+ *   log.error('something bad happened: %o', err)
+ * }
  *
- * log('with this peer: %p', aPeerId)
- * log('and this base58btc: %b', aUint8Array)
- * log('and this base32: %t', aUint8Array)
- *  ```
+ * log('with this peer: %p', {})
+ * log('and this base58btc: %b', Uint8Array.from([0, 1, 2, 3]))
+ * log('and this base32: %t', Uint8Array.from([4, 5, 6, 7]))
+ * ```
+ *
  * ```console
  * $ DEBUG=libp2p:* node index.js
  * something happened: it was ok

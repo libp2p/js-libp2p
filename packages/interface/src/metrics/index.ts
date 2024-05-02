@@ -146,6 +146,144 @@ export interface CounterGroup {
  * The libp2p metrics tracking object. This interface is only concerned
  * with the collection of metrics, please see the individual implementations
  * for how to extract metrics for viewing.
+ *
+ * @example How to register a simple metric
+ *
+ * ```typescript
+ * import { Metrics, Metric } from '@libp2p/interface/metrics
+ *
+ * interface MyServiceComponents {
+ *   metrics: Metrics
+ * }
+ *
+ * class MyService {
+ *   private readonly myMetric: Metric
+ *
+ *   constructor (components: MyServiceComponents) {
+ *     this.myMetric = components.metrics.registerMetric({
+ *       name: 'my_metric',
+ *       label: 'my_label',
+ *       help: 'my help text'
+ *     })
+ *   }
+ *
+ *   // later
+ *   doSomething () {
+ *     this.myMetric.update(1)
+ *   }
+ * }
+ * ```
+ *
+ * @example How to register a dynamically calculated metric
+ *
+ * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
+ *
+ * ```typescript
+ * import { Metrics, Metric } from '@libp2p/interface/metrics
+ *
+ * interface MyServiceComponents {
+ *   metrics: Metrics
+ * }
+ *
+ * class MyService {
+ *   private readonly myMetric: Metric
+ *
+ *   constructor (components: MyServiceComponents) {
+ *     this.myMetric = components.metrics.registerMetric({
+ *       name: 'my_metric',
+ *       label: 'my_label',
+ *       help: 'my help text',
+ *       calculate: async () => {
+ *         // do something expensive
+ *         return 1
+ *       }
+ *     })
+ *   }
+ * }
+ * ```
+ *
+ * @example How to register a group of metrics
+ *
+ * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
+ *
+ * ```typescript
+ * import { Metrics, MetricGroup } from '@libp2p/interface/metrics
+ *
+ * interface MyServiceComponents {
+ *   metrics: Metrics
+ * }
+ *
+ * class MyService {
+ *   private readonly myMetricGroup: MetricGroup
+ *
+ *   constructor (components: MyServiceComponents) {
+ *     this.myMetricGroup = components.metrics.registerMetricGroup({
+ *       name: 'my_metric_group',
+ *       label: 'my_label',
+ *       help: 'my help text'
+ *     })
+ *   }
+ *
+ *   // later
+ *   doSomething () {
+ *     this.myMetricGroup.increment({ my_label: 'my_value' })
+ *   }
+ * }
+ * ```
+ *
+ * There are specific metric groups for tracking libp2p connections and streams:
+ *
+ * @example How to track multiaddr connections
+ *
+ * This is something only libp2p transports need to do.
+ *
+ * ```typescript
+ * import { Metrics } from '@libp2p/interface/metrics
+ *
+ * interface MyServiceComponents {
+ *   metrics: Metrics
+ * }
+ *
+ * class MyService {
+ *   private readonly metrics: Metrics
+ *
+ *   constructor (components: MyServiceComponents) {
+ *     this.metrics = components.metrics
+ *   }
+ *
+ *   // later
+ *   doSomething () {
+ *     const connection = {} // create a connection
+ *     this.metrics.trackMultiaddrConnection(connection)
+ *   }
+ * }
+ * ```
+ *
+ * @example How to track protocol streams
+ *
+ * This is something only libp2p connections need to do.
+ *
+ * ```typescript
+ * import { Metrics } from '@libp2p/interface/metrics
+ *
+ * interface MyServiceComponents {
+ *   metrics: Metrics
+ * }
+ *
+ * class MyService {
+ *   private readonly metrics: Metrics
+ *
+ *   constructor (components: MyServiceComponents) {
+ *     this.metrics = components.metrics
+ *   }
+ *
+ *   // later
+ *   doSomething () {
+ *     const stream = {} // create a stream
+ *     this.metrics.trackProtocolStream(stream)
+ *   }
+ * }
+ * ```
  */
 export interface Metrics {
   /**

@@ -12,7 +12,7 @@ import type { PeerId } from '@libp2p/interface'
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerMap } from '@libp2p/peer-collections'
  *
  * const map = peerMap<string>()
@@ -40,8 +40,8 @@ export class PeerMap <T> {
     this.map.clear()
   }
 
-  delete (peer: PeerId): void {
-    this.map.delete(peer.toString())
+  delete (peer: PeerId): boolean {
+    return this.map.delete(peer.toString())
   }
 
   entries (): IterableIterator<[PeerId, T]> {
@@ -87,4 +87,8 @@ export class PeerMap <T> {
   get size (): number {
     return this.map.size
   }
+}
+
+export function peerMap <T> (): PeerMap<T> {
+  return new PeerMap<T>()
 }

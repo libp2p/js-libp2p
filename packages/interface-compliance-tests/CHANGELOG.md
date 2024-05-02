@@ -33,6 +33,281 @@
   * dependencies
     * @libp2p/multistream-select bumped from ^5.0.0 to ^5.0.1
 
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/peer-collections bumped from ^5.0.0 to ^5.1.0
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
+    * @libp2p/interface-internal bumped from ^1.0.2 to ^1.0.3
+    * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/multistream-select bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-collections bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-id bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/peer-id-factory bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/utils bumped from ^5.0.2 to ^5.0.3
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/multistream-select bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/utils bumped from ^5.0.3 to ^5.1.0
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.0.5 to ^1.0.6
+    * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/utils bumped from ^5.2.0 to ^5.2.1
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
+
+## [5.4.3](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.2...interface-compliance-tests-v5.4.3) (2024-05-01)
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/interface-internal bumped from ^1.1.1 to ^1.2.0
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+    * @libp2p/multistream-select bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-collections bumped from ^5.1.11 to ^5.2.0
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+
+## [5.4.2](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.1...interface-compliance-tests-v5.4.2) (2024-04-24)
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.2.0 to ^1.3.0
+    * @libp2p/interface-internal bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/logger bumped from ^4.0.10 to ^4.0.11
+    * @libp2p/multistream-select bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-collections bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/peer-id bumped from ^4.0.10 to ^4.1.0
+    * @libp2p/peer-id-factory bumped from ^4.0.10 to ^4.1.0
+    * @libp2p/utils bumped from ^5.3.1 to ^5.3.2
+
+## [5.4.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.0...interface-compliance-tests-v5.4.1) (2024-04-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.3.0 to ^5.3.1
+
+## [5.4.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.3.4...interface-compliance-tests-v5.4.0) (2024-04-12)
+
+
+### Features
+
+* add isDialable method to libp2p ([#2479](https://github.com/libp2p/js-libp2p/issues/2479)) ([2c56203](https://github.com/libp2p/js-libp2p/commit/2c56203f9ccf4b6ed30541a871b9bd8c5a21526e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/interface-internal bumped from ^1.0.11 to ^1.1.0
+    * @libp2p/logger bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/multistream-select bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-collections bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-id bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/peer-id-factory bumped from ^4.0.9 to ^4.0.10
+    * @libp2p/utils bumped from ^5.2.8 to ^5.3.0
+
+## [5.3.4](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.3.3...interface-compliance-tests-v5.3.4) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/interface-internal bumped from ^1.0.10 to ^1.0.11
+    * @libp2p/logger bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/multistream-select bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-collections bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/peer-id-factory bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/utils bumped from ^5.2.7 to ^5.2.8
+
+## [5.3.3](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.3.2...interface-compliance-tests-v5.3.3) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/interface-internal bumped from ^1.0.9 to ^1.0.10
+    * @libp2p/logger bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/multistream-select bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-collections bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-id bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/peer-id-factory bumped from ^4.0.7 to ^4.0.8
+    * @libp2p/utils bumped from ^5.2.6 to ^5.2.7
+
+## [5.3.2](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.3.1...interface-compliance-tests-v5.3.2) (2024-02-27)
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/interface-internal bumped from ^1.0.8 to ^1.0.9
+    * @libp2p/logger bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/multistream-select bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-collections bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-id bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/peer-id-factory bumped from ^4.0.6 to ^4.0.7
+    * @libp2p/utils bumped from ^5.2.5 to ^5.2.6
+
+## [5.3.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.2.0...interface-compliance-tests-v5.3.0) (2024-02-07)
+
+
+### Features
+
+* add tls connection encrypter ([#2377](https://github.com/libp2p/js-libp2p/issues/2377)) ([537d356](https://github.com/libp2p/js-libp2p/commit/537d356edf329f244b3b7a76d20a69e66cf3d203))
+
+
+### Bug Fixes
+
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/interface-internal bumped from ^1.0.7 to ^1.0.8
+    * @libp2p/logger bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/multistream-select bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-collections bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/peer-id-factory bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/utils bumped from ^5.2.3 to ^5.2.4
+
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.3...interface-compliance-tests-v5.2.0) (2024-01-24)
+
+
+### Features
+
+* add sinon matchers for PeerIds and Multiaddrs to test module ([#2373](https://github.com/libp2p/js-libp2p/issues/2373)) ([2e464c0](https://github.com/libp2p/js-libp2p/commit/2e464c09993c919f66a465d8c0ed511f6a9e9c90))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.2.2 to ^5.2.3
+
+## [5.1.3](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.2...interface-compliance-tests-v5.1.3) (2024-01-16)
+
+
+### Bug Fixes
+
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/interface-internal bumped from ^1.0.6 to ^1.0.7
+    * @libp2p/logger bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/multistream-select bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-collections bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/peer-id-factory bumped from ^4.0.4 to ^4.0.5
+    * @libp2p/utils bumped from ^5.2.1 to ^5.2.2
+
+## [5.1.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.1.0...interface-compliance-tests-v5.1.1) (2024-01-06)
+
+
+### Bug Fixes
+
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/interface-internal bumped from ^1.0.4 to ^1.0.5
+    * @libp2p/logger bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/multistream-select bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-collections bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^4.0.3 to ^4.0.4
+    * @libp2p/peer-id-factory bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/utils bumped from ^5.1.1 to ^5.2.0
+
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.8...interface-compliance-tests-v5.1.0) (2023-12-28)
+
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
+    * @libp2p/interface-internal bumped from ^1.0.3 to ^1.0.4
+    * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/multistream-select bumped from ^5.0.3 to ^5.1.0
+    * @libp2p/peer-collections bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
+    * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
+    * @libp2p/utils bumped from ^5.1.0 to ^5.1.1
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.0.0...interface-compliance-tests-v5.0.1) (2023-11-30)
 
 

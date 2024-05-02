@@ -12,7 +12,7 @@ import type { PeerId } from '@libp2p/interface'
  *
  * @example
  *
- * ```JavaScript
+ * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
  *
  * const set = peerSet()
@@ -121,4 +121,8 @@ export class PeerSet {
 
     return output
   }
+}
+
+export function peerSet (): PeerSet {
+  return new PeerSet()
 }

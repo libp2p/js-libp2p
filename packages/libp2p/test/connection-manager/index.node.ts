@@ -2,6 +2,9 @@
 
 import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { dns } from '@multiformats/dns'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -13,7 +16,7 @@ import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
-import { createNode, createPeerId } from '../fixtures/creators/peer.js'
+import { createNode } from '../fixtures/creators/peer.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
 import type { Libp2pNode } from '../../src/libp2p.js'
@@ -26,8 +29,8 @@ describe('Connection Manager', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -122,8 +125,8 @@ describe('libp2p.connections', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createPeerId(),
-      createPeerId()
+      createEd25519PeerId(),
+      createEd25519PeerId()
     ])
   })
 
@@ -388,6 +391,30 @@ describe('libp2p.connections', () => {
         force: true
       })
       expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(2)
+    })
+
+    it('should use custom DNS resolver', async () => {
+      const resolver = sinon.stub()
+
+      libp2p = await createNode({
+        config: createBaseOptions({
+          addresses: {
+            listen: ['/ip4/127.0.0.1/tcp/0/ws']
+          },
+          dns: dns({
+            resolvers: {
+              '.': resolver
+            }
+          })
+        })
+      })
+
+      const ma = multiaddr('/dnsaddr/example.com/tcp/12345')
+      const err = new Error('Could not resolve')
+
+      resolver.withArgs('_dnsaddr.example.com').rejects(err)
+
+      await expect(libp2p.dial(ma)).to.eventually.be.rejectedWith(err)
     })
   })
 

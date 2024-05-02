@@ -1,13 +1,13 @@
 import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import first from 'it-first'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
-import isPrivateIp from 'private-ip'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -231,7 +231,7 @@ export class AutoNATService implements Startable {
               return isNotOurHost
             })
             .filter(ma => {
-              const isSupportedTransport = Boolean(self.components.transportManager.transportForMultiaddr(ma))
+              const isSupportedTransport = Boolean(self.components.transportManager.dialTransportForMultiaddr(ma))
 
               self.log.trace('transport for %a is supported %s', ma, isSupportedTransport)
               // skip any Multiaddrs that have transports we do not support

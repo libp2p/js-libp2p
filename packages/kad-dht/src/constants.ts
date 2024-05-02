@@ -11,11 +11,7 @@ export const hour = 60 * minute
 
 export const MAX_RECORD_AGE = 36 * hour
 
-export const LAN_PREFIX = '/lan'
-
-export const PROTOCOL_PREFIX = '/ipfs'
-
-export const PROTOCOL_DHT = '/kad/1.0.0'
+export const PROTOCOL = '/ipfs/kad/1.0.0'
 
 export const RECORD_KEY_PREFIX = '/dht/record'
 
@@ -39,19 +35,19 @@ export const K = 20
 export const ALPHA = 3
 
 // How often we look for our closest DHT neighbours
-export const QUERY_SELF_INTERVAL = Number(5 * minute)
+export const QUERY_SELF_INTERVAL = 5 * minute
 
 // How often we look for the first set of our closest DHT neighbours
-export const QUERY_SELF_INITIAL_INTERVAL = Number(Number(second))
+export const QUERY_SELF_INITIAL_INTERVAL = second
 
 // How long to look for our closest DHT neighbours for
-export const QUERY_SELF_TIMEOUT = Number(5 * second)
+export const QUERY_SELF_TIMEOUT = 5 * second
 
 // How often we try to find new peers
-export const TABLE_REFRESH_INTERVAL = Number(5 * minute)
+export const TABLE_REFRESH_INTERVAL = 5 * minute
 
 // How how long to look for new peers for
-export const TABLE_REFRESH_QUERY_TIMEOUT = Number(30 * second)
+export const TABLE_REFRESH_QUERY_TIMEOUT = 30 * second
 
 // When a timeout is not specified, run a query for this long
-export const DEFAULT_QUERY_TIMEOUT = Number(30 * second)
+export const DEFAULT_QUERY_TIMEOUT = 30 * second

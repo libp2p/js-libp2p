@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, setMaxListeners } from '@libp2p/interface'
 import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -6,7 +6,7 @@ import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
-import { cleanup, RTCPeerConnection } from '../webrtc/index.js'
+import { RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
@@ -56,6 +56,7 @@ export class WebRTCTransport implements Transport, Startable {
   ) {
     this.log = components.logger.forComponent('libp2p:webrtc')
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     if (components.metrics != null) {
       this.metrics = {
@@ -86,7 +87,6 @@ export class WebRTCTransport implements Transport, Startable {
 
   async stop (): Promise<void> {
     await this.components.registrar.unhandle(SIGNALING_PROTO_ID)
-    cleanup()
     this._started = false
   }
 
@@ -100,8 +100,18 @@ export class WebRTCTransport implements Transport, Startable {
 
   readonly [transportSymbol] = true
 
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  /**
+   * Filter check for all Multiaddrs that this transport can listen on
+   */
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTC.exactMatch)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 
   /*

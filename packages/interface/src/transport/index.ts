@@ -1,5 +1,5 @@
 import type { Connection, MultiaddrConnection } from '../connection/index.js'
-import type { TypedEventTarget } from '../events.js'
+import type { TypedEventTarget } from '../event-target.js'
 import type { AbortOptions } from '../index.js'
 import type { StreamMuxerFactory } from '../stream-muxer/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -68,9 +68,16 @@ export interface Transport {
   createListener(options: CreateListenerOptions): Listener
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
+   * Takes a list of `Multiaddr`s and returns only addresses that are valid for
+   * the transport to listen on
    */
-  filter: MultiaddrFilter
+  listenFilter: MultiaddrFilter
+
+  /**
+   * Takes a list of `Multiaddr`s and returns only addresses that are vali for
+   * the transport to dial
+   */
+  dialFilter: MultiaddrFilter
 }
 
 export function isTransport (other: any): other is Transport {

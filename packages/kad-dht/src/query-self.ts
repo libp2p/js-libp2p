@@ -12,7 +12,7 @@ import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interfa
 import type { DeferredPromise } from 'p-defer'
 
 export interface QuerySelfInit {
-  lan: boolean
+  logPrefix: string
   peerRouting: PeerRouting
   routingTable: RoutingTable
   count?: number
@@ -46,10 +46,10 @@ export class QuerySelf implements Startable {
   private querySelfPromise?: DeferredPromise<void>
 
   constructor (components: QuerySelfComponents, init: QuerySelfInit) {
-    const { peerRouting, lan, count, interval, queryTimeout, routingTable } = init
+    const { peerRouting, logPrefix, count, interval, queryTimeout, routingTable } = init
 
     this.peerId = components.peerId
-    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:query-self`)
+    this.log = components.logger.forComponent(`${logPrefix}:query-self`)
     this.started = false
     this.peerRouting = peerRouting
     this.routingTable = routingTable
@@ -106,10 +106,11 @@ export class QuerySelf implements Startable {
 
     if (this.started) {
       this.controller = new AbortController()
-      const signal = anySignal([this.controller.signal, AbortSignal.timeout(this.queryTimeout)])
+      const timeoutSignal = AbortSignal.timeout(this.queryTimeout)
+      const signal = anySignal([this.controller.signal, timeoutSignal])
 
       // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      setMaxListeners(Infinity, signal)
+      setMaxListeners(Infinity, signal, this.controller.signal, timeoutSignal)
 
       try {
         if (this.routingTable.size === 0) {

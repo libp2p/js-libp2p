@@ -1,22 +1,22 @@
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface PublicKey {
+export interface PublicKey<Type extends KeyType = 'Ed25519'> {
   readonly bytes: Uint8Array
   verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
   marshal(): Uint8Array
-  equals(key: PublicKey): boolean
+  equals(key: PublicKey<Type>): boolean
   hash(): Uint8Array | Promise<Uint8Array>
 }
 
 /**
  * Generic private key interface
  */
-export interface PrivateKey {
-  readonly public: PublicKey
+export interface PrivateKey<Type extends KeyType = 'Ed25519'> {
+  readonly public: PublicKey<Type>
   readonly bytes: Uint8Array
   sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
   marshal(): Uint8Array
-  equals(key: PrivateKey): boolean
+  equals(key: PrivateKey<Type>): boolean
   hash(): Uint8Array | Promise<Uint8Array>
   /**
    * Gets the ID of the key.

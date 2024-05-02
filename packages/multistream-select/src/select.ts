@@ -1,6 +1,7 @@
 import { CodeError } from '@libp2p/interface'
 import { lpStream } from 'it-length-prefixed-stream'
 import pDefer from 'p-defer'
+import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -27,7 +28,7 @@ export interface SelectStream extends Duplex<any, any, any> {
  * @returns A stream for the selected protocol and the protocol that was selected from the list of protocols provided to `select`.
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { pipe } from 'it-pipe'
  * import * as mss from '@libp2p/multistream-select'
  * import { Mplex } from '@libp2p/mplex'
@@ -64,7 +65,7 @@ export interface SelectStream extends Duplex<any, any, any> {
 export async function select <Stream extends SelectStream> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
 
-  if (protocols.length === 1) {
+  if (protocols.length === 1 && options.negotiateFully === false) {
     return optimisticSelect(stream, protocols[0], options)
   }
 
@@ -181,6 +182,12 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
           sentProtocol = true
           sendingProtocol = false
           doneSendingProtocol.resolve()
+
+          // read the negotiation response but don't block more sending
+          negotiate()
+            .catch(err => {
+              options.log.error('could not finish optimistic protocol negotiation of %s', protocol, err)
+            })
         } else {
           yield buf
         }
@@ -321,9 +328,26 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
     const originalClose = stream.close.bind(stream)
 
     stream.close = async (opts) => {
-      // the stream is being closed, don't try to negotiate a protocol if we
-      // haven't already
-      if (!negotiated) {
+      // if we are in the process of negotiation, let it finish before closing
+      // because we may have unsent early data
+      const tasks = []
+
+      if (sendingProtocol) {
+        tasks.push(doneSendingProtocol.promise)
+      }
+
+      if (readingProtocol) {
+        tasks.push(doneReadingProtocol.promise)
+      }
+
+      if (tasks.length > 0) {
+        // let the in-flight protocol negotiation finish gracefully
+        await raceSignal(
+          Promise.all(tasks),
+          opts?.signal
+        )
+      } else {
+        // no protocol negotiation attempt has occurred so don't start one
         negotiated = true
         negotiating = false
         doneNegotiating.resolve()

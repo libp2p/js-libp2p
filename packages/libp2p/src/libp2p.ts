@@ -1,4 +1,4 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { contentRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -14,16 +14,17 @@ import { defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
-import { CompoundContentRouting } from './content-routing/index.js'
+import { CompoundContentRouting } from './content-routing.js'
 import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
+import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -67,6 +68,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.services = {}
     const components = this.components = defaultComponents({
       peerId: init.peerId,
+      privateKey: init.privateKey,
       nodeInfo: init.nodeInfo ?? {
         name: pkg.name,
         version: pkg.version
@@ -74,7 +76,8 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       logger: this.logger,
       events,
       datastore: init.datastore ?? new MemoryDatastore(),
-      connectionGater: connectionGater(init.connectionGater)
+      connectionGater: connectionGater(init.connectionGater),
+      dns: init.dns
     })
 
     this.peerStore = this.configureComponent('peerStore', new PersistentPeerStore(components, {
@@ -135,6 +138,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       routers: contentRouters
     }))
 
+    // Random walk
+    this.configureComponent('randomWalk', new RandomWalk(this.components))
+
     // Discovery modules
     ;(init.peerDiscovery ?? []).forEach((fn, index) => {
       const service = this.configureComponent(`peer-discovery-${index}`, fn(this.components))
@@ -175,7 +181,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
         if (service[peerDiscoverySymbol] != null) {
           this.log('registering service %s for peer discovery', name)
-          service[peerDiscoverySymbol].addEventListener('peer', (evt: CustomEvent<PeerInfo>) => {
+          service[peerDiscoverySymbol].addEventListener?.('peer', (evt: CustomEvent<PeerInfo>) => {
             this.#onDiscoveryPeer(evt)
           })
         }
@@ -262,7 +268,11 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   }
 
   async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
-    return this.components.connectionManager.openConnection(peer, options)
+    return this.components.connectionManager.openConnection(peer, {
+      // ensure any userland dials take top priority in the queue
+      priority: 75,
+      ...options
+    })
   }
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
@@ -307,10 +317,16 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       return peer.publicKey
     }
 
-    const peerInfo = await this.peerStore.get(peer)
+    try {
+      const peerInfo = await this.peerStore.get(peer)
 
-    if (peerInfo.id.publicKey != null) {
-      return peerInfo.id.publicKey
+      if (peerInfo.id.publicKey != null) {
+        return peerInfo.id.publicKey
+      }
+    } catch (err: any) {
+      if (err.code !== codes.ERR_NOT_FOUND) {
+        throw err
+      }
     }
 
     const peerKey = uint8ArrayConcat([
@@ -320,6 +336,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
+
     // ensure the returned key is valid
     unmarshalPublicKey(bytes)
 
@@ -362,6 +379,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.components.registrar.unregister(id)
   }
 
+  async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
+    return this.components.connectionManager.isDialable(multiaddr, options)
+  }
+
   /**
    * Called whenever peer discovery services emit `peer` events and adds peers
    * to the peer store.
@@ -386,7 +407,13 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * libp2p interface and is useful for testing and debugging.
  */
 export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
-  options.peerId ??= await createEd25519PeerId()
+  const peerId = options.peerId ??= await createEd25519PeerId()
 
-  return new Libp2pNode(validateConfig(options))
+  if (peerId.privateKey == null) {
+    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
+  }
+
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
+
+  return new Libp2pNode(await validateConfig(options))
 }

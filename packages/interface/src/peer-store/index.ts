@@ -150,7 +150,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.forEach(peer => {
    *   // ...
    * })
@@ -163,7 +163,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const peer of await peerStore.all()) {
    *   // ...
    * }
@@ -176,7 +176,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.addressBook.set(peerId, multiaddrs)
    * await peerStore.addressBook.get(peerId)
    * // multiaddrs[]
@@ -194,7 +194,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.has(peerId)
    * // false
    * await peerStore.addressBook.add(peerId, multiaddrs)
@@ -209,7 +209,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peer = await peerStore.get(peerId)
    * // { .. }
    * ```
@@ -221,7 +221,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.save(peerId, {
    *   multiaddrs
    * })
@@ -234,7 +234,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.patch(peerId, {
    *   multiaddrs
    * })
@@ -247,7 +247,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.merge(peerId, {
    *   multiaddrs
    * })
@@ -264,7 +264,7 @@ export interface PeerStore {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await peerStore.consumePeerRecord(buf, expectedPeer)
    * ```
    */

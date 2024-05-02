@@ -5,7 +5,7 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { create } from '@libp2p/hmac'
  *
  * const hash = 'SHA1' // 'SHA256' || 'SHA512'

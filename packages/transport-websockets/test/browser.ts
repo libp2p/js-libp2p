@@ -53,7 +53,7 @@ describe('libp2p-websockets', () => {
     const ma3 = multiaddr('/ip6/::1/tcp/80/ws')
     const ma4 = multiaddr('/ip6/::1/tcp/443/wss')
 
-    const valid = ws.filter([ma1, ma2, ma3, ma4])
+    const valid = ws.dialFilter([ma1, ma2, ma3, ma4])
 
     if (isBrowser || isWebWorker) {
       expect(valid.length).to.equal(2)

@@ -2,12 +2,12 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 
 import { defaultLogger } from '@libp2p/logger'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MESSAGE_TYPE } from '../../../src/message/index.js'
-import { Libp2pRecord } from '../../../src/record/index.js'
+import { type Message, MessageType } from '../../../src/message/dht.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
@@ -15,7 +15,7 @@ import type { Validators } from '../../../src/index.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
-const T = MESSAGE_TYPE.PUT_VALUE
+const T = MessageType.PUT_VALUE
 
 describe('rpc - handlers - PutValue', () => {
   let sourcePeer: PeerId
@@ -34,12 +34,18 @@ describe('rpc - handlers - PutValue', () => {
     }
 
     handler = new PutValueHandler(components, {
-      validators
+      validators,
+      logPrefix: ''
     })
   })
 
   it('errors on missing record', async () => {
-    const msg = new Message(T, uint8ArrayFromString('hello'), 5)
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('hello'),
+      closer: [],
+      providers: []
+    }
 
     try {
       await handler.handle(sourcePeer, msg)
@@ -52,13 +58,18 @@ describe('rpc - handlers - PutValue', () => {
   })
 
   it('stores the record in the datastore', async () => {
-    const msg = new Message(T, uint8ArrayFromString('/val/hello'), 5)
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('/val/hello'),
+      closer: [],
+      providers: []
+    }
     const record = new Libp2pRecord(
       uint8ArrayFromString('hello'),
       uint8ArrayFromString('world'),
       new Date()
     )
-    msg.record = record
+    msg.record = record.serialize()
     validators.val = async () => {}
 
     const response = await handler.handle(sourcePeer, msg)

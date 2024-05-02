@@ -2,6 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type ConnectionGater, type PeerId, type PeerStore, type Topology } from '@libp2p/interface'
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -17,8 +18,6 @@ import { type Components, defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import { createPeerId } from '../fixtures/creators/peer.js'
-import { matchPeerId } from '../fixtures/match-peer-id.js'
 import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 const protocol = '/test/1.0.0'
@@ -30,7 +29,7 @@ describe('registrar', () => {
   let libp2p: Libp2pNode
 
   before(async () => {
-    peerId = await createPeerId()
+    peerId = await createEd25519PeerId()
   })
 
   describe('errors', () => {

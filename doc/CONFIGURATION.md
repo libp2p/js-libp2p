@@ -42,9 +42,9 @@
 
 libp2p is a modular networking stack. It's designed to be able to suit a variety of project needs. The configuration of libp2p is a key part of its structure. It enables you to bring exactly what you need, and only what you need. This document is a guide on how to configure libp2p for your particular project. Check out the [Configuration examples](#configuration-examples) section if you're just looking to leverage an existing configuration.
 
-Regardless of how you configure libp2p, the top level [API](./API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
+Regardless of how you configure libp2p, the top level [API](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
 
-To get a high-level overview of the js-libp2p architecture, please read the [Architecture](./ARCHITECTURE.md) document.
+To get a high-level overview of the js-libp2p architecture, please read the [Architecture](https://github.com/libp2p/js-libp2p/blob/main/doc/ARCHITECTURE.md) document.
 
 ## Modules
 
@@ -115,7 +115,7 @@ Some available connection encryption protocols:
 - [@chainsafe/libp2p-noise](https://github.com/chainsafe/js-libp2p-noise)
 - [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/src/packages/connection-encrypter-plaintext/index.ts) (Not for production use)
 
-If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Crypto Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto).
+If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Connection Encrypter Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/connection-encrypter).
 
 If you want to know more about libp2p connection encryption, you should read the following content:
 
@@ -201,7 +201,7 @@ If you want to know more about libp2p pubsub, you should read the following cont
 
 ## Customizing libp2p
 
-When [creating a libp2p node](./API.md#create), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
+When [creating a libp2p node](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#create), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
 
 ```js
 const modules = {
@@ -928,13 +928,13 @@ If enough peers report that this address is dialable, the node is free to change
 
 For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
 
-```ts
+```TypeScript
 import { createLibp2p } from 'libp2p'
-import { autoNATService } from '@libp2p/autonat'
+import { autoNAT } from '@libp2p/autonat'
 
 const node = await createLibp2p({
   services: {
-    nat: autoNATService({
+    nat: autoNAT({
       protocolPrefix: 'my-node', // this should be left as the default value to ensure maximum compatibility
       timeout: 30000, // the remote must complete the AutoNAT protocol within this timeout
       maxInboundStreams: 1, // how many concurrent inbound AutoNAT protocols streams to allow on each connection
@@ -1021,4 +1021,4 @@ The [examples repo](https://github.com/libp2p/js-libp2p-examples) is also a good
 
 ## Limits
 
-Configuring the various limits of your node is important to protect it when it is part of hostile of adversarial networks. See [LIMITS.md](./LIMITS.md) for a full breakdown of the various built in protections and safeguards.
+Configuring the various limits of your node is important to protect it when it is part of hostile of adversarial networks. See [LIMITS.md](https://github.com/libp2p/js-libp2p/tree/main/doc/LIMITS.md) for a full breakdown of the various built in protections and safeguards.

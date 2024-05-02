@@ -10,26 +10,27 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import 'node-forge/lib/asn1.js'
-import 'node-forge/lib/pbe.js'
 import { CodeError } from '@libp2p/interface'
-// @ts-expect-error types are missing
-import forge from 'node-forge/lib/forge.js'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as Ed25519 from './ed25519-class.js'
 import generateEphemeralKeyPair from './ephemeral-keys.js'
 import { importer } from './importer.js'
 import { keyStretcher } from './key-stretcher.js'
 import * as keysPBM from './keys.js'
 import * as RSA from './rsa-class.js'
+import { importFromPem } from './rsa-utils.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey } from '@libp2p/interface'
+import type { PrivateKey, PublicKey, KeyType as KeyTypes } from '@libp2p/interface'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }
 export { keysPBM }
 
-export type KeyTypes = 'RSA' | 'Ed25519' | 'secp256k1'
+export type { KeyTypes }
+
+export { RsaPrivateKey, RsaPublicKey, MAX_RSA_KEY_SIZE } from './rsa-class.js'
+export { Ed25519PrivateKey, Ed25519PublicKey } from './ed25519-class.js'
+export { Secp256k1PrivateKey, Secp256k1PublicKey } from './secp256k1-class.js'
+export type { JWKKeyPair } from './interface.js'
 
 export const supportedKeys = {
   rsa: RSA,
@@ -54,11 +55,8 @@ function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k
 
 /**
  * Generates a keypair of the given type and bitsize
- *
- * @param type
- * @param bits -  Minimum of 1024
  */
-export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<PrivateKey> {
+export async function generateKeyPair <T extends KeyTypes> (type: T, bits?: number): Promise<PrivateKey<T>> {
   return typeToKey(type).generateKeyPair(bits ?? 2048)
 }
 
@@ -67,7 +65,7 @@ export async function generateKeyPair (type: KeyTypes, bits?: number): Promise<P
  *
  * Seed is a 32 byte uint8array
  */
-export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array, bits?: number): Promise<PrivateKey> {
+export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, seed: Uint8Array, bits?: number): Promise<PrivateKey<T>> {
   if (type.toLowerCase() !== 'ed25519') {
     throw new CodeError('Seed key derivation is unimplemented for RSA or secp256k1', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
   }
@@ -78,7 +76,7 @@ export async function generateKeyPairFromSeed (type: KeyTypes, seed: Uint8Array,
 /**
  * Converts a protobuf serialized public key into its representative object
  */
-export function unmarshalPublicKey (buf: Uint8Array): PublicKey {
+export function unmarshalPublicKey <T extends KeyTypes> (buf: Uint8Array): PublicKey<T> {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -106,7 +104,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey> {
+export async function unmarshalPrivateKey <T extends KeyTypes> (buf: Uint8Array): Promise<PrivateKey<T>> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -136,7 +134,7 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): U
  *
  * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
  */
-export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey> {
+export async function importKey <T extends KeyTypes> (encryptedKey: string, password: string): Promise<PrivateKey<T>> {
   try {
     const key = await importer(encryptedKey, password)
     return await unmarshalPrivateKey(key)
@@ -144,12 +142,9 @@ export async function importKey (encryptedKey: string, password: string): Promis
     // Ignore and try the old pem decrypt
   }
 
-  // Only rsa supports pem right now
-  const key = forge.pki.decryptRsaPrivateKey(encryptedKey, password)
-  if (key === null) {
-    throw new CodeError('Cannot read the key, most likely the password is wrong or not a RSA key', 'ERR_CANNOT_DECRYPT_PEM')
+  if (!encryptedKey.includes('BEGIN')) {
+    throw new CodeError('Encrypted key was not a libp2p-key or a PEM file', 'ERR_INVALID_IMPORT_FORMAT')
   }
-  let der = forge.asn1.toDer(forge.pki.privateKeyToAsn1(key))
-  der = uint8ArrayFromString(der.getBytes(), 'ascii')
-  return supportedKeys.rsa.unmarshalRsaPrivateKey(der)
+
+  return importFromPem(encryptedKey, password)
 }

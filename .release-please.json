@@ -1,8 +1,17 @@
 {
+  "release-type": "node",
   "plugins": ["node-workspace"],
+  "changelog-sections": [
+    { "type": "feat", "section": "Features", "hidden": false },
+    { "type": "fix", "section": "Bug Fixes", "hidden": false },
+    { "type": "docs", "section": "Documentation", "hidden": false },
+    { "type": "deps", "section": "Dependencies", "hidden": false },
+    { "type": "refactor", "section": "Refactors", "hidden": false }
+  ],
   "packages": {
     "interop": {},
     "packages/connection-encrypter-plaintext": {},
+    "packages/connection-encrypter-tls": {},
     "packages/crypto": {},
     "packages/interface": {},
     "packages/interface-compliance-tests": {},
@@ -22,12 +31,14 @@
     "packages/peer-store": {},
     "packages/protocol-autonat": {},
     "packages/protocol-dcutr": {},
+    "packages/protocol-echo": {},
     "packages/protocol-fetch": {},
     "packages/protocol-identify": {},
     "packages/protocol-perf": {},
     "packages/protocol-ping": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
+    "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
     "packages/transport-circuit-relay-v2": {},
     "packages/transport-tcp": {},

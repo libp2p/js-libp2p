@@ -21,7 +21,7 @@ export interface RoutingTableRefreshComponents {
 export interface RoutingTableRefreshInit {
   peerRouting: PeerRouting
   routingTable: RoutingTable
-  lan: boolean
+  logPrefix: string
   refreshInterval?: number
   refreshQueryTimeout?: number
 }
@@ -40,8 +40,8 @@ export class RoutingTableRefresh {
   private refreshTimeoutId?: ReturnType<typeof setTimeout>
 
   constructor (components: RoutingTableRefreshComponents, init: RoutingTableRefreshInit) {
-    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
-    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
+    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, logPrefix } = init
+    this.log = components.logger.forComponent(`${logPrefix}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL
@@ -51,7 +51,7 @@ export class RoutingTableRefresh {
     this.refreshTable = this.refreshTable.bind(this)
   }
 
-  async start (): Promise<void> {
+  async afterStart (): Promise<void> {
     this.log(`refreshing routing table every ${this.refreshInterval}ms`)
     this.refreshTable(true)
   }
@@ -147,7 +147,7 @@ export class RoutingTableRefresh {
       maxCommonPrefix = MAX_COMMON_PREFIX_LENGTH
     }
 
-    const dates = []
+    const dates: Date[] = []
 
     for (let i = 0; i <= maxCommonPrefix; i++) {
       // defaults to the zero value if we haven't refreshed it yet.

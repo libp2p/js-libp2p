@@ -1,0 +1,146 @@
+/* eslint-disable complexity */
+
+import { setMaxListeners } from '@libp2p/interface'
+import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { protocols } from '@multiformats/multiaddr'
+import drain from 'it-drain'
+import parallel from 'it-parallel'
+import { pbStream } from 'it-protobuf-stream'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import {
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
+  MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION
+} from './consts.js'
+import { Identify as IdentifyMessage } from './pb/message.js'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
+import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
+import type { Stream, Startable } from '@libp2p/interface'
+import type { ConnectionManager, IncomingStreamData } from '@libp2p/interface-internal'
+
+export class IdentifyPush extends AbstractIdentify implements Startable, IdentifyPushInterface {
+  private readonly connectionManager: ConnectionManager
+  private readonly concurrency: number
+
+  constructor (components: IdentifyPushComponents, init: IdentifyPushInit = {}) {
+    super(components, {
+      ...init,
+      protocol: `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
+      log: components.logger.forComponent('libp2p:identify-push')
+    })
+
+    this.connectionManager = components.connectionManager
+    this.concurrency = init.concurrency ?? defaultValues.concurrency
+
+    if ((init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate)) {
+      // When self peer record changes, trigger identify-push
+      components.events.addEventListener('self:peer:update', (evt) => {
+        void this.push().catch(err => { this.log.error(err) })
+      })
+    }
+  }
+
+  /**
+   * Calls `push` on all peer connections
+   */
+  async push (): Promise<void> {
+    // Do not try to push if we are not running
+    if (!this.isStarted()) {
+      return
+    }
+
+    const listenAddresses = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+    const peerRecord = new PeerRecord({
+      peerId: this.peerId,
+      multiaddrs: listenAddresses
+    })
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId)
+    const supportedProtocols = this.registrar.getProtocols()
+    const peer = await this.peerStore.get(this.peerId)
+    const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
+    const protocolVersion = uint8ArrayToString(peer.metadata.get('ProtocolVersion') ?? uint8ArrayFromString(this.host.protocolVersion))
+    const self = this
+
+    async function * pushToConnections (): AsyncGenerator<() => Promise<void>> {
+      for (const connection of self.connectionManager.getConnections()) {
+        const peer = await self.peerStore.get(connection.remotePeer)
+
+        if (!peer.protocols.includes(self.protocol)) {
+          continue
+        }
+
+        yield async () => {
+          let stream: Stream | undefined
+          const signal = AbortSignal.timeout(self.timeout)
+
+          setMaxListeners(Infinity, signal)
+
+          try {
+            stream = await connection.newStream(self.protocol, {
+              signal,
+              runOnTransientConnection: self.runOnTransientConnection
+            })
+
+            const pb = pbStream(stream, {
+              maxDataLength: self.maxMessageSize
+            }).pb(IdentifyMessage)
+
+            await pb.write({
+              listenAddrs: listenAddresses.map(ma => ma.bytes),
+              signedPeerRecord: signedPeerRecord.marshal(),
+              protocols: supportedProtocols,
+              agentVersion,
+              protocolVersion
+            }, {
+              signal
+            })
+
+            await stream.close({
+              signal
+            })
+          } catch (err: any) {
+            // Just log errors
+            self.log.error('could not push identify update to peer', err)
+            stream?.abort(err)
+          }
+        }
+      }
+    }
+
+    await drain(parallel(pushToConnections(), {
+      concurrency: this.concurrency
+    }))
+  }
+
+  /**
+   * Reads the Identify Push message from the given `connection`
+   */
+  async handleProtocol (data: IncomingStreamData): Promise<void> {
+    const { connection, stream } = data
+
+    try {
+      if (this.peerId.equals(connection.remotePeer)) {
+        throw new Error('received push from ourselves?')
+      }
+
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      }
+
+      const pb = pbStream(stream, {
+        maxDataLength: this.maxMessageSize
+      }).pb(IdentifyMessage)
+
+      const message = await pb.read(options)
+      await stream.close(options)
+
+      await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+    } catch (err: any) {
+      this.log.error('received invalid message', err)
+      stream.abort(err)
+      return
+    }
+
+    this.log('handled push from %p', connection.remotePeer)
+  }
+}

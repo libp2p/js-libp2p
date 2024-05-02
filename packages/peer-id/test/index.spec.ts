@@ -47,6 +47,18 @@ describe('PeerId', () => {
     expect(id.equals(peerIdFromBytes(buf))).to.be.true()
   })
 
+  it('equals nothing', async () => {
+    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base58btc')
+    const id = peerIdFromBytes(buf)
+    expect(id.equals()).to.be.false()
+  })
+
+  it('equals undefined', async () => {
+    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base58btc')
+    const id = peerIdFromBytes(buf)
+    expect(id.equals(undefined)).to.be.false()
+  })
+
   it('parses a PeerId as Ed25519', async () => {
     const id = peerIdFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa')
     expect(id).to.have.property('type', 'Ed25519')

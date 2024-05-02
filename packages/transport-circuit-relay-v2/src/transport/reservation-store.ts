@@ -1,6 +1,6 @@
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type AbortOptions, type ComponentLogger, type Logger, type Connection, type PeerId, type PeerStore, type Startable } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { PeerJobQueue } from '@libp2p/utils/peer-job-queue'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -8,6 +8,7 @@ import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
+import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
@@ -26,6 +27,7 @@ export interface RelayStoreComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export interface RelayStoreInit {
@@ -75,7 +77,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly transportManager: TransportManager
   private readonly peerStore: PeerStore
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly reserveQueue: PeerJobQueue
+  private readonly reserveQueue: PeerQueue
   private readonly reservations: PeerMap<RelayEntry>
   private readonly maxDiscoveredRelays: number
   private readonly maxReservationQueueLength: number
@@ -99,8 +101,10 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.started = false
 
     // ensure we don't listen on multiple relays simultaneously
-    this.reserveQueue = new PeerJobQueue({
-      concurrency: init?.reservationConcurrency ?? DEFAULT_RESERVATION_CONCURRENCY
+    this.reserveQueue = new PeerQueue({
+      concurrency: init?.reservationConcurrency ?? DEFAULT_RESERVATION_CONCURRENCY,
+      metricName: 'libp2p_relay_reservation_queue',
+      metrics: components.metrics
     })
 
     // When a peer disconnects, if we had a reservation on that peer
@@ -115,11 +119,11 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     return this.started
   }
 
-  async start (): Promise<void> {
+  start (): void {
     this.started = true
   }
 
-  async stop (): Promise<void> {
+  stop (): void {
     this.reserveQueue.clear()
     this.reservations.forEach(({ timeout }) => {
       clearTimeout(timeout)
@@ -145,7 +149,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       return
     }
 
-    if (this.reserveQueue.hasJob(peerId)) {
+    if (this.reserveQueue.has(peerId)) {
       this.log('relay peer is already in the reservation queue')
       return
     }

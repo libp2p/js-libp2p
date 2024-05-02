@@ -1,3 +1,5 @@
+# @libp2p/autonat
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,8 +9,35 @@
 
 # About
 
-Use the `autoNATService` function to add support for the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
-to libp2p.
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+The AutoNAT service uses the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/).
+The service confirms addresses are dialable by remote peers, and updates the list it advertises.
+
+The service dials randomly selected peers with a request to verify it's external addresses.
+The request includes a list of public multiaddrs (addressManager.getObservedAddrs()).
+The remote peers dial that list and respond with the results.
+
+The AutoNAT service uses those responses to either:
+
+- addressManager.confirmObservedAddr(addr)
+- addressManager.removeObservedAddr(addr)
+
+The result list of candidates and confirmed addresses can be found
+at addressManager.getObservedAddrs()
 
 ## Example
 
@@ -46,8 +75,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/protocol-autonat/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/protocol-autonat/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

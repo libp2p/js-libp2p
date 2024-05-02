@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "3.0.1",
+  "version": "4.1.1",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -51,10 +51,6 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./aes": {
-      "types": "./dist/src/aes/index.d.ts",
-      "import": "./dist/src/aes/index.js"
-    },
     "./hmac": {
       "types": "./dist/src/hmac/index.d.ts",
       "import": "./dist/src/hmac/index.js"
@@ -69,15 +65,13 @@
     "parserOptions": {
       "project": true,
       "sourceType": "module"
-    },
-    "ignorePatterns": [
-      "src/*.d.ts"
-    ]
+    }
   },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser",
@@ -90,28 +84,29 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.0.1",
-    "@noble/curves": "^1.1.0",
-    "@noble/hashes": "^1.3.1",
-    "multiformats": "^12.1.3",
-    "node-forge": "^1.1.0",
-    "protons-runtime": "^5.0.0",
-    "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "@libp2p/interface": "^1.3.1",
+    "@noble/curves": "^1.4.0",
+    "@noble/hashes": "^1.4.0",
+    "asn1js": "^3.0.5",
+    "multiformats": "^13.1.0",
+    "protons-runtime": "^5.4.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.3"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.0",
-    "aegir": "^41.0.2",
+    "@types/mocha": "^10.0.6",
+    "aegir": "^42.2.5",
     "benchmark": "^2.1.4",
-    "protons": "^7.3.0"
+    "protons": "^7.5.0"
   },
   "browser": {
-    "./dist/src/aes/ciphers.js": "./dist/src/aes/ciphers-browser.js",
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
     "./dist/src/hmac/index.js": "./dist/src/hmac/index-browser.js",
     "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh-browser.js",
     "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519-browser.js",
     "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js",
-    "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1-browser.js"
-  }
+    "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1-browser.js",
+    "./dist/src/webcrypto.js": "./dist/src/webcrypto-browser.js"
+  },
+  "sideEffects": false
 }

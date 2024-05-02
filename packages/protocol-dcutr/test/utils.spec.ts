@@ -24,7 +24,7 @@ describe('dcutr utils', () => {
     for (const [key, value] of Object.entries(testCases)) {
       it(`should ${value ? '' : 'not '}allow ${key}`, () => {
         const transportManager = stubInterface<TransportManager>({
-          transportForMultiaddr: Sinon.stub().returns(stubInterface<Transport>())
+          dialTransportForMultiaddr: Sinon.stub().returns(stubInterface<Transport>())
         })
 
         expect(isPublicAndDialable(multiaddr(key), transportManager)).to.equal(value)

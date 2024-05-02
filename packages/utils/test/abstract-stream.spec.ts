@@ -3,6 +3,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
+import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { AbstractStream } from '../src/abstract-stream.js'
@@ -195,5 +196,67 @@ describe('abstract stream', () => {
 
     expect(sendCloseReadSpy.called).to.be.false()
     expect(sendCloseWriteSpy.called).to.be.false()
+  })
+
+  it('should wait for sending data to finish when closing gracefully', async () => {
+    const sendStarted = pDefer()
+    let timeFinished: number = 0
+    const wasAbortedBeforeSendingFinished = pDefer()
+    const wasAbortedAfterSendingFinished = pDefer()
+
+    // stub send method to simulate slow sending
+    stream.sendData = async (data, options) => {
+      sendStarted.resolve()
+      await delay(1000)
+      timeFinished = Date.now()
+
+      // slow send has finished, make sure we weren't aborted before we were
+      // done sending data
+      wasAbortedBeforeSendingFinished.resolve(options?.signal?.aborted)
+
+      // save a reference to the signal, should be aborted after
+      // `stream.close()` returns
+      wasAbortedAfterSendingFinished.resolve(options?.signal)
+    }
+    const data = [
+      Uint8Array.from([0, 1, 2, 3, 4])
+    ]
+
+    void stream.sink(data)
+
+    // wait for send to start
+    await sendStarted.promise
+
+    // close stream
+    await stream.close()
+
+    // should have waited for send to complete
+    expect(Date.now()).to.be.greaterThanOrEqual(timeFinished)
+    await expect(wasAbortedBeforeSendingFinished.promise).to.eventually.be.false()
+    await expect(wasAbortedAfterSendingFinished.promise).to.eventually.have.property('aborted', true)
+  })
+
+  it('should abort close due to timeout with slow sender', async () => {
+    const sendStarted = pDefer()
+
+    // stub send method to simulate slow sending
+    stream.sendData = async () => {
+      sendStarted.resolve()
+      await delay(1000)
+    }
+    const data = [
+      Uint8Array.from([0, 1, 2, 3, 4])
+    ]
+
+    void stream.sink(data)
+
+    // wait for send to start
+    await sendStarted.promise
+
+    // close stream, should be aborted
+    await expect(stream.close({
+      signal: AbortSignal.timeout(1)
+    })).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
   })
 })
