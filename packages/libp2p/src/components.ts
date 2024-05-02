@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface'
 import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type PrivateKey, type Upgrader } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 
@@ -14,6 +14,7 @@ export interface Components extends Record<string, any>, Startable {
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
+  randomWalk: RandomWalk
   registrar: Registrar
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -35,6 +36,7 @@ export interface ComponentsInit {
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader
+  randomWalk?: RandomWalk
   metrics?: Metrics
   registrar?: Registrar
   connectionManager?: ConnectionManager
