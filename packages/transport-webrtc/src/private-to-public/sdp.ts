@@ -10,7 +10,7 @@ import type { MultihashDigest } from 'multiformats/hashes/interface'
 // @ts-expect-error - Not easy to combine these types.
 export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
-export function getLocalFingerprint(pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
+export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
   // try to fetch fingerprint from local certificate
   const localCert = pc.getConfiguration().certificates?.at(0)
   if (localCert == null || localCert.getFingerprints == null) {
@@ -37,14 +37,14 @@ export function getLocalFingerprint(pc: RTCPeerConnection, options: LoggerOption
 }
 
 const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
-export function getFingerprintFromSdp(sdp: string): string | undefined {
+export function getFingerprintFromSdp (sdp: string): string | undefined {
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
 }
 /**
  * Get base2 | identity decoders
  */
-function ipv(ma: Multiaddr): string {
+function ipv (ma: Multiaddr): string {
   for (const proto of ma.protoNames()) {
     if (proto.startsWith('ip')) {
       return proto.toUpperCase()
@@ -55,7 +55,7 @@ function ipv(ma: Multiaddr): string {
 }
 
 // Extract the certhash from a multiaddr
-export function certhash(ma: Multiaddr): string {
+export function certhash (ma: Multiaddr): string {
   const tups = ma.stringTuples()
   const certhash = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0]
 
@@ -69,14 +69,14 @@ export function certhash(ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash(certhash: string): MultihashDigest {
+export function decodeCerthash (certhash: string): MultihashDigest {
   return digest.decode(mbdecoder.decode(certhash))
 }
 
 /**
  * Extract the fingerprint from a multiaddr
  */
-export function ma2Fingerprint(ma: Multiaddr): string[] {
+export function ma2Fingerprint (ma: Multiaddr): string[] {
   const mhdecoded = decodeCerthash(certhash(ma))
   const prefix = toSupportedHashFunction(mhdecoded.code)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
@@ -92,7 +92,7 @@ export function ma2Fingerprint(ma: Multiaddr): string[] {
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction(code: number): string {
+export function toSupportedHashFunction (code: number): string {
   switch (code) {
     case 0x11:
       return 'sha1'
@@ -108,7 +108,7 @@ export function toSupportedHashFunction(code: number): string {
 /**
  * Convert a multiaddr into a SDP
  */
-function ma2sdp(ma: Multiaddr, ufrag: string): string {
+function ma2sdp (ma: Multiaddr, ufrag: string): string {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
   const [CERTFP] = ma2Fingerprint(ma)
@@ -133,7 +133,7 @@ a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
 /**
  * Create an answer SDP from a multiaddr
  */
-export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   return {
     type: 'answer',
     sdp: ma2sdp(ma, ufrag)
@@ -143,7 +143,7 @@ export function fromMultiAddr(ma: Multiaddr, ufrag: string): RTCSessionDescripti
 /**
  * Replace (munge) the ufrag and password values in a SDP
  */
-export function munge(desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
+export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp === undefined) {
     throw invalidArgument("Can't munge a missing SDP")
   }
