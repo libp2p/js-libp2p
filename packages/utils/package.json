@@ -52,6 +52,10 @@
       "types": "./dist/src/address-sort.d.ts",
       "import": "./dist/src/address-sort.js"
     },
+    "./adaptive-timeout": {
+      "types": "./dist/src/adaptive-timeout.d.ts",
+      "import": "./dist/src/adaptive-timeout.js"
+    },
     "./array-equals": {
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"
@@ -71,6 +75,10 @@
     "./is-promise": {
       "types": "./dist/src/is-promise.d.ts",
       "import": "./dist/src/is-promise.js"
+    },
+    "./moving-average": {
+      "types": "./dist/src/moving-average.d.ts",
+      "import": "./dist/src/moving-average.js"
     },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
