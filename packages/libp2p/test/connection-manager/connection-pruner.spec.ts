@@ -32,7 +32,7 @@ describe('connection-pruner', () => {
     }, {})
   })
 
-  it('should sort connections for pruning', async () => {
+  it('should sort connections for pruning, closing connections without streams first unless they are tagged', async () => {
     const tagged = ['tagged', 'untagged']
     const streams = ['streams', 'no-streams']
     const direction = ['inbound', 'outbound']
