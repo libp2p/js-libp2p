@@ -20,7 +20,12 @@ export async function createRelay () {
     streamMuxers: [yamux()],
     services: {
       identify: identify(),
-      relay: circuitRelayServer()
+      relay: circuitRelayServer({
+        reservations: {
+          maxReservations: Infinity,
+          applyDefaultLimit: false
+        }
+      })
     }
   })
   return server
