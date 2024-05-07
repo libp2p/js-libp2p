@@ -50,4 +50,4 @@ export const TABLE_REFRESH_INTERVAL = 5 * minute
 export const TABLE_REFRESH_QUERY_TIMEOUT = 30 * second
 
 // When a timeout is not specified, run a query for this long
-export const DEFAULT_QUERY_TIMEOUT = 30 * second
+export const DEFAULT_QUERY_TIMEOUT = 180 * second
