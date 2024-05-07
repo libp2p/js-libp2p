@@ -49,9 +49,7 @@ describe('ping test', function () {
         denyDialMultiaddr: async () => false
       },
       services: {
-        ping: ping({
-          timeout: 120000
-        }),
+        ping: ping(),
         identify: identify()
       }
     }
