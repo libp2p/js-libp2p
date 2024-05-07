@@ -44,6 +44,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abort-options": {
+      "types": "./dist/src/abort-options.d.ts",
+      "import": "./dist/src/abort-options.js"
+    },
     "./abstract-stream": {
       "types": "./dist/src/abstract-stream.d.ts",
       "import": "./dist/src/abstract-stream.js"
@@ -63,6 +67,10 @@
     "./close-source": {
       "types": "./dist/src/close-source.d.ts",
       "import": "./dist/src/close-source.js"
+    },
+    "./close": {
+      "types": "./dist/src/close.d.ts",
+      "import": "./dist/src/close.js"
     },
     "./filters": {
       "types": "./dist/src/filters/index.d.ts",
