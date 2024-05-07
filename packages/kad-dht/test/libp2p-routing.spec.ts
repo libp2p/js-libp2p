@@ -95,7 +95,9 @@ describe('content routing', () => {
       peerId: peers[peers.length - 1],
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
-      peerStore: stubInterface<PeerStore>(),
+      peerStore: stubInterface<PeerStore>({
+        all: async () => []
+      }),
       connectionManager: stubInterface<ConnectionManager>(),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
@@ -220,7 +222,9 @@ describe('peer routing', () => {
       peerId: peers[peers.length - 1],
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
-      peerStore: stubInterface<PeerStore>(),
+      peerStore: stubInterface<PeerStore>({
+        all: async () => []
+      }),
       connectionManager: stubInterface<ConnectionManager>(),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
