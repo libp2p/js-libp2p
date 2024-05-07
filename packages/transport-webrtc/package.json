@@ -65,7 +65,7 @@
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
     "multihashes": "^4.0.3",
-    "node-datachannel": "^0.8.0",
+    "node-datachannel": "^0.9.0",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "p-timeout": "^6.1.2",
