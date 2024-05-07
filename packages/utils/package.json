@@ -44,6 +44,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abort-options": {
+      "types": "./dist/src/abort-options.d.ts",
+      "import": "./dist/src/abort-options.js"
+    },
     "./abstract-stream": {
       "types": "./dist/src/abstract-stream.d.ts",
       "import": "./dist/src/abstract-stream.js"
@@ -59,6 +63,10 @@
     "./close-source": {
       "types": "./dist/src/close-source.d.ts",
       "import": "./dist/src/close-source.js"
+    },
+    "./close": {
+      "types": "./dist/src/close.d.ts",
+      "import": "./dist/src/close.js"
     },
     "./filters": {
       "types": "./dist/src/filters/index.d.ts",
@@ -139,6 +147,7 @@
     "@multiformats/multiaddr-matcher": "^1.2.0",
     "@sindresorhus/fnv1a": "^3.1.0",
     "@types/murmurhash3js-revisited": "^3.0.3",
+    "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.2",
