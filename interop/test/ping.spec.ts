@@ -220,14 +220,12 @@ describe('ping test', function () {
       otherMaStr = otherMaStr.replace('/tls/ws', '/wss')
 
       const otherMa = multiaddr(otherMaStr)
-
-      console.error(`node ${node.peerId.toString()} dials: ${otherMa}`)
       const handshakeStartInstant = Date.now()
 
+      console.error(`node ${node.peerId.toString()} dials: ${otherMa}`)
       await node.dial(otherMa)
 
       console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
-
       const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
       const handshakePlusOneRTT = Date.now() - handshakeStartInstant
       console.log(JSON.stringify({
