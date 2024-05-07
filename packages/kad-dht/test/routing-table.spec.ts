@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
+import { TypedEventEmitter, CustomEvent, stop, start } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -24,7 +24,7 @@ import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, ty
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents, PeerId, PeerStore, Stream } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, Stream, Peer } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('Routing Table', () => {
@@ -57,11 +57,11 @@ describe('Routing Table', () => {
       logPrefix: '',
       protocol: PROTOCOL
     })
-    await table.start()
+    await start(table)
   })
 
   afterEach(async () => {
-    await table.stop()
+    await stop(table)
   })
 
   it('add', async function () {
@@ -319,5 +319,32 @@ describe('Routing Table', () => {
     // should have updated list of tagged peers
     const finalTaggedPeers = await getTaggedPeers()
     expect(finalTaggedPeers.difference(new PeerSet(sortedPeerList.slice(1)))).to.have.property('size', 0)
+  })
+
+  it('adds peerstore peers to the routing table on startup', async () => {
+    const peer1 = stubInterface<Peer>({
+      id: await createEd25519PeerId(),
+      protocols: [
+        PROTOCOL
+      ]
+    })
+    const peer2 = stubInterface<Peer>({
+      id: await createEd25519PeerId(),
+      protocols: [
+        '/ipfs/id/1.0.0'
+      ]
+    })
+
+    await expect(table.find(peer1.id)).to.eventually.be.undefined()
+    await expect(table.find(peer2.id)).to.eventually.be.undefined()
+
+    await stop(table)
+
+    components.peerStore.all = async () => [peer1, peer2]
+
+    await start(table)
+
+    await expect(table.find(peer1.id)).to.eventually.be.ok()
+    await expect(table.find(peer2.id)).to.eventually.be.undefined()
   })
 })

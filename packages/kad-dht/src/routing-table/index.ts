@@ -110,6 +110,15 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       })
     })
 
+    // add existing peers from the peer store to routing table
+    for (const peer of await this.components.peerStore.all()) {
+      if (peer.protocols.includes(this.protocol)) {
+        const id = await utils.convertPeerId(peer.id)
+
+        this.kb.add({ id, peer: peer.id })
+      }
+    }
+
     // tag kad-close peers
     this._tagPeers(kBuck)
   }
