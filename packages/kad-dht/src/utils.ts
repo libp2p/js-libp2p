@@ -6,6 +6,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { RECORD_KEY_PREFIX } from './constants.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -186,4 +187,8 @@ export function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
   }
 
   return false
+}
+
+export function getDistance (from: Uint8Array, to: Uint8Array): bigint {
+  return BigInt('0x' + uint8ArrayToString(uint8ArrayXor(from, to), 'base16'))
 }

@@ -22,6 +22,7 @@ import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { QueryContext, QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
 import type { PeerId } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 interface TopologyEntry {
   delay?: number
@@ -126,7 +127,10 @@ describe('QueryManager', () => {
   it('does not run queries before start', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -139,7 +143,10 @@ describe('QueryManager', () => {
   it('does not run queries after stop', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -155,7 +162,10 @@ describe('QueryManager', () => {
   it('should pass query context', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1
@@ -189,7 +199,10 @@ describe('QueryManager', () => {
   it('simple run - succeed finding value', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -242,7 +255,10 @@ describe('QueryManager', () => {
   it('simple run - fail to find value', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -285,7 +301,10 @@ describe('QueryManager', () => {
   it('should abort a query', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 2,
@@ -331,7 +350,10 @@ describe('QueryManager', () => {
   it('should allow a sub-query to timeout without aborting the whole query', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 2,
@@ -383,7 +405,10 @@ describe('QueryManager', () => {
   it('does not return an error if only some queries error', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 10
@@ -422,7 +447,10 @@ describe('QueryManager', () => {
   it('returns empty run if initial peer list is empty', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 10
@@ -444,7 +472,10 @@ describe('QueryManager', () => {
   it('should query closer peers first', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -497,7 +528,10 @@ describe('QueryManager', () => {
   it('should stop when passing through the same node twice', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 20,
@@ -534,7 +568,10 @@ describe('QueryManager', () => {
   it('only closerPeers', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -566,7 +603,10 @@ describe('QueryManager', () => {
   it('only closerPeers concurrent', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 3
@@ -602,7 +642,10 @@ describe('QueryManager', () => {
   it('queries stop after shutdown', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -656,7 +699,10 @@ describe('QueryManager', () => {
   it('disjoint path values', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 2
@@ -698,7 +744,10 @@ describe('QueryManager', () => {
   it('disjoint path continue other paths after error on one path', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 2
@@ -737,7 +786,10 @@ describe('QueryManager', () => {
   it('should allow the self-query query to run', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       initialQuerySelfHasRun: pDefer<any>(),
       routingTable,
@@ -772,7 +824,10 @@ describe('QueryManager', () => {
 
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       initialQuerySelfHasRun,
       alpha: 2,
@@ -826,7 +881,10 @@ describe('QueryManager', () => {
   it('should end paths when they have no closer peers to those already queried', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 1,
@@ -874,7 +932,10 @@ describe('QueryManager', () => {
   it('should abort the query if we break out of the loop early', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
     }, {
       ...defaultInit(),
       disjointPaths: 2
