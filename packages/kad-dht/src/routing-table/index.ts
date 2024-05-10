@@ -311,10 +311,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   /**
-   * Retrieve the closest peers to the given key
+   * Retrieve the closest peers to the given kadId
    */
-  closestPeer (key: Uint8Array): PeerId | undefined {
-    const res = this.closestPeers(key, 1)
+  closestPeer (kadId: Uint8Array): PeerId | undefined {
+    const res = this.closestPeers(kadId, 1)
 
     if (res.length > 0) {
       return res[0]
@@ -324,14 +324,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   /**
-   * Retrieve the `count`-closest peers to the given key
+   * Retrieve the `count`-closest peers to the given kadId
    */
-  closestPeers (key: Uint8Array, count = this.kBucketSize): PeerId[] {
+  closestPeers (kadId: Uint8Array, count = this.kBucketSize): PeerId[] {
     if (this.kb == null) {
       return []
     }
 
-    return [...this.kb.closest(key, count)]
+    return [...this.kb.closest(kadId, count)]
   }
 
   /**

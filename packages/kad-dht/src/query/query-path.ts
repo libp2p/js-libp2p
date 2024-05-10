@@ -1,9 +1,10 @@
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import Queue from 'p-queue'
-import { toString } from 'uint8arrays/to-string'
-import { xor } from 'uint8arrays/xor'
-import { convertPeerId, convertBuffer, getDistance } from '../utils.js'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { xor as uint8ArrayXor } from 'uint8arrays/xor'
+import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import { queueToGenerator } from './utils.js'
 import type { CleanUpEvents } from './manager.js'
@@ -108,7 +109,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
     peersSeen.add(peer)
 
-    const peerXor = BigInt('0x' + toString(xor(peerKadId, kadId), 'base16'))
+    const peerXor = uint8ArrayXor(peerKadId, kadId)
 
     queue.add(async () => {
       const signals = [signal]
@@ -153,10 +154,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
               }
 
               const closerPeerKadId = await convertPeerId(closerPeer.id)
-              const closerPeerXor = getDistance(closerPeerKadId, kadId)
+              const closerPeerXor = uint8ArrayXor(closerPeerKadId, kadId)
 
               // only continue query if closer peer is actually closer
-              if (closerPeerXor > peerXor) { // eslint-disable-line max-depth
+              if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
                 log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
                 continue
               }
@@ -184,7 +185,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       // @ts-expect-error this is supposed to be a Number but it's ok to use BigInts
       // as long as all priorities are BigInts since we won't mix BigInts and Number
       // values in arithmetic operations
-      priority: MAX_XOR - peerXor
+      priority: MAX_XOR - BigInt(`0x${uint8ArrayToString(peerXor, 'base16')}`)
     }).catch(err => {
       log.error(err)
     })

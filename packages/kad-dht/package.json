@@ -87,7 +87,7 @@
     "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.3",
