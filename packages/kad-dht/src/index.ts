@@ -308,6 +308,20 @@ export interface KadDHTInit {
   kBucketSize?: number
 
   /**
+   * The threshold at which a kBucket will be split into two smaller kBuckets
+   *
+   * @default kBucketSize
+   */
+  kBucketSplitThreshold?: number
+
+  /**
+   * How many bits of the KAD-ID of peers to use when creating the routing table
+   *
+   * @default 128
+   */
+  prefixLength?: number
+
+  /**
    * If true, only ever be a DHT client. If false, be a DHT client until told
    * to be a DHT server via `setMode`.
    *

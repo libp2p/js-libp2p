@@ -1,11 +1,9 @@
-import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
-import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import * as utils from '../utils.js'
+import { convertPeerId, getDistance } from '../utils.js'
 import type { PeerId } from '@libp2p/interface'
 
 interface PeerDistance {
   peerId: PeerId
-  distance: Uint8Array
+  distance: bigint
 }
 
 /**
@@ -48,18 +46,36 @@ export class PeerDistanceList {
    * Add a peerId to the list.
    */
   async add (peerId: PeerId): Promise<void> {
+    const dhtKey = await convertPeerId(peerId)
+
+    this.addWitKadId(peerId, dhtKey)
+  }
+
+  /**
+   * Add a peerId to the list.
+   */
+  addWitKadId (peerId: PeerId, kadId: Uint8Array): void {
     if (this.peerDistances.find(pd => pd.peerId.equals(peerId)) != null) {
       return
     }
 
-    const dhtKey = await utils.convertPeerId(peerId)
     const el = {
       peerId,
-      distance: uint8ArrayXor(this.originDhtKey, dhtKey)
+      distance: getDistance(this.originDhtKey, kadId)
     }
 
     this.peerDistances.push(el)
-    this.peerDistances.sort((a, b) => uint8ArrayCompare(a.distance, b.distance))
+    this.peerDistances.sort((a, b) => {
+      if (a.distance < b.distance) {
+        return -1
+      }
+
+      if (a.distance > b.distance) {
+        return 1
+      }
+
+      return 0
+    })
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
   }
 
@@ -76,13 +92,13 @@ export class PeerDistanceList {
       return true
     }
 
-    const dhtKeys = await Promise.all(peerIds.map(utils.convertPeerId))
+    const dhtKeys = await Promise.all(peerIds.map(convertPeerId))
     const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
 
     for (const dhtKey of dhtKeys) {
-      const keyDistance = uint8ArrayXor(this.originDhtKey, dhtKey)
+      const keyDistance = getDistance(this.originDhtKey, dhtKey)
 
-      if (uint8ArrayCompare(keyDistance, furthestDistance) < 0) {
+      if (keyDistance < furthestDistance) {
         return true
       }
     }
