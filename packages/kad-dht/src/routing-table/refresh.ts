@@ -165,7 +165,7 @@ export class RoutingTableRefresh {
     const randomData = randomBytes(2)
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
-    const key = await this._makePeerId(this.routingTable.kb.localNodeId, randomUint16, targetCommonPrefixLength)
+    const key = await this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)
 
     return peerIdFromBytes(key)
   }
@@ -241,8 +241,8 @@ export class RoutingTableRefresh {
       return
     }
 
-    for (const { id } of this.routingTable.kb.toIterable()) {
-      const distance = uint8ArrayXor(this.routingTable.kb.localNodeId, id)
+    for (const { kadId } of this.routingTable.kb.toIterable()) {
+      const distance = uint8ArrayXor(this.routingTable.kb.localPeer.kadId, kadId)
       let leadingZeros = 0
 
       for (const byte of distance) {

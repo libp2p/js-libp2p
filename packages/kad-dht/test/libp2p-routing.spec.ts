@@ -98,7 +98,9 @@ describe('content routing', () => {
       peerStore: stubInterface<PeerStore>({
         all: async () => []
       }),
-      connectionManager: stubInterface<ConnectionManager>(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger()
@@ -225,7 +227,9 @@ describe('peer routing', () => {
       peerStore: stubInterface<PeerStore>({
         all: async () => []
       }),
-      connectionManager: stubInterface<ConnectionManager>(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger()

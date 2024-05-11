@@ -13,6 +13,7 @@ import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { ComponentLogger, Metric, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {
@@ -31,6 +32,7 @@ export interface QueryManagerComponents {
   peerId: PeerId
   metrics?: Metrics
   logger: ComponentLogger
+  connectionManager: ConnectionManager
 }
 
 export interface QueryOptions extends RoutingOptions {
@@ -53,6 +55,7 @@ export class QueryManager implements Startable {
   private queries: number
   private readonly logger: ComponentLogger
   private readonly peerId: PeerId
+  private readonly connectionManager: ConnectionManager
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
@@ -73,6 +76,7 @@ export class QueryManager implements Startable {
     this.routingTable = init.routingTable
     this.logger = components.logger
     this.peerId = components.peerId
+    this.connectionManager = components.connectionManager
 
     if (components.metrics != null) {
       this.metrics = {
@@ -194,7 +198,8 @@ export class QueryManager implements Startable {
           queryFuncTimeout: options.queryFuncTimeout,
           log,
           peersSeen,
-          onProgress: options.onProgress
+          onProgress: options.onProgress,
+          connectionManager: this.connectionManager
         })
       })
 
@@ -202,6 +207,17 @@ export class QueryManager implements Startable {
       for await (const event of merge(...paths)) {
         if (event.name === 'QUERY_ERROR') {
           log.error('query error', event.error)
+        }
+
+        if (event.name === 'PEER_RESPONSE') {
+          for (const peer of [...event.closer, ...event.providers]) {
+            // eslint-disable-next-line max-depth
+            if (!(await this.connectionManager.isDialable(peer.multiaddrs))) {
+              continue
+            }
+
+            await this.routingTable.add(peer.id)
+          }
         }
 
         yield event
