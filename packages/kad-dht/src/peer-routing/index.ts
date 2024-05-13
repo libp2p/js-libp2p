@@ -195,7 +195,7 @@ export class PeerRouting {
   }
 
   /**
-   * Kademlia 'node lookup' operation on a key, which could be a the bytes from
+   * Kademlia 'FIND_NODE' operation on a key, which could be the bytes from
    * a multihash or a peer ID
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
