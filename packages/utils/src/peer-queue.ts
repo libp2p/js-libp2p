@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { Queue, type QueueAddOptions } from './queue/index.js'
+import { Queue } from './queue/index.js'
 import type { Job } from './queue/job.js'
-import type { PeerId } from '@libp2p/interface'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 
-export interface PeerQueueJobOptions extends QueueAddOptions {
+export interface PeerQueueJobOptions extends AbortOptions {
   peerId: PeerId
 }
 

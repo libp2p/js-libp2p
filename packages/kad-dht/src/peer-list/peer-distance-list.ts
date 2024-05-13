@@ -67,9 +67,7 @@ export class PeerDistanceList {
     }
 
     this.peerDistances.push(el)
-    this.peerDistances.sort((a, b) => {
-      return uint8ArrayXorCompare(a.distance, b.distance)
-    })
+    this.peerDistances.sort((a, b) => uint8ArrayXorCompare(a.distance, b.distance))
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
   }
 

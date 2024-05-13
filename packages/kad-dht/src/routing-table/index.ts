@@ -11,7 +11,7 @@ import type { ConnectionManager } from '@libp2p/interface-internal'
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 128
+export const PREFIX_LENGTH = 32
 export const PING_TIMEOUT = 10000
 export const PING_CONCURRENCY = 10
 
