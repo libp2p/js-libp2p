@@ -301,23 +301,39 @@ export type Validators = Record<string, ValidateFn>
 
 export interface KadDHTInit {
   /**
-   * How many peers to store in each kBucket
+   * How many peers to store in each kBucket. Once there are more than this
+   * number of peers for a given prefix in a kBucket, the node will start to
+   * ping existing peers to see if they are still online - if they are offline
+   * they will be evicted and the new peer added.
    *
    * @default 20
    */
   kBucketSize?: number
 
   /**
-   * The threshold at which a kBucket will be split into two smaller kBuckets
+   * The threshold at which a kBucket will be split into two smaller kBuckets.
+   *
+   * KBuckets will not be split once the maximum trie depth is reached
+   * (controlled by the `prefixLength` option) so one can replicate go-libp2p's
+   * accelerated DHT client by (for example) setting `kBucketSize` to `Infinity`
+   * and `kBucketSplitThreshold` to 20.
    *
    * @default kBucketSize
    */
   kBucketSplitThreshold?: number
 
   /**
-   * How many bits of the KAD-ID of peers to use when creating the routing table
+   * How many bits of the KAD-ID of peers to use when creating the routing
+   * table.
    *
-   * @default 128
+   * The routing table is a binary trie with peers stored in the leaf nodes. The
+   * larger this number gets, the taller the trie can grow and the more peers
+   * can be stored.
+   *
+   * Storing more peers means fewer lookups (and network operations) are needed
+   * to locate a certain peer, but also that more memory is consumed.
+   *
+   * @default 32
    */
   prefixLength?: number
 

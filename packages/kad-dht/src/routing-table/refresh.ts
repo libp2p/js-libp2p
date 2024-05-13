@@ -1,4 +1,5 @@
 import { randomBytes } from '@libp2p/crypto'
+import { setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import length from 'it-length'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -136,7 +137,12 @@ export class RoutingTableRefresh {
 
     this.log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
 
-    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), { signal: AbortSignal.timeout(this.refreshQueryTimeout) }))
+    const signal = AbortSignal.timeout(this.refreshQueryTimeout)
+    setMaxListeners(Infinity, signal)
+
+    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), {
+      signal
+    }))
 
     this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
     this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)

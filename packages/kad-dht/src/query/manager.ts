@@ -1,4 +1,4 @@
-import { TypedEventEmitter, CustomEvent, setMaxListeners } from '@libp2p/interface'
+import { setMaxListeners } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
@@ -155,7 +155,6 @@ export class QueryManager implements Startable {
 
     // query a subset of peers up to `kBucketSize / 2` in length
     const startTime = Date.now()
-    const cleanUp = new TypedEventEmitter<CleanUpEvents>()
     let queryFinished = false
 
     try {
@@ -194,7 +193,6 @@ export class QueryManager implements Startable {
           pathIndex: index,
           numPaths: peersToQuery.length,
           alpha: this.alpha,
-          cleanUp,
           queryFuncTimeout: options.queryFuncTimeout,
           log,
           peersSeen,
@@ -245,7 +243,6 @@ export class QueryManager implements Startable {
         stopQueryTimer()
       }
 
-      cleanUp.dispatchEvent(new CustomEvent('cleanup'))
       log('query:done in %dms', Date.now() - startTime)
     }
   }

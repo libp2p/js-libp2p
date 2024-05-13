@@ -1,4 +1,5 @@
 import { TypedEventEmitter } from '@libp2p/interface'
+import map from 'it-map'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
@@ -148,8 +149,8 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
       return
     }
 
-    // are the too many peers in the bucket?
-    if (bucket.peers.length === this.splitThreshold) {
+    // are there too many peers in the bucket and can we make the trie deeper?
+    if (bucket.peers.length === this.splitThreshold && bucket.depth < this.prefixLength) {
       // split the bucket
       this._split(bucket)
 
@@ -194,10 +195,10 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
     const list = new PeerDistanceList(id, n)
 
     for (const peer of this.toIterable()) {
-      list.addWitKadId(peer.peerId, peer.kadId)
+      list.addWitKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
     }
 
-    yield * list.peers
+    yield * map(list.peers, info => info.id)
   }
 
   /**
