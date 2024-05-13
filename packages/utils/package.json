@@ -100,6 +100,10 @@
       "types": "./dist/src/peer-queue.d.ts",
       "import": "./dist/src/peer-queue.js"
     },
+    "./priority-queue": {
+      "types": "./dist/src/priority-queue.d.ts",
+      "import": "./dist/src/priority-queue.js"
+    },
     "./private-ip": {
       "types": "./dist/src/private-ip.d.ts",
       "import": "./dist/src/private-ip.js"

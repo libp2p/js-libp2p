@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { Queue } from './queue/index.js'
 import type { Job } from './queue/job.js'
 import type { AbortOptions, PeerId } from '@libp2p/interface'
