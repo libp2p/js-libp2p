@@ -76,7 +76,6 @@
     "it-parallel": "^3.0.6",
     "it-pipe": "^3.0.1",
     "it-protobuf-stream": "^1.1.2",
-    "it-pushable": "^3.2.3",
     "it-take": "^3.0.4",
     "multiformats": "^13.1.0",
     "p-defer": "^4.0.1",
@@ -87,7 +86,7 @@
     "race-signal": "^1.0.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.3",
@@ -102,7 +101,7 @@
     "datastore-core": "^9.2.9",
     "datastore-level": "^10.1.7",
     "delay": "^6.0.0",
-    "execa": "^8.0.1",
+    "execa": "^9.0.2",
     "it-all": "^3.0.4",
     "it-filter": "^3.0.4",
     "it-last": "^3.0.4",
@@ -115,7 +114,6 @@
     "protons": "^7.5.0",
     "sinon": "^17.0.1",
     "sinon-ts": "^2.0.0",
-    "wherearewe": "^2.0.1",
     "which": "^4.0.0"
   },
   "browser": {
