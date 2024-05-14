@@ -3,6 +3,10 @@
   "containerImageID": "webkit-js-libp2p-head",
   "transports": [
     {
+      "name": "webtransport",
+      "onlyDial": true
+    },
+    {
       "name": "webrtc-direct",
       "onlyDial": true
     },
