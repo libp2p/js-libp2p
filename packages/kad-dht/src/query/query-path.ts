@@ -1,19 +1,15 @@
-import { setMaxListeners } from '@libp2p/interface'
+import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { Queue } from '@libp2p/utils/queue'
 import { anySignal } from 'any-signal'
-import Queue from 'p-queue'
-import { toString } from 'uint8arrays/to-string'
-import { xor } from 'uint8arrays/xor'
-import { convertPeerId, convertBuffer, getDistance } from '../utils.js'
+import { xor as uint8ArrayXor } from 'uint8arrays/xor'
+import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
-import { queueToGenerator } from './utils.js'
-import type { CleanUpEvents } from './manager.js'
 import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, TypedEventTarget, PeerId, RoutingOptions } from '@libp2p/interface'
+import type { Logger, PeerId, RoutingOptions, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
-
-export const MAX_XOR = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
 
 export interface QueryPathOptions extends RoutingOptions {
   /**
@@ -57,11 +53,6 @@ export interface QueryPathOptions extends RoutingOptions {
   numPaths: number
 
   /**
-   * will emit a 'cleanup' event if the caller exits the for..await of early
-   */
-  cleanUp: TypedEventTarget<CleanUpEvents>
-
-  /**
    * A timeout for queryFunc in ms
    */
   queryFuncTimeout?: number
@@ -82,16 +73,21 @@ export interface QueryPathOptions extends RoutingOptions {
   connectionManager: ConnectionManager
 }
 
+interface QueryQueueOptions extends AbortOptions {
+  distance: Uint8Array
+}
+
 /**
  * Walks a path through the DHT, calling the passed query function for
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, cleanUp, queryFuncTimeout, log, peersSeen, connectionManager } = options
+  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, queryFuncTimeout, log, peersSeen, connectionManager } = options
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
-  const queue = new Queue({
-    concurrency: alpha
+  const queue = new Queue<QueryEvent | undefined, QueryQueueOptions>({
+    concurrency: alpha,
+    sort: (a, b) => uint8ArrayXorCompare(a.options.distance, b.options.distance)
   })
 
   // perform lookups on kadId, not the actual value
@@ -108,7 +104,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
     peersSeen.add(peer)
 
-    const peerXor = BigInt('0x' + toString(xor(peerKadId, kadId), 'base16'))
+    const peerXor = uint8ArrayXor(peerKadId, kadId)
 
     queue.add(async () => {
       const signals = [signal]
@@ -153,10 +149,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
               }
 
               const closerPeerKadId = await convertPeerId(closerPeer.id)
-              const closerPeerXor = getDistance(closerPeerKadId, kadId)
+              const closerPeerXor = uint8ArrayXor(closerPeerKadId, kadId)
 
               // only continue query if closer peer is actually closer
-              if (closerPeerXor > peerXor) { // eslint-disable-line max-depth
+              if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
                 log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
                 continue
               }
@@ -165,7 +161,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
               queryPeer(closerPeer.id, closerPeerKadId)
             }
           }
-          queue.emit('completed', event)
+
+          queue.safeDispatchEvent('completed', {
+            detail: event
+          })
         }
       } catch (err: any) {
         if (!signal.aborted) {
@@ -178,13 +177,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
         compoundSignal.clear()
       }
     }, {
-      // use xor value as the queue priority - closer peers should execute first
-      // subtract it from MAX_XOR because higher priority values execute sooner
-
-      // @ts-expect-error this is supposed to be a Number but it's ok to use BigInts
-      // as long as all priorities are BigInts since we won't mix BigInts and Number
-      // values in arithmetic operations
-      priority: MAX_XOR - peerXor
+      distance: peerXor
     }).catch(err => {
       log.error(err)
     })
@@ -193,6 +186,18 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   // begin the query with the starting peer
   queryPeer(startingPeer, await convertPeerId(startingPeer))
 
-  // yield results as they come in
-  yield * queueToGenerator(queue, signal, cleanUp, log)
+  try {
+    // yield results as they come in
+    for await (const event of queue.toGenerator({ signal })) {
+      if (event != null) {
+        yield event
+      }
+    }
+  } catch (err) {
+    if (signal.aborted) {
+      throw new CodeError('Query aborted', 'ERR_QUERY_ABORTED')
+    }
+
+    throw err
+  }
 }

@@ -11,7 +11,7 @@ import type { ConnectionManager } from '@libp2p/interface-internal'
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 128
+export const PREFIX_LENGTH = 32
 export const PING_TIMEOUT = 10000
 export const PING_CONCURRENCY = 10
 
@@ -311,10 +311,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   /**
-   * Retrieve the closest peers to the given key
+   * Retrieve the closest peers to the given kadId
    */
-  closestPeer (key: Uint8Array): PeerId | undefined {
-    const res = this.closestPeers(key, 1)
+  closestPeer (kadId: Uint8Array): PeerId | undefined {
+    const res = this.closestPeers(kadId, 1)
 
     if (res.length > 0) {
       return res[0]
@@ -324,14 +324,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   /**
-   * Retrieve the `count`-closest peers to the given key
+   * Retrieve the `count`-closest peers to the given kadId
    */
-  closestPeers (key: Uint8Array, count = this.kBucketSize): PeerId[] {
+  closestPeers (kadId: Uint8Array, count = this.kBucketSize): PeerId[] {
     if (this.kb == null) {
       return []
     }
 
-    return [...this.kb.closest(key, count)]
+    return [...this.kb.closest(kadId, count)]
   }
 
   /**
