@@ -37,7 +37,6 @@
     - [Configuring protocol name](#configuring-protocol-name)
 - [Configuration examples](#configuration-examples)
 - [Limits](#limits)
-- [React Native](#react-native)
 
 ## Overview
 
@@ -1023,7 +1022,3 @@ The [examples repo](https://github.com/libp2p/js-libp2p-examples) is also a good
 ## Limits
 
 Configuring the various limits of your node is important to protect it when it is part of hostile of adversarial networks. See [LIMITS.md](https://github.com/libp2p/js-libp2p/tree/main/doc/LIMITS.md) for a full breakdown of the various built in protections and safeguards.
-
-## React Native
-
-Libp2p can be used in React Native applications. However, there are some limitations and considerations to take into account as not all transports are supported and some of the underlying dependencies may not work as expected. There is on-going work to address these issues, particularly around the support of TCP. For a demo on how to use libp2p in a React Native application, see https://github.com/ipfs-shipyard/js-libp2p-react-native
