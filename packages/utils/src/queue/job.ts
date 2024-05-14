@@ -21,17 +21,15 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
   public id: string
   public fn: (options: JobOptions) => Promise<JobReturnType>
   public options: JobOptions
-  public priority: number
   public recipients: Array<JobRecipient<JobReturnType>>
   public status: JobStatus
   public readonly timeline: JobTimeline
   private readonly controller: AbortController
 
-  constructor (fn: (options: JobOptions) => Promise<JobReturnType>, options: any, priority: number = 0) {
+  constructor (fn: (options: JobOptions) => Promise<JobReturnType>, options: any) {
     this.id = randomId()
     this.status = 'queued'
     this.fn = fn
-    this.priority = priority
     this.options = options
     this.recipients = []
     this.timeline = {

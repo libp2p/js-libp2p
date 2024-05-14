@@ -14,7 +14,7 @@ import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentL
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
 
-const DEFAULT_DIAL_PRIORITY = 50
+export const DEFAULT_DIAL_PRIORITY = 50
 
 export interface ConnectionManagerInit {
   /**
