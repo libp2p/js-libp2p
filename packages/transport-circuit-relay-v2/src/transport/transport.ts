@@ -233,7 +233,7 @@ export class CircuitRelayTransport implements Transport {
 
       this.log('new outbound transient connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
-        transient: true
+        transient: status.limit!=null
       })
     } catch (err: any) {
       this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
