@@ -48,6 +48,15 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [1.0.17](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.16...fetch-v1.0.17) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.2.0 to ^1.2.1
+
 ## [1.0.16](https://github.com/libp2p/js-libp2p/compare/fetch-v1.0.15...fetch-v1.0.16) (2024-05-01)
 
 

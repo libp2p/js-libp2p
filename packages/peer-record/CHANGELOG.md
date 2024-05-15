@@ -60,6 +60,15 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.17](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.16...peer-record-v7.0.17) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.4.0 to ^5.4.1
+
 ## [7.0.16](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.15...peer-record-v7.0.16) (2024-05-01)
 
 

@@ -110,6 +110,34 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.5.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.5.1...libp2p-v1.5.2) (2024-05-14)
+
+
+### Bug Fixes
+
+* add randomwalk to components ([#2518](https://github.com/libp2p/js-libp2p/issues/2518)) ([a11e135](https://github.com/libp2p/js-libp2p/commit/a11e135c221543b20fe746ab8ae85d54316ffe97))
+* pass autodial config thorugh in connection manager init ([#2523](https://github.com/libp2p/js-libp2p/issues/2523)) ([767b23e](https://github.com/libp2p/js-libp2p/commit/767b23e710b1a9b545421365f2f9603c37cbec78))
+* prune connections based on stream counts and direction ([#2521](https://github.com/libp2p/js-libp2p/issues/2521)) ([8e36fc5](https://github.com/libp2p/js-libp2p/commit/8e36fc5094c69083989650ccf3dfff001e5b0034))
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.2.0 to ^1.2.1
+    * @libp2p/peer-collections bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/peer-store bumped from ^10.0.17 to ^10.0.18
+    * @libp2p/utils bumped from ^5.4.0 to ^5.4.1
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.22 to ^1.0.23
+    * @libp2p/identify bumped from ^2.0.0 to ^2.0.1
+    * @libp2p/interface-compliance-tests bumped from ^5.4.3 to ^5.4.4
+    * @libp2p/mplex bumped from ^10.0.22 to ^10.0.23
+    * @libp2p/plaintext bumped from ^1.0.22 to ^1.0.23
+    * @libp2p/tcp bumped from ^9.0.24 to ^9.0.25
+    * @libp2p/websockets bumped from ^8.0.22 to ^8.0.23
+
 ## [1.5.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.5.0...libp2p-v1.5.1) (2024-05-01)
 
 
