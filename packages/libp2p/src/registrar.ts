@@ -164,6 +164,11 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
+            if (topology.filter?.has(remotePeer) === false) {
+              continue
+            }
+
+            topology.filter?.remove(remotePeer)
             topology.onDisconnect?.(remotePeer)
           }
         }
@@ -195,6 +200,11 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
+        if (topology.filter?.has(peer.id) === false) {
+          continue
+        }
+
+        topology.filter?.remove(peer.id)
         topology.onDisconnect?.(peer.id)
       }
     }
@@ -222,6 +232,11 @@ export class DefaultRegistrar implements Registrar {
           continue
         }
 
+        if (topology.filter?.has(peerId) === true) {
+          continue
+        }
+
+        topology.filter?.add(peerId)
         topology.onConnect?.(peerId, connection)
       }
     }
