@@ -39,6 +39,7 @@ async function createGoLibp2p () {
     '-muxer=mplex',
     '-echo'
   ], {
+    reject: false,
     env: {
       GOLOG_LOG_LEVEL: 'debug'
     }
