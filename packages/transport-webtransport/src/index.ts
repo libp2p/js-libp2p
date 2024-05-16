@@ -117,20 +117,9 @@ class WebTransportTransport implements Transport {
     options = options ?? {}
 
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
-
-    if (remotePeer == null) {
-      throw new CodeError('Need a target peerid', 'ERR_INVALID_PARAMETERS')
-    }
-
-    if (certhashes.length === 0) {
-      throw new CodeError('Expected multiaddr to contain certhashes', 'ERR_INVALID_PARAMETERS')
-    }
-
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
-
     let cleanUpWTSession: WebTransportSessionCleanup = () => {}
-
     let closed = false
     let ready = false
     let authenticated = false
@@ -246,7 +235,7 @@ class WebTransportTransport implements Transport {
     }
   }
 
-  async authenticateWebTransport (wt: WebTransport, localPeer: PeerId, remotePeer: PeerId, certhashes: Array<MultihashDigest<number>>, signal?: AbortSignal): Promise<boolean> {
+  async authenticateWebTransport (wt: WebTransport, localPeer: PeerId, remotePeer?: PeerId, certhashes: Array<MultihashDigest<number>> = [], signal?: AbortSignal): Promise<boolean> {
     if (signal?.aborted === true) {
       throw new AbortError()
     }
@@ -327,9 +316,9 @@ class WebTransportTransport implements Transport {
         return false
       }
 
-      const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+      const { url, certhashes } = parseMultiaddr(ma)
 
-      return url != null && remotePeer != null && certhashes.length > 0
+      return url != null && certhashes.length > 0
     })
   }
 }

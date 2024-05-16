@@ -1,67 +1,69 @@
-/* eslint-disable no-console */
-import { spawn, exec } from 'child_process'
-import { existsSync } from 'node:fs'
-import os from 'node:os'
-import defer from 'p-defer'
+import { createClient } from '@libp2p/daemon-client'
+import { multiaddr } from '@multiformats/multiaddr'
+import { execa } from 'execa'
+import { path as p2pd } from 'go-libp2p'
+import pDefer from 'p-defer'
 
 /** @type {import('aegir/types').PartialOptions} */
 export default {
   test: {
     async before () {
-      const main = os.platform() === 'win32' ? 'main.exe' : 'main'
-
-      if (!existsSync('./go-libp2p-webtransport-server/main')) {
-        await new Promise((resolve, reject) => {
-          exec(`go build -o ${main} main.go`,
-            { cwd: './go-libp2p-webtransport-server' },
-            (error, stdout, stderr) => {
-              if (error) {
-                reject(error)
-                console.error(`exec error: ${error}`)
-                return
-              }
-              resolve()
-            })
-        })
-      }
-
-      const server = spawn(`./${main}`, [], { cwd: './go-libp2p-webtransport-server', killSignal: 'SIGINT' })
-      server.stderr.on('data', (data) => {
-        console.log('stderr:', data.toString())
-      })
-      const serverAddr = defer()
-      const serverAddr6 = defer()
-      const disableIp6 = process.env.DISABLE_IPV6 != null
-
-      server.stdout.on('data', (buf) => {
-        const data = buf.toString()
-
-        console.log('stdout:', data);
-        if (data.includes('addr=/ip4')) {
-          // Parse the addr out
-          serverAddr.resolve(`/ip4${data.match(/addr=\/ip4(.*)/)[1]}`)
-        }
-
-        if (data.includes('addr=/ip6')) {
-          // Parse the addr out
-          serverAddr6.resolve(`/ip6${data.match(/addr=\/ip6(.*)/)[1]}`)
-        }
-      })
+      const goLibp2p = await createGoLibp2p()
 
       return {
-        server,
+        goLibp2p,
         env: {
-          serverAddr: await serverAddr.promise,
-          serverAddr6: disableIp6 === false ? await serverAddr6.promise : 'skipping',
-          disableIp6
+          GO_LIBP2P_ADDR_IP4: goLibp2p.ip4,
+          GO_LIBP2P_ADDR_IP6: goLibp2p.ip6,
+          DISABLE_IPV6: process.env.DISABLE_IPV6
         }
       }
     },
-    async after (_, { server }) {
-      server.kill('SIGINT')
+    async after (_, before) {
+      await before.goLibp2p.proc.kill()
     }
   },
   build: {
     bundlesizeMax: '18kB'
+  }
+}
+
+async function createGoLibp2p () {
+  const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
+  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+  const deferred = pDefer()
+  const proc = execa(p2pd(), [
+    `-listen=${apiAddr.toString()}`,
+    '-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport,/ip6/::1/udp/0/quic-v1/webtransport',
+    '-noise=true',
+    '-dhtServer',
+    '-relay',
+    '-muxer=mplex',
+    '-echo'
+  ], {
+    env: {
+      GOLOG_LOG_LEVEL: 'debug'
+    }
+  })
+
+  proc.stdout?.on('data', (buf) => {
+    const str = buf.toString()
+
+    // daemon has started
+    if (str.includes('Control socket:')) {
+      deferred.resolve()
+    }
+  })
+  await deferred.promise
+
+  const daemonClient = createClient(apiAddr)
+  const id = await daemonClient.identify()
+
+  return {
+    apiAddr,
+    peerId: id.peerId.toString(),
+    ip4: id.addrs.map(ma => ma.encapsulate(`/p2p/${id.peerId}`).toString()).filter(ma => ma.startsWith('/ip4')).pop(),
+    ip6: id.addrs.map(ma => ma.encapsulate(`/p2p/${id.peerId}`).toString()).filter(ma => ma.startsWith('/ip6')).pop(),
+    proc
   }
 }
