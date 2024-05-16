@@ -1,8 +1,8 @@
 /**
  * @packageDocumentation
  *
- * Stores metrics in memory and periodically invokes a configured callback
- * to receive them.
+ * Stores metrics in memory and periodically invokes a configured callback to
+ * receive them.
  *
  * @example
  *
@@ -25,10 +25,8 @@
 
 import { logger } from '@libp2p/logger'
 import each from 'it-foreach'
-import type { MultiaddrConnection, Stream, Connection } from '@libp2p/interface/connection'
-import type { Startable } from '@libp2p/interface/dist/src/startable'
-import type { Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric } from '@libp2p/interface/metrics'
-import type { Duplex, Source } from 'it-stream-types'
+import type { Startable, MultiaddrConnection, Stream, Connection, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric } from '@libp2p/interface'
+import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:simple-metrics')
 
@@ -185,7 +183,7 @@ class SimpleMetrics implements Metrics, Startable {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<Source<any>>, name: string): void {
+  _track (stream: Duplex<AsyncGenerator<any>>, name: string): void {
     const self = this
 
     const sink = stream.sink
@@ -218,7 +216,7 @@ class SimpleMetrics implements Metrics, Startable {
   registerMetric (name: string, opts: CalculatedMetricOptions): void
   registerMetric (name: string, opts?: MetricOptions): Metric
   registerMetric (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -237,7 +235,7 @@ class SimpleMetrics implements Metrics, Startable {
   registerMetricGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
   registerMetricGroup (name: string, opts?: MetricOptions): MetricGroup
   registerMetricGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -256,7 +254,7 @@ class SimpleMetrics implements Metrics, Startable {
   registerCounter (name: string, opts: CalculatedMetricOptions): void
   registerCounter (name: string, opts?: MetricOptions): Counter
   registerCounter (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -275,7 +273,7 @@ class SimpleMetrics implements Metrics, Startable {
   registerCounterGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
   registerCounterGroup (name: string, opts?: MetricOptions): CounterGroup
   registerCounterGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 

@@ -1,8 +1,8 @@
-import { start, stop } from '@libp2p/interface/startable'
+import { start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { simpleMetrics } from '../src/index.js'
-import type { Metrics } from '@libp2p/interface/src/metrics'
+import type { Metrics } from '@libp2p/interface'
 
 describe('simple-metrics', () => {
   let s: Metrics
