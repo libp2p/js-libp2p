@@ -1,4 +1,4 @@
-## [1.0.1](https://github.com/libp2p/js-libp2p-simple-metrics/compare/v1.0.0...v1.0.1) (2023-09-26)
+## [1.0.1](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.0.0...simple-metrics-v1.0.1) (2023-09-26)
 
 
 ### Bug Fixes
