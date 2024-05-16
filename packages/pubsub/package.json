@@ -109,7 +109,7 @@
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
     "protons-runtime": "^5.4.0",
-    "sinon": "^17.0.1"
+    "sinon": "^18.0.0"
   },
   "sideEffects": false
 }

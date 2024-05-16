@@ -70,7 +70,7 @@
     "it-all": "^3.0.4",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.1",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "uint8arrays": "^5.0.3"
   },
   "sideEffects": false

@@ -131,7 +131,7 @@
     "it-take": "^3.0.4",
     "p-event": "^6.0.1",
     "p-wait-for": "^5.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },
