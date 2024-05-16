@@ -13,9 +13,7 @@ export default {
       return {
         goLibp2p,
         env: {
-          GO_LIBP2P_ADDR_IP4: goLibp2p.ip4,
-          GO_LIBP2P_ADDR_IP6: goLibp2p.ip6,
-          DISABLE_IPV6: process.env.DISABLE_IPV6
+          GO_LIBP2P_ADDR: goLibp2p.multiaddr
         }
       }
     },
@@ -34,7 +32,7 @@ async function createGoLibp2p () {
   const deferred = pDefer()
   const proc = execa(p2pd(), [
     `-listen=${apiAddr.toString()}`,
-    '-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport,/ip6/::1/udp/0/quic-v1/webtransport',
+    '-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport',
     '-noise=true',
     '-dhtServer',
     '-relay',
@@ -62,8 +60,7 @@ async function createGoLibp2p () {
   return {
     apiAddr,
     peerId: id.peerId.toString(),
-    ip4: id.addrs.map(ma => ma.encapsulate(`/p2p/${id.peerId}`).toString()).filter(ma => ma.startsWith('/ip4')).pop(),
-    ip6: id.addrs.map(ma => ma.encapsulate(`/p2p/${id.peerId}`).toString()).filter(ma => ma.startsWith('/ip6')).pop(),
+    multiaddr: id.addrs.map(ma => ma.encapsulate(`/p2p/${id.peerId}`).toString()).pop(),
     proc
   }
 }

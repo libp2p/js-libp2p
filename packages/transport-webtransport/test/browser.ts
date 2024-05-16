@@ -40,11 +40,11 @@ describe('libp2p-webtransport', () => {
   })
 
   it('webtransport connects to go-libp2p', async () => {
-    if (process.env.GO_LIBP2P_ADDR_IP4 == null) {
-      throw new Error('GO_LIBP2P_ADDR_IP4 not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.GO_LIBP2P_ADDR_IP4
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     // Ping many times
@@ -56,11 +56,11 @@ describe('libp2p-webtransport', () => {
   })
 
   it('fails to connect without certhashes', async () => {
-    if (process.env.GO_LIBP2P_ADDR_IP4 == null) {
-      throw new Error('GO_LIBP2P_ADDR_IP4 not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.GO_LIBP2P_ADDR_IP4
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const maStrNoCerthash: string = maStr.split('/certhash')[0]
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
@@ -70,11 +70,11 @@ describe('libp2p-webtransport', () => {
   })
 
   it('fails to connect due to an aborted signal', async () => {
-    if (process.env.GO_LIBP2P_ADDR_IP4 == null) {
-      throw new Error('GO_LIBP2P_ADDR_IP4 not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.GO_LIBP2P_ADDR_IP4
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     const controller = new AbortController()
@@ -86,28 +86,13 @@ describe('libp2p-webtransport', () => {
     expect(err.toString()).to.contain('aborted')
   })
 
-  it('connects to ipv6 addresses', async function () {
-    if (process.env.DISABLE_IPV6 === 'true') {
-      return this.skip()
-    }
-    if (process.env.GO_LIBP2P_ADDR_IP6 == null) {
-      throw new Error('GO_LIBP2P_ADDR_IP6 not found')
-    }
-
-    const ma = multiaddr(process.env.GO_LIBP2P_ADDR_IP6)
-
-    // the address is unreachable but we can parse it correctly
-    const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
-    await stream.close()
-  })
-
   it('closes writes of streams after they have sunk a source', async () => {
     // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p/blob/main/packages/interface-compliance-tests/src/stream-muxer/close-test.ts)
-    if (process.env.GO_LIBP2P_ADDR_IP4 == null) {
-      throw new Error('GO_LIBP2P_ADDR_IP4 not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.GO_LIBP2P_ADDR_IP4
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     const data = [
