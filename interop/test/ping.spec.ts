@@ -192,13 +192,17 @@ describe('ping test', function () {
           throw new Error('No relayAddr')
         }
         // const conn = await node.dial(multiaddr(relayAddr))
+        console.error('dial relay')
         await node.dial(multiaddr(relayAddr))
+        console.error('wait for relay reservation')
         multiaddrs = await hasWebrtcMultiaddr
       }
 
+      console.error('inform redis of dial address')
       // Send the listener addr over the proxy server so this works on both the Browser and Node
       await redisProxy(['RPUSH', 'listenerAddr', multiaddrs[0]])
       // Wait
+      console.error('wait for incoming ping')
       await new Promise(resolve => setTimeout(resolve, 1000 * parseInt(timeoutSecs, 10)))
     } catch (err) {
       // Show all errors in an aggregated error
@@ -220,12 +224,12 @@ describe('ping test', function () {
       otherMaStr = otherMaStr.replace('/tls/ws', '/wss')
 
       const otherMa = multiaddr(otherMaStr)
-
-      console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
       const handshakeStartInstant = Date.now()
 
+      console.error(`node ${node.peerId.toString()} dials: ${otherMa}`)
       await node.dial(otherMa)
 
+      console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
       const pingRTT = await node.services.ping.ping(multiaddr(otherMa))
       const handshakePlusOneRTT = Date.now() - handshakeStartInstant
       console.log(JSON.stringify({

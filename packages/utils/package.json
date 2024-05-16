@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -44,6 +44,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abort-options": {
+      "types": "./dist/src/abort-options.d.ts",
+      "import": "./dist/src/abort-options.js"
+    },
     "./abstract-stream": {
       "types": "./dist/src/abstract-stream.d.ts",
       "import": "./dist/src/abstract-stream.js"
@@ -52,6 +56,10 @@
       "types": "./dist/src/address-sort.d.ts",
       "import": "./dist/src/address-sort.js"
     },
+    "./adaptive-timeout": {
+      "types": "./dist/src/adaptive-timeout.d.ts",
+      "import": "./dist/src/adaptive-timeout.js"
+    },
     "./array-equals": {
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"
@@ -59,6 +67,10 @@
     "./close-source": {
       "types": "./dist/src/close-source.d.ts",
       "import": "./dist/src/close-source.js"
+    },
+    "./close": {
+      "types": "./dist/src/close.d.ts",
+      "import": "./dist/src/close.js"
     },
     "./filters": {
       "types": "./dist/src/filters/index.d.ts",
@@ -72,6 +84,10 @@
       "types": "./dist/src/is-promise.d.ts",
       "import": "./dist/src/is-promise.js"
     },
+    "./moving-average": {
+      "types": "./dist/src/moving-average.d.ts",
+      "import": "./dist/src/moving-average.js"
+    },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
       "import": "./dist/src/multiaddr/is-loopback.js"
@@ -83,6 +99,10 @@
     "./peer-queue": {
       "types": "./dist/src/peer-queue.d.ts",
       "import": "./dist/src/peer-queue.js"
+    },
+    "./priority-queue": {
+      "types": "./dist/src/priority-queue.d.ts",
+      "import": "./dist/src/priority-queue.js"
     },
     "./private-ip": {
       "types": "./dist/src/private-ip.d.ts",
@@ -139,6 +159,7 @@
     "@multiformats/multiaddr-matcher": "^1.2.0",
     "@sindresorhus/fnv1a": "^3.1.0",
     "@types/murmurhash3js-revisited": "^3.0.3",
+    "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.2",

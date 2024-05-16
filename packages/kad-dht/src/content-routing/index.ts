@@ -58,13 +58,14 @@ export class ContentRouting {
    */
   async * provide (key: CID, multiaddrs: Multiaddr[], options: RoutingOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     this.log('provide %s', key)
+    const target = key.multihash.bytes
 
     // Add peer as provider
     await this.providers.addProvider(key, this.components.peerId)
 
     const msg: Partial<Message> = {
       type: MessageType.ADD_PROVIDER,
-      key: key.multihash.bytes,
+      key: target,
       providers: [
         toPbPeerInfo({
           id: this.components.peerId,
@@ -107,7 +108,7 @@ export class ContentRouting {
 
     // Notify closest peers
     yield * pipe(
-      this.peerRouting.getClosestPeers(key.multihash.bytes, options),
+      this.peerRouting.getClosestPeers(target, options),
       (source) => map(source, (event) => maybeNotifyPeer(event)),
       (source) => parallel(source, {
         ordered: false,

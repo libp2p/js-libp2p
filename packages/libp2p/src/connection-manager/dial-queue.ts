@@ -2,7 +2,7 @@
 import { CodeError, AggregateCodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
-import { Queue, type QueueAddOptions } from '@libp2p/utils/queue'
+import { PriorityQueue, type PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
 import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { Circuit } from '@multiformats/multiaddr-matcher'
@@ -18,6 +18,7 @@ import {
   MAX_DIAL_QUEUE_LENGTH
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
+import { DEFAULT_DIAL_PRIORITY } from './index.js'
 import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
@@ -32,7 +33,7 @@ export interface DialOptions extends AbortOptions {
   force?: boolean
 }
 
-interface DialQueueJobOptions extends QueueAddOptions {
+interface DialQueueJobOptions extends PriorityQueueJobOptions {
   peerId?: PeerId
   multiaddrs: Set<string>
 }
@@ -70,7 +71,7 @@ interface DialQueueComponents {
 }
 
 export class DialQueue {
-  public queue: Queue<Connection, DialQueueJobOptions>
+  public queue: PriorityQueue<Connection, DialQueueJobOptions>
   private readonly components: DialQueueComponents
   private readonly addressSorter: AddressSorter
   private readonly maxPeerAddrsToDial: number
@@ -97,7 +98,7 @@ export class DialQueue {
     }
 
     // controls dial concurrency
-    this.queue = new Queue({
+    this.queue = new PriorityQueue({
       concurrency: init.maxParallelDials ?? defaultOptions.maxParallelDials,
       metricName: 'libp2p_dial_queue',
       metrics: components.metrics
@@ -277,7 +278,7 @@ export class DialQueue {
       }
     }, {
       peerId,
-      priority: options.priority,
+      priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
       signal: options.signal
     })

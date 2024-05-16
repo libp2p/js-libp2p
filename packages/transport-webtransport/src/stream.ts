@@ -17,20 +17,21 @@ class WebTransportStream extends AbstractStream {
     this.writer = init.bidiStream.writable.getWriter()
     this.reader = init.bidiStream.readable.getReader()
 
-    Promise.resolve().then(async () => {
-      while (true) {
-        const result = await this.reader.read()
+    Promise.resolve()
+      .then(async () => {
+        while (true) {
+          const result = await this.reader.read()
 
-        if (result.done) {
-          init.log('remote closed write')
-          return
-        }
+          if (result.done) {
+            init.log('remote closed write')
+            return
+          }
 
-        if (result.value != null) {
-          this.sourcePush(new Uint8ArrayList(result.value))
+          if (result.value != null) {
+            this.sourcePush(new Uint8ArrayList(result.value))
+          }
         }
-      }
-    })
+      })
       .catch(err => {
         init.log.error('error reading from stream', err)
         this.abort(err)

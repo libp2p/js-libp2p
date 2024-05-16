@@ -3,8 +3,8 @@ import type { PeerId } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils/filters'
 
 /**
- * Uses a Bloom filter to implement a mechansim for deduplicating PeerIds in a
- * way that uses a fixed amount of memory.
+ * Uses a Cuckoo filter to implement a mechanism for deduplicating PeerIds in a
+ * way that uses a smaller amount of memory than a PeerSet.
  */
 export class PeerFilter {
   private readonly filter: Filter
@@ -26,6 +26,12 @@ export class PeerFilter {
   }
 }
 
-export function peerFilter (size: number): PeerFilter {
-  return new PeerFilter(size)
+/**
+ * Create and return a PeerFilter
+ *
+ * @param size - The maximum number of peers expected to be added to the filter
+ * @param errorRate - The acceptable error rate
+ */
+export function peerFilter (size: number, errorRate: number = 0.001): PeerFilter {
+  return new PeerFilter(size, errorRate)
 }
