@@ -69,7 +69,7 @@
     "@multiformats/multiaddr": "^12.2.1",
     "aegir": "^42.2.5",
     "protons": "^7.5.0",
-    "sinon": "^17.0.1"
+    "sinon": "^18.0.0"
   },
   "sideEffects": false
 }

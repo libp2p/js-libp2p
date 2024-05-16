@@ -182,7 +182,7 @@
     "it-drain": "^3.0.5",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
