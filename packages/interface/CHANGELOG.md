@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.1...interface-v1.4.0) (2024-05-17)
+
+
+### Features
+
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
 ## [1.3.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.0...interface-v1.3.1) (2024-05-01)
 
 
