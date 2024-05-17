@@ -60,14 +60,14 @@
     "it-stream-types": "^2.0.1",
     "protons-runtime": "^5.4.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.4",
     "@libp2p/logger": "^4.0.12",
     "@libp2p/peer-id-factory": "^4.1.1",
-    "@multiformats/multiaddr": "^12.2.1",
-    "aegir": "^42.2.5",
+    "@multiformats/multiaddr": "^12.2.3",
+    "aegir": "^42.2.11",
     "protons": "^7.5.0",
     "sinon": "^18.0.0"
   },

@@ -77,27 +77,27 @@
     "@libp2p/interface": "^1.3.1",
     "@libp2p/utils": "^5.4.1",
     "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.2.1",
+    "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-to-uri": "^10.0.1",
     "@types/ws": "^8.5.10",
     "it-ws": "^6.1.1",
     "p-defer": "^4.0.1",
     "wherearewe": "^2.0.1",
-    "ws": "^8.16.0"
+    "ws": "^8.17.0"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.4",
     "@libp2p/logger": "^4.0.12",
-    "aegir": "^42.2.5",
+    "aegir": "^42.2.11",
     "is-loopback-addr": "^2.0.2",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
+    "it-all": "^3.0.6",
+    "it-drain": "^3.0.7",
     "it-goodbye": "^4.0.6",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
     "p-wait-for": "^5.0.2",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
