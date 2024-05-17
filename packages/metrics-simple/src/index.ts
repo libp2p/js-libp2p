@@ -245,7 +245,7 @@ class SimpleMetrics implements Metrics, Startable {
       return
     }
 
-    const metric = new DefaultMetric()
+    const metric = new DefaultGroupMetric()
     this.metrics.set(name, metric)
 
     return metric
@@ -264,7 +264,7 @@ class SimpleMetrics implements Metrics, Startable {
       return
     }
 
-    const metric = new DefaultGroupMetric()
+    const metric = new DefaultMetric()
     this.metrics.set(name, metric)
 
     return metric
