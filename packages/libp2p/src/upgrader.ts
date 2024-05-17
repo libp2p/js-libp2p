@@ -641,7 +641,7 @@ export class DefaultUpgrader implements Upgrader {
         protocol
       }
     } catch (err: any) {
-      connection.log.error('encrypting inbound connection to %p failed', err)
+      connection.log.error('encrypting inbound connection to %p failed', remotePeerId, err)
       throw new CodeError(err.message, codes.ERR_ENCRYPTION_FAILED)
     }
   }
@@ -678,7 +678,7 @@ export class DefaultUpgrader implements Upgrader {
         protocol
       }
     } catch (err: any) {
-      connection.log.error('encrypting outbound connection to %p failed', err)
+      connection.log.error('encrypting outbound connection to %p failed', remotePeerId, err)
       throw new CodeError(err.message, codes.ERR_ENCRYPTION_FAILED)
     }
   }
