@@ -55,7 +55,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
@@ -66,16 +66,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # needed for webtransport tests, remove after https://github.com/libp2p/js-libp2p/pull/2422
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
-        with:
-          go-version: '1.22'
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
@@ -86,16 +82,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # needed for webtransport tests, remove after https://github.com/libp2p/js-libp2p/pull/2422
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
-        with:
-          go-version: '1.22'
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -111,7 +103,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
@@ -127,7 +119,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -148,7 +140,7 @@ jobs:
           sudo apt-get update
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
@@ -168,7 +160,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
@@ -184,7 +176,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0
+      - uses: codecov/codecov-action@5ecb98a3c6b747ed38dc09f787459979aebb39be # v4.3.1
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*

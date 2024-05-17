@@ -1,10 +1,10 @@
-import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import * as utils from '../utils.js'
-import type { PeerId } from '@libp2p/interface'
+import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { convertPeerId } from '../utils.js'
+import type { PeerId, PeerInfo } from '@libp2p/interface'
 
 interface PeerDistance {
-  peerId: PeerId
+  peer: PeerInfo
   distance: Uint8Array
 }
 
@@ -38,29 +38,53 @@ export class PeerDistanceList {
   }
 
   /**
-   * The peerIds in the list, in order of distance from the origin key
+   * The peers in the list, in order of distance from the origin key
    */
-  get peers (): PeerId[] {
-    return this.peerDistances.map(pd => pd.peerId)
+  get peers (): PeerInfo[] {
+    return this.peerDistances.map(pd => pd.peer)
   }
 
   /**
    * Add a peerId to the list.
    */
-  async add (peerId: PeerId): Promise<void> {
-    if (this.peerDistances.find(pd => pd.peerId.equals(peerId)) != null) {
+  async add (peer: PeerInfo): Promise<void> {
+    const dhtKey = await convertPeerId(peer.id)
+
+    this.addWitKadId(peer, dhtKey)
+  }
+
+  /**
+   * Add a peerId to the list.
+   */
+  addWitKadId (peer: PeerInfo, kadId: Uint8Array): void {
+    if (this.peerDistances.find(pd => pd.peer.id.equals(peer.id)) != null) {
       return
     }
 
-    const dhtKey = await utils.convertPeerId(peerId)
     const el = {
-      peerId,
-      distance: uint8ArrayXor(this.originDhtKey, dhtKey)
+      peer,
+      distance: uint8ArrayXor(this.originDhtKey, kadId)
     }
 
     this.peerDistances.push(el)
-    this.peerDistances.sort((a, b) => uint8ArrayCompare(a.distance, b.distance))
+    this.peerDistances.sort((a, b) => uint8ArrayXorCompare(a.distance, b.distance))
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
+  }
+
+  /**
+   * Indicates whether any of the peerIds passed as a parameter are closer
+   * to the origin key than the furthest peerId in the PeerDistanceList.
+   */
+  async isCloser (peerId: PeerId): Promise<boolean> {
+    if (this.length === 0) {
+      return true
+    }
+
+    const dhtKey = await convertPeerId(peerId)
+    const dhtKeyXor = uint8ArrayXor(dhtKey, this.originDhtKey)
+    const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
+
+    return uint8ArrayXorCompare(dhtKeyXor, furthestDistance) === -1
   }
 
   /**
@@ -72,21 +96,8 @@ export class PeerDistanceList {
       return false
     }
 
-    if (this.length === 0) {
-      return true
-    }
-
-    const dhtKeys = await Promise.all(peerIds.map(utils.convertPeerId))
-    const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
-
-    for (const dhtKey of dhtKeys) {
-      const keyDistance = uint8ArrayXor(this.originDhtKey, dhtKey)
-
-      if (uint8ArrayCompare(keyDistance, furthestDistance) < 0) {
-        return true
-      }
-    }
-
-    return false
+    return Promise.any(
+      peerIds.map(async peerId => this.isCloser(peerId))
+    )
   }
 }

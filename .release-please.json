@@ -21,6 +21,7 @@
     "packages/libp2p": {},
     "packages/logger": {},
     "packages/metrics-prometheus": {},
+    "packages/metrics-simple": {},
     "packages/multistream-select": {},
     "packages/peer-collections": {},
     "packages/peer-discovery-bootstrap": {},

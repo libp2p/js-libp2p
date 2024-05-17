@@ -96,6 +96,47 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.31](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.30...webtransport-v4.0.31) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^5.4.0 to ^5.4.1
+  * devDependencies
+    * libp2p bumped from ^1.5.1 to ^1.5.2
+
+## [4.0.30](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.29...webtransport-v4.0.30) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.5.0 to ^1.5.1
+
+## [4.0.29](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.28...webtransport-v4.0.29) (2024-05-01)
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+* WebTransport stream now extends abstract stream ([#2514](https://github.com/libp2p/js-libp2p/issues/2514)) ([de3f7ae](https://github.com/libp2p/js-libp2p/commit/de3f7aeafa6a4ada2f65598aa6d8eeece6ad83d8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+    * libp2p bumped from ^1.4.3 to ^1.5.0
+
 ## [4.0.28](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.27...webtransport-v4.0.28) (2024-04-24)
 
 

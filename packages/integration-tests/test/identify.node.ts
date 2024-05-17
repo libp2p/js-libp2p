@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { type Identify, identify } from '@libp2p/identify'
+import { identify, identifyPush } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
@@ -10,6 +10,7 @@ import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createBaseOptions } from './fixtures/base-options.js'
+import type { Identify, IdentifyPush } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
 
 const LOCAL_PORT = 47321
@@ -24,7 +25,7 @@ if (typeof globalThis.navigator !== 'undefined') {
 }
 
 describe('identify', () => {
-  let libp2p: Libp2p<{ identify: Identify }>
+  let libp2p: Libp2p<{ identify: Identify, identifyPush: IdentifyPush }>
   let remoteLibp2p: Libp2p<{ identify: Identify }>
 
   beforeEach(async () => {
@@ -34,7 +35,8 @@ describe('identify', () => {
         listen: [`/ip4/0.0.0.0/tcp/${LOCAL_PORT}`]
       },
       services: {
-        identify: identify()
+        identify: identify(),
+        identifyPush: identifyPush()
       }
     }))
     remoteLibp2p = await createLibp2p(createBaseOptions({
@@ -43,7 +45,8 @@ describe('identify', () => {
         listen: [`/ip4/0.0.0.0/tcp/${REMOTE_PORT}`]
       },
       services: {
-        identify: identify()
+        identify: identify(),
+        identifyPush: identifyPush()
       }
     }))
   })
@@ -178,7 +181,7 @@ describe('identify', () => {
 
   it('should push protocol updates to an already connected peer', async () => {
     const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
-    const identityServicePushSpy = sinon.spy(libp2p.services.identify, 'push')
+    const identityServicePushSpy = sinon.spy(libp2p.services.identifyPush, 'push')
     const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 
@@ -239,7 +242,7 @@ describe('identify', () => {
 
   it('should push multiaddr updates to an already connected peer', async () => {
     const identityServiceIdentifySpy = sinon.spy(libp2p.services.identify, 'identify')
-    const identityServicePushSpy = sinon.spy(libp2p.services.identify, 'push')
+    const identityServicePushSpy = sinon.spy(libp2p.services.identifyPush, 'push')
     const connectionPromise = pEvent(libp2p, 'connection:open')
     const connection = await libp2p.dial(remoteLibp2p.getMultiaddrs())
 

@@ -11,6 +11,15 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [4.1.1](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.1.0...peer-id-v4.1.1) (2024-05-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+
 ## [4.1.0](https://github.com/libp2p/js-libp2p/compare/peer-id-v4.0.10...peer-id-v4.1.0) (2024-04-24)
 
 

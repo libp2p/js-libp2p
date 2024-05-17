@@ -1,5 +1,6 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
+import { AdaptiveTimeout, type AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import { pbStream } from 'it-protobuf-stream'
 import { CodeError } from 'protons-runtime'
 import { Message } from './message/dht.js'
@@ -16,6 +17,7 @@ import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, Routing
 export interface NetworkInit {
   protocol: string
   logPrefix: string
+  timeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 }
 
 interface NetworkEvents {
@@ -30,6 +32,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   private readonly protocol: string
   private running: boolean
   private readonly components: KadDHTComponents
+  private readonly timeout: AdaptiveTimeout
 
   /**
    * Create a new network
@@ -42,6 +45,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     this.log = components.logger.forComponent(`${init.logPrefix}:network`)
     this.running = false
     this.protocol = protocol
+    this.timeout = new AdaptiveTimeout({
+      ...(init.timeout ?? {}),
+      metrics: components.metrics,
+      metricName: `${init.logPrefix.replaceAll(':', '_')}_network_message_send_times_milliseconds`
+    })
   }
 
   /**
@@ -88,12 +96,23 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     yield sendQueryEvent({ to, type }, options)
 
     let stream: Stream | undefined
+    const signal = this.timeout.getTimeoutSignal(options)
+
+    options = {
+      ...options,
+      signal
+    }
 
     try {
       const connection = await this.components.connectionManager.openConnection(to, options)
-      const stream = await connection.newStream(this.protocol, options)
-
+      stream = await connection.newStream(this.protocol, options)
       const response = await this._writeReadMessage(stream, msg, options)
+
+      stream.close(options)
+        .catch(err => {
+          this.log.error('error closing stream to %p', to, err)
+          stream?.abort(err)
+        })
 
       yield peerResponseEvent({
         from: to,
@@ -103,12 +122,11 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record)
       }, options)
     } catch (err: any) {
+      stream?.abort(err)
       this.log.error('could not send %s to %p', msg.type, to, err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
-      if (stream != null) {
-        await stream.close()
-      }
+      this.timeout.cleanUp(signal)
     }
   }
 
@@ -131,20 +149,31 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     yield sendQueryEvent({ to, type }, options)
 
     let stream: Stream | undefined
+    const signal = this.timeout.getTimeoutSignal(options)
+
+    options = {
+      ...options,
+      signal
+    }
 
     try {
       const connection = await this.components.connectionManager.openConnection(to, options)
-      const stream = await connection.newStream(this.protocol, options)
+      stream = await connection.newStream(this.protocol, options)
 
       await this._writeMessage(stream, msg, options)
 
+      stream.close(options)
+        .catch(err => {
+          this.log.error('error closing stream to %p', to, err)
+          stream?.abort(err)
+        })
+
       yield peerResponseEvent({ from: to, messageType: type }, options)
     } catch (err: any) {
+      stream?.abort(err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
-      if (stream != null) {
-        await stream.close()
-      }
+      this.timeout.cleanUp(signal)
     }
   }
 

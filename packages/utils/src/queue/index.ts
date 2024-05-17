@@ -4,16 +4,11 @@ import { raceEvent } from 'race-event'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 
-export interface QueueAddOptions extends AbortOptions {
-  /**
-   * Priority of operation. Operations with greater priority will be scheduled first.
-   *
-   * @default 0
-   */
-  priority?: number
+export interface Comparator<T> {
+  (a: T, b: T): -1 | 0 | 1
 }
 
-export interface QueueInit {
+export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
   /**
    * Concurrency limit.
    *
@@ -32,6 +27,11 @@ export interface QueueInit {
    * An implementation of the libp2p Metrics interface
    */
   metrics?: Metrics
+
+  /**
+   * An optional function that will sort the queue after a job has been added
+   */
+  sort?: Comparator<Job<JobOptions, JobReturnType>>
 }
 
 export type JobStatus = 'queued' | 'running' | 'errored' | 'complete'
@@ -40,21 +40,21 @@ export interface RunFunction<Options = AbortOptions, ReturnType = void> {
   (opts?: Options): Promise<ReturnType>
 }
 
-export interface JobMatcher<JobOptions extends QueueAddOptions = QueueAddOptions> {
+export interface JobMatcher<JobOptions extends AbortOptions = AbortOptions> {
   (options?: Partial<JobOptions>): boolean
 }
 
-export interface QueueJobSuccess<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+export interface QueueJobSuccess<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
   job: Job<JobOptions, JobReturnType>
   result: JobReturnType
 }
 
-export interface QueueJobFailure<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+export interface QueueJobFailure<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
   job: Job<JobOptions, JobReturnType>
   error: Error
 }
 
-export interface QueueEvents<JobReturnType, JobOptions extends QueueAddOptions = QueueAddOptions> {
+export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
   /**
    * A job is about to start running
    */
@@ -103,39 +103,19 @@ export interface QueueEvents<JobReturnType, JobOptions extends QueueAddOptions =
   'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
-// Port of lower_bound from https://en.cppreference.com/w/cpp/algorithm/lower_bound
-// Used to compute insertion index to keep queue sorted after insertion
-function lowerBound<T> (array: readonly T[], value: T, comparator: (a: T, b: T) => number): number {
-  let first = 0
-  let count = array.length
-
-  while (count > 0) {
-    const step = Math.trunc(count / 2)
-    let it = first + step
-
-    if (comparator(array[it], value) <= 0) {
-      first = ++it
-      count -= step + 1
-    } else {
-      count = step
-    }
-  }
-
-  return first
-}
-
 /**
  * Heavily influence by `p-queue` with the following differences:
  *
  * 1. Items remain at the head of the queue while they are running so `queue.size` includes `queue.pending` items - this is so interested parties can join the results of a queue item while it is running
  * 2. The options for a job are stored separately to the job in order for them to be modified while they are still in the queue
  */
-export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions = QueueAddOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
+export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
+  private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
 
-  constructor (init: QueueInit = {}) {
+  constructor (init: QueueInit<JobReturnType, JobOptions> = {}) {
     super()
 
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
@@ -153,6 +133,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
       })
     }
 
+    this.sort = init.sort
     this.queue = []
   }
 
@@ -215,16 +196,11 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
   }
 
   private enqueue (job: Job<JobOptions, JobReturnType>): void {
-    if (this.queue[this.size - 1]?.priority >= job.priority) {
-      this.queue.push(job)
-      return
-    }
+    this.queue.push(job)
 
-    const index = lowerBound(
-      this.queue, job,
-      (a: Readonly< Job<JobOptions, JobReturnType>>, b: Readonly< Job<JobOptions, JobReturnType>>) => b.priority - a.priority
-    )
-    this.queue.splice(index, 0, job)
+    if (this.sort != null) {
+      this.queue.sort(this.sort)
+    }
   }
 
   /**
@@ -233,7 +209,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
   async add (fn: RunFunction<JobOptions, JobReturnType>, options?: JobOptions): Promise<JobReturnType> {
     options?.signal?.throwIfAborted()
 
-    const job = new Job<JobOptions, JobReturnType>(fn, options, options?.priority)
+    const job = new Job<JobOptions, JobReturnType>(fn, options)
 
     const p = job.join(options)
       .then(result => {

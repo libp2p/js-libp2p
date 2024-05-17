@@ -2,8 +2,9 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import pDefer from 'p-defer'
-import { Queue, type QueueAddOptions } from '../src/queue/index.js'
+import { Queue } from '../src/queue/index.js'
 import { TestSignal } from './fixtures/test-signal.js'
+import type { AbortOptions } from '@libp2p/interface'
 
 const fixture = Symbol('fixture')
 
@@ -13,7 +14,7 @@ function randomInt (minimum: number, maximum: number): number {
   )
 }
 
-interface SlowJobQueueOptions extends QueueAddOptions {
+interface SlowJobQueueOptions extends AbortOptions {
   slow: boolean
 }
 
@@ -117,21 +118,6 @@ describe('queue', () => {
     }))
 
     await Promise.all(input)
-  })
-
-  it('adds with priority', async () => {
-    const result: number[] = []
-    const queue = new Queue<number>({ concurrency: 1 })
-    void queue.add(async () => result.push(1), { priority: 1 })
-    void queue.add(async () => result.push(0), { priority: 0 })
-    void queue.add(async () => result.push(1), { priority: 1 })
-    void queue.add(async () => result.push(2), { priority: 1 })
-    void queue.add(async () => result.push(3), { priority: 2 })
-    void queue.add(async () => result.push(0), { priority: -1 })
-
-    await queue.onEmpty()
-
-    expect(result).to.deep.equal([1, 3, 1, 2, 0, 0])
   })
 
   it('.onEmpty()', async () => {

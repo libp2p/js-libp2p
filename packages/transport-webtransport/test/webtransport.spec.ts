@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { noise } from '@chainsafe/libp2p-noise'
+import { ping } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import map from 'it-map'
@@ -8,10 +9,10 @@ import toBuffer from 'it-to-buffer'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import pWaitFor from 'p-wait-for'
 import { webTransport } from '../src/index.js'
-import { randomBytes } from './fixtures/random-bytes.js'
+import type { PingService } from '@libp2p/ping'
 
 describe('libp2p-webtransport', () => {
-  let node: Libp2p
+  let node: Libp2p<{ ping: PingService }>
 
   beforeEach(async () => {
     node = await createLibp2p({
@@ -22,6 +23,9 @@ describe('libp2p-webtransport', () => {
       },
       connectionManager: {
         minConnections: 0
+      },
+      services: {
+        ping: ping()
       }
     })
   })
@@ -36,59 +40,27 @@ describe('libp2p-webtransport', () => {
   })
 
   it('webtransport connects to go-libp2p', async () => {
-    if (process.env.serverAddr == null) {
-      throw new Error('serverAddr not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.serverAddr
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     // Ping many times
-    for (let index = 0; index < 100; index++) {
-      const now = Date.now()
-
-      // Note we're re-implementing the ping protocol here because as of this
-      // writing, go-libp2p will reset the stream instead of close it. The next
-      // version of go-libp2p v0.24.0 will have this fix. When that's released
-      // we can use the builtin ping system
-      const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
-
-      const data = randomBytes(32)
-
-      const pong = new Promise<void>((resolve, reject) => {
-        (async () => {
-          for await (const chunk of stream.source) {
-            const v = chunk.subarray()
-            const byteMatches: boolean = v.every((byte: number, i: number) => byte === data[i])
-            if (byteMatches) {
-              resolve()
-            } else {
-              reject(new Error('Wrong pong'))
-            }
-          }
-        })().catch(reject)
-      })
-
-      let res = -1
-      await stream.sink((async function * () {
-        yield data
-        // Wait for the pong before we close the write side
-        await pong
-        res = Date.now() - now
-      })())
-
-      await stream.close()
+    for (let index = 0; index < 50; index++) {
+      const res = await node.services.ping.ping(ma)
 
       expect(res).to.be.greaterThan(-1)
     }
   })
 
   it('fails to connect without certhashes', async () => {
-    if (process.env.serverAddr == null) {
-      throw new Error('serverAddr not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.serverAddr
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const maStrNoCerthash: string = maStr.split('/certhash')[0]
     const maStrP2p = maStr.split('/p2p/')[1]
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
@@ -98,11 +70,11 @@ describe('libp2p-webtransport', () => {
   })
 
   it('fails to connect due to an aborted signal', async () => {
-    if (process.env.serverAddr == null) {
-      throw new Error('serverAddr not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.serverAddr
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     const controller = new AbortController()
@@ -114,28 +86,13 @@ describe('libp2p-webtransport', () => {
     expect(err.toString()).to.contain('aborted')
   })
 
-  it.skip('connects to ipv6 addresses', async function () {
-    if (process.env.disableIp6 === 'true') {
-      return this.skip()
-    }
-    if (process.env.serverAddr6 == null) {
-      throw new Error('serverAddr6 not found')
-    }
-
-    const ma = multiaddr(process.env.serverAddr6)
-
-    // the address is unreachable but we can parse it correctly
-    const stream = await node.dialProtocol(ma, '/ipfs/ping/1.0.0')
-    await stream.close()
-  })
-
   it('closes writes of streams after they have sunk a source', async () => {
     // This is the behavior of stream muxers: (see mplex, yamux and compliance tests: https://github.com/libp2p/js-libp2p/blob/main/packages/interface-compliance-tests/src/stream-muxer/close-test.ts)
-    if (process.env.serverAddr == null) {
-      throw new Error('serverAddr not found')
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
     }
 
-    const maStr: string = process.env.serverAddr
+    const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
 
     const data = [
@@ -150,7 +107,7 @@ describe('libp2p-webtransport', () => {
       yield * data
     }
 
-    const stream = await node.dialProtocol(ma, 'echo')
+    const stream = await node.dialProtocol(ma, '/echo/1.0.0')
 
     expect(stream.timeline.closeWrite).to.be.undefined()
     expect(stream.timeline.closeRead).to.be.undefined()

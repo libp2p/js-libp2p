@@ -106,6 +106,55 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [12.0.16](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.15...kad-dht-v12.0.16) (2024-05-14)
+
+
+### Bug Fixes
+
+* increase default DHT query timeout ([#2525](https://github.com/libp2p/js-libp2p/issues/2525)) ([1488a73](https://github.com/libp2p/js-libp2p/commit/1488a7371eb80751662b7ab71967ab537d912119))
+* load peerstore peers into routing table at startup ([#2534](https://github.com/libp2p/js-libp2p/issues/2534)) ([510d9ce](https://github.com/libp2p/js-libp2p/commit/510d9ce6563095e9d01a64e88dd7dab8e18641ee))
+* time out DHT network requests separately from query ([#2524](https://github.com/libp2p/js-libp2p/issues/2524)) ([bfa7660](https://github.com/libp2p/js-libp2p/commit/bfa7660d5f91d1b9bf4a6859d4567d3613404de2))
+* use prefix binary tree for routing table ([#2536](https://github.com/libp2p/js-libp2p/issues/2536)) ([7ae6063](https://github.com/libp2p/js-libp2p/commit/7ae6063dfbc754f95a2c4bd0a6bd146f2989a5f5))
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Dependencies
+
+* **dev:** bump execa from 8.0.1 to 9.0.2 ([#2542](https://github.com/libp2p/js-libp2p/issues/2542)) ([43046b9](https://github.com/libp2p/js-libp2p/commit/43046b9aebebfadeb1c092a1ef768c63c32298e3))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.2.0 to ^1.2.1
+    * @libp2p/peer-collections bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/utils bumped from ^5.4.0 to ^5.4.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.3 to ^5.4.4
+    * @libp2p/peer-store bumped from ^10.0.17 to ^10.0.18
+
+## [12.0.15](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.14...kad-dht-v12.0.15) (2024-05-01)
+
+
+### Bug Fixes
+
+* begin routing table refresh after routing table has started ([#2511](https://github.com/libp2p/js-libp2p/issues/2511)) ([3bc94b4](https://github.com/libp2p/js-libp2p/commit/3bc94b403b117cdc5ed57f73da22c6fda8a3ef51))
+* return self in FIND_NODE for self ([#2512](https://github.com/libp2p/js-libp2p/issues/2512)) ([9e9a32b](https://github.com/libp2p/js-libp2p/commit/9e9a32b77d7f4ab9130a628f3f2bd0421e81d445))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/interface-internal bumped from ^1.1.1 to ^1.2.0
+    * @libp2p/peer-collections bumped from ^5.1.11 to ^5.2.0
+    * @libp2p/peer-id bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/utils bumped from ^5.3.2 to ^5.4.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.2 to ^5.4.3
+    * @libp2p/logger bumped from ^4.0.11 to ^4.0.12
+    * @libp2p/peer-id-factory bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/peer-store bumped from ^10.0.16 to ^10.0.17
+
 ## [12.0.14](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.0.13...kad-dht-v12.0.14) (2024-04-24)
 
 

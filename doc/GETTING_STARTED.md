@@ -16,6 +16,7 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
   - [Debugging](#debugging)
     - [Node](#node)
     - [Browser](#browser)
+  - [React Native](#react-native)
   - [What is next](#what-is-next)
 
 ## Install
@@ -270,6 +271,10 @@ localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the
 // networking debug logs
 localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
 ```
+
+## React Native
+
+Libp2p can be used in React Native applications. However, there are some limitations and considerations to take into account as not all transports are supported and some of the underlying dependencies may not work as expected. There is on-going work to address these issues, particularly around the support of TCP. For a demo on how to use libp2p in a React Native application, see https://github.com/ipfs-shipyard/js-libp2p-react-native
 
 ## What is next
 
