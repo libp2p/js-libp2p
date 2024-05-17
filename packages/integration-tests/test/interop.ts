@@ -15,6 +15,7 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
+import { webTransport } from '@libp2p/webtransport'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -46,7 +47,11 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {
-    opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    if (options.transport === 'webtransport') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
+    } else {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    }
   }
 
   if (options.encryption != null) {
@@ -122,14 +127,20 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions<ServiceMap> = {
     peerId,
     addresses: {
-      listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
+      listen: []
     },
-    transports: [tcp(), circuitRelayTransport()],
+    transports: [tcp(), circuitRelayTransport(), webTransport()],
     streamMuxers: [],
     connectionEncryption: [noise()],
     connectionManager: {
       minConnections: 0
     }
+  }
+
+  if (options.transport === 'webtransport') {
+    opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
+  } else if (options.transport === 'tcp') {
+    opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
   }
 
   const services: ServiceFactoryMap = {

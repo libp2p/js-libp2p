@@ -1,5 +1,3 @@
-import { createClient } from '@libp2p/daemon-client'
-import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
 import pDefer from 'p-defer'
@@ -27,6 +25,12 @@ export default {
 }
 
 async function createGoLibp2p () {
+  // have to import these dynamically as they have a transitive dependency on
+  // @libp2p/interface which is part of this monorepo so may not have been built
+  // yet
+  const { multiaddr } = await import('@multiformats/multiaddr')
+  const { createClient } = await import('@libp2p/daemon-client')
+
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
   const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
   const deferred = pDefer()

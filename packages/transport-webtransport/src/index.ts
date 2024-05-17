@@ -191,6 +191,10 @@ class WebTransportTransport implements Transport {
         throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
       }
 
+      if (options?.signal?.aborted === true) {
+        throw new AbortError()
+      }
+
       this.metrics?.dialerEvents.increment({ open: true })
 
       maConn = {
@@ -303,8 +307,8 @@ class WebTransportTransport implements Transport {
   /**
    * Filter check for all Multiaddrs that this transport can listen on
    */
-  listenFilter (): Multiaddr[] {
-    return []
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return multiaddrs.filter(ma => WebTransportMatcher.exactMatch(ma))
   }
 
   /**
