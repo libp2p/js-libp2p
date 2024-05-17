@@ -55,4 +55,92 @@ describe('simple-metrics', () => {
 
     expect(list).to.not.have.nested.property('[1].foo.baz')
   })
+
+  it('should create a metric', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({})
+
+    await start(s)
+
+    const m = s.registerMetric('test_metric')
+    m.update(10)
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.property('test_metric', 10)
+  })
+
+  it('should create a counter metric', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({})
+
+    await start(s)
+
+    const m = s.registerCounter('test_metric')
+    m.increment()
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.property('test_metric', 1)
+  })
+
+  it('should create a metric group', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({})
+
+    await start(s)
+
+    const m = s.registerMetricGroup('test_metric')
+    m.update({
+      foo: 10,
+      bar: 20
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.deep.property('test_metric', {
+      foo: 10,
+      bar: 20
+    })
+  })
+
+  it('should create a metric counter group', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({})
+
+    await start(s)
+
+    const m = s.registerCounterGroup('test_metric')
+    m.increment({
+      foo: 10,
+      bar: 20
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.deep.property('test_metric', {
+      foo: 10,
+      bar: 20
+    })
+  })
 })
