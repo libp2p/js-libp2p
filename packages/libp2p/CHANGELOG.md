@@ -110,6 +110,44 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.6.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.5.2...libp2p-v1.6.0) (2024-05-17)
+
+
+### Features
+
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+
+
+### Bug Fixes
+
+* log error correctly ([#2552](https://github.com/libp2p/js-libp2p/issues/2552)) ([a3e8bea](https://github.com/libp2p/js-libp2p/commit/a3e8beabdc2b551594952b5d5621555296eff79a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/interface-internal bumped from ^1.2.1 to ^1.2.2
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/multistream-select bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-collections bumped from ^5.2.1 to ^5.2.2
+    * @libp2p/peer-id bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/peer-id-factory bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/peer-store bumped from ^10.0.18 to ^10.0.19
+    * @libp2p/utils bumped from ^5.4.1 to ^5.4.2
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.23 to ^1.0.24
+    * @libp2p/identify bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/interface-compliance-tests bumped from ^5.4.4 to ^5.4.5
+    * @libp2p/mplex bumped from ^10.0.23 to ^10.0.24
+    * @libp2p/plaintext bumped from ^1.0.23 to ^1.0.24
+    * @libp2p/tcp bumped from ^9.0.25 to ^9.0.26
+    * @libp2p/websockets bumped from ^8.0.23 to ^8.0.24
+
 ## [1.5.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.5.1...libp2p-v1.5.2) (2024-05-14)
 
 

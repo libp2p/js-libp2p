@@ -5,6 +5,22 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [1.0.2](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.0.1...simple-metrics-v1.0.2) (2024-05-17)
+
+
+### Bug Fixes
+
+* allow creating counter groups ([#2550](https://github.com/libp2p/js-libp2p/issues/2550)) ([8214dcf](https://github.com/libp2p/js-libp2p/commit/8214dcfb0e14e7bf377b5f0d9864551038c069fa))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+
 ## 1.0.0 (2023-09-20)
 
 
