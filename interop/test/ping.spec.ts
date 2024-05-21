@@ -18,6 +18,7 @@ import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import pRetry from 'p-retry'
 
 async function redisProxy (commands: any[]): Promise<any> {
+  // retry after "fetch failed" errors as Redis might not be running yet in CI?
   const res = await pRetry(async () => fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, {
     method: 'POST',
     body: JSON.stringify(commands)
