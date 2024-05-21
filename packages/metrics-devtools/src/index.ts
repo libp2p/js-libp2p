@@ -106,6 +106,19 @@ export interface EnableDebugMessage {
 }
 
 /**
+ * We cannot use the web extension API to copy text to the cliboard yet as it's
+ * not supported in Firefox yet, so get the page to do it
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Interact_with_the_clipboard#writing_to_the_clipboard
+ */
+export interface CopyToClipboardMessage {
+  source: '@libp2p/devtools-metrics:devtools'
+  type: 'copy-to-clipboard'
+  value: string
+  tabId: number
+}
+
+/**
  * Messages that are sent from the application page to the DevTools panel
  */
 export type ApplicationMessage = MetricsMessage | SelfMessage | PeersMessage
@@ -118,7 +131,7 @@ export type WorkerMessage = PageLoadedMessage | PermissionsErrorMessage
 /**
  * Messages that are sent from the DevTools panel page to the application page
  */
-export type DevToolsMessage = IdentifyMessage | EnableDebugMessage
+export type DevToolsMessage = IdentifyMessage | EnableDebugMessage | CopyToClipboardMessage
 
 export interface SelfPeer {
   /**
