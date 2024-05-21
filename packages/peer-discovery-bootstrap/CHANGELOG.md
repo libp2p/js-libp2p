@@ -83,6 +83,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.24](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.23...bootstrap-v10.0.24) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/peer-id bumped from ^4.1.1 to ^4.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.4 to ^5.4.5
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+
 ## [10.0.23](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.0.22...bootstrap-v10.0.23) (2024-05-14)
 
 
