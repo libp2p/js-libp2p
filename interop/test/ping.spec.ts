@@ -14,6 +14,7 @@ import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import delay from 'delay'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 import pRetry from 'p-retry'
 
@@ -22,7 +23,16 @@ async function redisProxy (commands: any[]): Promise<any> {
   const res = await pRetry(async () => fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, {
     method: 'POST',
     body: JSON.stringify(commands)
-  }))
+  }), {
+    async onFailedAttempt (error): Promise<void> {
+      const retry = error.attemptNumber * 1000
+
+      console.info(`Attempt ${error.attemptNumber}/10 failed -`, error)
+      console.info(`Waiting for ${retry}ms before retrying due to error`, error)
+
+      await delay(retry)
+    }
+  })
 
   if (!res.ok) {
     throw new Error('Redis command failed')
