@@ -17,7 +17,7 @@ import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 
 async function redisProxy (commands: any[]): Promise<any> {
-  const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, {
+  const res = await fetch(`http://localhost:${process.env.REDIS_PROXY_PORT}`, {
     method: 'POST',
     body: JSON.stringify(commands)
   })
@@ -181,7 +181,7 @@ describe('ping test', function () {
 
       const transport = process.env.transport
       if (transport === 'webrtc') {
-        const relayAddr = process.env.relayAddr
+        const relayAddr = process.env.RELAY_ADDR
         const hasWebrtcMultiaddr = new Promise<string[]>((resolve) => {
           const abortController = new AbortController()
           node.addEventListener('self:peer:update', (event) => {

@@ -36,7 +36,11 @@ export default {
       redisClient.on('error', (err) => {
         console.error('Redis client error:', err)
       })
+
+      let start = Date.now()
+      console.error('connect redis client')
       await redisClient.connect()
+      console.error('connected redis client after', Date.now() - start, 'ms')
 
       const requestListener = async function (req, res) {
         const requestJSON = await new Promise(resolve => {
@@ -80,13 +84,14 @@ export default {
         }
       }
 
+      start = Date.now()
       console.error('start proxy server')
       const proxyServer = http.createServer(requestListener)
       proxyServer.listen(0)
 
       await pEvent(proxyServer, 'listen')
 
-      console.error('redis proxy is listening on port', proxyServer.address().port)
+      console.error('redis proxy is listening on port', proxyServer.address().port, 'after', Date.now() - start, 'ms')
 
       return {
         redisClient,
@@ -94,8 +99,8 @@ export default {
         proxyServer,
         env: {
           ...process.env,
-          relayAddr,
-          proxyPort: proxyServer.address().port
+          RELAY_ADDR: relayAddr,
+          REDIS_PROXY_PORT: proxyServer.address().port
         }
       }
     },
