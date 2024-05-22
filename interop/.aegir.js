@@ -33,8 +33,9 @@ export default {
       const redisClient = createClient({
         url: `redis://${redisAddr}`
       })
-      // eslint-disable-next-line no-console
-      redisClient.on('error', (err) => console.error(`Redis Client Error: ${err}`))
+      redisClient.on('error', (err) => {
+        console.error('Redis client error:', err)
+      })
       await redisClient.connect()
 
       const requestListener = async function (req, res) {
@@ -51,8 +52,18 @@ export default {
 
         try {
           const redisRes = await redisClient.sendCommand(requestJSON)
-          if (redisRes === null) {
-            throw new Error('redis sent back null')
+
+          if (redisRes == null) {
+            console.error('Redis failure - sent', requestJSON, 'received', redisRes)
+
+            res.writeHead(500, {
+              'Access-Control-Allow-Origin': '*'
+            })
+            res.end(JSON.stringify({
+              message: 'Redis sent back null'
+            }))
+
+            return
           }
 
           res.writeHead(200, {
@@ -69,13 +80,13 @@ export default {
         }
       }
 
-      console.info('start proxy server')
+      console.error('start proxy server')
       const proxyServer = http.createServer(requestListener)
       proxyServer.listen(0)
 
       await pEvent(proxyServer, 'listen')
 
-      console.info('redis proxy is listening on port', proxyServer.address().port)
+      console.error('redis proxy is listening on port', proxyServer.address().port)
 
       return {
         redisClient,
