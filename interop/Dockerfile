@@ -4,11 +4,11 @@ FROM node:22-bullseye-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json ./
 COPY ./packages ./packages
 COPY ./interop ./interop
 
-RUN npm ci
+RUN npm i
 RUN npm run build
 
 WORKDIR /app/interop
