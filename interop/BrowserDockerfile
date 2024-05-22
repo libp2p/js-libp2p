@@ -10,13 +10,12 @@ FROM mcr.microsoft.com/playwright
 
 COPY --from=js-libp2p-base /app/ /app/
 WORKDIR /app
+
 # We install browsers here instead of the cached version so that we use the latest browsers at run time.
 # Ideally this would also be pinned, but playwright controls this, so there isn't much we can do about it.
 # By installing here, we avoid installing it at test time.
-RUN npm ci
 RUN npx playwright install-deps
 RUN npx playwright install
-RUN npm run build
 
 # Options: chromium, firefox, webkit
 ARG BROWSER=chromium
