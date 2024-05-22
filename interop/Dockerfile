@@ -1,15 +1,14 @@
-FROM node:20
+# Here because we want to fetch the node_modules within docker so that it's
+# installed on the same platform the test is run. Otherwise tools like `esbuild` will fail to run
+FROM node:22-bullseye-slim
 
 WORKDIR /app
-COPY package.json .
-COPY ./node_modules ./node_modules
-COPY ./packages ./packages
-COPY ./interop ./interop
 
-WORKDIR /app/interop
+COPY package*.json .aegir.js tsconfig.json ./
+COPY src ./src
+COPY test ./test
 
-# disable colored output and CLI animation from test runners
-ENV CI true
-ENV DEBUG libp2p*
+RUN npm ci
+RUN npm run build
 
-ENTRYPOINT [ "npm", "run", "test:interop:multidim", "--", "--build", "false", "--types", "false", "-t", "node" ]
+ENTRYPOINT npm test -- -t node

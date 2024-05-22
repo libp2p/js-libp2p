@@ -9,7 +9,6 @@
     { "type": "refactor", "section": "Refactors", "hidden": false }
   ],
   "packages": {
-    "interop": {},
     "packages/connection-encrypter-plaintext": {},
     "packages/connection-encrypter-tls": {},
     "packages/crypto": {},

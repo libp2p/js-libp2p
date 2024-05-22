@@ -2,7 +2,6 @@
 import http from 'http'
 import { pEvent } from 'p-event'
 import { createClient } from 'redis'
-import { createRelay } from './relay.js'
 
 const redisAddr = process.env.redis_addr || 'redis:6379'
 const transport = process.env.transport
@@ -18,6 +17,8 @@ export default {
       }
     },
     async before () {
+      const { createRelay } = await import('./dist/test/fixtures/relay.js')
+
       let relayNode = { stop: () => {} }
       let relayAddr = ''
       if (transport === 'webrtc' && !isDialer) {
