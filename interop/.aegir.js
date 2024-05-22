@@ -1,4 +1,6 @@
+/* eslint-disable no-console */
 import http from 'http'
+import { pEvent } from 'p-event'
 import { createClient } from 'redis'
 import { createRelay } from './relay.js'
 
@@ -67,8 +69,13 @@ export default {
         }
       }
 
+      console.info('start proxy server')
       const proxyServer = http.createServer(requestListener)
-      await new Promise(resolve => { proxyServer.listen(0, 'localhost', () => { resolve() }) })
+      proxyServer.listen(0)
+
+      await pEvent(proxyServer, 'listen')
+
+      console.info('redis proxy is listening on port', proxyServer.address().port)
 
       return {
         redisClient,

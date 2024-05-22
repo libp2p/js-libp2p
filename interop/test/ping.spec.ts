@@ -17,7 +17,6 @@ import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p, type Libp2p, type Libp2pOptions } from 'libp2p'
 
 async function redisProxy (commands: any[]): Promise<any> {
-  // retry after "fetch failed" errors as Redis might not be running yet in CI?
   const res = await fetch(`http://localhost:${process.env.proxyPort ?? ''}/`, {
     method: 'POST',
     body: JSON.stringify(commands)
