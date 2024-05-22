@@ -89,7 +89,7 @@ export default {
       const proxyServer = http.createServer(requestListener)
       proxyServer.listen(0)
 
-      await pEvent(proxyServer, 'listen')
+      await pEvent(proxyServer, 'listening')
 
       console.error('redis proxy is listening on port', proxyServer.address().port, 'after', Date.now() - start, 'ms')
 

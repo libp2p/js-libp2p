@@ -9,6 +9,7 @@ ARG BROWSER=chromium
 ENV BROWSER=$BROWSER
 # disable colored output and CLI animation from test runners
 ENV CI true
+ENV DEBUG libp2p*
 
 # manually specify runner until https://github.com/hugomrdias/playwright-test/issues/572 is resolved
 ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER
