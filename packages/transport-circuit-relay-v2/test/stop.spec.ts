@@ -194,4 +194,32 @@ describe('circuit-relay stop protocol', function () {
       'did not dial relay we did not have a reservation on'
     )
   })
+
+  it('Should not be a transient connection if the relay has no limit', async () => {
+    const remotePeer = await createEd25519PeerId()
+    const remoteAddr = multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
+
+    transport.reservationStore.hasReservation = Sinon.stub().returns(false)
+    const connection = stubInterface<Connection>({
+      remotePeer,
+      remoteAddr
+    })
+
+    components.transportManager.listen.returns(Promise.resolve())
+
+    void transport.onStop({
+      connection,
+      stream: remoteStream
+    })
+
+    await pbstr.write({
+      type: StopMessage.Type.CONNECT,
+      peer: {
+        id: sourcePeer.toBytes(),
+        addrs: []
+      }
+    })
+
+    expect(connection.transient).to.be.false()
+  })
 })
