@@ -9,7 +9,6 @@
     { "type": "refactor", "section": "Refactors", "hidden": false }
   ],
   "packages": {
-    "interop": {},
     "packages/connection-encrypter-plaintext": {},
     "packages/connection-encrypter-tls": {},
     "packages/crypto": {},
@@ -20,6 +19,7 @@
     "packages/keychain": {},
     "packages/libp2p": {},
     "packages/logger": {},
+    "packages/metrics-devtools": {},
     "packages/metrics-prometheus": {},
     "packages/metrics-simple": {},
     "packages/multistream-select": {},
