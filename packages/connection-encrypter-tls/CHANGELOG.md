@@ -6,6 +6,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.12](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.11...tls-v1.0.12) (2024-05-28)
+
+
+### Bug Fixes
+
+* export tls key as pkcs8 ([#2562](https://github.com/libp2p/js-libp2p/issues/2562)) ([167bf2b](https://github.com/libp2p/js-libp2p/commit/167bf2b3cf0aa741c8118e241c3668e8ef91c549))
+
 ## [1.0.11](https://github.com/libp2p/js-libp2p/compare/tls-v1.0.10...tls-v1.0.11) (2024-05-17)
 
 
