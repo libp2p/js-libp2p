@@ -68,7 +68,7 @@ export default {
       }
 
       const proxyServer = http.createServer(requestListener)
-      await new Promise(resolve => { proxyServer.listen(0, () => { resolve() }) })
+      await new Promise(resolve => { proxyServer.listen(0, 'localhost', () => { resolve() }) })
 
       return {
         redisClient,
