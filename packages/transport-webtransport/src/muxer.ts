@@ -23,38 +23,42 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
 
       const activeStreams: Stream[] = []
 
-      void Promise.resolve().then(async () => {
-        //! TODO unclear how to add backpressure here?
-        while (true) {
-          const { done, value: wtStream } = await reader.read()
+      Promise.resolve()
+        .then(async () => {
+          //! TODO unclear how to add backpressure here?
+          while (true) {
+            const { done, value: wtStream } = await reader.read()
 
-          if (done) {
-            break
-          }
+            if (done) {
+              break
+            }
 
-          if (activeStreams.length >= config.maxInboundStreams) {
-            log(`too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`)
-            // We've reached our limit, close this stream.
-            wtStream.writable.close().catch((err: Error) => {
-              log.error(`failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
-            })
-            wtStream.readable.cancel().catch((err: Error) => {
-              log.error(`failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
-            })
-          } else {
-            const stream = await webtransportBiDiStreamToStream(
-              wtStream,
-              String(streamIDCounter++),
-              'inbound',
-              activeStreams,
-              init?.onStreamEnd,
-              logger
-            )
-            activeStreams.push(stream)
-            init?.onIncomingStream?.(stream)
+            if (activeStreams.length >= config.maxInboundStreams) {
+              log(`too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`)
+              // We've reached our limit, close this stream.
+              wtStream.writable.close().catch((err: Error) => {
+                log.error(`failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
+              })
+              wtStream.readable.cancel().catch((err: Error) => {
+                log.error(`failed to close inbound stream that crossed our maxInboundStream limit: ${err.message}`)
+              })
+            } else {
+              const stream = await webtransportBiDiStreamToStream(
+                wtStream,
+                String(streamIDCounter++),
+                'inbound',
+                activeStreams,
+                init?.onStreamEnd,
+                logger
+              )
+              activeStreams.push(stream)
+              init?.onIncomingStream?.(stream)
+            }
           }
-        }
-      })
+        })
+        .catch(err => {
+          log.error('could not create a new stream', err)
+        })
 
       const muxer: StreamMuxer = {
         protocol: 'webtransport',
@@ -74,7 +78,12 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
          */
         close: async () => {
           log('closing webtransport muxer gracefully')
-          wt.close()
+
+          try {
+            wt.close()
+          } catch (err: any) {
+            muxer.abort(err)
+          }
         },
 
         /**
@@ -82,7 +91,12 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
          */
         abort: (err: Error) => {
           log('closing webtransport muxer with err:', err)
-          wt.close()
+
+          try {
+            wt.close()
+          } catch (err: any) {
+            log.error('webtransport session threw error during close', err)
+          }
         },
 
         // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
