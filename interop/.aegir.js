@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
 import http from 'http'
-import { pEvent } from 'p-event'
 import { createClient } from 'redis'
+import { createRelay } from './relay.js'
 
 const redisAddr = process.env.redis_addr || 'redis:6379'
 const transport = process.env.transport
@@ -17,8 +16,6 @@ export default {
       }
     },
     async before () {
-      const { createRelay } = await import('./dist/test/fixtures/relay.js')
-
       let relayNode = { stop: () => {} }
       let relayAddr = ''
       if (transport === 'webrtc' && !isDialer) {
@@ -34,14 +31,9 @@ export default {
       const redisClient = createClient({
         url: `redis://${redisAddr}`
       })
-      redisClient.on('error', (err) => {
-        console.error('Redis client error:', err)
-      })
-
-      let start = Date.now()
-      console.error('connect redis client')
+      // eslint-disable-next-line no-console
+      redisClient.on('error', (err) => console.error(`Redis Client Error: ${err}`))
       await redisClient.connect()
-      console.error('connected redis client after', Date.now() - start, 'ms')
 
       const requestListener = async function (req, res) {
         const requestJSON = await new Promise(resolve => {
@@ -57,18 +49,8 @@ export default {
 
         try {
           const redisRes = await redisClient.sendCommand(requestJSON)
-
-          if (redisRes == null) {
-            console.error('Redis failure - sent', requestJSON, 'received', redisRes)
-
-            res.writeHead(500, {
-              'Access-Control-Allow-Origin': '*'
-            })
-            res.end(JSON.stringify({
-              message: 'Redis sent back null'
-            }))
-
-            return
+          if (redisRes === null) {
+            throw new Error('redis sent back null')
           }
 
           res.writeHead(200, {
@@ -85,16 +67,8 @@ export default {
         }
       }
 
-      start = Date.now()
-      console.error('start proxy server')
       const proxyServer = http.createServer(requestListener)
-      proxyServer.listen(0)
-
-      await pEvent(proxyServer, 'listening', {
-        signal: AbortSignal.timeout(5000)
-      })
-
-      console.error('redis proxy is listening on port', proxyServer.address().port, 'after', Date.now() - start, 'ms')
+      await new Promise(resolve => { proxyServer.listen(0, () => { resolve() }) })
 
       return {
         redisClient,
@@ -102,8 +76,8 @@ export default {
         proxyServer,
         env: {
           ...process.env,
-          RELAY_ADDR: relayAddr,
-          REDIS_PROXY_PORT: proxyServer.address().port
+          relayAddr,
+          proxyPort: proxyServer.address().port
         }
       }
     },

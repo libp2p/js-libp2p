@@ -5,9 +5,8 @@ import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { createLibp2p } from 'libp2p'
-import type { Libp2p } from '@libp2p/interface'
 
-export async function createRelay (): Promise<Libp2p> {
+export async function createRelay () {
   const server = await createLibp2p({
     addresses: {
       listen: ['/ip4/0.0.0.0/tcp/0/ws']
@@ -29,6 +28,5 @@ export async function createRelay (): Promise<Libp2p> {
       })
     }
   })
-
   return server
 }
