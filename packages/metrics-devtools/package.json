@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/devtools-metrics",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Collect libp2p metrics and send them to browser DevTools",
   "author": "",
   "license": "Apache-2.0 OR MIT",
