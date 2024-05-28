@@ -111,6 +111,47 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.0.33](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.32...webrtc-v4.0.33) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/interface-internal bumped from ^1.2.1 to ^1.2.2
+    * @libp2p/peer-id bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/utils bumped from ^5.4.1 to ^5.4.2
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.23 to ^1.0.24
+    * @libp2p/interface-compliance-tests bumped from ^5.4.4 to ^5.4.5
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/peer-id-factory bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/websockets bumped from ^8.0.23 to ^8.0.24
+    * libp2p bumped from ^1.5.2 to ^1.6.0
+
+## [4.0.32](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.31...webrtc-v4.0.32) (2024-05-14)
+
+
+### Dependencies
+
+* bump node-datachannel from 0.8.0 to 0.9.0 ([#2532](https://github.com/libp2p/js-libp2p/issues/2532)) ([d9366f9](https://github.com/libp2p/js-libp2p/commit/d9366f9aa1c88e3fc4ba281307dc11266a9e388b))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.2.0 to ^1.2.1
+    * @libp2p/utils bumped from ^5.4.0 to ^5.4.1
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.22 to ^1.0.23
+    * @libp2p/interface-compliance-tests bumped from ^5.4.3 to ^5.4.4
+    * @libp2p/websockets bumped from ^8.0.22 to ^8.0.23
+    * libp2p bumped from ^1.5.1 to ^1.5.2
+
 ## [4.0.31](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.30...webrtc-v4.0.31) (2024-05-01)
 
 

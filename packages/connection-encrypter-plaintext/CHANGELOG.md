@@ -72,6 +72,35 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.24](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.23...plaintext-v1.0.24) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/peer-id bumped from ^4.1.1 to ^4.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.4 to ^5.4.5
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/peer-id-factory bumped from ^4.1.1 to ^4.1.2
+
+## [1.0.23](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.22...plaintext-v1.0.23) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.3 to ^5.4.4
+
 ## [1.0.22](https://github.com/libp2p/js-libp2p/compare/plaintext-v1.0.21...plaintext-v1.0.22) (2024-05-01)
 
 

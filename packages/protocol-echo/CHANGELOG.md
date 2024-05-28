@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.0.7](https://github.com/libp2p/js-libp2p/compare/echo-v1.0.6...echo-v1.0.7) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/interface-internal bumped from ^1.2.1 to ^1.2.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+
+## [1.0.6](https://github.com/libp2p/js-libp2p/compare/echo-v1.0.5...echo-v1.0.6) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^1.2.0 to ^1.2.1
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p/compare/echo-v1.0.4...echo-v1.0.5) (2024-05-01)
 
 

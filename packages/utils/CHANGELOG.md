@@ -36,6 +36,34 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.4.2](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.1...utils-v5.4.2) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.1 to ^4.1.2
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.1 to ^4.1.2
+
+## [5.4.1](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.0...utils-v5.4.1) (2024-05-14)
+
+
+### Bug Fixes
+
+* prune connections based on stream counts and direction ([#2521](https://github.com/libp2p/js-libp2p/issues/2521)) ([8e36fc5](https://github.com/libp2p/js-libp2p/commit/8e36fc5094c69083989650ccf3dfff001e5b0034))
+* time out DHT network requests separately from query ([#2524](https://github.com/libp2p/js-libp2p/issues/2524)) ([bfa7660](https://github.com/libp2p/js-libp2p/commit/bfa7660d5f91d1b9bf4a6859d4567d3613404de2))
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
 ## [5.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v5.3.2...utils-v5.4.0) (2024-05-01)
 
 
