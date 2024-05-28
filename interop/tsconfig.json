@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../packages/interface"
+    },
+    {
       "path": "../packages/libp2p"
     },
     {
