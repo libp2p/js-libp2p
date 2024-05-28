@@ -5,8 +5,11 @@ import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+export const MINIMUM_AGE = 5000
+
 interface ConnectionPrunerInit {
   maxConnections?: number
+  minimumAge?: number
   allow?: Multiaddr[]
 }
 
@@ -19,7 +22,8 @@ interface ConnectionPrunerComponents {
 
 const defaultOptions = {
   maxConnections: MAX_CONNECTIONS,
-  allow: []
+  allow: [],
+  minimumAge: MINIMUM_AGE
 }
 
 /**
@@ -27,6 +31,7 @@ const defaultOptions = {
  */
 export class ConnectionPruner {
   private readonly maxConnections: number
+  private readonly minimumAge: number
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly allow: Multiaddr[]
@@ -35,6 +40,7 @@ export class ConnectionPruner {
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
+    this.minimumAge = init.minimumAge ?? defaultOptions.minimumAge
     this.allow = init.allow ?? defaultOptions.allow
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
@@ -58,7 +64,7 @@ export class ConnectionPruner {
     const connections = this.connectionManager.getConnections()
     const numConnections = connections.length
 
-    this.log('checking max connections limit %d/%d', numConnections, this.maxConnections)
+    this.log.trace('checking max connections limit %d/%d', numConnections, this.maxConnections)
 
     if (numConnections <= this.maxConnections) {
       return
@@ -90,14 +96,18 @@ export class ConnectionPruner {
       }
     }
 
+    const minimumAge = Date.now() - this.minimumAge
     const sortedConnections = this.sortConnections(connections, peerValues)
+      .filter(conn => {
+        return conn.timeline.open < minimumAge
+      })
 
     // close some connections
     const toPrune = Math.max(numConnections - this.maxConnections, 0)
     const toClose = []
 
     for (const connection of sortedConnections) {
-      this.log('too many connections open - closing a connection to %p', connection.remotePeer)
+      this.log('too many connections open - closing a connection to %p - direction %s, age %d, streams %d', connection.remotePeer, connection.direction, Date.now() - connection.timeline.open, connection.streams.length)
       // check allow list
       const connectionInAllowList = this.allow.some((ma) => {
         return connection.remoteAddr.toString().startsWith(ma.toString())

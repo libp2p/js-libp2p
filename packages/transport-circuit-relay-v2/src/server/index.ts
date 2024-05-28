@@ -14,7 +14,6 @@ import {
 } from '../constants.js'
 import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
-import { AdvertService, type AdvertServiceComponents, type AdvertServiceInit } from './advert-service.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
@@ -30,12 +29,6 @@ export interface CircuitRelayServerInit {
    * the stream will be reset (default: 30s)
    */
   hopTimeout?: number
-
-  /**
-   * If true, advertise this service via libp2p content routing to allow
-   * peers to locate us on the network (default: false)
-   */
-  advertise?: boolean | AdvertServiceInit
 
   /**
    * Configuration of reservations
@@ -70,7 +63,7 @@ export interface StopOptions {
   request: StopMessage
 }
 
-export interface CircuitRelayServerComponents extends AdvertServiceComponents {
+export interface CircuitRelayServerComponents {
   registrar: Registrar
   peerStore: PeerStore
   addressManager: AddressManager
@@ -98,7 +91,6 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   private readonly connectionManager: ConnectionManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
-  private readonly advertService: AdvertService | undefined
   private started: boolean
   private readonly hopTimeout: number
   private readonly shutdownController: AbortController
@@ -122,24 +114,13 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.connectionGater = components.connectionGater
     this.started = false
     this.hopTimeout = init?.hopTimeout ?? DEFAULT_HOP_TIMEOUT
-    this.shutdownController = new AbortController()
     this.maxInboundHopStreams = init.maxInboundHopStreams
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-
-    setMaxListeners(Infinity, this.shutdownController.signal)
-
-    if (init.advertise != null && init.advertise !== false) {
-      this.advertService = new AdvertService(components, init.advertise === true ? undefined : init.advertise)
-      this.advertService.addEventListener('advert:success', () => {
-        this.safeDispatchEvent('relay:advert:success', {})
-      })
-      this.advertService.addEventListener('advert:error', (evt) => {
-        this.safeDispatchEvent('relay:advert:error', { detail: evt.detail })
-      })
-    }
-
     this.reservationStore = new ReservationStore(init.reservations)
+
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
   isStarted (): boolean {
@@ -153,9 +134,6 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     if (this.started) {
       return
     }
-
-    // Advertise service if HOP enabled and advertising enabled
-    this.advertService?.start()
 
     await this.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
       void this.onHop(data).catch(err => {
@@ -176,7 +154,6 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
    * Stop Relay service
    */
   async stop (): Promise<void> {
-    this.advertService?.stop()
     this.reservationStore.stop()
     this.shutdownController.abort()
     await this.registrar.unhandle(RELAY_V2_HOP_CODEC)
