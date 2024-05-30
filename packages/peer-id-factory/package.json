@@ -66,7 +66,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^42.2.11",
+    "aegir": "^43.0.0",
     "multiformats": "^13.1.0",
     "protons": "^7.5.0"
   },

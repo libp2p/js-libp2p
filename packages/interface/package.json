@@ -56,7 +56,7 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^42.2.11"
+    "aegir": "^43.0.0"
   },
   "browser": {
     "events": "./dist/src/events.browser.js"

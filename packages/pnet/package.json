@@ -67,7 +67,7 @@
     "@libp2p/peer-id-factory": "^4.1.1",
     "@multiformats/multiaddr": "^12.2.3",
     "@types/xsalsa20": "^1.1.3",
-    "aegir": "^42.2.11",
+    "aegir": "^43.0.0",
     "it-all": "^3.0.6"
   },
   "sideEffects": false
