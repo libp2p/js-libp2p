@@ -70,12 +70,8 @@ export default {
       }
     },
     after: async (_, before) => {
-      try {
-        await before.libp2p.stop()
-        await before.goLibp2pRelay.proc.kill()
-      } catch {
-        // go-libp2p daemon throws when killed
-      }
+      await before.libp2p.stop()
+      await before.goLibp2pRelay.proc.kill()
     }
   }
 }
@@ -100,6 +96,9 @@ async function createGoLibp2pRelay () {
     env: {
       GOLOG_LOG_LEVEL: 'debug'
     }
+  })
+  proc.catch(() => {
+    // go-libp2p daemon throws when killed
   })
 
   proc.stdout?.on('data', (buf) => {
