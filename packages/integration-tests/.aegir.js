@@ -1,18 +1,4 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { createClient } from '@libp2p/daemon-client'
-import { echo } from '@libp2p/echo'
-import { identify } from '@libp2p/identify'
-import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
-import { WebSockets } from '@multiformats/mafmt'
-import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
-import { path as p2pd } from 'go-libp2p'
-import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 
 /** @type {import('aegir').PartialOptions} */
@@ -22,6 +8,19 @@ export default {
   },
   test: {
     before: async () => {
+      // use dynamic import because we only want to reference these files during the test run, e.g. after building
+      const { webSockets } = await import('@libp2p/websockets')
+      const { mplex } = await import('@libp2p/mplex')
+      const { noise } = await import('@chainsafe/libp2p-noise')
+      const { createEd25519PeerId } = await import('@libp2p/peer-id-factory')
+      const { yamux } = await import('@chainsafe/libp2p-yamux')
+      const { WebSockets } = await import('@multiformats/mafmt')
+      const { createLibp2p } = await import('libp2p')
+      const { plaintext } = await import('@libp2p/plaintext')
+      const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
+      const { identify } = await import('@libp2p/identify')
+      const { echo } = await import('@libp2p/echo')
+
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
         connectionManager: {
@@ -78,6 +77,10 @@ export default {
 }
 
 async function createGoLibp2pRelay () {
+  const { multiaddr } = await import('@multiformats/multiaddr')
+  const { path: p2pd } = await import('go-libp2p')
+  const { createClient } = await import('@libp2p/daemon-client')
+
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
   const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
   const deferred = pDefer()
