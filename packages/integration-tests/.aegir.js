@@ -70,8 +70,12 @@ export default {
       }
     },
     after: async (_, before) => {
-      await before.libp2p.stop()
-      await before.goLibp2pRelay.proc.kill()
+      try {
+        await before.libp2p.stop()
+        await before.goLibp2pRelay.proc.kill()
+      } catch {
+        // go-libp2p daemon throws when killed
+      }
     }
   }
 }
