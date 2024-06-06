@@ -35,9 +35,11 @@
  * ```
  */
 
-import { UPnPNAT } from './upnp-nat.js'
+import { UPnPNAT as UPnPNATClass, type NatAPI, type MapPortOptions } from './upnp-nat.js'
 import type { ComponentLogger, NodeInfo, PeerId } from '@libp2p/interface'
 import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
+
+export type { NatAPI, MapPortOptions }
 
 export interface PMPOptions {
   /**
@@ -86,8 +88,12 @@ export interface UPnPNATComponents {
   addressManager: AddressManager
 }
 
-export function uPnPNAT (init: UPnPNATInit = {}): (components: UPnPNATComponents) => unknown {
+export interface UPnPNAT {
+  client: NatAPI
+}
+
+export function uPnPNAT (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {
   return (components: UPnPNATComponents) => {
-    return new UPnPNAT(components, init)
+    return new UPnPNATClass(components, init)
   }
 }

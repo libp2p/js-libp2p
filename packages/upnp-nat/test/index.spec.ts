@@ -39,9 +39,7 @@ describe('UPnP NAT (TCP)', () => {
 
     client = stubInterface<NatAPI>()
 
-    natManager._getClient = () => {
-      return client
-    }
+    natManager.client = client
 
     teardown.push(async () => {
       await stop(natManager)
