@@ -76,6 +76,15 @@ export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1P
   })
 }
 
+export function exportToJSON(peerId, excludePrivateKey) {
+    const obj = PeerIdProto.decode(exportToProtobuf(peerId));
+    return {
+        id: uint8ArrayToString(obj.id, 'base58btc'),
+        pubKey: uint8ArrayToString(obj.pubKey, 'base64pad'),
+        privKey: excludePrivateKey === true ? undefined : uint8ArrayToString(obj.privKey, 'base64pad'),
+    };
+}
+
 export async function createFromProtobuf (buf: Uint8Array): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   const {
     id,
