@@ -24,6 +24,7 @@
 import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString} from 'uint8arrays/to-string'
 import { PeerIdProto } from './proto.js'
 import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, KeyType } from '@libp2p/interface'
 
