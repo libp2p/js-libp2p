@@ -14,7 +14,7 @@ import { webTransport } from '@libp2p/webtransport'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebTransport } from '@multiformats/multiaddr-matcher'
 import { createLibp2p } from 'libp2p'
-import { hasRelay } from './fixtures/utils.js'
+import { hasRelay, isFirefox } from './fixtures/utils.js'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('circuit-relay discovery', () => {
@@ -72,6 +72,11 @@ describe('circuit-relay discovery', () => {
 
   it('should reserve slot on go relay via WebTransport', async function () {
     if (globalThis.WebTransport == null) {
+      return this.skip()
+    }
+
+    if (isFirefox) {
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1899812
       return this.skip()
     }
 
