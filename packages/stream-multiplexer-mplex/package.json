@@ -74,7 +74,7 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.5",
     "@libp2p/logger": "^4.0.13",
-    "aegir": "^42.2.11",
+    "aegir": "^43.0.1",
     "benchmark": "^2.1.4",
     "cborg": "^4.2.0",
     "delay": "^6.0.0",

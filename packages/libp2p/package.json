@@ -120,7 +120,7 @@
     "@libp2p/tcp": "^9.0.26",
     "@libp2p/websockets": "^8.0.24",
     "@multiformats/mafmt": "^12.1.6",
-    "aegir": "^42.2.11",
+    "aegir": "^43.0.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
