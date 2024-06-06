@@ -259,7 +259,7 @@ const node = await createLibp2p({
   addresses: {
     listen: [
       '/ip4/0.0.0.0/tcp/9001/ws',
-      '/ip4/0.0.0.0/tcp/9002/',
+      '/ip4/0.0.0.0/tcp/9002',
     ],
   },
   transports: [
