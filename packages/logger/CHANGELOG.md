@@ -21,6 +21,23 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [4.0.13](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.12...logger-v4.0.13) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^4.1.1 to ^4.1.2
+
 ## [4.0.12](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.11...logger-v4.0.12) (2024-05-01)
 
 

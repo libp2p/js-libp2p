@@ -24,8 +24,8 @@ repo and examine the changes made.
 
 -->
 
-Stores metrics in memory and periodically invokes a configured callback
-to receive them.
+Stores metrics in memory and periodically invokes a configured callback to
+receive them.
 
 ## Example
 

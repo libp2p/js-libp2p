@@ -32,7 +32,7 @@ A second function, `identifyPush` is also exported to add support for [identify/
 
 This protocol will send updates to all connected peers when the multiaddrs or protocols of the current node change.
 
-> [!TIP]
+> \[!TIP]
 > For maximum network compatibility you should configure both protocols
 
 ## Example - Enabling identify
