@@ -44,7 +44,7 @@
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { webSockets } from '@libp2p/websockets'
- * import filters from '@libp2p/websockets/filters'
+ * import * as filters from '@libp2p/websockets/filters'
  *
  * const node = await createLibp2p({
  *   transports: [
