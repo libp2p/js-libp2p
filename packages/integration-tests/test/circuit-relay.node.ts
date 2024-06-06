@@ -1086,8 +1086,9 @@ describe('circuit-relay', () => {
 
       await local.dial(ma)
 
-      const connection = remote.getConnections(local.peerId)[0]
-      expect(connection).to.have.property('transient', false)
+      const connections = remote.getConnections(local.peerId)
+      expect(connections).to.have.lengthOf(1)
+      expect(connections).to.have.nested.property('[0].transient', false)
     })
   })
 })
