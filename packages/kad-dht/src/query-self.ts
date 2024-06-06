@@ -106,10 +106,11 @@ export class QuerySelf implements Startable {
 
     if (this.started) {
       this.controller = new AbortController()
-      const signal = anySignal([this.controller.signal, AbortSignal.timeout(this.queryTimeout)])
+      const timeoutSignal = AbortSignal.timeout(this.queryTimeout)
+      const signal = anySignal([this.controller.signal, timeoutSignal])
 
       // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      setMaxListeners(Infinity, signal)
+      setMaxListeners(Infinity, signal, this.controller.signal, timeoutSignal)
 
       try {
         if (this.routingTable.size === 0) {

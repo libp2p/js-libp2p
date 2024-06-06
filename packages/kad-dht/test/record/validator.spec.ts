@@ -2,9 +2,9 @@
 /* eslint-env mocha */
 
 import { generateKeyPair, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Libp2pRecord } from '../../src/record/index.js'
 import * as validator from '../../src/record/validators.js'
 import * as fixture from '../fixtures/record/go-key-records.js'
 import type { Validators } from '../../src/index.js'

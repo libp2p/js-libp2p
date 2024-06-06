@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Upgrader } from '@libp2p/interface'
-import { isStartable } from '@libp2p/interface'
+import { TypedEventEmitter, isStartable } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
@@ -14,7 +13,8 @@ import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
-import type { AddressManager, ConnectionManager, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId
@@ -24,7 +24,7 @@ interface StubbedCircuitRelayTransportComponents {
   transportManager: StubbedInstance<TransportManager>
   upgrader: StubbedInstance<Upgrader>
   addressManager: StubbedInstance<AddressManager>
-  contentRouting: StubbedInstance<ContentRouting>
+  randomWalk: StubbedInstance<RandomWalk>
   connectionGater: StubbedInstance<ConnectionGater>
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
@@ -44,9 +44,9 @@ describe('circuit-relay stop protocol', function () {
     components = {
       addressManager: stubInterface<AddressManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
-      contentRouting: stubInterface<ContentRouting>(),
       peerId: await createEd25519PeerId(),
       peerStore: stubInterface<PeerStore>(),
+      randomWalk: stubInterface<RandomWalk>(),
       registrar: stubInterface<Registrar>(),
       transportManager: stubInterface<TransportManager>(),
       upgrader: stubInterface<Upgrader>(),

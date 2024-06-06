@@ -9,7 +9,6 @@
     { "type": "refactor", "section": "Refactors", "hidden": false }
   ],
   "packages": {
-    "interop": {},
     "packages/connection-encrypter-plaintext": {},
     "packages/connection-encrypter-tls": {},
     "packages/crypto": {},
@@ -20,7 +19,9 @@
     "packages/keychain": {},
     "packages/libp2p": {},
     "packages/logger": {},
+    "packages/metrics-devtools": {},
     "packages/metrics-prometheus": {},
+    "packages/metrics-simple": {},
     "packages/multistream-select": {},
     "packages/peer-collections": {},
     "packages/peer-discovery-bootstrap": {},
@@ -38,6 +39,7 @@
     "packages/protocol-ping": {},
     "packages/pubsub": {},
     "packages/pubsub-floodsub": {},
+    "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
     "packages/transport-circuit-relay-v2": {},
     "packages/transport-tcp": {},

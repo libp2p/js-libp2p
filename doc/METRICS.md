@@ -13,7 +13,7 @@ Metrics allow you to gather run time statistics on your libp2p node.
 ## Overview
 
 - Metrics gathering is optional, as there is a performance hit to using it
-- See the [API](./API.md) for Metrics usage. Metrics in libp2p do not emit events, as such applications wishing to read Metrics will need to do so actively. This ensures that the system is not unnecessarily firing update notifications.
+- See the [API](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md) for Metrics usage. Metrics in libp2p do not emit events, as such applications wishing to read Metrics will need to do so actively. This ensures that the system is not unnecessarily firing update notifications.
 - For large installations you may wish to combine the statistics with a visualizer such as [Graphana](https://grafana.com/)
 
 Although designed to primarily integrate with tools such as [Prometheus](https://prometheus.io/) it does not introduce any dependencies that require you to use any particular tool to store or graph metrics.

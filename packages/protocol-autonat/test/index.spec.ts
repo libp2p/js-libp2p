@@ -437,7 +437,7 @@ describe('autonat', () => {
       }
 
       // we might support this transport
-      transportManager.transportForMultiaddr.withArgs(observedAddress)
+      transportManager.dialTransportForMultiaddr.withArgs(observedAddress)
         .returns(opts.transportSupported === false ? undefined : stubInterface<Transport>())
 
       // we might open a new connection

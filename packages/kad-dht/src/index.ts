@@ -86,11 +86,12 @@ import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughM
 import type { ProvidersInit } from './providers.js'
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent } from 'progress-events'
 
-export { Libp2pRecord as Record } from './record/index.js'
+export { Libp2pRecord as Record } from '@libp2p/record'
 export { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper }
 
 /**
@@ -300,11 +301,41 @@ export type Validators = Record<string, ValidateFn>
 
 export interface KadDHTInit {
   /**
-   * How many peers to store in each kBucket
+   * How many peers to store in each kBucket. Once there are more than this
+   * number of peers for a given prefix in a kBucket, the node will start to
+   * ping existing peers to see if they are still online - if they are offline
+   * they will be evicted and the new peer added.
    *
    * @default 20
    */
   kBucketSize?: number
+
+  /**
+   * The threshold at which a kBucket will be split into two smaller kBuckets.
+   *
+   * KBuckets will not be split once the maximum trie depth is reached
+   * (controlled by the `prefixLength` option) so one can replicate go-libp2p's
+   * accelerated DHT client by (for example) setting `kBucketSize` to `Infinity`
+   * and `kBucketSplitThreshold` to 20.
+   *
+   * @default kBucketSize
+   */
+  kBucketSplitThreshold?: number
+
+  /**
+   * How many bits of the KAD-ID of peers to use when creating the routing
+   * table.
+   *
+   * The routing table is a binary trie with peers stored in the leaf nodes. The
+   * larger this number gets, the taller the trie can grow and the more peers
+   * can be stored.
+   *
+   * Storing more peers means fewer lookups (and network operations) are needed
+   * to locate a certain peer, but also that more memory is consumed.
+   *
+   * @default 32
+   */
+  prefixLength?: number
 
   /**
    * If true, only ever be a DHT client. If false, be a DHT client until told
@@ -405,6 +436,11 @@ export interface KadDHTInit {
    * with this filter.
    */
   peerInfoMapper?(peer: PeerInfo): PeerInfo
+
+  /**
+   * Dynamic network timeout settings for sending messages to peers
+   */
+  networkDialTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 }
 
 export interface KadDHTComponents {

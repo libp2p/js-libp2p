@@ -44,19 +44,17 @@ export class FindNodeHandler implements DHTMessageHandler {
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
     this.log('incoming request from %p for peers closer to %b', peerId, msg.key)
 
-    let closer: PeerInfo[] = []
-
     if (msg.key == null) {
       throw new CodeError('Invalid FIND_NODE message received - key was missing', 'ERR_INVALID_MESSAGE')
     }
 
+    const closer: PeerInfo[] = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+
     if (uint8ArrayEquals(this.peerId.toBytes(), msg.key)) {
-      closer = [{
+      closer.push({
         id: this.peerId,
         multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
-      }]
-    } else {
-      closer = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+      })
     }
 
     const response: Message = {

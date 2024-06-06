@@ -52,7 +52,7 @@ At the time of writing, WebRTC Direct is dial-only in browsers and not supported
 
 Support in Node.js is possible but PRs will need to be opened to [libdatachannel](https://github.com/paullouisageneau/libdatachannel) and the appropriate APIs exposed in [node-datachannel](https://github.com/murat-dogan/node-datachannel).
 
-For both WebRTC and WebRTC Direct, support is arriving soon in go-libp2p but they are unsupported in rust-libp2p.
+WebRTC Direct support is available in rust-libp2p and arriving soon in go-libp2p.
 
 See the WebRTC section of <https://connectivity.libp2p.io> for more information.
 
@@ -134,7 +134,7 @@ while (true) {
   await delay(1000)
 }
 
-// the listener has Circuit Relay, WebSocket and WebRTC transports to dial
+// the dialer has Circuit Relay, WebSocket and WebRTC transports to dial
 // the listener via the relay, complete the SDP handshake and establish a
 // direct WebRTC connection
 const dialer = await createLibp2p({
@@ -235,8 +235,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-webrtc/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-webrtc/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

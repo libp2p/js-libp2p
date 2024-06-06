@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface'
-import { Libp2pRecord } from '../../record/index.js'
+import { Libp2pRecord } from '@libp2p/record'
 import { verifyRecord } from '../../record/validators.js'
 import { bufferToRecordKey } from '../../utils.js'
 import type { Validators } from '../../index.js'

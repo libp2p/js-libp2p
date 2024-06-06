@@ -1,24 +1,28 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { anySignal } from 'any-signal'
+import { raceSignal } from 'race-signal'
 import {
-  RELAY_RENDEZVOUS_NS,
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
-import { namespaceToCid } from '../utils.js'
-import type { ComponentLogger, Logger, ContentRouting, PeerId, PeerStore, Startable } from '@libp2p/interface'
-import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { ComponentLogger, Logger, PeerId, PeerStore, Startable, TopologyFilter } from '@libp2p/interface'
+import type { ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface RelayDiscoveryEvents {
   'relay:discover': CustomEvent<PeerId>
 }
 
 export interface RelayDiscoveryComponents {
-  peerId: PeerId
   peerStore: PeerStore
   connectionManager: ConnectionManager
   transportManager: TransportManager
-  contentRouting: ContentRouting
   registrar: Registrar
   logger: ComponentLogger
+  randomWalk: RandomWalk
+}
+
+export interface RelayDiscoveryInit {
+  filter?: TopologyFilter
 }
 
 /**
@@ -26,23 +30,30 @@ export interface RelayDiscoveryComponents {
  * peers that support the circuit v2 HOP protocol.
  */
 export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> implements Startable {
-  private readonly peerId: PeerId
   private readonly peerStore: PeerStore
-  private readonly contentRouting: ContentRouting
   private readonly registrar: Registrar
+  private readonly connectionManager: ConnectionManager
+  private readonly randomWalk: RandomWalk
   private started: boolean
+  private running: boolean
   private topologyId?: string
   private readonly log: Logger
+  private discoveryController: AbortController
+  private readonly filter?: TopologyFilter
 
-  constructor (components: RelayDiscoveryComponents) {
+  constructor (components: RelayDiscoveryComponents, init: RelayDiscoveryInit = {}) {
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:discover-relays')
     this.started = false
-    this.peerId = components.peerId
+    this.running = false
     this.peerStore = components.peerStore
-    this.contentRouting = components.contentRouting
     this.registrar = components.registrar
+    this.connectionManager = components.connectionManager
+    this.randomWalk = components.randomWalk
+    this.filter = init.filter
+    this.discoveryController = new AbortController()
+    setMaxListeners(Infinity, this.discoveryController.signal)
   }
 
   isStarted (): boolean {
@@ -53,8 +64,9 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     // register a topology listener for when new peers are encountered
     // that support the hop protocol
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
-      notifyOnTransient: true,
+      filter: this.filter,
       onConnect: (peerId) => {
+        this.log('discovered relay %p', peerId)
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }
     })
@@ -62,18 +74,12 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     this.started = true
   }
 
-  afterStart (): void {
-    void this.discover()
-      .catch(err => {
-        this.log.error('error discovering relays', err)
-      })
-  }
-
   stop (): void {
     if (this.topologyId != null) {
       this.registrar.unregister(this.topologyId)
     }
 
+    this.discoveryController?.abort()
     this.started = false
   }
 
@@ -81,54 +87,113 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
    * Try to listen on available hop relay connections.
    * The following order will happen while we do not have enough relays:
    *
-   * 1. Check the metadata store for known relays, try to listen on the ones we are already connected
+   * 1. Check the metadata store for known relays, try to listen on the ones we are already connected to
    * 2. Dial and try to listen on the peers we know that support hop but are not connected
    * 3. Search the network
    */
-  async discover (): Promise<void> {
-    this.log('searching peer store for relays')
-    const peers = (await this.peerStore.all({
-      filters: [
-        // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
-        (peer) => {
-          return peer.protocols.includes(RELAY_V2_HOP_CODEC)
-        }
-      ],
-      orders: [
-        () => Math.random() < 0.5 ? 1 : -1
-      ]
-    }))
-
-    for (const peer of peers) {
-      this.log('found relay peer %p in content peer store', peer.id)
-      this.safeDispatchEvent('relay:discover', { detail: peer.id })
+  startDiscovery (): void {
+    if (this.running) {
+      return
     }
 
-    this.log('found %d relay peers in peer store', peers.length)
+    this.log('start discovery')
+    this.running = true
+    this.discoveryController = new AbortController()
+    setMaxListeners(Infinity, this.discoveryController.signal)
 
-    try {
-      this.log('searching content routing for relays')
-      const cid = await namespaceToCid(RELAY_RENDEZVOUS_NS)
+    Promise.resolve()
+      .then(async () => {
+        this.log('searching peer store for relays')
 
-      let found = 0
+        const peers = (await this.peerStore.all({
+          filters: [
+            // filter by a list of peers supporting RELAY_V2_HOP and ones we are not listening on
+            (peer) => {
+              return peer.protocols.includes(RELAY_V2_HOP_CODEC)
+            }
+          ],
+          orders: [
+            () => Math.random() < 0.5 ? 1 : -1
+          ]
+        }))
 
-      for await (const provider of this.contentRouting.findProviders(cid)) {
-        if (provider.multiaddrs.length > 0 && !provider.id.equals(this.peerId)) {
-          const peerId = provider.id
+        for (const peer of peers) {
+          this.log.trace('found relay peer %p in peer store', peer.id)
+          this.safeDispatchEvent('relay:discover', { detail: peer.id })
+        }
 
-          found++
-          await this.peerStore.merge(peerId, {
-            multiaddrs: provider.multiaddrs
+        this.log('found %d relay peers in peer store', peers.length)
+
+        // perform random walk and dial peers - after identify has run, the network
+        // topology will be notified of new relays
+        const queue = new PeerQueue({
+          concurrency: 5
+        })
+
+        this.log('start random walk')
+        for await (const peer of this.randomWalk.walk({ signal: this.discoveryController.signal })) {
+          this.log.trace('found random peer %p', peer.id)
+
+          if (queue.has(peer.id)) {
+            this.log.trace('random peer %p was already in queue', peer.id)
+
+            // skip peers already in the queue
+            continue
+          }
+
+          if (this.connectionManager.getConnections(peer.id)?.length > 0) {
+            this.log.trace('random peer %p was already connected', peer.id)
+
+            // skip peers we are already connected to
+            continue
+          }
+
+          if (!(await this.connectionManager.isDialable(peer.multiaddrs))) {
+            this.log.trace('random peer %p was not dialable', peer.id, peer.multiaddrs.map(ma => ma.toString()))
+
+            // skip peers we can't dial
+            continue
+          }
+
+          this.log.trace('wait for space in queue for %p', peer.id)
+
+          // pause the random walk until there is space in the queue
+          await raceSignal(queue.onSizeLessThan(10), this.discoveryController.signal)
+
+          this.log('adding random peer %p to dial queue (length: %d)', peer.id, queue.size)
+
+          // dial the peer - this will cause identify to run and our topology to
+          // be notified and we'll attempt to create reservations
+          queue.add(async () => {
+            const signal = anySignal([this.discoveryController.signal, AbortSignal.timeout(5000)])
+            setMaxListeners(Infinity, signal)
+
+            try {
+              await this.connectionManager.openConnection(peer.id, { signal })
+            } finally {
+              signal.clear()
+            }
+          }, {
+            peerId: peer.id,
+            signal: this.discoveryController.signal
           })
-
-          this.log('found relay peer %p in content routing', peerId)
-          this.safeDispatchEvent('relay:discover', { detail: peerId })
+            .catch(err => {
+              this.log.error('error opening connection to random peer %p', peer.id, err)
+            })
         }
-      }
 
-      this.log('found %d relay peers in content routing', found)
-    } catch (err: any) {
-      this.log.error('failed when finding relays on the network', err)
-    }
+        await queue.onIdle()
+      })
+      .catch(err => {
+        if (!this.discoveryController.signal.aborted) {
+          this.log.error('failed when finding relays on the network', err)
+        }
+      })
+  }
+
+  stopDiscovery (): void {
+    this.log('stop discovery')
+    this.running = false
+    this.discoveryController?.abort()
   }
 }

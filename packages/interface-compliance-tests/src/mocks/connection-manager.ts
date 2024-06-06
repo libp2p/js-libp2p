@@ -199,6 +199,10 @@ class MockConnectionManager implements ConnectionManager, Startable {
   getDialQueue (): PendingDial[] {
     return []
   }
+
+  async isDialable (): Promise<boolean> {
+    return true
+  }
 }
 
 export function mockConnectionManager (components: MockConnectionManagerComponents): ConnectionManager {

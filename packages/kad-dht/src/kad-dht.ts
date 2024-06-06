@@ -1,4 +1,4 @@
-import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
+import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
@@ -379,16 +379,15 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     // Only respond to queries when not in client mode
     await this.setMode(this.clientMode ? 'client' : 'server')
 
-    this.querySelf.start()
-
-    await Promise.all([
-      this.providers.start(),
-      this.queryManager.start(),
-      this.network.start(),
-      this.routingTable.start(),
-      this.topologyListener.start(),
-      this.routingTableRefresh.start()
-    ])
+    await start(
+      this.querySelf,
+      this.providers,
+      this.queryManager,
+      this.network,
+      this.routingTable,
+      this.topologyListener,
+      this.routingTableRefresh
+    )
   }
 
   /**
@@ -398,16 +397,15 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   async stop (): Promise<void> {
     this.running = false
 
-    this.querySelf.stop()
-
-    await Promise.all([
-      this.providers.stop(),
-      this.queryManager.stop(),
-      this.network.stop(),
-      this.routingTable.stop(),
-      this.routingTableRefresh.stop(),
-      this.topologyListener.stop()
-    ])
+    await stop(
+      this.querySelf,
+      this.providers,
+      this.queryManager,
+      this.network,
+      this.routingTable,
+      this.routingTableRefresh,
+      this.topologyListener
+    )
   }
 
   /**

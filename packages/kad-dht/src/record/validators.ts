@@ -2,8 +2,8 @@ import { CodeError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Libp2pRecord } from './index.js'
 import type { Validators } from '../index.js'
+import type { Libp2pRecord } from '@libp2p/record'
 
 /**
  * Checks a record and ensures it is still valid.

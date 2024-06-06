@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "5.2.6",
+  "version": "5.4.2",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -44,9 +44,17 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./abort-options": {
+      "types": "./dist/src/abort-options.d.ts",
+      "import": "./dist/src/abort-options.js"
+    },
     "./abstract-stream": {
       "types": "./dist/src/abstract-stream.d.ts",
       "import": "./dist/src/abstract-stream.js"
+    },
+    "./adaptive-timeout": {
+      "types": "./dist/src/adaptive-timeout.d.ts",
+      "import": "./dist/src/adaptive-timeout.js"
     },
     "./address-sort": {
       "types": "./dist/src/address-sort.d.ts",
@@ -56,9 +64,17 @@
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"
     },
+    "./close": {
+      "types": "./dist/src/close.d.ts",
+      "import": "./dist/src/close.js"
+    },
     "./close-source": {
       "types": "./dist/src/close-source.d.ts",
       "import": "./dist/src/close-source.js"
+    },
+    "./filters": {
+      "types": "./dist/src/filters/index.d.ts",
+      "import": "./dist/src/filters/index.js"
     },
     "./ip-port-to-multiaddr": {
       "types": "./dist/src/ip-port-to-multiaddr.d.ts",
@@ -67,6 +83,10 @@
     "./is-promise": {
       "types": "./dist/src/is-promise.d.ts",
       "import": "./dist/src/is-promise.js"
+    },
+    "./moving-average": {
+      "types": "./dist/src/moving-average.d.ts",
+      "import": "./dist/src/moving-average.js"
     },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
@@ -79,6 +99,10 @@
     "./peer-queue": {
       "types": "./dist/src/peer-queue.d.ts",
       "import": "./dist/src/peer-queue.js"
+    },
+    "./priority-queue": {
+      "types": "./dist/src/priority-queue.d.ts",
+      "import": "./dist/src/priority-queue.js"
     },
     "./private-ip": {
       "types": "./dist/src/private-ip.d.ts",
@@ -128,33 +152,38 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
-    "@libp2p/interface": "^1.1.4",
-    "@libp2p/logger": "^4.0.7",
-    "@multiformats/multiaddr": "^12.1.14",
-    "@multiformats/multiaddr-matcher": "^1.1.2",
+    "@libp2p/crypto": "^4.1.2",
+    "@libp2p/interface": "^1.4.0",
+    "@libp2p/logger": "^4.0.13",
+    "@multiformats/multiaddr": "^12.2.3",
+    "@multiformats/multiaddr-matcher": "^1.2.1",
+    "@sindresorhus/fnv1a": "^3.1.0",
+    "@types/murmurhash3js-revisited": "^3.0.3",
+    "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.2",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
+    "murmurhash3js-revisited": "^3.0.0",
     "netmask": "^2.0.2",
-    "p-defer": "^4.0.0",
-    "race-event": "^1.2.0",
+    "p-defer": "^4.0.1",
+    "race-event": "^1.3.0",
     "race-signal": "^1.0.2",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^4.0.7",
+    "@libp2p/peer-id-factory": "^4.1.2",
     "@types/netmask": "^2.0.5",
-    "aegir": "^42.2.4",
+    "aegir": "^43.0.1",
     "delay": "^6.0.0",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
+    "it-all": "^3.0.6",
+    "it-drain": "^3.0.7",
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
-    "sinon": "^17.0.1",
-    "sinon-ts": "^2.0.0",
-    "uint8arrays": "^5.0.2"
+    "sinon": "^18.0.0",
+    "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
 }

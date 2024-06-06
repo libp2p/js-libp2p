@@ -17,7 +17,7 @@ describe('WebTransport Transport', () => {
     }
   })
 
-  it('transport filter filters out invalid multiaddrs', async () => {
+  it('transport filter filters out invalid dial multiaddrs', async () => {
     const valid = [
       multiaddr('/ip4/1.2.3.4/udp/1234/quic-v1/webtransport/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd')
     ]
@@ -28,7 +28,7 @@ describe('WebTransport Transport', () => {
 
     const t = webTransport()(components)
 
-    expect(t.filter([
+    expect(t.dialFilter([
       ...valid,
       ...invalid
     ])).to.deep.equal(valid)

@@ -4,16 +4,11 @@ import { raceEvent } from 'race-event'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 
-export interface QueueAddOptions extends AbortOptions {
-  /**
-   * Priority of operation. Operations with greater priority will be scheduled first.
-   *
-   * @default 0
-   */
-  priority?: number
+export interface Comparator<T> {
+  (a: T, b: T): -1 | 0 | 1
 }
 
-export interface QueueInit {
+export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
   /**
    * Concurrency limit.
    *
@@ -32,6 +27,11 @@ export interface QueueInit {
    * An implementation of the libp2p Metrics interface
    */
   metrics?: Metrics
+
+  /**
+   * An optional function that will sort the queue after a job has been added
+   */
+  sort?: Comparator<Job<JobOptions, JobReturnType>>
 }
 
 export type JobStatus = 'queued' | 'running' | 'errored' | 'complete'
@@ -40,39 +40,67 @@ export interface RunFunction<Options = AbortOptions, ReturnType = void> {
   (opts?: Options): Promise<ReturnType>
 }
 
-export interface JobMatcher<JobOptions extends QueueAddOptions = QueueAddOptions> {
+export interface JobMatcher<JobOptions extends AbortOptions = AbortOptions> {
   (options?: Partial<JobOptions>): boolean
 }
 
-export interface QueueEvents<JobReturnType> {
-  'active': CustomEvent
-  'idle': CustomEvent
-  'empty': CustomEvent
-  'add': CustomEvent
-  'next': CustomEvent
-  'completed': CustomEvent<JobReturnType>
-  'error': CustomEvent<Error>
+export interface QueueJobSuccess<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
+  job: Job<JobOptions, JobReturnType>
+  result: JobReturnType
 }
 
-// Port of lower_bound from https://en.cppreference.com/w/cpp/algorithm/lower_bound
-// Used to compute insertion index to keep queue sorted after insertion
-function lowerBound<T> (array: readonly T[], value: T, comparator: (a: T, b: T) => number): number {
-  let first = 0
-  let count = array.length
+export interface QueueJobFailure<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
+  job: Job<JobOptions, JobReturnType>
+  error: Error
+}
 
-  while (count > 0) {
-    const step = Math.trunc(count / 2)
-    let it = first + step
+export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = AbortOptions> {
+  /**
+   * A job is about to start running
+   */
+  'active': CustomEvent
 
-    if (comparator(array[it], value) <= 0) {
-      first = ++it
-      count -= step + 1
-    } else {
-      count = step
-    }
-  }
+  /**
+   * All jobs have finished and the queue is empty
+   */
+  'idle': CustomEvent
 
-  return first
+  /**
+   * The queue is empty, jobs may be running
+   */
+  'empty': CustomEvent
+
+  /**
+   * A job was added to the queue
+   */
+  'add': CustomEvent
+
+  /**
+   * A job has finished or failed
+   */
+  'next': CustomEvent
+
+  /**
+   * A job has finished successfully
+   */
+  'completed': CustomEvent<JobReturnType>
+
+  /**
+   * A job has failed
+   */
+  'error': CustomEvent<Error>
+
+  /**
+   * Emitted just after `"completed", a job has finished successfully - this
+   * event gives access to the job and it's result
+   */
+  'success': CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
+
+  /**
+   * Emitted just after `"error", a job has failed - this event gives access to
+   * the job and the thrown error
+   */
+  'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
 /**
@@ -81,12 +109,13 @@ function lowerBound<T> (array: readonly T[], value: T, comparator: (a: T, b: T) 
  * 1. Items remain at the head of the queue while they are running so `queue.size` includes `queue.pending` items - this is so interested parties can join the results of a queue item while it is running
  * 2. The options for a job are stored separately to the job in order for them to be modified while they are still in the queue
  */
-export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions = QueueAddOptions> extends TypedEventEmitter<QueueEvents<JobReturnType>> {
+export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
+  private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
 
-  constructor (init: QueueInit = {}) {
+  constructor (init: QueueInit<JobReturnType, JobOptions> = {}) {
     super()
 
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
@@ -104,6 +133,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
       })
     }
 
+    this.sort = init.sort
     this.queue = []
   }
 
@@ -166,16 +196,11 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
   }
 
   private enqueue (job: Job<JobOptions, JobReturnType>): void {
-    if (this.queue[this.size - 1]?.priority >= job.priority) {
-      this.queue.push(job)
-      return
-    }
+    this.queue.push(job)
 
-    const index = lowerBound(
-      this.queue, job,
-      (a: Readonly< Job<JobOptions, JobReturnType>>, b: Readonly< Job<JobOptions, JobReturnType>>) => b.priority - a.priority
-    )
-    this.queue.splice(index, 0, job)
+    if (this.sort != null) {
+      this.queue.sort(this.sort)
+    }
   }
 
   /**
@@ -184,25 +209,34 @@ export class Queue<JobReturnType = unknown, JobOptions extends QueueAddOptions =
   async add (fn: RunFunction<JobOptions, JobReturnType>, options?: JobOptions): Promise<JobReturnType> {
     options?.signal?.throwIfAborted()
 
-    const job = new Job<JobOptions, JobReturnType>(fn, options, options?.priority)
-
-    const p = job.join(options)
-      .then(result => {
-        this.safeDispatchEvent('completed', { detail: result })
-
-        return result
-      })
-      .catch(err => {
-        this.safeDispatchEvent('error', { detail: err })
-
-        throw err
-      })
-
+    const job = new Job<JobOptions, JobReturnType>(fn, options)
     this.enqueue(job)
     this.safeDispatchEvent('add')
     this.tryToStartAnother()
 
-    return p
+    return job.join(options)
+      .then(result => {
+        this.safeDispatchEvent('completed', { detail: result })
+        this.safeDispatchEvent('success', { detail: { job, result } })
+
+        return result
+      })
+      .catch(err => {
+        if (job.status === 'queued') {
+          // job was aborted before it started - remove the job from the queue
+          for (let i = 0; i < this.queue.length; i++) {
+            if (this.queue[i] === job) {
+              this.queue.splice(i, 1)
+              break
+            }
+          }
+        }
+
+        this.safeDispatchEvent('error', { detail: err })
+        this.safeDispatchEvent('failure', { detail: { job, error: err } })
+
+        throw err
+      })
   }
 
   /**

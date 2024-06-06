@@ -2,8 +2,11 @@
 
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import pDefer from 'p-defer'
-import { PeerQueue } from '../src/peer-queue.js'
+import { raceEvent } from 'race-event'
+import { PeerQueue, type PeerQueueJobOptions } from '../src/peer-queue.js'
+import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
 
 describe('peer queue', () => {
   it('should have jobs', async () => {
@@ -115,5 +118,47 @@ describe('peer queue', () => {
     expect(queue.find(peerIdA)).to.be.undefined()
 
     deferred.resolve(value)
+  })
+
+  it('emits success event', async () => {
+    const value = 'hello world'
+
+    const peerIdA = await createEd25519PeerId()
+    const queue = new PeerQueue<string>({
+      concurrency: 1
+    })
+
+    void queue.add(async () => {
+      await delay(100)
+      return value
+    }, {
+      peerId: peerIdA
+    }).catch(() => {})
+
+    const event = await raceEvent<CustomEvent<QueueJobSuccess<string, PeerQueueJobOptions>>>(queue, 'success')
+
+    expect(event.detail.job.options.peerId).to.equal(peerIdA)
+    expect(event.detail.result).to.equal(value)
+  })
+
+  it('emits failure event', async () => {
+    const err = new Error('Oh no!')
+
+    const peerIdA = await createEd25519PeerId()
+    const queue = new PeerQueue<string>({
+      concurrency: 1
+    })
+
+    void queue.add(async () => {
+      await delay(100)
+      throw err
+    }, {
+      peerId: peerIdA
+    }).catch(() => {})
+
+    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure')
+
+    expect(event.detail.job.options.peerId).to.equal(peerIdA)
+    expect(event.detail.error).to.equal(err)
   })
 })

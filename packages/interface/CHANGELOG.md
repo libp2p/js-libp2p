@@ -5,6 +5,58 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.1...interface-v1.4.0) (2024-05-17)
+
+
+### Features
+
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+## [1.3.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.0...interface-v1.3.1) (2024-05-01)
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+## [1.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.2.0...interface-v1.3.0) (2024-04-24)
+
+
+### Features
+
+* extensible peer ids ([#2496](https://github.com/libp2p/js-libp2p/issues/2496)) ([0d5d966](https://github.com/libp2p/js-libp2p/commit/0d5d966d134fab726c95fbe8fb8e21719d930ef2))
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.6...interface-v1.2.0) (2024-04-12)
+
+
+### Features
+
+* add isDialable method to libp2p ([#2479](https://github.com/libp2p/js-libp2p/issues/2479)) ([2c56203](https://github.com/libp2p/js-libp2p/commit/2c56203f9ccf4b6ed30541a871b9bd8c5a21526e))
+
+## [1.1.6](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.5...interface-v1.1.6) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+## [1.1.5](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.4...interface-v1.1.5) (2024-03-28)
+
+
+### Bug Fixes
+
+* add name property to exported interface errors ([#2446](https://github.com/libp2p/js-libp2p/issues/2446)) ([330a5ed](https://github.com/libp2p/js-libp2p/commit/330a5ed7213c6d4c777733fc6641418fbf597f82))
+
 ## [1.1.4](https://github.com/libp2p/js-libp2p/compare/interface-v1.1.3...interface-v1.1.4) (2024-02-27)
 
 

@@ -43,7 +43,6 @@ describe('Protocol prefix is configurable', () => {
     expect(peer.protocols).to.include.members([
       `/${testProtocol}/fetch/0.0.1`,
       `/${testProtocol}/id/1.0.0`,
-      `/${testProtocol}/id/push/1.0.0`,
       `/${testProtocol}/ping/1.0.0`
     ])
   })
@@ -65,7 +64,6 @@ describe('Protocol prefix is configurable', () => {
     const peer = await libp2p.peerStore.get(libp2p.peerId)
     expect(peer.protocols).to.include.members([
       '/ipfs/id/1.0.0',
-      '/ipfs/id/push/1.0.0',
       '/ipfs/ping/1.0.0',
       '/libp2p/fetch/0.0.1'
     ])

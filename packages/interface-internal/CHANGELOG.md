@@ -32,6 +32,105 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [1.2.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.2.1...interface-internal-v1.2.2) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+    * @libp2p/peer-collections bumped from ^5.2.1 to ^5.2.2
+
+## [1.2.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.2.0...interface-internal-v1.2.1) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^5.2.0 to ^5.2.1
+
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.1.1...interface-internal-v1.2.0) (2024-05-01)
+
+
+### Features
+
+* add random walk component ([#2501](https://github.com/libp2p/js-libp2p/issues/2501)) ([998fcaf](https://github.com/libp2p/js-libp2p/commit/998fcaf94889251817a3bbaaad9b654bebdf3a6e))
+
+
+### Bug Fixes
+
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-collections bumped from ^5.1.11 to ^5.2.0
+
+## [1.1.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.1.0...interface-internal-v1.1.1) (2024-04-24)
+
+
+### Documentation
+
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.2.0 to ^1.3.0
+    * @libp2p/peer-collections bumped from ^5.1.10 to ^5.1.11
+
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.11...interface-internal-v1.1.0) (2024-04-12)
+
+
+### Features
+
+* add isDialable method to libp2p ([#2479](https://github.com/libp2p/js-libp2p/issues/2479)) ([2c56203](https://github.com/libp2p/js-libp2p/commit/2c56203f9ccf4b6ed30541a871b9bd8c5a21526e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.6 to ^1.2.0
+    * @libp2p/peer-collections bumped from ^5.1.9 to ^5.1.10
+
+## [1.0.11](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.10...interface-internal-v1.0.11) (2024-04-05)
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.5 to ^1.1.6
+    * @libp2p/peer-collections bumped from ^5.1.8 to ^5.1.9
+
+## [1.0.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.9...interface-internal-v1.0.10) (2024-03-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/peer-collections bumped from ^5.1.7 to ^5.1.8
+
 ## [1.0.9](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.0.8...interface-internal-v1.0.9) (2024-02-27)
 
 

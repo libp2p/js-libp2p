@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/mplex",
-  "version": "10.0.16",
+  "version": "10.0.24",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex#readme",
@@ -62,29 +62,29 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.4",
-    "@libp2p/utils": "^5.2.6",
+    "@libp2p/interface": "^1.4.0",
+    "@libp2p/utils": "^5.4.2",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.3.2",
-    "@libp2p/logger": "^4.0.7",
-    "aegir": "^42.2.4",
+    "@libp2p/interface-compliance-tests": "^5.4.5",
+    "@libp2p/logger": "^4.0.13",
+    "aegir": "^43.0.1",
     "benchmark": "^2.1.4",
-    "cborg": "^4.0.9",
+    "cborg": "^4.2.0",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^3.0.4",
-    "it-drain": "^3.0.5",
-    "it-foreach": "^2.0.6",
-    "it-map": "^3.0.5",
+    "it-all": "^3.0.6",
+    "it-drain": "^3.0.7",
+    "it-foreach": "^2.1.0",
+    "it-map": "^3.1.0",
     "it-pair": "^2.0.6",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "random-int": "^3.0.0"
   },
   "sideEffects": false

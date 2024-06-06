@@ -57,7 +57,7 @@ describe('dial queue', () => {
       '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
     }
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.callsFake(async ma => {
       const maStr = ma.toString()
       const action = actions[maStr]
@@ -97,7 +97,7 @@ describe('dial queue', () => {
       ]
     })
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
 
     dialer = new DialQueue(components)
@@ -124,7 +124,7 @@ describe('dial queue', () => {
       ]
     })
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
 
     dialer = new DialQueue(components)
@@ -141,7 +141,7 @@ describe('dial queue', () => {
       '/ip4/127.0.0.1/tcp/1233': async () => deferredConn.promise
     }
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.callsFake(async ma => {
       const maStr = ma.toString()
       const action = actions[maStr]
@@ -178,7 +178,7 @@ describe('dial queue', () => {
       maxParallelDials: 2
     })
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.callsFake(async ma => {
       const maStr = ma.toString()
       const action = actions[maStr]
@@ -218,7 +218,7 @@ describe('dial queue', () => {
       maxParallelDials: 2
     })
 
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
     components.transportManager.dial.callsFake(async ma => {
       const maStr = ma.toString()
       const action = actions[maStr]
@@ -267,7 +267,7 @@ describe('dial queue', () => {
     dialer = new DialQueue(components, {
       maxParallelDials: 50
     })
-    components.transportManager.transportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
 
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
 
@@ -294,7 +294,7 @@ describe('dial queue', () => {
     const ma = multiaddr(`/ip4/123.123.123.123/tcp/123/ws/p2p/${relayPeer}/p2p-circuit/webrtc`)
     const maWithPeer = `${ma}/p2p/${remotePeer}`
 
-    components.transportManager.transportForMultiaddr.callsFake(ma => {
+    components.transportManager.dialTransportForMultiaddr.callsFake(ma => {
       if (WebRTC.exactMatch(ma)) {
         return stubInterface<Transport>()
       }

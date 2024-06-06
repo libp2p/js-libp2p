@@ -3,6 +3,8 @@ import delay from 'delay'
 import all from 'it-all'
 import pDefer from 'p-defer'
 import { Queue } from '../src/queue/index.js'
+import { TestSignal } from './fixtures/test-signal.js'
+import type { AbortOptions } from '@libp2p/interface'
 
 const fixture = Symbol('fixture')
 
@@ -10,6 +12,10 @@ function randomInt (minimum: number, maximum: number): number {
   return Math.floor(
     (Math.random() * (maximum - minimum + 1)) + minimum
   )
+}
+
+interface SlowJobQueueOptions extends AbortOptions {
+  slow: boolean
 }
 
 describe('queue', () => {
@@ -112,21 +118,6 @@ describe('queue', () => {
     }))
 
     await Promise.all(input)
-  })
-
-  it('adds with priority', async () => {
-    const result: number[] = []
-    const queue = new Queue<number>({ concurrency: 1 })
-    void queue.add(async () => result.push(1), { priority: 1 })
-    void queue.add(async () => result.push(0), { priority: 0 })
-    void queue.add(async () => result.push(1), { priority: 1 })
-    void queue.add(async () => result.push(2), { priority: 1 })
-    void queue.add(async () => result.push(3), { priority: 2 })
-    void queue.add(async () => result.push(0), { priority: -1 })
-
-    await queue.onEmpty()
-
-    expect(result).to.deep.equal([1, 3, 1, 2, 0, 0])
   })
 
   it('.onEmpty()', async () => {
@@ -715,5 +706,98 @@ describe('queue', () => {
     expect(started).to.equal(3)
     expect(collected).to.deep.equal([0, 1])
     expect(queue.size).to.equal(0)
+  })
+
+  it('cleans up listeners after all job recipients abort', async () => {
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
+    void queue.add(async () => {
+      await delay(100)
+    }, {
+      slow: true
+    })
+
+    const signal = new TestSignal()
+
+    const jobResult = queue.add(async () => {}, {
+      slow: false,
+      signal
+    })
+
+    expect(queue.size).to.equal(2)
+    expect(queue.queued).to.equal(1)
+    expect(queue.running).to.equal(1)
+
+    const slowJob = queue.queue.find(job => !job.options.slow)
+
+    expect(slowJob?.recipients).to.have.lengthOf(1)
+    expect(slowJob?.recipients[0].signal).to.equal(signal)
+
+    // listeners added
+    expect(signal.listenerCount('abort')).to.equal(2)
+
+    // abort job stuck in queue
+    signal.abort()
+
+    // all listeners removed
+    expect(signal.listenerCount('abort')).to.equal(0)
+
+    await expect(jobResult).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
+  })
+
+  it('rejects aborted jobs with the abort reason if supplied', async () => {
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
+    void queue.add(async () => {
+      await delay(100)
+    }, {
+      slow: true
+    })
+
+    const signal = new TestSignal()
+
+    const jobResult = queue.add(async () => {}, {
+      slow: false,
+      signal
+    })
+
+    const err = new Error('Took too long')
+
+    // abort job stuck in queue
+    signal.abort(err)
+
+    // result rejects
+    await expect(jobResult).to.eventually.be.rejectedWith(err)
+  })
+
+  it('immediately removes aborted job', async () => {
+    const signal = new TestSignal()
+    const queue = new Queue<void, SlowJobQueueOptions>({ concurrency: 1 })
+    void queue.add(async () => {
+      await delay(100)
+    }, {
+      slow: true
+    })
+    const jobResult = queue.add(async () => {}, {
+      slow: false,
+      signal
+    })
+
+    expect(queue.size).to.equal(2)
+    expect(queue.queued).to.equal(1)
+    expect(queue.running).to.equal(1)
+
+    // abort job stuck in queue
+    signal.abort()
+
+    await expect(jobResult).to.eventually.be.rejected
+      .with.property('code', 'ABORT_ERR')
+
+    // counts updated
+    expect(queue.size).to.equal(1)
+    expect(queue.queued).to.equal(0)
+    expect(queue.running).to.equal(1)
+
+    // job not in queue any more
+    expect(queue.queue.find(job => !job.options.slow)).to.be.undefined()
   })
 })

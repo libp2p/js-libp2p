@@ -35,11 +35,15 @@ const PROTOCOL = '/test/dht/1.0.0'
 
 function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): { connection: Connection, incomingStream: Stream } {
   const duplex = duplexPair<any>()
-  const outgoingStream = stubInterface<Stream>()
+  const outgoingStream = stubInterface<Stream>({
+    close: async () => {}
+  })
   outgoingStream.source = duplex[0].source
   outgoingStream.sink.callsFake(async source => duplex[0].sink(source))
 
-  const incomingStream = stubInterface<Stream>()
+  const incomingStream = stubInterface<Stream>({
+    close: async () => {}
+  })
   incomingStream.source = duplex[1].source
   incomingStream.sink.callsFake(async source => duplex[1].sink(source))
 
@@ -91,8 +95,12 @@ describe('content routing', () => {
       peerId: peers[peers.length - 1],
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
-      peerStore: stubInterface<PeerStore>(),
-      connectionManager: stubInterface<ConnectionManager>(),
+      peerStore: stubInterface<PeerStore>({
+        all: async () => []
+      }),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger()
@@ -216,8 +224,12 @@ describe('peer routing', () => {
       peerId: peers[peers.length - 1],
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
-      peerStore: stubInterface<PeerStore>(),
-      connectionManager: stubInterface<ConnectionManager>(),
+      peerStore: stubInterface<PeerStore>({
+        all: async () => []
+      }),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger()

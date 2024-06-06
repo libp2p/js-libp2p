@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/floodsub",
-  "version": "9.0.12",
+  "version": "9.0.20",
   "description": "libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub-floodsub#readme",
@@ -60,24 +60,24 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.1.4",
-    "@libp2p/pubsub": "^9.0.11",
+    "@libp2p/interface": "^1.4.0",
+    "@libp2p/pubsub": "^9.0.19",
     "protons-runtime": "^5.4.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.2"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.3.2",
-    "@libp2p/logger": "^4.0.7",
-    "@libp2p/peer-collections": "^5.1.7",
-    "@libp2p/peer-id-factory": "^4.0.7",
-    "@multiformats/multiaddr": "^12.1.14",
+    "@libp2p/interface-compliance-tests": "^5.4.5",
+    "@libp2p/logger": "^4.0.13",
+    "@libp2p/peer-collections": "^5.2.2",
+    "@libp2p/peer-id-factory": "^4.1.2",
+    "@multiformats/multiaddr": "^12.2.3",
     "@types/sinon": "^17.0.3",
-    "aegir": "^42.2.4",
+    "aegir": "^43.0.1",
     "multiformats": "^13.1.0",
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
-    "sinon": "^17.0.1"
+    "sinon": "^18.0.0"
   },
   "sideEffects": false
 }

@@ -1,6 +1,7 @@
 import { keys } from '@libp2p/crypto'
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MessageType } from '../message/dht.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
@@ -9,10 +10,9 @@ import {
   finalPeerEvent,
   valueEvent
 } from '../query/events.js'
-import { Libp2pRecord } from '../record/index.js'
 import { verifyRecord } from '../record/validators.js'
 import * as utils from '../utils.js'
-import type { KadDHTComponents, DHTRecord, DialPeerEvent, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
+import type { KadDHTComponents, DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
@@ -195,17 +195,17 @@ export class PeerRouting {
   }
 
   /**
-   * Kademlia 'node lookup' operation on a key, which could be a the
-   * bytes from a multihash or a peer ID
+   * Kademlia 'FIND_NODE' operation on a key, which could be the bytes from
+   * a multihash or a peer ID
    */
-  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
+  async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
-    const id = await utils.convertBuffer(key)
-    const tablePeers = this.routingTable.closestPeers(id)
+    const kadId = await utils.convertBuffer(key)
+    const tablePeers = this.routingTable.closestPeers(kadId)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-    const peers = new PeerDistanceList(id, this.routingTable.kBucketSize)
-    await Promise.all(tablePeers.map(async peer => { await peers.add(peer) }))
+    const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
+    await Promise.all(tablePeers.map(async peer => { await peers.add({ id: peer, multiaddrs: [] }) }))
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal }) {
       self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
@@ -221,31 +221,22 @@ export class PeerRouting {
     }
 
     for await (const event of this.queryManager.run(key, getCloserPeersQuery, options)) {
-      yield event
-
       if (event.name === 'PEER_RESPONSE') {
-        await Promise.all(event.closer.map(async peerData => { await peers.add(peerData.id) }))
+        await Promise.all(event.closer.map(async peerData => {
+          await peers.add(peerData)
+        }))
       }
+
+      yield event
     }
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (const peerId of peers.peers) {
-      try {
-        const peer = await this.peerStore.get(peerId)
-
-        yield finalPeerEvent({
-          from: this.peerId,
-          peer: {
-            id: peerId,
-            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
-          }
-        }, options)
-      } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
-        }
-      }
+    for (const peer of peers.peers) {
+      yield finalPeerEvent({
+        from: this.peerId,
+        peer
+      }, options)
     }
   }
 
@@ -255,7 +246,7 @@ export class PeerRouting {
    *
    * Note: The peerStore is updated with new addresses found for the given peer.
    */
-  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<DialPeerEvent | QueryEvent> {
+  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     for await (const event of this._getValueSingle(peer, key, options)) {
       if (event.name === 'PEER_RESPONSE') {
         if (event.record != null) {
@@ -319,7 +310,7 @@ export class PeerRouting {
     if (output.length > 0) {
       this.log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
     } else {
-      this.log('getCloserPeersOffline could not find peer closer to %b than %p', key, closerThan)
+      this.log('getCloserPeersOffline could not find peer closer to %b than %p with %d peers in the routing table', key, closerThan, this.routingTable.size)
     }
 
     return output

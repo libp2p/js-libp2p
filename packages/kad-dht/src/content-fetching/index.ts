@@ -1,4 +1,5 @@
 import { CodeError } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -11,7 +12,6 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { Libp2pRecord } from '../record/index.js'
 import { bestRecord } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
@@ -51,11 +51,6 @@ export class ContentFetching {
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.network = network
-  }
-
-  async putLocal (key: Uint8Array, rec: Uint8Array): Promise<void> {
-    const dsKey = bufferToRecordKey(key)
-    await this.components.datastore.put(dsKey, rec)
   }
 
   /**

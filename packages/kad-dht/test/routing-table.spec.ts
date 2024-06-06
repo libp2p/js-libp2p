@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
+import { TypedEventEmitter, CustomEvent, stop, start } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -24,7 +24,7 @@ import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, ty
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents, PeerId, PeerStore, Stream } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, Stream, Peer } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('Routing Table', () => {
@@ -57,11 +57,11 @@ describe('Routing Table', () => {
       logPrefix: '',
       protocol: PROTOCOL
     })
-    await table.start()
+    await start(table)
   })
 
   afterEach(async () => {
-    await table.stop()
+    await stop(table)
   })
 
   it('add', async function () {
@@ -95,17 +95,17 @@ describe('Routing Table', () => {
   })
 
   it('remove', async function () {
-    this.timeout(20 * 1000)
-
     const peers = await createPeerIds(10)
     await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
 
     const key = await kadUtils.convertPeerId(peers[2])
     expect(table.closestPeers(key, 10)).to.have.length(10)
+    await expect(table.find(peers[5])).to.eventually.be.ok()
+    expect(table.size).to.equal(10)
 
     await table.remove(peers[5])
-    expect(table.closestPeers(key, 10)).to.have.length(9)
-    expect(table.size).to.be.eql(9)
+    await expect(table.find(peers[5])).to.eventually.be.undefined()
+    expect(table.size).to.equal(9)
   })
 
   it('emits peer:remove event', async () => {
@@ -147,12 +147,12 @@ describe('Routing Table', () => {
     ]
 
     const oldPeer = {
-      id: peerIds[0].toBytes(),
-      peer: peerIds[0]
+      kadId: await kadUtils.convertPeerId(peerIds[0]),
+      peerId: peerIds[0]
     }
     const newPeer = {
-      id: peerIds[1].toBytes(),
-      peer: peerIds[1]
+      kadId: await kadUtils.convertPeerId(peerIds[1]),
+      peerId: peerIds[1]
     }
 
     if (table.kb == null) {
@@ -175,7 +175,7 @@ describe('Routing Table', () => {
 
     // simulate connection succeeding
     const newStreamStub = sinon.stub().withArgs(PROTOCOL).resolves(stream)
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).resolves({
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peerId).resolves({
       newStream: newStreamStub
     })
     components.connectionManager.openConnection = openConnectionStub
@@ -183,16 +183,16 @@ describe('Routing Table', () => {
     await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
 
     expect(openConnectionStub.calledOnce).to.be.true()
-    expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
+    expect(openConnectionStub.calledWith(oldPeer.peerId)).to.be.true()
 
     expect(newStreamStub.callCount).to.equal(1)
     expect(newStreamStub.calledWith(PROTOCOL)).to.be.true()
 
     // did not add the new peer
-    expect(table.kb.get(newPeer.id)).to.be.undefined()
+    expect(table.kb.get(newPeer.kadId)).to.be.undefined()
 
     // kept the old peer
-    expect(table.kb.get(oldPeer.id)).to.not.be.undefined()
+    expect(table.kb.get(oldPeer.kadId)).to.not.be.undefined()
   })
 
   it('evicts oldest peer that does not respond to ping', async () => {
@@ -202,16 +202,16 @@ describe('Routing Table', () => {
     ]
 
     const oldPeer = {
-      id: peerIds[0].toBytes(),
-      peer: peerIds[0]
+      kadId: await kadUtils.convertPeerId(peerIds[0]),
+      peerId: peerIds[0]
     }
     const newPeer = {
-      id: peerIds[1].toBytes(),
-      peer: peerIds[1]
+      kadId: await kadUtils.convertPeerId(peerIds[1]),
+      peerId: peerIds[1]
     }
 
     // libp2p fails to dial the old peer
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peer).rejects(new Error('Could not dial peer'))
+    const openConnectionStub = sinon.stub().withArgs(oldPeer.peerId).rejects(new Error('Could not dial peer'))
     components.connectionManager.openConnection = openConnectionStub
 
     if (table.kb == null) {
@@ -225,13 +225,13 @@ describe('Routing Table', () => {
     await table.pingQueue.onIdle()
 
     expect(openConnectionStub.callCount).to.equal(1)
-    expect(openConnectionStub.calledWith(oldPeer.peer)).to.be.true()
+    expect(openConnectionStub.calledWith(oldPeer.peerId)).to.be.true()
 
     // added the new peer
-    expect(table.kb.get(newPeer.id)).to.not.be.undefined()
+    expect(table.kb.get(newPeer.kadId)).to.not.be.undefined()
 
     // evicted the old peer
-    expect(table.kb.get(oldPeer.id)).to.be.undefined()
+    expect(table.kb.get(oldPeer.kadId)).to.be.undefined()
   })
 
   it('tags newly found kad-close peers', async () => {
@@ -291,9 +291,9 @@ describe('Routing Table', () => {
 
     // should have all added contacts in the root kbucket
     expect(table.kb?.count()).to.equal(KBUCKET_SIZE, 'did not fill kbuckets')
-    expect(table.kb?.root.contacts).to.have.lengthOf(KBUCKET_SIZE, 'split root kbucket when we should not have')
-    expect(table.kb?.root.left).to.be.null('split root kbucket when we should not have')
-    expect(table.kb?.root.right).to.be.null('split root kbucket when we should not have')
+    expect(table.kb?.root).to.have.property('peers').with.lengthOf(KBUCKET_SIZE, 'split root kbucket when we should not have')
+    expect(table.kb?.root).to.not.have.property('left', 'split root kbucket when we should not have')
+    expect(table.kb?.root).to.not.have.property('right', 'split root kbucket when we should not have')
 
     await pWaitFor(() => {
       return tagPeerSpy.callCount === KBUCKET_SIZE
@@ -308,8 +308,8 @@ describe('Routing Table', () => {
     await table.add(sortedPeerList[sortedPeerList.length - 1])
 
     expect(table.kb?.count()).to.equal(KBUCKET_SIZE + 1, 'did not fill kbuckets')
-    expect(table.kb?.root.left).to.not.be.null('did not split root kbucket when we should have')
-    expect(table.kb?.root.right).to.not.be.null('did not split root kbucket when we should have')
+    expect(table.kb?.root).to.have.property('left').that.is.not.null('did not split root kbucket when we should have')
+    expect(table.kb?.root).to.have.property('right').that.is.not.null('did not split root kbucket when we should have')
 
     // wait for tag new peer and untag old peer
     await pWaitFor(() => {
@@ -319,5 +319,32 @@ describe('Routing Table', () => {
     // should have updated list of tagged peers
     const finalTaggedPeers = await getTaggedPeers()
     expect(finalTaggedPeers.difference(new PeerSet(sortedPeerList.slice(1)))).to.have.property('size', 0)
+  })
+
+  it('adds peerstore peers to the routing table on startup', async () => {
+    const peer1 = stubInterface<Peer>({
+      id: await createEd25519PeerId(),
+      protocols: [
+        PROTOCOL
+      ]
+    })
+    const peer2 = stubInterface<Peer>({
+      id: await createEd25519PeerId(),
+      protocols: [
+        '/ipfs/id/1.0.0'
+      ]
+    })
+
+    await expect(table.find(peer1.id)).to.eventually.be.undefined()
+    await expect(table.find(peer2.id)).to.eventually.be.undefined()
+
+    await stop(table)
+
+    components.peerStore.all = async () => [peer1, peer2]
+
+    await start(table)
+
+    await expect(table.find(peer1.id)).to.eventually.be.ok()
+    await expect(table.find(peer2.id)).to.eventually.be.undefined()
   })
 })

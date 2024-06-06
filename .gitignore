@@ -1,3 +1,4 @@
+node_modules
 build
 dist
 .docs
@@ -5,10 +6,4 @@ dist
 node_modules
 package-lock.json
 yarn.lock
-.tmp-compiled-docs
-tsconfig-doc-check.aegir.json
-
-# IDE
-.DS_Store
 .vscode
-packages/transport-webtransport/go-libp2p-webtransport-server/main

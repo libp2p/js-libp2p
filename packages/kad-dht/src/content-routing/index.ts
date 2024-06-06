@@ -58,13 +58,14 @@ export class ContentRouting {
    */
   async * provide (key: CID, multiaddrs: Multiaddr[], options: RoutingOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     this.log('provide %s', key)
+    const target = key.multihash.bytes
 
     // Add peer as provider
     await this.providers.addProvider(key, this.components.peerId)
 
     const msg: Partial<Message> = {
       type: MessageType.ADD_PROVIDER,
-      key: key.multihash.bytes,
+      key: target,
       providers: [
         toPbPeerInfo({
           id: this.components.peerId,
@@ -107,7 +108,7 @@ export class ContentRouting {
 
     // Notify closest peers
     yield * pipe(
-      this.peerRouting.getClosestPeers(key.multihash.bytes, options),
+      this.peerRouting.getClosestPeers(target, options),
       (source) => map(source, (event) => maybeNotifyPeer(event)),
       (source) => parallel(source, {
         ordered: false,
@@ -128,6 +129,7 @@ export class ContentRouting {
    */
   async * findProviders (key: CID, options: RoutingOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
     const toFind = this.routingTable.kBucketSize
+    let found = 0
     const target = key.multihash.bytes
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
@@ -158,11 +160,12 @@ export class ContentRouting {
 
       yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers }, options)
       yield providerEvent({ from: this.components.peerId, providers }, options)
-    }
 
-    // All done
-    if (provs.length >= toFind) {
-      return
+      found += providers.length
+
+      if (found >= toFind) {
+        return
+      }
     }
 
     /**
@@ -201,10 +204,12 @@ export class ContentRouting {
 
         if (newProviders.length > 0) {
           yield providerEvent({ from: event.from, providers: newProviders }, options)
-        }
 
-        if (providers.size === toFind) {
-          return
+          found += newProviders.length
+
+          if (found >= toFind) {
+            return
+          }
         }
       }
     }

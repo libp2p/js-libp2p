@@ -17,13 +17,14 @@ import { DefaultConnectionManager } from './connection-manager/index.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
+import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -136,6 +137,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.contentRouting = this.components.contentRouting = this.configureComponent('contentRouting', new CompoundContentRouting(this.components, {
       routers: contentRouters
     }))
+
+    // Random walk
+    this.configureComponent('randomWalk', new RandomWalk(this.components))
 
     // Discovery modules
     ;(init.peerDiscovery ?? []).forEach((fn, index) => {
@@ -373,6 +377,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
 
   unregister (id: string): void {
     this.components.registrar.unregister(id)
+  }
+
+  async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
+    return this.components.connectionManager.isDialable(multiaddr, options)
   }
 
   /**
