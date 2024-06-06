@@ -179,11 +179,11 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
     ]
   })
 
-  const certPrivateKeySpki = await crypto.subtle.exportKey('spki', keys.privateKey)
+  const certPrivateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keys.privateKey)
 
   return {
     cert: selfCert.toString(),
-    key: spkiToPEM(certPrivateKeySpki)
+    key: pkcs8ToPEM(certPrivateKeyPkcs8)
   }
 }
 
@@ -213,7 +213,7 @@ export function encodeSignatureData (certPublicKey: ArrayBuffer): Uint8Array {
   ])
 }
 
-function spkiToPEM (keydata: ArrayBuffer): string {
+function pkcs8ToPEM (keydata: ArrayBuffer): string {
   return formatAsPem(uint8ArrayToString(new Uint8Array(keydata), 'base64'))
 }
 
