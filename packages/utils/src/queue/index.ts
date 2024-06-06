@@ -210,8 +210,11 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     options?.signal?.throwIfAborted()
 
     const job = new Job<JobOptions, JobReturnType>(fn, options)
+    this.enqueue(job)
+    this.safeDispatchEvent('add')
+    this.tryToStartAnother()
 
-    const p = job.join(options)
+    return job.join(options)
       .then(result => {
         this.safeDispatchEvent('completed', { detail: result })
         this.safeDispatchEvent('success', { detail: { job, result } })
@@ -234,12 +237,6 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
         throw err
       })
-
-    this.enqueue(job)
-    this.safeDispatchEvent('add')
-    this.tryToStartAnother()
-
-    return p
   }
 
   /**

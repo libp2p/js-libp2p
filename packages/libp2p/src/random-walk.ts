@@ -103,10 +103,17 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
       // find peers until no more consumers are interested
       while (this.walkers > 0) {
         try {
-          for await (const peer of this.peerRouting.getClosestPeers(randomBytes(32), { signal })) {
+          const data = randomBytes(32)
+          let s = Date.now()
+
+          for await (const peer of this.peerRouting.getClosestPeers(data, { signal })) {
+            if (signal.aborted) {
+              this.log('aborting walk')
+            }
+
             signal.throwIfAborted()
 
-            this.log('found peer %p', peer.id)
+            this.log('found peer %p after %dms for %d walkers', peer.id, Date.now() - s, this.walkers)
             found++
             this.safeDispatchEvent('walk:peer', {
               detail: peer
@@ -115,9 +122,14 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
             // if we only have one consumer, pause the query until they request
             // another random peer or they signal they are no longer interested
             if (this.walkers === 1 && this.needNext != null) {
+              this.log('wait for need next')
               await raceSignal(this.needNext.promise, signal)
             }
+
+            s = Date.now()
           }
+
+          this.log('walk iteration for %b and %d walkers finished, found %d peers', data, this.walkers, found)
         } catch (err) {
           this.log.error('randomwalk errored', err)
 
@@ -126,6 +138,8 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
           })
         }
       }
+
+      this.log('no walkers left, ended walk')
     })
       .catch(err => {
         this.log.error('randomwalk errored', err)
