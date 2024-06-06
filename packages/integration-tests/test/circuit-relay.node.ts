@@ -1073,5 +1073,21 @@ describe('circuit-relay', () => {
       // for longer than that
       expect(finish - start).to.be.greaterThan(defaultDurationLimit)
     })
+
+    it('should not mark an outgoing connection as transient', async () => {
+      const ma = getRelayAddress(remote)
+
+      const connection = await local.dial(ma)
+      expect(connection).to.have.property('transient', false)
+    })
+
+    it('should not mark an incoming connection as transient', async () => {
+      const ma = getRelayAddress(remote)
+
+      await local.dial(ma)
+
+      const connection = remote.getConnections(local.peerId)[0]
+      expect(connection).to.have.property('transient', false)
+    })
   })
 })
