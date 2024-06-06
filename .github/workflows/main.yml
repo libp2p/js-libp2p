@@ -207,7 +207,7 @@ jobs:
           path: |
             package-lock.json
             interop/package-lock.json
-      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@fix/wait-for-healthy-redis
+      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
         with:
           test-filter: js-libp2p-head
           test-ignore: nim
