@@ -1,6 +1,5 @@
 import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import first from 'it-first'
@@ -366,9 +365,6 @@ export class AutoNATService implements Startable {
           }
         }
       })
-      // find some random peers
-      const randomPeer = await createEd25519PeerId()
-      const randomCid = randomPeer.toBytes()
 
       const results: Record<string, { success: number, failure: number }> = {}
       const networkSegments: string[] = []
@@ -441,7 +437,8 @@ export class AutoNATService implements Startable {
         }
       }
 
-      for await (const dialResponse of parallel(map(this.components.peerRouting.getClosestPeers(randomCid, {
+      // find some random peers
+      for await (const dialResponse of parallel(map(this.components.randomWalk.walk({
         signal
       }), (peer) => async () => verifyAddress(peer)), {
         concurrency: REQUIRED_SUCCESSFUL_DIALS
