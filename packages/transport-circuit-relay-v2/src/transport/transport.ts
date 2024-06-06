@@ -1,11 +1,12 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, start, stop } from '@libp2p/interface'
 import { transportSymbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader, type AbortOptions, type ComponentLogger, type Logger, type Connection, type Stream, type ConnectionGater, type PeerId, type PeerStore } from '@libp2p/interface'
+import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import { CIRCUIT_PROTO_CODE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
@@ -77,8 +78,12 @@ export class CircuitRelayTransport implements Transport {
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
     this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
 
-    if (init.discoverRelays != null && init.discoverRelays > 0) {
-      this.discovery = new RelayDiscovery(components)
+    const discoverRelays = init.discoverRelays ?? 0
+
+    if (discoverRelays > 0) {
+      this.discovery = new RelayDiscovery(components, {
+        filter: init.discoveryFilter ?? peerFilter(DEFAULT_DISCOVERY_FILTER_SIZE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE)
+      })
       this.discovery.addEventListener('relay:discover', (evt) => {
         this.reservationStore.addRelay(evt.detail, 'discovered')
           .catch(err => {
@@ -89,10 +94,12 @@ export class CircuitRelayTransport implements Transport {
 
     this.reservationStore = new ReservationStore(components, init)
     this.reservationStore.addEventListener('relay:not-enough-relays', () => {
-      this.discovery?.discover()
-        .catch(err => {
-          this.log.error('could not discover relays', err)
-        })
+      this.discovery?.startDiscovery()
+    })
+    this.reservationStore.addEventListener('relay:created-reservation', () => {
+      if (this.reservationStore.reservationCount() >= discoverRelays) {
+        this.discovery?.stopDiscovery()
+      }
     })
 
     this.started = false
@@ -103,8 +110,6 @@ export class CircuitRelayTransport implements Transport {
   }
 
   async start (): Promise<void> {
-    this.reservationStore.start()
-
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       void this.onStop(data).catch(err => {
         this.log.error('error while handling STOP protocol', err)
@@ -116,18 +121,13 @@ export class CircuitRelayTransport implements Transport {
       runOnTransientConnection: true
     })
 
-    await this.discovery?.start()
+    await start(this.discovery, this.reservationStore)
 
     this.started = true
   }
 
-  afterStart (): void {
-    this.discovery?.afterStart()
-  }
-
   async stop (): Promise<void> {
-    this.discovery?.stop()
-    this.reservationStore.stop()
+    await stop(this.discovery, this.reservationStore)
     await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
 
     this.started = false
@@ -231,9 +231,9 @@ export class CircuitRelayTransport implements Transport {
         logger: this.logger
       })
 
-      this.log('new outbound transient connection %a', maConn.remoteAddr)
+      this.log('new outbound relayed connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
-        transient: true
+        transient: status.limit != null
       })
     } catch (err: any) {
       this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
@@ -346,9 +346,9 @@ export class CircuitRelayTransport implements Transport {
       logger: this.logger
     })
 
-    this.log('new inbound transient connection %a', maConn.remoteAddr)
+    this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      transient: true
+      transient: request.limit != null
     })
     this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }

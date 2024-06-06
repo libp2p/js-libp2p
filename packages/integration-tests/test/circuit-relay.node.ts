@@ -638,7 +638,7 @@ describe('circuit-relay', () => {
       expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(1)
     })
 
-    it('should mark a relayed connection as transient', async () => {
+    it('should mark an outgoing relayed connection as transient', async () => {
       // discover relay and make reservation
       const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
 
@@ -653,6 +653,25 @@ describe('circuit-relay', () => {
 
       // connection to remote through relay should be marked transient
       expect(connection).to.have.property('transient', true)
+    })
+
+    it('should mark an incoming relayed connection as transient', async () => {
+      // discover relay and make reservation
+      const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
+
+      // connection to relay should not be marked transient
+      expect(connectionToRelay).to.have.property('transient', false)
+
+      await usingAsRelay(remote, relay1)
+
+      // dial the remote through the relay
+      const ma = getRelayAddress(remote)
+      await local.dial(ma)
+
+      // connection from local through relay should be marked transient
+      const connections = remote.getConnections(local.peerId)
+      expect(connections).to.have.lengthOf(1)
+      expect(connections).to.have.nested.property('[0].transient', true)
     })
 
     it('should not open streams on a transient connection', async () => {
@@ -1072,6 +1091,23 @@ describe('circuit-relay', () => {
       // default time limit is set to 100ms so the stream should have been open
       // for longer than that
       expect(finish - start).to.be.greaterThan(defaultDurationLimit)
+    })
+
+    it('should not mark an outgoing connection as transient', async () => {
+      const ma = getRelayAddress(remote)
+
+      const connection = await local.dial(ma)
+      expect(connection).to.have.property('transient', false)
+    })
+
+    it('should not mark an incoming connection as transient', async () => {
+      const ma = getRelayAddress(remote)
+
+      await local.dial(ma)
+
+      const connections = remote.getConnections(local.peerId)
+      expect(connections).to.have.lengthOf(1)
+      expect(connections).to.have.nested.property('[0].transient', false)
     })
   })
 })
