@@ -359,6 +359,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
+    const limit = this.reservationStore.get(dstPeer)?.limit
     const destinationConnection = connections[0]
 
     const destinationStream = await this.stopHop({
@@ -368,7 +369,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
         peer: {
           id: connection.remotePeer.toBytes(),
           addrs: []
-        }
+        },
+        limit
       }
     })
 
@@ -378,11 +380,14 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.OK })
+    await hopstr.write({
+      type: HopMessage.Type.STATUS,
+      status: Status.OK,
+      limit
+    })
     const sourceStream = stream.unwrap()
 
     this.log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
-    const limit = this.reservationStore.get(dstPeer)?.limit
     // Short circuit the two streams to create the relayed connection
     createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit, {
       log: this.log
