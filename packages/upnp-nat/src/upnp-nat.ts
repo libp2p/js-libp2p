@@ -4,7 +4,7 @@ import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import { isBrowser } from 'wherearewe'
-import type { UPnPNATComponents, UPnPNATInit } from './index.js'
+import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 
 const DEFAULT_TTL = 7200
@@ -15,7 +15,8 @@ function highPort (min = 1024, max = 65535): number {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-export class UPnPNAT implements Startable {
+export class UPnPNAT implements Startable, UPnPNATInterface {
+  public client: NatAPI
   private readonly components: UPnPNATComponents
   private readonly externalAddress?: string
   private readonly localAddress?: string
@@ -24,7 +25,6 @@ export class UPnPNAT implements Startable {
   private readonly keepAlive: boolean
   private readonly gateway?: string
   private started: boolean
-  private client?: NatAPI
   private readonly log: Logger
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
@@ -42,6 +42,13 @@ export class UPnPNAT implements Startable {
     if (this.ttl < DEFAULT_TTL) {
       throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, ERR_INVALID_PARAMETERS)
     }
+
+    this.client = upnpNat({
+      description: this.description,
+      ttl: this.ttl,
+      keepAlive: this.keepAlive,
+      gateway: this.gateway
+    })
   }
 
   isStarted (): boolean {
@@ -95,8 +102,7 @@ export class UPnPNAT implements Startable {
         continue
       }
 
-      const client = this._getClient()
-      const publicIp = this.externalAddress ?? await client.externalIp()
+      const publicIp = this.externalAddress ?? await this.client.externalIp()
       const isPrivate = isPrivateIp(publicIp)
 
       if (isPrivate === true) {
@@ -111,7 +117,7 @@ export class UPnPNAT implements Startable {
 
       this.log(`opening uPnP connection from ${publicIp}:${publicPort} to ${host}:${port}`)
 
-      await client.map({
+      await this.client.map({
         publicPort,
         localPort: port,
         localAddress: this.localAddress,
@@ -126,21 +132,6 @@ export class UPnPNAT implements Startable {
     }
   }
 
-  _getClient (): NatAPI {
-    if (this.client != null) {
-      return this.client
-    }
-
-    this.client = upnpNat({
-      description: this.description,
-      ttl: this.ttl,
-      keepAlive: this.keepAlive,
-      gateway: this.gateway
-    })
-
-    return this.client
-  }
-
   /**
    * Stops the NAT manager
    */
@@ -151,7 +142,6 @@ export class UPnPNAT implements Startable {
 
     try {
       await this.client.close()
-      this.client = undefined
     } catch (err: any) {
       this.log.error(err)
     }
