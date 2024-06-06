@@ -237,6 +237,7 @@ It's important to note that some services depend on others in order to function 
 
 ```js
 // Creating a libp2p node with:
+//   listen on tcp ports 9001 and 9002 on all interfaces
 //   transport: websockets + tcp
 //   stream-muxing: mplex
 //   crypto-channel: noise
@@ -255,6 +256,12 @@ import { gossipsub } from 'libp2p-gossipsub'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/tcp/9001/ws',
+      '/ip4/0.0.0.0/tcp/9002',
+    ],
+  },
   transports: [
     tcp(),
     webSockets()
