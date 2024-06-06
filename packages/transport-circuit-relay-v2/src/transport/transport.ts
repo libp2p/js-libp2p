@@ -231,9 +231,9 @@ export class CircuitRelayTransport implements Transport {
         logger: this.logger
       })
 
-      this.log('new outbound transient connection %a', maConn.remoteAddr)
+      this.log('new outbound relayed connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
-        transient: true
+        transient: status.limit != null
       })
     } catch (err: any) {
       this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
@@ -346,9 +346,9 @@ export class CircuitRelayTransport implements Transport {
       logger: this.logger
     })
 
-    this.log('new inbound transient connection %a', maConn.remoteAddr)
+    this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      transient: true
+      transient: request.limit != null
     })
     this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }
