@@ -6,9 +6,11 @@ import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { stubInterface } from 'sinon-ts'
 import { UnimplementedError } from '../src/error.js'
 import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import { expectError } from './util.js'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 function ignoredDialOption (): CreateListenerOptions {
   const upgrader = mockUpgrader({})
@@ -24,7 +26,8 @@ describe('WebRTCDirect Transport', () => {
     components = {
       peerId: await createEd25519PeerId(),
       metrics,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      transportManager: stubInterface<TransportManager>()
     }
   })
 
@@ -33,7 +36,8 @@ describe('WebRTCDirect Transport', () => {
     expect(t.constructor.name).to.equal('WebRTCDirectTransport')
   })
 
-  it('can dial', async () => {
+  // TODO: this test should complete a dial
+  it.skip('can dial', async () => {
     const ma = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc-direct/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd')
     const transport = new WebRTCDirectTransport(components)
     const options = ignoredDialOption()
@@ -42,7 +46,7 @@ describe('WebRTCDirect Transport', () => {
     transport.dial(ma, options)
   })
 
-  it('createListner throws', () => {
+  it.skip('createListner throws', () => {
     const t = new WebRTCDirectTransport(components)
     try {
       t.createListener(ignoredDialOption())

@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import * as underTest from '../src/private-to-public/sdp.js'
+import * as underTest from '../src/private-to-public/utils/sdp.js'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
 const sampleCerthash = 'uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ'
@@ -23,7 +23,7 @@ a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host`
 describe('SDP', () => {
   it('converts multiaddr with certhash to an answer SDP', async () => {
     const ufrag = 'MyUserFragment'
-    const sdp = underTest.fromMultiAddr(sampleMultiAddr, ufrag)
+    const sdp = underTest.serverOfferFromMultiAddr(sampleMultiAddr, ufrag)
 
     expect(sdp.sdp).to.contain(sampleSdp)
   })
@@ -77,5 +77,12 @@ a=max-message-size:16384
 a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host`
 
     expect(result.sdp).to.equal(expected)
+  })
+
+  it('should turn a fingerprint into a multiaddr fragment', () => {
+    const input = 'B9:3F:A1:4B:E8:46:73:08:6F:73:51:3E:27:9D:56:B7:29:67:4C:4A:B8:8D:21:EF:BF:E6:BA:16:37:BA:6C:2A'
+    const output = underTest.fingerprint2Ma(input)
+
+    expect(output.toString()).to.equal('/certhash/uEiC5P6FL6EZzCG9zUT4nnVa3KWdMSriNIe-_5roWN7psKg')
   })
 })

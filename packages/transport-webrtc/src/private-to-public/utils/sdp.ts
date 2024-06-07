@@ -1,9 +1,12 @@
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { base64url } from 'multiformats/bases/base64'
 import { bases } from 'multiformats/basics'
+import * as Digest from 'multiformats/hashes/digest'
+import { sha256 } from 'multiformats/hashes/sha2'
 import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
-import { CERTHASH_CODE } from './transport.js'
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../../error.js'
+import { CERTHASH_CODE } from '../transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { HashCode, HashName } from 'multihashes'
 
 /**
@@ -89,7 +92,15 @@ export function ma2Fingerprint (ma: Multiaddr): string[] {
     throw invalidFingerprint(fingerprint, ma.toString())
   }
 
-  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fingerprint]
+  return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
+}
+
+export function fingerprint2Ma (fingerprint: string): Multiaddr {
+  const output = fingerprint.split(':').map(str => parseInt(str, 16))
+  const encoded = Uint8Array.from(output)
+  const digest = Digest.create(sha256.code, encoded)
+
+  return multiaddr(`/certhash/${base64url.encode(digest.bytes)}`)
 }
 
 /**
@@ -109,20 +120,53 @@ export function toSupportedHashFunction (name: multihashes.HashName): string {
 }
 
 /**
- * Convert a multiaddr into a SDP
+ * Create an offer SDP message from a multiaddr
  */
-function ma2sdp (ma: Multiaddr, ufrag: string): string {
+export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+  const { host, port } = ma.toOptions()
+  const ipVersion = ipv(ma)
+
+  const sdp = `v=0
+o=rtc 779560196 0 IN ${ipVersion} ${host}
+s=-
+t=0 0
+a=group:BUNDLE 0
+a=msid-semantic:WMS *
+a=ice-options:ice2,trickle
+a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+m=application 9 UDP/DTLS/SCTP webrtc-datachannel
+c=IN ${ipVersion} ${host}
+a=mid:0
+a=sendrecv
+a=sctp-port:5000
+a=max-message-size:16384
+a=setup:active
+a=ice-ufrag:${ufrag}
+a=ice-pwd:${ufrag}
+a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host
+a=end-of-candidates
+`
+
+  return {
+    type: 'offer',
+    sdp
+  }
+}
+
+/**
+ * Create an answer SDP message from a multiaddr
+ */
+export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
   const [CERTFP] = ma2Fingerprint(ma)
-
-  return `v=0
+  const sdp = `v=0
 o=- 0 0 IN ${ipVersion} ${host}
 s=-
 c=IN ${ipVersion} ${host}
 t=0 0
 a=ice-lite
-m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
+m=application 9 UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}
@@ -130,16 +174,13 @@ a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
 a=max-message-size:16384
-a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
-}
+a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host
+a=end-of-candidates
+`
 
-/**
- * Create an answer SDP from a multiaddr
- */
-export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   return {
     type: 'answer',
-    sdp: ma2sdp(ma, ufrag)
+    sdp
   }
 }
 
@@ -151,8 +192,10 @@ export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessi
     throw invalidArgument("Can't munge a missing SDP")
   }
 
+  const lineBreak = desc.sdp.includes('\r\n') ? '\r\n' : '\n'
+
   desc.sdp = desc.sdp
-    .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + '\n')
-    .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + '\n')
+    .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + lineBreak)
+    .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + lineBreak)
   return desc
 }
