@@ -8,7 +8,7 @@ import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
 import { identify } from '@libp2p/identify'
-import { interopTests } from '@libp2p/interop'
+import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -46,7 +46,15 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {
-    opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'webtransport') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
+    } else if (options.transport === 'webrtc-direct') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct')
+    } else {
+      throw new UnsupportedError()
+    }
   }
 
   if (options.encryption != null) {
@@ -122,7 +130,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions<ServiceMap> = {
     peerId,
     addresses: {
-      listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
+      listen: []
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
@@ -130,6 +138,18 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     connectionManager: {
       minConnections: 0
     }
+  }
+
+  if (options.noListen !== true) {
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
+    } else {
+      throw new UnsupportedError()
+    }
+  }
+
+  if (options.transport === 'webtransport' || options.transport === 'webrtc-direct') {
+    throw new UnsupportedError()
   }
 
   const services: ServiceFactoryMap = {
