@@ -101,6 +101,31 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [1.0.25](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v1.0.24...circuit-relay-v2-v1.0.25) (2024-06-07)
+
+
+### Bug Fixes
+
+* only mark a connection as transient if the relay has applied limits ([#2575](https://github.com/libp2p/js-libp2p/issues/2575)) ([4bd8e4f](https://github.com/libp2p/js-libp2p/commit/4bd8e4f791d055c2ba1445f1dea64dd3735e41c9))
+* use randomwalk to find circuit relay servers ([#2563](https://github.com/libp2p/js-libp2p/issues/2563)) ([440c9b3](https://github.com/libp2p/js-libp2p/commit/440c9b360b8413149f4a1404c3368f124b0f8a5e)), closes [#2545](https://github.com/libp2p/js-libp2p/issues/2545)
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.0 to ^1.4.1
+    * @libp2p/interface-internal bumped from ^1.2.2 to ^1.2.3
+    * @libp2p/peer-collections bumped from ^5.2.2 to ^5.2.3
+    * @libp2p/peer-id bumped from ^4.1.2 to ^4.1.3
+    * @libp2p/peer-record bumped from ^7.0.18 to ^7.0.19
+    * @libp2p/utils bumped from ^5.4.2 to ^5.4.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.5 to ^5.4.6
+    * @libp2p/logger bumped from ^4.0.13 to ^4.0.14
+    * @libp2p/peer-id-factory bumped from ^4.1.2 to ^4.1.3
+
 ## [1.0.24](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v1.0.23...circuit-relay-v2-v1.0.24) (2024-05-17)
 
 

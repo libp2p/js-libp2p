@@ -64,6 +64,26 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.0.22...upnp-nat-v1.1.0) (2024-06-07)
+
+
+### Features
+
+* allow access to UPnP client from types ([#2449](https://github.com/libp2p/js-libp2p/issues/2449)) ([f6fe2cc](https://github.com/libp2p/js-libp2p/commit/f6fe2cc3cfb4a69520ede31874c94088a7e9b270))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.0 to ^1.4.1
+    * @libp2p/interface-internal bumped from ^1.2.2 to ^1.2.3
+    * @libp2p/utils bumped from ^5.4.2 to ^5.4.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.13 to ^4.0.14
+    * @libp2p/peer-id-factory bumped from ^4.1.2 to ^4.1.3
+
 ## [1.0.22](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.0.21...upnp-nat-v1.0.22) (2024-05-17)
 
 
