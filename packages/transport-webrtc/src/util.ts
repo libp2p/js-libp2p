@@ -2,6 +2,7 @@ import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import type { LoggerOptions } from '@libp2p/interface'
+import type { PeerConnection } from 'node-datachannel'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')
@@ -63,4 +64,8 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
 export interface AbortPromiseOptions {
   signal?: AbortSignal
   message?: string
+}
+
+export function isPeerConnection (obj: any): obj is PeerConnection {
+  return typeof obj.state === 'function'
 }

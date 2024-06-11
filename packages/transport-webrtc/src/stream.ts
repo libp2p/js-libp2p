@@ -1,10 +1,11 @@
 import { CodeError } from '@libp2p/interface'
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { anySignal } from 'any-signal'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
-import { pEvent, TimeoutError } from 'p-event'
 import pTimeout from 'p-timeout'
+import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './private-to-public/pb/message.js'
@@ -89,6 +90,7 @@ export class WebRTCStream extends AbstractStream {
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
   private readonly openTimeout: number
+  private readonly closeController: AbortController
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
@@ -133,6 +135,7 @@ export class WebRTCStream extends AbstractStream {
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
     this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
+    this.closeController = new AbortController()
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -161,6 +164,11 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onclose = (_evt) => {
+      this.log.trace('received onclose event')
+
+      // stop any in-progress writes
+      this.closeController.abort()
+
       // if the channel has closed we'll never receive a FIN_ACK so resolve the
       // promise so we don't try to wait later
       this.receiveFinAck.resolve()
@@ -171,6 +179,11 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onerror = (evt) => {
+      this.log.trace('received onerror event')
+
+      // stop any in-progress writes
+      this.closeController.abort()
+
       const err = (evt as RTCErrorEvent).error
       this.abort(err)
     }
@@ -208,34 +221,59 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
-    if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
-      try {
-        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
-        await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
-      } catch (err: any) {
-        if (err instanceof TimeoutError) {
-          throw new CodeError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`, 'ERR_BUFFER_CLEAR_TIMEOUT')
-        }
-
-        throw err
-      }
-    }
-
     if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
       throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
     }
 
     if (this.channel.readyState !== 'open') {
-      this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
-      await pEvent(this.channel, 'open', { timeout: this.openTimeout })
+      const timeout = AbortSignal.timeout(this.openTimeout)
+      const signal = anySignal([
+        this.closeController.signal,
+        timeout
+      ])
+
+      try {
+        this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
+        await raceEvent(this.channel, 'open', signal)
+      } finally {
+        signal.clear()
+      }
+
       this.log('channel state is now "%s", sending data', this.channel.readyState)
     }
 
-    // send message without copying data
-    this.channel.send(data.subarray())
+    if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
+      const timeout = AbortSignal.timeout(this.bufferedAmountLowEventTimeout)
+      const signal = anySignal([
+        this.closeController.signal,
+        timeout
+      ])
+
+      try {
+        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
+        await raceEvent(this.channel, 'bufferedamountlow', signal)
+      } catch (err: any) {
+        if (timeout.aborted) {
+          throw new CodeError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`, 'ERR_BUFFER_CLEAR_TIMEOUT')
+        }
+
+        throw err
+      } finally {
+        signal.clear()
+      }
+    }
+
+    try {
+      // send message without copying data
+      this.channel.send(data.subarray())
+    } catch (err: any) {
+      this.log.error('error while sending message', err)
+    }
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
+    this.log.trace('-> will send', data.byteLength)
+
     // sending messages is an async operation so use a copy of the list as it
     // may be changed beneath us
     data = data.sublist()
@@ -245,10 +283,14 @@ export class WebRTCStream extends AbstractStream {
       const buf = data.subarray(0, toSend)
       const msgbuf = Message.encode({ message: buf })
       const sendbuf = lengthPrefixed.encode.single(msgbuf)
+      this.log.trace('-> sending message', this.channel.readyState)
       await this._sendMessage(sendbuf)
+      this.log.trace('-> sent message', this.channel.readyState)
 
       data.consume(toSend)
     }
+
+    this.log.trace('-> sent data', this.channel.readyState)
   }
 
   async sendReset (): Promise<void> {
@@ -256,6 +298,11 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendCloseWrite (options: AbortOptions): Promise<void> {
+    if (this.channel.readyState !== 'open') {
+      this.receiveFinAck.resolve()
+      return
+    }
+
     const sent = await this._sendFlag(Message.Flag.FIN)
 
     if (sent) {
@@ -277,6 +324,10 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendCloseRead (): Promise<void> {
+    if (this.channel.readyState !== 'open') {
+      return
+    }
+
     await this._sendFlag(Message.Flag.STOP_SENDING)
   }
 

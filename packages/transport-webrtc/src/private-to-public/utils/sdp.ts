@@ -6,7 +6,6 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import * as multihashes from 'multihashes'
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../../error.js'
 import { CERTHASH_CODE } from '../transport.js'
-import type { LoggerOptions } from '@libp2p/interface'
 import type { HashCode, HashName } from 'multihashes'
 
 /**
@@ -15,34 +14,12 @@ import type { HashCode, HashName } from 'multihashes'
 // @ts-expect-error - Not easy to combine these types.
 export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
-export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
-  // try to fetch fingerprint from local certificate
-  const localCert = pc.getConfiguration().certificates?.at(0)
-  if (localCert == null || localCert.getFingerprints == null) {
-    options.log.trace('fetching fingerprint from local SDP')
-    const localDescription = pc.localDescription
-    if (localDescription == null) {
-      return undefined
-    }
-    return getFingerprintFromSdp(localDescription.sdp)
-  }
-
-  options.log.trace('fetching fingerprint from local certificate')
-
-  if (localCert.getFingerprints().length === 0) {
+const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
+export function getFingerprintFromSdp (sdp: string | undefined): string | undefined {
+  if (sdp == null) {
     return undefined
   }
 
-  const fingerprint = localCert.getFingerprints()[0].value
-  if (fingerprint == null) {
-    throw invalidFingerprint('', 'no fingerprint on local certificate')
-  }
-
-  return fingerprint
-}
-
-const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
-export function getFingerprintFromSdp (sdp: string): string | undefined {
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
 }
@@ -77,6 +54,17 @@ export function certhash (ma: Multiaddr): string {
 export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
   const mbdecoded = mbdecoder.decode(certhash)
   return multihashes.decode(mbdecoded)
+}
+
+export function certhashToFingerprint (certhash: string): string {
+  const mbdecoded = decodeCerthash(certhash)
+
+  return new Array(mbdecoded.length)
+    .fill(0)
+    .map((val, index) => {
+      return mbdecoded.digest[index].toString(16).padStart(2, '0').toUpperCase()
+    })
+    .join(':')
 }
 
 /**
@@ -134,7 +122,7 @@ a=group:BUNDLE 0
 a=msid-semantic:WMS *
 a=ice-options:ice2,trickle
 a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
-m=application 9 UDP/DTLS/SCTP webrtc-datachannel
+m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 c=IN ${ipVersion} ${host}
 a=mid:0
 a=sendrecv
@@ -166,7 +154,7 @@ s=-
 c=IN ${ipVersion} ${host}
 t=0 0
 a=ice-lite
-m=application 9 UDP/DTLS/SCTP webrtc-datachannel
+m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}

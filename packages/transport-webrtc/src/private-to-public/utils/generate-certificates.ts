@@ -2,15 +2,7 @@ import * as x509 from '@peculiar/x509'
 import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-
-/**
- * PEM format server certificate and private key
- */
-export interface TransportCertificate {
-  privateKey: string
-  pem: string
-  certhash: string
-}
+import type { TransportCertificate } from '../..'
 
 const ONE_DAY_MS = 86400000
 

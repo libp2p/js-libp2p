@@ -1,26 +1,20 @@
 import { createSocket } from 'node:dgram'
 import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { noise } from '@chainsafe/libp2p-noise'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { IP4 } from '@multiformats/multiaddr-matcher'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 // @ts-expect-error no types
 import stun from 'stun'
-import { dataChannelError } from '../error.js'
-import { WebRTCMultiaddrConnection } from '../maconn.js'
-import { DataChannelMuxerFactory } from '../muxer.js'
-import { createStream } from '../stream.js'
-import { isFirefox } from '../util.js'
-import { RTCPeerConnection } from '../webrtc/index.js'
 import { UFRAG_PREFIX } from './constants.js'
-import { generateTransportCertificate, type TransportCertificate } from './utils/generate-certificates.js'
-import { generateNoisePrologue } from './utils/generate-noise-prologue.js'
-import * as sdp from './utils/sdp.js'
-import type { DataChannelOptions } from '../index.js'
-import type { PeerId, ListenerEvents, Listener, Connection, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics } from '@libp2p/interface'
+import { connect } from './utils/connect.js'
+import { generateTransportCertificate } from './utils/generate-certificates.js'
+import { type DirectRTCPeerConnection, createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
+import type { DataChannelOptions, TransportCertificate } from '../index.js'
+import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, ConnectionHandler } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, RemoteInfo } from 'node:dgram'
 import type { AddressInfo } from 'node:net'
@@ -37,12 +31,12 @@ export interface WebRTCDirectListenerComponents {
 }
 
 export interface WebRTCDirectListenerInit {
-  shutdownController: AbortController
-  handler?(conn: Connection): void
+  handler?: ConnectionHandler
   upgrader: Upgrader
   certificates?: TransportCertificate[]
   maxInboundStreams?: number
   dataChannel?: DataChannelOptions
+  rtcConfiguration?: RTCConfiguration
 }
 
 export interface WebRTCListenerMetrics {
@@ -55,10 +49,9 @@ const IP6_PROTOCOL = protocols('ip6')
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private socket?: Socket
-  private readonly shutdownController: AbortController
   private readonly multiaddrs: Multiaddr[]
   private certificate?: TransportCertificate
-  private readonly connections: Map<string, RTCPeerConnection>
+  private readonly connections: Map<string, DirectRTCPeerConnection>
   private readonly log: Logger
   private readonly init: WebRTCDirectListenerInit
   private readonly components: WebRTCDirectListenerComponents
@@ -69,10 +62,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     this.init = init
     this.components = components
-    this.shutdownController = init.shutdownController
     this.multiaddrs = []
     this.connections = new Map()
-    this.log = components.logger.forComponent('libp2p:webrtc-direct')
+    this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
+    this.certificate = init.certificates?.[0]
 
     if (components.metrics != null) {
       this.metrics = {
@@ -141,17 +134,23 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     this.socket.on('message', (msg, rinfo) => {
       try {
+        this.log('incoming STUN packet from %o', rinfo)
         const response = stun.decode(msg)
-
         // TODO: this needs to be rate limited keyed by the remote host to
         // prevent a DOS attack
         this.incomingConnection(response, rinfo, certificate).catch(err => {
-          this.log.error('could not process incoming STUN data', err)
+          this.log.error('could not process incoming STUN data from %o', rinfo, err)
         })
       } catch (err) {
-        this.log.error('could not process incoming STUN data', err)
+        this.log.error('could not process incoming STUN data from %o', rinfo, err)
       }
     })
+
+    this.socket.on('close', () => {
+      this.safeDispatchEvent('close')
+    })
+
+    this.safeDispatchEvent('listening')
   }
 
   private async incomingConnection (stunMessage: any, rinfo: RemoteInfo, certificate: TransportCertificate): Promise<void> {
@@ -168,24 +167,19 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     let peerConnection = this.connections.get(key)
 
     if (peerConnection != null) {
+      this.log('already got peer connection for', key)
       return
     }
 
-    peerConnection = new RTCPeerConnection({
-      // @ts-expect-error missing argument
-      iceUfrag: ufrag,
-      icePwd: ufrag,
-      disableFingerprintVerification: true,
-      certificatePemFile: certificate.pem,
-      keyPemFile: certificate.privateKey,
-      maxMessageSize: 16384
-    })
+    this.log('create peer connection for', key)
+
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
+    peerConnection = await createDialerRTCPeerConnection('NodeB', ufrag, this.init.rtcConfiguration, this.certificate)
 
     this.connections.set(key, peerConnection)
 
-    const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
-    peerConnection.addEventListener(eventListeningName, () => {
-      switch (peerConnection?.connectionState) {
+    peerConnection.addEventListener('connectionstatechange', () => {
+      switch (peerConnection.connectionState) {
         case 'failed':
         case 'disconnected':
         case 'closed':
@@ -196,135 +190,23 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       }
     })
 
-    const controller = new AbortController()
-    const signal = controller.signal
-
     try {
-      // create data channel for running the noise handshake. Once the data
-      // channel is opened, we will initiate the noise handshake. This is used
-      // to confirm the identity of the peer.
-      const dataChannelOpenPromise = new Promise<RTCDataChannel>((resolve, reject) => {
-        const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
-        const handshakeTimeout = setTimeout(() => {
-          const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-          this.log.error(error)
-          this.metrics?.listenerEvents.increment({ open_error: true })
-          reject(dataChannelError('data', error))
-        }, HANDSHAKE_TIMEOUT_MS)
-
-        handshakeDataChannel.onopen = (_) => {
-          clearTimeout(handshakeTimeout)
-          resolve(handshakeDataChannel)
-        }
-
-        // ref: https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel/error_event
-        handshakeDataChannel.onerror = (event: Event) => {
-          clearTimeout(handshakeTimeout)
-          const errorTarget = event.target?.toString() ?? 'not specified'
-          const error = `Error opening a data channel for handshaking: ${errorTarget}`
-          this.log.error(error)
-          // NOTE: We use unknown error here but this could potentially be
-          // considered a reset by some standards.
-          this.metrics?.listenerEvents.increment({ unknown_error: true })
-          reject(dataChannelError('data', error))
-        }
-      })
-
-      // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-      // respond to STUN messages without performing an actual SDP exchange.
-      // This is because it can infer the passwd field by reading the USERNAME
-      // attribute of the STUN message.
-      // uses dummy certhash
-      let remoteAddr = multiaddr(`/${rinfo.family === 'IPv4' ? 'ip4' : 'ip6'}/${rinfo.address}/udp/${rinfo.port}`)
-      const offerSdp = sdp.clientOfferFromMultiaddr(remoteAddr, ufrag)
-      await peerConnection.setRemoteDescription(offerSdp)
-
-      const answerSdp = await peerConnection.createAnswer()
-      const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
-      await peerConnection.setLocalDescription(mungedAnswerSdp)
-
-      // wait for peerconnection.onopen to fire, or for the datachannel to open
-      const handshakeDataChannel = await dataChannelOpenPromise
-
-      // now that the connection has been opened, add the remote's certhash to
-      // it's multiaddr so we can complete the noise handshake
-      const remoteFingerprint = sdp.getFingerprintFromSdp(peerConnection.currentRemoteDescription?.sdp ?? '') ?? ''
-      remoteAddr = remoteAddr.encapsulate(sdp.fingerprint2Ma(remoteFingerprint))
-
-      // Do noise handshake.
-      // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before
-      // starting the actual Noise handshake.
-      // <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints
-      // of A (responder) and B (initiator) in their byte representation.
-      const fingerprintsPrologue = generateNoisePrologue(peerConnection, sha256.code, remoteAddr, this.log, 'initiator')
-
-      // Since we use the default crypto interface and do not use a static key
-      // or early data, we pass in undefined for these parameters.
-      const connectionEncrypter = noise({ prologueBytes: fingerprintsPrologue })(this.components)
-
-      const wrappedChannel = createStream({
-        channel: handshakeDataChannel,
-        direction: 'inbound',
+      const conn = await connect(peerConnection, ufrag, {
+        role: 'initiator',
+        log: this.log,
         logger: this.components.logger,
-        ...(this.init.dataChannel ?? {})
-      })
-      const wrappedDuplex = {
-        ...wrappedChannel,
-        sink: wrappedChannel.sink.bind(wrappedChannel),
-        source: (async function * () {
-          for await (const list of wrappedChannel.source) {
-            for (const buf of list) {
-              yield buf
-            }
-          }
-        }())
-      }
-
-      // Creating the connection before completion of the noise
-      // handshake ensures that the stream opening callback is set up
-      const maConn = new WebRTCMultiaddrConnection(this.components, {
-        peerConnection,
-        remoteAddr,
-        timeline: {
-          open: Date.now()
-        },
-        metrics: this.metrics?.listenerEvents
+        metrics: this.components.metrics,
+        events: this.metrics?.listenerEvents,
+        signal: AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
+        remoteAddr: multiaddr(`/${rinfo.family === 'IPv4' ? 'ip4' : 'ip6'}/${rinfo.address}/udp/${rinfo.port}`),
+        hashCode: sha256.code,
+        dataChannel: this.init.dataChannel,
+        upgrader: this.init.upgrader,
+        peerId: this.components.peerId,
+        handler: this.init.handler
       })
 
-      const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
-
-      peerConnection.addEventListener(eventListeningName, () => {
-        switch (peerConnection.connectionState) {
-          case 'failed':
-          case 'disconnected':
-          case 'closed':
-            maConn.close().catch((err) => {
-              this.log.error('error closing connection', err)
-            }).finally(() => {
-              // Remove the event listener once the connection is closed
-              controller.abort()
-            })
-            break
-          default:
-            break
-        }
-      }, { signal })
-
-      // Track opened peer connection
-      this.metrics?.listenerEvents.increment({ peer_connection: true })
-
-      const muxerFactory = new DataChannelMuxerFactory(this.components, {
-        peerConnection,
-        metrics: this.metrics?.listenerEvents,
-        dataChannelOptions: this.init.dataChannel
-      })
-
-      // For inbound connections, we are expected to start the noise handshake.
-      // Therefore, we need to secure an outbound noise connection from the remote.
-      const result = await connectionEncrypter.secureOutbound(this.components.peerId, wrappedDuplex)
-      maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
-
-      await this.init.upgrader.upgradeInbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+      this.safeDispatchEvent('connection', { detail: conn })
     } catch (err) {
       peerConnection.close()
       throw err
@@ -336,19 +218,27 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async close (): Promise<void> {
-    this.shutdownController.abort()
-    this.safeDispatchEvent('close', {})
+    for (const connection of this.connections.values()) {
+      connection.close()
+    }
 
-    await new Promise<void>((resolve) => {
-      if (this.socket == null) {
-        resolve()
-        return
-      }
+    await Promise.all([
+      new Promise<void>((resolve) => {
+        if (this.socket == null) {
+          resolve()
+          return
+        }
 
-      this.socket.close(() => {
-        resolve()
+        this.socket.close(() => {
+          resolve()
+        })
+      }),
+      // RTCPeerConnections will be removed from the connections map when their
+      // connection state changes to 'closed'/'disconnected'/'failed
+      pWaitFor(() => {
+        return this.connections.size === 0
       })
-    })
+    ])
   }
 }
 

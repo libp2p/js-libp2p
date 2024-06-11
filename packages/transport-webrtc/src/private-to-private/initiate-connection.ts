@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
-import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
+import { RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'

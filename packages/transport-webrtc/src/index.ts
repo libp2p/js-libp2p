@@ -237,6 +237,25 @@ export interface DataChannelOptions {
 }
 
 /**
+ * PEM format server certificate and private key
+ */
+export interface TransportCertificate {
+  /**
+   * The private key for the certificate in PEM format
+   */
+  privateKey: string
+  /**
+   * PEM format certificate
+   */
+  pem: string
+
+  /**
+   * The hash of the certificate
+   */
+  certhash: string
+}
+
+/**
  * @param {WebRTCTransportDirectInit} init - WebRTC direct transport configuration
  * @param init.dataChannel - DataChannel configurations
  * @param {number} init.dataChannel.maxMessageSize - Max message size that can be sent through the DataChannel. Larger messages will be chunked into smaller messages below this size (default 16kb)
