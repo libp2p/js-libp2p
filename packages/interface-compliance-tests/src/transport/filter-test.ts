@@ -8,10 +8,11 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('filter', () => {
     let listenAddrs: Multiaddr[]
     let dialAddrs: Multiaddr[]
-    let transport: Transport
+    let dialer: Transport
+    let listener: Transport
 
     before(async () => {
-      ({ listenAddrs, dialAddrs, transport } = await common.setup())
+      ({ listenAddrs, dialAddrs, dialer, listener } = await common.setup())
     })
 
     after(async () => {
@@ -19,12 +20,12 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('filters listen addresses', () => {
-      const filteredAddrs = transport.listenFilter(listenAddrs)
+      const filteredAddrs = listener.listenFilter(listenAddrs)
       expect(filteredAddrs).to.eql(listenAddrs)
     })
 
     it('filters dial addresses', () => {
-      const filteredAddrs = transport.dialFilter(dialAddrs)
+      const filteredAddrs = dialer.dialFilter(dialAddrs)
       expect(filteredAddrs).to.eql(dialAddrs)
     })
   })
