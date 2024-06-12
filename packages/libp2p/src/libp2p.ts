@@ -27,7 +27,7 @@ import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
-export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -37,7 +37,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public logger: ComponentLogger
   public status: Libp2pStatus
 
-  public components: Components & T[keyof T]
+  public components: Components & T
   private readonly log: Logger
 
   constructor (init: Libp2pInit<T> & Required<Pick<Libp2pInit<T>, 'peerId'>>) {
@@ -160,7 +160,6 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     if (init.services != null) {
       for (const name of Object.keys(init.services)) {
         const createService = init.services[name]
-        // @ts-expect-error components type is not fully formed yet
         const service: any = createService(this.components)
 
         if (service == null) {
@@ -412,7 +411,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
   const peerId = options.peerId ??= await createEd25519PeerId()
 
   if (peerId.privateKey == null) {
