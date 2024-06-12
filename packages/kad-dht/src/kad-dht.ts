@@ -1,4 +1,4 @@
-import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, start, stop } from '@libp2p/interface'
+import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
@@ -307,6 +307,18 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       })
     }
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/kad-dht'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/content-routing',
+    '@libp2p/peer-routing',
+    '@libp2p/peer-discovery'
+  ]
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
 
   get [contentRoutingSymbol] (): ContentRouting {
     return this.dhtContentRouting

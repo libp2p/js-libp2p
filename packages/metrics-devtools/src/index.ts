@@ -16,7 +16,7 @@
  * for Chrome or Firefox to inspect the state of your running node.
  */
 
-import { start, stop } from '@libp2p/interface'
+import { serviceCapabilities, start, stop } from '@libp2p/interface'
 import { enable, disable } from '@libp2p/logger'
 import { simpleMetrics } from '@libp2p/simple-metrics'
 import { base64 } from 'multiformats/bases/base64'
@@ -253,6 +253,12 @@ class DevToolsMetrics implements Metrics {
       }
     })({})
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/devtools-metrics'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/metrics'
+  ]
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
     this.simpleMetrics.trackMultiaddrConnection(maConn)

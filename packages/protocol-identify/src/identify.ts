@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
 
-import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { CodeError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
@@ -32,6 +32,10 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       })
     }
   }
+
+  [serviceCapabilities]: string[] = [
+    '@libp2p/identify'
+  ]
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyMessage> {
     let stream: Stream | undefined

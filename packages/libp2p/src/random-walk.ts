@@ -39,6 +39,8 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
     setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/random-walk'
+
   start (): void {
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)

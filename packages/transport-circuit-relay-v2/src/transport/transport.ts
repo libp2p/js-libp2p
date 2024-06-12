@@ -1,5 +1,4 @@
-import { CodeError, start, stop } from '@libp2p/interface'
-import { transportSymbol, type Transport, type CreateListenerOptions, type Listener, type Upgrader, type AbortOptions, type ComponentLogger, type Logger, type Connection, type Stream, type ConnectionGater, type PeerId, type PeerStore } from '@libp2p/interface'
+import { CodeError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
@@ -12,6 +11,7 @@ import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
+import type { Transport, CreateListenerOptions, Listener, Upgrader, AbortOptions, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -105,6 +105,19 @@ export class CircuitRelayTransport implements Transport {
     this.started = false
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/circuit-relay-v2-transport'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport',
+    '@libp2p/circuit-relay-v2-transport'
+  ]
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
+
+  readonly [transportSymbol] = true
+
   isStarted (): boolean {
     return this.started
   }
@@ -132,10 +145,6 @@ export class CircuitRelayTransport implements Transport {
 
     this.started = false
   }
-
-  readonly [transportSymbol] = true
-
-  readonly [Symbol.toStringTag] = 'libp2p/circuit-relay-v2'
 
   /**
    * Dial a peer over a relay

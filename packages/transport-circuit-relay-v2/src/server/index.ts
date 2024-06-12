@@ -123,6 +123,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/circuit-relay-v2-server'
+
   isStarted (): boolean {
     return this.started
   }

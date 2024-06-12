@@ -1,4 +1,4 @@
-import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { CodeError, serviceCapabilities, serviceDependencies, setMaxListeners } from '@libp2p/interface'
 import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -72,6 +72,19 @@ export class WebRTCTransport implements Transport, Startable {
     }
   }
 
+  readonly [transportSymbol] = true
+
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify',
+    '@libp2p/circuit-relay-v2-transport'
+  ]
+
   isStarted (): boolean {
     return this._started
   }
@@ -95,10 +108,6 @@ export class WebRTCTransport implements Transport, Startable {
       shutdownController: this.shutdownController
     })
   }
-
-  readonly [Symbol.toStringTag] = '@libp2p/webrtc'
-
-  readonly [transportSymbol] = true
 
   /**
    * Filter check for all Multiaddrs that this transport can listen on
