@@ -416,7 +416,7 @@ export async function createLibp2pNode <T extends ServiceMap = Record<string, un
     throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
   }
 
-  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
 
   return new Libp2pNode(await validateConfig(options))
 }
