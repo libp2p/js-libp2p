@@ -22,7 +22,7 @@ export interface PersistentPeerStoreComponents {
  * Return true to allow storing the passed multiaddr for the passed peer
  */
 export interface AddressFilter {
-  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean>
+  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean> | boolean
 }
 
 export interface PersistentPeerStoreInit {
