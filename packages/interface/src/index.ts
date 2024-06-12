@@ -685,15 +685,6 @@ export interface LoggerOptions {
 }
 
 /**
- * Returns a new type with all fields marked optional.
- *
- * Borrowed from the tsdef module.
- */
-export type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
-}
-
-/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,

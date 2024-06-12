@@ -9,10 +9,10 @@ import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import type { Components } from '../../src/components.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('registrar protocols', () => {
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p
 
   it('should be able to register and unregister a handler', async () => {
     const deferred = pDefer<Components>()
