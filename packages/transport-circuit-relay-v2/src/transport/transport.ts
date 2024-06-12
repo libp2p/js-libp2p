@@ -112,9 +112,16 @@ export class CircuitRelayTransport implements Transport {
     '@libp2p/circuit-relay-v2-transport'
   ]
 
-  readonly [serviceDependencies]: string[] = [
-    '@libp2p/identify'
-  ]
+  get [serviceDependencies] (): string[] {
+    // we only need identify if discovery is enabled
+    if (this.discovery != null) {
+      return [
+        '@libp2p/identify'
+      ]
+    }
+
+    return []
+  }
 
   readonly [transportSymbol] = true
 
