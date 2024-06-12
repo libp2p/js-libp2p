@@ -37,10 +37,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public logger: ComponentLogger
   public status: Libp2pStatus
 
-  public components: Components
+  public components: Components & T[keyof T]
   private readonly log: Logger
 
-  constructor (init: Libp2pInit<T>) {
+  constructor (init: Libp2pInit<T> & Required<Pick<Libp2pInit<T>, 'peerId'>>) {
     super()
 
     this.status = 'stopped'
@@ -66,6 +66,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
+    // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
@@ -111,7 +112,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       muxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
     })
 
     // Setup the transport manager
@@ -159,6 +160,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     if (init.services != null) {
       for (const name of Object.keys(init.services)) {
         const createService = init.services[name]
+        // @ts-expect-error components type is not fully formed yet
         const service: any = createService(this.components)
 
         if (service == null) {
@@ -197,6 +199,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       this.log.error('component %s was null or undefined', name)
     }
 
+    // @ts-expect-error cannot assign props
     this.components[name] = component
 
     return component
@@ -416,7 +419,7 @@ export async function createLibp2pNode <T extends ServiceMap = Record<string, un
     throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
   }
 
-  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
 
   return new Libp2pNode(await validateConfig(options))
 }
