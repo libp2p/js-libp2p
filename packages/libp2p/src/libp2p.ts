@@ -10,7 +10,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
-import { defaultComponents } from './components.js'
+import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
@@ -187,6 +187,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         }
       }
     }
+
+    // Ensure all services have their required dependencies
+    checkServiceDependencies(components)
   }
 
   private configureComponent <T> (name: string, component: T): T {

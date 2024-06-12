@@ -715,6 +715,24 @@ export interface RoutingOptions extends AbortOptions, ProgressOptions {
   useCache?: boolean
 }
 
+/**
+ * This symbol is used by libp2p services to define the capabilities they can
+ * provide to other libp2p services.
+ *
+ * The service should define a property with this symbol as the key and the
+ * value should be a string array of provided capabilities.
+ */
+export const serviceCapabilities = Symbol.for('@libp2p/service-capabilities')
+
+/**
+ * This symbol is used by libp2p services to define the capabilities they
+ * require from other libp2p services.
+ *
+ * The service should define a property with this symbol as the key and the
+ * value should be a string array of required capabilities.
+ */
+export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
+
 export * from './connection/index.js'
 export * from './connection-encrypter/index.js'
 export * from './connection-gater/index.js'
