@@ -178,25 +178,15 @@ import { createLibp2p } from 'libp2p'
 
 // first service
 
-interface MyServiceComponents {
-  peerId: PeerId
-}
-
 class MyService {
-  private readonly components: MyServiceComponents
-
-  constructor (components: MyServiceComponents) {
-    this.components = components
-  }
-
   saySomething (): string {
     return 'Hello from myService'
   }
 }
 
 function myService () {
-  return (components: MyServiceComponents) => {
-    return new MyService(components)
+  return () => {
+    return new MyService()
   }
 }
 
@@ -209,7 +199,7 @@ interface MyOtherServiceComponents {
 class MyOtherService {
   private readonly components: MyOtherServiceComponents
 
-  constructor (components: MyServiceComponents, init: MyServiceInit = {}) {
+  constructor (components: MyOtherServiceComponents) {
     this.components = components
   }
 
@@ -225,9 +215,8 @@ function myOtherService () {
 }
 
 // configure the node with both services
-
 const node = await createLibp2p({
-  //.. other config here
+  // .. other config here
   services: {
     myService: myService(),
     myOtherService: myOtherService()
