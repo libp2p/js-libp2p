@@ -3,6 +3,7 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import * as filter from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -45,6 +46,9 @@ async function createNode (): Promise<Libp2p> {
     },
     connectionManager: {
       minConnections: 0
+    },
+    services: {
+      identify: identify()
     }
   })
 }

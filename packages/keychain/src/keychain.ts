@@ -2,7 +2,7 @@
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import { CodeError } from '@libp2p/interface'
+import { CodeError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
@@ -118,6 +118,12 @@ export class DefaultKeychain implements Keychain {
 
     privates.set(this, { dek })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/keychain'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/keychain'
+  ]
 
   /**
    * Generates the options for a keychain.  A random salt is produced.

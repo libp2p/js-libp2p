@@ -758,7 +758,10 @@ describe('circuit-relay', () => {
             circuitRelayTransport({
               discoverRelays: 1
             })
-          ]
+          ],
+          services: {
+            identify: identify()
+          }
         }),
         createClient({
           transports: [
@@ -766,7 +769,10 @@ describe('circuit-relay', () => {
             circuitRelayTransport({
               discoverRelays: 1
             })
-          ]
+          ],
+          services: {
+            identify: identify()
+          }
         }),
         createRelay({
           services: {
@@ -846,7 +852,10 @@ describe('circuit-relay', () => {
             circuitRelayTransport({
               discoverRelays: 1
             })
-          ]
+          ],
+          services: {
+            identify: identify()
+          }
         }),
         createClient({
           transports: [
@@ -854,7 +863,10 @@ describe('circuit-relay', () => {
             circuitRelayTransport({
               discoverRelays: 1
             })
-          ]
+          ],
+          services: {
+            identify: identify()
+          }
         }),
         createRelay({
           services: {
@@ -1010,7 +1022,8 @@ describe('circuit-relay', () => {
               defaultDurationLimit,
               applyDefaultLimit: false
             }
-          })
+          }),
+          identify: identify()
         }
       })
 
@@ -1023,7 +1036,8 @@ describe('circuit-relay', () => {
             ]
           },
           services: {
-            echoService
+            echoService,
+            identify: identify()
           }
         })
       ])

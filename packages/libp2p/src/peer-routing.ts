@@ -29,6 +29,8 @@ export class DefaultPeerRouting implements PeerRouting {
     this.routers = init.routers ?? []
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/peer-routing'
+
   /**
    * Iterates over all peer routers in parallel to find the given peer
    */

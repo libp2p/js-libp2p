@@ -47,6 +47,8 @@ export class AutoNATService implements Startable {
     this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/autonat'
+
   isStarted (): boolean {
     return this.started
   }

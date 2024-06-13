@@ -40,6 +40,8 @@ export class DefaultRegistrar implements Registrar {
     this.components.events.addEventListener('peer:identify', this._onPeerIdentify)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/registrar'
+
   getProtocols (): string[] {
     return Array.from(new Set<string>([
       ...this.handlers.keys()

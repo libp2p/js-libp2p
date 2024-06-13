@@ -66,6 +66,7 @@
  * ```
  */
 
+import { serviceCapabilities } from '@libp2p/interface'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
@@ -163,6 +164,12 @@ class PrometheusMetrics implements Metrics {
       }
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/metrics-prometheus'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/metrics'
+  ]
 
   /**
    * Increment the transfer stat for the passed key, making sure
