@@ -302,21 +302,23 @@ const node = await createLibp2p({
 }) // throws error because identify is not present
 ```
 
-### Common dependencies
+### Frequently used dependencies
+
+These capabilities are provided by commonly used libp2p modules such as `@libp2p/identify`, `@chainsafe/libp2p-noise`, `@libp2p/webrtc` etc.
 
 Adding these strings to your service dependencies will cause starting libp2p to throw unless a service is configured to provide these capabilities.
 
-| Symbol | Notes |
-| -------- | ------- |
-| `@libp2p/identify` | You should declare this a as a dependency if your service uses the [Registrar](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface_internal.Registrar.html) to register a network topology. |
-| `@libp2p/identify-push` | The [Identify Push](https://github.com/libp2p/specs/blob/master/identify/README.md#identifypush) protocol must be configured |
-| `@libp2p/connection-encryption` | A connection encrypter must be configured |
-| `@libp2p/stream-multiplexing` | A stream multiplexer must be configured |
-| `@libp2p/content-routing` | A content routing implementation must be configured |
-| `@libp2p/peer-routing` | A peer routing implementation must be configured |
-| `@libp2p/peer-discovery` | A peer discovery implementation must be configured |
-| `@libp2p/keychain` | The libp2p keychain |
-| `@libp2p/metrics` | A metrics implementation must be configured |
-| `@libp2p/transport` | A libp2p transport must be configured |
-| `@libp2p/circuit-relay-v2-transport` | The Circuit Relay v2 transport must be configured |
-| `@libp2p/nat-traversal` | A NAT traversal mechanism must be configured |
+| Dependency | Implementations | Notes |
+| -------- | ------- | ------- |
+| `@libp2p/identify` | `@libp2p/identify` | You should declare this a as a dependency if your service uses the [Registrar](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface_internal.Registrar.html) to register a network topology. |
+| `@libp2p/identify-push` | `@libp2p/identify` | |
+| `@libp2p/connection-encryption` | `@chainsafe/libp2p-noise`, `@libp2p/tls`, `@libp2p/plaintext` |  |
+| `@libp2p/stream-multiplexing` | `@chainsafe/libp2p-yamux` | |
+| `@libp2p/content-routing` | `@libp2p/kad-dht` | |
+| `@libp2p/peer-routing` | `@libp2p/kad-dht` | |
+| `@libp2p/peer-discovery` | `@libp2p/kad-dht`, `@libp2p/bootstrap`, `@libp2p/mdns` |  |
+| `@libp2p/keychain` | `@libp2p/keychain` | |
+| `@libp2p/metrics` | `@libp2p/prometheus-metrics`, `@libp2p/simple-metrics`, `@libp2p/devtool-metrics` |  |
+| `@libp2p/transport` | `@libp2p/tcp`, `@libp2p/websockets`, `@libp2p/webrtc`, `@libp2p/webtransport`, `@libp2p/circuit-relay-v2` |  |
+| `@libp2p/circuit-relay-v2-transport` | `@libp2p/circuit-relay-v2` | |
+| `@libp2p/nat-traversal` | `@libp2p/upnp-nat` | |
