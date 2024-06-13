@@ -270,6 +270,7 @@ class MyService implements Startable {
     this.components = components
   }
 
+  // this property is used as a human-friendly name for the service
   readonly [Symbol.toStringTag] = 'ServiceA'
 
   // this service provides these capabilities to the node
