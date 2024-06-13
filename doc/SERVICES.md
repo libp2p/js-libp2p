@@ -131,7 +131,14 @@ class MyService {
   }
 
   saySomething (): string {
-    return this.message.replace('{}', this.components.connectionManager.getDialQueue().length)
+    return this.message.replace('{}', `${this.components.connectionManager.getDialQueue().length}`)
+  }
+}
+
+// a function that returns a factory function
+function myService (init: MyServiceInit) {
+  return (components: MyServiceComponents) => {
+    return new MyService(components, init)
   }
 }
 
@@ -149,9 +156,54 @@ const node = await createLibp2p({
 console.info(node.services.myService.saySomething()) // 'The queue is 0 dials long'
 ```
 
+## Service lifecycle
+
+Services that need to do async work during startup/shutdown can implement the [Startable](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Startable.html) interface.
+
+It defines several methods that if defined, will be invoked when starting/stopping the node.
+
+All methods may return either `void` or `Promise<void>`.
+
+> [!WARNING]
+> If your functions are async, libp2p will wait for the returned promise to resolve before continuing which can increase startup/shutdown duration
+
+```ts
+import type { Startable } from '@libp2p/interface'
+
+class MyService implements Startable {
+  async beforeStart (): Promise<void> {
+    // optional, can be sync or async
+  }
+
+  async start (): Promise<void> {
+    // can be sync or async
+  }
+
+  async afterStart (): Promise<void> {
+    // optional, can be sync or async
+  }
+
+  async beforeStop (): Promise<void> {
+    // optional, can be sync or async
+  }
+
+  async stop (): Promise<void> {
+    // can be sync or async
+  }
+
+  async afterStop (): Promise<void> {
+    // optional, can be sync or async
+  }
+}
+```
+
 ### Depending on other services
 
 All configured services will be added to the `components` object, so you are able to access other custom services as well as libp2p internals.
+
+Defining it as part of your service components interface will cause TypeScript compilation errors if an instance is not present at the expected key in the service map. This should prevent misconfigurations if you are using TypeScript.
+
+If you do not depend on another service directly but still require it to be configured, see the next section on expressing service capabilities and dependencies.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -204,58 +256,21 @@ const node = await createLibp2p({
 console.info(node.services.myOtherService.speakToMyService()) // 'Hello from myService'
 ```
 
-## Service lifecycle
-
-Services that need to do async work during startup/shutdown can implement the [Startable](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Startable.html) interface.
-
-It defines several methods that if defined, will be invoked when starting/stopping the node.
-
-> [!WARNING]
-> If your functions are async, libp2p will wait for the returned promise to resolve before continuing which can increase startup/shutdown duration
-
-```ts
-import type { Startable } from '@libp2p/interface'
-
-class MyService implements Startable {
-  async beforeStart (): Promise<void> {
-    // optional, can be sync or async
-  }
-
-  async start (): Promise<void> {
-    // can be sync or async
-  }
-
-  async afterStart (): Promise<void> {
-    // optional, can be sync or async
-  }
-
-  async beforeStop (): Promise<void> {
-    // optional, can be sync or async
-  }
-
-  async stop (): Promise<void> {
-    // can be sync or async
-  }
-
-  async afterStop (): Promise<void> {
-    // optional, can be sync or async
-  }
-}
-```
-
 ## Expressing service capabilities and dependencies
-
-If your service has a hard requirement on another service, defining it as part of your service components interface will cause TypeScript compilation errors if an instance is not present at the expected key in the service map.
 
 If you have a dependency on the capabilities provided by another service without needing to directly invoke methods on it, you can inform libp2p by using symbol properties.
 
 libp2p will throw on construction if the dependencies of your service cannot be satisfied.
 
+This is useful if, for example, you configure a service that reacts to peer discovery in some way - you can define a requirement to have at least one peer discovery method configured.
+
+Similarly, if your service registers a network topology, these work by notifying topologies after [Identify](https://github.com/libp2p/specs/blob/master/identify/README.md) has run, so any service using topologies has an indirect dependency on `@libp2p/identify`.
+
 ```ts
 import { createLibp2p } from 'libp2p'
-import { serviceCapabilities, serviceDependencies, Startable } from '@libp2p/interface'
-import { Startable } from '@libp2p/interface'
-import { Registrar } from '@libp2p/interface-internal'
+import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import type { Startable } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 
 interface MyServiceComponents {
   registrar: Registrar
@@ -265,6 +280,7 @@ interface MyServiceComponents {
 // without the Identify protocol present, so it's defined as a dependency
 class MyService implements Startable {
   private readonly components: MyServiceComponents
+  private topologyId?: string
 
   constructor (components: MyServiceComponents) {
     this.components = components
@@ -283,8 +299,18 @@ class MyService implements Startable {
     '@libp2p/identify'
   ]
 
-  start () {
-    this.components.registrar.register(/* topology arguments here */)
+  async start (): Promise<void> {
+    this.topologyId = await this.components.registrar.register('/my/protocol', {
+      onConnect (peer, connection) {
+        // handle connect
+      }
+    })
+  }
+
+  stop (): void {
+    if (this.topologyId != null) {
+      this.components.registrar.unregister(this.topologyId)
+    }
   }
 }
 
