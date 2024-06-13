@@ -1,5 +1,5 @@
 import { upnpNat, type NatAPI, type MapPortOptions } from '@achingbrain/nat-port-mapper'
-import { CodeError, ERR_INVALID_PARAMETERS } from '@libp2p/interface'
+import { CodeError, ERR_INVALID_PARAMETERS, serviceCapabilities } from '@libp2p/interface'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { fromNodeAddress } from '@multiformats/multiaddr'
@@ -50,6 +50,12 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
       gateway: this.gateway
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/upnp-nat'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/nat-traversal'
+  ]
 
   isStarted (): boolean {
     return this.started

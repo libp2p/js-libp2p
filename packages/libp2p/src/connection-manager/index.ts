@@ -260,6 +260,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/connection-manager'
+
   isStarted (): boolean {
     return this.started
   }

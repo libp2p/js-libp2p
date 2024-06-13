@@ -1,4 +1,5 @@
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
@@ -23,7 +24,10 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     connectionEncryption: [
       plaintext()
     ],
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    services: {
+      identify: identify()
+    }
   }
 
   return mergeOptions(options, overrides)

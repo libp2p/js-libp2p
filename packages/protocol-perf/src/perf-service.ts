@@ -28,6 +28,8 @@ export class Perf implements Startable, PerfInterface {
     this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/perf'
+
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
       void this.handleMessage(data).catch((err) => {

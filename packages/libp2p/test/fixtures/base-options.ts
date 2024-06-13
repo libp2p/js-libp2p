@@ -1,5 +1,6 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
@@ -27,7 +28,10 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     ],
     connectionEncryption: [
       plaintext()
-    ]
+    ],
+    services: {
+      identify: identify()
+    }
   }
 
   return mergeOptions(options, ...overrides)

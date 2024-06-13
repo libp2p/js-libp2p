@@ -1,5 +1,5 @@
 import { noise } from '@chainsafe/libp2p-noise'
-import { type CreateListenerOptions, transportSymbol, type Transport, type Listener, type ComponentLogger, type Logger, type Connection, type CounterGroup, type Metrics, type PeerId } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -16,6 +16,7 @@ import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
 import type { DataChannelOptions } from '../index.js'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -73,6 +74,14 @@ export class WebRTCDirectTransport implements Transport {
     }
   }
 
+  readonly [transportSymbol] = true
+
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
+
   /**
    * Dial a given multiaddr
    */
@@ -102,16 +111,6 @@ export class WebRTCDirectTransport implements Transport {
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return this.listenFilter(multiaddrs)
   }
-
-  /**
-   * Implement toString() for WebRTCTransport
-   */
-  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
-
-  /**
-   * Symbol.for('@libp2p/transport')
-   */
-  readonly [transportSymbol] = true
 
   /**
    * Connect to a peer using a multiaddr
