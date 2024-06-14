@@ -49,7 +49,7 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
-  rtcConfiguration?: RTCConfiguration
+  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
   certificates?: TransportCertificate[]
   useLibjuice?: boolean

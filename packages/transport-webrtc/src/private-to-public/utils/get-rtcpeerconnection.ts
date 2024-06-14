@@ -78,7 +78,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   }
 }
 
-export async function createDialerRTCPeerConnection (name: string, ufrag: string, rtcConfiguration?: RTCConfiguration, certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
+export async function createDialerRTCPeerConnection (name: string, ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
   if (certificate == null) {
     const keyPair = await crypto.subtle.generateKey({
       name: 'ECDSA',
@@ -90,6 +90,8 @@ export async function createDialerRTCPeerConnection (name: string, ufrag: string
     })
   }
 
+  const rtcConfig = typeof rtcConfiguration === 'function' ? await rtcConfiguration() : rtcConfiguration
+
   // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
   const peerConnection = new PeerConnection(name, {
     disableFingerprintVerification: true,
@@ -97,7 +99,7 @@ export async function createDialerRTCPeerConnection (name: string, ufrag: string
     certificatePemFile: certificate.pem,
     keyPemFile: certificate.privateKey,
     maxMessageSize: 16384,
-    iceServers: toLibdatachannelIceServers(rtcConfiguration?.iceServers) ?? DEFAULT_STUN_SERVERS
+    iceServers: toLibdatachannelIceServers(rtcConfig?.iceServers) ?? DEFAULT_STUN_SERVERS
   })
 
   return new DirectRTCPeerConnection({

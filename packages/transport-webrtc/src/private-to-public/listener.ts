@@ -34,7 +34,7 @@ export interface WebRTCDirectListenerInit {
   certificates?: TransportCertificate[]
   maxInboundStreams?: number
   dataChannel?: DataChannelOptions
-  rtcConfiguration?: RTCConfiguration
+  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   useLibjuice?: boolean
 }
 
