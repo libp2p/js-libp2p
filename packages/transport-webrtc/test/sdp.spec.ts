@@ -24,7 +24,7 @@ a=end-of-candidates`
 describe('SDP', () => {
   it('converts multiaddr with certhash to an answer SDP', async () => {
     const ufrag = 'MyUserFragment'
-    const sdp = underTest.serverOfferFromMultiAddr(sampleMultiAddr, ufrag)
+    const sdp = underTest.serverOfferFromMultiAddr(sampleMultiAddr, ufrag, ufrag)
 
     expect(sdp.sdp).to.contain(sampleSdp)
   })

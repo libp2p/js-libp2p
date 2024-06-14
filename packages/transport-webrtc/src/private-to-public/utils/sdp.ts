@@ -110,7 +110,7 @@ export function toSupportedHashFunction (name: multihashes.HashName): string {
 /**
  * Create an offer SDP message from a multiaddr
  */
-export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string, pwd: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
 
@@ -130,7 +130,7 @@ a=sctp-port:5000
 a=max-message-size:16384
 a=setup:active
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${ufrag}
+a=ice-pwd:${pwd}
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host
 a=end-of-candidates
 `
@@ -144,7 +144,7 @@ a=end-of-candidates
 /**
  * Create an answer SDP message from a multiaddr
  */
-export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string, pwd: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
   const [CERTFP] = ma2Fingerprint(ma)
@@ -158,7 +158,7 @@ m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${ufrag}
+a=ice-pwd:${pwd}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
 a=max-message-size:16384

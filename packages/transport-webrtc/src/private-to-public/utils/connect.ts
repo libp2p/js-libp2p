@@ -31,7 +31,7 @@ export interface ConnectOptions {
 
 const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<Connection> {
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, pwd: string, options: ConnectOptions): Promise<Connection> {
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the remote will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -47,15 +47,21 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   options.log.trace('setting local description')
   await peerConnection.setLocalDescription(mungedOfferSdp)
 
+  if (options.role === 'initiator') {
+    options.log.trace('server offer', mungedOfferSdp.sdp)
+  } else {
+    options.log.trace('client offer', mungedOfferSdp.sdp)
+  }
+
   // construct answer sdp from multiaddr and ufrag
   let answerSdp: RTCSessionDescriptionInit
 
   if (options.role === 'initiator') {
-    options.log.trace('deriving client offer')
-    answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag)
+    answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag, pwd)
+    options.log.trace('server derived client offer', answerSdp.sdp)
   } else {
-    options.log.trace('deriving server offer')
-    answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag)
+    answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag, pwd)
+    options.log.trace('client derived server offer', answerSdp.sdp)
   }
 
   options.log.trace('setting remote description')

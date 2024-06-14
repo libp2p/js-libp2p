@@ -52,6 +52,7 @@ export interface WebRTCTransportDirectInit {
   rtcConfiguration?: RTCConfiguration
   dataChannel?: DataChannelOptions
   certificates?: TransportCertificate[]
+  useLibjuice?: boolean
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -133,7 +134,7 @@ export class WebRTCDirectTransport implements Transport {
     const peerConnection = await createDialerRTCPeerConnection('NodeA', ufrag, this.init.rtcConfiguration)
 
     try {
-      return await raceSignal(connect(peerConnection, ufrag, {
+      return await raceSignal(connect(peerConnection, ufrag, ufrag, {
         role: 'responder',
         log: this.log,
         logger: this.components.logger,

@@ -1,4 +1,4 @@
-import net from 'net'
+import net from 'node:net'
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'

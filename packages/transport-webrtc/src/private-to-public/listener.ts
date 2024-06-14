@@ -1,23 +1,21 @@
-import { createSocket } from 'node:dgram'
+
 import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { IP4 } from '@multiformats/multiaddr-matcher'
+import getPort from 'get-port'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
-// @ts-expect-error no types
-import stun from 'stun'
-import { UFRAG_PREFIX } from './constants.js'
 import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
-import { type DirectRTCPeerConnection, createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
+import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
+import { stunListener } from './utils/stun-listener.js'
+import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
+import type { StunServer } from './utils/stun-listener.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, ConnectionHandler } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Socket, RemoteInfo } from 'node:dgram'
-import type { AddressInfo } from 'node:net'
 
 /**
  * The time to wait, in milliseconds, for the data channel handshake to complete
@@ -37,6 +35,7 @@ export interface WebRTCDirectListenerInit {
   maxInboundStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration
+  useLibjuice?: boolean
 }
 
 export interface WebRTCListenerMetrics {
@@ -48,7 +47,7 @@ const IP4_PROTOCOL = protocols('ip4')
 const IP6_PROTOCOL = protocols('ip6')
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private socket?: Socket
+  private server?: StunServer
   private readonly multiaddrs: Multiaddr[]
   private certificate?: TransportCertificate
   private readonly connections: Map<string, DirectRTCPeerConnection>
@@ -79,9 +78,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
   async listen (ma: Multiaddr): Promise<void> {
     const parts = ma.stringTuples()
-
     const ipVersion = IP4.matches(ma) ? 4 : 6
-
     const host = parts
       .filter(([code]) => code === IP4_PROTOCOL.code)
       .pop()?.[1] ?? parts
@@ -91,8 +88,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     if (host == null) {
       throw new Error('IP4/6 host must be specified in webrtc-direct mulitaddr')
     }
-
-    const port = parseInt(parts
+    let port = parseInt(parts
       .filter(([code, value]) => code === UDP_PROTOCOL.code)
       .pop()?.[1] ?? '')
 
@@ -100,18 +96,20 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       throw new Error('UDP port must be specified in webrtc-direct mulitaddr')
     }
 
-    this.socket = createSocket({
-      type: `udp${ipVersion}`,
-      reuseAddr: true
-    })
-
-    try {
-      this.socket.bind(port, host)
-      await pEvent(this.socket, 'listening')
-    } catch (err) {
-      this.socket.close()
-      throw err
+    if (port === 0 && this.init.useLibjuice !== false) {
+      // libjuice doesn't map 0 to a random free port so we have to do it
+      // ourselves
+      port = await getPort()
     }
+
+    this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, pwd, remoteHost, remotePort) => {
+      this.incomingConnection(ufrag, pwd, remoteHost, remotePort)
+        .catch(err => {
+          this.log.error('error processing incoming STUN request', err)
+        })
+    }, {
+      useLibjuice: this.init.useLibjuice
+    })
 
     let certificate = this.certificate
 
@@ -126,44 +124,17 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       })
     }
 
-    const address = this.socket.address()
+    const address = this.server.address()
 
-    getNetworkAddresses(address, ipVersion).forEach((ma) => {
+    getNetworkAddresses(address.address, address.port, ipVersion).forEach((ma) => {
       this.multiaddrs.push(multiaddr(`${ma}/webrtc-direct/certhash/${certificate.certhash}`))
-    })
-
-    this.socket.on('message', (msg, rinfo) => {
-      try {
-        this.log('incoming STUN packet from %o', rinfo)
-        const response = stun.decode(msg)
-        // TODO: this needs to be rate limited keyed by the remote host to
-        // prevent a DOS attack
-        this.incomingConnection(response, rinfo, certificate).catch(err => {
-          this.log.error('could not process incoming STUN data from %o', rinfo, err)
-        })
-      } catch (err) {
-        this.log.error('could not process incoming STUN data from %o', rinfo, err)
-      }
-    })
-
-    this.socket.on('close', () => {
-      this.safeDispatchEvent('close')
     })
 
     this.safeDispatchEvent('listening')
   }
 
-  private async incomingConnection (stunMessage: any, rinfo: RemoteInfo, certificate: TransportCertificate): Promise<void> {
-    const usernameAttribute = stunMessage.getAttribute(stun.constants.STUN_ATTR_USERNAME)
-    const username: string | undefined = usernameAttribute?.value?.toString()
-
-    if (username == null || !username.startsWith(UFRAG_PREFIX)) {
-      this.log.trace('ufrag missing from incoming STUN message from %s:%s', rinfo.address, rinfo.port)
-      return
-    }
-
-    const ufrag = username.split(':')[0]
-    const key = `${rinfo.address}:${rinfo.port}:${ufrag}`
+  private async incomingConnection (ufrag: string, pwd: string, remoteHost: string, remotePort: number): Promise<void> {
+    const key = `${remoteHost}:${remotePort}:${ufrag}`
     let peerConnection = this.connections.get(key)
 
     if (peerConnection != null) {
@@ -191,14 +162,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     })
 
     try {
-      const conn = await connect(peerConnection, ufrag, {
+      const conn = await connect(peerConnection, ufrag, pwd, {
         role: 'initiator',
         log: this.log,
         logger: this.components.logger,
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
         signal: AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
-        remoteAddr: multiaddr(`/${rinfo.family === 'IPv4' ? 'ip4' : 'ip6'}/${rinfo.address}/udp/${rinfo.port}`),
+        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
         hashCode: sha256.code,
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
@@ -222,28 +193,20 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       connection.close()
     }
 
-    await Promise.all([
-      new Promise<void>((resolve) => {
-        if (this.socket == null) {
-          resolve()
-          return
-        }
+    await this.server?.close()
 
-        this.socket.close(() => {
-          resolve()
-        })
-      }),
-      // RTCPeerConnections will be removed from the connections map when their
-      // connection state changes to 'closed'/'disconnected'/'failed
-      pWaitFor(() => {
-        return this.connections.size === 0
-      })
-    ])
+    // RTCPeerConnections will be removed from the connections map when their
+    // connection state changes to 'closed'/'disconnected'/'failed
+    await pWaitFor(() => {
+      return this.connections.size === 0
+    })
+
+    this.safeDispatchEvent('close')
   }
 }
 
-function getNetworkAddresses (host: AddressInfo, version: 4 | 6): string[] {
-  if (host.address === '0.0.0.0' || host.address === '::1') {
+function getNetworkAddresses (host: string, port: number, version: 4 | 6): string[] {
+  if (host === '0.0.0.0' || host === '::1') {
     // return all ip4 interfaces
     return Object.entries(networkInterfaces())
       .flatMap(([_, addresses]) => addresses)
@@ -263,10 +226,10 @@ function getNetworkAddresses (host: AddressInfo, version: 4 | 6): string[] {
 
         return false
       })
-      .map(address => `/ip${version}/${address}/udp/${host.port}`)
+      .map(address => `/ip${version}/${address}/udp/${port}`)
   }
 
   return [
-    `/ip${version}/${host.address}/udp/${host.port}`
+    `/ip${version}/${host}/udp/${port}`
   ]
 }
