@@ -52,6 +52,7 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
+  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
 }
 
@@ -137,7 +138,10 @@ export class WebRTCDirectTransport implements Transport {
       hash: sdp.toSupportedHashFunction(remoteCerthash.name)
     } as any)
 
-    const peerConnection = new RTCPeerConnection({ certificates: [certificate] })
+    const peerConnection = new RTCPeerConnection({
+      ...(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {}),
+      certificates: [certificate]
+    })
 
     try {
       // create data channel for running the noise handshake. Once the data channel is opened,

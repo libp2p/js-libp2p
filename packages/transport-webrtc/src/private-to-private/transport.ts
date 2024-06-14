@@ -19,7 +19,7 @@ export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
 const INBOUND_CONNECTION_TIMEOUT = 30 * 1000
 
 export interface WebRTCTransportInit {
-  rtcConfiguration?: RTCConfiguration
+  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
 
   /**
@@ -133,7 +133,7 @@ export class WebRTCTransport implements Transport, Startable {
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     this.log.trace('dialing address: %a', ma)
 
-    const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const peerConnection = new RTCPeerConnection(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration)
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
       dataChannelOptions: this.init.dataChannel
@@ -170,7 +170,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
-    const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const peerConnection = new RTCPeerConnection(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration)
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
       dataChannelOptions: this.init.dataChannel
