@@ -122,6 +122,8 @@ export class DefaultUpgrader implements Upgrader {
     this.events = components.events
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/upgrader'
+
   async shouldBlockConnection (remotePeer: PeerId, maConn: MultiaddrConnection, connectionType: ConnectionDeniedType): Promise<void> {
     const connectionGater = this.components.connectionGater[connectionType]
 

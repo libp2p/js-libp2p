@@ -16,11 +16,11 @@
  * for Chrome or Firefox to inspect the state of your running node.
  */
 
-import { start, stop } from '@libp2p/interface'
+import { serviceCapabilities, start, stop } from '@libp2p/interface'
 import { enable, disable } from '@libp2p/logger'
 import { simpleMetrics } from '@libp2p/simple-metrics'
 import { base64 } from 'multiformats/bases/base64'
-import type { ComponentLogger, Connection, Libp2pEvents, Logger, Metrics, MultiaddrConnection, PeerId, Peer as PeerStorePeer, PeerStore, PeerUpdate, Stream, TypedEventEmitter } from '@libp2p/interface'
+import type { ComponentLogger, Connection, Libp2pEvents, Logger, Metrics, MultiaddrConnection, PeerId, Peer as PeerStorePeer, PeerStore, PeerUpdate, Stream, TypedEventTarget } from '@libp2p/interface'
 import type { TransportManager, Registrar, ConnectionManager } from '@libp2p/interface-internal'
 
 export const SOURCE_DEVTOOLS = '@libp2p/devtools-metrics:devtools'
@@ -214,7 +214,7 @@ export interface DevToolsMetricsInit {
 
 export interface DevToolsMetricsComponents {
   logger: ComponentLogger
-  events: TypedEventEmitter<Libp2pEvents>
+  events: TypedEventTarget<Libp2pEvents>
   peerId: PeerId
   transportManager: TransportManager
   registrar: Registrar
@@ -253,6 +253,12 @@ class DevToolsMetrics implements Metrics {
       }
     })({})
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/devtools-metrics'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/metrics'
+  ]
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
     this.simpleMetrics.trackMultiaddrConnection(maConn)

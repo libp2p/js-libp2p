@@ -37,6 +37,8 @@ export class DefaultTransportManager implements TransportManager, Startable {
     this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/transport-manager'
+
   /**
    * Adds a `Transport` to the manager
    */

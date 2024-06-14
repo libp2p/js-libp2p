@@ -1,4 +1,4 @@
-import { PeerConnection } from 'node-datachannel'
+import { DescriptionType, PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from '../../webrtc/index.js'
 import { DEFAULT_STUN_SERVERS } from '../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
@@ -64,7 +64,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
 
     // have to set ufrag after first datachannel is created
     if (this.connectionState === 'new') {
-      this.peerConnection.setLocalDescription('offer', {
+      this.peerConnection.setLocalDescription(DescriptionType.Offer, {
         iceUfrag: this.ufrag,
         icePwd: this.ufrag
       })

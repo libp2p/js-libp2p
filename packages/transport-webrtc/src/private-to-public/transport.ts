@@ -1,4 +1,4 @@
-import { transportSymbol } from '@libp2p/interface'
+import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -75,6 +75,14 @@ export class WebRTCDirectTransport implements Transport {
     }
   }
 
+  readonly [transportSymbol] = true
+
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
+
   /**
    * Dial a given multiaddr
    */
@@ -108,16 +116,6 @@ export class WebRTCDirectTransport implements Transport {
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return this.listenFilter(multiaddrs)
   }
-
-  /**
-   * Implement toString() for WebRTCTransport
-   */
-  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
-
-  /**
-   * Symbol.for('@libp2p/transport')
-   */
-  readonly [transportSymbol] = true
 
   /**
    * Connect to a peer using a multiaddr

@@ -32,7 +32,7 @@
  * ```
  */
 
-import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
+import { TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -127,6 +127,10 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
   readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/peer-discovery'
+  ]
 
   isStarted (): boolean {
     return Boolean(this.timer)

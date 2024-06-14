@@ -19,7 +19,7 @@
  */
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
-import { CodeError } from '@libp2p/interface'
+import { CodeError, serviceCapabilities } from '@libp2p/interface'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents, TLSInit } from './index.js'
@@ -36,6 +36,12 @@ export class TLS implements ConnectionEncrypter {
     this.log = components.logger.forComponent('libp2p:tls')
     this.timeout = init.timeout ?? 1000
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/tls'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/connection-encryption'
+  ]
 
   async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
     return this._encrypt(localId, conn, true, remoteId)

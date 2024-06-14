@@ -2,6 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
@@ -738,7 +739,10 @@ describe('libp2p.upgrader', () => {
       connectionEncryption: [
         plaintext()
       ],
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      services: {
+        identify: identify()
+      }
     })
     await libp2p.start()
 
@@ -757,7 +761,10 @@ describe('libp2p.upgrader', () => {
       connectionEncryption: [
         plaintext()
       ],
-      connectionGater: mockConnectionGater()
+      connectionGater: mockConnectionGater(),
+      services: {
+        identify: identify()
+      }
     })
     await remoteLibp2p.start()
 

@@ -13,7 +13,7 @@ import type { Libp2pNode } from '../../src/libp2p.js'
 import type { PeerUpdate } from '@libp2p/interface'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
-const announceAddreses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
+const announceAddresses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
 
 describe('libp2p.addressManager', () => {
   let libp2p: Libp2pNode
@@ -31,7 +31,7 @@ describe('libp2p.addressManager', () => {
         ...AddressesOptions,
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses
+          announce: announceAddresses
         }
       }
     })
@@ -83,7 +83,7 @@ describe('libp2p.addressManager', () => {
         ...AddressesOptions,
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses
+          announce: announceAddresses
         }
       }
     })
@@ -94,10 +94,10 @@ describe('libp2p.addressManager', () => {
 
     // Announce 1 announce addr
     const advertiseMultiaddrs = libp2p.components.addressManager.getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
-    expect(advertiseMultiaddrs.length).to.equal(announceAddreses.length)
+    expect(advertiseMultiaddrs.length).to.equal(announceAddresses.length)
     advertiseMultiaddrs.forEach((m) => {
       expect(tmListen).to.not.include(m)
-      expect(announceAddreses).to.include(m)
+      expect(announceAddresses).to.include(m)
     })
   })
 
@@ -136,7 +136,7 @@ describe('libp2p.addressManager', () => {
         ...AddressesOptions,
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses,
+          announce: announceAddresses,
           announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
         }
       }
@@ -181,7 +181,7 @@ describe('libp2p.addressManager', () => {
       config: {
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses
+          announce: announceAddresses
         },
         transports: [
           webSockets()
@@ -192,7 +192,7 @@ describe('libp2p.addressManager', () => {
       }
     })
 
-    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddreses)
+    expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddresses)
     expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.not.have.members(listenAddresses)
   })
 
@@ -202,7 +202,7 @@ describe('libp2p.addressManager', () => {
       config: {
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses
+          announce: announceAddresses
         },
         transports: [
           webSockets()
@@ -213,14 +213,19 @@ describe('libp2p.addressManager', () => {
       }
     })
 
-    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update')
+    const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update', {
+      filter: (event) => {
+        return event.detail.peer.addresses.map(({ multiaddr }) => multiaddr.toString())
+          .includes(announceAddresses[0])
+      }
+    })
 
     await libp2p.start()
 
     const event = await eventPromise
 
     expect(event.detail.peer.addresses.map(({ multiaddr }) => multiaddr.toString()))
-      .to.include.members(announceAddreses, 'peer info did not include announce addresses')
+      .to.include.members(announceAddresses, 'peer info did not include announce addresses')
   })
 
   it('should only include confirmed observed addresses in peer record', async () => {
@@ -229,7 +234,7 @@ describe('libp2p.addressManager', () => {
       config: {
         addresses: {
           listen: listenAddresses,
-          announce: announceAddreses
+          announce: announceAddresses
         },
         transports: [
           webSockets()

@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -49,7 +50,10 @@ describe('core', () => {
       transports: [
         webSockets(),
         circuitRelayTransport()
-      ]
+      ],
+      services: {
+        identify: identify()
+      }
     })
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws'), {

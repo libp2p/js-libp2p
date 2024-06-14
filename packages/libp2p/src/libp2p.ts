@@ -10,7 +10,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
-import { defaultComponents } from './components.js'
+import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
@@ -27,7 +27,7 @@ import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
-export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -37,10 +37,10 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
   public logger: ComponentLogger
   public status: Libp2pStatus
 
-  public components: Components
+  public components: Components & T
   private readonly log: Logger
 
-  constructor (init: Libp2pInit<T>) {
+  constructor (init: Libp2pInit<T> & Required<Pick<Libp2pInit<T>, 'peerId'>>) {
     super()
 
     this.status = 'stopped'
@@ -66,6 +66,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
+    // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
@@ -111,7 +112,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncryption: (init.connectionEncryption ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       muxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
     })
 
     // Setup the transport manager
@@ -187,6 +188,9 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
         }
       }
     }
+
+    // Ensure all services have their required dependencies
+    checkServiceDependencies(components)
   }
 
   private configureComponent <T> (name: string, component: T): T {
@@ -194,6 +198,7 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
       this.log.error('component %s was null or undefined', name)
     }
 
+    // @ts-expect-error cannot assign props
     this.components[name] = component
 
     return component
@@ -406,14 +411,14 @@ export class Libp2pNode<T extends ServiceMap = Record<string, unknown>> extends 
  * Returns a new Libp2pNode instance - this exposes more of the internals than the
  * libp2p interface and is useful for testing and debugging.
  */
-export async function createLibp2pNode <T extends ServiceMap = Record<string, unknown>> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
+export async function createLibp2pNode <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
   const peerId = options.peerId ??= await createEd25519PeerId()
 
   if (peerId.privateKey == null) {
     throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
   }
 
-  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey as Uint8Array)
+  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
 
   return new Libp2pNode(await validateConfig(options))
 }
