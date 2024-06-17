@@ -133,14 +133,7 @@ export class WebRTCTransport implements Transport, Startable {
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     this.log.trace('dialing address: %a', ma)
 
-    const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory(this.components, {
-      peerConnection,
-      dataChannelOptions: this.init.dataChannel
-    })
-
-    const { remoteAddress } = await initiateConnection({
-      peerConnection,
+    const { remoteAddress, peerConnection } = await initiateConnection({
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
       signal: options.signal,
@@ -154,6 +147,11 @@ export class WebRTCTransport implements Transport, Startable {
       timeline: { open: Date.now() },
       remoteAddr: remoteAddress,
       metrics: this.metrics?.dialerEvents
+    })
+
+    const muxerFactory = new DataChannelMuxerFactory(this.components, {
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
     })
 
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {

@@ -1,7 +1,7 @@
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
-import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
+import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
@@ -17,7 +17,7 @@ export interface IncomingStreamOpts extends IncomingStreamData {
 }
 
 export interface ConnectOptions extends LoggerOptions {
-  peerConnection: RTCPeerConnection
+  rtcConfiguration?: RTCConfiguration
   multiaddr: Multiaddr
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -26,7 +26,7 @@ export interface ConnectOptions extends LoggerOptions {
   metrics?: WebRTCTransportMetrics
 }
 
-export async function initiateConnection ({ peerConnection, signal, metrics, multiaddr: ma, connectionManager, transportManager, log }: ConnectOptions): Promise<{ remoteAddress: Multiaddr }> {
+export async function initiateConnection ({ rtcConfiguration, signal, metrics, multiaddr: ma, connectionManager, transportManager, log }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection }> {
   const { baseAddr } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -64,6 +64,7 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
     })
 
     const messageStream = pbStream(stream).pb(Message)
+    const peerConnection = new RTCPeerConnection(rtcConfiguration)
 
     try {
       // we create the channel so that the RTCPeerConnection has a component for
@@ -150,7 +151,8 @@ export async function initiateConnection ({ peerConnection, signal, metrics, mul
       log.trace('initiator connected to remote address %s', ma)
 
       return {
-        remoteAddress: ma
+        remoteAddress: ma,
+        peerConnection
       }
     } catch (err: any) {
       peerConnection.close()
