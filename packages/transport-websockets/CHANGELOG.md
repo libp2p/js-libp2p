@@ -70,6 +70,25 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [8.0.25](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.24...websockets-v8.0.25) (2024-06-07)
+
+
+### Documentation
+
+* fix filters import ([#2579](https://github.com/libp2p/js-libp2p/issues/2579)) ([62e3225](https://github.com/libp2p/js-libp2p/commit/62e32252a334a5389546dd05a143ffb93cb8e744))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.0 to ^1.4.1
+    * @libp2p/utils bumped from ^5.4.2 to ^5.4.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.5 to ^5.4.6
+    * @libp2p/logger bumped from ^4.0.13 to ^4.0.14
+
 ## [8.0.24](https://github.com/libp2p/js-libp2p/compare/websockets-v8.0.23...websockets-v8.0.24) (2024-05-17)
 
 

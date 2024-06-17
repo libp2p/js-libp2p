@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, serviceCapabilities } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { pipe } from 'it-pipe'
@@ -119,6 +119,12 @@ export class MplexStreamMuxer implements StreamMuxer {
       duration: 1
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/mplex'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/stream-multiplexing'
+  ]
 
   /**
    * Returns a Map of streams and their ids

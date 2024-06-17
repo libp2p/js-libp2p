@@ -26,6 +26,8 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     this.components = components
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/content-routing'
+
   isStarted (): boolean {
     return this.started
   }

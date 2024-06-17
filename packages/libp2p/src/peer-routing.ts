@@ -1,5 +1,5 @@
 import { CodeError } from '@libp2p/interface'
-import { PeerSet } from '@libp2p/peer-collections'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import merge from 'it-merge'
 import parallel from 'it-parallel'
 import { codes, messages } from './errors.js'
@@ -28,6 +28,8 @@ export class DefaultPeerRouting implements PeerRouting {
     this.peerStore = components.peerStore
     this.routers = init.routers ?? []
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/peer-routing'
 
   /**
    * Iterates over all peer routers in parallel to find the given peer
@@ -79,7 +81,7 @@ export class DefaultPeerRouting implements PeerRouting {
     }
 
     const self = this
-    const seen = new PeerSet()
+    const seen = createScalableCuckooFilter(1024)
 
     for await (const peer of parallel(
       async function * () {
@@ -119,11 +121,11 @@ export class DefaultPeerRouting implements PeerRouting {
       }
 
       // deduplicate peers
-      if (seen.has(peer.id)) {
+      if (seen.has(peer.id.toBytes())) {
         continue
       }
 
-      seen.add(peer.id)
+      seen.add(peer.id.toBytes())
 
       yield peer
     }

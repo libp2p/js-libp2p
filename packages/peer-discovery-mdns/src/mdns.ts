@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
+import { CustomEvent, TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
 import { stringGen } from './utils.js'
@@ -57,6 +57,10 @@ export class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> impleme
   readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/mdns'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/peer-discovery'
+  ]
 
   isStarted (): boolean {
     return Boolean(this.mdns)

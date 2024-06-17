@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { CodeError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type PrivateKey, type Upgrader } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
@@ -156,4 +156,42 @@ export function defaultComponents (init: ComponentsInit = {}): Components {
 
   // @ts-expect-error component keys are proxied
   return proxy
+}
+
+export function checkServiceDependencies (components: Components): void {
+  const serviceCapabilities: Record<string, ConstrainBoolean> = {}
+
+  for (const service of Object.values(components.components)) {
+    for (const capability of getServiceCapabilities(service)) {
+      serviceCapabilities[capability] = true
+    }
+  }
+
+  for (const service of Object.values(components.components)) {
+    for (const capability of getServiceDependencies(service)) {
+      if (serviceCapabilities[capability] !== true) {
+        throw new CodeError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`, 'ERR_UNMET_SERVICE_DEPENDENCIES')
+      }
+    }
+  }
+}
+
+function getServiceCapabilities (service: any): string[] {
+  if (Array.isArray(service?.[serviceCapabilities])) {
+    return service[serviceCapabilities]
+  }
+
+  return []
+}
+
+function getServiceDependencies (service: any): string[] {
+  if (Array.isArray(service?.[serviceDependencies])) {
+    return service[serviceDependencies]
+  }
+
+  return []
+}
+
+function getServiceName (service: any): string {
+  return service?.[Symbol.toStringTag] ?? service?.toString() ?? 'unknown'
 }

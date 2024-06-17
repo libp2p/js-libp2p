@@ -56,7 +56,7 @@ describe('interface-transport compliance', () => {
         restore () { delayMs = 0 }
       }
 
-      return { transport: wsProxy, listenAddrs: addrs, dialAddrs: addrs, connector }
+      return { dialer: wsProxy, listener: wsProxy, listenAddrs: addrs, dialAddrs: addrs, connector }
     },
     async teardown () {}
   })

@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { type Connection, type ConnectionProtector, isConnection, type PeerId, type Stream } from '@libp2p/interface'
+import { type Connection, type ConnectionProtector, isConnection, type PeerId, type Stream, type Libp2p } from '@libp2p/interface'
 import { AbortError, ERR_TIMEOUT, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -30,7 +30,8 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { codes as ErrorCodes } from '../../src/errors.js'
-import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { createLibp2p } from '../../src/index.js'
+import { createLibp2pNode } from '../../src/libp2p.js'
 import { DefaultPeerRouting } from '../../src/peer-routing.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
@@ -281,8 +282,8 @@ describe('dialing (direct, TCP)', () => {
 describe('libp2p.dialer (direct, TCP)', () => {
   let peerId: PeerId
   let remotePeerId: PeerId
-  let libp2p: Libp2pNode
-  let remoteLibp2p: Libp2pNode
+  let libp2p: Libp2p
+  let remoteLibp2p: Libp2p
   let remoteAddr: Multiaddr
 
   beforeEach(async () => {
@@ -291,7 +292,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       createEd25519PeerId()
     ])
 
-    remoteLibp2p = await createLibp2pNode({
+    remoteLibp2p = await createLibp2p({
       peerId: remotePeerId,
       addresses: {
         listen: [listenAddr.toString()]
@@ -565,6 +566,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const dials = 10
     const error = new Error('Boom')
+    // @ts-expect-error private field access
     Sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => Promise.reject(error))
 
     await libp2p.peerStore.patch(remotePeerId, {

@@ -3,6 +3,7 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -57,7 +58,10 @@ describe('dialing (resolvable addresses)', () => {
         connectionEncryption: [
           plaintext()
         ],
-        connectionGater: mockConnectionGater()
+        connectionGater: mockConnectionGater(),
+        services: {
+          identify: identify()
+        }
       }),
       createLibp2pNode({
         addresses: {
@@ -82,7 +86,8 @@ describe('dialing (resolvable addresses)', () => {
           plaintext()
         ],
         services: {
-          relay: circuitRelayServer()
+          relay: circuitRelayServer(),
+          identify: identify()
         },
         connectionGater: mockConnectionGater()
       })
@@ -115,7 +120,7 @@ describe('dialing (resolvable addresses)', () => {
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
 
     // Transport spy
-    const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')
+    const transport = getTransport(libp2p, '@libp2p/circuit-relay-v2-transport')
     const transportDialSpy = sinon.spy(transport, 'dial')
 
     // Resolver stub

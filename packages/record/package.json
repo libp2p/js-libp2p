@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/record",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "libp2p record implementation",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/record#readme",
@@ -65,7 +65,7 @@
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.3",
-    "aegir": "^42.2.11",
+    "aegir": "^43.0.1",
     "multiformats": "^13.1.0",
     "protons": "^7.5.0"
   },

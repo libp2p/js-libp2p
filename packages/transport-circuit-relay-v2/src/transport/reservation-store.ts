@@ -1,15 +1,17 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
+import { createBloomFilter } from '@libp2p/utils/filters'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
+import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
 import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { Filter } from '@libp2p/utils/filters'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
 const REFRESH_WINDOW = (60 * 1000) * 10
@@ -69,6 +71,7 @@ interface RelayEntry {
 export interface ReservationStoreEvents {
   'relay:not-enough-relays': CustomEvent
   'relay:removed': CustomEvent<PeerId>
+  'relay:created-reservation': CustomEvent<PeerId>
 }
 
 export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> implements Startable {
@@ -84,6 +87,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly reservationCompletionTimeout: number
   private started: boolean
   private readonly log: Logger
+  private readonly relayFilter: Filter
 
   constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
     super()
@@ -96,9 +100,10 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.events = components.events
     this.reservations = new PeerMap()
     this.maxDiscoveredRelays = init?.discoverRelays ?? 0
-    this.maxReservationQueueLength = init?.maxReservationQueueLength ?? 100
-    this.reservationCompletionTimeout = init?.reservationCompletionTimeout ?? 10000
+    this.maxReservationQueueLength = init?.maxReservationQueueLength ?? DEFAULT_MAX_RESERVATION_QUEUE_LENGTH
+    this.reservationCompletionTimeout = init?.reservationCompletionTimeout ?? DEFAULT_RESERVATION_COMPLETION_TIMEOUT
     this.started = false
+    this.relayFilter = createBloomFilter(100)
 
     // ensure we don't listen on multiple relays simultaneously
     this.reserveQueue = new PeerQueue({
@@ -123,6 +128,13 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.started = true
   }
 
+  afterStart (): void {
+    if (this.reservations.size < this.maxDiscoveredRelays) {
+      this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
+      this.safeDispatchEvent('relay:not-enough-relays', {})
+    }
+  }
+
   stop (): void {
     this.reserveQueue.clear()
     this.reservations.forEach(({ timeout }) => {
@@ -134,9 +146,9 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
   /**
    * If the number of current relays is beneath the configured `maxReservations`
-   * value, and the passed peer id is not our own, and we have a non-relayed connection
-   * to the remote, and the remote peer speaks the hop protocol, try to reserve a slot
-   * on the remote peer
+   * value, and the passed peer id is not our own, and we have a non-relayed
+   * connection to the remote, and the remote peer speaks the hop protocol, try
+   * to reserve a slot on the remote peer
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     if (this.peerId.equals(peerId)) {
@@ -145,18 +157,25 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     if (this.reserveQueue.size > this.maxReservationQueueLength) {
-      this.log('not adding relay as the queue is full')
+      this.log('not adding potential relay peer %p as the queue is full', peerId)
       return
     }
 
     if (this.reserveQueue.has(peerId)) {
-      this.log('relay peer is already in the reservation queue')
+      this.log('potential relay peer %p is already in the reservation queue', peerId)
       return
     }
 
-    this.log('add relay %p', peerId)
+    if (this.relayFilter.has(peerId.toBytes())) {
+      this.log('potential relay peer %p has failed previously, not trying again', peerId, new Error('where').stack)
+      return
+    }
+
+    this.log('try to reserve relay slot with %p', peerId)
 
     await this.reserveQueue.add(async () => {
+      const start = Date.now()
+
       try {
         // allow refresh of an existing reservation if it is about to expire
         const existingReservation = this.reservations.get(peerId)
@@ -183,6 +202,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         }
 
         const signal = AbortSignal.timeout(this.reservationCompletionTimeout)
+        setMaxListeners(Infinity, signal)
 
         const connection = await this.connectionManager.openConnection(peerId, {
           signal
@@ -230,8 +250,12 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         // listen on multiaddr that only the circuit transport is listening for
         await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit`)])
+
+        this.safeDispatchEvent('relay:created-reservation', {
+          detail: peerId
+        })
       } catch (err) {
-        this.log.error('could not reserve slot on %p', peerId, err)
+        this.log.error('could not reserve slot on %p after %dms', peerId, Date.now() - start, err)
 
         // cancel the renewal timeout if it's been set
         const reservation = this.reservations.get(peerId)
@@ -242,6 +266,9 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         // if listening failed, remove the reservation
         this.reservations.delete(peerId)
+
+        // don't try this peer again
+        this.relayFilter.add(peerId.toBytes())
       }
     }, {
       peerId
@@ -254,6 +281,10 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
   getReservation (peerId: PeerId): Reservation | undefined {
     return this.reservations.get(peerId)?.reservation
+  }
+
+  reservationCount (): number {
+    return this.reservations.size
   }
 
   async #createReservation (connection: Connection, options: AbortOptions): Promise<Reservation> {
@@ -270,11 +301,12 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     try {
       response = await hopstr.read(options)
     } catch (err: any) {
-      this.log.error('error parsing reserve message response from %p because', connection.remotePeer, err)
       stream.abort(err)
       throw err
     } finally {
-      await stream.close()
+      if (stream.status !== 'closed') {
+        await stream.close(options)
+      }
     }
 
     if (response.status === Status.OK && (response.reservation != null)) {

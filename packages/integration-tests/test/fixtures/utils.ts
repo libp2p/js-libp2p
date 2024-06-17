@@ -1,5 +1,6 @@
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Libp2p, AbortOptions, ContentRouting, PeerId, PeerInfo } from '@libp2p/interface'
@@ -7,6 +8,9 @@ import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID, Version } from 'multiformats'
 import type { Options as PWaitForOptions } from 'p-wait-for'
+
+const browser = detect()
+export const isFirefox = ((browser != null) && browser.name === 'firefox')
 
 export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay

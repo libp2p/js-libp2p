@@ -30,7 +30,7 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
+import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
 import createListener from './listener.js'
@@ -102,6 +102,10 @@ class WebTransportTransport implements Transport {
   readonly [Symbol.toStringTag] = '@libp2p/webtransport'
 
   readonly [transportSymbol] = true
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
 
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     if (options?.signal?.aborted === true) {
