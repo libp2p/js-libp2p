@@ -22,7 +22,6 @@ const browser = detect()
 
 interface Initiator {
   multiaddr: Multiaddr
-  peerConnection: RTCPeerConnection
   connectionManager: StubbedInstance<ConnectionManager>
   transportManager: StubbedInstance<TransportManager>
   connection: StubbedInstance<Connection>
@@ -67,7 +66,6 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
   return {
     initiator: {
       multiaddr: receiverMultiaddr,
-      peerConnection: new RTCPeerConnection(),
       connectionManager: stubInterface<ConnectionManager>(),
       transportManager: stubInterface<TransportManager>(),
       connection: stubInterface<Connection>(),
@@ -91,9 +89,10 @@ describe('webrtc basic', () => {
   const isFirefox = ((browser != null) && browser.name === 'firefox')
   let initiator: Initiator
   let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiator?.peerConnection?.close()
+    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
@@ -109,7 +108,7 @@ describe('webrtc basic', () => {
     // signalling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
-    await expect(
+    ;[{ peerConnection: initiatorPeerConnection }] = await expect(
       Promise.all([
         initiateConnection(initiator),
         handleIncomingStream(recipient)
@@ -118,11 +117,11 @@ describe('webrtc basic', () => {
 
     await pRetry(async () => {
       if (isFirefox) {
-        expect(initiator.peerConnection.iceConnectionState).eq('connected')
+        expect(initiatorPeerConnection.iceConnectionState).eq('connected')
         expect(recipient.peerConnection.iceConnectionState).eq('connected')
         return
       }
-      expect(initiator.peerConnection.connectionState).eq('connected')
+      expect(initiatorPeerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })
   })
@@ -137,18 +136,14 @@ describe('webrtc basic', () => {
     // transport manager dials recipient
     initiator.transportManager.dial.resolves(initiator.connection)
 
-    const createOffer = initiator.peerConnection.setRemoteDescription.bind(initiator.peerConnection)
-
-    initiator.peerConnection.setRemoteDescription = async (name) => {
-      // the dial is aborted
+    initiator.connection.newStream.callsFake(async () => {
+      // the operation is aborted
       abortController.abort(new Error('Oh noes!'))
-      // setting the description takes some time
+      // opening the stream takes some time
       await delay(100)
-      return createOffer(name)
-    }
-
-    // signalling stream opens successfully
-    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+      // signalling stream opens successfully
+      return initiator.stream
+    })
 
     await expect(Promise.all([
       initiateConnection({
@@ -164,9 +159,10 @@ describe('webrtc basic', () => {
 describe('webrtc receiver', () => {
   let initiator: Initiator
   let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiator?.peerConnection?.close()
+    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
@@ -177,18 +173,16 @@ describe('webrtc receiver', () => {
 
     await stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })
     await expect(receiverPeerConnectionPromise).to.be.rejectedWith(/Failed to set remoteDescription/)
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 })
 
 describe('webrtc dialer', () => {
   let initiator: Initiator
   let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiator?.peerConnection?.close()
+    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 

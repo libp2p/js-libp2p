@@ -134,6 +134,7 @@ export class WebRTCTransport implements Transport, Startable {
     this.log.trace('dialing address: %a', ma)
 
     const { remoteAddress, peerConnection } = await initiateConnection({
+      rtcConfiguration: this.init.rtcConfiguration,
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
       signal: options.signal,
@@ -169,10 +170,6 @@ export class WebRTCTransport implements Transport, Startable {
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory(this.components, {
-      peerConnection,
-      dataChannelOptions: this.init.dataChannel
-    })
 
     try {
       const { remoteAddress } = await handleIncomingStream({
@@ -183,6 +180,11 @@ export class WebRTCTransport implements Transport, Startable {
         log: this.log
       })
 
+      // close the stream if SDP messages have been exchanged successfully
+      await stream.close({
+        signal
+      })
+
       const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
         peerConnection,
         timeline: { open: (new Date()).getTime() },
@@ -190,8 +192,10 @@ export class WebRTCTransport implements Transport, Startable {
         metrics: this.metrics?.listenerEvents
       })
 
-      // close the connection on shut down
-      this._closeOnShutdown(peerConnection, webRTCConn)
+      const muxerFactory = new DataChannelMuxerFactory(this.components, {
+        peerConnection,
+        dataChannelOptions: this.init.dataChannel
+      })
 
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
@@ -199,11 +203,10 @@ export class WebRTCTransport implements Transport, Startable {
         muxerFactory
       })
 
-      // close the stream if SDP messages have been exchanged successfully
-      await stream.close({
-        signal
-      })
+      // close the connection on shut down
+      this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
+      peerConnection.close()
       stream.abort(err)
       throw err
     }

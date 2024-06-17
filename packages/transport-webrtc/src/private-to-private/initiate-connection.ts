@@ -80,7 +80,7 @@ export async function initiateConnection ({ rtcConfiguration, signal, metrics, m
         // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
         const data = JSON.stringify(candidate?.toJSON() ?? null)
 
-        log.trace('initiator sending ICE candidate %s', data)
+        log.trace('initiator sending ICE candidate %o', candidate)
 
         void messageStream.write({
           type: Message.Type.ICE_CANDIDATE,
