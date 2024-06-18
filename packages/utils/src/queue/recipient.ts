@@ -5,12 +5,10 @@ import type { DeferredPromise } from 'p-defer'
 export class JobRecipient<JobReturnType> {
   public deferred: DeferredPromise<JobReturnType>
   public signal?: AbortSignal
-  public where?: string
 
-  constructor (where?: string, signal?: AbortSignal) {
+  constructor (signal?: AbortSignal) {
     this.signal = signal
     this.deferred = pDefer()
-    this.where = where
 
     this.onAbort = this.onAbort.bind(this)
     this.signal?.addEventListener('abort', this.onAbort)
