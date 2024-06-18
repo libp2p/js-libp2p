@@ -167,7 +167,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     if (this.relayFilter.has(peerId.toBytes())) {
-      this.log('potential relay peer %p has failed previously, not trying again', peerId, new Error('where').stack)
+      this.log('potential relay peer %p has failed previously, not trying again', peerId)
       return
     }
 
