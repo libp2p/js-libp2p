@@ -28,7 +28,7 @@
  */
 
 import net from 'net'
-import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
+import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
@@ -149,6 +149,10 @@ class TCP implements Transport {
   readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/tcp'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true

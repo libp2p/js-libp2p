@@ -110,6 +110,8 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     this.tag = decodedPSK.tag ?? ''
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/pnet'
+
   /**
    * Takes a given Connection and creates a private encryption stream
    * between its two peers from the PSK the Protector instance was

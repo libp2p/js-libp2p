@@ -1,4 +1,6 @@
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
@@ -24,12 +26,16 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       circuitRelayTransport()
     ],
     streamMuxers: [
+      yamux(),
       mplex()
     ],
     connectionEncryption: [
       plaintext()
     ],
-    connectionGater: mockConnectionGater()
+    connectionGater: mockConnectionGater(),
+    services: {
+      identify: identify()
+    }
   }
 
   // WebWorkers cannot do WebRTC so only add support if we are not in a worker

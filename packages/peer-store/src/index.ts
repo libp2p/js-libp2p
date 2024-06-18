@@ -22,7 +22,7 @@ export interface PersistentPeerStoreComponents {
  * Return true to allow storing the passed multiaddr for the passed peer
  */
 export interface AddressFilter {
-  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean>
+  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean> | boolean
 }
 
 export interface PersistentPeerStoreInit {
@@ -44,6 +44,8 @@ export class PersistentPeerStore implements PeerStore {
     this.peerId = components.peerId
     this.store = new PersistentStore(components, init)
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/peer-store'
 
   async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
     this.log.trace('forEach await read lock')

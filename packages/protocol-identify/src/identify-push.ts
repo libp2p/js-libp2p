@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
 
-import { setMaxListeners } from '@libp2p/interface'
+import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
 import drain from 'it-drain'
@@ -39,6 +39,10 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       })
     }
   }
+
+  [serviceCapabilities]: string[] = [
+    '@libp2p/identify-push'
+  ]
 
   /**
    * Calls `push` on all peer connections

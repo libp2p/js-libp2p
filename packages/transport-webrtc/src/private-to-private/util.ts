@@ -23,11 +23,14 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         connectedPromise.promise,
         stream.read({
           signal: options.signal
-        })
+        }).catch(() => {})
       ])
 
       // stream ended or we became connected
       if (message == null) {
+        // throw if we timed out
+        options.signal?.throwIfAborted()
+
         break
       }
 
@@ -48,7 +51,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
 
       const candidate = new RTCIceCandidate(candidateInit)
 
-      options.log.trace('%s received new ICE candidate', options.direction, candidate)
+      options.log.trace('%s received new ICE candidate %o', options.direction, candidateInit)
 
       try {
         await pc.addIceCandidate(candidate)

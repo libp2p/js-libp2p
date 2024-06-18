@@ -32,6 +32,7 @@
  * ```
  */
 
+import { serviceDependencies } from '@libp2p/interface'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
@@ -76,6 +77,12 @@ export class FloodSub extends PubSubBaseProtocol {
       validityMs: init?.seenTTL ?? 30000
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/floodsub'
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
 
   /**
    * Decode a Uint8Array into an RPC object

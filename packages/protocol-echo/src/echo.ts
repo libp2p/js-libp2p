@@ -21,6 +21,8 @@ export class Echo implements Startable, EchoInterface {
     this.init = init
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/echo'
+
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, ({ stream }) => {
       void pipe(stream, stream)

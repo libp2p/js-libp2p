@@ -1,4 +1,4 @@
-import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface'
+import { CodeError, ERR_INVALID_MESSAGE, serviceDependencies } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
@@ -51,6 +51,12 @@ export class DefaultDCUtRService implements Startable {
     this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/dcutr'
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
 
   isStarted (): boolean {
     return this.started

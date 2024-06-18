@@ -419,8 +419,8 @@ describe('libp2p.connections', () => {
   })
 
   describe('connection gater', () => {
-    let libp2p: Libp2pNode
-    let remoteLibp2p: Libp2pNode
+    let libp2p: Libp2p
+    let remoteLibp2p: Libp2p
 
     beforeEach(async () => {
       remoteLibp2p = await createNode({
@@ -485,7 +485,7 @@ describe('libp2p.connections', () => {
       await libp2p.peerStore.patch(remoteLibp2p.peerId, {
         multiaddrs: remoteLibp2p.getMultiaddrs()
       })
-      await libp2p.components.connectionManager.openConnection(remoteLibp2p.peerId)
+      await libp2p.dial(remoteLibp2p.peerId)
 
       for (const multiaddr of remoteLibp2p.getMultiaddrs()) {
         expect(denyDialMultiaddr.calledWith(multiaddr)).to.be.true()
