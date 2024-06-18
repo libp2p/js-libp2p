@@ -111,6 +111,37 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.34...webrtc-v4.1.0) (2024-06-18)
+
+
+### Features
+
+* allow passing a function for rtcConfiguration ([#2590](https://github.com/libp2p/js-libp2p/issues/2590)) ([9e02366](https://github.com/libp2p/js-libp2p/commit/9e0236627b50a389df3350a90e58720cc205f0af)), closes [#2554](https://github.com/libp2p/js-libp2p/issues/2554)
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* create RTCPeerConnection after dialing remote peer ([#2593](https://github.com/libp2p/js-libp2p/issues/2593)) ([8e4fdcd](https://github.com/libp2p/js-libp2p/commit/8e4fdcde999a64b6f6e573960b2a53cc78c0bebf)), closes [#2591](https://github.com/libp2p/js-libp2p/issues/2591)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/interface-internal bumped from ^1.2.3 to ^1.2.4
+    * @libp2p/peer-id bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/utils bumped from ^5.4.3 to ^5.4.4
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.25 to ^1.1.0
+    * @libp2p/identify bumped from ^2.0.3 to ^2.1.0
+    * @libp2p/interface-compliance-tests bumped from ^5.4.6 to ^5.4.7
+    * @libp2p/logger bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/peer-id-factory bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/websockets bumped from ^8.0.25 to ^8.1.0
+    * libp2p bumped from ^1.6.1 to ^1.7.0
+
 ## [4.0.34](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.0.33...webrtc-v4.0.34) (2024-06-07)
 
 
