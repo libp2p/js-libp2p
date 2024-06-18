@@ -1,12 +1,13 @@
 import { CodeError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
+import { DataChannelMuxerFactory } from '../muxer.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { SIGNALING_PROTO_ID, splitAddr, type WebRTCTransportMetrics } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
 import type { DataChannelOptions } from '../index.js'
-import type { LoggerOptions, Connection } from '@libp2p/interface'
+import type { LoggerOptions, Connection, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionManager, IncomingStreamData, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -18,15 +19,17 @@ export interface IncomingStreamOpts extends IncomingStreamData {
 
 export interface ConnectOptions extends LoggerOptions {
   rtcConfiguration?: RTCConfiguration
+  dataChannel?: DataChannelOptions
   multiaddr: Multiaddr
   connectionManager: ConnectionManager
   transportManager: TransportManager
   dataChannelOptions?: Partial<DataChannelOptions>
   signal?: AbortSignal
   metrics?: WebRTCTransportMetrics
+  logger: ComponentLogger
 }
 
-export async function initiateConnection ({ rtcConfiguration, signal, metrics, multiaddr: ma, connectionManager, transportManager, log }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { baseAddr } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -65,6 +68,12 @@ export async function initiateConnection ({ rtcConfiguration, signal, metrics, m
 
     const messageStream = pbStream(stream).pb(Message)
     const peerConnection = new RTCPeerConnection(rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory({
+      logger
+    }, {
+      peerConnection,
+      dataChannelOptions: dataChannel
+    })
 
     try {
       // we create the channel so that the RTCPeerConnection has a component for
@@ -143,8 +152,8 @@ export async function initiateConnection ({ rtcConfiguration, signal, metrics, m
       log.trace('initiator connected, closing init channel')
       channel.close()
 
-      log.trace('initiator closing signalling stream')
-      await messageStream.unwrap().unwrap().close({
+      log.trace('closing signalling channel')
+      await stream.close({
         signal
       })
 
@@ -152,9 +161,12 @@ export async function initiateConnection ({ rtcConfiguration, signal, metrics, m
 
       return {
         remoteAddress: ma,
-        peerConnection
+        peerConnection,
+        muxerFactory
       }
     } catch (err: any) {
+      log.error('outgoing signalling error', err)
+
       peerConnection.close()
       stream.abort(err)
       throw err

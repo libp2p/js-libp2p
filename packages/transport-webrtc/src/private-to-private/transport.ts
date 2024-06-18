@@ -133,14 +133,16 @@ export class WebRTCTransport implements Transport, Startable {
   async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
     this.log.trace('dialing address: %a', ma)
 
-    const { remoteAddress, peerConnection } = await initiateConnection({
+    const { remoteAddress, peerConnection, muxerFactory } = await initiateConnection({
       rtcConfiguration: this.init.rtcConfiguration,
+      dataChannel: this.init.dataChannel,
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
       signal: options.signal,
       connectionManager: this.components.connectionManager,
       transportManager: this.components.transportManager,
-      log: this.log
+      log: this.log,
+      logger: this.components.logger
     })
 
     const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
@@ -148,11 +150,6 @@ export class WebRTCTransport implements Transport, Startable {
       timeline: { open: Date.now() },
       remoteAddr: remoteAddress,
       metrics: this.metrics?.dialerEvents
-    })
-
-    const muxerFactory = new DataChannelMuxerFactory(this.components, {
-      peerConnection,
-      dataChannelOptions: this.init.dataChannel
     })
 
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
@@ -170,6 +167,10 @@ export class WebRTCTransport implements Transport, Startable {
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
     const peerConnection = new RTCPeerConnection(this.init.rtcConfiguration)
+    const muxerFactory = new DataChannelMuxerFactory(this.components, {
+      peerConnection,
+      dataChannelOptions: this.init.dataChannel
+    })
 
     try {
       const { remoteAddress } = await handleIncomingStream({
@@ -192,11 +193,6 @@ export class WebRTCTransport implements Transport, Startable {
         metrics: this.metrics?.listenerEvents
       })
 
-      const muxerFactory = new DataChannelMuxerFactory(this.components, {
-        peerConnection,
-        dataChannelOptions: this.init.dataChannel
-      })
-
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
@@ -206,6 +202,8 @@ export class WebRTCTransport implements Transport, Startable {
       // close the connection on shut down
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
+      this.log.error('incoming signalling error', err)
+
       peerConnection.close()
       stream.abort(err)
       throw err

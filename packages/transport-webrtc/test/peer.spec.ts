@@ -15,7 +15,7 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger, Connection, Stream } from '@libp2p/interface'
+import type { Logger, Connection, Stream, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 const browser = detect()
@@ -27,6 +27,7 @@ interface Initiator {
   connection: StubbedInstance<Connection>
   stream: Stream
   log: Logger
+  logger: ComponentLogger
 }
 
 interface Recipient {
@@ -70,7 +71,8 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
       transportManager: stubInterface<TransportManager>(),
       connection: stubInterface<Connection>(),
       stream: initiatorStream,
-      log: logger('test')
+      log: logger('test'),
+      logger: defaultLogger()
     },
     recipient: {
       peerConnection: new RTCPeerConnection(),

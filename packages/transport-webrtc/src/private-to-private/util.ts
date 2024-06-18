@@ -23,11 +23,14 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         connectedPromise.promise,
         stream.read({
           signal: options.signal
-        })
+        }).catch(() => {})
       ])
 
       // stream ended or we became connected
       if (message == null) {
+        // throw if we timed out
+        options.signal?.throwIfAborted()
+
         break
       }
 
