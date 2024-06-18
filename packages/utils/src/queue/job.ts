@@ -59,7 +59,7 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
   }
 
   async join (options: AbortOptions = {}): Promise<JobReturnType> {
-    const recipient = new JobRecipient<JobReturnType>((new Error('where')).stack, options.signal)
+    const recipient = new JobRecipient<JobReturnType>(options.signal)
     this.recipients.push(recipient)
 
     options.signal?.addEventListener('abort', this.onAbort)
