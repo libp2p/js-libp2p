@@ -31,6 +31,7 @@
  * ```
  */
 
+import { serviceCapabilities } from '@libp2p/interface'
 import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
@@ -90,6 +91,12 @@ class Mplex implements StreamMuxerFactory {
     this.components = components
     this._init = init
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/mplex'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/stream-multiplexing'
+  ]
 
   createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
     return new MplexStreamMuxer(this.components, {
