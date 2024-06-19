@@ -18,6 +18,22 @@
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -28,6 +44,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./rpc": {
+      "types": "./dist/src/rpc/index.d.ts",
+      "import": "./dist/src/rpc/index.js"
     }
   },
   "eslintConfig": {
@@ -51,6 +71,8 @@
     "@libp2p/interface-internal": "^1.2.3",
     "@libp2p/logger": "^4.0.14",
     "@libp2p/simple-metrics": "^1.0.3",
+    "it-pushable": "^3.2.3",
+    "it-rpc": "^1.0.0",
     "multiformats": "^13.1.0"
   },
   "devDependencies": {
