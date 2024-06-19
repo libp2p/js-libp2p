@@ -1,8 +1,17 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions } from '@libp2p/interface'
+import type { TransportManagerDialProgressEvents } from '../transport-manager/index.js'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, Address } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
-export interface OpenConnectionOptions extends AbortOptions {
+export type OpenConnectionProgressEvents =
+  TransportManagerDialProgressEvents |
+  ProgressEvent<'dial:already-connected'> |
+  ProgressEvent<'dial:already-in-dial-queue'> |
+  ProgressEvent<'dial:add-to-dial-queue'> |
+  ProgressEvent<'dial:calculate-addresses', Address[]>
+
+export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * Connection requests with a higher priority will be executed before those
    * with a lower priority. (default: 50)

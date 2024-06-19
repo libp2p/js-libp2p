@@ -1,8 +1,9 @@
 import { CodeError, FaultTolerance } from '@libp2p/interface'
 import { trackedMap } from '@libp2p/utils/tracked-map'
+import { CustomProgressEvent } from 'progress-events'
 import { codes } from './errors.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
-import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
+import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface TransportManagerInit {
@@ -107,12 +108,14 @@ export class DefaultTransportManager implements TransportManager, Startable {
   /**
    * Dials the given Multiaddr over it's supported transport
    */
-  async dial (ma: Multiaddr, options?: AbortOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options?: TransportManagerDialOptions): Promise<Connection> {
     const transport = this.dialTransportForMultiaddr(ma)
 
     if (transport == null) {
       throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
     }
+
+    options?.onProgress?.(new CustomProgressEvent<string>('dial:selected-transport', transport[Symbol.toStringTag]))
 
     try {
       return await transport.dial(ma, {
