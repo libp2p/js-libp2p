@@ -15,7 +15,7 @@
  */
 
 import { CodeError } from '@libp2p/interface'
-import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type Secp256k1PeerId, peerIdSymbol, type PeerId } from '@libp2p/interface'
+import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type URLPeerId, type Secp256k1PeerId, peerIdSymbol, type PeerId } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { bases } from 'multiformats/basics'
 import { CID } from 'multiformats/cid'
@@ -23,6 +23,8 @@ import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -181,6 +183,52 @@ class Secp256k1PeerIdImpl extends PeerIdImpl implements Secp256k1PeerId {
   }
 }
 
+// these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
+const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
+
+class URLPeerIdImpl implements URLPeerId {
+  readonly type = 'url'
+  readonly multihash: MultihashDigest
+  readonly privateKey?: Uint8Array
+  readonly publicKey?: Uint8Array
+  readonly url: string
+
+  constructor (url: URL) {
+    this.url = url.toString()
+    this.multihash = identity.digest(uint8ArrayFromString(this.url))
+  }
+
+  [inspect] (): string {
+    return `PeerId(${this.url})`
+  }
+
+  readonly [peerIdSymbol] = true
+
+  toString (): string {
+    return this.toCID().toString()
+  }
+
+  toCID (): CID {
+    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.multihash)
+  }
+
+  toBytes (): Uint8Array {
+    return this.toCID().bytes
+  }
+
+  equals (other?: PeerId | Uint8Array | string): boolean {
+    if (other == null) {
+      return false
+    }
+
+    if (other instanceof Uint8Array) {
+      other = uint8ArrayToString(other)
+    }
+
+    return other.toString() === this.toString()
+  }
+}
+
 export function createPeerId (init: PeerIdInit): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
   if (init.type === 'RSA') {
     return new RSAPeerIdImpl(init)
@@ -213,7 +261,7 @@ export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId |
   throw new CodeError('Not a PeerId', 'ERR_INVALID_PARAMETERS')
 }
 
-export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
+export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
   decoder = decoder ?? baseDecoder
 
   if (str.charAt(0) === '1' || str.charAt(0) === 'Q') {
@@ -233,7 +281,7 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
   return peerIdFromBytes(baseDecoder.decode(str))
 }
 
-export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
+export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
   try {
     const multihash = Digest.decode(buf)
 
@@ -255,9 +303,15 @@ export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1Peer
   throw new Error('Supplied PeerID CID is invalid')
 }
 
-export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
-  if (cid == null || cid.multihash == null || cid.version == null || (cid.version === 1 && cid.code !== LIBP2P_KEY_CODE)) {
+export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
+  if (cid == null || cid.multihash == null || cid.version == null || (cid.version === 1 && (cid.code !== LIBP2P_KEY_CODE) && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE)) {
     throw new Error('Supplied PeerID CID is invalid')
+  }
+
+  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE) {
+    const url = uint8ArrayToString(cid.multihash.digest)
+
+    return new URLPeerIdImpl(new URL(url))
   }
 
   const multihash = cid.multihash

@@ -19,6 +19,10 @@ export interface Secp256k1PeerId extends PeerId {
   readonly publicKey: Uint8Array
 }
 
+export interface URLPeerId extends PeerId {
+  readonly type: 'url'
+}
+
 export interface PeerId {
   type: PeerIdType
   multihash: MultihashDigest
