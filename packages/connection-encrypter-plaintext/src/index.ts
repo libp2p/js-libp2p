@@ -23,7 +23,7 @@
 import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
-import { Exchange, KeyType } from './pb/proto.js'
+import { Exchange, KeyType, PublicKey } from './pb/proto.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -91,7 +91,7 @@ class Plaintext implements ConnectionEncrypter {
         id: localId.toBytes(),
         pubkey: {
           Type: type,
-          Data: localId.publicKey ?? new Uint8Array(0)
+          Data: localId.publicKey ? PublicKey.decode(localId.publicKey).Data : new Uint8Array(0)
         }
       }, {
         signal
@@ -116,7 +116,7 @@ class Plaintext implements ConnectionEncrypter {
         throw new Error('Remote id missing')
       }
 
-      peerId = await peerIdFromKeys(response.pubkey.Data)
+      peerId = await peerIdFromKeys(PublicKey.encode(response.pubkey))
 
       if (!peerId.equals(peerIdFromBytes(response.id))) {
         throw new Error('Public key did not match id')
