@@ -91,7 +91,7 @@ class Plaintext implements ConnectionEncrypter {
         id: localId.toBytes(),
         pubkey: {
           Type: type,
-          Data: localId.publicKey === null ? new Uint8Array(0) : PublicKey.decode(localId.publicKey).Data
+          Data: localId.publicKey === null ? new Uint8Array(0) : (PublicKey.decode(localId.publicKey).Data ?? new Uint8Array(0))
         }
       }, {
         signal
