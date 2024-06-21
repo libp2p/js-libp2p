@@ -109,5 +109,13 @@ async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pub
     return createFromPubKey(key)
   }
 
-  return peerIdFromBytes(multihash)
+  const peerId = peerIdFromBytes(multihash)
+
+  if (peerId.type !== 'Ed25519' && peerId.type !== 'secp256k1' && peerId.type !== 'RSA') {
+    // should not be possible since `multihash` is derived from keys and these
+    // are the cryptographic peer id types
+    throw new Error('Supplied PeerID is invalid')
+  }
+
+  return peerId
 }
