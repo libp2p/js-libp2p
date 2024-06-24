@@ -39,9 +39,8 @@ describe('SDP', () => {
 
     // sha2-256 multihash 0x12 permanent
     // https://github.com/multiformats/multicodec/blob/master/table.csv
-    expect(decoded.name).to.equal('sha2-256')
     expect(decoded.code).to.equal(0x12)
-    expect(decoded.length).to.equal(32)
+    expect(decoded.size).to.equal(32)
     expect(decoded.digest.toString()).to.equal('114,104,71,205,72,176,94,197,96,77,21,156,191,64,29,111,0,161,35,236,144,23,14,44,209,179,143,210,157,55,229,177')
   })
 
