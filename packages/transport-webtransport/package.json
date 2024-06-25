@@ -68,7 +68,7 @@
     "@libp2p/peer-id-factory": "^4.1.4",
     "@libp2p/ping": "^1.1.0",
     "@noble/hashes": "^1.4.0",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.0",
     "execa": "^9.1.0",
     "go-libp2p": "^1.2.0",
     "it-map": "^3.1.0",

@@ -122,7 +122,7 @@
     "@libp2p/utils": "^5.4.4",
     "@multiformats/multiaddr": "^12.2.3",
     "abortable-iterator": "^5.0.1",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.0",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-byte-stream": "^1.0.10",

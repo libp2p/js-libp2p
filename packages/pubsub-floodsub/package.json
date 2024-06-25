@@ -73,7 +73,7 @@
     "@libp2p/peer-id-factory": "^4.1.4",
     "@multiformats/multiaddr": "^12.2.3",
     "@types/sinon": "^17.0.3",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.0",
     "multiformats": "^13.1.0",
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",

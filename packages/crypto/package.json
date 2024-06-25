@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.0",
     "benchmark": "^2.1.4",
     "protons": "^7.5.0"
   },
