@@ -315,6 +315,11 @@ class WebTransportTransport implements Transport {
    * Filter check for all Multiaddrs that this transport can dial
    */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    // test for WebTransport support
+    if (globalThis.WebTransport == null) {
+      return []
+    }
+
     return multiaddrs.filter(ma => {
       if (!WebTransportMatcher.exactMatch(ma)) {
         return false
