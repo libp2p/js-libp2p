@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import * as lengthPrefixed from 'it-length-prefixed'
-import { Message } from '../src/pb/message.js'
+import { Message } from '../src/private-to-public/pb/message.js'
 
 export const expectError = (error: unknown, message: string): void => {
   if (error instanceof Error) {

@@ -15,6 +15,7 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
+import { webRTCDirect } from '@libp2p/webrtc'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -45,6 +46,12 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
+
+    if (options.transport === 'webrtc-direct') {
+      // dialing webrtc-direct is broken in go-libp2p at the moment
+      // https://github.com/libp2p/go-libp2p/issues/2827
+      throw new UnsupportedError()
+    }
   } else {
     if (options.transport == null || options.transport === 'tcp') {
       opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
@@ -132,7 +139,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     addresses: {
       listen: []
     },
-    transports: [tcp(), circuitRelayTransport()],
+    transports: [
+      tcp(),
+      circuitRelayTransport(),
+      webRTCDirect()
+    ],
     streamMuxers: [],
     connectionEncryption: [noise()],
     connectionManager: {
@@ -143,12 +154,14 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen !== true) {
     if (options.transport == null || options.transport === 'tcp') {
       opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'webrtc-direct') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/webrtc-direct')
     } else {
       throw new UnsupportedError()
     }
   }
 
-  if (options.transport === 'webtransport' || options.transport === 'webrtc-direct') {
+  if (options.transport === 'webtransport') {
     throw new UnsupportedError()
   }
 

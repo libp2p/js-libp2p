@@ -56,7 +56,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.metrics = init.metrics
     this.protocol = init.protocol ?? PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
-    this.log = components.logger.forComponent('libp2p:webrtc:datachannelmuxerfactory')
+    this.log = components.logger.forComponent('libp2p:webrtc:muxerfactory')
 
     // store any datachannels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
@@ -155,11 +155,14 @@ export class DataChannelMuxer implements StreamMuxer {
         return
       }
 
+      // cannot access `.id` property after close as node-datachannel throws
+      const id = channel.id
+
       const stream = createStream({
         channel,
         direction: 'inbound',
         onEnd: () => {
-          this.log('incoming channel %s ended with state %s', channel.id, channel.readyState)
+          this.log('incoming channel %s ended with state %s', id, channel.readyState)
           this.#onStreamEnd(stream, channel)
         },
         logger: this.logger,
@@ -239,16 +242,19 @@ export class DataChannelMuxer implements StreamMuxer {
   sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
   newStream (): Stream {
-    // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
+    // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
 
     this.log.trace('opened outgoing datachannel with channel id %s', channel.id)
+
+    // cannot access `.id` property after close as node-datachannel throws
+    const id = channel.id
 
     const stream = createStream({
       channel,
       direction: 'outbound',
       onEnd: () => {
-        this.log('outgoing channel %s ended with state %s', channel.id, channel.readyState)
+        this.log('outgoing channel %s ended with state %s', id, channel.readyState)
         this.#onStreamEnd(stream, channel)
       },
       logger: this.logger,
