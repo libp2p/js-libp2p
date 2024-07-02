@@ -1,7 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
-import { DEFAULT_ICE_SERVERS } from './constants'
+import { DEFAULT_ICE_SERVERS } from './constants.js'
 import type { LoggerOptions } from '@libp2p/interface'
 
 const browser = detect()
