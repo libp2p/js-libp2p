@@ -24,6 +24,7 @@
 import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString} from 'uint8arrays/to-string'
 import { PeerIdProto } from './proto.js'
 import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, KeyType } from '@libp2p/interface'
 
@@ -74,6 +75,15 @@ export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1P
     pubKey: peerId.publicKey,
     privKey: excludePrivateKey === true || peerId.privateKey == null ? undefined : peerId.privateKey
   })
+}
+
+export function exportToJSON(peerId, excludePrivateKey) {
+    const obj = PeerIdProto.decode(exportToProtobuf(peerId));
+    return {
+        id: uint8ArrayToString(obj.id, 'base58btc'),
+        pubKey: uint8ArrayToString(obj.pubKey, 'base64pad'),
+        privKey: excludePrivateKey === true ? undefined : uint8ArrayToString(obj.privKey, 'base64pad'),
+    };
 }
 
 export async function createFromProtobuf (buf: Uint8Array): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
