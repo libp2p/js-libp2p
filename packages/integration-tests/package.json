@@ -66,7 +66,7 @@
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-matcher": "^1.2.1",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.1",
     "delay": "^6.0.0",
     "detect-browser": "^5.3.0",
     "execa": "^9.1.0",
