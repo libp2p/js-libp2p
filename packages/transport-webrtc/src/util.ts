@@ -1,6 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
+import { DEFAULT_ICE_SERVERS } from './constants'
 import type { LoggerOptions } from '@libp2p/interface'
 
 const browser = detect()
@@ -63,4 +64,20 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
 export interface AbortPromiseOptions {
   signal?: AbortSignal
   message?: string
+}
+
+export async function getRtcConfiguration (config?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)): Promise<RTCConfiguration> {
+  config = config ?? {}
+
+  if (typeof config === 'function') {
+    config = await config()
+  }
+
+  config.iceServers = config.iceServers ?? DEFAULT_ICE_SERVERS.map(url => ({
+    urls: [
+      url
+    ]
+  }))
+
+  return config
 }

@@ -6,6 +6,7 @@ import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
+import { getRtcConfiguration } from '../util.js'
 import { RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
@@ -134,7 +135,7 @@ export class WebRTCTransport implements Transport, Startable {
     this.log.trace('dialing address: %a', ma)
 
     const { remoteAddress, peerConnection, muxerFactory } = await initiateConnection({
-      rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration,
+      rtcConfiguration: await getRtcConfiguration(this.init.rtcConfiguration),
       dataChannel: this.init.dataChannel,
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
@@ -166,7 +167,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
-    const peerConnection = new RTCPeerConnection(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration)
+    const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
       dataChannelOptions: this.init.dataChannel

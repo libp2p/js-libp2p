@@ -10,7 +10,7 @@ import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgumen
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
-import { isFirefox } from '../util.js'
+import { getRtcConfiguration, isFirefox } from '../util.js'
 import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
@@ -139,7 +139,7 @@ export class WebRTCDirectTransport implements Transport {
     } as any)
 
     const peerConnection = new RTCPeerConnection({
-      ...(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {}),
+      ...(await getRtcConfiguration(this.init.rtcConfiguration)),
       certificates: [certificate]
     })
 
