@@ -61,6 +61,7 @@
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.2.3",
     "@types/sinon": "^17.0.3",
+    "progress-events": "^1.0.0",
     "stream-to-it": "^1.0.1"
   },
   "devDependencies": {

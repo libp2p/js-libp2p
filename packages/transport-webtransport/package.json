@@ -58,6 +58,7 @@
     "@multiformats/multiaddr-matcher": "^1.2.1",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
+    "progress-events": "^1.0.0",
     "race-signal": "^1.0.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
