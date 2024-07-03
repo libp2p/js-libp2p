@@ -115,9 +115,12 @@ export class DefaultTransportManager implements TransportManager, Startable {
       throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
     }
 
-    options?.onProgress?.(new CustomProgressEvent<string>('dial:selected-transport', transport[Symbol.toStringTag]))
+    options?.onProgress?.(new CustomProgressEvent<string>('transport-manager:selected-transport', transport[Symbol.toStringTag]))
 
     try {
+      // @ts-expect-error the transport has a typed onProgress option but we
+      // can't predict what transport implementation we selected so all we can
+      // do is pass the onProgress handler in and hope for the best
       return await transport.dial(ma, {
         ...options,
         upgrader: this.components.upgrader

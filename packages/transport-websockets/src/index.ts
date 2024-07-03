@@ -57,18 +57,21 @@
  * ```
  */
 
-import { AbortError, CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
+import { CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
@@ -81,7 +84,11 @@ export interface WebSocketsComponents {
   logger: ComponentLogger
 }
 
-class WebSockets implements Transport {
+export type WebSocketsDialEvents =
+  OutboundConnectionUpgradeEvents |
+  ProgressEvent<'websockets:open-connection'>
+
+class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
@@ -100,7 +107,7 @@ class WebSockets implements Transport {
     '@libp2p/transport'
   ]
 
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
@@ -110,15 +117,14 @@ class WebSockets implements Transport {
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
-    const conn = await options.upgrader.upgradeOutbound(maConn)
+    const conn = await options.upgrader.upgradeOutbound(maConn, options)
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: AbortOptions): Promise<DuplexWebSocket> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
+  async _connect (ma: Multiaddr, options: DialOptions<WebSocketsDialEvents>): Promise<DuplexWebSocket> {
+    options?.signal?.throwIfAborted()
+
     const cOpts = ma.toOptions()
     this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
@@ -133,37 +139,16 @@ class WebSockets implements Transport {
       errorPromise.reject(err)
     })
 
-    if (options.signal == null) {
-      await Promise.race([rawSocket.connected(), errorPromise.promise])
-
-      this.log('connected %s', ma)
-      return rawSocket
-    }
-
-    // Allow abort via signal during connect
-    let onAbort
-    const abort = new Promise((resolve, reject) => {
-      onAbort = () => {
-        reject(new AbortError())
-        rawSocket.close().catch(err => {
+    try {
+      options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
+      await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
+    } catch (err: any) {
+      rawSocket.close()
+        .catch(err => {
           this.log.error('error closing raw socket', err)
         })
-      }
 
-      // Already aborted?
-      if (options?.signal?.aborted === true) {
-        onAbort(); return
-      }
-
-      options?.signal?.addEventListener('abort', onAbort)
-    })
-
-    try {
-      await Promise.race([abort, errorPromise.promise, rawSocket.connected()])
-    } finally {
-      if (onAbort != null) {
-        options?.signal?.removeEventListener('abort', onAbort)
-      }
+      throw err
     }
 
     this.log('connected %s', ma)

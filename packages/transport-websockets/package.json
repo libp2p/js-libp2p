@@ -82,6 +82,8 @@
     "@types/ws": "^8.5.10",
     "it-ws": "^6.1.1",
     "p-defer": "^4.0.1",
+    "progress-events": "^1.0.0",
+    "race-signal": "^1.0.2",
     "wherearewe": "^2.0.1",
     "ws": "^8.17.0"
   },

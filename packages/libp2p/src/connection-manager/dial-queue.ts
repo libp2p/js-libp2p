@@ -152,7 +152,7 @@ export class DialQueue {
 
     if (existingConnection != null) {
       this.log('already connected to %a', existingConnection.remoteAddr)
-      options.onProgress?.(new CustomProgressEvent('dial:already-connected'))
+      options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
       return existingConnection
     }
 
@@ -187,7 +187,7 @@ export class DialQueue {
         existingDial.options.multiaddrs.add(multiaddr.toString())
       }
 
-      options.onProgress?.(new CustomProgressEvent('dial:already-in-dial-queue'))
+      options.onProgress?.(new CustomProgressEvent('dial-queue:already-in-dial-queue'))
       return existingDial.join(options)
     }
 
@@ -197,8 +197,9 @@ export class DialQueue {
 
     this.log('creating dial target for %p', peerId, multiaddrs.map(ma => ma.toString()))
 
-    options.onProgress?.(new CustomProgressEvent('dial:add-to-dial-queue'))
+    options.onProgress?.(new CustomProgressEvent('dial-queue:add-to-dial-queue'))
     return this.queue.add(async (options) => {
+      options?.onProgress?.(new CustomProgressEvent('dial-queue:start-dial'))
       // create abort conditions - need to do this before `calculateMultiaddrs` as
       // we may be about to resolve a dns addr which can time out
       const signal = this.createDialAbortController(options?.signal)
@@ -212,7 +213,7 @@ export class DialQueue {
           signal
         })
 
-        options?.onProgress?.(new CustomProgressEvent<Address[]>('dial:calculate-addresses', addrsToDial))
+        options?.onProgress?.(new CustomProgressEvent<Address[]>('dial-queue:calculated-addresses', addrsToDial))
 
         addrsToDial.map(({ multiaddr }) => multiaddr.toString()).forEach(addr => {
           options?.multiaddrs.add(addr)
@@ -282,7 +283,8 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
-      signal: options.signal
+      signal: options.signal,
+      onProgress: options.onProgress
     })
   }
 
