@@ -96,6 +96,28 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.1](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.1.0...webtransport-v4.1.1) (2024-07-03)
+
+
+### Bug Fixes
+
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+* WebTransport fail gracefully in Safari ([#2605](https://github.com/libp2p/js-libp2p/issues/2605)) ([21cf7bc](https://github.com/libp2p/js-libp2p/commit/21cf7bc56bf352a15fe8a167a8d81edd23a9897c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/peer-id bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/utils bumped from ^5.4.4 to ^5.4.5
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/ping bumped from ^1.1.0 to ^1.1.1
+    * libp2p bumped from ^1.7.0 to ^1.8.0
+
 ## [4.1.0](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.0.33...webtransport-v4.1.0) (2024-06-18)
 
 

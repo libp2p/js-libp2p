@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/prometheus-metrics",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Collect libp2p metrics for scraping by Prometheus or Graphana",
   "author": "",
   "license": "Apache-2.0 OR MIT",
@@ -48,16 +48,16 @@
     "test:electron-main": "aegir test -t electron-main --cov"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.5.0",
+    "@libp2p/interface": "^1.6.0",
     "it-foreach": "^2.1.0",
     "it-stream-types": "^2.0.1",
     "prom-client": "^15.1.2",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.4.7",
-    "@libp2p/logger": "^4.0.15",
-    "@libp2p/peer-id-factory": "^4.1.4",
+    "@libp2p/interface-compliance-tests": "^5.4.8",
+    "@libp2p/logger": "^4.0.16",
+    "@libp2p/peer-id-factory": "^4.2.0",
     "@multiformats/multiaddr": "^12.2.3",
     "aegir": "^43.0.1",
     "it-drain": "^3.0.7",

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.1](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.2.0...devtools-metrics-v0.2.1) (2024-07-03)
+
+
+### Bug Fixes
+
+* add rpc to metrics-devtools ([#2595](https://github.com/libp2p/js-libp2p/issues/2595)) ([15eb664](https://github.com/libp2p/js-libp2p/commit/15eb66428d191e1c26db69ef3587bd2afb972d17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/peer-id bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/simple-metrics bumped from ^1.1.0 to ^1.1.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+
 ## [0.2.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.1.1...devtools-metrics-v0.2.0) (2024-06-18)
 
 
