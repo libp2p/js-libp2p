@@ -30,13 +30,15 @@
 import net from 'net'
 import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
+import { CustomProgressEvent } from 'progress-events'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
+import type { ProgressEvent } from 'progress-events'
 
 export interface TCPOptions {
   /**
@@ -108,7 +110,11 @@ export interface TCPSocketOptions extends AbortOptions {
   allowHalfOpen?: boolean
 }
 
-export interface TCPDialOptions extends DialOptions, TCPSocketOptions {
+export type TCPDialEvents =
+  OutboundConnectionUpgradeEvents |
+  ProgressEvent<'tcp:open-connection'>
+
+export interface TCPDialOptions extends DialOptions<TCPDialEvents>, TCPSocketOptions {
 
 }
 
@@ -125,7 +131,7 @@ export interface TCPMetrics {
   dialerEvents: CounterGroup
 }
 
-class TCP implements Transport {
+class TCP implements Transport<TCPDialEvents> {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
@@ -199,9 +205,8 @@ class TCP implements Transport {
   }
 
   async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
-    if (options.signal?.aborted === true) {
-      throw new AbortError()
-    }
+    options.signal?.throwIfAborted()
+    options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()

@@ -510,7 +510,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       if (existingConnection != null) {
         this.log('had an existing non-transient connection to %p', peerId)
 
-        options.onProgress?.(new CustomProgressEvent('dial:already-connected'))
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection
       }
     }

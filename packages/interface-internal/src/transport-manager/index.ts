@@ -3,7 +3,7 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export type TransportManagerDialProgressEvents =
-  ProgressEvent<'dial:selected-transport', string>
+  ProgressEvent<'transport-manager:selected-transport', string>
 
 export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
 

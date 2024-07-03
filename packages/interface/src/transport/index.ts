@@ -3,6 +3,7 @@ import type { TypedEventTarget } from '../event-target.js'
 import type { AbortOptions } from '../index.js'
 import type { StreamMuxerFactory } from '../stream-muxer/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export interface ListenerEvents {
   'connection': CustomEvent<Connection>
@@ -39,14 +40,14 @@ export interface CreateListenerOptions {
   upgrader: Upgrader
 }
 
-export interface DialOptions extends AbortOptions {
+export interface DialOptions<DialEvents extends ProgressEvent = ProgressEvent> extends AbortOptions, ProgressOptions<DialEvents> {
   upgrader: Upgrader
 }
 
 /**
- * A libp2p transport is understood as something that offers a dial and listen interface to establish connections.
+ * A libp2p transport offers dial and listen methods to establish connections.
  */
-export interface Transport {
+export interface Transport<DialEvents extends ProgressEvent = ProgressEvent> {
   /**
    * Used to identify the transport
    */
@@ -60,7 +61,7 @@ export interface Transport {
   /**
    * Dial a given multiaddr.
    */
-  dial(ma: Multiaddr, options: DialOptions): Promise<Connection>
+  dial(ma: Multiaddr, options: DialOptions<DialEvents>): Promise<Connection>
 
   /**
    * Create transport listeners.
@@ -99,7 +100,7 @@ export enum FaultTolerance {
   NO_FATAL
 }
 
-export interface UpgraderOptions {
+export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents> {
   skipEncryption?: boolean
   skipProtection?: boolean
   muxerFactory?: StreamMuxerFactory
@@ -111,14 +112,22 @@ export interface UpgraderOptions {
   transient?: boolean
 }
 
+export type InboundConnectionUpgradeEvents =
+ProgressEvent<'upgrader:encrypt-inbound-connection'> |
+ProgressEvent<'upgrader:multiplex-inbound-connection'>
+
+export type OutboundConnectionUpgradeEvents =
+ProgressEvent<'upgrader:encrypt-outbound-connection'> |
+ProgressEvent<'upgrader:multiplex-outbound-connection'>
+
 export interface Upgrader {
   /**
    * Upgrades an outbound connection on `transport.dial`.
    */
-  upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection>
+  upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<OutboundConnectionUpgradeEvents>): Promise<Connection>
 
   /**
    * Upgrades an inbound connection on transport listener.
    */
-  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions): Promise<Connection>
+  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<Connection>
 }

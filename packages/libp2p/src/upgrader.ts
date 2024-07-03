@@ -1,6 +1,7 @@
 import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { CustomProgressEvent } from 'progress-events'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
@@ -185,6 +186,8 @@ export class DefaultUpgrader implements Upgrader {
         // Encrypt the connection
         encryptedConn = protectedConn
         if (opts?.skipEncryption !== true) {
+          opts?.onProgress?.(new CustomProgressEvent('upgrader:encrypt-inbound-connection'));
+
           ({
             conn: encryptedConn,
             remotePeer,
@@ -214,6 +217,8 @@ export class DefaultUpgrader implements Upgrader {
         if (opts?.muxerFactory != null) {
           muxerFactory = opts.muxerFactory
         } else if (this.muxers.size > 0) {
+          opts?.onProgress?.(new CustomProgressEvent('upgrader:multiplex-inbound-connection'))
+
           // Multiplex the connection
           const multiplexed = await this._multiplexInbound({
             ...protectedConn,
