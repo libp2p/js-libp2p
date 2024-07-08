@@ -226,6 +226,7 @@ List of packages currently in existence for libp2p
     <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia (IPFS in JavaScript) logo" width="150" /></a>
     <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
+    <a href="https://topology.gg/"><img src="https://avatars.githubusercontent.com/u/157637200" alt="Topology logo" width="150" /></a>
   </p>
 </div>
 
