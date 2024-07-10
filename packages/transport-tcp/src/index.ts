@@ -35,7 +35,7 @@ import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, Listener, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 import type { ProgressEvent } from 'progress-events'
@@ -114,7 +114,7 @@ export type TCPDialEvents =
   OutboundConnectionUpgradeEvents |
   ProgressEvent<'tcp:open-connection'>
 
-export interface TCPDialOptions extends DialOptions<TCPDialEvents>, TCPSocketOptions {
+export interface TCPDialOptions extends DialTransportOptions<TCPDialEvents>, TCPSocketOptions {
 
 }
 

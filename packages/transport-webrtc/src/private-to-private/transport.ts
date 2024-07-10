@@ -11,8 +11,8 @@ import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
-import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable } from '@libp2p/interface'
-import type { IncomingStreamData, Registrar, ConnectionManager, TransportManager, OpenConnectionProgressEvents } from '@libp2p/interface-internal'
+import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { IncomingStreamData, Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { ProgressEvent } from 'progress-events'
 
 const WEBRTC_TRANSPORT = '/webrtc'
@@ -145,7 +145,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
    * For a circuit relay, this will be of the form
    * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
   */
-  async dial (ma: Multiaddr, options: DialOptions<WebRTCDialEvents>): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
     this.log.trace('dialing address: %a', ma)
 
     const { remoteAddress, peerConnection, muxerFactory } = await initiateConnection({

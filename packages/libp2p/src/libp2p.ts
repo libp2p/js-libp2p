@@ -24,7 +24,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
@@ -272,7 +272,7 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
     return Array.from(peerSet)
   }
 
-  async dial (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<Connection> {
+  async dial (peer: PeerId | Multiaddr | Multiaddr[], options: DialOptions = {}): Promise<Connection> {
     return this.components.connectionManager.openConnection(peer, {
       // ensure any userland dials take top priority in the queue
       priority: 75,

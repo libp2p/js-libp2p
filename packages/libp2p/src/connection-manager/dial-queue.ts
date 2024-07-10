@@ -20,8 +20,8 @@ import {
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions } from '@libp2p/interface'
-import type { OpenConnectionOptions, OpenConnectionProgressEvents, TransportManager } from '@libp2p/interface-internal'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
 import type { ProgressOptions } from 'progress-events'
 
