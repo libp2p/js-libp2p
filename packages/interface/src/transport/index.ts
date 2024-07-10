@@ -40,7 +40,7 @@ export interface CreateListenerOptions {
   upgrader: Upgrader
 }
 
-export interface DialOptions<DialEvents extends ProgressEvent = ProgressEvent> extends AbortOptions, ProgressOptions<DialEvents> {
+export interface DialTransportOptions<DialEvents extends ProgressEvent = ProgressEvent> extends AbortOptions, ProgressOptions<DialEvents> {
   upgrader: Upgrader
 }
 
@@ -61,7 +61,7 @@ export interface Transport<DialEvents extends ProgressEvent = ProgressEvent> {
   /**
    * Dial a given multiaddr.
    */
-  dial(ma: Multiaddr, options: DialOptions<DialEvents>): Promise<Connection>
+  dial(ma: Multiaddr, options: DialTransportOptions<DialEvents>): Promise<Connection>
 
   /**
    * Create transport listeners.

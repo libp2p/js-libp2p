@@ -67,7 +67,7 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -107,7 +107,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     '@libp2p/transport'
   ]
 
-  async dial (ma: Multiaddr, options: DialOptions<WebSocketsDialEvents>): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
@@ -122,7 +122,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: DialOptions<WebSocketsDialEvents>): Promise<DuplexWebSocket> {
+  async _connect (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<DuplexWebSocket> {
     options?.signal?.throwIfAborted()
 
     const cOpts = ma.toOptions()

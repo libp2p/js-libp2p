@@ -12,8 +12,8 @@ import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialOptions } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, IncomingStreamData, OpenConnectionProgressEvents, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
@@ -167,7 +167,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   /**
    * Dial a peer over a relay
    */
-  async dial (ma: Multiaddr, options: DialOptions<CircuitRelayDialEvents>): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<CircuitRelayDialEvents>): Promise<Connection> {
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
       this.log.error(errMsg, ma)

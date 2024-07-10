@@ -40,7 +40,7 @@ import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import WebTransport from './webtransport.js'
-import type { Transport, CreateListenerOptions, DialOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -83,7 +83,7 @@ export type WebTransportDialEvents =
   ProgressEvent<'webtransport:secure-outbound-connection'> |
   ProgressEvent<'webtransport:close-authentication-stream'>
 
-interface AuthenticateWebTransportOptions extends DialOptions<WebTransportDialEvents> {
+interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransportDialEvents> {
   wt: WebTransport
   localPeer: PeerId
   remotePeer?: PeerId
@@ -123,7 +123,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     '@libp2p/transport'
   ]
 
-  async dial (ma: Multiaddr, options: DialOptions<WebTransportDialEvents>): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebTransportDialEvents>): Promise<Connection> {
     if (options?.signal?.aborted === true) {
       throw new AbortError()
     }

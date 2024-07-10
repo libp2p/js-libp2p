@@ -1,9 +1,6 @@
-import type { AbortOptions, Connection, Listener, Transport } from '@libp2p/interface'
+import type { AbortOptions, Connection, Listener, Transport, TransportManagerDialProgressEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProgressOptions, ProgressEvent } from 'progress-events'
-
-export type TransportManagerDialProgressEvents =
-  ProgressEvent<'transport-manager:selected-transport', string>
+import type { ProgressOptions } from 'progress-events'
 
 export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
 
