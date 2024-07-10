@@ -150,7 +150,7 @@ export interface CounterGroup {
  * @example How to register a simple metric
  *
  * ```typescript
- * import { Metrics, Metric } from '@libp2p/interface/metrics
+ * import { Metrics, Metric } from '@libp2p/interface/metrics'
  *
  * interface MyServiceComponents {
  *   metrics: Metrics
@@ -179,7 +179,7 @@ export interface CounterGroup {
  * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
  *
  * ```typescript
- * import { Metrics, Metric } from '@libp2p/interface/metrics
+ * import { Metrics, Metric } from '@libp2p/interface/metrics'
  *
  * interface MyServiceComponents {
  *   metrics: Metrics
@@ -207,7 +207,7 @@ export interface CounterGroup {
  * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
  *
  * ```typescript
- * import { Metrics, MetricGroup } from '@libp2p/interface/metrics
+ * import { Metrics, MetricGroup } from '@libp2p/interface/metrics'
  *
  * interface MyServiceComponents {
  *   metrics: Metrics
@@ -238,7 +238,7 @@ export interface CounterGroup {
  * This is something only libp2p transports need to do.
  *
  * ```typescript
- * import { Metrics } from '@libp2p/interface/metrics
+ * import { Metrics } from '@libp2p/interface/metrics'
  *
  * interface MyServiceComponents {
  *   metrics: Metrics
@@ -264,7 +264,7 @@ export interface CounterGroup {
  * This is something only libp2p connections need to do.
  *
  * ```typescript
- * import { Metrics } from '@libp2p/interface/metrics
+ * import { Metrics } from '@libp2p/interface/metrics'
  *
  * interface MyServiceComponents {
  *   metrics: Metrics
