@@ -36,6 +36,19 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.4.6](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.5...utils-v5.4.6) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.5 to ^4.1.6
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.2.0 to ^4.2.1
+
 ## [5.4.5](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.4...utils-v5.4.5) (2024-07-03)
 
 
