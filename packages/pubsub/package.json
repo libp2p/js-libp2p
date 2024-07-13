@@ -102,7 +102,7 @@
     "@libp2p/logger": "^4.0.17",
     "@libp2p/peer-id-factory": "^4.2.1",
     "@types/sinon": "^17.0.3",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.1",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
