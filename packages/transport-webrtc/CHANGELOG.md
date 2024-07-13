@@ -111,6 +111,33 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.2](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.1...webrtc-v4.1.2) (2024-07-13)
+
+
+### Bug Fixes
+
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+* limit default WebRTC STUN servers to 4x ([#2615](https://github.com/libp2p/js-libp2p/issues/2615)) ([3319ff4](https://github.com/libp2p/js-libp2p/commit/3319ff41ec7a30a632343e3171136b57460e01cb))
+* remove deprecated multihashes library ([#2522](https://github.com/libp2p/js-libp2p/issues/2522)) ([e9b6a24](https://github.com/libp2p/js-libp2p/commit/e9b6a242ac8b485f5fe9c33710e100c660c308aa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/interface-internal bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/peer-id bumped from ^4.2.0 to ^4.2.1
+    * @libp2p/utils bumped from ^5.4.5 to ^5.4.6
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.1.1 to ^1.1.2
+    * @libp2p/identify bumped from ^2.1.1 to ^2.1.2
+    * @libp2p/interface-compliance-tests bumped from ^5.4.8 to ^5.4.9
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+    * @libp2p/peer-id-factory bumped from ^4.2.0 to ^4.2.1
+    * @libp2p/websockets bumped from ^8.1.1 to ^8.1.2
+    * libp2p bumped from ^1.8.0 to ^1.8.1
+
 ## [4.1.1](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.0...webrtc-v4.1.1) (2024-07-03)
 
 
