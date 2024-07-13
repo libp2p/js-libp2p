@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.2.1](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.2.0...devtools-metrics-v0.2.1) (2024-07-03)
+
+
+### Bug Fixes
+
+* add rpc to metrics-devtools ([#2595](https://github.com/libp2p/js-libp2p/issues/2595)) ([15eb664](https://github.com/libp2p/js-libp2p/commit/15eb66428d191e1c26db69ef3587bd2afb972d17))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/peer-id bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/simple-metrics bumped from ^1.1.0 to ^1.1.1
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+
+## [0.2.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.1.1...devtools-metrics-v0.2.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/interface-internal bumped from ^1.2.3 to ^1.2.4
+    * @libp2p/logger bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/simple-metrics bumped from ^1.0.3 to ^1.1.0
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.1.3 to ^4.1.4
+
 ## [0.1.1](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.1.0...devtools-metrics-v0.1.1) (2024-06-07)
 
 

@@ -32,6 +32,36 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [1.3.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.2.4...interface-internal-v1.3.0) (2024-07-03)
+
+
+### Features
+
+* invoke progress events during dialing ([#2596](https://github.com/libp2p/js-libp2p/issues/2596)) ([6573cb8](https://github.com/libp2p/js-libp2p/commit/6573cb8b072c9ab3b0b374a9d2a4270cbc5c19b6))
+
+
+### Bug Fixes
+
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/peer-collections bumped from ^5.2.4 to ^5.2.5
+
+## [1.2.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.2.3...interface-internal-v1.2.4) (2024-06-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/peer-collections bumped from ^5.2.3 to ^5.2.4
+
 ## [1.2.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.2.2...interface-internal-v1.2.3) (2024-06-07)
 
 

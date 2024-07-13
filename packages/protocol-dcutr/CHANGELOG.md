@@ -44,6 +44,33 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [1.1.1](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.1.0...dcutr-v1.1.1) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/utils bumped from ^5.4.4 to ^5.4.5
+
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.22...dcutr-v1.1.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/interface-internal bumped from ^1.2.3 to ^1.2.4
+    * @libp2p/utils bumped from ^5.4.3 to ^5.4.4
+
 ## [1.0.22](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.0.21...dcutr-v1.0.22) (2024-06-07)
 
 

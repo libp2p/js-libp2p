@@ -1,7 +1,12 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
+import { CID } from 'multiformats/cid'
+import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { createPeerId, peerIdFromBytes, peerIdFromString } from '../src/index.js'
+import { createPeerId, peerIdFromBytes, peerIdFromCID, peerIdFromString } from '../src/index.js'
+
+// these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
+const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 
 describe('PeerId', () => {
   it('create an id without \'new\'', () => {
@@ -110,5 +115,29 @@ describe('PeerId', () => {
     const res = JSON.parse(JSON.stringify({ id }))
 
     expect(res).to.have.property('id', id.toString())
+  })
+
+  it('creates a url peer id from a CID string', async () => {
+    const url = 'http://example.com/'
+    const cid = CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url)))
+    const id = peerIdFromString(cid.toString())
+    expect(id).to.have.property('type', 'url')
+    expect(id.toString()).to.equal(cid.toString())
+  })
+
+  it('creates a url peer id from a CID bytes', async () => {
+    const url = 'http://example.com/'
+    const cid = CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url)))
+    const id = peerIdFromBytes(cid.bytes)
+    expect(id).to.have.property('type', 'url')
+    expect(id.toString()).to.equal(cid.toString())
+  })
+
+  it('creates a url peer id from a CID', async () => {
+    const url = 'http://example.com/'
+    const cid = CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, identity.digest(uint8ArrayFromString(url)))
+    const id = peerIdFromCID(cid)
+    expect(id).to.have.property('type', 'url')
+    expect(id.toString()).to.equal(cid.toString())
   })
 })

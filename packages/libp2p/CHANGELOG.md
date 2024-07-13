@@ -110,6 +110,78 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.8.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.7.0...libp2p-v1.8.0) (2024-07-03)
+
+
+### Features
+
+* invoke progress events during dialing ([#2596](https://github.com/libp2p/js-libp2p/issues/2596)) ([6573cb8](https://github.com/libp2p/js-libp2p/commit/6573cb8b072c9ab3b0b374a9d2a4270cbc5c19b6))
+
+
+### Bug Fixes
+
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.4 to ^4.1.5
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/multistream-select bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/peer-collections bumped from ^5.2.4 to ^5.2.5
+    * @libp2p/peer-id bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/peer-store bumped from ^10.1.0 to ^10.1.1
+    * @libp2p/utils bumped from ^5.4.4 to ^5.4.5
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/identify bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/interface-compliance-tests bumped from ^5.4.7 to ^5.4.8
+    * @libp2p/mplex bumped from ^10.1.0 to ^10.1.1
+    * @libp2p/plaintext bumped from ^1.1.0 to ^1.1.1
+    * @libp2p/tcp bumped from ^9.1.0 to ^9.1.1
+    * @libp2p/websockets bumped from ^8.1.0 to ^8.1.1
+
+## [1.7.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.6.1...libp2p-v1.7.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/interface-internal bumped from ^1.2.3 to ^1.2.4
+    * @libp2p/logger bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/multistream-select bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/peer-collections bumped from ^5.2.3 to ^5.2.4
+    * @libp2p/peer-id bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/peer-id-factory bumped from ^4.1.3 to ^4.1.4
+    * @libp2p/peer-store bumped from ^10.0.20 to ^10.1.0
+    * @libp2p/utils bumped from ^5.4.3 to ^5.4.4
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.0.25 to ^1.1.0
+    * @libp2p/identify bumped from ^2.0.3 to ^2.1.0
+    * @libp2p/interface-compliance-tests bumped from ^5.4.6 to ^5.4.7
+    * @libp2p/mplex bumped from ^10.0.25 to ^10.1.0
+    * @libp2p/plaintext bumped from ^1.0.25 to ^1.1.0
+    * @libp2p/tcp bumped from ^9.0.27 to ^9.1.0
+    * @libp2p/websockets bumped from ^8.0.25 to ^8.1.0
+
 ## [1.6.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.6.0...libp2p-v1.6.1) (2024-06-07)
 
 
