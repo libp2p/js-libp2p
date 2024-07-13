@@ -19,7 +19,7 @@ RUN npx playwright install-deps
 RUN npx playwright install
 
 # Options: chromium, firefox, webkit
-ARG BROWSER=firefox
+ARG BROWSER=chromium
 ENV BROWSER=${BROWSER}
 
 WORKDIR /app/interop
