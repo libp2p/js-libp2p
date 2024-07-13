@@ -9,7 +9,7 @@ COPY ./packages ./packages
 COPY ./interop ./interop
 
 # disable colored output and CLI animation from test runners
-ENV CI true
+ENV CI=true
 
 RUN npm i
 RUN npm run build

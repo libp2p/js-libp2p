@@ -4,6 +4,7 @@ import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupporte
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
+
 /**
  * Get base2 | identity decoders
  */
@@ -86,20 +87,20 @@ export function ma2Fingerprint (ma: Multiaddr): string[] {
     throw invalidFingerprint(fingerprint, ma.toString())
   }
 
-  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fingerprint]
+  return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
 }
 
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (code: number): string {
+export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'SHA-512' {
   switch (code) {
     case 0x11:
-      return 'sha1'
+      return 'SHA-1'
     case 0x12:
-      return 'sha-256'
+      return 'SHA-256'
     case 0x13:
-      return 'sha-512'
+      return 'SHA-512'
     default:
       throw unsupportedHashAlgorithmCode(code)
   }

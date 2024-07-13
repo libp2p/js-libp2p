@@ -3,11 +3,10 @@ import { transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import { sha1 } from 'multiformats/hashes/sha1'
-import { sha256, sha512 } from 'multiformats/hashes/sha2'
+import * as Digest from 'multiformats/hashes/digest'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument, unsupportedHashAlgorithmCode } from '../error.js'
+import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
@@ -196,7 +195,7 @@ export class WebRTCDirectTransport implements Transport {
       // Do noise handshake.
       // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
       // <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
-      const fingerprintsPrologue = await this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma)
+      const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma)
 
       // Since we use the default crypto interface and do not use a static key or early data,
       // we pass in undefined for these parameters.
@@ -274,7 +273,7 @@ export class WebRTCDirectTransport implements Transport {
    * Generate a noise prologue from the peer connection's certificate.
    * noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
    */
-  private async generateNoisePrologue (pc: RTCPeerConnection, hasCode: number, ma: Multiaddr): Promise<Uint8Array> {
+  private generateNoisePrologue (pc: RTCPeerConnection, hashCode: number, ma: Multiaddr): Uint8Array {
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate')
     }
@@ -288,23 +287,10 @@ export class WebRTCDirectTransport implements Transport {
 
     const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')
     const localFpArray = uint8arrayFromString(localFpString, 'hex')
-    const local = await encode(hasCode, localFpArray)
+    const local = Digest.create(hashCode, localFpArray)
     const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma))
     const prefix = uint8arrayFromString('libp2p-webrtc-noise:')
 
-    return concat([prefix, local, remote])
-  }
-}
-
-async function encode (hasher: number, localFpArray: Uint8Array): Promise<Uint8Array> {
-  switch (hasher) {
-    case 0x11:
-      return (await sha1.digest(localFpArray)).bytes
-    case 0x12:
-      return (await sha256.digest(localFpArray)).bytes
-    case 0x13:
-      return (await sha512.digest(localFpArray)).bytes
-    default:
-      throw unsupportedHashAlgorithmCode(hasher)
+    return concat([prefix, local.bytes, remote])
   }
 }
