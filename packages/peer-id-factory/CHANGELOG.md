@@ -27,6 +27,17 @@
   * dependencies
     * @libp2p/crypto bumped from ^3.0.4 to ^4.0.0
 
+## [4.2.1](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.2.0...peer-id-factory-v4.2.1) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.5 to ^4.1.6
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/peer-id bumped from ^4.2.0 to ^4.2.1
+
 ## [4.2.0](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.1.4...peer-id-factory-v4.2.0) (2024-07-03)
 
 

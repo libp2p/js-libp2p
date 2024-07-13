@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.6.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.0...interface-v1.6.1) (2024-07-13)
+
+
+### Bug Fixes
+
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+
+
+### Documentation
+
+* fix metrics example typo ([#2613](https://github.com/libp2p/js-libp2p/issues/2613)) ([3805a20](https://github.com/libp2p/js-libp2p/commit/3805a20fa77e10cd30dc38c85e3d7eef00ce328b))
+
 ## [1.6.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.5.0...interface-v1.6.0) (2024-07-03)
 
 
