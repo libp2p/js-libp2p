@@ -46,8 +46,11 @@ export const VARINT_LENGTH = 2
 
 /**
  * Max message size that can be sent to the DataChannel
+ *
+ * @see https://blog.mozilla.org/webrtc/large-data-channel-messages/
+ * @see https://issues.webrtc.org/issues/40644524
  */
-export const MAX_MESSAGE_SIZE = 16 * 1024
+export const MAX_MESSAGE_SIZE = 256 * 1024
 
 /**
  * When closing streams we send a FIN then wait for the remote to
