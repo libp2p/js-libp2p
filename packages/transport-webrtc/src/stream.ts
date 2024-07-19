@@ -35,9 +35,9 @@ export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 /**
- * protobuf field definition overhead
+ * protobuf field definition overhead + length encoding prefix length
  */
-export const PROTOBUF_OVERHEAD = 5
+export const PROTOBUF_OVERHEAD = 7
 
 /**
  * Length of varint, in bytes
