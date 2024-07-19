@@ -192,7 +192,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          # Pinned because of https://github.com/npm/cli/issues/7657
+          node-version: 20.13.1
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
           directories: |
