@@ -27,7 +27,7 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
 /**
  * How much can be buffered to the DataChannel at once
  */
-export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+export const MAX_BUFFERED_AMOUNT = 10 * 1024 * 1024
 
 /**
  * How long time we wait for the 'bufferedamountlow' event to be emitted
