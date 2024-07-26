@@ -38,11 +38,45 @@ function ipv4Check (ipAddr: string): boolean {
   return false
 }
 
+function isIpv4MappedIpv6 (ipAddr: string): boolean {
+  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr)
+}
+
+/**
+ * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2
+ */
+function ipv4MappedIpv6Check (ipAddr: string): boolean {
+  const parts = ipAddr.split(':')
+
+  if (parts.length < 2) {
+    return false
+  }
+
+  const octet34 = parts[parts.length - 1].padStart(4, '0')
+  const octet12 = parts[parts.length - 2].padStart(4, '0')
+
+  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`
+
+  return ipv4Check(ip4)
+}
+
+/**
+ * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.2 example 3
+ */
+function isIpv4EmbeddedIpv6 (ipAddr: string): boolean {
+  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr)
+}
+
+function ipv4EmbeddedIpv6Check (ipAddr: string): boolean {
+  const parts = ipAddr.split(':')
+  const ip4 = parts[parts.length - 1]
+
+  return ipv4Check(ip4)
+}
+
 function ipv6Check (ipAddr: string): boolean {
   return /^::$/.test(ipAddr) ||
     /^::1$/.test(ipAddr) ||
-    /^::f{4}:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) ||
-    /^::f{4}:0.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) ||
     /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) ||
     /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
     /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
@@ -56,6 +90,8 @@ function ipv6Check (ipAddr: string): boolean {
 
 export function isPrivateIp (ip: string): boolean | undefined {
   if (isIPv4(ip)) return ipv4Check(ip)
+  else if (isIpv4MappedIpv6(ip)) return ipv4MappedIpv6Check(ip)
+  else if (isIpv4EmbeddedIpv6(ip)) return ipv4EmbeddedIpv6Check(ip)
   else if (isIPv6(ip)) return ipv6Check(ip)
   else return undefined
 }
