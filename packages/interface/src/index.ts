@@ -527,7 +527,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
-   * const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
+   * const stream = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
    *
    * // protocol negotiated: 'echo/1.0.0' means that the other party only supports the older version
    *

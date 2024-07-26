@@ -127,7 +127,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   /**
    * Create a new KadDHT
    */
-  constructor (components: KadDHTComponents, init: KadDHTInit) {
+  constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
     const {

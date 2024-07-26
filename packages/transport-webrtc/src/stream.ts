@@ -27,7 +27,7 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
 /**
  * How much can be buffered to the DataChannel at once
  */
-export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
 
 /**
  * How long time we wait for the 'bufferedamountlow' event to be emitted
@@ -35,9 +35,9 @@ export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 /**
- * protobuf field definition overhead
+ * protobuf field definition overhead + length encoding prefix length
  */
-export const PROTOBUF_OVERHEAD = 5
+export const PROTOBUF_OVERHEAD = 7
 
 /**
  * Length of varint, in bytes
@@ -46,8 +46,11 @@ export const VARINT_LENGTH = 2
 
 /**
  * Max message size that can be sent to the DataChannel
+ *
+ * @see https://blog.mozilla.org/webrtc/large-data-channel-messages/
+ * @see https://issues.webrtc.org/issues/40644524
  */
-export const MAX_MESSAGE_SIZE = 16 * 1024
+export const MAX_MESSAGE_SIZE = 256 * 1024
 
 /**
  * When closing streams we send a FIN then wait for the remote to
