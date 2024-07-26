@@ -43,7 +43,7 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr)
 
-        if (peerId == null || !peerId.equals(maPeerId)) {
+        if (peerId != null && !peerId.equals(maPeerId)) {
           throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
         }
       }

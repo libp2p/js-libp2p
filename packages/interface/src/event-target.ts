@@ -34,7 +34,7 @@ export interface TypedEventTarget <EventMap extends Record<string, any>> extends
  * etc
  */
 export class TypedEventEmitter<EventMap extends Record<string, any>> extends EventTarget implements TypedEventTarget<EventMap> {
-  #listeners = new Map<any, Listener[]>()
+  readonly #listeners = new Map<any, Listener[]>()
 
   constructor () {
     super()
