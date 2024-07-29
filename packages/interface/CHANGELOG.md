@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.6.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.1...interface-v1.6.2) (2024-07-29)
+
+
+### Documentation
+
+* update `connection.newStream` return value ([#2630](https://github.com/libp2p/js-libp2p/issues/2630)) ([c164e2e](https://github.com/libp2p/js-libp2p/commit/c164e2e237716be17891ae8015ca78f46d0dea17))
+
 ## [1.6.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.0...interface-v1.6.1) (2024-07-13)
 
 

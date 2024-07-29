@@ -36,6 +36,25 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [5.4.7](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.6...utils-v5.4.7) (2024-07-29)
+
+
+### Bug Fixes
+
+* add ipv6Check regex for private address ([#2624](https://github.com/libp2p/js-libp2p/issues/2624)) ([a82ff82](https://github.com/libp2p/js-libp2p/commit/a82ff82211f187e6ad6eef2f73e3221f6fc7b444))
+* increase default cuckoo filter fingerprint size ([#2636](https://github.com/libp2p/js-libp2p/issues/2636)) ([34cf1f7](https://github.com/libp2p/js-libp2p/commit/34cf1f7cd178799a9f153dacf6734a3b83f11c3e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.6 to ^4.1.7
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+  * devDependencies
+    * @libp2p/peer-id-factory bumped from ^4.2.1 to ^4.2.2
+
 ## [5.4.6](https://github.com/libp2p/js-libp2p/compare/utils-v5.4.5...utils-v5.4.6) (2024-07-13)
 
 
