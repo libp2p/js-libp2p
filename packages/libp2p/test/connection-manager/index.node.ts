@@ -6,10 +6,8 @@ import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { dns } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import delay from 'delay'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
-import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
@@ -60,7 +58,6 @@ describe('Connection Manager', () => {
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
-      minConnections: 50,
       inboundUpgradeTimeout: 1000
     })
 
@@ -98,7 +95,6 @@ describe('Connection Manager', () => {
     })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
-      minConnections: 50,
       inboundUpgradeTimeout: 1000
     })
 
@@ -197,141 +193,6 @@ describe('libp2p.connections', () => {
       }
 
       sinon.reset()
-    })
-
-    it('should connect to all the peers stored in the PeerStore, if their number is below minConnections', async () => {
-      libp2p = await createNode({
-        started: false,
-        config: {
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          },
-          connectionManager: {
-            minConnections: 3
-          }
-        }
-      })
-
-      // Populate PeerStore before starting
-      await libp2p.peerStore.patch(nodes[0].peerId, {
-        multiaddrs: nodes[0].getMultiaddrs()
-      })
-      await libp2p.peerStore.patch(nodes[1].peerId, {
-        multiaddrs: nodes[1].getMultiaddrs()
-      })
-
-      await libp2p.start()
-
-      // Wait for peers to connect
-      await pWaitFor(() => libp2p.getConnections().length === 2)
-
-      await libp2p.stop()
-    })
-
-    it('should connect to all the peers stored in the PeerStore until reaching the minConnections', async () => {
-      const minConnections = 1
-      libp2p = await createNode({
-        started: false,
-        config: {
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          },
-          connectionManager: {
-            minConnections,
-            maxConnections: 1
-          }
-        }
-      })
-
-      // Populate PeerStore before starting
-      await libp2p.peerStore.patch(nodes[0].peerId, {
-        multiaddrs: nodes[0].getMultiaddrs()
-      })
-      await libp2p.peerStore.patch(nodes[1].peerId, {
-        multiaddrs: nodes[1].getMultiaddrs()
-      })
-
-      await libp2p.start()
-
-      // Wait for peer to connect
-      await pWaitFor(() => libp2p.components.connectionManager.getConnections().length === minConnections)
-
-      // Wait more time to guarantee no other connection happened
-      await delay(200)
-      expect(libp2p.components.connectionManager.getConnections().length).to.eql(minConnections)
-
-      await libp2p.stop()
-    })
-
-    // flaky
-    it.skip('should connect to all the peers stored in the PeerStore until reaching the minConnections sorted', async () => {
-      const minConnections = 1
-      libp2p = await createNode({
-        started: false,
-        config: {
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          },
-          connectionManager: {
-            minConnections,
-            maxConnections: 1
-          }
-        }
-      })
-
-      // Populate PeerStore before starting
-      await libp2p.peerStore.patch(nodes[0].peerId, {
-        multiaddrs: nodes[0].getMultiaddrs()
-      })
-      await libp2p.peerStore.patch(nodes[1].peerId, {
-        multiaddrs: nodes[1].getMultiaddrs(),
-        protocols: ['/protocol-min-conns']
-      })
-
-      await libp2p.start()
-
-      // Wait for peer to connect
-      await pWaitFor(() => libp2p.components.connectionManager.getConnections().length === minConnections)
-
-      // Should have connected to the peer with protocols
-      expect(libp2p.components.connectionManager.getConnections(nodes[0].peerId)).to.be.empty()
-      expect(libp2p.components.connectionManager.getConnections(nodes[1].peerId)).to.not.be.empty()
-
-      await libp2p.stop()
-    })
-
-    it('should connect to peers in the PeerStore when a peer disconnected', async () => {
-      const minConnections = 1
-
-      libp2p = await createNode({
-        config: {
-          addresses: {
-            listen: ['/ip4/127.0.0.1/tcp/0/ws']
-          },
-          connectionManager: {
-            minConnections
-          }
-        }
-      })
-
-      // Populate PeerStore after starting (discovery)
-      await libp2p.peerStore.patch(nodes[0].peerId, {
-        multiaddrs: nodes[0].getMultiaddrs()
-      })
-
-      // Wait for peer to connect
-      const conn = await libp2p.dial(nodes[0].peerId)
-      expect(libp2p.components.connectionManager.getConnections(nodes[0].peerId)).to.not.be.empty()
-
-      await conn.close()
-      // Closed
-      await pWaitFor(() => libp2p.components.connectionManager.getConnections().length === 0)
-      // Connected
-      await pWaitFor(() => libp2p.components.connectionManager.getConnections().length === 1)
-
-      expect(libp2p.components.connectionManager.getConnections(nodes[0].peerId)).to.not.be.empty()
-
-      await libp2p.stop()
     })
 
     it('should be closed status once immediately stopping', async () => {

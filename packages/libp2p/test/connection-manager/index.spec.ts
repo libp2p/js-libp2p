@@ -19,7 +19,6 @@ import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
   maxConnections: 10,
-  minConnections: 1,
   autoDialInterval: Infinity,
   inboundUpgradeTimeout: 10000
 }
@@ -85,8 +84,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
-          minConnections: 2
+          maxConnections: max
         }
       }),
       started: false
@@ -144,8 +142,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
-          minConnections: 2
+          maxConnections: max
         }
       }),
       started: false
@@ -210,7 +207,6 @@ describe('Connection Manager', () => {
       config: createBaseOptions({
         connectionManager: {
           maxConnections: max,
-          minConnections: 0,
           allow: [
             '/ip4/83.13.55.32'
           ]
@@ -294,8 +290,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
-          minConnections: 0
+          maxConnections: max
         }
       }),
       started: false
@@ -327,8 +322,7 @@ describe('Connection Manager', () => {
     await expect(createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: 5,
-          minConnections: 6
+          maxConnections: -1
         }
       }),
       started: false

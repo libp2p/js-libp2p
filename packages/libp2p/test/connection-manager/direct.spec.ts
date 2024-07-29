@@ -56,7 +56,6 @@ describe('dialing (direct, WebSockets)', () => {
     })
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
       maxConnections: 100,
-      minConnections: 50,
       inboundUpgradeTimeout: 1000
     })
 

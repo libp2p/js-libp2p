@@ -12,9 +12,6 @@ async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
   return createLibp2p(createBaseOptions({
     services: {
       fetch: fetch()
-    },
-    connectionManager: {
-      minConnections: 0
     }
   }))
 }
