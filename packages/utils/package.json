@@ -176,7 +176,7 @@
   "devDependencies": {
     "@libp2p/peer-id-factory": "^4.2.2",
     "@types/netmask": "^2.0.5",
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
