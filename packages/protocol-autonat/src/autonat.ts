@@ -178,7 +178,7 @@ export class AutoNATService implements Startable {
     let peerId: PeerId
     const peer = dialRequest.peer
 
-    if (peer == null || peer.id == null) {
+    if (peer?.id == null) {
       this.log.error('PeerId missing from message')
 
       return {

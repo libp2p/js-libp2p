@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/simple-metrics",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Simple in-memory metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-simple#readme",
@@ -50,13 +50,13 @@
     "dep-check": "aegir dep-check -i events"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.6.1",
-    "@libp2p/logger": "^4.0.17",
+    "@libp2p/interface": "^1.6.2",
+    "@libp2p/logger": "^4.0.18",
     "it-foreach": "^2.1.0",
     "it-stream-types": "^2.0.1"
   },
   "devDependencies": {
-    "aegir": "^43.0.1",
+    "aegir": "^44.0.1",
     "p-defer": "^4.0.1"
   }
 }

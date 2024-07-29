@@ -14,7 +14,7 @@ export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d
 export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
   // try to fetch fingerprint from local certificate
   const localCert = pc.getConfiguration().certificates?.at(0)
-  if (localCert == null || localCert.getFingerprints == null) {
+  if (localCert?.getFingerprints == null) {
     options.log.trace('fetching fingerprint from local SDP')
     const localDescription = pc.localDescription
     if (localDescription == null) {

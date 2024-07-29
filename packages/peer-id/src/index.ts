@@ -304,7 +304,7 @@ export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1Peer
 }
 
 export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
-  if (cid == null || cid.multihash == null || cid.version == null || (cid.version === 1 && (cid.code !== LIBP2P_KEY_CODE) && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE)) {
+  if (cid?.multihash == null || cid.version == null || (cid.version === 1 && (cid.code !== LIBP2P_KEY_CODE) && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE)) {
     throw new Error('Supplied PeerID CID is invalid')
   }
 

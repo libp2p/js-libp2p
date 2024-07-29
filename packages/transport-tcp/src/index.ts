@@ -248,7 +248,7 @@ class TCP implements Transport<TCPDialEvents> {
         done(new AbortError())
       }
 
-      const done = (err?: any): void => {
+      const done = (err?: Error): void => {
         rawSocket.removeListener('error', onError)
         rawSocket.removeListener('timeout', onTimeout)
         rawSocket.removeListener('connect', onConnect)
