@@ -24,8 +24,7 @@ export default {
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
         connectionManager: {
-          inboundConnectionThreshold: Infinity,
-          minConnections: 0
+          inboundConnectionThreshold: Infinity
         },
         addresses: {
           listen: [

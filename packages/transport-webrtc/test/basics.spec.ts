@@ -44,9 +44,6 @@ async function createNode (): Promise<Libp2p> {
     connectionGater: {
       denyDialMultiaddr: () => false
     },
-    connectionManager: {
-      minConnections: 0
-    },
     services: {
       identify: identify()
     }

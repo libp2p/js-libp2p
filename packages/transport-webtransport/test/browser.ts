@@ -21,9 +21,6 @@ describe('libp2p-webtransport', () => {
       connectionGater: {
         denyDialMultiaddr: async () => false
       },
-      connectionManager: {
-        minConnections: 0
-      },
       services: {
         ping: ping()
       }

@@ -39,12 +39,6 @@ const node = await createLibp2p({
     maxConnections: 100,
 
     /**
-     * If the number of open connections goes below this number, the node
-     * will try to connect to randomly selected peers from the peer store
-     */
-    minConnections: 50,
-
-    /**
      * How many connections can be open but not yet upgraded
      */
     maxIncomingPendingConnections: 100,

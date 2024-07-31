@@ -7,9 +7,8 @@ import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
-import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
@@ -23,52 +22,6 @@ export interface ConnectionManagerInit {
    * pruning connections to reduce resource usage. (default: 300, 100 in browsers)
    */
   maxConnections?: number
-
-  /**
-   * The minimum number of connections below which libp2p will start to dial peers
-   * from the peer book. Setting this to 0 effectively disables this behaviour.
-   * (default: 50, 5 in browsers)
-   */
-  minConnections?: number
-
-  /**
-   * How long to wait between attempting to keep our number of concurrent connections
-   * above minConnections (default: 5000)
-   */
-  autoDialInterval?: number
-
-  /**
-   * When dialling peers from the peer book to keep the number of open connections
-   * above `minConnections`, add dials for this many peers to the dial queue
-   * at once. (default: 25)
-   */
-  autoDialConcurrency?: number
-
-  /**
-   * To allow user dials to take priority over auto dials, use this value as the
-   * dial priority. (default: 0)
-   */
-  autoDialPriority?: number
-
-  /**
-   * Limit the maximum number of peers to dial when trying to keep the number of
-   * open connections above `minConnections`. (default: 100)
-   */
-  autoDialMaxQueueLength?: number
-
-  /**
-   * When we've failed to dial a peer, do not autodial them again within this
-   * number of ms. (default: 1 minute, 7 minutes in browsers)
-   */
-  autoDialPeerRetryThreshold?: number
-
-  /**
-   * Newly discovered peers may be auto-dialed to increase the number of open
-   * connections, but they can be discovered in quick succession so add a small
-   * delay before attempting to dial them in case more peers have been
-   * discovered. (default: 10ms)
-   */
-  autoDialDiscoveredPeersDebounce?: number
 
   /**
    * Sort the known addresses of a peer before trying to dial, By default public
@@ -142,15 +95,9 @@ export interface ConnectionManagerInit {
 }
 
 const defaultOptions = {
-  minConnections: MIN_CONNECTIONS,
   maxConnections: MAX_CONNECTIONS,
   inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
-  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
-  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
-  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
+  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS
 }
 
 export interface DefaultConnectionManagerComponents {
@@ -177,7 +124,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
-  public readonly autoDial: AutoDial
   public readonly connectionPruner: ConnectionPruner
   private readonly inboundConnectionRateLimiter: RateLimiter
   private readonly peerStore: PeerStore
@@ -187,10 +133,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
-    const minConnections = init.minConnections ?? defaultOptions.minConnections
 
-    if (this.maxConnections < minConnections) {
-      throw new CodeError('Connection Manager maxConnections must be greater than minConnections', codes.ERR_INVALID_PARAMETERS)
+    if (this.maxConnections < 0) {
+      throw new CodeError('Connection Manager maxConnections must be greater than zero', codes.ERR_INVALID_PARAMETERS)
     }
 
     /**
@@ -220,21 +165,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.inboundConnectionRateLimiter = new RateLimiter({
       points: init.inboundConnectionThreshold ?? defaultOptions.inboundConnectionThreshold,
       duration: 1
-    })
-
-    // controls what happens when we don't have enough connections
-    this.autoDial = new AutoDial({
-      connectionManager: this,
-      peerStore: components.peerStore,
-      events: components.events,
-      logger: components.logger
-    }, {
-      minConnections,
-      autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency,
-      autoDialPriority: init.autoDialPriority ?? defaultOptions.autoDialPriority,
-      autoDialPeerRetryThreshold: init.autoDialPeerRetryThreshold ?? defaultOptions.autoDialPeerRetryThreshold,
-      autoDialDiscoveredPeersDebounce: init.autoDialDiscoveredPeersDebounce ?? defaultOptions.autoDialDiscoveredPeersDebounce,
-      maxQueueLength: init.autoDialMaxQueueLength ?? defaultOptions.autoDialMaxQueueLength
     })
 
     // controls what happens when we have too many connections
@@ -351,7 +281,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
 
     this.dialQueue.start()
-    this.autoDial.start()
 
     this.started = true
     this.log('started')
@@ -379,8 +308,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       .catch(err => {
         this.log.error(err)
       })
-
-    this.autoDial.afterStart()
   }
 
   /**
@@ -388,7 +315,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
    */
   async stop (): Promise<void> {
     this.dialQueue.stop()
-    this.autoDial.stop()
 
     // Close all connections we're tracking
     const tasks: Array<Promise<void>> = []

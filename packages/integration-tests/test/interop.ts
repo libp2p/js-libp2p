@@ -134,10 +134,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
-    connectionEncryption: [noise()],
-    connectionManager: {
-      minConnections: 0
-    }
+    connectionEncryption: [noise()]
   }
 
   if (options.noListen !== true) {

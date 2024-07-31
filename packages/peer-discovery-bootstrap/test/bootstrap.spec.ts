@@ -7,13 +7,20 @@ import { IPFS } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { bootstrap, type BootstrapComponents } from '../src/index.js'
+import { bootstrap } from '../src/index.js'
 import peerList from './fixtures/default-peers.js'
 import partialValidPeerList from './fixtures/some-invalid-peers.js'
-import type { PeerStore } from '@libp2p/interface'
+import type { ComponentLogger, PeerStore } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
+
+export interface StubbedBootstrapComponents {
+  peerStore: PeerStore
+  logger: ComponentLogger
+  connectionManager: StubbedInstance<ConnectionManager>
+}
 
 describe('bootstrap', () => {
-  let components: BootstrapComponents
+  let components: StubbedBootstrapComponents
   let peerStore: StubbedInstance<PeerStore>
 
   beforeEach(async () => {
@@ -21,7 +28,8 @@ describe('bootstrap', () => {
 
     components = {
       peerStore,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>()
     }
   })
 
@@ -46,6 +54,27 @@ describe('bootstrap', () => {
     await start(r)
 
     await p
+    await stop(r)
+  })
+
+  it('should dial bootstrap peers', async function () {
+    this.timeout(5 * 1000)
+    const r = bootstrap({
+      list: peerList,
+      timeout: 100
+    })(components)
+
+    await start(r)
+
+    await new Promise<void>(resolve => {
+      const interval = setInterval(() => {
+        if (components.connectionManager.openConnection.callCount === 1) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 100)
+    })
+
     await stop(r)
   })
 
@@ -92,7 +121,10 @@ describe('bootstrap', () => {
           value: tagValue,
           ttl: tagTTL
         }
-      }
+      },
+      multiaddrs: [
+        bootstrapper0ma
+      ]
     })
 
     await stop(r)
