@@ -1,11 +1,11 @@
 import { serviceCapabilities } from '@libp2p/interface'
-import { anySignal } from 'any-signal'
+import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { byteStream } from 'it-byte-stream'
-import type { ComponentLogger, Logger, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 const DEFAULT_PING_INTERVAL_MS = 10000
-const DEFAULT_PING_TIMEOUT_MS = 2000
 
 export interface ConnectionMonitorInit {
   /**
@@ -16,12 +16,13 @@ export interface ConnectionMonitorInit {
   pingInterval?: number
 
   /**
-   * How long the ping is allowed to take before the connection will be judged
-   * inactive and aborted
+   * Timeout settings for How long the ping is allowed to take before the
+   * connection will be judged inactive and aborted.
    *
-   * @default 2000
+   * The timeout is adaptive to cope with slower networks or nodes that
+   * have changing network characteristics, such as mobile.
    */
-  pingTimeout?: number
+  pingTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
    * If true, any connection that fails the ping will be aborted
@@ -34,6 +35,7 @@ export interface ConnectionMonitorInit {
 export interface ConnectionMonitorComponents {
   logger: ComponentLogger
   connectionManager: ConnectionManager
+  metrics?: Metrics
 }
 
 export class ConnectionMonitor implements Startable {
@@ -41,15 +43,20 @@ export class ConnectionMonitor implements Startable {
   private readonly log: Logger
   private heartbeatInterval?: ReturnType<typeof setInterval>
   private readonly pingIntervalMs: number
-  private readonly pingTimeoutMs: number
   private abortController?: AbortController
+  private readonly timeout: AdaptiveTimeout
 
   constructor (components: ConnectionMonitorComponents, init: ConnectionMonitorInit = {}) {
     this.components = components
 
     this.log = components.logger.forComponent('libp2p:connection-monitor')
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS
-    this.pingTimeoutMs = init.pingTimeout ?? DEFAULT_PING_TIMEOUT_MS
+
+    this.timeout = new AdaptiveTimeout({
+      ...(init.pingTimeout ?? {}),
+      metrics: components.metrics,
+      metricName: 'libp2p_connection_monitor_ping_time_milliseconds'
+    })
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/connection-monitor'
@@ -66,10 +73,9 @@ export class ConnectionMonitor implements Startable {
         Promise.resolve().then(async () => {
           let start = Date.now()
           try {
-            const signal = anySignal([
-              this.abortController?.signal,
-              AbortSignal.timeout(this.pingTimeoutMs)
-            ])
+            const signal = this.timeout.getTimeoutSignal({
+              signal: this.abortController?.signal
+            })
             const stream = await conn.newStream('/ipfs/ping/1.0.0', {
               signal,
               runOnTransientConnection: true
