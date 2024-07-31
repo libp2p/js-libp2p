@@ -6,7 +6,7 @@ import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions, ConnectionLimits } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 const DEFAULT_PROTOCOL_SELECT_TIMEOUT = 30000
@@ -18,7 +18,7 @@ interface CreateConnectionOptions {
   upgradedConn: MultiaddrConnection
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
-  transient?: boolean
+  limits?: ConnectionLimits
 }
 
 interface OnStreamOptions {
@@ -243,7 +243,7 @@ export class DefaultUpgrader implements Upgrader {
         upgradedConn,
         muxerFactory,
         remotePeer,
-        transient: opts?.transient
+        limits: opts?.limits
       })
     } finally {
       signal.removeEventListener('abort', onAbort)
@@ -342,7 +342,7 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn,
       muxerFactory,
       remotePeer,
-      transient: opts?.transient
+      limits: opts?.limits
     })
   }
 
@@ -357,7 +357,7 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn,
       remotePeer,
       muxerFactory,
-      transient
+      limits
     } = opts
 
     let muxer: StreamMuxer | undefined
@@ -578,7 +578,7 @@ export class DefaultUpgrader implements Upgrader {
       timeline: maConn.timeline,
       multiplexer: muxer?.protocol,
       encryption: cryptoProtocol,
-      transient,
+      limits,
       logger: this.components.logger,
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
@@ -617,7 +617,7 @@ export class DefaultUpgrader implements Upgrader {
     const { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
-    if (connection.transient && options.runOnTransientConnection !== true) {
+    if (connection.limits != null && options.runOnLimitedConnection !== true) {
       throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
     }
 

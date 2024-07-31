@@ -221,7 +221,9 @@ describe('registrar topologies', () => {
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // connection is transient
-    conn.transient = true
+    conn.limits = {
+      bytes: 100
+    }
 
     // return connection from connection manager
     connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
@@ -265,14 +267,16 @@ describe('registrar topologies', () => {
     const remotePeerId = await createEd25519PeerId()
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
-    // connection is transient
-    conn.transient = true
+    // connection is limited
+    conn.limits = {
+      bytes: 100
+    }
 
     // return connection from connection manager
     connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
 
     const topology: Topology = {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: () => {
         onConnectDefer.resolve()
       }
@@ -298,7 +302,7 @@ describe('registrar topologies', () => {
     let callCount = 0
 
     const topology: Topology = {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: () => {
         callCount++
 
@@ -314,10 +318,14 @@ describe('registrar topologies', () => {
     // setup connections before registrar
     const remotePeerId = await createEd25519PeerId()
     const transientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    transientConnection.transient = true
+    transientConnection.limits = {
+      bytes: 100
+    }
 
     const nonTransientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    nonTransientConnection.transient = false
+    nonTransientConnection.limits = {
+      bytes: 100
+    }
 
     // return connection from connection manager
     connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([

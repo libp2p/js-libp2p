@@ -149,7 +149,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     }, {
       maxInboundStreams: this.maxInboundStopStreams,
       maxOutboundStreams: this.maxOutboundStopStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     await start(this.discovery, this.reservationStore)
@@ -269,8 +269,25 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       })
 
       this.log('new outbound relayed connection %a', maConn.remoteAddr)
+
+      let expires = Date.now() + (status.limit?.duration ?? Infinity) * 1000
+
+      if (status.limit?.duration === 0) {
+        expires = Infinity
+      }
+
+      const bytes = Number(status.limit?.data) ?? Infinity
+
       return await this.upgrader.upgradeOutbound(maConn, {
-        transient: status.limit != null,
+        limits: {
+          get bytes (): number {
+            // TODO: decrement me
+            return bytes
+          },
+          get seconds (): number {
+            return (Date.now() - expires) / 1000
+          }
+        },
         onProgress
       })
     } catch (err: any) {
@@ -384,9 +401,25 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       logger: this.logger
     })
 
+    let expires = Date.now() + (request.limit.duration ?? Infinity) * 1000
+
+    if (request.limit.duration === 0) {
+      expires = Infinity
+    }
+
+    const bytes = Number(request.limit?.data) ?? Infinity
+
     this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      transient: request.limit != null
+      limits: {
+        get bytes (): number {
+          // TODO: decrement me
+          return bytes
+        },
+        get seconds (): number {
+          return (Date.now() - expires) / 1000
+        }
+      }
     })
     this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }

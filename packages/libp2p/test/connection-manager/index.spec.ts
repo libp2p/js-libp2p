@@ -527,7 +527,9 @@ describe('Connection Manager', () => {
     const addr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${targetPeer}`)
 
     const existingConnection = stubInterface<Connection>({
-      transient: true
+      limits: {
+        bytes: 100
+      }
     })
     const newConnection = stubInterface<Connection>()
 

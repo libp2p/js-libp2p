@@ -24,7 +24,7 @@ describe('dcutr', () => {
   async function waitForOnlyDirectConnections (): Promise<void> {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
-      const onlyDirect = connections.filter(conn => !conn.transient)
+      const onlyDirect = connections.filter(conn => conn.limits == null)
 
       if (onlyDirect.length === connections.length) {
         // all connections are direct
@@ -109,8 +109,8 @@ describe('dcutr', () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 
-      // connection should be transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be limited
+      expect(connection).to.have.property('limited', true)
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
@@ -166,8 +166,8 @@ describe('dcutr', () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 
-      // connection should be transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be limited
+      expect(connection).to.have.property('limited', true)
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()

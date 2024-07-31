@@ -1,5 +1,6 @@
 import { CodeError, ERR_INVALID_MESSAGE, serviceDependencies } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
 import { HolePunch } from './pb/message.js'
@@ -70,9 +71,9 @@ export class DefaultDCUtRService implements Startable {
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: (peerId, connection) => {
-        if (!connection.transient) {
+        if (!Circuit.exactMatch(connection.remoteAddr)) {
           // the connection is already direct, no upgrade is required
           return
         }
@@ -97,7 +98,7 @@ export class DefaultDCUtRService implements Startable {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     this.started = true
@@ -140,7 +141,7 @@ export class DefaultDCUtRService implements Startable {
         // 1. B opens a stream to A using the /libp2p/dcutr protocol.
         stream = await relayedConnection.newStream([multicodec], {
           signal: options.signal,
-          runOnTransientConnection: true
+          runOnLimitedConnection: true
         })
 
         const pb = pbStream(stream, {
@@ -256,7 +257,7 @@ export class DefaultDCUtRService implements Startable {
           force: true
         })
 
-        if (connection.transient) {
+        if (!Circuit.exactMatch(connection.remoteAddr)) {
           throw new Error('Could not open a new, non-transient, connection')
         }
 
