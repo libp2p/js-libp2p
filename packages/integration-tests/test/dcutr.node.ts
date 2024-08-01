@@ -110,7 +110,7 @@ describe('dcutr', () => {
       const connection = await libp2pA.dial(relayedAddress)
 
       // connection should be limited
-      expect(connection).to.have.property('limited', true)
+      expect(connection).to.have.property('limits').that.is.ok()
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
@@ -167,7 +167,7 @@ describe('dcutr', () => {
       const connection = await libp2pA.dial(relayedAddress)
 
       // connection should be limited
-      expect(connection).to.have.property('limited', true)
+      expect(connection).to.have.property('limits').that.is.ok()
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()

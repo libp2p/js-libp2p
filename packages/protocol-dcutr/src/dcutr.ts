@@ -257,7 +257,7 @@ export class DefaultDCUtRService implements Startable {
           force: true
         })
 
-        if (!Circuit.exactMatch(connection.remoteAddr)) {
+        if (Circuit.exactMatch(connection.remoteAddr)) {
           throw new Error('Could not open a new, non-limited, connection')
         }
 
