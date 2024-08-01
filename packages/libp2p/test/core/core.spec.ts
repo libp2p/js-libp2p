@@ -45,7 +45,7 @@ describe('core', () => {
     await expect(libp2p.isDialable(ma)).to.eventually.be.true()
   })
 
-  it('should test if a protocol can run over a transient connection', async () => {
+  it('should test if a protocol can run over a limited connection', async () => {
     libp2p = await createLibp2p({
       transports: [
         webSockets(),

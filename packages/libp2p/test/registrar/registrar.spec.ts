@@ -212,7 +212,7 @@ describe('registrar topologies', () => {
     await onDisconnectDefer.promise
   })
 
-  it('should not call topology handlers for transient connection', async () => {
+  it('should not call topology handlers for limited connection', async () => {
     const onConnectDefer = pDefer()
     const onDisconnectDefer = pDefer()
 
@@ -220,9 +220,9 @@ describe('registrar topologies', () => {
     const remotePeerId = await createEd25519PeerId()
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
-    // connection is transient
+    // connection is limited
     conn.limits = {
-      bytes: 100
+      bytes: 100n
     }
 
     // return connection from connection manager
@@ -230,10 +230,10 @@ describe('registrar topologies', () => {
 
     const topology: Topology = {
       onConnect: () => {
-        onConnectDefer.reject(new Error('Topolgy onConnect called for transient connection'))
+        onConnectDefer.reject(new Error('Topolgy onConnect called for limited connection'))
       },
       onDisconnect: () => {
-        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for transient connection'))
+        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for limited connection'))
       }
     }
 
@@ -260,7 +260,7 @@ describe('registrar topologies', () => {
     ])).to.eventually.not.be.rejected()
   })
 
-  it('should call topology onConnect handler for transient connection when explicitly requested', async () => {
+  it('should call topology onConnect handler for limited connection when explicitly requested', async () => {
     const onConnectDefer = pDefer()
 
     // setup connections before registrar
@@ -269,7 +269,7 @@ describe('registrar topologies', () => {
 
     // connection is limited
     conn.limits = {
-      bytes: 100
+      bytes: 100n
     }
 
     // return connection from connection manager
@@ -297,7 +297,7 @@ describe('registrar topologies', () => {
     await expect(onConnectDefer.promise).to.eventually.be.undefined()
   })
 
-  it('should call topology handlers for non-transient connection opened after transient connection', async () => {
+  it('should call topology handlers for non-limited connection opened after limited connection', async () => {
     const onConnectDefer = pDefer()
     let callCount = 0
 
@@ -317,37 +317,37 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = await createEd25519PeerId()
-    const transientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    transientConnection.limits = {
-      bytes: 100
+    const limitedConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+    limitedConnection.limits = {
+      bytes: 100n
     }
 
-    const nonTransientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    nonTransientConnection.limits = {
-      bytes: 100
+    const nonLimitedConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+    nonLimitedConnection.limits = {
+      bytes: 100n
     }
 
     // return connection from connection manager
     connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([
-      transientConnection,
-      nonTransientConnection
+      limitedConnection,
+      nonLimitedConnection
     ])
 
-    // remote peer connects over transient connection
+    // remote peer connects over limited connection
     events.safeDispatchEvent('peer:identify', {
       detail: {
         peerId: remotePeerId,
         protocols: [protocol],
-        connection: transientConnection
+        connection: limitedConnection
       }
     })
 
-    // remote peer opens non-transient connection
+    // remote peer opens non-limited connection
     events.safeDispatchEvent('peer:identify', {
       detail: {
         peerId: remotePeerId,
         protocols: [protocol],
-        connection: nonTransientConnection
+        connection: nonLimitedConnection
       }
     })
 

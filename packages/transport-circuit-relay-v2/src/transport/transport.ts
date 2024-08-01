@@ -8,6 +8,7 @@ import { pbStream } from 'it-protobuf-stream'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
+import { LimitTracker } from '../utils.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
@@ -261,33 +262,21 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         throw new CodeError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`, ERR_HOP_REQUEST_FAILED)
       }
 
+      const limits = new LimitTracker(status.limit)
+
       const maConn = streamToMaConnection({
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
-        logger: this.logger
+        logger: this.logger,
+        onDataRead: limits.onData,
+        onDataWrite: limits.onData
       })
 
       this.log('new outbound relayed connection %a', maConn.remoteAddr)
 
-      let expires = Date.now() + (status.limit?.duration ?? Infinity) * 1000
-
-      if (status.limit?.duration === 0) {
-        expires = Infinity
-      }
-
-      const bytes = Number(status.limit?.data) ?? Infinity
-
       return await this.upgrader.upgradeOutbound(maConn, {
-        limits: {
-          get bytes (): number {
-            // TODO: decrement me
-            return bytes
-          },
-          get seconds (): number {
-            return (Date.now() - expires) / 1000
-          }
-        },
+        limits: limits.getLimits(),
         onProgress
       })
     } catch (err: any) {
@@ -392,34 +381,21 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       signal
     })
 
+    const limits = new LimitTracker(request.limit)
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
     const localAddr = this.addressManager.getAddresses()[0]
     const maConn = streamToMaConnection({
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
-      logger: this.logger
+      logger: this.logger,
+      onDataRead: limits.onData,
+      onDataWrite: limits.onData
     })
-
-    let expires = Date.now() + (request.limit.duration ?? Infinity) * 1000
-
-    if (request.limit.duration === 0) {
-      expires = Infinity
-    }
-
-    const bytes = Number(request.limit?.data) ?? Infinity
 
     this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      limits: {
-        get bytes (): number {
-          // TODO: decrement me
-          return bytes
-        },
-        get seconds (): number {
-          return (Date.now() - expires) / 1000
-        }
-      }
+      limits: limits.getLimits()
     })
     this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }

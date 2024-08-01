@@ -258,7 +258,7 @@ export class DefaultDCUtRService implements Startable {
         })
 
         if (!Circuit.exactMatch(connection.remoteAddr)) {
-          throw new Error('Could not open a new, non-transient, connection')
+          throw new Error('Could not open a new, non-limited, connection')
         }
 
         this.log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)

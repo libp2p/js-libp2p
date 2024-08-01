@@ -618,7 +618,7 @@ export class DefaultUpgrader implements Upgrader {
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
     if (connection.limits != null && options.runOnLimitedConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
+      throw new CodeError('Cannot open protocol stream on limited connection', 'ERR_LIMITED_CONNECTION')
     }
 
     handler({ connection, stream })

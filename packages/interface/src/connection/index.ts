@@ -226,8 +226,26 @@ export interface NewStreamOptions extends AbortOptions {
 
 export type ConnectionStatus = 'open' | 'closing' | 'closed'
 
+/**
+ * Connection limits are present on connections that are only allowed to
+ * transfer a certain amount of bytes or be open for a certain number
+ * of seconds.
+ *
+ * These limits are applied by Circuit Relay v2 servers, for example and
+ * the connection will normally be closed abruptly if the limits are
+ * exceeded.
+ */
 export interface ConnectionLimits {
-  bytes?: number
+  /**
+   * If present this is the number of bytes remaining that may be
+   * transferred over this connection
+   */
+  bytes?: bigint
+
+  /**
+   * If present this is the number of seconds that this connection will
+   * remain open for
+   */
   seconds?: number
 }
 
