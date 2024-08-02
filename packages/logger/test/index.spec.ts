@@ -1,7 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import debug from '../src/debug/node.js'
+import debug from 'weald'
 import { Key } from 'interface-datastore'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'

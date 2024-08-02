@@ -32,7 +32,7 @@
  * ```
  */
 
-import debug from './debug/node.js'
+import debug from 'weald'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
