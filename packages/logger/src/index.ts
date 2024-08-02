@@ -32,7 +32,7 @@
  * ```
  */
 
-import debug from 'debug'
+import debug from './debug/node.js'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
@@ -194,7 +194,7 @@ export function logger (name: string): Logger {
   let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)
 
   // look at all the debug names and see if trace logging has explicitly been enabled
-  if (debug.enabled(`${name}:trace`) && debug.names.map(r => r.toString()).find(n => n.includes(':trace')) != null) {
+  if (debug.enabled(`${name}:trace`) && debug.names.map((r: any) => r.toString()).find((n: string) => n.includes(':trace')) != null) {
     trace = debug(`${name}:trace`)
   }
 
