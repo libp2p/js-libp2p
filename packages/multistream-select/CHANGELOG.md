@@ -19,6 +19,18 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [5.1.16](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.15...multistream-select-v5.1.16) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+
 ## [5.1.15](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.14...multistream-select-v5.1.15) (2024-07-29)
 
 

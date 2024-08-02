@@ -21,6 +21,23 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [4.0.19](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.18...logger-v4.0.19) (2024-08-02)
+
+
+### Bug Fixes
+
+* replace debug with weald to remove CJS deps ([#2648](https://github.com/libp2p/js-libp2p/issues/2648)) ([f30e2ee](https://github.com/libp2p/js-libp2p/commit/f30e2ee8de0ce5c050598cfc6744b02cc329c2b9))
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+
 ## [4.0.18](https://github.com/libp2p/js-libp2p/compare/logger-v4.0.17...logger-v4.0.18) (2024-07-29)
 
 

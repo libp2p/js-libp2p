@@ -44,6 +44,18 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [1.1.4](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.1.3...dcutr-v1.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+    * @libp2p/utils bumped from ^5.4.7 to ^5.4.8
+
 ## [1.1.3](https://github.com/libp2p/js-libp2p/compare/dcutr-v1.1.2...dcutr-v1.1.3) (2024-07-29)
 
 
