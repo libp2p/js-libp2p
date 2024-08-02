@@ -1,7 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import debug from 'weald'
 import { Key } from 'interface-datastore'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
@@ -9,6 +8,7 @@ import { base64 } from 'multiformats/bases/base64'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import debug from 'weald'
 import { logger, peerLogger } from '../src/index.js'
 
 describe('logger', () => {

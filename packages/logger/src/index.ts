@@ -32,10 +32,10 @@
  * ```
  */
 
-import debug from 'weald'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
+import debug from 'weald'
 import { truncatePeerId } from './utils.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
