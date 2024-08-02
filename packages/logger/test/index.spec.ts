@@ -1,7 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import debug from 'debug'
 import { Key } from 'interface-datastore'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
@@ -9,6 +8,7 @@ import { base64 } from 'multiformats/bases/base64'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import debug from 'weald'
 import { logger, peerLogger } from '../src/index.js'
 
 describe('logger', () => {
@@ -16,7 +16,7 @@ describe('logger', () => {
     const log = logger('hello')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.not.true()
+    expect(log).to.have.property('enabled').that.is.not.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -29,7 +29,7 @@ describe('logger', () => {
     const log = logger.forComponent('hello')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.not.true()
+    expect(log).to.have.property('enabled').that.is.not.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -42,7 +42,7 @@ describe('logger', () => {
     const log = logger('enabled-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -55,7 +55,7 @@ describe('logger', () => {
     const log = logger('enabled-with-error-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -68,7 +68,7 @@ describe('logger', () => {
     const log = logger('enabled-with-trace-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.true()
     expect(log).to.have.property('trace').that.is.a('function')
