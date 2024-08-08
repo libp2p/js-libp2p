@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { type Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -30,7 +30,7 @@ export async function read (reader: LengthPrefixedStream<Duplex<AsyncGenerator<U
 
   if (buf.byteLength === 0 || buf.get(buf.byteLength - 1) !== NewLine[0]) {
     options.log.error('Invalid mss message - missing newline', buf)
-    throw new CodeError('missing newline', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+    throw new InvalidMessageError('Missing newline')
   }
 
   return buf.sublist(0, -1) // Remove newline

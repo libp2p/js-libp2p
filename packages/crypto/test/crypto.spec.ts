@@ -50,14 +50,16 @@ describe('libp2p-crypto', function () {
 
   it('generateKeyPair', () => {
     // @ts-expect-error key type is invalid
-    return expect(crypto.keys.generateKeyPair('invalid-key-type', 512)).to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_KEY_TYPE')
+    return expect(crypto.keys.generateKeyPair('invalid-key-type', 512)).to.eventually.be.rejected
+      .with.property('name', 'InvalidParametersError')
   })
 
   it('generateKeyPairFromSeed', () => {
     const seed = crypto.randomBytes(32)
 
     // @ts-expect-error key type is invalid
-    return expect(crypto.keys.generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
+    return expect(crypto.keys.generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected
+      .with.property('name', 'InvalidParametersError')
   })
 
   // https://github.com/libp2p/js-libp2p-crypto/issues/314
@@ -134,7 +136,7 @@ describe('libp2p-crypto', function () {
 
     it('throws on invalid hash name', () => {
       const fn = (): string => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
-      expect(fn).to.throw().with.property('code', 'ERR_UNSUPPORTED_HASH_TYPE')
+      expect(fn).to.throw().with.property('name', 'InvalidParametersError')
     })
   })
 

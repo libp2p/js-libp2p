@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
@@ -29,7 +29,7 @@ export class AddProviderHandler implements DHTMessageHandler {
     this.log('start')
 
     if (msg.key == null || msg.key.length === 0) {
-      throw new CodeError('Missing key', 'ERR_MISSING_KEY')
+      throw new InvalidMessageError('Missing key')
     }
 
     let cid: CID
@@ -37,7 +37,7 @@ export class AddProviderHandler implements DHTMessageHandler {
       // this is actually just the multihash, not the whole CID
       cid = CID.decode(msg.key)
     } catch (err: any) {
-      throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
+      throw new InvalidMessageError('Invalid CID')
     }
 
     if (msg.providers == null || msg.providers.length === 0) {

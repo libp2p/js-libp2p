@@ -1,8 +1,7 @@
-import { CodeError, serviceCapabilities, serviceDependencies, setMaxListeners, transportSymbol } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, serviceDependencies, setMaxListeners, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
-import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { getRtcConfiguration } from '../util.js'
@@ -247,11 +246,11 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
   const addrs = ma.toString().split(WEBRTC_TRANSPORT + '/')
   if (addrs.length !== 2) {
-    throw new CodeError('webrtc protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('webrtc protocol was not present in multiaddr')
   }
 
   if (!addrs[0].includes(CIRCUIT_RELAY_TRANSPORT)) {
-    throw new CodeError('p2p-circuit protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('p2p-circuit protocol was not present in multiaddr')
   }
 
   // look for remote peerId
@@ -260,12 +259,12 @@ export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId
 
   const destinationIdString = destination.getPeerId()
   if (destinationIdString == null) {
-    throw new CodeError('destination peer id was missing', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('destination peer id was missing')
   }
 
   const lastProtoInRemote = remoteAddr.protos().pop()
   if (lastProtoInRemote === undefined) {
-    throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('invalid multiaddr')
   }
   if (lastProtoInRemote.name !== 'p2p') {
     remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)

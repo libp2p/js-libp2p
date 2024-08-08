@@ -1,4 +1,4 @@
-import { CodeError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
+import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
@@ -6,7 +6,7 @@ import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { CustomProgressEvent } from 'progress-events'
-import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
@@ -171,7 +171,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
       this.log.error(errMsg, ma)
-      throw new CodeError(errMsg, ERR_RELAYED_DIAL)
+      throw new DialError(errMsg)
     }
 
     // Check the multiaddr to see if it contains a relay and a destination peer
@@ -184,7 +184,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     if (relayId == null || destinationId == null) {
       const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
       this.log.error(errMsg)
-      throw new CodeError(errMsg, ERR_RELAYED_DIAL)
+      throw new DialError(errMsg)
     }
 
     const relayPeer = peerIdFromString(relayId)
@@ -258,7 +258,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       const status = await hopstr.read()
 
       if (status.status !== Status.OK) {
-        throw new CodeError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`, ERR_HOP_REQUEST_FAILED)
+        throw new InvalidMessageError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`)
       }
 
       const maConn = streamToMaConnection({

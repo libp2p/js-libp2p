@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { CodeError } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
@@ -243,8 +242,7 @@ describe('KadDHT', () => {
     it('put - should require a minimum number of peers to have successful puts', async function () {
       this.timeout(10 * 1000)
 
-      const errCode = 'ERR_NOT_AVAILABLE'
-      const error = new CodeError('fake error', errCode)
+      const error = new Error('fake error')
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
 
@@ -342,7 +340,8 @@ describe('KadDHT', () => {
 
       await drain(dhtA.put(key, value))
 
-      await expect(last(dhtA.get(key))).to.eventually.be.rejected().property('code', 'ERR_UNRECOGNIZED_KEY_PREFIX')
+      await expect(last(dhtA.get(key))).to.eventually.be.rejected
+        .with.property('name', 'MissingSelectorError')
     })
 
     it('put - get with update', async function () {
@@ -836,8 +835,7 @@ describe('KadDHT', () => {
     it('get should handle correctly an unexpected error', async function () {
       this.timeout(240 * 1000)
 
-      const errCode = 'ERR_INVALID_RECORD_FAKE'
-      const error = new CodeError('fake error', errCode)
+      const error = new Error('fake error')
 
       const [dhtA, dhtB] = await Promise.all([
         tdht.spawn(),
@@ -851,7 +849,7 @@ describe('KadDHT', () => {
       const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
 
       expect(errors).to.have.lengthOf(1)
-      expect(errors).to.have.nested.property('[0].error.code', errCode)
+      expect(errors).to.have.nested.property('[0].error.name', 'QueryError')
 
       stub.restore()
     })

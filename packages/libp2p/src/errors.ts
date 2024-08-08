@@ -1,67 +1,102 @@
 export enum messages {
   NOT_STARTED_YET = 'The libp2p node is not started yet',
-  ERR_PROTECTOR_REQUIRED = 'Private network is enforced, but no protector was provided',
   NOT_FOUND = 'Not found'
 }
 
-export enum codes {
-  ERR_PROTECTOR_REQUIRED = 'ERR_PROTECTOR_REQUIRED',
-  ERR_PEER_DIAL_INTERCEPTED = 'ERR_PEER_DIAL_INTERCEPTED',
-  ERR_CONNECTION_INTERCEPTED = 'ERR_CONNECTION_INTERCEPTED',
-  ERR_INVALID_PROTOCOLS_FOR_STREAM = 'ERR_INVALID_PROTOCOLS_FOR_STREAM',
-  ERR_CONNECTION_ENDED = 'ERR_CONNECTION_ENDED',
-  ERR_CONNECTION_FAILED = 'ERR_CONNECTION_FAILED',
-  ERR_NODE_NOT_STARTED = 'ERR_NODE_NOT_STARTED',
-  ERR_ALREADY_ABORTED = 'ERR_ALREADY_ABORTED',
-  ERR_TOO_MANY_ADDRESSES = 'ERR_TOO_MANY_ADDRESSES',
-  ERR_NO_VALID_ADDRESSES = 'ERR_NO_VALID_ADDRESSES',
-  ERR_RELAYED_DIAL = 'ERR_RELAYED_DIAL',
-  ERR_DIALED_SELF = 'ERR_DIALED_SELF',
-  ERR_DISCOVERED_SELF = 'ERR_DISCOVERED_SELF',
-  ERR_DUPLICATE_TRANSPORT = 'ERR_DUPLICATE_TRANSPORT',
-  ERR_ENCRYPTION_FAILED = 'ERR_ENCRYPTION_FAILED',
-  ERR_HOP_REQUEST_FAILED = 'ERR_HOP_REQUEST_FAILED',
-  ERR_INVALID_KEY = 'ERR_INVALID_KEY',
-  ERR_INVALID_MESSAGE = 'ERR_INVALID_MESSAGE',
-  ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS',
-  ERR_INVALID_PEER = 'ERR_INVALID_PEER',
-  ERR_MUXER_UNAVAILABLE = 'ERR_MUXER_UNAVAILABLE',
-  ERR_NOT_FOUND = 'ERR_NOT_FOUND',
-  ERR_TRANSPORT_UNAVAILABLE = 'ERR_TRANSPORT_UNAVAILABLE',
-  ERR_TRANSPORT_DIAL_FAILED = 'ERR_TRANSPORT_DIAL_FAILED',
-  ERR_UNSUPPORTED_PROTOCOL = 'ERR_UNSUPPORTED_PROTOCOL',
-  ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED = 'ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED',
-  ERR_INVALID_MULTIADDR = 'ERR_INVALID_MULTIADDR',
-  ERR_SIGNATURE_NOT_VALID = 'ERR_SIGNATURE_NOT_VALID',
-  ERR_FIND_SELF = 'ERR_FIND_SELF',
-  ERR_NO_ROUTERS_AVAILABLE = 'ERR_NO_ROUTERS_AVAILABLE',
-  ERR_CONNECTION_NOT_MULTIPLEXED = 'ERR_CONNECTION_NOT_MULTIPLEXED',
-  ERR_NO_DIAL_TOKENS = 'ERR_NO_DIAL_TOKENS',
-  ERR_INVALID_CMS = 'ERR_INVALID_CMS',
-  ERR_MISSING_KEYS = 'ERR_MISSING_KEYS',
-  ERR_NO_KEY = 'ERR_NO_KEY',
-  ERR_INVALID_KEY_NAME = 'ERR_INVALID_KEY_NAME',
-  ERR_INVALID_KEY_TYPE = 'ERR_INVALID_KEY_TYPE',
-  ERR_KEY_ALREADY_EXISTS = 'ERR_KEY_ALREADY_EXISTS',
-  ERR_INVALID_KEY_SIZE = 'ERR_INVALID_KEY_SIZE',
-  ERR_KEY_NOT_FOUND = 'ERR_KEY_NOT_FOUND',
-  ERR_OLD_KEY_NAME_INVALID = 'ERR_OLD_KEY_NAME_INVALID',
-  ERR_NEW_KEY_NAME_INVALID = 'ERR_NEW_KEY_NAME_INVALID',
-  ERR_PASSWORD_REQUIRED = 'ERR_PASSWORD_REQUIRED',
-  ERR_PEM_REQUIRED = 'ERR_PEM_REQUIRED',
-  ERR_CANNOT_READ_KEY = 'ERR_CANNOT_READ_KEY',
-  ERR_MISSING_PRIVATE_KEY = 'ERR_MISSING_PRIVATE_KEY',
-  ERR_MISSING_PUBLIC_KEY = 'ERR_MISSING_PUBLIC_KEY',
-  ERR_INVALID_OLD_PASS_TYPE = 'ERR_INVALID_OLD_PASS_TYPE',
-  ERR_INVALID_NEW_PASS_TYPE = 'ERR_INVALID_NEW_PASS_TYPE',
-  ERR_INVALID_PASS_LENGTH = 'ERR_INVALID_PASS_LENGTH',
-  ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
-  ERR_WRONG_PING_ACK = 'ERR_WRONG_PING_ACK',
-  ERR_INVALID_RECORD = 'ERR_INVALID_RECORD',
-  ERR_ALREADY_SUCCEEDED = 'ERR_ALREADY_SUCCEEDED',
-  ERR_NO_HANDLER_FOR_PROTOCOL = 'ERR_NO_HANDLER_FOR_PROTOCOL',
-  ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS',
-  ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS',
-  ERR_CONNECTION_DENIED = 'ERR_CONNECTION_DENIED',
-  ERR_TRANSFER_LIMIT_EXCEEDED = 'ERR_TRANSFER_LIMIT_EXCEEDED'
+export class MissingServiceError extends Error {
+  constructor (message = 'Missing service') {
+    super(message)
+    this.name = 'MissingServiceError'
+  }
+}
+
+export class UnmetServiceDependenciesError extends Error {
+  constructor (message = 'Unmet service dependencies') {
+    super(message)
+    this.name = 'UnmetServiceDependenciesError'
+  }
+}
+
+export class NoContentRoutersError extends Error {
+  constructor (message = 'No content routers available') {
+    super(message)
+    this.name = 'NoContentRoutersError'
+  }
+}
+
+export class NoPeerRoutersError extends Error {
+  constructor (message = 'No peer routers available') {
+    super(message)
+    this.name = 'NoPeerRoutersError'
+  }
+}
+
+export class QueriedForSelfError extends Error {
+  constructor (message = 'Should not try to find self') {
+    super(message)
+    this.name = 'QueriedForSelfError'
+  }
+}
+
+export class UnhandledProtocolError extends Error {
+  constructor (message = 'Unhandled protocol error') {
+    super(message)
+    this.name = 'UnhandledProtocolError'
+  }
+}
+
+export class DuplicateProtocolHandlerError extends Error {
+  constructor (message = 'Duplicate protocol handler error') {
+    super(message)
+    this.name = 'DuplicateProtocolHandlerError'
+  }
+}
+
+export class DialDeniedError extends Error {
+  constructor (message = 'Dial denied error') {
+    super(message)
+    this.name = 'DialDeniedError'
+  }
+}
+
+export class NoValidAddressesError extends Error {
+  constructor (message = 'No valid addresses') {
+    super(message)
+    this.name = 'NoValidAddressesError'
+  }
+}
+
+export class ConnectionInterceptedError extends Error {
+  constructor (message = 'Connection intercepted') {
+    super(message)
+    this.name = 'ConnectionInterceptedError'
+  }
+}
+
+export class ConnectionDeniedError extends Error {
+  constructor (message = 'Connection denied') {
+    super(message)
+    this.name = 'ConnectionDeniedError'
+  }
+}
+
+export class MuxerUnavailableError extends Error {
+  constructor (message = 'Stream is not multiplexed') {
+    super(message)
+    this.name = 'MuxerUnavailableError'
+  }
+}
+
+export class EncryptionFailedError extends Error {
+  constructor (message = 'Encryption failed') {
+    super(message)
+    this.name = 'EncryptionFailedError'
+  }
+}
+
+export class TransportUnavailableError extends Error {
+  constructor (message = 'Transport unavailable') {
+    super(message)
+    this.name = 'TransportUnavailableError'
+  }
 }

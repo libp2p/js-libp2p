@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -114,7 +114,7 @@ export class Secp256k1PrivateKey implements PrivateKey<'secp256k1'> {
     if (format === 'libp2p-key') {
       return exporter(this.bytes, password)
     } else {
-      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
+      throw new InvalidParametersError('Export format is not supported')
     }
   }
 }

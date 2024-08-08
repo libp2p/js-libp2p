@@ -1,5 +1,5 @@
 import net from 'net'
-import { CodeError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter } from '@libp2p/interface'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
@@ -107,7 +107,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     if (context.closeServerOnMaxConnections != null) {
       // Sanity check options
       if (context.closeServerOnMaxConnections.closeAbove < context.closeServerOnMaxConnections.listenBelow) {
-        throw new CodeError('closeAbove must be >= listenBelow', 'ERR_CONNECTION_LIMITS')
+        throw new InvalidParametersError('closeAbove must be >= listenBelow')
       }
     }
 
@@ -179,7 +179,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
   private onSocket (socket: net.Socket): void {
     if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
-      throw new CodeError('Server is not listening yet', 'ERR_SERVER_NOT_RUNNING')
+      throw new NotStartedError('Server is not listening yet')
     }
     // Avoid uncaught errors caused by unstable connections
     socket.on('error', err => {
@@ -304,7 +304,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
   async listen (ma: Multiaddr): Promise<void> {
     if (this.status.code === TCPListenerStatusCode.ACTIVE || this.status.code === TCPListenerStatusCode.PAUSED) {
-      throw new CodeError('server is already listening', 'ERR_SERVER_ALREADY_LISTENING')
+      throw new AlreadyStartedError('server is already listening')
     }
 
     const peerId = ma.getPeerId()
@@ -327,7 +327,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   }
 
   async close (): Promise<void> {
-    const err = new CodeError('Listener is closing', 'ERR_LISTENER_CLOSING')
+    const err = new AbortError('Listener is closing')
 
     // synchronously close each connection
     this.connections.forEach(conn => {
@@ -372,9 +372,9 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     this.log('closing server on %s', this.server.address())
 
     // NodeJS implementation tracks listening status with `this._handle` property.
-    // - Server.close() sets this._handle to null immediately. If this._handle is null, ERR_SERVER_NOT_RUNNING is thrown
+    // - Server.close() sets this._handle to null immediately. If this._handle is null, NotStartedError is thrown
     // - Server.listening returns `this._handle !== null` https://github.com/nodejs/node/blob/386d761943bb1b217fba27d6b80b658c23009e60/lib/net.js#L1675
-    // - Server.listen() if `this._handle !== null` throws ERR_SERVER_ALREADY_LISTEN
+    // - Server.listen() if `this._handle !== null` throws AlreadyStartedError
     //
     // NOTE: Both listen and close are technically not async actions, so it's not necessary to track
     // states 'pending-close' or 'pending-listen'

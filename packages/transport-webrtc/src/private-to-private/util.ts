@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { ConnectionFailedError, InvalidMessageError } from '@libp2p/interface'
 import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { isFirefox } from '../util.js'
@@ -38,7 +38,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
       }
 
       if (message.type !== Message.Type.ICE_CANDIDATE) {
-        throw new CodeError('ICE candidate message expected', 'ERR_NOT_ICE_CANDIDATE')
+        throw new InvalidMessageError('ICE candidate message expected')
       }
 
       const candidateInit = JSON.parse(message.data ?? 'null')
@@ -86,7 +86,7 @@ function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<voi
       case 'failed':
       case 'disconnected':
       case 'closed':
-        promise.reject(new CodeError('RTCPeerConnection was closed', 'ERR_CONNECTION_CLOSED_BEFORE_CONNECTED'))
+        promise.reject(new ConnectionFailedError('RTCPeerConnection was closed'))
         break
       default:
         break

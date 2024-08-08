@@ -10,7 +10,6 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
-import { codes } from '../src/errors.js'
 import { PersistentPeerStore } from '../src/index.js'
 import { Peer as PeerPB } from '../src/pb/peer.js'
 
@@ -38,13 +37,13 @@ describe('save', () => {
   it('throws invalid parameters error if invalid PeerId is provided', async () => {
     // @ts-expect-error invalid input
     await expect(peerStore.save('invalid peerId'))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('throws invalid parameters error if no peer data provided', async () => {
     // @ts-expect-error invalid input
     await expect(peerStore.save(peerId))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('throws invalid parameters error if invalid multiaddrs are provided', async () => {
@@ -52,7 +51,7 @@ describe('save', () => {
       // @ts-expect-error invalid input
       addresses: ['invalid multiaddr']
     }))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('replaces the stored content by default and emit change event', async () => {

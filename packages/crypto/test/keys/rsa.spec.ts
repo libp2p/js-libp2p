@@ -193,7 +193,7 @@ vQ2NBF1B1/I4w5/LCbEDxrliX5fTe9osfkFZolLMsD6B9c2J1DvAJKaiMhc=
 
     it('handles invalid export type', () => {
       return expect(key.export('secret', 'invalid-type')).to.eventually.be.rejected
-        .with.property('code', 'ERR_INVALID_EXPORT_FORMAT')
+        .with.property('name', 'InvalidParametersError')
     })
   })
 

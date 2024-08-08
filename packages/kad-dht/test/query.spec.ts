@@ -341,7 +341,7 @@ describe('QueryManager', () => {
     }, 10)
 
     await expect(all(manager.run(key, queryFunc, { signal: controller.signal }))).to.eventually.be.rejected()
-      .with.property('code', 'ERR_QUERY_ABORTED')
+      .with.property('name', 'QueryAbortedError')
 
     expect(aborted).to.be.true()
 

@@ -1,6 +1,8 @@
 import crypto from 'crypto'
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import type { ECDHKey, ECDHKeyPair } from './interface.js'
+
+export type Curve = 'P-256' | 'P-384' | 'P-521'
 
 const curves = {
   'P-256': 'prime256v1',
@@ -16,9 +18,9 @@ const names = curveTypes.join(' / ')
  *
  * Focuses only on ECDH now, but can be made more general in the future.
  */
-export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> {
+export async function generateEphmeralKeyPair (curve: Curve): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
+    throw new InvalidParametersError(`Unknown curve: ${curve}. Must be ${names}`)
   }
 
   const ecdh = crypto.createECDH(curves[curve])

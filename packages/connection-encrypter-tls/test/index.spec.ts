@@ -1,9 +1,5 @@
 /* eslint-env mocha */
 
-import {
-  InvalidCryptoExchangeError,
-  UnexpectedPeerError
-} from '@libp2p/interface'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromBytes } from '@libp2p/peer-id'
@@ -50,7 +46,7 @@ describe('tls', () => {
       encrypter.secureOutbound(localPeer, outbound, wrongPeer)
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
-      expect(err).to.have.property('code', UnexpectedPeerError.code)
+      expect(err).to.have.property('name', 'UnexpectedPeerError')
     })
   })
 
@@ -70,6 +66,6 @@ describe('tls', () => {
       encrypter.secureInbound(localPeer, inbound),
       encrypter.secureOutbound(remotePeer, outbound, localPeer)
     ]))
-      .to.eventually.be.rejected.with.property('code', InvalidCryptoExchangeError.code)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 })

@@ -4,8 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerIdProto {
@@ -42,7 +41,7 @@ export namespace PeerIdProto {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -51,18 +50,22 @@ export namespace PeerIdProto {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.id = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.pubKey = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.privKey = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -77,7 +80,7 @@ export namespace PeerIdProto {
     return encodeMessage(obj, PeerIdProto.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerIdProto => {
-    return decodeMessage(buf, PeerIdProto.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerIdProto>): PeerIdProto => {
+    return decodeMessage(buf, PeerIdProto.codec(), opts)
   }
 }

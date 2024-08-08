@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { peerRoutingSymbol, CodeError } from '@libp2p/interface'
+import { peerRoutingSymbol, NotFoundError } from '@libp2p/interface'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -34,7 +34,7 @@ describe('peer-routing', () => {
     it('.findPeer should return an error', async () => {
       await expect(node.peerRouting.findPeer(peerId))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_NO_ROUTERS_AVAILABLE')
+        .and.to.have.property('name', 'NoPeerRoutersError')
     })
 
     it('.getClosestPeers should return an error', async () => {
@@ -43,7 +43,7 @@ describe('peer-routing', () => {
         throw new Error('.getClosestPeers should return an error')
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.equal('ERR_NO_ROUTERS_AVAILABLE')
+        expect(err.name).to.equal('NoPeerRoutersError')
       }
     })
   })
@@ -104,7 +104,7 @@ describe('peer-routing', () => {
     it('should error when peer tries to find itself', async () => {
       await expect(node.peerRouting.findPeer(node.peerId))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_FIND_SELF')
+        .and.to.have.property('name', 'QueriedForSelfError')
     })
 
     it('should handle error thrown synchronously during find peer', async () => {
@@ -116,7 +116,7 @@ describe('peer-routing', () => {
 
       await expect(node.peerRouting.findPeer(unknownPeer))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_NOT_FOUND')
+        .and.to.have.property('name', 'NotFoundError')
     })
 
     it('should handle error thrown asynchronously during find peer', async () => {
@@ -128,7 +128,7 @@ describe('peer-routing', () => {
 
       await expect(node.peerRouting.findPeer(unknownPeer))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_NOT_FOUND')
+        .and.to.have.property('name', 'NotFoundError')
     })
 
     it('should handle error thrown asynchronously after delay during find peer', async () => {
@@ -141,7 +141,7 @@ describe('peer-routing', () => {
 
       await expect(node.peerRouting.findPeer(unknownPeer))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_NOT_FOUND')
+        .and.to.have.property('name', 'NotFoundError')
     })
   })
 
@@ -200,7 +200,7 @@ describe('peer-routing', () => {
     it('should error when peer tries to find itself', async () => {
       await expect(node.peerRouting.findPeer(node.peerId))
         .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_FIND_SELF')
+        .and.to.have.property('name', 'QueriedForSelfError')
     })
 
     it('should handle errors from the delegate when finding closest peers', async () => {
@@ -252,7 +252,7 @@ describe('peer-routing', () => {
 
       router.findPeer.callsFake(async function () {
         await delay(100)
-        throw new CodeError('Not found', 'ERR_NOT_FOUND')
+        throw new NotFoundError('Not found')
       })
       delegate.findPeer.callsFake(async () => {
         return results
@@ -275,7 +275,7 @@ describe('peer-routing', () => {
 
       router.findPeer.callsFake(async function () {
         await defer.promise
-        throw new CodeError('Not found', 'ERR_NOT_FOUND')
+        throw new NotFoundError('Not found')
       })
       delegate.findPeer.callsFake(async () => {
         return results
@@ -303,7 +303,7 @@ describe('peer-routing', () => {
       })
       delegate.findPeer.callsFake(async () => {
         await defer.promise
-        throw new CodeError('Not found', 'ERR_NOT_FOUND')
+        throw new NotFoundError('Not found')
       })
 
       const peer = await node.peerRouting.findPeer(remotePeerId)

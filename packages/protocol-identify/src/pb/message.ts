@@ -4,8 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, MaxLengthError, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Identify {
@@ -70,7 +69,7 @@ export namespace Identify {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           listenAddrs: [],
           protocols: []
@@ -82,30 +81,46 @@ export namespace Identify {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 5:
+            case 5: {
               obj.protocolVersion = reader.string()
               break
-            case 6:
+            }
+            case 6: {
               obj.agentVersion = reader.string()
               break
-            case 1:
+            }
+            case 1: {
               obj.publicKey = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.listenAddrs != null && obj.listenAddrs.length === opts.limits.listenAddrs) {
+                throw new MaxLengthError('Decode error - map field "listenAddrs" had too many elements')
+              }
+
               obj.listenAddrs.push(reader.bytes())
               break
-            case 4:
+            }
+            case 4: {
               obj.observedAddr = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
+              if (opts.limits?.protocols != null && obj.protocols.length === opts.limits.protocols) {
+                throw new MaxLengthError('Decode error - map field "protocols" had too many elements')
+              }
+
               obj.protocols.push(reader.string())
               break
-            case 8:
+            }
+            case 8: {
               obj.signedPeerRecord = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -120,7 +135,7 @@ export namespace Identify {
     return encodeMessage(obj, Identify.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Identify => {
-    return decodeMessage(buf, Identify.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Identify>): Identify => {
+    return decodeMessage(buf, Identify.codec(), opts)
   }
 }

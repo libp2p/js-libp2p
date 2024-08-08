@@ -1,4 +1,4 @@
-import { CodeError, TypedEventEmitter } from '@libp2p/interface'
+import { ListenError, TypedEventEmitter } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ReservationStore } from './reservation-store.js'
@@ -51,7 +51,7 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     const reservation = this.relayStore.getReservation(relayConn.remotePeer)
 
     if (reservation == null) {
-      throw new CodeError('Did not have reservation after making reservation', 'ERR_NO_RESERVATION')
+      throw new ListenError('Did not have reservation after making reservation')
     }
 
     if (this.listeningAddrs.has(relayConn.remotePeer)) {

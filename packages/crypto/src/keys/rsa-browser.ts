@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../random-bytes.js'
 import webcrypto from '../webcrypto.js'
@@ -102,7 +102,7 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
 
 async function exportKey (pair: CryptoKeyPair): Promise<[JsonWebKey, JsonWebKey]> {
   if (pair.privateKey == null || pair.publicKey == null) {
-    throw new CodeError('Private and public key are required', 'ERR_INVALID_PARAMETERS')
+    throw new InvalidParametersError('Private and public key are required')
   }
 
   return Promise.all([
@@ -130,9 +130,9 @@ async function derivePublicFromPrivate (jwKey: JsonWebKey): Promise<CryptoKey> {
 
 export function keySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
-    throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
+    throw new InvalidParametersError('invalid key type')
   } else if (jwk.n == null) {
-    throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
+    throw new InvalidParametersError('invalid key modulus')
   }
   const bytes = uint8ArrayFromString(jwk.n, 'base64url')
   return bytes.length * 8

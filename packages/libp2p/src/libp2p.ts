@@ -1,5 +1,5 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
+import { contentRoutingSymbol, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, InvalidPeerIdError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -15,7 +15,6 @@ import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
 import { CompoundContentRouting } from './content-routing.js'
-import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
@@ -282,13 +281,13 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
     if (protocols == null) {
-      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
     protocols = Array.isArray(protocols) ? protocols : [protocols]
 
     if (protocols.length === 0) {
-      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
     const connection = await this.dial(peer, options)
@@ -329,7 +328,7 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
         return peerInfo.id.publicKey
       }
     } catch (err: any) {
-      if (err.code !== codes.ERR_NOT_FOUND) {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }
@@ -396,7 +395,7 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
-      this.log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      this.log.error('peer discovery mechanism discovered self')
       return
     }
 
@@ -415,7 +414,7 @@ export async function createLibp2pNode <T extends ServiceMap = ServiceMap> (opti
   const peerId = options.peerId ??= await createEd25519PeerId()
 
   if (peerId.privateKey == null) {
-    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
+    throw new InvalidPeerIdError('Peer id was missing private key')
   }
 
   options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
