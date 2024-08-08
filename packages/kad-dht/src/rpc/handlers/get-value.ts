@@ -114,7 +114,7 @@ export class GetValueHandler implements DHTMessageHandler {
     try {
       rawRecord = await this.datastore.get(dsKey)
     } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
+      if (err.name === 'NotFoundError') {
         return undefined
       }
       throw err

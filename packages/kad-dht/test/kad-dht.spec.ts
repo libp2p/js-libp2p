@@ -849,7 +849,7 @@ describe('KadDHT', () => {
       const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
 
       expect(errors).to.have.lengthOf(1)
-      expect(errors).to.have.nested.property('[0].error.name', 'QueryError')
+      expect(errors).to.have.nested.property('[0].error', error)
 
       stub.restore()
     })

@@ -18,14 +18,14 @@ describe('selection', () => {
 
     it('throws on missing selector in the record key', () => {
       expect(
-        () => selection.bestRecord({}, uint8ArrayFromString('/'), records)
+        () => selection.bestRecord({}, uint8ArrayFromString('/no-selector/key-value'), records)
       ).to.throw().with.property('name', 'MissingSelectorError')
     })
 
     it('throws on unknown key prefix', () => {
       expect(
         // @ts-expect-error invalid input
-        () => selection.bestRecord({ world () {} }, uint8ArrayFromString('/hello/'), records)
+        () => selection.bestRecord({ world () {} }, uint8ArrayFromString('/world'), records)
       ).to.throw().with.property('name', 'InvalidParametersError')
     })
 
