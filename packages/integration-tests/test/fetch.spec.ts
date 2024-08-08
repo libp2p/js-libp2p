@@ -112,7 +112,7 @@ describe('fetch', () => {
     receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
     await expect(sender.services.fetch.fetch(receiver.peerId, '/moduleUNKNOWN/foobar'))
-      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
+      .to.eventually.be.rejected.with.property('name', 'ProtocolError')
   })
 
   it('registering multiple handlers for same prefix errors', async () => {

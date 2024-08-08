@@ -1,4 +1,4 @@
-import { InvalidMultiaddrError, InvalidPeerIdError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, UnsupportedProtocolError, TimeoutError, setMaxListeners } from '@libp2p/interface'
+import { InvalidMultiaddrError, InvalidPeerIdError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, TimeoutError, setMaxListeners } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CustomProgressEvent } from 'progress-events'
