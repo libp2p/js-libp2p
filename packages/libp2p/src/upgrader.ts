@@ -521,11 +521,7 @@ export class DefaultUpgrader implements Upgrader {
             muxedStream.abort(err)
           }
 
-          if (err.code != null) {
-            throw err
-          }
-
-          throw new UnsupportedProtocolError(String(err))
+          throw err
         }
       }
 

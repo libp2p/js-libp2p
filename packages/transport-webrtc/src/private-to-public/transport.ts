@@ -6,7 +6,7 @@ import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { DataChannelError, UnimplementedError } from '../error.js'
+import { DataChannelError, InappropriateMultiaddrError, UnimplementedError } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
@@ -122,7 +122,7 @@ export class WebRTCDirectTransport implements Transport {
 
     const remotePeerString = ma.getPeerId()
     if (remotePeerString === null) {
-      throw new InvalidParametersError("we need to have the remote's PeerId")
+      throw new InappropriateMultiaddrError("we need to have the remote's PeerId")
     }
     const theirPeerId = p.peerIdFromString(remotePeerString)
 
