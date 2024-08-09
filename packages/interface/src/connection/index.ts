@@ -288,6 +288,13 @@ export interface Connection {
   transient: boolean
 
   /**
+   * The time in milliseconds it takes to make a round trip to the remote peer.
+   *
+   * This is updated periodically by the connection monitor.
+   */
+  rtt?: number
+
+  /**
    * Create a new stream on this connection and negotiate one of the passed protocols
    */
   newStream(protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
