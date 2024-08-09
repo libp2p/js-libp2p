@@ -1,10 +1,8 @@
 import { CodeError } from '@libp2p/interface'
 import { CID } from 'multiformats/cid'
-import { Message } from '../../message/index.js'
-import {
-  removePrivateAddresses,
-  removePublicAddresses
-} from '../../utils.js'
+import { MessageType } from '../../message/dht.js'
+import type { PeerInfoMapper } from '../../index.js'
+import type { Message } from '../../message/dht.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
@@ -14,7 +12,8 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 export interface GetProvidersHandlerInit {
   peerRouting: PeerRouting
   providers: Providers
-  lan: boolean
+  logPrefix: string
+  peerInfoMapper: PeerInfoMapper
 }
 
 export interface GetProvidersHandlerComponents {
@@ -25,21 +24,25 @@ export interface GetProvidersHandlerComponents {
 export class GetProvidersHandler implements DHTMessageHandler {
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
-  private readonly lan: boolean
   private readonly peerStore: PeerStore
+  private readonly peerInfoMapper: PeerInfoMapper
   private readonly log: Logger
 
   constructor (components: GetProvidersHandlerComponents, init: GetProvidersHandlerInit) {
-    const { peerRouting, providers, lan } = init
+    const { peerRouting, providers, logPrefix } = init
 
-    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:get-providers')
+    this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:get-providers`)
     this.peerStore = components.peerStore
     this.peerRouting = peerRouting
     this.providers = providers
-    this.lan = Boolean(lan)
+    this.peerInfoMapper = init.peerInfoMapper
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
+    if (msg.key == null) {
+      throw new CodeError('Invalid GET_PROVIDERS message received - key was missing', 'ERR_INVALID_MESSAGE')
+    }
+
     let cid
     try {
       cid = CID.decode(msg.key)
@@ -56,17 +59,28 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
     const providerPeers = await this._getPeers(peers)
     const closerPeers = await this._getPeers(closer.map(({ id }) => id))
-    const response = new Message(msg.type, msg.key, msg.clusterLevel)
-
-    if (providerPeers.length > 0) {
-      response.providerPeers = providerPeers
+    const response: Message = {
+      type: MessageType.GET_PROVIDERS,
+      key: msg.key,
+      clusterLevel: msg.clusterLevel,
+      closer: closerPeers
+        .map(this.peerInfoMapper)
+        .filter(({ multiaddrs }) => multiaddrs.length)
+        .map(peerInfo => ({
+          id: peerInfo.id.toBytes(),
+          multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
+        })),
+      providers: providerPeers
+        .map(this.peerInfoMapper)
+        .filter(({ multiaddrs }) => multiaddrs.length)
+        .map(peerInfo => ({
+          id: peerInfo.id.toBytes(),
+          multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
+        }))
     }
 
-    if (closerPeers.length > 0) {
-      response.closerPeers = closerPeers
-    }
+    this.log('got %s providers %s closerPeers', response.providers.length, response.closer.length)
 
-    this.log('got %s providers %s closerPeers', providerPeers.length, closerPeers.length)
     return response
   }
 
@@ -76,13 +90,12 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async _getPeers (peerIds: PeerId[]): Promise<PeerInfo[]> {
     const output: PeerInfo[] = []
-    const addrFilter = this.lan ? removePublicAddresses : removePrivateAddresses
 
     for (const peerId of peerIds) {
       try {
         const peer = await this.peerStore.get(peerId)
 
-        const peerAfterFilter = addrFilter({
+        const peerAfterFilter = this.peerInfoMapper({
           id: peerId,
           multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })

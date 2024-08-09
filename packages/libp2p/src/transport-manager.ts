@@ -1,8 +1,9 @@
 import { CodeError, FaultTolerance } from '@libp2p/interface'
 import { trackedMap } from '@libp2p/utils/tracked-map'
+import { CustomProgressEvent } from 'progress-events'
 import { codes } from './errors.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
-import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
+import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface TransportManagerInit {
@@ -36,6 +37,8 @@ export class DefaultTransportManager implements TransportManager, Startable {
     })
     this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/transport-manager'
 
   /**
    * Adds a `Transport` to the manager
@@ -105,14 +108,19 @@ export class DefaultTransportManager implements TransportManager, Startable {
   /**
    * Dials the given Multiaddr over it's supported transport
    */
-  async dial (ma: Multiaddr, options?: AbortOptions): Promise<Connection> {
-    const transport = this.transportForMultiaddr(ma)
+  async dial (ma: Multiaddr, options?: TransportManagerDialOptions): Promise<Connection> {
+    const transport = this.dialTransportForMultiaddr(ma)
 
     if (transport == null) {
       throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
     }
 
+    options?.onProgress?.(new CustomProgressEvent<string>('transport-manager:selected-transport', transport[Symbol.toStringTag]))
+
     try {
+      // @ts-expect-error the transport has a typed onProgress option but we
+      // can't predict what transport implementation we selected so all we can
+      // do is pass the onProgress handler in and hope for the best
       return await transport.dial(ma, {
         ...options,
         upgrader: this.components.upgrader
@@ -156,9 +164,22 @@ export class DefaultTransportManager implements TransportManager, Startable {
   /**
    * Finds a transport that matches the given Multiaddr
    */
-  transportForMultiaddr (ma: Multiaddr): Transport | undefined {
+  dialTransportForMultiaddr (ma: Multiaddr): Transport | undefined {
     for (const transport of this.transports.values()) {
-      const addrs = transport.filter([ma])
+      const addrs = transport.dialFilter([ma])
+
+      if (addrs.length > 0) {
+        return transport
+      }
+    }
+  }
+
+  /**
+   * Finds a transport that matches the given Multiaddr
+   */
+  listenTransportForMultiaddr (ma: Multiaddr): Transport | undefined {
+    for (const transport of this.transports.values()) {
+      const addrs = transport.listenFilter([ma])
 
       if (addrs.length > 0) {
         return transport
@@ -182,7 +203,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     const couldNotListen = []
 
     for (const [key, transport] of this.transports.entries()) {
-      const supportedAddrs = transport.filter(addrs)
+      const supportedAddrs = transport.listenFilter(addrs)
       const tasks = []
 
       // For each supported multiaddr, create a listener

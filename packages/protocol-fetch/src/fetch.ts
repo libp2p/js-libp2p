@@ -34,6 +34,8 @@ export class Fetch implements Startable, FetchInterface {
     this.init = init
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/fetch'
+
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleMessage(data)
@@ -195,7 +197,7 @@ export class Fetch implements Startable, FetchInterface {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * libp2p.fetchService.registerLookupFunction('/prefix', (key) => { ... })
    * ```
@@ -214,7 +216,7 @@ export class Fetch implements Startable, FetchInterface {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * libp2p.fetchService.unregisterLookupFunction('/prefix')
    * ```

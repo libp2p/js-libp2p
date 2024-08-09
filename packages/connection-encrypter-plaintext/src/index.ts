@@ -20,7 +20,7 @@
  * ```
  */
 
-import { UnexpectedPeerError, InvalidCryptoExchangeError } from '@libp2p/interface'
+import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
 import { Exchange, KeyType } from './pb/proto.js'
@@ -54,6 +54,12 @@ class Plaintext implements ConnectionEncrypter {
     this.log = components.logger.forComponent('libp2p:plaintext')
     this.timeout = init.timeout ?? 1000
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/plaintext'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/connection-encryption'
+  ]
 
   async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
     return this._encrypt(this.peerId, conn, remoteId)

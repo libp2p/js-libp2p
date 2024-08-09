@@ -1,19 +1,21 @@
 import { CodeError, KEEP_ALIVE } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
+import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { RateLimiterMemory } from 'rate-limiter-flexible'
+import { CustomProgressEvent } from 'progress-events'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
+import { AUTO_DIAL_CONCURRENCY, AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE, AUTO_DIAL_MAX_QUEUE_LENGTH, AUTO_DIAL_PEER_RETRY_THRESHOLD, AUTO_DIAL_PRIORITY, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL, MIN_CONNECTIONS } from './constants.js'
 import { DialQueue } from './dial-queue.js'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
+import type { JobStatus } from '@libp2p/utils/queue'
 
-const DEFAULT_DIAL_PRIORITY = 50
+export const DEFAULT_DIAL_PRIORITY = 50
 
 export interface ConnectionManagerInit {
   /**
@@ -81,8 +83,18 @@ export interface ConnectionManagerInit {
   maxParallelDials?: number
 
   /**
-   * Maximum number of addresses allowed for a given peer - if a peer has more
-   * addresses than this then the dial will fail. (default: 25)
+   * The maximum size the dial queue is allowed to grow to. Promises returned
+   * when dialing peers after this limit is reached will not resolve until the
+   * queue size falls beneath this size.
+   *
+   * @default 500
+   */
+  maxDialQueueLength?: number
+
+  /**
+   * Maximum number of addresses allowed for a given peer before giving up
+   *
+   * @default 25
    */
   maxPeerAddrsToDial?: number
 
@@ -136,13 +148,16 @@ const defaultOptions = {
   maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
   autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
   autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH
+  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
+  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
+  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
 }
 
 export interface DefaultConnectionManagerComponents {
   peerId: PeerId
   metrics?: Metrics
   peerStore: PeerStore
+  peerRouting: PeerRouting
   transportManager: TransportManager
   connectionGater: ConnectionGater
   events: TypedEventTarget<Libp2pEvents>
@@ -164,8 +179,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   public readonly dialQueue: DialQueue
   public readonly autoDial: AutoDial
   public readonly connectionPruner: ConnectionPruner
-  private readonly inboundConnectionRateLimiter: RateLimiterMemory
-
+  private readonly inboundConnectionRateLimiter: RateLimiter
   private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
   private readonly events: TypedEventTarget<Libp2pEvents>
@@ -203,7 +217,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
 
     // controls individual peers trying to dial us too quickly
-    this.inboundConnectionRateLimiter = new RateLimiterMemory({
+    this.inboundConnectionRateLimiter = new RateLimiter({
       points: init.inboundConnectionThreshold ?? defaultOptions.inboundConnectionThreshold,
       duration: 1
     })
@@ -218,6 +232,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       minConnections,
       autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions.autoDialConcurrency,
       autoDialPriority: init.autoDialPriority ?? defaultOptions.autoDialPriority,
+      autoDialPeerRetryThreshold: init.autoDialPeerRetryThreshold ?? defaultOptions.autoDialPeerRetryThreshold,
+      autoDialDiscoveredPeersDebounce: init.autoDialDiscoveredPeersDebounce ?? defaultOptions.autoDialDiscoveredPeersDebounce,
       maxQueueLength: init.autoDialMaxQueueLength ?? defaultOptions.autoDialMaxQueueLength
     })
 
@@ -232,16 +248,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       allow: this.allow
     })
 
-    this.dialQueue = new DialQueue({
-      peerId: components.peerId,
-      metrics: components.metrics,
-      peerStore: components.peerStore,
-      transportManager: components.transportManager,
-      connectionGater: components.connectionGater,
-      logger: components.logger
-    }, {
+    this.dialQueue = new DialQueue(components, {
       addressSorter: init.addressSorter ?? defaultAddressSort,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
+      maxDialQueueLength: init.maxDialQueueLength ?? MAX_DIAL_QUEUE_LENGTH,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
@@ -250,6 +260,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       connections: this.connections
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/connection-manager'
 
   isStarted (): boolean {
     return this.started
@@ -338,6 +350,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
+    this.dialQueue.start()
     this.autoDial.start()
 
     this.started = true
@@ -497,6 +510,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       if (existingConnection != null) {
         this.log('had an existing non-transient connection to %p', peerId)
 
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection
       }
     }
@@ -598,6 +612,24 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   }
 
   getDialQueue (): PendingDial[] {
-    return this.dialQueue.pendingDials
+    const statusMap: Record<JobStatus, PendingDialStatus> = {
+      queued: 'queued',
+      running: 'active',
+      errored: 'error',
+      complete: 'success'
+    }
+
+    return this.dialQueue.queue.queue.map(job => {
+      return {
+        id: job.id,
+        status: statusMap[job.status],
+        peerId: job.options.peerId,
+        multiaddrs: [...job.options.multiaddrs].map(ma => multiaddr(ma))
+      }
+    })
+  }
+
+  async isDialable (multiaddr: Multiaddr | Multiaddr[], options: IsDialableOptions = {}): Promise<boolean> {
+    return this.dialQueue.isDialable(multiaddr, options)
   }
 }

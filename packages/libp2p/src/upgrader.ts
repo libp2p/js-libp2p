@@ -1,6 +1,7 @@
 import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { CustomProgressEvent } from 'progress-events'
 import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
@@ -122,6 +123,8 @@ export class DefaultUpgrader implements Upgrader {
     this.events = components.events
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/upgrader'
+
   async shouldBlockConnection (remotePeer: PeerId, maConn: MultiaddrConnection, connectionType: ConnectionDeniedType): Promise<void> {
     const connectionGater = this.components.connectionGater[connectionType]
 
@@ -183,6 +186,8 @@ export class DefaultUpgrader implements Upgrader {
         // Encrypt the connection
         encryptedConn = protectedConn
         if (opts?.skipEncryption !== true) {
+          opts?.onProgress?.(new CustomProgressEvent('upgrader:encrypt-inbound-connection'));
+
           ({
             conn: encryptedConn,
             remotePeer,
@@ -212,6 +217,8 @@ export class DefaultUpgrader implements Upgrader {
         if (opts?.muxerFactory != null) {
           muxerFactory = opts.muxerFactory
         } else if (this.muxers.size > 0) {
+          opts?.onProgress?.(new CustomProgressEvent('upgrader:multiplex-inbound-connection'))
+
           // Multiplex the connection
           const multiplexed = await this._multiplexInbound({
             ...protectedConn,
@@ -471,7 +478,7 @@ export class DefaultUpgrader implements Upgrader {
           const streamCount = countStreams(protocol, 'outbound', connection)
 
           if (streamCount >= outgoingLimit) {
-            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - limit ${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`, codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
             muxedStream.abort(err)
 
             throw err
@@ -641,7 +648,8 @@ export class DefaultUpgrader implements Upgrader {
         protocol
       }
     } catch (err: any) {
-      throw new CodeError(String(err), codes.ERR_ENCRYPTION_FAILED)
+      connection.log.error('encrypting inbound connection failed', err)
+      throw new CodeError(err.message, codes.ERR_ENCRYPTION_FAILED)
     }
   }
 
@@ -670,14 +678,15 @@ export class DefaultUpgrader implements Upgrader {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      connection.log('encrypting outbound connection to %p using %p', remotePeerId)
+      connection.log('encrypting outbound connection to %p using %s', remotePeerId, encrypter)
 
       return {
         ...await encrypter.secureOutbound(stream, remotePeerId),
         protocol
       }
     } catch (err: any) {
-      throw new CodeError(String(err), codes.ERR_ENCRYPTION_FAILED)
+      connection.log.error('encrypting outbound connection to %p failed', remotePeerId, err)
+      throw new CodeError(err.message, codes.ERR_ENCRYPTION_FAILED)
     }
   }
 

@@ -1,7 +1,7 @@
 import all from 'it-all'
 import map from 'it-map'
-import { compare as uint8ArrayCompare } from 'uint8arrays/compare'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
+import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId } from '../../src/utils.js'
 import type { PeerId } from '@libp2p/interface'
 
@@ -22,7 +22,7 @@ export async function sortClosestPeers (peers: PeerId[], kadId: Uint8Array): Pro
 
   return distances
     .sort((a, b) => {
-      return uint8ArrayCompare(a.distance, b.distance)
+      return uint8ArrayXorCompare(a.distance, b.distance)
     })
     .map((d) => d.peer)
 }

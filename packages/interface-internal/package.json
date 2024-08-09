@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-internal",
-  "version": "1.0.1",
+  "version": "1.3.3",
   "description": "Interfaces implemented by internal libp2p components",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal#readme",
@@ -21,22 +21,6 @@
   ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -60,15 +44,18 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.0.1",
-    "@libp2p/peer-collections": "^5.0.0",
-    "@multiformats/multiaddr": "^12.1.10",
-    "uint8arraylist": "^2.4.3"
+    "@libp2p/interface": "^1.6.3",
+    "@libp2p/peer-collections": "^5.2.8",
+    "@multiformats/multiaddr": "^12.2.3",
+    "progress-events": "^1.0.0",
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^41.0.2"
-  }
+    "aegir": "^44.0.1"
+  },
+  "sideEffects": false
 }

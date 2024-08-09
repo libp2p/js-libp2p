@@ -3,6 +3,7 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -14,21 +15,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
 import type { PeerId, Transport } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
-
-const getDnsaddrStub = (peerId: PeerId): string[] => [
-  `/dnsaddr/ams-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
-  `/dnsaddr/ams-2.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
-  `/dnsaddr/lon-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
-  `/dnsaddr/nrt-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
-  `/dnsaddr/nyc-1.bootstrap.libp2p.io/p2p/${peerId.toString()}`,
-  `/dnsaddr/sfo-2.bootstrap.libp2p.io/p2p/${peerId.toString()}`
-]
 
 const relayedAddr = (peerId: PeerId): string => `${relayAddr.toString()}/p2p-circuit/p2p/${peerId.toString()}`
 
@@ -67,7 +58,10 @@ describe('dialing (resolvable addresses)', () => {
         connectionEncryption: [
           plaintext()
         ],
-        connectionGater: mockConnectionGater()
+        connectionGater: mockConnectionGater(),
+        services: {
+          identify: identify()
+        }
       }),
       createLibp2pNode({
         addresses: {
@@ -92,7 +86,8 @@ describe('dialing (resolvable addresses)', () => {
           plaintext()
         ],
         services: {
-          relay: circuitRelayServer()
+          relay: circuitRelayServer(),
+          identify: identify()
         },
         connectionGater: mockConnectionGater()
       })
@@ -125,46 +120,11 @@ describe('dialing (resolvable addresses)', () => {
     const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
 
     // Transport spy
-    const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')
+    const transport = getTransport(libp2p, '@libp2p/circuit-relay-v2-transport')
     const transportDialSpy = sinon.spy(transport, 'dial')
 
     // Resolver stub
     resolver.onCall(0).returns(Promise.resolve(getDnsRelayedAddrStub(remoteId)))
-
-    // Dial with address resolve
-    const connection = await libp2p.dial(dialAddr)
-    expect(connection).to.exist()
-    expect(connection.remoteAddr.equals(relayedAddrFetched))
-
-    const dialArgs = transportDialSpy.firstCall.args
-    expect(dialArgs[0].equals(relayedAddrFetched)).to.eql(true)
-  })
-
-  it('resolves a dnsaddr recursively', async () => {
-    const remoteId = remoteLibp2p.peerId
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
-    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
-
-    const relayId = await createEd25519PeerId()
-    // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.peerStore.merge(relayId, {
-      protocols: [RELAY_V2_HOP_CODEC]
-    })
-
-    // Transport spy
-    const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')
-    const transportDialSpy = sinon.spy(transport, 'dial')
-
-    // Resolver stub
-    let firstCall = false
-    resolver.callsFake(async () => {
-      if (!firstCall) {
-        firstCall = true
-        // Return an array of dnsaddr
-        return Promise.resolve(getDnsaddrStub(remoteId))
-      }
-      return Promise.resolve(getDnsRelayedAddrStub(remoteId))
-    })
 
     // Dial with address resolve
     const connection = await libp2p.dial(dialAddr)
@@ -205,50 +165,16 @@ describe('dialing (resolvable addresses)', () => {
     await deferred.promise
   })
 
-  it('resolves a dnsaddr recursively not failing if one address fails to resolve', async () => {
-    const remoteId = remoteLibp2p.peerId
-    const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
-    const relayedAddrFetched = multiaddr(relayedAddr(remoteId))
-
-    const relayId = await createEd25519PeerId()
-    // ensure remote libp2p creates reservation on relay
-    await remoteLibp2p.peerStore.merge(relayId, {
-      protocols: [RELAY_V2_HOP_CODEC]
-    })
-
-    // Transport spy
-    const transport = getTransport(libp2p, 'libp2p/circuit-relay-v2')
-    const transportDialSpy = sinon.spy(transport, 'dial')
-
-    // Resolver stub
-    resolver.onCall(0).callsFake(async () => Promise.resolve(getDnsaddrStub(remoteId)))
-    resolver.onCall(1).callsFake(async () => Promise.reject(new Error()))
-    resolver.callsFake(async () => Promise.resolve(getDnsRelayedAddrStub(remoteId)))
-
-    // Dial with address resolve
-    const connection = await libp2p.dial(dialAddr)
-    expect(connection).to.exist()
-    expect(connection.remoteAddr.equals(relayedAddrFetched))
-
-    const dialArgs = transportDialSpy.firstCall.args
-    expect(dialArgs[0].equals(relayedAddrFetched)).to.eql(true)
-  })
-
   it('fails to dial if resolve fails and there are no addresses to dial', async () => {
     const remoteId = remoteLibp2p.peerId
     const dialAddr = multiaddr(`/dnsaddr/remote.libp2p.io/p2p/${remoteId.toString()}`)
+    const err = new Error()
 
     // Stub resolver
-    resolver.returns(Promise.reject(new Error()))
-
-    // Stub transport
-    const transport = getTransport(libp2p, '@libp2p/websockets')
-    const spy = sinon.spy(transport, 'dial')
+    resolver.returns(Promise.reject(err))
 
     await expect(libp2p.dial(dialAddr))
-      .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
-    expect(spy.callCount).to.eql(0)
+      .to.eventually.be.rejectedWith(err)
   })
 })
 

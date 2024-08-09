@@ -18,8 +18,10 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('listen', () => {
     let upgrader: Upgrader
-    let addrs: Multiaddr[]
-    let transport: Transport
+    let listenAddrs: Multiaddr[]
+    let dialAddrs: Multiaddr[]
+    let dialer: Transport
+    let listener: Transport
     let registrar: Registrar
 
     before(async () => {
@@ -29,7 +31,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         events: new TypedEventEmitter()
       });
 
-      ({ transport, addrs } = await common.setup())
+      ({ dialer, listener, listenAddrs, dialAddrs } = await common.setup())
     })
 
     after(async () => {
@@ -41,11 +43,11 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('simple', async () => {
-      const listener = transport.createListener({
+      const listen = listener.createListener({
         upgrader
       })
-      await listener.listen(addrs[0])
-      await listener.close()
+      await listen.listen(listenAddrs[0])
+      await listen.close()
     })
 
     it('close listener with connections, through timeout', async () => {
@@ -57,7 +59,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         void drain(data.stream.source)
       })
 
-      const listener = transport.createListener({
+      const listen = listener.createListener({
         upgrader,
         handler: (conn) => {
           listenerConns.push(conn)
@@ -65,14 +67,14 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // Listen
-      await listener.listen(addrs[0])
+      await listen.listen(listenAddrs[0])
 
       // Create two connections to the listener
       const [conn1] = await Promise.all([
-        transport.dial(addrs[0], {
+        dialer.dial(dialAddrs[0], {
           upgrader
         }),
-        transport.dial(addrs[0], {
+        dialer.dial(dialAddrs[0], {
           upgrader
         })
       ])
@@ -89,7 +91,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
           stream1
         ),
         // Closer the listener (will take a couple of seconds to time out)
-        listener.close()
+        listen.close()
       ])
 
       await stream1.close()
@@ -107,39 +109,39 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     it('should not handle connection if upgradeInbound throws', async () => {
       sinon.stub(upgrader, 'upgradeInbound').throws()
 
-      const listener = transport.createListener({
+      const listen = listener.createListener({
         upgrader
       })
 
       // Listen
-      await listener.listen(addrs[0])
+      await listen.listen(listenAddrs[0])
 
       // Create a connection to the listener
-      const conn = await transport.dial(addrs[0], {
+      const conn = await dialer.dial(dialAddrs[0], {
         upgrader
       })
 
       await pWaitFor(() => typeof conn.timeline.close === 'number')
-      await listener.close()
+      await listen.close()
     })
 
     describe('events', () => {
       it('connection', async () => {
         const upgradeSpy = sinon.spy(upgrader, 'upgradeInbound')
-        const listener = transport.createListener({
+        const listen = listener.createListener({
           upgrader
         })
         const deferred = defer()
         let conn
 
-        listener.addEventListener('connection', (evt) => {
+        listen.addEventListener('connection', (evt) => {
           conn = evt.detail
           deferred.resolve()
         })
 
         void (async () => {
-          await listener.listen(addrs[0])
-          await transport.dial(addrs[0], {
+          await listen.listen(listenAddrs[0])
+          await dialer.dial(dialAddrs[0], {
             upgrader
           })
         })()
@@ -148,41 +150,41 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
         await expect(upgradeSpy.getCall(0).returnValue).to.eventually.equal(conn)
         expect(upgradeSpy.callCount).to.equal(1)
-        await listener.close()
+        await listen.close()
       })
 
       it('listening', (done) => {
-        const listener = transport.createListener({
+        const listen = listener.createListener({
           upgrader
         })
-        listener.addEventListener('listening', () => {
-          listener.close().then(done, done)
+        listen.addEventListener('listening', () => {
+          listen.close().then(done, done)
         })
-        void listener.listen(addrs[0])
+        void listen.listen(listenAddrs[0])
       })
 
       it('error', (done) => {
-        const listener = transport.createListener({
+        const listen = listener.createListener({
           upgrader
         })
-        listener.addEventListener('error', (evt) => {
+        listen.addEventListener('error', (evt) => {
           expect(evt.detail).to.be.an.instanceOf(Error)
-          listener.close().then(done, done)
+          listen.close().then(done, done)
         })
-        listener.dispatchEvent(new CustomEvent('error', {
+        listen.dispatchEvent(new CustomEvent('error', {
           detail: new Error('my err')
         }))
       })
 
       it('close', (done) => {
-        const listener = transport.createListener({
+        const listen = listener.createListener({
           upgrader
         })
-        listener.addEventListener('close', () => { done() })
+        listen.addEventListener('close', () => { done() })
 
         void (async () => {
-          await listener.listen(addrs[0])
-          await listener.close()
+          await listen.listen(listenAddrs[0])
+          await listen.close()
         })()
       })
     })

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/bootstrap",
-  "version": "10.0.5",
+  "version": "10.1.4",
   "description": "Peer discovery via a list of bootstrap peers",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",
@@ -43,6 +43,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
@@ -53,15 +54,16 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.0.1",
-    "@libp2p/peer-id": "^4.0.1",
+    "@libp2p/interface": "^1.6.3",
+    "@libp2p/peer-id": "^4.2.3",
     "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.1.10"
+    "@multiformats/multiaddr": "^12.2.3"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.0.5",
-    "@libp2p/logger": "^4.0.1",
-    "aegir": "^41.0.2",
+    "@libp2p/interface-compliance-tests": "^5.4.11",
+    "@libp2p/logger": "^4.0.19",
+    "aegir": "^44.0.1",
     "sinon-ts": "^2.0.0"
-  }
+  },
+  "sideEffects": false
 }

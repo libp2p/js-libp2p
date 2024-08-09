@@ -9,6 +9,7 @@ export class AbortError extends Error {
 
   constructor (message: string = 'The operation was aborted') {
     super(message)
+    this.name = 'AbortError'
     this.code = AbortError.code
     this.type = AbortError.type
   }
@@ -33,11 +34,28 @@ export class CodeError<T extends Record<string, any> = Record<string, never>> ex
   }
 }
 
+export class AggregateCodeError<T extends Record<string, any> = Record<string, never>> extends AggregateError {
+  public readonly props: T
+
+  constructor (
+    errors: Error[],
+    message: string,
+    public readonly code: string,
+    props?: T
+  ) {
+    super(errors, message)
+
+    this.name = props?.name ?? 'AggregateCodeError'
+    this.props = props ?? {} as T // eslint-disable-line @typescript-eslint/consistent-type-assertions
+  }
+}
+
 export class UnexpectedPeerError extends Error {
   public code: string
 
   constructor (message = 'Unexpected Peer') {
     super(message)
+    this.name = 'UnexpectedPeerError'
     this.code = UnexpectedPeerError.code
   }
 
@@ -49,6 +67,7 @@ export class InvalidCryptoExchangeError extends Error {
 
   constructor (message = 'Invalid crypto exchange') {
     super(message)
+    this.name = 'InvalidCryptoExchangeError'
     this.code = InvalidCryptoExchangeError.code
   }
 
@@ -60,6 +79,7 @@ export class InvalidCryptoTransmissionError extends Error {
 
   constructor (message = 'Invalid crypto transmission') {
     super(message)
+    this.name = 'InvalidCryptoTransmissionError'
     this.code = InvalidCryptoTransmissionError.code
   }
 

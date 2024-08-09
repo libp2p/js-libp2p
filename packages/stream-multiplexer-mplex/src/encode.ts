@@ -1,6 +1,6 @@
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { allocUnsafe } from './alloc-unsafe.js'
+import { allocUnsafe } from 'uint8arrays/alloc'
 import { type Message, MessageTypes } from './message-types.js'
 import type { Source } from 'it-stream-types'
 

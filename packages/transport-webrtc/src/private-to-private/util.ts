@@ -1,13 +1,16 @@
 import { CodeError } from '@libp2p/interface'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
+import type { WebRTCDialEvents } from './transport.js'
 import type { LoggerOptions, Stream } from '@libp2p/interface'
 import type { AbortOptions, MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
+import type { ProgressOptions } from 'progress-events'
 
-export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions {
+export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions, ProgressOptions<WebRTCDialEvents> {
   direction: string
 }
 
@@ -23,11 +26,14 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         connectedPromise.promise,
         stream.read({
           signal: options.signal
-        })
+        }).catch(() => {})
       ])
 
       // stream ended or we became connected
       if (message == null) {
+        // throw if we timed out
+        options.signal?.throwIfAborted()
+
         break
       }
 
@@ -41,6 +47,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
       // candidate means candidate gathering has finished
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
       if (candidateInit === '' || candidateInit === null) {
+        options.onProgress?.(new CustomProgressEvent('webrtc:end-of-ice-candidates'))
         options.log.trace('end-of-candidates received')
 
         continue
@@ -48,9 +55,10 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
 
       const candidate = new RTCIceCandidate(candidateInit)
 
-      options.log.trace('%s received new ICE candidate', options.direction, candidate)
+      options.log.trace('%s received new ICE candidate %o', options.direction, candidateInit)
 
       try {
+        options.onProgress?.(new CustomProgressEvent<string>('webrtc:add-ice-candidate', candidate.candidate))
         await pc.addIceCandidate(candidate)
       } catch (err) {
         options.log.error('%s bad candidate received', options.direction, candidateInit, err)

@@ -1,14 +1,27 @@
-# syntax=docker/dockerfile:1
-
 FROM mcr.microsoft.com/playwright
 
-COPY --from=node-js-libp2p-head /app/ /app/
-WORKDIR /app/interop
+WORKDIR /app
+
+COPY package.json ./
+COPY ./packages ./packages
+COPY ./interop ./interop
+
+# disable colored output and CLI animation from test runners
+ENV CI=true
+
+RUN npm i
+RUN npm run build
+
+# We install browsers here instead of the cached version so that we use the latest browsers at run time.
+# Ideally this would also be pinned, but playwright controls this, so there isn't much we can do about it.
+# By installing here, we avoid installing it at test time.
+RUN npx playwright install-deps
+RUN npx playwright install
+
 # Options: chromium, firefox, webkit
 ARG BROWSER=chromium
-ENV BROWSER=$BROWSER
-# disable colored output and CLI animation from test runners
-ENV CI true
+ENV BROWSER=${BROWSER}
 
-# manually specify runner until https://github.com/hugomrdias/playwright-test/issues/572 is resolved
-ENTRYPOINT npm run test:interop:multidim -- --build false --types false -t browser -- --browser $BROWSER
+WORKDIR /app/interop
+
+ENTRYPOINT npm test -- -t browser -- --browser $BROWSER

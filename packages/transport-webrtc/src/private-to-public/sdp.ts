@@ -1,10 +1,9 @@
-import { bases } from 'multiformats/basics'
-import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
+import { type Multiaddr } from '@multiformats/multiaddr'
+import { bases, digest } from 'multiformats/basics'
+import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithmCode } from '../error.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { HashCode, HashName } from 'multihashes'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 /**
  * Get base2 | identity decoders
@@ -15,7 +14,7 @@ export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d
 export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
   // try to fetch fingerprint from local certificate
   const localCert = pc.getConfiguration().certificates?.at(0)
-  if (localCert == null || localCert.getFingerprints == null) {
+  if (localCert?.getFingerprints == null) {
     options.log.trace('fetching fingerprint from local SDP')
     const localDescription = pc.localDescription
     if (localDescription == null) {
@@ -71,9 +70,8 @@ export function certhash (ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
-  const mbdecoded = mbdecoder.decode(certhash)
-  return multihashes.decode(mbdecoded)
+export function decodeCerthash (certhash: string): MultihashDigest {
+  return digest.decode(mbdecoder.decode(certhash))
 }
 
 /**
@@ -81,7 +79,7 @@ export function decodeCerthash (certhash: string): { code: HashCode, name: HashN
  */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
   const mhdecoded = decodeCerthash(certhash(ma))
-  const prefix = toSupportedHashFunction(mhdecoded.name)
+  const prefix = toSupportedHashFunction(mhdecoded.code)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
   const sdp = fingerprint.match(/.{1,2}/g)
 
@@ -89,22 +87,22 @@ export function ma2Fingerprint (ma: Multiaddr): string[] {
     throw invalidFingerprint(fingerprint, ma.toString())
   }
 
-  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fingerprint]
+  return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
 }
 
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (name: multihashes.HashName): string {
-  switch (name) {
-    case 'sha1':
-      return 'sha-1'
-    case 'sha2-256':
-      return 'sha-256'
-    case 'sha2-512':
-      return 'sha-512'
+export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'SHA-512' {
+  switch (code) {
+    case 0x11:
+      return 'SHA-1'
+    case 0x12:
+      return 'SHA-256'
+    case 0x13:
+      return 'SHA-512'
     default:
-      throw unsupportedHashAlgorithm(name)
+      throw unsupportedHashAlgorithmCode(code)
   }
 }
 

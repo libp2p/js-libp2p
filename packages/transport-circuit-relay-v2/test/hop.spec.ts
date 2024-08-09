@@ -1,7 +1,7 @@
 /* eslint-disable max-nested-callbacks */
 
-import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Transport, type Upgrader } from '@libp2p/interface'
-import { isStartable } from '@libp2p/interface'
+import { TypedEventEmitter, isStartable } from '@libp2p/interface'
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
@@ -15,11 +15,8 @@ import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODE
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../src/index.js'
 import { HopMessage, Status } from '../src/pb/index.js'
 import type { CircuitRelayServerInit } from '../src/server/index.js'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
-
-export function matchPeerId (peerId: PeerId): Sinon.SinonMatcher {
-  return Sinon.match(p => p.toString() === peerId.toString())
-}
+import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, Transport } from '@libp2p/interface'
+import type { RandomWalk, AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 interface Node {
   peerId: PeerId
@@ -85,7 +82,6 @@ describe('circuit-relay hop protocol', function () {
 
     const service = circuitRelayServer(circuitRelayInit)({
       addressManager,
-      contentRouting: stubInterface<ContentRouting>(),
       connectionManager,
       peerId,
       peerStore,
@@ -101,9 +97,9 @@ describe('circuit-relay hop protocol', function () {
     const transport = circuitRelayTransport({})({
       addressManager,
       connectionManager,
-      contentRouting: stubInterface<ContentRouting>(),
       peerId,
       peerStore,
+      randomWalk: stubInterface<RandomWalk>(),
       registrar,
       transportManager: stubInterface<TransportManager>(),
       upgrader,

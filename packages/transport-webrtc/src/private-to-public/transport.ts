@@ -1,21 +1,22 @@
 import { noise } from '@chainsafe/libp2p-noise'
-import { type CreateListenerOptions, transportSymbol, type Transport, type Listener, type ComponentLogger, type Logger, type Connection, type CounterGroup, type Metrics, type PeerId } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import * as multihashes from 'multihashes'
+import * as Digest from 'multiformats/hashes/digest'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
-import { isFirefox } from '../util.js'
+import { getRtcConfiguration, isFirefox } from '../util.js'
 import { RTCPeerConnection } from '../webrtc/index.js'
 import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
 import type { DataChannelOptions } from '../index.js'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -51,6 +52,7 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
+  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
 }
 
@@ -73,6 +75,14 @@ export class WebRTCDirectTransport implements Transport {
     }
   }
 
+  readonly [transportSymbol] = true
+
+  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
+
   /**
    * Dial a given multiaddr
    */
@@ -90,21 +100,18 @@ export class WebRTCDirectTransport implements Transport {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid addresses for the transport
+   * Filter check for all Multiaddrs that this transport can listen on
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return multiaddrs.filter(WebRTCDirect.exactMatch)
   }
 
   /**
-   * Implement toString() for WebRTCTransport
+   * Filter check for all Multiaddrs that this transport can dial
    */
-  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
-
-  /**
-   * Symbol.for('@libp2p/transport')
-   */
-  readonly [transportSymbol] = true
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
+  }
 
   /**
    * Connect to a peer using a multiaddr
@@ -128,10 +135,13 @@ export class WebRTCDirectTransport implements Transport {
     const certificate = await RTCPeerConnection.generateCertificate({
       name: 'ECDSA',
       namedCurve: 'P-256',
-      hash: sdp.toSupportedHashFunction(remoteCerthash.name)
+      hash: sdp.toSupportedHashFunction(remoteCerthash.code)
     } as any)
 
-    const peerConnection = new RTCPeerConnection({ certificates: [certificate] })
+    const peerConnection = new RTCPeerConnection({
+      ...(await getRtcConfiguration(this.init.rtcConfiguration)),
+      certificates: [certificate]
+    })
 
     try {
       // create data channel for running the noise handshake. Once the data channel is opened,
@@ -263,7 +273,7 @@ export class WebRTCDirectTransport implements Transport {
    * Generate a noise prologue from the peer connection's certificate.
    * noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
    */
-  private generateNoisePrologue (pc: RTCPeerConnection, hashCode: multihashes.HashCode, ma: Multiaddr): Uint8Array {
+  private generateNoisePrologue (pc: RTCPeerConnection, hashCode: number, ma: Multiaddr): Uint8Array {
     if (pc.getConfiguration().certificates?.length === 0) {
       throw invalidArgument('no local certificate')
     }
@@ -277,10 +287,10 @@ export class WebRTCDirectTransport implements Transport {
 
     const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')
     const localFpArray = uint8arrayFromString(localFpString, 'hex')
-    const local = multihashes.encode(localFpArray, hashCode)
+    const local = Digest.create(hashCode, localFpArray)
     const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma))
     const prefix = uint8arrayFromString('libp2p-webrtc-noise:')
 
-    return concat([prefix, local, remote])
+    return concat([prefix, local.bytes, remote])
   }
 }

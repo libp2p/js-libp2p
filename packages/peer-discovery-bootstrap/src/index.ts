@@ -7,47 +7,32 @@
  *
  * Clients that need constant connections to bootstrap nodes (e.g. browsers) can set the TTL to `Infinity`.
  *
- * ```JavaScript
+ * @example Configuring a list of bootstrap nodes
+ *
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { bootstrap } from '@libp2p/bootstrap'
- * import { tcp } from 'libp2p/tcp'
- * import { noise } from '@libp2p/noise'
- * import { mplex } from '@libp2p/mplex'
  *
- * let options = {
- *   transports: [
- *     tcp()
- *   ],
- *   streamMuxers: [
- *     mplex()
- *   ],
- *   connectionEncryption: [
- *     noise()
- *   ],
+ * const libp2p = await createLibp2p({
  *   peerDiscovery: [
  *     bootstrap({
- *       list: [ // a list of bootstrap peer multiaddrs to connect to on node startup
- *         "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
- *         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
- *         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa"
- *       ],
- *       timeout: 1000, // in ms,
- *       tagName: 'bootstrap',
- *       tagValue: 50,
- *       tagTTL: 120000 // in ms
+ *       list: [
+ *         // a list of bootstrap peer multiaddrs to connect to on node startup
+ *         '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+ *         '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+ *         '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+ *       ]
  *     })
  *   ]
- * }
+ * })
  *
- * const libp2p = await createLibp2p(options)
- *
- * libp2p.on('peer:discovery', function (peerId) {
- *   console.this.log('found peer: ', peerId.toB58String())
+ * libp2p.addEventListener('peer:discovery', (evt) => {
+ *   console.log('found peer: ', evt.detail.toString())
  * })
  * ```
  */
 
-import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
+import { TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -142,6 +127,10 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
   readonly [peerDiscoverySymbol] = this
 
   readonly [Symbol.toStringTag] = '@libp2p/bootstrap'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/peer-discovery'
+  ]
 
   isStarted (): boolean {
     return Boolean(this.timer)

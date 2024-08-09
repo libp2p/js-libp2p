@@ -5,9 +5,10 @@
  *
  * @example
  *
- * ```js
- * import { createLibp2pNode } from 'libp2p'
- * import { webSockets } from '@libp2p/webrtc-direct'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { webSockets } from '@libp2p/websockets'
+ * import { multiaddr } from '@multiformats/multiaddr'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -16,7 +17,9 @@
  * //... other config
  * })
  * await node.start()
- * await node.dial('/ip4/127.0.0.1/tcp/9090/ws')
+ *
+ * const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+ * await node.dial(ma)
  * ```
  *
  * ## Filters
@@ -36,45 +39,39 @@
  * - `filters.dnsWsOrWss`
  *   - Returns all DNS based addresses, both with `ws` or `wss`.
  *
- * @example
+ * @example Allow dialing insecure WebSockets
  *
- * ```js
- * import { createLibp2pNode } from 'libp2p'
- * import { websockets } from '@libp2p/websockets'
- * import filters from '@libp2p/websockets/filters'
- * import { mplex } from '@libp2p/mplex'
- * import { noise } from '@libp2p/noise'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { webSockets } from '@libp2p/websockets'
+ * import * as filters from '@libp2p/websockets/filters'
  *
- * const transportKey = Websockets.prototype[Symbol.toStringTag]
- * const node = await Libp2p.create({
- *   transport: [
- *     websockets({
+ * const node = await createLibp2p({
+ *   transports: [
+ *     webSockets({
  *       // connect to all sockets, even insecure ones
  *       filter: filters.all
  *     })
- *   ],
- *   streamMuxers: [
- *     mplex()
- *   ],
- *   connectionEncryption: [
- *     noise()
  *   ]
  * })
  * ```
  */
 
-import { AbortError, CodeError } from '@libp2p/interface'
-import { type Transport, type MultiaddrFilter, transportSymbol, type CreateListenerOptions, type DialOptions, type Listener, type AbortOptions, type ComponentLogger, type Logger, type Connection } from '@libp2p/interface'
+import { CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
@@ -87,7 +84,11 @@ export interface WebSocketsComponents {
   logger: ComponentLogger
 }
 
-class WebSockets implements Transport {
+export type WebSocketsDialEvents =
+  OutboundConnectionUpgradeEvents |
+  ProgressEvent<'websockets:open-connection'>
+
+class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
@@ -98,11 +99,15 @@ class WebSockets implements Transport {
     this.init = init
   }
 
-  readonly [Symbol.toStringTag] = '@libp2p/websockets'
-
   readonly [transportSymbol] = true
 
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  readonly [Symbol.toStringTag] = '@libp2p/websockets'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
+
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
@@ -112,15 +117,14 @@ class WebSockets implements Transport {
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
-    const conn = await options.upgrader.upgradeOutbound(maConn)
+    const conn = await options.upgrader.upgradeOutbound(maConn, options)
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: AbortOptions): Promise<DuplexWebSocket> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
+  async _connect (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<DuplexWebSocket> {
+    options?.signal?.throwIfAborted()
+
     const cOpts = ma.toOptions()
     this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
@@ -135,37 +139,16 @@ class WebSockets implements Transport {
       errorPromise.reject(err)
     })
 
-    if (options.signal == null) {
-      await Promise.race([rawSocket.connected(), errorPromise.promise])
-
-      this.log('connected %s', ma)
-      return rawSocket
-    }
-
-    // Allow abort via signal during connect
-    let onAbort
-    const abort = new Promise((resolve, reject) => {
-      onAbort = () => {
-        reject(new AbortError())
-        rawSocket.close().catch(err => {
+    try {
+      options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
+      await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
+    } catch (err: any) {
+      rawSocket.close()
+        .catch(err => {
           this.log.error('error closing raw socket', err)
         })
-      }
 
-      // Already aborted?
-      if (options?.signal?.aborted === true) {
-        onAbort(); return
-      }
-
-      options?.signal?.addEventListener('abort', onAbort)
-    })
-
-    try {
-      await Promise.race([abort, errorPromise.promise, rawSocket.connected()])
-    } finally {
-      if (onAbort != null) {
-        options?.signal?.removeEventListener('abort', onAbort)
-      }
+      throw err
     }
 
     this.log('connected %s', ma)
@@ -191,7 +174,7 @@ class WebSockets implements Transport {
    * By default, in a browser environment only DNS+WSS multiaddr is accepted,
    * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     if (this.init?.filter != null) {
@@ -204,6 +187,13 @@ class WebSockets implements Transport {
     }
 
     return filters.all(multiaddrs)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 }
 

@@ -108,6 +108,8 @@ export class DefaultAddressManager {
     })
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/address-manager'
+
   _updatePeerStoreAddresses (): void {
     // if announce addresses have been configured, ensure they make it into our peer
     // record for things like identify

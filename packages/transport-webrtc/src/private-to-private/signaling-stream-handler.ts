@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import pDefer, { type DeferredPromise } from 'p-defer'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected } from './util.js'
@@ -20,8 +19,6 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
   const messageStream = pbStream(stream).pb(Message)
 
   try {
-    const answerSentPromise: DeferredPromise<void> = pDefer()
-
     // candidate callbacks
     peerConnection.onicecandidate = ({ candidate }) => {
       // a null candidate means end-of-candidates, an empty string candidate
@@ -67,7 +64,6 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
       log.error('could not execute createAnswer', err)
-      answerSentPromise.reject(err)
       throw new CodeError('Failed to create answer', 'ERR_SDP_HANDSHAKE_FAILED')
     })
 
@@ -78,15 +74,10 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       signal
     })
 
-    peerConnection.setLocalDescription(answer).then(() => {
-      answerSentPromise.resolve()
-    }, err => {
+    await peerConnection.setLocalDescription(answer).catch(err => {
       log.error('could not execute setLocalDescription', err)
-      answerSentPromise.reject(err)
       throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
     })
-
-    await answerSentPromise.promise
 
     log.trace('recipient read candidates until connected')
 
@@ -95,11 +86,6 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       direction: 'recipient',
       signal,
       log
-    })
-
-    log.trace('recipient connected, closing signaling stream')
-    await messageStream.unwrap().unwrap().close({
-      signal
     })
   } catch (err: any) {
     if (peerConnection.connectionState !== 'connected') {

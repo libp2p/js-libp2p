@@ -1,12 +1,98 @@
-import { DefaultDualKadDHT } from './dual-kad-dht.js'
+/**
+ * @packageDocumentation
+ *
+ * This module implements the [libp2p Kademlia spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md) in TypeScript.
+ *
+ * The Kademlia DHT allow for several operations such as finding peers, searching for providers of DHT records, etc.
+ *
+ * @example Using with libp2p
+ *
+ * ```TypeScript
+ * import { kadDHT } from '@libp2p/kad-dht'
+ * import { createLibp2p } from 'libp2p'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     dht: kadDHT({
+ *       // DHT options
+ *     })
+ *   }
+ * })
+ *
+ * const peerId = peerIdFromString('QmFoo')
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
+ *
+ * console.info(peerInfo) // peer id, multiaddrs
+ * ```
+ *
+ * @example Connecting to the IPFS Amino DHT
+ *
+ * The [Amino DHT](https://blog.ipfs.tech/2023-09-amino-refactoring/) is a public-good DHT used by IPFS to fetch content, find peers, etc.
+ *
+ * If you are trying to access content on the public internet, this is the implementation you want.
+ *
+ * ```TypeScript
+ * import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+ * import { createLibp2p } from 'libp2p'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     aminoDHT: kadDHT({
+ *       protocol: '/ipfs/kad/1.0.0',
+ *       peerInfoMapper: removePrivateAddressesMapper
+ *     })
+ *   }
+ * })
+ *
+ * const peerId = peerIdFromString('QmFoo')
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
+ *
+ * console.info(peerInfo) // peer id, multiaddrs
+ * ```
+ *
+ * @example Connecting to a LAN-only DHT
+ *
+ * This DHT only works with privately dialable peers.
+ *
+ * This is for use when peers are on the local area network.
+ *
+ * ```TypeScript
+ * import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
+ * import { createLibp2p } from 'libp2p'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     lanDHT: kadDHT({
+ *       protocol: '/ipfs/lan/kad/1.0.0',
+ *       peerInfoMapper: removePublicAddressesMapper,
+ *       clientMode: false
+ *     })
+ *   }
+ * })
+ *
+ * const peerId = peerIdFromString('QmFoo')
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
+ *
+ * console.info(peerInfo) // peer id, multiaddrs
+ * ```
+ */
+
+import { KadDHT as KadDHTClass } from './kad-dht.js'
+import { MessageType } from './message/dht.js'
+import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
 import type { ProvidersInit } from './providers.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
-import type { ProgressOptions, ProgressEvent } from 'progress-events'
+import type { ProgressEvent } from 'progress-events'
 
-export { Libp2pRecord as Record } from './record/index.js'
+export { Libp2pRecord as Record } from '@libp2p/record'
+export { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper }
 
 /**
  * The types of events emitted during DHT queries
@@ -25,14 +111,7 @@ export enum EventTypes {
 /**
  * The types of messages sent to peers during DHT queries
  */
-export enum MessageType {
-  PUT_VALUE = 0,
-  GET_VALUE,
-  ADD_PROVIDER,
-  GET_PROVIDERS,
-  FIND_NODE,
-  PING
-}
+export { MessageType }
 
 export type MessageName = keyof typeof MessageType
 
@@ -51,10 +130,6 @@ export type DHTProgressEvents =
   ProgressEvent<'kad-dht:query:value', ValueEvent> |
   ProgressEvent<'kad-dht:query:add-peer', AddPeerEvent> |
   ProgressEvent<'kad-dht:query:dial-peer', DialPeerEvent>
-
-export interface QueryOptions extends AbortOptions, ProgressOptions {
-  queryFuncTimeout?: number
-}
 
 /**
  * Emitted when sending queries to remote peers
@@ -146,44 +221,49 @@ export interface RoutingTable {
   size: number
 }
 
+export interface PeerInfoMapper {
+  (peer: PeerInfo): PeerInfo
+}
+
 export interface KadDHT {
   /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
-  get(key: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
+  get(key: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find providers of a given CID
    */
-  findProviders(key: CID, options?: QueryOptions): AsyncIterable<QueryEvent>
+  findProviders(key: CID, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find a peer on the DHT
    */
-  findPeer(id: PeerId, options?: QueryOptions): AsyncIterable<QueryEvent>
+  findPeer(id: PeerId, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Find the closest peers to the passed key
    */
-  getClosestPeers(key: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
+  getClosestPeers(key: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Store provider records for the passed CID on the DHT pointing to us
    */
-  provide(key: CID, options?: QueryOptions): AsyncIterable<QueryEvent>
+  provide(key: CID, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Store the passed value under the passed key on the DHT
    */
-  put(key: Uint8Array, value: Uint8Array, options?: QueryOptions): AsyncIterable<QueryEvent>
+  put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
    * Returns the mode this node is in
    */
-  getMode(): Promise<'client' | 'server'>
+  getMode(): 'client' | 'server'
 
   /**
-   * If 'server' this node will respond to DHT queries, if 'client' this node will not
+   * If 'server' this node will respond to DHT queries, if 'client' this node
+   * will not.
    */
   setMode(mode: 'client' | 'server'): Promise<void>
 
@@ -195,11 +275,6 @@ export interface KadDHT {
 
 export interface SingleKadDHT extends KadDHT {
   routingTable: RoutingTable
-}
-
-export interface DualKadDHT extends KadDHT {
-  wan: SingleKadDHT
-  lan: SingleKadDHT
 }
 
 /**
@@ -226,12 +301,47 @@ export type Validators = Record<string, ValidateFn>
 
 export interface KadDHTInit {
   /**
-   * How many peers to store in each kBucket (default 20)
+   * How many peers to store in each kBucket. Once there are more than this
+   * number of peers for a given prefix in a kBucket, the node will start to
+   * ping existing peers to see if they are still online - if they are offline
+   * they will be evicted and the new peer added.
+   *
+   * @default 20
    */
   kBucketSize?: number
 
   /**
-   * Whether to start up as a DHT client or server
+   * The threshold at which a kBucket will be split into two smaller kBuckets.
+   *
+   * KBuckets will not be split once the maximum trie depth is reached
+   * (controlled by the `prefixLength` option) so one can replicate go-libp2p's
+   * accelerated DHT client by (for example) setting `kBucketSize` to `Infinity`
+   * and `kBucketSplitThreshold` to 20.
+   *
+   * @default kBucketSize
+   */
+  kBucketSplitThreshold?: number
+
+  /**
+   * How many bits of the KAD-ID of peers to use when creating the routing
+   * table.
+   *
+   * The routing table is a binary trie with peers stored in the leaf nodes. The
+   * larger this number gets, the taller the trie can grow and the more peers
+   * can be stored.
+   *
+   * Storing more peers means fewer lookups (and network operations) are needed
+   * to locate a certain peer, but also that more memory is consumed.
+   *
+   * @default 32
+   */
+  prefixLength?: number
+
+  /**
+   * If true, only ever be a DHT client. If false, be a DHT client until told
+   * to be a DHT server via `setMode`.
+   *
+   * @default false
    */
   clientMode?: boolean
 
@@ -254,7 +364,9 @@ export interface KadDHTInit {
   /**
    * During startup we run the self-query at a shorter interval to ensure
    * the containing node can respond to queries quickly. Set this interval
-   * here in ms (default: 1000)
+   * here in ms.
+   *
+   * @default 1000
    */
   initialQuerySelfInterval?: number
 
@@ -262,34 +374,55 @@ export interface KadDHTInit {
    * After startup by default all queries will be paused until the initial
    * self-query has run and there are some peers in the routing table.
    *
-   * Pass true here to disable this behaviour. (default: false)
+   * Pass true here to disable this behaviour.
+   *
+   * @default false
    */
   allowQueryWithZeroPeers?: boolean
 
   /**
-   * A custom protocol prefix to use (default: '/ipfs')
+   * The network protocol to use
+   *
+   * @default "/ipfs/kad/1.0.0"
    */
-  protocolPrefix?: string
+  protocol?: string
+
+  /**
+   * The logging prefix to use
+   *
+   * @default "libp2p:kad-dht"
+   */
+  logPrefix?: string
 
   /**
    * How long to wait in ms when pinging DHT peers to decide if they
-   * should be evicted from the routing table or not (default 10000)
+   * should be evicted from the routing table or not.
+   *
+   * @default 10000
    */
   pingTimeout?: number
 
   /**
    * How many peers to ping in parallel when deciding if they should
-   * be evicted from the routing table or not (default 10)
+   * be evicted from the routing table or not
+   *
+   * @default 10
    */
   pingConcurrency?: number
 
   /**
-   * How many parallel incoming streams to allow on the DHT protocol per-connection
+   * How many parallel incoming streams to allow on the DHT protocol per
+   * connection
+   *
+   * @default 32
    */
   maxInboundStreams?: number
 
   /**
-   * How many parallel outgoing streams to allow on the DHT protocol per-connection
+   * How many parallel outgoing streams to allow on the DHT protocol per
+   * connection
+   *
+   * @default 64
    */
   maxOutboundStreams?: number
 
@@ -297,6 +430,17 @@ export interface KadDHTInit {
    * Initialization options for the Providers component
    */
   providers?: ProvidersInit
+
+  /**
+   * For every incoming and outgoing PeerInfo, override address configuration
+   * with this filter.
+   */
+  peerInfoMapper?(peer: PeerInfo): PeerInfo
+
+  /**
+   * Dynamic network timeout settings for sending messages to peers
+   */
+  networkDialTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 }
 
 export interface KadDHTComponents {
@@ -311,6 +455,10 @@ export interface KadDHTComponents {
   logger: ComponentLogger
 }
 
-export function kadDHT (init?: KadDHTInit): (components: KadDHTComponents) => DualKadDHT {
-  return (components: KadDHTComponents) => new DefaultDualKadDHT(components, init)
+/**
+ * Creates a custom DHT implementation, please ensure you pass a `protocol`
+ * string as an option.
+ */
+export function kadDHT (init: KadDHTInit = {}): (components: KadDHTComponents) => KadDHT {
+  return (components: KadDHTComponents) => new KadDHTClass(components, init)
 }

@@ -16,10 +16,10 @@ describe('interface-transport compliance', () => {
         logger: defaultLogger()
       })
       const addrs = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/ws'),
-        multiaddr('/dns4/ipfs.io/tcp/9092/wss')
+        multiaddr('/ip4/127.0.0.1/tcp/9096/ws'),
+        multiaddr('/ip4/127.0.0.1/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9097/ws'),
+        multiaddr('/dns4/ipfs.io/tcp/9097/wss')
       ]
 
       let delayMs = 0
@@ -56,7 +56,7 @@ describe('interface-transport compliance', () => {
         restore () { delayMs = 0 }
       }
 
-      return { transport: wsProxy, addrs, connector }
+      return { dialer: wsProxy, listener: wsProxy, listenAddrs: addrs, dialAddrs: addrs, connector }
     },
     async teardown () {}
   })

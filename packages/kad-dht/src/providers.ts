@@ -15,13 +15,20 @@ import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats'
 
 export interface ProvidersInit {
+  /**
+   * @default 256
+   */
   cacheSize?: number
   /**
    * How often invalid records are cleaned. (in seconds)
+   *
+   * @default 5400
    */
   cleanupInterval?: number
   /**
    * How long is a provider valid for. (in seconds)
+   *
+   * @default 86400
    */
   provideValidity?: number
 }

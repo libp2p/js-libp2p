@@ -3,7 +3,16 @@
  *
  * Use the `identify` function to add support for the [Identify protocol](https://github.com/libp2p/specs/blob/master/identify/README.md) to libp2p.
  *
- * @example
+ * This protocol allows network peers to discover the multiaddrs the current node listens on, and the protocols it supports.
+ *
+ * A second function, `identifyPush` is also exported to add support for [identify/push](https://github.com/libp2p/specs/blob/master/identify/README.md#identifypush).
+ *
+ * This protocol will send updates to all connected peers when the multiaddrs or protocols of the current node change.
+ *
+ * > [!TIP]
+ * > For maximum network compatibility you should configure both protocols
+ *
+ * @example Enabling identify
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
@@ -16,19 +25,32 @@
  *   }
  * })
  * ```
+ *
+ * @example Enabling identify push
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { identifyPush } from '@libp2p/identify'
+ *
+ * const node = await createLibp2p({
+ *   // ...other options
+ *   services: {
+ *     identifyPush: identifyPush()
+ *   }
+ * })
+ * ```
  */
 
-import {
-  MULTICODEC_IDENTIFY,
-  MULTICODEC_IDENTIFY_PUSH
-} from './consts.js'
+import { IdentifyPush as IdentifyPushClass } from './identify-push.js'
 import { Identify as IdentifyClass } from './identify.js'
 import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface IdentifyInit {
   /**
-   * The prefix to use for the protocol (default: 'ipfs')
+   * The prefix to use for the protocol
+   *
+   * @default 'ipfs'
    */
   protocolPrefix?: string
 
@@ -39,36 +61,73 @@ export interface IdentifyInit {
 
   /**
    * How long we should wait for a remote peer to send their identify response
+   *
+   * @default 5000
    */
   timeout?: number
 
   /**
-   * Identify responses larger than this in bytes will be rejected (default: 8192)
+   * Identify responses larger than this in bytes will be rejected
+   *
+   * @default 8192
    */
-  maxIdentifyMessageSize?: number
+  maxMessageSize?: number
 
+  /**
+   * The maximum number of inbound streams that may be open on a single
+   * connection for this protocol
+   *
+   * @default 1
+   */
   maxInboundStreams?: number
+
+  /**
+   * The maximum number of outbound streams that may be open on a single
+   * connection for this protocol
+   *
+   * @default 1
+   */
   maxOutboundStreams?: number
 
-  maxPushIncomingStreams?: number
-  maxPushOutgoingStreams?: number
+  /**
+   * The maximum number of observed addresses to send in an Identify message
+   */
   maxObservedAddresses?: number
 
   /**
-   * Whether to automatically dial identify on newly opened connections (default: true)
-   */
-  runOnConnectionOpen?: boolean
-
-  /**
-   * Whether to run on connections with data or duration limits (default: true)
+   * Whether to run on connections with data or duration limits
+   *
+   * @default true
    */
   runOnTransientConnection?: boolean
+
+  /**
+   * Whether to automatically run identify on newly opened connections
+   *
+   * @default true
+   */
+  runOnConnectionOpen?: boolean
+}
+
+export interface IdentifyPushInit extends Omit<IdentifyInit, 'runOnConnectionOpen'> {
+  /**
+   * Whether to automatically dial identify-push on self updates
+   *
+   * @default true
+   */
+  runOnSelfUpdate?: boolean
+
+  /**
+   * Push to this many connections in parallel
+   *
+   * @default 32
+   */
+  concurrency?: number
 }
 
 export interface IdentifyComponents {
   peerId: PeerId
   peerStore: PeerStore
-  connectionManager: ConnectionManager
   registrar: Registrar
   addressManager: AddressManager
   events: TypedEventTarget<Libp2pEvents>
@@ -76,12 +135,8 @@ export interface IdentifyComponents {
   nodeInfo: NodeInfo
 }
 
-/**
- * The protocols the Identify service supports
- */
-export const multicodecs = {
-  IDENTIFY: MULTICODEC_IDENTIFY,
-  IDENTIFY_PUSH: MULTICODEC_IDENTIFY_PUSH
+export interface IdentifyPushComponents extends IdentifyComponents {
+  connectionManager: ConnectionManager
 }
 
 export interface Identify {
@@ -93,10 +148,16 @@ export interface Identify {
    * you may be better off configuring a topology to be notified instead.
    */
   identify(connection: Connection, options?: AbortOptions): Promise<IdentifyResult>
+}
 
+export interface IdentifyPush {
   push(): Promise<void>
 }
 
 export function identify (init: IdentifyInit = {}): (components: IdentifyComponents) => Identify {
   return (components) => new IdentifyClass(components, init)
+}
+
+export function identifyPush (init: IdentifyPushInit = {}): (components: IdentifyPushComponents) => IdentifyPush {
+  return (components) => new IdentifyPushClass(components, init)
 }

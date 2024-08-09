@@ -11,25 +11,28 @@
  *
  * @example Configuring libp2p to use floodsub
  *
- * ```JavaScript
- * import { createLibp2pNode } from 'libp2p'
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
  * import { floodsub } from '@libp2p/floodsub'
  *
- * const node = await createLibp2pNode({
- *   pubsub: floodsub()
+ * const node = await createLibp2p({
+ *   services: {
+ *     pubsub: floodsub()
+ *   }
  *   //... other options
  * })
  * await node.start()
  *
- * node.pubsub.subscribe('fruit')
- * node.pubsub.addEventListener('message', (evt) => {
- *   console.this.log(evt)
+ * node.services.pubsub.subscribe('fruit')
+ * node.services.pubsub.addEventListener('message', (evt) => {
+ *   console.log(evt)
  * })
  *
- * node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+ * node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
  * ```
  */
 
+import { serviceDependencies } from '@libp2p/interface'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
@@ -74,6 +77,12 @@ export class FloodSub extends PubSubBaseProtocol {
       validityMs: init?.seenTTL ?? 30000
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/floodsub'
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
 
   /**
    * Decode a Uint8Array into an RPC object

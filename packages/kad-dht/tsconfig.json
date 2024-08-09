@@ -34,6 +34,12 @@
     },
     {
       "path": "../peer-store"
+    },
+    {
+      "path": "../record"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

@@ -8,13 +8,13 @@ import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
 import { identify } from '@libp2p/identify'
-import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
-import { interopTests } from '@libp2p/interop'
-import { kadDHT } from '@libp2p/kad-dht'
+import { UnsupportedError, interopTests } from '@libp2p/interop'
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
+import { tls } from '@libp2p/tls'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -46,11 +46,19 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {
-    opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'webtransport') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
+    } else if (options.transport === 'webrtc-direct') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct')
+    } else {
+      throw new UnsupportedError()
+    }
   }
 
-  if (options.noise === true) {
-    opts.push('-noise=true')
+  if (options.encryption != null) {
+    opts.push(`-${options.encryption}=true`)
   }
 
   if (options.dht === true) {
@@ -122,7 +130,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions<ServiceMap> = {
     peerId,
     addresses: {
-      listen: options.noListen === true ? [] : ['/ip4/127.0.0.1/tcp/0']
+      listen: []
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
@@ -132,8 +140,26 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     }
   }
 
+  if (options.noListen !== true) {
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
+    } else {
+      throw new UnsupportedError()
+    }
+  }
+
+  if (options.transport === 'webtransport' || options.transport === 'webrtc-direct') {
+    throw new UnsupportedError()
+  }
+
   const services: ServiceFactoryMap = {
     identify: identify()
+  }
+
+  if (options.encryption === 'noise') {
+    opts.connectionEncryption?.push(noise())
+  } else if (options.encryption === 'tls') {
+    opts.connectionEncryption?.push(tls())
   }
 
   if (options.muxer === 'mplex') {
@@ -155,41 +181,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   if (options.dht === true) {
-    services.dht = (components: any) => {
-      const dht: any = kadDHT({
-        clientMode: false
-      })(components)
-
-      // go-libp2p-daemon only has the older single-table DHT instead of the dual
-      // lan/wan version found in recent go-ipfs versions. unfortunately it's been
-      // abandoned so here we simulate the older config with the js implementation
-      const lan: any = dht.lan
-
-      const protocol = '/ipfs/kad/1.0.0'
-      lan.protocol = protocol
-      lan.network.protocol = protocol
-      lan.topologyListener.protocol = protocol
-
-      Object.defineProperties(lan, {
-        [contentRoutingSymbol]: {
-          get () {
-            return dht[contentRoutingSymbol]
-          }
-        },
-        [peerRoutingSymbol]: {
-          get () {
-            return dht[peerRoutingSymbol]
-          }
-        },
-        [peerDiscoverySymbol]: {
-          get () {
-            return dht[peerDiscoverySymbol]
-          }
-        }
-      })
-
-      return lan
-    }
+    services.dht = kadDHT({
+      protocol: '/ipfs/kad/1.0.0',
+      peerInfoMapper: passthroughMapper,
+      clientMode: false
+    })
   }
 
   const node: any = await createLibp2p({

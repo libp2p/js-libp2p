@@ -1,4 +1,4 @@
-import type { AbortOptions } from '../index.js'
+import type { RoutingOptions } from '../index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { PeerInfo } from '../peer-info/index.js'
 
@@ -9,7 +9,7 @@ import type { PeerInfo } from '../peer-info/index.js'
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * import { peerRouting, PeerRouting } from '@libp2p/peer-routing'
  *
  * class MyPeerRouter implements PeerRouting {
@@ -23,18 +23,26 @@ import type { PeerInfo } from '../peer-info/index.js'
  */
 export const peerRoutingSymbol = Symbol.for('@libp2p/peer-routing')
 
+/**
+ * Implementers of this interface can provide a PeerRouting implementation to
+ * interested callers.
+ */
+export interface PeerRoutingProvider {
+  [peerRoutingSymbol]: PeerRouting
+}
+
 export interface PeerRouting {
   /**
    * Searches the network for peer info corresponding to the passed peer id.
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // ...
    * const peer = await peerRouting.findPeer(peerId, options)
    * ```
    */
-  findPeer(peerId: PeerId, options?: AbortOptions): Promise<PeerInfo>
+  findPeer(peerId: PeerId, options?: RoutingOptions): Promise<PeerInfo>
 
   /**
    * Search the network for peers that are closer to the passed key. Peer
@@ -42,12 +50,12 @@ export interface PeerRouting {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * // Iterate over the closest peers found for the given key
    * for await (const peer of peerRouting.getClosestPeers(key)) {
    *   console.log(peer.id, peer.multiaddrs)
    * }
    * ```
    */
-  getClosestPeers(key: Uint8Array, options?: AbortOptions): AsyncIterable<PeerInfo>
+  getClosestPeers(key: Uint8Array, options?: RoutingOptions): AsyncIterable<PeerInfo>
 }

@@ -1,18 +1,19 @@
 import { peerIdFromBytes } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { Key } from 'interface-datastore/key'
 import { sha256 } from 'multiformats/hashes/sha2'
-import isPrivateIp from 'private-ip'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { RECORD_KEY_PREFIX } from './constants.js'
-import { Libp2pRecord } from './record/index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 const PK_PREFIX = uint8ArrayFromString('/pk/')
 
-export function removePrivateAddresses (peer: PeerInfo): PeerInfo {
+export function removePrivateAddressesMapper (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
@@ -48,7 +49,7 @@ export function removePrivateAddresses (peer: PeerInfo): PeerInfo {
   }
 }
 
-export function removePublicAddresses (peer: PeerInfo): PeerInfo {
+export function removePublicAddressesMapper (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
@@ -76,6 +77,10 @@ export function removePublicAddresses (peer: PeerInfo): PeerInfo {
       return isPrivate
     })
   }
+}
+
+export function passthroughMapper (info: PeerInfo): PeerInfo {
+  return info
 }
 
 /**
@@ -147,4 +152,38 @@ export function debounce (callback: () => void, wait: number = 100): () => void 
     clearTimeout(timeout)
     timeout = setTimeout(() => { callback() }, wait)
   }
+}
+
+// see https://github.com/multiformats/multiaddr/blob/master/protocols.csv
+const P2P_CIRCUIT_CODE = 290
+const DNS4_CODE = 54
+const DNS6_CODE = 55
+const DNSADDR_CODE = 56
+const IP4_CODE = 4
+const IP6_CODE = 41
+
+export function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
+  const tuples = multiaddr.stringTuples()
+
+  // p2p-circuit should not enable server mode
+  for (const tuple of tuples) {
+    if (tuple[0] === P2P_CIRCUIT_CODE) {
+      return false
+    }
+  }
+
+  // dns4 or dns6 or dnsaddr
+  if (tuples[0][0] === DNS4_CODE || tuples[0][0] === DNS6_CODE || tuples[0][0] === DNSADDR_CODE) {
+    return true
+  }
+
+  // ip4 or ip6
+  if (tuples[0][0] === IP4_CODE || tuples[0][0] === IP6_CODE) {
+    const result = isPrivateIp(`${tuples[0][1]}`)
+    const isPublic = result == null || !result
+
+    return isPublic
+  }
+
+  return false
 }

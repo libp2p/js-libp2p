@@ -30,6 +30,21 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 Use the `createLibp2p` function to create a libp2p node.
 
 ## Example
@@ -71,15 +86,15 @@ It is complementary to the overarching libp2p project roadmap: <https://github.c
 
 ### Configuration
 
-For all the information on how you can configure libp2p see [CONFIGURATION.md](./doc/CONFIGURATION.md).
+For all the information on how you can configure libp2p see [CONFIGURATION.md](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md).
 
 ## Limits
 
-For help configuring your node to resist malicious network peers, see [LIMITS.md](./doc/LIMITS.md)
+For help configuring your node to resist malicious network peers, see [LIMITS.md](https://github.com/libp2p/js-libp2p/blob/main/doc/LIMITS.md)
 
 ## Getting started
 
-If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](./doc/GETTING_STARTED.md) guide.
+If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide.
 
 ## Tutorials and Examples
 
@@ -163,6 +178,7 @@ List of packages currently in existence for libp2p
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia logo" width="150" /></a>
     <a href="https://github.com/orbitdb/orbitdb"><img src="https://avatars.githubusercontent.com/u/25079463?s=200&v=4" alt="OrbitDB logo" width="150" /></a>
     <a href="https://waku.org/"><img src="https://avatars.githubusercontent.com/u/107703624?s=200&v=4" alt="Waku" width="150" /></a>
+    <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
   </p>
 </div>
 
@@ -184,8 +200,8 @@ The libp2p implementation in JavaScript is a work in progress. As such, there ar
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

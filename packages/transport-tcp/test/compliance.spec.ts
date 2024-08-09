@@ -38,7 +38,7 @@ describe('interface-transport compliance', () => {
         }
       }
 
-      return { transport, addrs, connector }
+      return { dialer: transport, listener: transport, listenAddrs: addrs, dialAddrs: addrs, connector }
     },
     async teardown () {}
   })

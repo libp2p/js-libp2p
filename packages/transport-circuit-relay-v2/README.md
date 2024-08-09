@@ -1,3 +1,5 @@
+# @libp2p/circuit-relay-v2
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,10 +9,27 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
 addresses.
 
-## Example
+## Example - Use as a transport
+
+Configuring a transport will let you dial other circuit relay addresses.
 
 ```typescript
 import { createLibp2p } from 'libp2p'
@@ -26,16 +45,19 @@ const node = await createLibp2p({
 The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
 server.  This will not work in browsers.
 
-## Example
+## Example - Use as a server
+
+Configuring a server will let you function as a network relay for other
+nodes.
 
 ```typescript
 import { createLibp2p } from 'libp2p'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
-  services: [
+  services: {
     circuitRelay: circuitRelayServer()
-  ]
+  }
 })
 ```
 
@@ -61,8 +83,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-circuit-relay-v2/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/transport-circuit-relay-v2/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

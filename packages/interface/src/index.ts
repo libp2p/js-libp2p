@@ -16,7 +16,7 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { TypedEventTarget } from './events.js'
+import type { TypedEventTarget } from './event-target.js'
 import type { Metrics } from './metrics/index.js'
 import type { PeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -25,8 +25,9 @@ import type { Address, Peer, PeerStore } from './peer-store/index.js'
 import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index.js'
 import type { Topology } from './topology/index.js'
-import type { Listener } from './transport/index.js'
+import type { Listener, OutboundConnectionUpgradeEvents } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -135,7 +136,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:discovery', (event) => {
    *    const peerInfo = event.detail
    *    // ...
@@ -149,7 +150,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:connect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -165,7 +166,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:disconnect', (event) => {
    *   const peerId = event.detail
    *   // ...
@@ -181,7 +182,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('peer:identify', (event) => {
    *   const identifyResult = event.detail
    *   // ...
@@ -209,7 +210,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('self:peer:update', (event) => {
    *   const { peer } = event.detail
    *   // ...
@@ -250,7 +251,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has started
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('start', (event) => {
    *   console.info(libp2p.isStarted()) // true
    * })
@@ -261,7 +262,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that the node has stopped
    *
-   * ```js
+   * ```TypeScript
    * libp2p.addEventListener('stop', (event) => {
    *   console.info(libp2p.isStarted()) // false
    * })
@@ -276,7 +277,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const node = await createLibp2p({
  *   // ...other options
  *   services: {
@@ -323,6 +324,36 @@ export interface PendingDial {
 
 export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
 
+export interface IsDialableOptions extends AbortOptions {
+  /**
+   * If the dial attempt would open a protocol, and the multiaddr being dialed
+   * is a circuit relay address, passing true here would cause the test to fail
+   * because that protocol would not be allowed to run over a data/time limited
+   * connection.
+   */
+  runOnTransientConnection?: boolean
+}
+
+export type TransportManagerDialProgressEvents =
+  ProgressEvent<'transport-manager:selected-transport', string>
+
+export type OpenConnectionProgressEvents =
+  TransportManagerDialProgressEvents |
+  ProgressEvent<'dial-queue:already-connected'> |
+  ProgressEvent<'dial-queue:already-in-dial-queue'> |
+  ProgressEvent<'dial-queue:add-to-dial-queue'> |
+  ProgressEvent<'dial-queue:start-dial'> |
+  ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
+  OutboundConnectionUpgradeEvents
+
+export interface DialOptions extends AbortOptions, ProgressOptions {
+
+}
+
+export interface DialProtocolOptions extends NewStreamOptions {
+
+}
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -335,7 +366,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * console.info(libp2p.peerId)
    * // PeerId(12D3Foo...)
    * ````
@@ -348,7 +379,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peer = await libp2p.peerStore.get(peerId)
    * console.info(peer)
    * // { id: PeerId(12D3Foo...), addresses: [] ... }
@@ -362,7 +393,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const peerInfo = await libp2p.peerRouting.findPeer(peerId)
    * console.info(peerInfo)
    * // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -370,7 +401,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.peerRouting.getClosestPeers(key)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -386,7 +417,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for await (const peerInfo of libp2p.contentRouting.findProviders(cid)) {
    *   console.info(peerInfo)
    *   // { id: PeerId(12D3Foo...), multiaddrs: [] ... }
@@ -401,7 +432,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const metric = libp2p.metrics.registerMetric({
    *   'my-metric'
    * })
@@ -432,7 +463,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const listenMa = libp2p.getMultiaddrs()
    * // [ <Multiaddr 047f00000106f9ba - /ip4/127.0.0.1/tcp/63930> ]
    * ```
@@ -444,7 +475,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const protocols = libp2p.getProtocols()
    * // [ '/ipfs/ping/1.0.0', '/ipfs/id/1.0.0' ]
    * ```
@@ -457,7 +488,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const connection of libp2p.getConnections()) {
    *   console.log(peerId, connection.remoteAddr.toString())
    *   // Logs the PeerId string and the observed remote multiaddr of each Connection
@@ -471,7 +502,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * for (const pendingDial of libp2p.getDialQueue()) {
    *   console.log(pendingDial)
    * }
@@ -492,11 +523,11 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
-   * const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
+   * const stream = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
    *
    * // protocol negotiated: 'echo/1.0.0' means that the other party only supports the older version
    *
@@ -504,7 +535,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * await conn.close()
    * ```
    */
-  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection>
+  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: DialOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -513,7 +544,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * import { pipe } from 'it-pipe'
    *
    * const { stream, protocol } = await libp2p.dialProtocol(remotePeerId, protocols)
@@ -522,7 +553,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
+  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
@@ -533,7 +564,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * await libp2p.hangUp(remotePeerId)
    * ```
    */
@@ -548,7 +579,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const handler = ({ connection, stream, protocol }) => {
    *   // use stream or connection according to the needs
    * }
@@ -567,7 +598,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
@@ -579,7 +610,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register('/echo/1.0.0', {
    *   onConnect: (peer, connection) => {
    *     // handle connect
@@ -598,7 +629,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const id = await libp2p.register(...)
    *
    * libp2p.unregister(id)
@@ -607,11 +638,22 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   unregister(id: string): void
 
   /**
-   * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA' type
-   * this may mean searching the DHT if the key is not present in the KeyStore.
-   * A set of user defined services
+   * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'
+   * type this may mean searching the routing if the peer's key is not present
+   * in the peer store.
    */
   getPublicKey(peer: PeerId, options?: AbortOptions): Promise<Uint8Array>
+
+  /**
+   * Given the current node configuration, returns a promise of `true` or
+   * `false` if the node would attempt to dial the passed multiaddr.
+   *
+   * This means a relevant transport is configured, and the connection gater
+   * would not block the dial attempt.
+   *
+   * This may involve resolving DNS addresses so you should pass an AbortSignal.
+   */
+  isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
 
   /**
    * A set of user defined services
@@ -640,7 +682,7 @@ export interface NodeInfo {
  *
  * @example
  *
- * ```js
+ * ```TypeScript
  * const controller = new AbortController()
  *
  * aLongRunningOperation({
@@ -663,13 +705,44 @@ export interface LoggerOptions {
 }
 
 /**
- * Returns a new type with all fields marked optional.
- *
- * Borrowed from the tsdef module.
+ * When a routing operation involves reading values, these options allow
+ * controlling where the values are read from. By default libp2p will check
+ * local caches but may not use the network if a valid local value is found,
+ * these options allow tuning that behaviour.
  */
-export type RecursivePartial<T> = {
-  [P in keyof T]?: T[P] extends Array<infer I> ? Array<RecursivePartial<I>> : T[P] extends (...args: any[]) => any ? T[P] : RecursivePartial<T[P]>
+export interface RoutingOptions extends AbortOptions, ProgressOptions {
+  /**
+   * Pass `false` to not use the network
+   *
+   * @default true
+   */
+  useNetwork?: boolean
+
+  /**
+   * Pass `false` to not use cached values
+   *
+   * @default true
+   */
+  useCache?: boolean
 }
+
+/**
+ * This symbol is used by libp2p services to define the capabilities they can
+ * provide to other libp2p services.
+ *
+ * The service should define a property with this symbol as the key and the
+ * value should be a string array of provided capabilities.
+ */
+export const serviceCapabilities = Symbol.for('@libp2p/service-capabilities')
+
+/**
+ * This symbol is used by libp2p services to define the capabilities they
+ * require from other libp2p services.
+ *
+ * The service should define a property with this symbol as the key and the
+ * value should be a string array of required capabilities.
+ */
+export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
 
 export * from './connection/index.js'
 export * from './connection-encrypter/index.js'
@@ -690,5 +763,6 @@ export * from './stream-muxer/index.js'
 export * from './topology/index.js'
 export * from './transport/index.js'
 export * from './errors.js'
+export * from './event-target.js'
 export * from './events.js'
 export * from './startable.js'

@@ -1,21 +1,24 @@
+import { PeerSet } from '@libp2p/peer-collections'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import { ALPHA } from '../constants.js'
-import { Message, MESSAGE_TYPE } from '../message/index.js'
+import { MessageType } from '../message/dht.js'
+import { toPbPeerInfo } from '../message/utils.js'
 import {
   queryErrorEvent,
   peerResponseEvent,
   providerEvent
 } from '../query/events.js'
-import type { KadDHTComponents, PeerResponseEvent, ProviderEvent, QueryEvent, QueryOptions } from '../index.js'
+import type { KadDHTComponents, PeerResponseEvent, ProviderEvent, QueryEvent } from '../index.js'
+import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { Providers } from '../providers.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { Logger, PeerInfo } from '@libp2p/interface'
+import type { Logger, PeerInfo, RoutingOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
@@ -25,7 +28,7 @@ export interface ContentRoutingInit {
   queryManager: QueryManager
   routingTable: RoutingTable
   providers: Providers
-  lan: boolean
+  logPrefix: string
 }
 
 export class ContentRouting {
@@ -38,10 +41,10 @@ export class ContentRouting {
   private readonly providers: Providers
 
   constructor (components: KadDHTComponents, init: ContentRoutingInit) {
-    const { network, peerRouting, queryManager, routingTable, providers, lan } = init
+    const { network, peerRouting, queryManager, routingTable, providers, logPrefix } = init
 
     this.components = components
-    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-routing`)
+    this.log = components.logger.forComponent(`${logPrefix}:content-routing`)
     this.network = network
     this.peerRouting = peerRouting
     this.queryManager = queryManager
@@ -53,17 +56,23 @@ export class ContentRouting {
    * Announce to the network that we can provide the value for a given key and
    * are contactable on the given multiaddrs
    */
-  async * provide (key: CID, multiaddrs: Multiaddr[], options: QueryOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
+  async * provide (key: CID, multiaddrs: Multiaddr[], options: RoutingOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     this.log('provide %s', key)
+    const target = key.multihash.bytes
 
     // Add peer as provider
     await this.providers.addProvider(key, this.components.peerId)
 
-    const msg = new Message(MESSAGE_TYPE.ADD_PROVIDER, key.multihash.bytes, 0)
-    msg.providerPeers = [{
-      id: this.components.peerId,
-      multiaddrs
-    }]
+    const msg: Partial<Message> = {
+      type: MessageType.ADD_PROVIDER,
+      key: target,
+      providers: [
+        toPbPeerInfo({
+          id: this.components.peerId,
+          multiaddrs
+        })
+      ]
+    }
 
     let sent = 0
 
@@ -99,7 +108,7 @@ export class ContentRouting {
 
     // Notify closest peers
     yield * pipe(
-      this.peerRouting.getClosestPeers(key.multihash.bytes, options),
+      this.peerRouting.getClosestPeers(target, options),
       (source) => map(source, (event) => maybeNotifyPeer(event)),
       (source) => parallel(source, {
         ordered: false,
@@ -118,8 +127,9 @@ export class ContentRouting {
   /**
    * Search the dht for up to `K` providers of the given CID.
    */
-  async * findProviders (key: CID, options: QueryOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
+  async * findProviders (key: CID, options: RoutingOptions): AsyncGenerator<PeerResponseEvent | ProviderEvent | QueryEvent> {
     const toFind = this.routingTable.kBucketSize
+    let found = 0
     const target = key.multihash.bytes
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
@@ -148,20 +158,24 @@ export class ContentRouting {
         }
       }
 
-      yield peerResponseEvent({ from: this.components.peerId, messageType: MESSAGE_TYPE.GET_PROVIDERS, providers }, options)
+      yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers }, options)
       yield providerEvent({ from: this.components.peerId, providers }, options)
-    }
 
-    // All done
-    if (provs.length >= toFind) {
-      return
+      found += providers.length
+
+      if (found >= toFind) {
+        return
+      }
     }
 
     /**
      * The query function to use on this particular disjoint path
      */
     const findProvidersQuery: QueryFunc = async function * ({ peer, signal }) {
-      const request = new Message(MESSAGE_TYPE.GET_PROVIDERS, target, 0)
+      const request = {
+        type: MessageType.GET_PROVIDERS,
+        key: target
+      }
 
       yield * self.network.sendRequest(peer, request, {
         ...options,
@@ -169,7 +183,7 @@ export class ContentRouting {
       })
     }
 
-    const providers = new Set(provs.map(p => p.toString()))
+    const providers = new PeerSet(provs)
 
     for await (const event of this.queryManager.run(target, findProvidersQuery, options)) {
       yield event
@@ -180,20 +194,22 @@ export class ContentRouting {
         const newProviders = []
 
         for (const peer of event.providers) {
-          if (providers.has(peer.id.toString())) {
+          if (providers.has(peer.id)) {
             continue
           }
 
-          providers.add(peer.id.toString())
+          providers.add(peer.id)
           newProviders.push(peer)
         }
 
         if (newProviders.length > 0) {
           yield providerEvent({ from: event.from, providers: newProviders }, options)
-        }
 
-        if (providers.size === toFind) {
-          return
+          found += newProviders.length
+
+          if (found >= toFind) {
+            return
+          }
         }
       }
     }

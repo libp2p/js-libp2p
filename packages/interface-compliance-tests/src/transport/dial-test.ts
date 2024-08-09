@@ -1,4 +1,4 @@
-import { AbortError, TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
@@ -17,10 +17,12 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('dial', () => {
     let upgrader: Upgrader
     let registrar: Registrar
-    let addrs: Multiaddr[]
-    let transport: Transport
+    let listenAddrs: Multiaddr[]
+    let dialAddrs: Multiaddr[]
+    let dialer: Transport
+    let listener: Transport
     let connector: Connector
-    let listener: Listener
+    let listen: Listener
 
     before(async () => {
       registrar = mockRegistrar()
@@ -29,7 +31,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         events: new TypedEventEmitter()
       });
 
-      ({ addrs, transport, connector } = await common.setup())
+      ({ listenAddrs, dialAddrs, dialer, listener, connector } = await common.setup())
     })
 
     after(async () => {
@@ -37,16 +39,16 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     beforeEach(async () => {
-      listener = transport.createListener({
+      listen = listener.createListener({
         upgrader
       })
-      await listener.listen(addrs[0])
+      await listen.listen(listenAddrs[0])
     })
 
     afterEach(async () => {
       sinon.restore()
       connector.restore()
-      await listener.close()
+      await listen.close()
     })
 
     it('simple', async () => {
@@ -61,7 +63,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
-      const conn = await transport.dial(addrs[0], {
+      const conn = await dialer.dial(dialAddrs[0], {
         upgrader
       })
 
@@ -77,7 +79,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
     it('can close connections', async () => {
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
-      const conn = await transport.dial(addrs[0], {
+      const conn = await dialer.dial(dialAddrs[0], {
         upgrader
       })
 
@@ -90,7 +92,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     it('to non existent listener', async () => {
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
 
-      await expect(transport.dial(addrs[1], {
+      await expect(dialer.dial(dialAddrs[1], {
         upgrader
       })).to.eventually.be.rejected()
       expect(upgradeSpy.callCount).to.equal(0)
@@ -100,9 +102,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const upgradeSpy = sinon.spy(upgrader, 'upgradeOutbound')
       const controller = new AbortController()
       controller.abort()
-      const conn = transport.dial(addrs[0], { signal: controller.signal, upgrader })
+      const conn = dialer.dial(dialAddrs[0], { signal: controller.signal, upgrader })
 
-      await expect(conn).to.eventually.be.rejected().with.property('code', AbortError.code)
+      await expect(conn).to.eventually.be.rejected().with.property('name', 'AbortError')
       expect(upgradeSpy.callCount).to.equal(0)
     })
 
@@ -113,10 +115,10 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       connector.delay(100)
 
       const controller = new AbortController()
-      const conn = transport.dial(addrs[0], { signal: controller.signal, upgrader })
+      const conn = dialer.dial(dialAddrs[0], { signal: controller.signal, upgrader })
       setTimeout(() => { controller.abort() }, 50)
 
-      await expect(conn).to.eventually.be.rejected().with.property('code', AbortError.code)
+      await expect(conn).to.eventually.be.rejected().with.property('name', 'AbortError')
       expect(upgradeSpy.callCount).to.equal(0)
     })
   })

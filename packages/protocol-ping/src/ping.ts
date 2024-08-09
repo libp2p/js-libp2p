@@ -32,6 +32,8 @@ export class PingService implements Startable, PingServiceInterface {
     this.handleMessage = this.handleMessage.bind(this)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/ping'
+
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,

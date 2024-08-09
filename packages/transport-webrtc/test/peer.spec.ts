@@ -15,29 +15,33 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger, Connection, Stream } from '@libp2p/interface'
+import type { Logger, Connection, Stream, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 
 const browser = detect()
 
+interface Initiator {
+  multiaddr: Multiaddr
+  connectionManager: StubbedInstance<ConnectionManager>
+  transportManager: StubbedInstance<TransportManager>
+  connection: StubbedInstance<Connection>
+  stream: Stream
+  log: Logger
+  logger: ComponentLogger
+}
+
+interface Recipient {
+  peerConnection: RTCPeerConnection
+  connection: StubbedInstance<Connection>
+  abortController: AbortController
+  signal: AbortSignal
+  stream: Stream
+  log: Logger
+}
+
 interface PrivateToPrivateComponents {
-  initiator: {
-    multiaddr: Multiaddr
-    peerConnection: RTCPeerConnection
-    connectionManager: StubbedInstance<ConnectionManager>
-    transportManager: StubbedInstance<TransportManager>
-    connection: StubbedInstance<Connection>
-    stream: Stream
-    log: Logger
-  }
-  recipient: {
-    peerConnection: RTCPeerConnection
-    connection: StubbedInstance<Connection>
-    abortController: AbortController
-    signal: AbortSignal
-    stream: Stream
-    log: Logger
-  }
+  initiator: Initiator
+  recipient: Recipient
 }
 
 async function getComponents (): Promise<PrivateToPrivateComponents> {
@@ -63,12 +67,12 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
   return {
     initiator: {
       multiaddr: receiverMultiaddr,
-      peerConnection: new RTCPeerConnection(),
       connectionManager: stubInterface<ConnectionManager>(),
       transportManager: stubInterface<TransportManager>(),
       connection: stubInterface<Connection>(),
       stream: initiatorStream,
-      log: logger('test')
+      log: logger('test'),
+      logger: defaultLogger()
     },
     recipient: {
       peerConnection: new RTCPeerConnection(),
@@ -85,9 +89,17 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
 
 describe('webrtc basic', () => {
   const isFirefox = ((browser != null) && browser.name === 'firefox')
+  let initiator: Initiator
+  let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
+
+  afterEach(() => {
+    initiatorPeerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
 
   it('should connect', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // no existing connection
     initiator.connectionManager.getConnections.returns([])
@@ -95,10 +107,10 @@ describe('webrtc basic', () => {
     // transport manager dials recipient
     initiator.transportManager.dial.resolves(initiator.connection)
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
-    await expect(
+    ;[{ peerConnection: initiatorPeerConnection }] = await expect(
       Promise.all([
         initiateConnection(initiator),
         handleIncomingStream(recipient)
@@ -107,21 +119,18 @@ describe('webrtc basic', () => {
 
     await pRetry(async () => {
       if (isFirefox) {
-        expect(initiator.peerConnection.iceConnectionState).eq('connected')
+        expect(initiatorPeerConnection.iceConnectionState).eq('connected')
         expect(recipient.peerConnection.iceConnectionState).eq('connected')
         return
       }
-      expect(initiator.peerConnection.connectionState).eq('connected')
+      expect(initiatorPeerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })
-
-    initiator.peerConnection.close()
-    recipient.peerConnection.close()
   })
 
   it('should survive aborting during connection', async () => {
+    ({ initiator, recipient } = await getComponents())
     const abortController = new AbortController()
-    const { initiator, recipient } = await getComponents()
 
     // no existing connection
     initiator.connectionManager.getConnections.returns([])
@@ -129,18 +138,14 @@ describe('webrtc basic', () => {
     // transport manager dials recipient
     initiator.transportManager.dial.resolves(initiator.connection)
 
-    const createOffer = initiator.peerConnection.setRemoteDescription.bind(initiator.peerConnection)
-
-    initiator.peerConnection.setRemoteDescription = async (name) => {
-      // the dial is aborted
+    initiator.connection.newStream.callsFake(async () => {
+      // the operation is aborted
       abortController.abort(new Error('Oh noes!'))
-      // setting the description takes some time
+      // opening the stream takes some time
       await delay(100)
-      return createOffer(name)
-    }
-
-    // signalling stream opens successfully
-    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+      // signaling stream opens successfully
+      return initiator.stream
+    })
 
     await expect(Promise.all([
       initiateConnection({
@@ -154,8 +159,17 @@ describe('webrtc basic', () => {
 })
 
 describe('webrtc receiver', () => {
+  let initiator: Initiator
+  let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
+
+  afterEach(() => {
+    initiatorPeerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
+
   it('should fail receiving on invalid sdp offer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
     const receiverPeerConnectionPromise = handleIncomingStream(recipient)
     const stream = pbStream(initiator.stream).pb(Message)
 
@@ -165,15 +179,24 @@ describe('webrtc receiver', () => {
 })
 
 describe('webrtc dialer', () => {
+  let initiator: Initiator
+  let recipient: Recipient
+  let initiatorPeerConnection: RTCPeerConnection
+
+  afterEach(() => {
+    initiatorPeerConnection?.close()
+    recipient?.peerConnection?.close()
+  })
+
   it('should fail receiving on invalid sdp answer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // existing connection already exists
     initiator.connectionManager.getConnections.returns([
       initiator.connection
     ])
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)
@@ -187,14 +210,14 @@ describe('webrtc dialer', () => {
   })
 
   it('should fail on receiving a candidate before an answer', async () => {
-    const { initiator, recipient } = await getComponents()
+    ({ initiator, recipient } = await getComponents())
 
     // existing connection already exists
     initiator.connectionManager.getConnections.returns([
       initiator.connection
     ])
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)
@@ -214,7 +237,7 @@ describe('webrtc dialer', () => {
     const answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
 
-    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/remote should send an SDP answer/)
+    await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
     pc.close()
   })
@@ -235,7 +258,7 @@ describe('webrtc filter', () => {
       multiaddr('/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/webrtc/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
     ]
 
-    expect(transport.filter(valid)).length(1)
+    expect(transport.dialFilter(valid)).length(1)
   })
 })
 

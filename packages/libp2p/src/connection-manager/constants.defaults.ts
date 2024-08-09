@@ -1,12 +1,12 @@
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#dialTimeout
  */
-export const DIAL_TIMEOUT = 30e3
+export const DIAL_TIMEOUT = 5e3
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundUpgradeTimeout
  */
-export const INBOUND_UPGRADE_TIMEOUT = 30e3
+export const INBOUND_UPGRADE_TIMEOUT = 2e3
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxPeerAddrsToDial
@@ -57,3 +57,8 @@ export const MAX_INCOMING_PENDING_CONNECTIONS = 10
  * failed to dial.
  */
 export const LAST_DIAL_FAILURE_KEY = 'last-dial-failure'
+
+/**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxDialQueueLength
+ */
+export const MAX_DIAL_QUEUE_LENGTH = 500

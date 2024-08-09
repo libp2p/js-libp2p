@@ -17,8 +17,8 @@ import { AutoNATService } from '../src/autonat.js'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
 import { Message } from '../src/pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
-import type { Connection, Stream, PeerId, PeerInfo, PeerRouting, Transport } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Connection, Stream, PeerId, PeerInfo, Transport } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -34,14 +34,14 @@ const defaultInit: AutoNATServiceInit = {
 describe('autonat', () => {
   let service: any
   let components: AutoNATComponents
-  let peerRouting: StubbedInstance<PeerRouting>
+  let randomWalk: StubbedInstance<RandomWalk>
   let registrar: StubbedInstance<Registrar>
   let addressManager: StubbedInstance<AddressManager>
   let connectionManager: StubbedInstance<ConnectionManager>
   let transportManager: StubbedInstance<TransportManager>
 
   beforeEach(async () => {
-    peerRouting = stubInterface<PeerRouting>()
+    randomWalk = stubInterface<RandomWalk>()
     registrar = stubInterface<Registrar>()
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
@@ -52,7 +52,7 @@ describe('autonat', () => {
     components = {
       peerId: await createEd25519PeerId(),
       logger: defaultLogger(),
-      peerRouting,
+      randomWalk,
       registrar,
       addressManager,
       connectionManager,
@@ -126,7 +126,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -156,7 +156,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -195,7 +195,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -240,7 +240,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -287,7 +287,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -339,7 +339,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -372,7 +372,7 @@ describe('autonat', () => {
         })
       ]
 
-      peerRouting.getClosestPeers.returns(async function * () {
+      randomWalk.walk.returns(async function * () {
         yield * peers
       }())
 
@@ -437,7 +437,7 @@ describe('autonat', () => {
       }
 
       // we might support this transport
-      transportManager.transportForMultiaddr.withArgs(observedAddress)
+      transportManager.dialTransportForMultiaddr.withArgs(observedAddress)
         .returns(opts.transportSupported === false ? undefined : stubInterface<Transport>())
 
       // we might open a new connection

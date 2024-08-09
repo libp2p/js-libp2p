@@ -1,5 +1,6 @@
 export * from './address-manager/index.js'
 export * from './connection-manager/index.js'
+export * from './random-walk/index.js'
 export * from './record/index.js'
 export * from './registrar/index.js'
 export * from './transport-manager/index.js'

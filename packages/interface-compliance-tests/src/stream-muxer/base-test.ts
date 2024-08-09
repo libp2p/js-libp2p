@@ -1,5 +1,6 @@
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import { byteStream } from 'it-byte-stream'
 import drain from 'it-drain'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
@@ -190,6 +191,248 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       expect(listenerChunks).to.be.eql(['hey'])
       expect(dialerChunks).to.be.eql(['hello'])
+    })
+
+    it('should echo a small value via a pipe', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from([0, 1, 2, 3, 4])
+
+      await pipe(
+        [input],
+        stream
+      )
+      await stream.close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
+    })
+
+    it('should echo a large value via a pipe', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from(new Array(1024 * 1024 * 10).fill(0))
+
+      await pipe(
+        [input],
+        stream
+      )
+      await stream.close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
+    })
+
+    it('should echo a small value via sink', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from([0, 1, 2, 3, 4])
+
+      await stream.sink([input])
+      await stream.close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
+    })
+
+    it('should echo a large value via sink', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from(new Array(1024 * 1024 * 10).fill(0))
+
+      await stream.sink([input])
+      await stream.close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
+    })
+
+    it('should echo a small value via a pushable', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from([0, 1, 2, 3, 4])
+
+      const pushable = byteStream(stream)
+      await pushable.write(input)
+      await pushable.unwrap().close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
+    })
+
+    it('should echo a large value via a pushable', async () => {
+      const p = duplexPair<Uint8Array | Uint8ArrayList>()
+      const onDialerStreamPromise: DeferredPromise<Stream> = defer()
+      const onDataReceivedPromise: DeferredPromise<Uint8Array> = defer()
+      const dialerFactory = await common.setup()
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound',
+        onIncomingStream: (stream) => {
+          onDialerStreamPromise.resolve(stream)
+        }
+      })
+      const listenerFactory = await common.setup()
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound',
+        onIncomingStream: (stream) => {
+          void Promise.resolve().then(async () => {
+            const output = new Uint8ArrayList()
+
+            for await (const buf of stream.source) {
+              output.append(buf)
+            }
+
+            onDataReceivedPromise.resolve(output.subarray())
+          })
+        }
+      })
+
+      void pipe(p[0], dialer, p[0])
+      void pipe(p[1], listener, p[1])
+
+      const stream = await dialer.newStream()
+      const input = Uint8Array.from(new Array(1024 * 1024 * 10).fill(0))
+
+      const pushable = byteStream(stream)
+      await pushable.write(input)
+      await pushable.unwrap().close()
+
+      expect(await onDataReceivedPromise.promise).to.equalBytes(input)
     })
   })
 }

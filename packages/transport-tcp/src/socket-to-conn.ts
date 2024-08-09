@@ -1,7 +1,6 @@
 import { CodeError } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-// @ts-expect-error no types
-import toIterable from 'stream-to-it'
+import { duplex } from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { ComponentLogger, MultiaddrConnection, CounterGroup } from '@libp2p/interface'
@@ -24,6 +23,7 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
+  let closePromise: Promise<void> | null = null
   const log = options.logger.forComponent('libp2p:tcp:socket')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
@@ -55,7 +55,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   const lOpts = multiaddrToNetConfig(remoteAddr)
   const lOptsStr = lOpts.path ?? `${lOpts.host ?? ''}:${lOpts.port ?? ''}`
-  const { sink, source } = toIterable.duplex(socket)
+  const { sink, source } = duplex(socket)
 
   // by default there is no timeout
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
@@ -109,9 +109,9 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         // If aborted we can safely ignore
         if (err.type !== 'aborted') {
           // If the source errored the socket will already have been destroyed by
-          // toIterable.duplex(). If the socket errored it will already be
+          // duplex(). If the socket errored it will already be
           // destroyed. There's nothing to do here except log the error & return.
-          log(err)
+          log.error('%s error in sink', lOptsStr, err)
         }
       }
 
@@ -128,8 +128,13 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     async close (options: AbortOptions = {}) {
       if (socket.destroyed) {
-        log('%s socket was already destroyed when trying to close', lOptsStr)
+        log('The %s socket is destroyed', lOptsStr)
         return
+      }
+
+      if (closePromise != null) {
+        log('The %s socket is closed or closing', lOptsStr)
+        return closePromise
       }
 
       if (options.signal == null) {
@@ -141,12 +146,19 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         }
       }
 
+      const abortSignalListener = (): void => {
+        socket.destroy(new CodeError('Destroying socket after timeout', 'ERR_CLOSE_TIMEOUT'))
+      }
+
+      options.signal?.addEventListener('abort', abortSignalListener)
+
       try {
         log('%s closing socket', lOptsStr)
-        await new Promise<void>((resolve, reject) => {
+        closePromise = new Promise<void>((resolve, reject) => {
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
+
             resolve()
           })
           socket.once('error', (err: Error) => {
@@ -156,8 +168,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             if (maConn.timeline.close == null) {
               maConn.timeline.close = Date.now()
             }
-
-            reject(err)
+            if (!socket.destroyed) {
+              reject(err)
+            }
+            // if socket is destroyed, 'closed' event will be emitted later to resolve the promise
           })
 
           // shorten inactivity timeout
@@ -179,15 +193,26 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
             socket.destroy()
           }
         })
+
+        await closePromise
       } catch (err: any) {
         this.abort(err)
+      } finally {
+        options.signal?.removeEventListener('abort', abortSignalListener)
       }
     },
 
     abort: (err: Error) => {
       log('%s socket abort due to error', lOptsStr, err)
 
-      socket.destroy(err)
+      // the abortSignalListener may already destroyed the socket with an error
+      if (!socket.destroyed) {
+        socket.destroy(err)
+      }
+
+      if (maConn.timeline.close == null) {
+        maConn.timeline.close = Date.now()
+      }
     },
 
     log

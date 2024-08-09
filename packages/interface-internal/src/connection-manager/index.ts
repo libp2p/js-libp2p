@@ -1,8 +1,9 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
 
-export interface OpenConnectionOptions extends AbortOptions {
+export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * Connection requests with a higher priority will be executed before those
    * with a lower priority. (default: 50)
@@ -23,7 +24,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connections = libp2p.connectionManager.get(peerId)
    * // []
    * ```
@@ -35,7 +36,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
    * ```
    */
@@ -46,7 +47,7 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const connection = await libp2p.connectionManager.openConnection(peerId)
    * ```
    */
@@ -75,9 +76,20 @@ export interface ConnectionManager {
    *
    * @example
    *
-   * ```js
+   * ```TypeScript
    * const dials = libp2p.connectionManager.getDialQueue()
    * ```
    */
   getDialQueue(): PendingDial[]
+
+  /**
+   * Given the current node configuration, returns a promise of `true` or
+   * `false` if the node would attempt to dial the passed multiaddr.
+   *
+   * This means a relevant transport is configured, and the connection gater
+   * would not block the dial attempt.
+   *
+   * This may involve resolving DNS addresses so you should pass an AbortSignal.
+   */
+  isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
 }

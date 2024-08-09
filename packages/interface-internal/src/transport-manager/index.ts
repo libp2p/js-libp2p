@@ -1,5 +1,10 @@
-import type { Connection, Listener, Transport } from '@libp2p/interface'
+import type { AbortOptions, Connection, Listener, Transport, TransportManagerDialProgressEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
+
+export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
+
+}
 
 export interface TransportManager {
   /**
@@ -13,7 +18,7 @@ export interface TransportManager {
    * a multiaddr, you may want to call openConnection on the connection manager
    * instead.
    */
-  dial(ma: Multiaddr, options?: any): Promise<Connection>
+  dial(ma: Multiaddr, options?: TransportManagerDialOptions): Promise<Connection>
 
   /**
    * Return all addresses currently being listened on
@@ -31,9 +36,15 @@ export interface TransportManager {
   getListeners(): Listener[]
 
   /**
-   * Get the transport for a given multiaddr, if one has been configured
+   * Get the transport to dial a given multiaddr, if one has been configured
    */
-  transportForMultiaddr(ma: Multiaddr): Transport | undefined
+  dialTransportForMultiaddr(ma: Multiaddr): Transport | undefined
+
+  /**
+   * Get the transport to listen on a given multiaddr, if one has been
+   * configured
+   */
+  listenTransportForMultiaddr(ma: Multiaddr): Transport | undefined
 
   /**
    * Listen on the passed multiaddrs

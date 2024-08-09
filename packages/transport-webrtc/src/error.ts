@@ -111,12 +111,12 @@ export function unimplemented (methodName: string): UnimplementedError {
 }
 
 export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
-  constructor (algo: string) {
-    super(`unsupported hash algorithm: ${algo}`, codes.ERR_HASH_NOT_SUPPORTED)
+  constructor (algo: number) {
+    super(`unsupported hash algorithm code: ${algo} please see the codes at https://github.com/multiformats/multicodec/blob/master/table.csv `, codes.ERR_HASH_NOT_SUPPORTED)
     this.name = 'WebRTC/UnsupportedHashAlgorithmError'
   }
 }
 
-export function unsupportedHashAlgorithm (algorithm: string): UnsupportedHashAlgorithmError {
-  return new UnsupportedHashAlgorithmError(algorithm)
+export function unsupportedHashAlgorithmCode (code: number): UnsupportedHashAlgorithmError {
+  return new UnsupportedHashAlgorithmError(code)
 }

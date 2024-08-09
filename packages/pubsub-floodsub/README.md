@@ -1,3 +1,5 @@
+# @libp2p/floodsub
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,6 +9,21 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 > Don't use this module
 
 This module is a naive implementation of pubsub. It broadcasts all messages to all network peers, cannot provide older messages and has no protection against bad actors.
@@ -15,24 +32,26 @@ It exists for academic purposes only, you should not use it in production.
 
 Instead please use [gossipsub](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub) - a more complete implementation which is also compatible with floodsub.
 
-## Example
+## Example - Configuring libp2p to use floodsub
 
-```JavaScript
-import { createLibp2pNode } from 'libp2p'
+```TypeScript
+import { createLibp2p } from 'libp2p'
 import { floodsub } from '@libp2p/floodsub'
 
-const node = await createLibp2pNode({
-  pubsub: floodsub()
+const node = await createLibp2p({
+  services: {
+    pubsub: floodsub()
+  }
   //... other options
 })
 await node.start()
 
-node.pubsub.subscribe('fruit')
-node.pubsub.addEventListener('message', (evt) => {
+node.services.pubsub.subscribe('fruit')
+node.services.pubsub.addEventListener('message', (evt) => {
   console.log(evt)
 })
 
-node.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
 ```
 
 # Install
@@ -57,8 +76,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/pubsub-floodsub/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/pubsub-floodsub/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

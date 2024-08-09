@@ -1,10 +1,11 @@
 import { CodeError } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import {
   MAX_RECORD_AGE
 } from '../../constants.js'
-import { Message, MESSAGE_TYPE } from '../../message/index.js'
-import { Libp2pRecord } from '../../record/index.js'
+import { MessageType } from '../../message/dht.js'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
+import type { Message } from '../../message/dht.js'
 import type { PeerRouting } from '../../peer-routing/index.js'
 import type { DHTMessageHandler } from '../index.js'
 import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
@@ -12,6 +13,7 @@ import type { Datastore } from 'interface-datastore'
 
 export interface GetValueHandlerInit {
   peerRouting: PeerRouting
+  logPrefix: string
 }
 
 export interface GetValueHandlerComponents {
@@ -27,7 +29,7 @@ export class GetValueHandler implements DHTMessageHandler {
   private readonly log: Logger
 
   constructor (components: GetValueHandlerComponents, init: GetValueHandlerInit) {
-    this.log = components.logger.forComponent('libp2p:kad-dht:rpc:handlers:get-value')
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:get-value`)
     this.peerStore = components.peerStore
     this.datastore = components.datastore
     this.peerRouting = init.peerRouting
@@ -42,7 +44,13 @@ export class GetValueHandler implements DHTMessageHandler {
       throw new CodeError('Invalid key', 'ERR_INVALID_KEY')
     }
 
-    const response = new Message(MESSAGE_TYPE.GET_VALUE, key, msg.clusterLevel)
+    const response: Message = {
+      type: MessageType.GET_VALUE,
+      key,
+      clusterLevel: msg.clusterLevel,
+      closer: [],
+      providers: []
+    }
 
     if (isPublicKeyKey(key)) {
       this.log('is public key')
@@ -65,24 +73,27 @@ export class GetValueHandler implements DHTMessageHandler {
 
       if (pubKey != null) {
         this.log('returning found public key')
-        response.record = new Libp2pRecord(key, pubKey, new Date())
+        response.record = new Libp2pRecord(key, pubKey, new Date()).serialize()
         return response
       }
     }
 
     const [record, closer] = await Promise.all([
       this._checkLocalDatastore(key),
-      this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+      this.peerRouting.getCloserPeersOffline(key, peerId)
     ])
 
     if (record != null) {
       this.log('had record for %b in local datastore', key)
-      response.record = record
+      response.record = record.serialize()
     }
 
     if (closer.length > 0) {
       this.log('had %s closer peers in routing table', closer.length)
-      response.closerPeers = closer
+      response.closer = closer.map(peerInfo => ({
+        id: peerInfo.id.toBytes(),
+        multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
+      }))
     }
 
     return response

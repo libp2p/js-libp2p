@@ -2,7 +2,7 @@ import { PeerMap } from '@libp2p/peer-collections'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { type Limit, Status } from '../pb/index.js'
 import type { RelayReservation } from '../index.js'
-import type { RecursivePartial, PeerId, Startable } from '@libp2p/interface'
+import type { PeerId, Startable } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
@@ -34,8 +34,6 @@ export interface ReservationStoreInit {
   defaultDataLimit?: bigint
 }
 
-export type ReservationStoreOptions = RecursivePartial<ReservationStoreInit>
-
 export class ReservationStore implements Startable {
   public readonly reservations = new PeerMap<RelayReservation>()
   private _started = false
@@ -47,7 +45,7 @@ export class ReservationStore implements Startable {
   private readonly defaultDurationLimit: number
   private readonly defaultDataLimit: bigint
 
-  constructor (options: ReservationStoreOptions = {}) {
+  constructor (options: ReservationStoreInit = {}) {
     this.maxReservations = options.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
     this.reservationClearInterval = options.reservationClearInterval ?? DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL
     this.applyDefaultLimit = options.applyDefaultLimit !== false

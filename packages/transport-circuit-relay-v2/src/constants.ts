@@ -2,24 +2,9 @@ const second = 1000
 const minute = 60 * second
 
 /**
- * Delay before HOP relay service is advertised on the network
- */
-export const ADVERTISE_BOOT_DELAY = 15 * minute
-
-/**
- * Delay Between HOP relay service advertisements on the network
- */
-export const ADVERTISE_TTL = 30 * minute
-
-/**
  * Multicodec code
  */
 export const CIRCUIT_PROTO_CODE = 290
-
-/**
- * Relay HOP relay service namespace for discovery
- */
-export const RELAY_RENDEZVOUS_NS = '/libp2p/relay'
 
 /**
  * The maximum number of relay reservations the relay server will accept
@@ -36,7 +21,20 @@ export const DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL = 300 * second
  */
 export const DEFAULT_MAX_RESERVATION_TTL = 2 * 60 * minute
 
+/**
+ * How many reservation attempts to make in parallel
+ */
 export const DEFAULT_RESERVATION_CONCURRENCY = 1
+
+/**
+ * How long to wait for a reservation attempt to finsih
+ */
+export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 1000
+
+/**
+ * How long to let the reservation attempt queue to grow
+ */
+export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
 
 export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
@@ -77,3 +75,6 @@ export const ERR_NO_ROUTERS_AVAILABLE = 'ERR_NO_ROUTERS_AVAILABLE'
 export const ERR_RELAYED_DIAL = 'ERR_RELAYED_DIAL'
 export const ERR_HOP_REQUEST_FAILED = 'ERR_HOP_REQUEST_FAILED'
 export const ERR_TRANSFER_LIMIT_EXCEEDED = 'ERR_TRANSFER_LIMIT_EXCEEDED'
+
+export const DEFAULT_DISCOVERY_FILTER_SIZE = 4096
+export const DEFAULT_DISCOVERY_FILTER_ERROR_RATE = 0.001

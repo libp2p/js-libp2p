@@ -1,4 +1,5 @@
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -6,15 +7,15 @@ import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
 import { pbStream } from 'it-protobuf-stream'
 import { stubInterface } from 'sinon-ts'
-import { Identify } from '../src/identify.js'
+import { IdentifyPush } from '../src/identify-push.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyPushStream, matchPeerId, type StubbedIdentifyComponents } from './fixtures/index.js'
+import { identifyPushStream, type StubbedIdentifyComponents } from './fixtures/index.js'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('identify (push)', () => {
   let components: StubbedIdentifyComponents
-  let identify: Identify
+  let identify: IdentifyPush
 
   beforeEach(async () => {
     components = {
@@ -37,16 +38,16 @@ describe('identify (push)', () => {
   })
 
   it('should register for identify push protocol on start', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
     expect(components.registrar.handle.called).to.be.true('identify push not handled')
-    expect(components.registrar.handle.getCall(1).args[0]).to.equal('/ipfs/id/push/1.0.0')
+    expect(components.registrar.handle.getCall(0).args[0]).to.equal('/ipfs/id/push/1.0.0')
   })
 
   it('should be able to push identify updates to another peer', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
@@ -93,7 +94,7 @@ describe('identify (push)', () => {
   })
 
   it('should handle incoming push', async () => {
-    identify = new Identify(components)
+    identify = new IdentifyPush(components)
 
     await start(identify)
 
@@ -119,7 +120,7 @@ describe('identify (push)', () => {
 
     components.peerStore.patch.reset()
 
-    await identify._handlePush({
+    await identify.handleProtocol({
       stream,
       connection
     })
@@ -134,7 +135,7 @@ describe('identify (push)', () => {
   })
 
   it('should time out during push identify', async () => {
-    identify = new Identify(components, {
+    identify = new IdentifyPush(components, {
       timeout: 10
     })
 
@@ -148,7 +149,7 @@ describe('identify (push)', () => {
 
     components.peerStore.patch.reset()
 
-    await expect(identify._handlePush({
+    await expect(identify.handleProtocol({
       stream,
       connection
     })).to.eventually.be.undefined()

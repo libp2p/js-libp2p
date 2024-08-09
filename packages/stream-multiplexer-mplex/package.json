@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/mplex",
-  "version": "10.0.5",
+  "version": "10.1.4",
   "description": "JavaScript implementation of https://github.com/libp2p/mplex",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex#readme",
@@ -50,6 +50,7 @@
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
     "test": "aegir test",
@@ -61,33 +62,30 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.0.1",
-    "@libp2p/utils": "^5.0.2",
-    "benchmark": "^2.1.4",
-    "it-pushable": "^3.2.1",
+    "@libp2p/interface": "^1.6.3",
+    "@libp2p/utils": "^5.4.8",
+    "it-pipe": "^3.0.1",
+    "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.1",
-    "rate-limiter-flexible": "^3.0.0",
-    "uint8-varint": "^2.0.0",
-    "uint8arraylist": "^2.4.3",
-    "uint8arrays": "^4.0.6"
+    "uint8-varint": "^2.0.4",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^5.0.5",
-    "@libp2p/logger": "^4.0.1",
-    "aegir": "^41.0.2",
-    "cborg": "^4.0.3",
+    "@libp2p/interface-compliance-tests": "^5.4.11",
+    "@libp2p/logger": "^4.0.19",
+    "aegir": "^44.0.1",
+    "benchmark": "^2.1.4",
+    "cborg": "^4.2.0",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^3.0.3",
-    "it-drain": "^3.0.3",
-    "it-foreach": "^2.0.2",
-    "it-map": "^3.0.3",
+    "it-all": "^3.0.6",
+    "it-drain": "^3.0.7",
+    "it-foreach": "^2.1.0",
+    "it-map": "^3.1.0",
     "it-pair": "^2.0.6",
-    "it-pipe": "^3.0.1",
-    "p-defer": "^4.0.0",
+    "p-defer": "^4.0.1",
     "random-int": "^3.0.0"
   },
-  "browser": {
-    "./dist/src/alloc-unsafe.js": "./dist/src/alloc-unsafe-browser.js"
-  }
+  "sideEffects": false
 }

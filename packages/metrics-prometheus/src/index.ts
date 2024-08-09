@@ -3,7 +3,7 @@
  *
  * Configure your libp2p node with Prometheus metrics:
  *
- * ```js
+ * ```typescript
  * import { createLibp2p } from 'libp2p'
  * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
  *
@@ -14,10 +14,10 @@
  *
  * Then use the `prom-client` module to supply metrics to the Prometheus/Graphana client using your http framework:
  *
- * ```js
+ * ```JavaScript
  * import client from 'prom-client'
  *
- * async handler (request, h) {
+ * async function handler (request, h) {
  *   return h.response(await client.register.metrics())
  *     .type(client.register.contentType)
  * }
@@ -25,29 +25,29 @@
  *
  * All Prometheus metrics are global so there's no other work required to extract them.
  *
- * ### Queries
+ * ## Queries
  *
  * Some useful queries are:
  *
- * #### Data sent/received
+ * ### Data sent/received
  *
  * ```
  * rate(libp2p_data_transfer_bytes_total[30s])
  * ```
  *
- * #### CPU usage
+ * ### CPU usage
  *
  * ```
  * rate(process_cpu_user_seconds_total[30s]) * 100
  * ```
  *
- * #### Memory usage
+ * ### Memory usage
  *
  * ```
  * nodejs_memory_usage_bytes
  * ```
  *
- * #### DHT query time
+ * ### DHT query time
  *
  * ```
  * libp2p_kad_dht_wan_query_time_seconds
@@ -59,102 +59,14 @@
  * libp2p_kad_dht_lan_query_time_seconds
  * ```
  *
- * #### TCP transport dialer errors
+ * ### TCP transport dialer errors
  *
  * ```
  * rate(libp2p_tcp_dialer_errors_total[30s])
  * ```
- *
- * @example
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetric = metrics.registerMetric({
- *  name: 'my_metric',
- *  label: 'my_label',
- *  help: 'my help text'
- * })
- *
- * myMetric.update(1)
- * ```
- *
- * @example
- *
- * A metric that is expensive to calculate can be created by passing a `calculate` function that will only be invoked when metrics are being scraped:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetric = metrics.registerMetric({
- *  name: 'my_metric',
- *  label: 'my_label',
- *  help: 'my help text',
- *  calculate: async () => {
- *   // do something expensive
- *    return 1
- *  }
- * })
- * ```
- *
- * @example
- *
- * If several metrics should be grouped together (e.g. for graphing purposes) `registerMetricGroup` can be used instead:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- *
- * const metrics = prometheusMetrics()()
- * const myMetricGroup = metrics.registerMetricGroup({
- *  name: 'my_metric_group',
- *  label: 'my_label',
- *  help: 'my help text'
- * })
- *
- * myMetricGroup.increment({ my_label: 'my_value' })
- * ```
- *
- * There are specific metric groups for tracking libp2p connections and streams:
- *
- * @example
- *
- * Track a newly opened multiaddr connection:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- * import { createLibp2p } from 'libp2p'
- *
- * const metrics = prometheusMetrics()()
- *
- * const libp2p = await createLibp2p({
- *    metrics: metrics,
- *   })
- * // set up a multiaddr connection
- * const connection = await libp2p.dial('multiaddr')
- * const connections = metrics.trackMultiaddrConnection(connection)
- * ```
- *
- * @example
- *
- * Track a newly opened stream:
- *
- * ```typescript
- * import { prometheusMetrics } from '@libp2p/prometheus-metrics'
- * import { createLibp2p } from 'libp2p'
- *
- * const metrics = prometheusMetrics()()
- *
- * const libp2p = await createLibp2p({
- *   metrics: metrics,
- * })
- *
- * const stream = await connection.newStream('/my/protocol')
- * const streams = metrics.trackProtocolStream(stream)
- * ```
  */
 
+import { serviceCapabilities } from '@libp2p/interface'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
@@ -252,6 +164,12 @@ class PrometheusMetrics implements Metrics {
       }
     })
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/metrics-prometheus'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/metrics'
+  ]
 
   /**
    * Increment the transfer stat for the passed key, making sure

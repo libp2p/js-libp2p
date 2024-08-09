@@ -45,7 +45,7 @@
  *
  * ### Programmatically
  *
- * ```js
+ * ```TypeScript
  * import fs from 'fs'
  * import { generateKey } from '@libp2p/pnet'
  *
@@ -109,6 +109,8 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     this.psk = decodedPSK.psk
     this.tag = decodedPSK.tag ?? ''
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/pnet'
 
   /**
    * Takes a given Connection and creates a private encryption stream

@@ -1,4 +1,5 @@
 import { CodeError } from '@libp2p/interface'
+import { Libp2pRecord } from '@libp2p/record'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
@@ -6,21 +7,21 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import {
   ALPHA
 } from '../constants.js'
-import { Message, MESSAGE_TYPE } from '../message/index.js'
+import { MessageType } from '../message/dht.js'
 import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { Libp2pRecord } from '../record/index.js'
 import { bestRecord } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
-import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryOptions, QueryEvent } from '../index.js'
+import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
+import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { AbortOptions, Logger } from '@libp2p/interface'
+import type { Logger, RoutingOptions } from '@libp2p/interface'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -28,7 +29,7 @@ export interface ContentFetchingInit {
   peerRouting: PeerRouting
   queryManager: QueryManager
   network: Network
-  lan: boolean
+  logPrefix: string
 }
 
 export class ContentFetching {
@@ -41,20 +42,15 @@ export class ContentFetching {
   private readonly network: Network
 
   constructor (components: KadDHTComponents, init: ContentFetchingInit) {
-    const { validators, selectors, peerRouting, queryManager, network, lan } = init
+    const { validators, selectors, peerRouting, queryManager, network, logPrefix } = init
 
     this.components = components
-    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:content-fetching`)
+    this.log = components.logger.forComponent(`${logPrefix}:content-fetching`)
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.network = network
-  }
-
-  async putLocal (key: Uint8Array, rec: Uint8Array): Promise<void> {
-    const dsKey = bufferToRecordKey(key)
-    await this.components.datastore.put(dsKey, rec)
   }
 
   /**
@@ -81,7 +77,7 @@ export class ContentFetching {
   /**
    * Send the best record found to any peers that have an out of date record
    */
-  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: AbortOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('sendCorrection for %b', key)
     const fixupRec = createPutRecord(key, best)
 
@@ -107,8 +103,11 @@ export class ContentFetching {
 
       // send correction
       let sentCorrection = false
-      const request = new Message(MESSAGE_TYPE.PUT_VALUE, key, 0)
-      request.record = Libp2pRecord.deserialize(fixupRec)
+      const request: Partial<Message> = {
+        type: MessageType.PUT_VALUE,
+        key,
+        record: fixupRec
+      }
 
       for await (const event of this.network.sendRequest(from, request, options)) {
         if (event.name === 'PEER_RESPONSE' && (event.record != null) && uint8ArrayEquals(event.record.value, Libp2pRecord.deserialize(fixupRec).value)) {
@@ -129,7 +128,7 @@ export class ContentFetching {
   /**
    * Store the given key/value pair in the DHT
    */
-  async * put (key: Uint8Array, value: Uint8Array, options: AbortOptions = {}): AsyncGenerator<unknown, void, undefined> {
+  async * put (key: Uint8Array, value: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<unknown, void, undefined> {
     this.log('put key %b value %b', key, value)
 
     // create record in the dht format
@@ -151,8 +150,11 @@ export class ContentFetching {
 
           const events = []
 
-          const msg = new Message(MESSAGE_TYPE.PUT_VALUE, key, 0)
-          msg.record = Libp2pRecord.deserialize(record)
+          const msg: Partial<Message> = {
+            type: MessageType.PUT_VALUE,
+            key,
+            record
+          }
 
           this.log('send put to %p', event.peer.id)
           for await (const putEvent of this.network.sendRequest(event.peer.id, msg, options)) {
@@ -185,7 +187,7 @@ export class ContentFetching {
   /**
    * Get the value to the given key
    */
-  async * get (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent | ValueEvent> {
+  async * get (key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent | ValueEvent> {
     this.log('get %b', key)
 
     const vals: ValueEvent[] = []
@@ -229,7 +231,7 @@ export class ContentFetching {
   /**
    * Get the `n` values to the given key without sorting
    */
-  async * getMany (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
+  async * getMany (key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getMany values for %b', key)
 
     try {

@@ -1,4 +1,5 @@
 import { randomBytes } from '@libp2p/crypto'
+import { setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import length from 'it-length'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -21,7 +22,7 @@ export interface RoutingTableRefreshComponents {
 export interface RoutingTableRefreshInit {
   peerRouting: PeerRouting
   routingTable: RoutingTable
-  lan: boolean
+  logPrefix: string
   refreshInterval?: number
   refreshQueryTimeout?: number
 }
@@ -40,8 +41,8 @@ export class RoutingTableRefresh {
   private refreshTimeoutId?: ReturnType<typeof setTimeout>
 
   constructor (components: RoutingTableRefreshComponents, init: RoutingTableRefreshInit) {
-    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, lan } = init
-    this.log = components.logger.forComponent(`libp2p:kad-dht:${lan ? 'lan' : 'wan'}:routing-table:refresh`)
+    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, logPrefix } = init
+    this.log = components.logger.forComponent(`${logPrefix}:routing-table:refresh`)
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL
@@ -51,7 +52,7 @@ export class RoutingTableRefresh {
     this.refreshTable = this.refreshTable.bind(this)
   }
 
-  async start (): Promise<void> {
+  async afterStart (): Promise<void> {
     this.log(`refreshing routing table every ${this.refreshInterval}ms`)
     this.refreshTable(true)
   }
@@ -136,7 +137,12 @@ export class RoutingTableRefresh {
 
     this.log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
 
-    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), { signal: AbortSignal.timeout(this.refreshQueryTimeout) }))
+    const signal = AbortSignal.timeout(this.refreshQueryTimeout)
+    setMaxListeners(Infinity, signal)
+
+    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), {
+      signal
+    }))
 
     this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
     this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
@@ -147,7 +153,7 @@ export class RoutingTableRefresh {
       maxCommonPrefix = MAX_COMMON_PREFIX_LENGTH
     }
 
-    const dates = []
+    const dates: Date[] = []
 
     for (let i = 0; i <= maxCommonPrefix; i++) {
       // defaults to the zero value if we haven't refreshed it yet.
@@ -165,7 +171,7 @@ export class RoutingTableRefresh {
     const randomData = randomBytes(2)
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
-    const key = await this._makePeerId(this.routingTable.kb.localNodeId, randomUint16, targetCommonPrefixLength)
+    const key = await this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)
 
     return peerIdFromBytes(key)
   }
@@ -241,8 +247,8 @@ export class RoutingTableRefresh {
       return
     }
 
-    for (const { id } of this.routingTable.kb.toIterable()) {
-      const distance = uint8ArrayXor(this.routingTable.kb.localNodeId, id)
+    for (const { kadId } of this.routingTable.kb.toIterable()) {
+      const distance = uint8ArrayXor(this.routingTable.kb.localPeer.kadId, kadId)
       let leadingZeros = 0
 
       for (const byte of distance) {

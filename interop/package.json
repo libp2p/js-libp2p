@@ -1,41 +1,8 @@
 {
-  "name": "@libp2p/multidim-interop",
-  "version": "2.0.8",
-  "description": "Multidimensional interop tests",
-  "author": "Glen De Cauwsemaecker <glen@littlebearlabs.io> / @marcopolo",
-  "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/interop#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
-  },
-  "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
-  },
+  "name": "@libp2p/transport-interop-libp2p-main",
+  "version": "1.0.0",
   "type": "module",
-  "types": "./dist/src/index.d.ts",
-  "files": [
-    "src",
-    "test",
-    "dist",
-    ".aegir.js",
-    "BrowserDockerfile",
-    "chromium-version.json",
-    "Dockerfile",
-    "firefox-version.json",
-    "Makefile",
-    "node-version.json",
-    "relay.js",
-    "tsconfig.json",
-    "webkit-version.json",
-    "!**/*.tsbuildinfo"
-  ],
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    }
-  },
+  "private": true,
   "eslintConfig": {
     "extends": "ipfs",
     "parserOptions": {
@@ -44,28 +11,29 @@
     }
   },
   "scripts": {
-    "start": "node index.js",
-    "build": "aegir build",
+    "clean": "aegir clean",
+    "build": "aegir build --bundle false",
+    "test": "aegir test",
     "lint": "aegir lint",
-    "test:interop:multidim": "aegir test",
-    "test:transport:interop": "aegir test"
+    "dep-check": "aegir dep-check"
   },
-  "dependencies": {
-    "@chainsafe/libp2p-noise": "^14.0.0",
-    "@chainsafe/libp2p-yamux": "^6.0.1",
-    "@libp2p/circuit-relay-v2": "^1.0.5",
-    "@libp2p/identify": "^1.0.4",
-    "@libp2p/mplex": "^10.0.5",
-    "@libp2p/ping": "^1.0.4",
-    "@libp2p/tcp": "^9.0.5",
-    "@libp2p/webrtc": "^4.0.8",
-    "@libp2p/websockets": "^8.0.5",
-    "@libp2p/webtransport": "^4.0.8",
-    "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.1.10",
-    "aegir": "^41.0.2",
-    "libp2p": "^1.0.8",
-    "redis": "^4.5.1"
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "^15.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.2",
+    "@libp2p/circuit-relay-v2": "^1.0.24",
+    "@libp2p/interface": "^1.4.0",
+    "@libp2p/identify": "^2.0.2",
+    "@libp2p/mplex": "^10.0.24",
+    "@libp2p/ping": "^1.0.19",
+    "@libp2p/tcp": "^9.0.26",
+    "@libp2p/webrtc": "^4.0.33",
+    "@libp2p/websockets": "^8.0.24",
+    "@libp2p/webtransport": "^4.0.32",
+    "@multiformats/multiaddr": "^12.2.3",
+    "aegir": "^44.0.1",
+    "libp2p": "^1.6.0",
+    "p-event": "^6.0.1",
+    "redis": "^4.6.14"
   },
   "browser": {
     "@libp2p/tcp": false

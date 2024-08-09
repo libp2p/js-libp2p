@@ -1,17 +1,20 @@
-import { CodeError } from '@libp2p/interface'
-import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type Upgrader } from '@libp2p/interface'
+import { CodeError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type PrivateKey, type Upgrader } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId
+  privateKey: PrivateKey
   nodeInfo: NodeInfo
   logger: ComponentLogger
   events: TypedEventTarget<Libp2pEvents>
   addressManager: AddressManager
   peerStore: PeerStore
   upgrader: Upgrader
+  randomWalk: RandomWalk
   registrar: Registrar
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -21,16 +24,19 @@ export interface Components extends Record<string, any>, Startable {
   datastore: Datastore
   connectionProtector?: ConnectionProtector
   metrics?: Metrics
+  dns?: DNS
 }
 
 export interface ComponentsInit {
   peerId?: PeerId
+  privateKey?: PrivateKey
   nodeInfo?: NodeInfo
   logger?: ComponentLogger
   events?: TypedEventTarget<Libp2pEvents>
   addressManager?: AddressManager
   peerStore?: PeerStore
   upgrader?: Upgrader
+  randomWalk?: RandomWalk
   metrics?: Metrics
   registrar?: Registrar
   connectionManager?: ConnectionManager
@@ -40,6 +46,7 @@ export interface ComponentsInit {
   peerRouting?: PeerRouting
   datastore?: Datastore
   connectionProtector?: ConnectionProtector
+  dns?: DNS
 }
 
 class DefaultComponents implements Startable {
@@ -101,7 +108,8 @@ class DefaultComponents implements Startable {
 
 const OPTIONAL_SERVICES = [
   'metrics',
-  'connectionProtector'
+  'connectionProtector',
+  'dns'
 ]
 
 const NON_SERVICE_PROPERTIES = [
@@ -148,4 +156,42 @@ export function defaultComponents (init: ComponentsInit = {}): Components {
 
   // @ts-expect-error component keys are proxied
   return proxy
+}
+
+export function checkServiceDependencies (components: Components): void {
+  const serviceCapabilities: Record<string, ConstrainBoolean> = {}
+
+  for (const service of Object.values(components.components)) {
+    for (const capability of getServiceCapabilities(service)) {
+      serviceCapabilities[capability] = true
+    }
+  }
+
+  for (const service of Object.values(components.components)) {
+    for (const capability of getServiceDependencies(service)) {
+      if (serviceCapabilities[capability] !== true) {
+        throw new CodeError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`, 'ERR_UNMET_SERVICE_DEPENDENCIES')
+      }
+    }
+  }
+}
+
+function getServiceCapabilities (service: any): string[] {
+  if (Array.isArray(service?.[serviceCapabilities])) {
+    return service[serviceCapabilities]
+  }
+
+  return []
+}
+
+function getServiceDependencies (service: any): string[] {
+  if (Array.isArray(service?.[serviceDependencies])) {
+    return service[serviceDependencies]
+  }
+
+  return []
+}
+
+function getServiceName (service: any): string {
+  return service?.[Symbol.toStringTag] ?? service?.toString() ?? 'unknown'
 }

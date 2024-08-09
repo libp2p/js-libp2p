@@ -7,10 +7,11 @@ import { isPromise } from '../util.js'
 import * as crypto from './ed25519.js'
 import { exporter } from './exporter.js'
 import * as pbm from './keys.js'
+import type { PublicKey, PrivateKey } from '@libp2p/interface'
 import type { Multibase } from 'multiformats'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export class Ed25519PublicKey {
+export class Ed25519PublicKey implements PublicKey<'Ed25519'> {
   private readonly _key: Uint8Array
 
   constructor (key: Uint8Array) {
@@ -47,7 +48,7 @@ export class Ed25519PublicKey {
   }
 }
 
-export class Ed25519PrivateKey {
+export class Ed25519PrivateKey implements PrivateKey<'Ed25519'> {
   private readonly _key: Uint8Array
   private readonly _publicKey: Uint8Array
 

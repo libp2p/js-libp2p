@@ -1,3 +1,5 @@
+# @libp2p/peer-record
+
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
@@ -7,6 +9,21 @@
 
 # About
 
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
 Libp2p nodes need to store data in a public location (e.g. a DHT), or rely on potentially untrustworthy intermediaries to relay information over its lifetime. Accordingly, libp2p nodes need to be able to verify that the data came from a specific peer and that it hasn't been tampered with.
 
 ## Envelope
@@ -15,55 +32,38 @@ Libp2p provides an all-purpose data container called **envelope**. It was create
 
 This envelope stores a marshaled record implementing the [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts). These Records are designed to be serialized to bytes and placed inside of the envelopes before being shared with other peers.
 
-You can read further about the envelope in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the envelope in [RFC 0002 - Signed Envelopes](https://github.com/libp2p/specs/blob/master/RFC/0002-signed-envelopes.md). For the original discussion about it you can look at the PR that was used to create it: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
-## Example
+## Example - Creating a peer record
 
 Create an envelope with an instance of an [interface-record](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/record/index.ts) implementation and prepare it for being exchanged:
 
-```js
-// interface-record implementation example with the "libp2p-example" namespace
-import { PeerRecord } from '@libp2p/peer-record'
-import { fromString } from 'uint8arrays/from-string'
+```TypeScript
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 
-class ExampleRecord extends PeerRecord {
-  constructor () {
-    super ('libp2p-example', fromString('0302', 'hex'))
-  }
+const peerId = await createEd25519PeerId()
 
-  marshal () {}
+const record = new PeerRecord({
+  peerId,
+  // ...other data
+})
 
-  equals (other) {}
-}
-
-ExampleRecord.createFromProtobuf = () => {}
+const envelope = await RecordEnvelope.seal(record, peerId)
+const wireData = envelope.marshal()
 ```
 
-```js
-import { PeerEnvelope } from '@libp2p/peer-record'
-import { ExampleRecord } from './example-record.js'
+## Example - Consuming a peer record
 
-const rec = new ExampleRecord()
-const e = await PeerEnvelope.seal(rec, peerId)
-const wireData = e.marshal()
-```
+Consume a received envelope `wireData` and transform it back to a record:
 
-## Example
+```TypeScript
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 
-Consume a received envelope (`wireData`) and transform it back to a record:
+const wireData = Uint8Array.from([0, 1, 2, 3, 4])
+const envelope = await RecordEnvelope.openAndCertify(wireData, PeerRecord.DOMAIN)
 
-```js
-import { PeerEnvelope } from '@libp2p/peer-record'
-import { ExampleRecord } from './example-record.js'
-
-const domain = 'libp2p-example'
-let e
-
-try {
-  e = await PeerEnvelope.openAndCertify(wireData, domain)
-} catch (err) {}
-
-const rec = ExampleRecord.createFromProtobuf(e.payload)
+const record = PeerRecord.createFromProtobuf(envelope.payload)
 ```
 
 ## Peer Record
@@ -74,18 +74,25 @@ Libp2p peer records were created to enable the distribution of verifiable addres
 
 A peer record contains the peers' publicly reachable listen addresses, and may be extended in the future to contain additional metadata relevant to routing. It also contains a `seqNumber` field, a timestamp per the spec, so that we can verify the most recent record.
 
-You can read further about the Peer Record in [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
+You can read further about the Peer Record in [RFC 0003 - Peer Routing Records](https://github.com/libp2p/specs/blob/master/RFC/0003-routing-records.md). For the original discussion about it you can view the PR that created the RFC: [libp2p/specs#217](https://github.com/libp2p/specs/pull/217).
 
 ## Example
 
 Create a new Peer Record
 
-```js
+```TypeScript
 import { PeerRecord } from '@libp2p/peer-record'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { multiaddr } from '@multiformats/multiaddr'
 
-const pr = new PeerRecord({
-  peerId: node.peerId,
-  multiaddrs: node.multiaddrs
+const peerId = await createEd25519PeerId()
+
+const record = new PeerRecord({
+  peerId: peerId,
+  multiaddrs: [
+    multiaddr('/ip4/...'),
+    multiaddr('/ip4/...')
+  ]
 })
 ```
 
@@ -93,10 +100,11 @@ const pr = new PeerRecord({
 
 Create a Peer Record from a protobuf
 
-```js
+```TypeScript
 import { PeerRecord } from '@libp2p/peer-record'
 
-const pr = PeerRecord.createFromProtobuf(data)
+const data = Uint8Array.from([0, 1, 2, 3, 4])
+const record = PeerRecord.createFromProtobuf(data)
 ```
 
 ## Libp2p Flows
@@ -160,8 +168,8 @@ Loading this module through a script tag will make it's exports available as `Li
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/peer-record/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/peer-record/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

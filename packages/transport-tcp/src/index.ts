@@ -5,65 +5,40 @@
  *
  * @example
  *
- * ```js
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { multiaddr } from '@multiformats/multiaddr'
- * import { pipe } from 'it-pipe'
- * import all from 'it-all'
  *
- * // A simple upgrader that just returns the MultiaddrConnection
- * const upgrader = {
- *   upgradeInbound: async maConn => maConn,
- *   upgradeOutbound: async maConn => maConn
- * }
- *
- * const transport = tcp()()
- *
- * const listener = transport.createListener({
- *   upgrader,
- *   handler: (socket) => {
- *     console.this.log('new connection opened')
- *     pipe(
- *       ['hello', ' ', 'World!'],
- *       socket
- *     )
- *   }
+ * const node = await createLibp2p({
+ *   transports: [
+ *     tcp()
+ *   ]
  * })
  *
- * const addr = multiaddr('/ip4/127.0.0.1/tcp/9090')
- * await listener.listen(addr)
- * console.this.log('listening')
+ * const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
  *
- * const socket = await transport.dial(addr, { upgrader })
- * const values = await pipe(
- *   socket,
- *   all
- * )
- * console.this.log(`Value: ${values.toString()}`)
+ * // dial a TCP connection, timing out after 10 seconds
+ * const connection = await node.dial(ma, {
+ *   signal: AbortSignal.timeout(10_000)
+ * })
  *
- * // Close connection after reading
- * await listener.close()
- * ```
- *
- * Outputs:
- *
- * ```sh
- * listening
- * new connection opened
- * Value: hello World!
+ * // use connection...
  * ```
  */
 
 import net from 'net'
-import { AbortError, CodeError, transportSymbol } from '@libp2p/interface'
+import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
+import { CustomProgressEvent } from 'progress-events'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { type CloseServerOnMaxConnectionsOpts, TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialOptions, Transport, Listener } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, Listener, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
+import type { ProgressEvent } from 'progress-events'
 
 export interface TCPOptions {
   /**
@@ -135,7 +110,11 @@ export interface TCPSocketOptions extends AbortOptions {
   allowHalfOpen?: boolean
 }
 
-export interface TCPDialOptions extends DialOptions, TCPSocketOptions {
+export type TCPDialEvents =
+  OutboundConnectionUpgradeEvents |
+  ProgressEvent<'tcp:open-connection'>
+
+export interface TCPDialOptions extends DialTransportOptions<TCPDialEvents>, TCPSocketOptions {
 
 }
 
@@ -152,7 +131,7 @@ export interface TCPMetrics {
   dialerEvents: CounterGroup
 }
 
-class TCP implements Transport {
+class TCP implements Transport<TCPDialEvents> {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
@@ -176,6 +155,10 @@ class TCP implements Transport {
   readonly [transportSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/tcp'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/transport'
+  ]
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
@@ -222,9 +205,8 @@ class TCP implements Transport {
   }
 
   async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
-    if (options.signal?.aborted === true) {
-      throw new AbortError()
-    }
+    options.signal?.throwIfAborted()
+    options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
@@ -266,7 +248,7 @@ class TCP implements Transport {
         done(new AbortError())
       }
 
-      const done = (err?: any): void => {
+      const done = (err?: Error): void => {
         rawSocket.removeListener('error', onError)
         rawSocket.removeListener('timeout', onTimeout)
         rawSocket.removeListener('connect', onConnect)
@@ -314,7 +296,7 @@ class TCP implements Transport {
   /**
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
    */
-  filter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter(ma => {
@@ -328,6 +310,13 @@ class TCP implements Transport {
 
       return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))
     })
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 }
 

@@ -1,4 +1,5 @@
-import { pipe } from 'it-pipe'
+import { execa } from 'execa'
+import pDefer from 'p-defer'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -18,6 +19,7 @@ export default {
       const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
+      const { echo } = await import('@libp2p/echo')
 
       const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
@@ -49,24 +51,73 @@ export default {
             reservations: {
               maxReservations: Infinity
             }
-          })
+          }),
+          echo: echo()
         }
       })
-      // Add the echo protocol
-      await libp2p.handle('/echo/1.0.0', ({ stream }) => {
-        pipe(stream, stream)
-          .catch() // sometimes connections are closed before multistream-select finishes which causes an error
-      })
+
+      const goLibp2pRelay = await createGoLibp2pRelay()
 
       return {
         libp2p,
+        goLibp2pRelay,
         env: {
-          RELAY_MULTIADDR: libp2p.getMultiaddrs().filter(ma => WebSockets.matches(ma)).pop()
+          RELAY_MULTIADDR: libp2p.getMultiaddrs().filter(ma => WebSockets.matches(ma)).pop(),
+          GO_RELAY_PEER: goLibp2pRelay.peerId,
+          GO_RELAY_MULTIADDRS: goLibp2pRelay.multiaddrs,
+          GO_RELAY_APIADDR: goLibp2pRelay.apiAddr
         }
       }
     },
     after: async (_, before) => {
       await before.libp2p.stop()
+      await before.goLibp2pRelay.proc.kill()
     }
+  }
+}
+
+async function createGoLibp2pRelay () {
+  const { multiaddr } = await import('@multiformats/multiaddr')
+  const { path: p2pd } = await import('go-libp2p')
+  const { createClient } = await import('@libp2p/daemon-client')
+
+  const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
+  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+  const deferred = pDefer()
+  const proc = execa(p2pd(), [
+    `-listen=${apiAddr.toString()}`,
+    // listen on TCP, WebSockets and WebTransport
+    '-hostAddrs=/ip4/127.0.0.1/tcp/0,/ip4/127.0.0.1/tcp/0/ws,/ip4/127.0.0.1/udp/0/quic-v1/webtransport',
+    '-noise=true',
+    '-dhtServer',
+    '-relay',
+    '-muxer=mplex'
+  ], {
+    env: {
+      GOLOG_LOG_LEVEL: 'debug'
+    }
+  })
+  proc.catch(() => {
+    // go-libp2p daemon throws when killed
+  })
+
+  proc.stdout?.on('data', (buf) => {
+    const str = buf.toString()
+
+    // daemon has started
+    if (str.includes('Control socket:')) {
+      deferred.resolve()
+    }
+  })
+  await deferred.promise
+
+  const daemonClient = createClient(apiAddr)
+  const id = await daemonClient.identify()
+
+  return {
+    apiAddr,
+    peerId: id.peerId.toString(),
+    multiaddrs: id.addrs.map(ma => ma.toString()).join(','),
+    proc
   }
 }

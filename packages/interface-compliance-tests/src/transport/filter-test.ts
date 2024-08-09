@@ -6,20 +6,27 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 
 export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('filter', () => {
-    let addrs: Multiaddr[]
-    let transport: Transport
+    let listenAddrs: Multiaddr[]
+    let dialAddrs: Multiaddr[]
+    let dialer: Transport
+    let listener: Transport
 
     before(async () => {
-      ({ addrs, transport } = await common.setup())
+      ({ listenAddrs, dialAddrs, dialer, listener } = await common.setup())
     })
 
     after(async () => {
       await common.teardown()
     })
 
-    it('filters addresses', () => {
-      const filteredAddrs = transport.filter(addrs)
-      expect(filteredAddrs).to.eql(addrs)
+    it('filters listen addresses', () => {
+      const filteredAddrs = listener.listenFilter(listenAddrs)
+      expect(filteredAddrs).to.eql(listenAddrs)
+    })
+
+    it('filters dial addresses', () => {
+      const filteredAddrs = dialer.dialFilter(dialAddrs)
+      expect(filteredAddrs).to.eql(dialAddrs)
     })
   })
 }

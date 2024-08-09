@@ -11,12 +11,13 @@
  *
  * @example
  *
- * ```ts
+ * ```TypeScript
  * import { createLibp2p } from 'libp2p'
- * import { circuitRelayTransport } from 'libp2p/circuit-relay'
+ * import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
  * import { tcp } from '@libp2p/tcp'
  * import { identify } from '@libp2p/identify'
  * import { dcutr } from '@libp2p/dcutr'
+ * import { multiaddr } from '@multiformats/multiaddr'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -31,7 +32,8 @@
  *
  * // QmTarget is a peer that is behind a NAT, supports TCP and has a relay
  * // reservation
- * await node.dial('/ip4/.../p2p/QmRelay/p2p-circuit/p2p/QmTarget')
+ * const ma = multiaddr('/ip4/.../p2p/QmRelay/p2p-circuit/p2p/QmTarget')
+ * await node.dial(ma)
  *
  * // after a while the connection should automatically get upgraded to a
  * // direct connection (e.g. non-transient)
@@ -45,7 +47,7 @@
  *     console.info('have relayed connection')
  *
  *     // wait a few seconds to see if it's succeeded yet
- *     await new Promise((resolve) => {
+ *     await new Promise<void>((resolve) => {
  *       setTimeout(() => resolve(), 5000)
  *     })
  *   }
