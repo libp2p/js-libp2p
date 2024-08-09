@@ -9,6 +9,13 @@ const DEFAULT_PING_INTERVAL_MS = 10000
 
 export interface ConnectionMonitorInit {
   /**
+   * Whether the connection monitor is enabled
+   *
+   * @default true
+   */
+  enabled?: boolean
+
+  /**
    * How often to ping remote peers in ms
    *
    * @default 10000

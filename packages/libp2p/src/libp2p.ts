@@ -122,8 +122,10 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
     // Create the Connection Manager
     this.configureComponent('connectionManager', new DefaultConnectionManager(this.components, init.connectionManager))
 
-    // Create the Connection Monitor
-    this.configureComponent('connectionMonitor', new ConnectionMonitor(this.components, init.connectionMonitor))
+    if (init.connectionMonitor?.enabled !== false) {
+      // Create the Connection Monitor if not disabled
+      this.configureComponent('connectionMonitor', new ConnectionMonitor(this.components, init.connectionMonitor))
+    }
 
     // Create the Registrar
     this.configureComponent('registrar', new DefaultRegistrar(this.components))
