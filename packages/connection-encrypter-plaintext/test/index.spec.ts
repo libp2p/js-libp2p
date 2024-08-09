@@ -64,6 +64,11 @@ describe('plaintext', () => {
     const peer = await createRSAPeerId()
     remotePeer = peerIdFromBytes(peer.toBytes())
 
+    encrypter = plaintext()({
+      peerId: remotePeer,
+      logger: defaultLogger()
+    })
+
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [

@@ -10,7 +10,11 @@ import { createMaConnPair } from './utils/index.js'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
-export default (common: TestSetup<ConnectionEncrypter>): void => {
+export interface ConnectionEncrypterSetupArgs {
+  peerId: PeerId
+}
+
+export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupArgs>): void => {
   describe('interface-connection-encrypter compliance tests', () => {
     let crypto: ConnectionEncrypter
     let cryptoRemote: ConnectionEncrypter
@@ -26,8 +30,8 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         remotePeer,
         mitmPeer
       ] = await Promise.all([
-        common.setup(),
-        common.setup({ peerId: PeerIdFactory.createFromJSON(peers[1]) }),
+        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[0]) }),
+        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[1]) }),
         PeerIdFactory.createFromJSON(peers[0]),
         PeerIdFactory.createFromJSON(peers[1]),
         PeerIdFactory.createFromJSON(peers[2])
