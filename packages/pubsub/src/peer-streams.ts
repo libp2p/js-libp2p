@@ -1,4 +1,4 @@
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'

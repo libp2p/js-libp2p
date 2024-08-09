@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import type { KadDHTComponents } from '.'
 import type { Logger, PeerId, Startable } from '@libp2p/interface'
 

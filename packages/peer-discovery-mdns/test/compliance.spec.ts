@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { CustomEvent } from '@libp2p/interface'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'

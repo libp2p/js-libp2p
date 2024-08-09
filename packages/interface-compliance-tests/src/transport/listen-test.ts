@@ -1,5 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { CustomEvent, TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { pipe } from 'it-pipe'
