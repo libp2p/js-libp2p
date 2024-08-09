@@ -16,7 +16,7 @@ export interface ConnectionMonitorInit {
   pingInterval?: number
 
   /**
-   * Timeout settings for How long the ping is allowed to take before the
+   * Timeout settings for how long the ping is allowed to take before the
    * connection will be judged inactive and aborted.
    *
    * The timeout is adaptive to cope with slower networks or nodes that
