@@ -1,9 +1,10 @@
 import { upnpNat, type NatAPI, type MapPortOptions } from '@achingbrain/nat-port-mapper'
-import { CodeError, ERR_INVALID_PARAMETERS, serviceCapabilities } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { fromNodeAddress } from '@multiformats/multiaddr'
 import { isBrowser } from 'wherearewe'
+import { DoubleNATError } from './errors.js'
 import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 
@@ -40,7 +41,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     this.gateway = init.gateway
 
     if (this.ttl < DEFAULT_TTL) {
-      throw new CodeError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`, ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`)
     }
 
     this.client = upnpNat({
@@ -112,11 +113,11 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
       const isPrivate = isPrivateIp(publicIp)
 
       if (isPrivate === true) {
-        throw new CodeError(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`, 'ERR_DOUBLE_NAT')
+        throw new DoubleNATError(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
       }
 
       if (isPrivate == null) {
-        throw new CodeError(`${publicIp} is not an IP address`, ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError(`${publicIp} is not an IP address`)
       }
 
       const publicPort = highPort()

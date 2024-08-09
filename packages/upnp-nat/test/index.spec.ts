@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS, stop } from '@libp2p/interface'
+import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -90,7 +90,7 @@ describe('UPnP NAT (TCP)', () => {
     ])
 
     await expect(natManager.mapIpAddresses()).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOUBLE_NAT')
+      .with.property('name', 'DoubleNATError')
 
     expect(client.map.called).to.be.false()
     expect(components.addressManager.addObservedAddr.called).to.be.false()
@@ -188,6 +188,6 @@ describe('UPnP NAT (TCP)', () => {
 
   it('should specify large enough TTL', async () => {
     await expect(createNatManager({ ttl: 5, keepAlive: true })).to.eventually.be.rejected
-      .with.property('code', ERR_INVALID_PARAMETERS)
+      .with.property('name', 'InvalidParametersError')
   })
 })

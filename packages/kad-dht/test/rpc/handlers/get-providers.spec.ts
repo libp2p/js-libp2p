@@ -68,7 +68,8 @@ describe('rpc - handlers - GetProviders', () => {
       providers: []
     }
 
-    await expect(handler.handle(sourcePeer, msg)).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CID')
+    await expect(handler.handle(sourcePeer, msg)).to.eventually.be.rejected
+      .with.property('name', 'InvalidMessageError')
   })
 
   it('responds with providers and closer peers', async () => {

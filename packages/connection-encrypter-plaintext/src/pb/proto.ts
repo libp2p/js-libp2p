@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
@@ -36,7 +36,7 @@ export namespace Exchange {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -45,15 +45,20 @@ export namespace Exchange {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.id = reader.bytes()
               break
-            case 2:
-              obj.pubkey = PublicKey.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.pubkey = PublicKey.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.pubkey
+              })
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -68,8 +73,8 @@ export namespace Exchange {
     return encodeMessage(obj, Exchange.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Exchange => {
-    return decodeMessage(buf, Exchange.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Exchange => {
+    return decodeMessage(buf, Exchange.codec(), opts)
   }
 }
 
@@ -120,10 +125,10 @@ export namespace PublicKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           Type: KeyType.RSA,
-          Data: new Uint8Array(0)
+          Data: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -132,15 +137,18 @@ export namespace PublicKey {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.Type = KeyType.codec().decode(reader)
               break
-            case 2:
+            }
+            case 2: {
               obj.Data = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -155,7 +163,7 @@ export namespace PublicKey {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PublicKey => {
-    return decodeMessage(buf, PublicKey.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+    return decodeMessage(buf, PublicKey.codec(), opts)
   }
 }

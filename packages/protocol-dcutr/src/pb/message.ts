@@ -4,8 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface HolePunch {
@@ -56,7 +55,7 @@ export namespace HolePunch {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           observedAddresses: []
         }
@@ -67,15 +66,22 @@ export namespace HolePunch {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = HolePunch.Type.codec().decode(reader)
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.observedAddresses != null && obj.observedAddresses.length === opts.limits.observedAddresses) {
+                throw new MaxLengthError('Decode error - map field "observedAddresses" had too many elements')
+              }
+
               obj.observedAddresses.push(reader.bytes())
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -90,7 +96,7 @@ export namespace HolePunch {
     return encodeMessage(obj, HolePunch.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): HolePunch => {
-    return decodeMessage(buf, HolePunch.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HolePunch>): HolePunch => {
+    return decodeMessage(buf, HolePunch.codec(), opts)
   }
 }

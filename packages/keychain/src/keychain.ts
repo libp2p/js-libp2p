@@ -2,14 +2,13 @@
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
-import { CodeError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { codes } from './errors.js'
 import type { KeychainComponents, KeychainInit, Keychain, KeyInfo } from './index.js'
 import type { Logger, KeyType, PeerId } from '@libp2p/interface'
 
@@ -157,26 +156,26 @@ export class DefaultKeychain implements Keychain {
   async createKey (name: string, type: KeyType, size = 2048): Promise<KeyInfo> {
     if (!validateKeyName(name) || name === 'self') {
       await randomDelay()
-      throw new CodeError('Invalid key name', codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError('Invalid key name')
     }
 
     if (typeof type !== 'string') {
       await randomDelay()
-      throw new CodeError('Invalid key type', codes.ERR_INVALID_KEY_TYPE)
+      throw new InvalidParametersError('Invalid key type')
     }
 
     const dsname = DsName(name)
     const exists = await this.components.datastore.has(dsname)
     if (exists) {
       await randomDelay()
-      throw new CodeError('Key name already exists', codes.ERR_KEY_ALREADY_EXISTS)
+      throw new InvalidParametersError('Key name already exists')
     }
 
     switch (type.toLowerCase()) {
       case 'rsa':
         if (!Number.isSafeInteger(size) || size < 2048) {
           await randomDelay()
-          throw new CodeError('Invalid RSA key size', codes.ERR_INVALID_KEY_SIZE)
+          throw new InvalidParametersError('Invalid RSA key size')
         }
         break
       default:
@@ -190,7 +189,7 @@ export class DefaultKeychain implements Keychain {
       const cached = privates.get(this)
 
       if (cached == null) {
-        throw new CodeError('dek missing', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('dek missing')
       }
 
       const dek = cached.dek
@@ -239,7 +238,7 @@ export class DefaultKeychain implements Keychain {
       const key = keys.find((k) => k.id === id)
 
       if (key == null) {
-        throw new CodeError(`Key with id '${id}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
+        throw new InvalidParametersError(`Key with id '${id}' does not exist.`)
       }
 
       return key
@@ -258,7 +257,7 @@ export class DefaultKeychain implements Keychain {
   async findKeyByName (name: string): Promise<KeyInfo> {
     if (!validateKeyName(name)) {
       await randomDelay()
-      throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
     const dsname = DsInfoName(name)
@@ -268,7 +267,7 @@ export class DefaultKeychain implements Keychain {
     } catch (err: any) {
       await randomDelay()
       this.log.error(err)
-      throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
+      throw new NotFoundError(`Key '${name}' does not exist.`)
     }
   }
 
@@ -281,7 +280,7 @@ export class DefaultKeychain implements Keychain {
   async removeKey (name: string): Promise<KeyInfo> {
     if (!validateKeyName(name) || name === 'self') {
       await randomDelay()
-      throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
     const dsname = DsName(name)
     const keyInfo = await this.findKeyByName(name)
@@ -302,11 +301,11 @@ export class DefaultKeychain implements Keychain {
   async renameKey (oldName: string, newName: string): Promise<KeyInfo> {
     if (!validateKeyName(oldName) || oldName === 'self') {
       await randomDelay()
-      throw new CodeError(`Invalid old key name '${oldName}'`, codes.ERR_OLD_KEY_NAME_INVALID)
+      throw new InvalidParametersError(`Invalid old key name '${oldName}'`)
     }
     if (!validateKeyName(newName) || newName === 'self') {
       await randomDelay()
-      throw new CodeError(`Invalid new key name '${newName}'`, codes.ERR_NEW_KEY_NAME_INVALID)
+      throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }
     const oldDsname = DsName(oldName)
     const newDsname = DsName(newName)
@@ -316,7 +315,7 @@ export class DefaultKeychain implements Keychain {
     const exists = await this.components.datastore.has(newDsname)
     if (exists) {
       await randomDelay()
-      throw new CodeError(`Key '${newName}' already exists`, codes.ERR_KEY_ALREADY_EXISTS)
+      throw new InvalidParametersError(`Key '${newName}' already exists`)
     }
 
     try {
@@ -344,11 +343,11 @@ export class DefaultKeychain implements Keychain {
   async exportKey (name: string, password: string): Promise<string> {
     if (!validateKeyName(name)) {
       await randomDelay()
-      throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
     if (password == null) {
       await randomDelay()
-      throw new CodeError('Password is required', codes.ERR_PASSWORD_REQUIRED)
+      throw new InvalidParametersError('Password is required')
     }
 
     const dsname = DsName(name)
@@ -358,7 +357,7 @@ export class DefaultKeychain implements Keychain {
       const cached = privates.get(this)
 
       if (cached == null) {
-        throw new CodeError('dek missing', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('dek missing')
       }
 
       const dek = cached.dek
@@ -394,17 +393,17 @@ export class DefaultKeychain implements Keychain {
   async importKey (name: string, pem: string, password: string): Promise<KeyInfo> {
     if (!validateKeyName(name) || name === 'self') {
       await randomDelay()
-      throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
     if (pem == null) {
       await randomDelay()
-      throw new CodeError('PEM encoded key is required', codes.ERR_PEM_REQUIRED)
+      throw new InvalidParametersError('PEM encoded key is required')
     }
     const dsname = DsName(name)
     const exists = await this.components.datastore.has(dsname)
     if (exists) {
       await randomDelay()
-      throw new CodeError(`Key '${name}' already exists`, codes.ERR_KEY_ALREADY_EXISTS)
+      throw new InvalidParametersError(`Key '${name}' already exists`)
     }
 
     let privateKey
@@ -412,7 +411,7 @@ export class DefaultKeychain implements Keychain {
       privateKey = await importKey(pem, password)
     } catch (err: any) {
       await randomDelay()
-      throw new CodeError('Cannot read the key, most likely the password is wrong', codes.ERR_CANNOT_READ_KEY)
+      throw new InvalidParametersError('Cannot read the key, most likely the password is wrong')
     }
 
     let kid
@@ -421,7 +420,7 @@ export class DefaultKeychain implements Keychain {
       const cached = privates.get(this)
 
       if (cached == null) {
-        throw new CodeError('dek missing', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('dek missing')
       }
 
       const dek = cached.dek
@@ -449,13 +448,13 @@ export class DefaultKeychain implements Keychain {
   async importPeer (name: string, peer: PeerId): Promise<KeyInfo> {
     try {
       if (!validateKeyName(name)) {
-        throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+        throw new InvalidParametersError(`Invalid key name '${name}'`)
       }
       if (peer == null) {
-        throw new CodeError('PeerId is required', codes.ERR_MISSING_PRIVATE_KEY)
+        throw new InvalidParametersError('PeerId is required')
       }
       if (peer.privateKey == null) {
-        throw new CodeError('PeerId.privKey is required', codes.ERR_MISSING_PRIVATE_KEY)
+        throw new InvalidParametersError('PeerId.privKey is required')
       }
 
       const privateKey = await unmarshalPrivateKey(peer.privateKey)
@@ -464,13 +463,13 @@ export class DefaultKeychain implements Keychain {
       const exists = await this.components.datastore.has(dsname)
       if (exists) {
         await randomDelay()
-        throw new CodeError(`Key '${name}' already exists`, codes.ERR_KEY_ALREADY_EXISTS)
+        throw new InvalidParametersError(`Key '${name}' already exists`)
       }
 
       const cached = privates.get(this)
 
       if (cached == null) {
-        throw new CodeError('dek missing', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('dek missing')
       }
 
       const dek = cached.dek
@@ -496,7 +495,7 @@ export class DefaultKeychain implements Keychain {
   async getPrivateKey (name: string): Promise<string> {
     if (!validateKeyName(name)) {
       await randomDelay()
-      throw new CodeError(`Invalid key name '${name}'`, codes.ERR_INVALID_KEY_NAME)
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
     try {
@@ -506,7 +505,7 @@ export class DefaultKeychain implements Keychain {
     } catch (err: any) {
       await randomDelay()
       this.log.error(err)
-      throw new CodeError(`Key '${name}' does not exist.`, codes.ERR_KEY_NOT_FOUND)
+      throw new InvalidParametersError(`Key '${name}' does not exist.`)
     }
   }
 
@@ -516,21 +515,21 @@ export class DefaultKeychain implements Keychain {
   async rotateKeychainPass (oldPass: string, newPass: string): Promise<void> {
     if (typeof oldPass !== 'string') {
       await randomDelay()
-      throw new CodeError(`Invalid old pass type '${typeof oldPass}'`, codes.ERR_INVALID_OLD_PASS_TYPE)
+      throw new InvalidParametersError(`Invalid old pass type '${typeof oldPass}'`)
     }
     if (typeof newPass !== 'string') {
       await randomDelay()
-      throw new CodeError(`Invalid new pass type '${typeof newPass}'`, codes.ERR_INVALID_NEW_PASS_TYPE)
+      throw new InvalidParametersError(`Invalid new pass type '${typeof newPass}'`)
     }
     if (newPass.length < 20) {
       await randomDelay()
-      throw new CodeError(`Invalid pass length ${newPass.length}`, codes.ERR_INVALID_PASS_LENGTH)
+      throw new InvalidParametersError(`Invalid pass length ${newPass.length}`)
     }
     this.log('recreating keychain')
     const cached = privates.get(this)
 
     if (cached == null) {
-      throw new CodeError('dek missing', codes.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('dek missing')
     }
 
     const oldDek = cached.dek

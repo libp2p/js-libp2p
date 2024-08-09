@@ -133,7 +133,7 @@ describe('Dialer and Listener integration', () => {
     // should fail when we interact with the stream
     const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
     await expect(pipe(input, dialerSelection.stream, async source => all(source)))
-      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+      .to.eventually.be.rejected.with.property('name', 'UnsupportedProtocolError')
   })
 
   it('should handle and optimistically select only by reading', async () => {
@@ -216,7 +216,7 @@ describe('Dialer and Listener integration', () => {
 
     // should fail when we interact with the stream
     await expect(pipe(dialerSelection.stream, async source => all(source)))
-      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+      .to.eventually.be.rejected.with.property('name', 'UnsupportedProtocolError')
   })
 
   it('should abort an unhandled optimistically select', async () => {
@@ -244,6 +244,6 @@ describe('Dialer and Listener integration', () => {
 
     // Dialer should fail to negotiate the single protocol
     await expect(dialerResultPromise).to.eventually.be.rejected()
-      .with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+      .with.property('name', 'UnsupportedProtocolError')
   })
 })

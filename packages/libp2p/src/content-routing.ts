@@ -1,7 +1,7 @@
-import { CodeError } from '@libp2p/interface'
+import { NotStartedError } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
-import { codes, messages } from './errors.js'
+import { NoContentRoutersError } from './errors.js'
 import type { AbortOptions, ComponentLogger, ContentRouting, PeerInfo, PeerRouting, PeerStore, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -45,7 +45,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async * findProviders (key: CID, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new NoContentRoutersError('No content routers available')
     }
 
     const self = this
@@ -84,7 +84,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async provide (key: CID, options: AbortOptions = {}): Promise<void> {
     if (this.routers.length === 0) {
-      throw new CodeError('No content routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new NoContentRoutersError('No content routers available')
     }
 
     await Promise.all(this.routers.map(async (router) => {
@@ -97,7 +97,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async put (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
+      throw new NotStartedError()
     }
 
     await Promise.all(this.routers.map(async (router) => {
@@ -111,7 +111,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
    */
   async get (key: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes.ERR_NODE_NOT_STARTED)
+      throw new NotStartedError()
     }
 
     return Promise.any(this.routers.map(async (router) => {

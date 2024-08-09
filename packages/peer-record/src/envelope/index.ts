@@ -1,12 +1,11 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { CodeError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
-import { codes } from '../errors.js'
 import { Envelope as Protobuf } from './envelope.js'
+import { InvalidSignatureError } from './errors.js'
 import type { PeerId, Record, Envelope } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {
@@ -65,7 +64,7 @@ export class RecordEnvelope implements Envelope {
     const valid = await envelope.validate(domain)
 
     if (!valid) {
-      throw new CodeError('envelope signature is not valid for the given domain', codes.ERR_SIGNATURE_NOT_VALID)
+      throw new InvalidSignatureError('Envelope signature is not valid for the given domain')
     }
 
     return envelope

@@ -1,8 +1,7 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import { AdaptiveTimeout, type AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import { pbStream } from 'it-protobuf-stream'
-import { CodeError } from 'protons-runtime'
 import { Message } from './message/dht.js'
 import { fromPbPeerInfo } from './message/utils.js'
 import {
@@ -88,7 +87,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     const type = msg.type
 
     if (type == null) {
-      throw new CodeError('Message type was missing', 'ERR_INVALID_PARAMETERS')
+      throw new InvalidParametersError('Message type was missing')
     }
 
     this.log('sending %s to %p', msg.type, to)
@@ -141,7 +140,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     const type = msg.type
 
     if (type == null) {
-      throw new CodeError('Message type was missing', 'ERR_INVALID_PARAMETERS')
+      throw new InvalidParametersError('Message type was missing')
     }
 
     this.log('sending %s to %p', msg.type, to)

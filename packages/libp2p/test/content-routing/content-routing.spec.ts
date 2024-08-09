@@ -32,15 +32,15 @@ describe('content-routing', () => {
         throw new Error('.findProviders should return an error')
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.equal('ERR_NO_ROUTERS_AVAILABLE')
+        expect(err.name).to.equal('NoContentRoutersError')
       }
     })
 
     it('.provide should return an error', async () => {
       // @ts-expect-error invalid params
       await expect(node.contentRouting.provide('a cid'))
-        .to.eventually.be.rejected()
-        .and.to.have.property('code', 'ERR_NO_ROUTERS_AVAILABLE')
+        .to.eventually.be.rejected
+        .with.property('name', 'NoContentRoutersError')
     })
   })
 

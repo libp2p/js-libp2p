@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMultiaddrError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { type Multiaddr, protocols } from '@multiformats/multiaddr'
 import { WebTransport } from '@multiformats/multiaddr-matcher'
@@ -21,7 +21,7 @@ export interface ParsedMultiaddr {
 
 export function parseMultiaddr (ma: Multiaddr): ParsedMultiaddr {
   if (!WebTransport.matches(ma)) {
-    throw new CodeError('Invalid multiaddr, was not a WebTransport address', 'ERR_INVALID_MULTIADDR')
+    throw new InvalidMultiaddrError('Invalid multiaddr, was not a WebTransport address')
   }
 
   const parts = ma.stringTuples()

@@ -1,8 +1,7 @@
-import { CodeError } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { ERR_TRANSFER_LIMIT_EXCEEDED } from './constants.js'
+import { DurationLimitError, TransferLimitError } from './errors.js'
 import type { Limit } from './pb/index.js'
 import type { LoggerOptions, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
@@ -27,7 +26,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
         options.log.error(err)
       }
 
-      throw new CodeError(`data limit of ${limitBytes} bytes exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED)
+      throw new TransferLimitError(`data limit of ${limitBytes} bytes exceeded`)
     }
 
     limit.remaining -= len
@@ -62,7 +61,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      dst.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
+      dst.abort(new DurationLimitError(`duration limit of ${limit?.duration} ms exceeded`))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
@@ -84,7 +83,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      src.abort(new CodeError(`duration limit of ${limit?.duration} ms exceeded`, ERR_TRANSFER_LIMIT_EXCEEDED))
+      src.abort(new DurationLimitError(`duration limit of ${limit?.duration} ms exceeded`))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })

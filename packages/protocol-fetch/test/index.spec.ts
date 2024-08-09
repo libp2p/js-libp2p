@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -140,7 +140,7 @@ describe('fetch', () => {
       }, FetchResponse)
 
       await expect(result).to.eventually.be.rejected
-        .with.property('code', ERR_INVALID_PARAMETERS)
+        .with.property('name', 'ProtocolError')
     })
 
     it('should time out fetching from another peer when waiting for the record', async () => {
@@ -158,7 +158,7 @@ describe('fetch', () => {
       await expect(fetch.fetch(remotePeer, key, {
         signal: AbortSignal.timeout(10)
       })).to.eventually.be.rejected
-        .with.property('code', 'ABORT_ERR')
+        .with.property('name', 'AbortError')
 
       expect(outgoingStream.abort.called).to.be.true()
     })
@@ -264,7 +264,7 @@ describe('fetch', () => {
       })
 
       expect(incomingStream.abort.called).to.be.true()
-      expect(incomingStream.abort.getCall(0).args[0]).to.have.property('code', 'ABORT_ERR')
+      expect(incomingStream.abort.getCall(0).args[0]).to.have.property('name', 'AbortError')
     })
   })
 })

@@ -14,8 +14,7 @@
  * ```
  */
 
-import { CodeError } from '@libp2p/interface'
-import { type Ed25519PeerId, type PeerIdType, type RSAPeerId, type URLPeerId, type Secp256k1PeerId, peerIdSymbol, type PeerId } from '@libp2p/interface'
+import { InvalidParametersError, peerIdSymbol } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { bases } from 'multiformats/basics'
 import { CID } from 'multiformats/cid'
@@ -25,6 +24,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Ed25519PeerId, PeerIdType, RSAPeerId, URLPeerId, Secp256k1PeerId, PeerId } from '@libp2p/interface'
 import type { MultibaseDecoder } from 'multiformats/bases/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -242,7 +242,7 @@ export function createPeerId (init: PeerIdInit): Ed25519PeerId | Secp256k1PeerId
     return new Secp256k1PeerIdImpl(init)
   }
 
-  throw new CodeError('Type must be "RSA", "Ed25519" or "secp256k1"', 'ERR_INVALID_PARAMETERS')
+  throw new InvalidParametersError('Type must be "RSA", "Ed25519" or "secp256k1"')
 }
 
 export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
@@ -258,7 +258,7 @@ export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId |
     return new Secp256k1PeerIdImpl(other)
   }
 
-  throw new CodeError('Not a PeerId', 'ERR_INVALID_PARAMETERS')
+  throw new InvalidParametersError('Not a PeerId')
 }
 
 export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {

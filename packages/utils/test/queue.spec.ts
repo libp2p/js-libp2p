@@ -159,7 +159,7 @@ describe('queue', () => {
     await expect(queue.onEmpty({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('.onIdle()', async () => {
@@ -201,7 +201,7 @@ describe('queue', () => {
     await expect(queue.onIdle({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('.onSizeLessThan()', async () => {
@@ -245,7 +245,7 @@ describe('queue', () => {
     await expect(queue.onSizeLessThan(1, {
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('.onIdle() - no pending', async () => {
@@ -676,7 +676,7 @@ describe('queue', () => {
     await expect(all(queue.toGenerator({
       signal: controller.signal
     }))).to.eventually.be.rejected
-      .with.property('code', 'ERR_QUEUE_ABORTED')
+      .with.property('name', 'AbortError')
   })
 
   it('can break out of a loop with a generator', async () => {
@@ -742,7 +742,7 @@ describe('queue', () => {
     expect(signal.listenerCount('abort')).to.equal(0)
 
     await expect(jobResult).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('rejects aborted jobs with the abort reason if supplied', async () => {
@@ -790,7 +790,7 @@ describe('queue', () => {
     signal.abort()
 
     await expect(jobResult).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
 
     // counts updated
     expect(queue.size).to.equal(1)

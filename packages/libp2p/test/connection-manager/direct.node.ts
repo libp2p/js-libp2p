@@ -5,7 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Connection, type ConnectionProtector, isConnection, type PeerId, type Stream, type Libp2p } from '@libp2p/interface'
-import { AbortError, ERR_TIMEOUT, TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -29,7 +29,6 @@ import { DefaultAddressManager } from '../../src/address-manager/index.js'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { createLibp2pNode } from '../../src/libp2p.js'
 import { DefaultPeerRouting } from '../../src/peer-routing.js'
@@ -152,7 +151,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(unsupportedAddr))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should fail to connect if peer has no known addresses', async () => {
@@ -161,7 +160,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(peerId))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should be able to connect to a given peer id', async () => {
@@ -185,7 +184,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(remoteComponents.peerId))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should only try to connect to addresses supported by the transports configured', async () => {
@@ -222,7 +221,7 @@ describe('dialing (direct, TCP)', () => {
 
     await expect(dialer.dial(remoteAddr))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.property('code', ERR_TIMEOUT)
+      .and.to.have.property('name', 'TimeoutError')
   })
 
   it('should only dial to the max concurrency', async () => {
@@ -441,11 +440,11 @@ describe('libp2p.dialer (direct, TCP)', () => {
     // @ts-expect-error invalid params
     await expect(libp2p.dialProtocol(remoteAddr))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.property('code', ErrorCodes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      .and.to.have.property('name', 'InvalidParametersError')
 
     await expect(libp2p.dialProtocol(remoteAddr, []))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.property('code', ErrorCodes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      .and.to.have.property('name', 'InvalidParametersError')
   })
 
   it('should be able to use hangup to close connections', async () => {

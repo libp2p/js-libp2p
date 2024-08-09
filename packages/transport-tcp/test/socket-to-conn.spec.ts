@@ -146,7 +146,7 @@ describe('socket-to-conn', () => {
 
     // client closed the connection - error code is platform specific
     if (os.platform() === 'linux') {
-      await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_READ_TIMEOUT')
+      await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
     } else {
       await expect(serverErrored.promise).to.eventually.have.property('code', 'ECONNRESET')
     }
@@ -199,7 +199,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // remote stopped sending us data
-    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_READ_TIMEOUT')
+    await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')
@@ -243,7 +243,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // remote didn't send us any data
-    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_SOCKET_READ_TIMEOUT')
+    await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')
@@ -479,7 +479,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // remote didn't read our data
-    await expect(serverErrored.promise).to.eventually.have.property('code', 'ERR_CLOSE_TIMEOUT')
+    await expect(serverErrored.promise).to.eventually.have.property('name', 'AbortError')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')

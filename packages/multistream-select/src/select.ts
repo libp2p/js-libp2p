@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { UnsupportedProtocolError } from '@libp2p/interface'
 import { lpStream } from 'it-length-prefixed-stream'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
@@ -113,7 +113,7 @@ export async function select <Stream extends SelectStream> (stream: Stream, prot
     }
   }
 
-  throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
+  throw new UnsupportedProtocolError('protocol selection failed')
 }
 
 /**
@@ -273,7 +273,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       options.log.trace('optimistic: read protocol "%s", expecting "%s"', response, protocol)
 
       if (response !== protocol) {
-        throw new CodeError('protocol selection failed', 'ERR_UNSUPPORTED_PROTOCOL')
+        throw new UnsupportedProtocolError('protocol selection failed')
       }
     } finally {
       readProtocol = true

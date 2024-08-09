@@ -1,6 +1,7 @@
-import { CodeError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { isStartable, type Startable, type Libp2pEvents, type ComponentLogger, type NodeInfo, type ConnectionProtector, type ConnectionGater, type ContentRouting, type TypedEventTarget, type Metrics, type PeerId, type PeerRouting, type PeerStore, type PrivateKey, type Upgrader } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { MissingServiceError, UnmetServiceDependenciesError } from './errors.js'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -134,7 +135,7 @@ export function defaultComponents (init: ComponentsInit = {}): Components {
         const service = components.components[prop]
 
         if (service == null && !OPTIONAL_SERVICES.includes(prop)) {
-          throw new CodeError(`${prop} not set`, 'ERR_SERVICE_MISSING')
+          throw new MissingServiceError(`${prop} not set`)
         }
 
         return service
@@ -170,7 +171,7 @@ export function checkServiceDependencies (components: Components): void {
   for (const service of Object.values(components.components)) {
     for (const capability of getServiceDependencies(service)) {
       if (serviceCapabilities[capability] !== true) {
-        throw new CodeError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`, 'ERR_UNMET_SERVICE_DEPENDENCIES')
+        throw new UnmetServiceDependenciesError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`)
       }
     }
   }

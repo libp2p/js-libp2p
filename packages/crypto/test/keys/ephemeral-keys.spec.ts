@@ -3,8 +3,9 @@
 import { expect } from 'aegir/chai'
 import * as crypto from '../../src/index.js'
 import fixtures from '../fixtures/go-elliptic-key.js'
+import type { Curve } from '../../src/keys/ecdh.js'
 
-const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
+const curves: Curve[] = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
 const lengths: Record<string, number> = {
   'P-256': 65,
   'P-384': 97,
@@ -57,6 +58,8 @@ describe('generateEphemeralKeyPair', () => {
   })
 
   it('handles bad curve name', async () => {
-    await expect(crypto.keys.generateEphemeralKeyPair('bad name')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_CURVE')
+    // @ts-expect-error argument is not a Curve
+    await expect(crypto.keys.generateEphemeralKeyPair('bad name')).to.eventually.be.rejected
+      .with.property('name', 'InvalidParametersError')
   })
 })

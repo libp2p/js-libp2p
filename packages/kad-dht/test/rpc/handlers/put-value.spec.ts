@@ -50,7 +50,7 @@ describe('rpc - handlers - PutValue', () => {
     try {
       await handler.handle(sourcePeer, msg)
     } catch (err: any) {
-      expect(err.code).to.eql('ERR_EMPTY_RECORD')
+      expect(err.name).to.equal('InvalidMessageError')
       return
     }
 

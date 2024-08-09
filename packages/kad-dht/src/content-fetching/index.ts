@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import map from 'it-map'
 import parallel from 'it-parallel'
@@ -7,6 +7,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import {
   ALPHA
 } from '../constants.js'
+import { QueryError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
 import {
   valueEvent,
@@ -118,7 +119,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options)
+        yield queryErrorEvent({ from, error: new QueryError('Value not put correctly') }, options)
       }
 
       this.log.error('Failed error correcting entry')
@@ -165,7 +166,7 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options))
+              events.push(queryErrorEvent({ from: event.peer.id, error: new QueryError('Value not put correctly') }, options))
             }
           }
 
@@ -211,7 +212,7 @@ export class ContentFetching {
       i = bestRecord(this.selectors, key, records)
     } catch (err: any) {
       // Assume the first record if no selector available
-      if (err.code !== 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY') {
+      if (err.name !== 'InvalidParametersError') {
         throw err
       }
     }
@@ -220,7 +221,7 @@ export class ContentFetching {
     this.log('GetValue %b %b', key, best)
 
     if (best == null) {
-      throw new CodeError('best value was not found', 'ERR_NOT_FOUND')
+      throw new NotFoundError('Best value was not found')
     }
 
     yield * this.sendCorrectionRecord(key, vals, best, options)

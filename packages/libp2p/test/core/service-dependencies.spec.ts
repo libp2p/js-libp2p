@@ -53,7 +53,7 @@ describe('service dependencies', () => {
         b: serviceB()
       }
     })).to.eventually.be.rejected
-      .with.property('code', 'ERR_UNMET_SERVICE_DEPENDENCIES')
+      .with.property('name', 'UnmetServiceDependenciesError')
   })
 
   it('should not error when service dependencies are met', async () => {

@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Envelope {
@@ -48,12 +48,12 @@ export namespace Envelope {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          publicKey: new Uint8Array(0),
-          payloadType: new Uint8Array(0),
-          payload: new Uint8Array(0),
-          signature: new Uint8Array(0)
+          publicKey: uint8ArrayAlloc(0),
+          payloadType: uint8ArrayAlloc(0),
+          payload: uint8ArrayAlloc(0),
+          signature: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -62,21 +62,26 @@ export namespace Envelope {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.publicKey = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.payloadType = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.payload = reader.bytes()
               break
-            case 5:
+            }
+            case 5: {
               obj.signature = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -91,7 +96,7 @@ export namespace Envelope {
     return encodeMessage(obj, Envelope.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Envelope => {
-    return decodeMessage(buf, Envelope.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Envelope => {
+    return decodeMessage(buf, Envelope.codec(), opts)
   }
 }

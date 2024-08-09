@@ -1,122 +1,76 @@
-import { CodeError } from '@libp2p/interface'
-import type { Direction } from '@libp2p/interface'
-
-export enum codes {
-  ERR_ALREADY_ABORTED = 'ERR_ALREADY_ABORTED',
-  ERR_DATA_CHANNEL = 'ERR_DATA_CHANNEL',
-  ERR_CONNECTION_CLOSED = 'ERR_CONNECTION_CLOSED',
-  ERR_HASH_NOT_SUPPORTED = 'ERR_HASH_NOT_SUPPORTED',
-  ERR_INVALID_MULTIADDR = 'ERR_INVALID_MULTIADDR',
-  ERR_INVALID_FINGERPRINT = 'ERR_INVALID_FINGERPRINT',
-  ERR_INVALID_PARAMETERS = 'ERR_INVALID_PARAMETERS',
-  ERR_NOT_IMPLEMENTED = 'ERR_NOT_IMPLEMENTED',
-  ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS',
-  ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS = 'ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS',
+export class WebRTCTransportError extends Error {
+  constructor (msg: string) {
+    super(`WebRTC transport error: ${msg}`)
+    this.name = 'WebRTCTransportError'
+  }
 }
 
-export class WebRTCTransportError extends CodeError {
-  constructor (msg: string, code?: string) {
-    super(`WebRTC transport error: ${msg}`, code ?? '')
-    this.name = 'WebRTCTransportError'
+export class SDPHandshakeFailedError extends WebRTCTransportError {
+  constructor (message = 'SDP handshake failed') {
+    super(message)
+    this.name = 'SDPHandshakeFailedError'
   }
 }
 
 export class ConnectionClosedError extends WebRTCTransportError {
   constructor (state: RTCPeerConnectionState, msg: string) {
-    super(`peerconnection moved to state: ${state}: ${msg}`, codes.ERR_CONNECTION_CLOSED)
+    super(`peerconnection moved to state: ${state}: ${msg}`)
     this.name = 'WebRTC/ConnectionClosed'
   }
 }
 
-export function connectionClosedError (state: RTCPeerConnectionState, msg: string): ConnectionClosedError {
-  return new ConnectionClosedError(state, msg)
-}
-
 export class DataChannelError extends WebRTCTransportError {
   constructor (streamLabel: string, msg: string) {
-    super(`[stream: ${streamLabel}] data channel error: ${msg}`, codes.ERR_DATA_CHANNEL)
+    super(`[stream: ${streamLabel}] data channel error: ${msg}`)
     this.name = 'WebRTC/DataChannelError'
   }
 }
 
-export function dataChannelError (streamLabel: string, msg: string): DataChannelError {
-  return new DataChannelError(streamLabel, msg)
-}
-
 export class InappropriateMultiaddrError extends WebRTCTransportError {
   constructor (msg: string) {
-    super(`There was a problem with the Multiaddr which was passed in: ${msg}`, codes.ERR_INVALID_MULTIADDR)
+    super(`There was a problem with the Multiaddr which was passed in: ${msg}`)
     this.name = 'WebRTC/InappropriateMultiaddrError'
   }
 }
 
-export function inappropriateMultiaddr (msg: string): InappropriateMultiaddrError {
-  return new InappropriateMultiaddrError(msg)
-}
-
 export class InvalidArgumentError extends WebRTCTransportError {
   constructor (msg: string) {
-    super(`There was a problem with a provided argument: ${msg}`, codes.ERR_INVALID_PARAMETERS)
+    super(`There was a problem with a provided argument: ${msg}`)
     this.name = 'WebRTC/InvalidArgumentError'
   }
 }
 
-export function invalidArgument (msg: string): InvalidArgumentError {
-  return new InvalidArgumentError(msg)
-}
-
 export class InvalidFingerprintError extends WebRTCTransportError {
   constructor (fingerprint: string, source: string) {
-    super(`Invalid fingerprint "${fingerprint}" within ${source}`, codes.ERR_INVALID_FINGERPRINT)
+    super(`Invalid fingerprint "${fingerprint}" within ${source}`)
     this.name = 'WebRTC/InvalidFingerprintError'
   }
 }
 
-export function invalidFingerprint (fingerprint: string, source: string): InvalidFingerprintError {
-  return new InvalidFingerprintError(fingerprint, source)
-}
-
 export class OperationAbortedError extends WebRTCTransportError {
   constructor (context: string, abortReason: string) {
-    super(`Signalled to abort because (${abortReason}}) ${context}`, codes.ERR_ALREADY_ABORTED)
+    super(`Signalled to abort because (${abortReason}}) ${context}`)
     this.name = 'WebRTC/OperationAbortedError'
   }
 }
 
-export function operationAborted (context: string, reason: string): OperationAbortedError {
-  return new OperationAbortedError(context, reason)
-}
-
 export class OverStreamLimitError extends WebRTCTransportError {
   constructor (msg: string) {
-    const code = msg.startsWith('inbound') ? codes.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS : codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS
-    super(msg, code)
+    super(msg)
     this.name = 'WebRTC/OverStreamLimitError'
   }
 }
 
-export function overStreamLimit (dir: Direction, proto: string): OverStreamLimitError {
-  return new OverStreamLimitError(`${dir} stream limit reached for protocol - ${proto}`)
-}
-
 export class UnimplementedError extends WebRTCTransportError {
   constructor (methodName: string) {
-    super(`A method (${methodName}) was called though it has been intentionally left unimplemented.`, codes.ERR_NOT_IMPLEMENTED)
+    super(`A method (${methodName}) was called though it has been intentionally left unimplemented.`)
     this.name = 'WebRTC/UnimplementedError'
   }
 }
 
-export function unimplemented (methodName: string): UnimplementedError {
-  return new UnimplementedError(methodName)
-}
-
 export class UnsupportedHashAlgorithmError extends WebRTCTransportError {
   constructor (algo: number) {
-    super(`unsupported hash algorithm code: ${algo} please see the codes at https://github.com/multiformats/multicodec/blob/master/table.csv `, codes.ERR_HASH_NOT_SUPPORTED)
+    super(`unsupported hash algorithm code: ${algo} please see the codes at https://github.com/multiformats/multicodec/blob/master/table.csv `)
     this.name = 'WebRTC/UnsupportedHashAlgorithmError'
   }
-}
-
-export function unsupportedHashAlgorithmCode (code: number): UnsupportedHashAlgorithmError {
-  return new UnsupportedHashAlgorithmError(code)
 }

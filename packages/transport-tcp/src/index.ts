@@ -28,7 +28,7 @@
  */
 
 import net from 'net'
-import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { AbortError, TimeoutError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import * as mafmt from '@multiformats/mafmt'
 import { CustomProgressEvent } from 'progress-events'
 import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
@@ -230,7 +230,7 @@ class TCP implements Transport<TCPDialEvents> {
         this.log('connection timeout %a', ma)
         this.metrics?.dialerEvents.increment({ timeout: true })
 
-        const err = new CodeError(`connection timeout after ${Date.now() - start}ms`, 'ERR_CONNECT_TIMEOUT')
+        const err = new TimeoutError(`connection timeout after ${Date.now() - start}ms`)
         // Note: this will result in onError() being called
         rawSocket.emit('error', err)
       }

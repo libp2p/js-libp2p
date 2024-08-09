@@ -1,10 +1,9 @@
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { codes } from './errors.js'
 import type { Message, PubSubRPCMessage } from '@libp2p/interface'
 
 /**
@@ -86,7 +85,7 @@ const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
 
 export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => {
   if (message.from == null) {
-    throw new CodeError('RPC message was missing from', codes.ERR_MISSING_FROM)
+    throw new InvalidMessageError('RPC message was missing from')
   }
 
   if (!await isSigned(message)) {
@@ -110,7 +109,7 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
   }
 
   if (msg.key.length === 0) {
-    throw new CodeError('Signed RPC message was missing key', codes.ERR_MISSING_KEY)
+    throw new InvalidMessageError('Signed RPC message was missing key')
   }
 
   return msg

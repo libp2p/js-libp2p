@@ -14,10 +14,7 @@ interface Cases {
     publicKey: Uint8Array[]
   }
   invalid: {
-    publicKey: Array<{
-      data: Uint8Array
-      code: string
-    }>
+    publicKey: Uint8Array[]
   }
 }
 
@@ -32,20 +29,13 @@ const generateCases = (hash: Uint8Array): Cases => {
       ]
     },
     invalid: {
-      publicKey: [{
-        data: uint8ArrayFromString('/pk/'),
-        code: 'ERR_INVALID_RECORD_KEY_TOO_SHORT'
-      }, {
-        data: Uint8Array.of(...uint8ArrayFromString('/pk/'), ...uint8ArrayFromString('random')),
-        code: 'ERR_INVALID_RECORD_HASH_MISMATCH'
-      }, {
-        data: hash,
-        code: 'ERR_INVALID_RECORD_KEY_BAD_PREFIX'
-      }, {
+      publicKey: [
+        uint8ArrayFromString('/pk/'),
+        Uint8Array.of(...uint8ArrayFromString('/pk/'), ...uint8ArrayFromString('random')),
+        hash,
         // @ts-expect-error invalid input
-        data: 'not a buffer',
-        code: 'ERR_INVALID_RECORD_KEY_NOT_BUFFER'
-      }]
+        'not a buffer'
+      ]
     }
   }
 }
@@ -86,7 +76,7 @@ describe('validator', () => {
         }
       }
       await expect(validator.verifyRecord(validators, rec))
-        .to.eventually.rejected.with.property('code', 'ERR_INVALID_RECORD_KEY_TYPE')
+        .to.eventually.rejected.with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -109,15 +99,15 @@ describe('validator', () => {
       })
 
       it('throws on invalid records', async () => {
-        return Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
+        return Promise.all(cases.invalid.publicKey.map(async data => {
           try {
             //
             await validator.validators.pk(data, key.public.bytes)
           } catch (err: any) {
-            expect(err.code).to.eql(code)
+            expect(err).to.have.property('name', 'InvalidParametersError')
             return
           }
-          expect.fail('did not throw an error with code ' + code)
+          expect.fail('did not throw an InvalidParametersError')
         }))
       })
     })

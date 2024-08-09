@@ -1,8 +1,9 @@
-import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
 import { anySignal } from 'any-signal'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { QueryAbortedError } from '../errors.js'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
@@ -195,7 +196,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     }
   } catch (err) {
     if (signal.aborted) {
-      throw new CodeError('Query aborted', 'ERR_QUERY_ABORTED')
+      throw new QueryAbortedError('Query aborted')
     }
 
     throw err

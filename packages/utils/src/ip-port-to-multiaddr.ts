@@ -1,19 +1,13 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-
-export const Errors = {
-  ERR_INVALID_IP_PARAMETER: 'ERR_INVALID_IP_PARAMETER',
-  ERR_INVALID_PORT_PARAMETER: 'ERR_INVALID_PORT_PARAMETER',
-  ERR_INVALID_IP: 'ERR_INVALID_IP'
-}
 
 /**
  * Transform an IP, Port pair into a multiaddr
  */
 export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr {
   if (typeof ip !== 'string') {
-    throw new CodeError(`invalid ip provided: ${ip}`, Errors.ERR_INVALID_IP_PARAMETER) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    throw new InvalidParametersError(`invalid ip provided: ${ip}`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
   }
 
   if (typeof port === 'string') {
@@ -21,7 +15,7 @@ export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr
   }
 
   if (isNaN(port)) {
-    throw new CodeError(`invalid port provided: ${port}`, Errors.ERR_INVALID_PORT_PARAMETER)
+    throw new InvalidParametersError(`invalid port provided: ${port}`)
   }
 
   if (isIPv4(ip)) {
@@ -32,5 +26,5 @@ export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr
     return multiaddr(`/ip6/${ip}/tcp/${port}`)
   }
 
-  throw new CodeError(`invalid ip:port for creating a multiaddr: ${ip}:${port}`, Errors.ERR_INVALID_IP)
+  throw new InvalidParametersError(`invalid ip:port for creating a multiaddr: ${ip}:${port}`)
 }

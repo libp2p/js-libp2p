@@ -66,7 +66,7 @@ describe('rpc - handlers - GetValue', () => {
     try {
       await handler.handle(sourcePeer, msg)
     } catch (err: any) {
-      expect(err.code).to.eql('ERR_INVALID_KEY')
+      expect(err.name).to.equal('InvalidMessageError')
       return
     }
 

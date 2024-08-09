@@ -59,7 +59,7 @@ describe('parse multiaddr', () => {
       const ma = multiaddr(`/ip4/123.123.123.123/udp/4001/p2p/${targetPeer}`)
 
       expect(() => parseMultiaddr(ma)).to.throw()
-        .with.property('code', 'ERR_INVALID_MULTIADDR')
+        .with.property('name', 'InvalidMultiaddrError')
     })
 
     it('fails to parse a webtransport address without certhashes', () => {
@@ -67,7 +67,7 @@ describe('parse multiaddr', () => {
       const ma = multiaddr(`/ip4/123.123.123.123/udp/4001/webtransport/p2p/${targetPeer}`)
 
       expect(() => parseMultiaddr(ma)).to.throw()
-        .with.property('code', 'ERR_INVALID_MULTIADDR')
+        .with.property('name', 'InvalidMultiaddrError')
     })
   })
 })

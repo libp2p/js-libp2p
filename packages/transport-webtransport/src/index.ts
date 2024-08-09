@@ -30,7 +30,7 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { AbortError, InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
@@ -131,7 +131,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     this.log('dialing %s', ma)
     const localPeer = this.components.peerId
     if (localPeer === undefined) {
-      throw new CodeError('Need a local peerid', 'ERR_INVALID_PARAMETERS')
+      throw new InvalidParametersError('Need a local peerid')
     }
 
     options = options ?? {}
@@ -209,7 +209,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       authenticated = await raceSignal(this.authenticateWebTransport({ wt, localPeer, remotePeer, certhashes, ...options }), options.signal)
 
       if (!authenticated) {
-        throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
+        throw new InvalidCryptoExchangeError('Failed to authenticate webtransport')
       }
 
       this.metrics?.dialerEvents.increment({ open: true })

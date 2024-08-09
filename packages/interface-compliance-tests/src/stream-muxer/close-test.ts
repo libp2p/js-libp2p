@@ -251,10 +251,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         controllers.push(controller)
 
         try {
-          const abortableRand = abortableSource(infiniteRandom(), controller.signal, { abortCode: 'ERR_TEST_ABORT' })
+          const abortableRand = abortableSource(infiniteRandom(), controller.signal, {
+            abortName: 'TestAbortError'
+          })
           await pipe(abortableRand, stream, drain)
         } catch (err: any) {
-          if (err.code !== 'ERR_TEST_ABORT') throw err
+          if (err.name !== 'TestAbortError') throw err
         }
 
         if (!closed) throw new Error('stream should not have ended yet!')
@@ -316,7 +318,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       await stream.sink(data)
 
       const err = await deferred.promise
-      expect(err).to.have.property('code', 'ERR_SINK_INVALID_STATE')
+      expect(err).to.have.property('name', 'StreamStateError')
     })
 
     it('can close a stream for reading', async () => {
@@ -473,7 +475,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // close should time out as message is never read
       await expect(pb.unwrap().close()).to.eventually.be.rejected
-        .with.property('code', 'ERR_CLOSE_READ_ABORTED')
+        .with.property('name', 'TimeoutError')
     })
     */
   })

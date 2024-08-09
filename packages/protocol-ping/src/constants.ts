@@ -13,5 +13,3 @@ export const TIMEOUT = 10000
 // opening stream A even though the dialing peer is opening stream B and closing stream A).
 export const MAX_INBOUND_STREAMS = 2
 export const MAX_OUTBOUND_STREAMS = 1
-
-export const ERR_WRONG_PING_ACK = 'ERR_WRONG_PING_ACK'

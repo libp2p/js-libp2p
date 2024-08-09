@@ -158,16 +158,8 @@ export default (test: TestSetup<Connection>): void => {
         expect(connection.timeline.close).to.not.exist()
         await connection.close()
 
-        try {
-          const protocol = '/echo/0.0.1'
-          await connection.newStream([protocol])
-        } catch (err: any) {
-          expect(err).to.exist()
-          expect(err.code).to.equal('ERR_CONNECTION_CLOSED')
-          return
-        }
-
-        throw new Error('should fail to create a new stream if the connection is closing')
+        await expect(connection.newStream(['/echo/0.0.1'])).to.eventually.be.rejected
+          .with.property('name', 'ConnectionClosedError')
       })
     })
   })

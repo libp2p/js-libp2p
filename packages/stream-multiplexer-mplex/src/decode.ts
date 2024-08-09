@@ -1,3 +1,4 @@
+import { InvalidMessageError } from '@libp2p/interface'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MessageTypeNames, MessageTypes } from './message-types.js'
 import type { Message } from './message-types.js'
@@ -33,7 +34,7 @@ export class Decoder {
     this._buffer.append(chunk)
 
     if (this._buffer.byteLength > this._maxUnprocessedMessageQueueSize) {
-      throw Object.assign(new Error('unprocessed message queue size too large!'), { code: 'ERR_MSG_QUEUE_TOO_BIG' })
+      throw new InvalidMessageError('Unprocessed message queue size too large!')
     }
 
     const msgs: Message[] = []
@@ -43,7 +44,7 @@ export class Decoder {
         try {
           this._headerInfo = this._decodeHeader(this._buffer)
         } catch (err: any) {
-          if (err.code === 'ERR_MSG_TOO_BIG') {
+          if (err.name === 'InvalidMessageError') {
             throw err
           }
 
@@ -98,7 +99,7 @@ export class Decoder {
 
     // test message type varint + data length
     if (length > this._maxMessageSize) {
-      throw Object.assign(new Error('message size too large!'), { code: 'ERR_MSG_TOO_BIG' })
+      throw new InvalidMessageError('Message size too large')
     }
 
     // @ts-expect-error h is a number not a CODE

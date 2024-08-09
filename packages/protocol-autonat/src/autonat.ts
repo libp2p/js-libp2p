@@ -1,4 +1,4 @@
-import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
+import { AbortError, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromBytes } from '@libp2p/peer-id'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -87,7 +87,7 @@ export class AutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
 
     const onAbort = (): void => {
-      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', ERR_TIMEOUT))
+      data.stream.abort(new AbortError())
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
@@ -385,7 +385,7 @@ export class AutoNATService implements Startable {
             signal
           })
 
-          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', ERR_TIMEOUT)) }
+          onAbort = () => { stream.abort(new AbortError()) }
 
           signal.addEventListener('abort', onAbort, { once: true })
 

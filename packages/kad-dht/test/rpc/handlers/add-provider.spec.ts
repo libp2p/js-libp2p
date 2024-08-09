@@ -51,7 +51,7 @@ describe('rpc - handlers - AddProvider', () => {
         closer: [],
         providers: []
       },
-      error: 'ERR_MISSING_KEY'
+      error: 'InvalidMessageError'
     }, {
       message: {
         type: MessageType.ADD_PROVIDER,
@@ -59,7 +59,7 @@ describe('rpc - handlers - AddProvider', () => {
         closer: [],
         providers: []
       },
-      error: 'ERR_INVALID_CID'
+      error: 'InvalidMessageError'
     }]
 
     tests.forEach((t) => {
@@ -68,7 +68,7 @@ describe('rpc - handlers - AddProvider', () => {
           await handler.handle(peerIds[0], t.message)
         } catch (err: any) {
           expect(err).to.exist()
-          expect(err.code).to.equal(t.error)
+          expect(err).to.have.property('name', t.error)
           return
         }
         throw new Error()

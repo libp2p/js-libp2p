@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, MaxLengthError, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PeerRecord {
@@ -37,9 +37,9 @@ export namespace PeerRecord {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {
-            multiaddr: new Uint8Array(0)
+            multiaddr: uint8ArrayAlloc(0)
           }
 
           const end = length == null ? reader.len : reader.pos + length
@@ -48,12 +48,14 @@ export namespace PeerRecord {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.multiaddr = reader.bytes()
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -68,8 +70,8 @@ export namespace PeerRecord {
       return encodeMessage(obj, AddressInfo.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): AddressInfo => {
-      return decodeMessage(buf, AddressInfo.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<AddressInfo>): AddressInfo => {
+      return decodeMessage(buf, AddressInfo.codec(), opts)
     }
   }
 
@@ -102,9 +104,9 @@ export namespace PeerRecord {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          peerId: new Uint8Array(0),
+          peerId: uint8ArrayAlloc(0),
           seq: 0n,
           addresses: []
         }
@@ -115,18 +117,28 @@ export namespace PeerRecord {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.peerId = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.seq = reader.uint64()
               break
-            case 3:
-              obj.addresses.push(PeerRecord.AddressInfo.codec().decode(reader, reader.uint32()))
+            }
+            case 3: {
+              if (opts.limits?.addresses != null && obj.addresses.length === opts.limits.addresses) {
+                throw new MaxLengthError('Decode error - map field "addresses" had too many elements')
+              }
+
+              obj.addresses.push(PeerRecord.AddressInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.addresses$
+              }))
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -141,7 +153,7 @@ export namespace PeerRecord {
     return encodeMessage(obj, PeerRecord.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerRecord => {
-    return decodeMessage(buf, PeerRecord.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerRecord>): PeerRecord => {
+    return decodeMessage(buf, PeerRecord.codec(), opts)
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { ERR_TIMEOUT, start } from '@libp2p/interface'
+import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
@@ -87,8 +87,8 @@ describe('ping', () => {
     // Run ping, should time out
     await expect(ping.ping(remotePeer, {
       signal
-    }))
-      .to.eventually.be.rejected.with.property('code', ERR_TIMEOUT)
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
 
     // should have aborted stream
     expect(stream.abort).to.have.property('called', true)

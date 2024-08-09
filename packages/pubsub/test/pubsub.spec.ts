@@ -389,7 +389,7 @@ describe('pubsub base implementation', () => {
         pubsub.getSubscribers(topic)
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_STARTED_YET')
+        expect(err.name).to.equal('NotStartedError')
         return
       }
       throw new Error('should fail if pubsub is not started')
@@ -404,7 +404,7 @@ describe('pubsub base implementation', () => {
         pubsub.getSubscribers()
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_VALID_TOPIC')
+        expect(err.name).to.equal('InvalidParametersError')
         return
       }
       throw new Error('should fail if no topic is provided')

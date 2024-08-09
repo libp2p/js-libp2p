@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { UnsupportedOperationError } from '@libp2p/interface'
 import { isPeerId, type PeerId, type ComponentLogger, type Libp2pEvents, type PendingDial, type Connection, type TypedEventTarget, type PubSub, type Startable } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -33,7 +33,7 @@ class MockNetwork {
       }
     }
 
-    throw new CodeError('Peer not found', 'ERR_PEER_NOT_FOUND')
+    throw new Error('Peer not found')
   }
 
   reset (): void {
@@ -97,12 +97,8 @@ class MockConnectionManager implements ConnectionManager, Startable {
   }
 
   async openConnection (peerId: PeerId | Multiaddr | Multiaddr[]): Promise<Connection> {
-    if (this.components == null) {
-      throw new CodeError('Not initialized', 'ERR_NOT_INITIALIZED')
-    }
-
     if (isMultiaddr(peerId)) {
-      throw new CodeError('Dialing multiaddrs not supported', 'ERR_NOT_SUPPORTED')
+      throw new UnsupportedOperationError('Dialing multiaddrs not supported')
     }
 
     let existingConnections: Connection[] = []
@@ -153,10 +149,6 @@ class MockConnectionManager implements ConnectionManager, Startable {
   }
 
   async closeConnections (peerId: PeerId): Promise<void> {
-    if (this.components == null) {
-      throw new CodeError('Not initialized', 'ERR_NOT_INITIALIZED')
-    }
-
     const connections = this.getConnections(peerId)
 
     if (connections.length === 0) {

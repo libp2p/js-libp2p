@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError, InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -68,7 +68,7 @@ export class RsaPrivateKey implements PrivateKey<'RSA'> {
 
   get public (): RsaPublicKey {
     if (this._publicKey == null) {
-      throw new CodeError('public key not provided', 'ERR_PUBKEY_NOT_PROVIDED')
+      throw new InvalidPublicKeyError('public key not provided')
     }
 
     return new RsaPublicKey(this._publicKey)
@@ -124,7 +124,7 @@ export class RsaPrivateKey implements PrivateKey<'RSA'> {
     } else if (format === 'libp2p-key') {
       return exporter(this.bytes, password)
     } else {
-      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
+      throw new InvalidParametersError('Export format is not supported')
     }
   }
 }
@@ -133,7 +133,7 @@ export async function unmarshalRsaPrivateKey (bytes: Uint8Array): Promise<RsaPri
   const jwk = crypto.utils.pkcs1ToJwk(bytes)
 
   if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+    throw new InvalidPrivateKeyError('Key size is too large')
   }
 
   const keys = await crypto.unmarshalPrivateKey(jwk)
@@ -145,7 +145,7 @@ export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
   const jwk = crypto.utils.pkixToJwk(bytes)
 
   if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+    throw new InvalidPublicKeyError('Key size is too large')
   }
 
   return new RsaPublicKey(jwk)
@@ -153,7 +153,7 @@ export function unmarshalRsaPublicKey (bytes: Uint8Array): RsaPublicKey {
 
 export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
   if (crypto.keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+    throw new InvalidParametersError('Key size is too large')
   }
 
   const keys = await crypto.unmarshalPrivateKey(jwk)
@@ -163,7 +163,7 @@ export async function fromJwk (jwk: JsonWebKey): Promise<RsaPrivateKey> {
 
 export async function generateKeyPair (bits: number): Promise<RsaPrivateKey> {
   if (bits > MAX_RSA_KEY_SIZE) {
-    throw new CodeError('key size is too large', 'ERR_KEY_SIZE_TOO_LARGE')
+    throw new InvalidParametersError('Key size is too large')
   }
 
   const keys = await crypto.generateKey(bits)

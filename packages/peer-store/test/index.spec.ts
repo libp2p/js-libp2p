@@ -70,7 +70,7 @@ describe('PersistentPeerStore', () => {
       })
 
       await expect(peerStore.delete(peerId)).to.eventually.be.rejected()
-        .with.property('code', 'ERR_INVALID_PARAMETERS')
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -108,21 +108,21 @@ describe('PersistentPeerStore', () => {
           [name]: { value: -1 }
         }
       }), 'PeerStore contain tag for peer where value was too small')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
 
       await expect(peerStore.save(peerId, {
         tags: {
           [name]: { value: 101 }
         }
       }), 'PeerStore contain tag for peer where value was too large')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
 
       await expect(peerStore.save(peerId, {
         tags: {
           [name]: { value: 5.5 }
         }
       }), 'PeerStore contain tag for peer where value was not an integer')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
     })
 
     it('tags a peer with an expiring value', async () => {

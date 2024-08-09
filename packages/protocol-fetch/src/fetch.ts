@@ -1,4 +1,4 @@
-import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
+import { AbortError, InvalidMessageError, InvalidParametersError, ProtocolError, setMaxListeners } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
@@ -87,7 +87,7 @@ export class Fetch implements Startable, FetchInterface {
       })
 
       onAbort = () => {
-        stream?.abort(new CodeError('fetch timeout', ERR_TIMEOUT))
+        stream?.abort(new AbortError())
       }
 
       // make stream abortable
@@ -115,11 +115,11 @@ export class Fetch implements Startable, FetchInterface {
         case (FetchResponse.StatusCode.ERROR): {
           this.log('received status for %s error', key)
           const errmsg = uint8arrayToString(response.data)
-          throw new CodeError('Error in fetch protocol response: ' + errmsg, ERR_INVALID_PARAMETERS)
+          throw new ProtocolError('Error in fetch protocol response: ' + errmsg)
         }
         default: {
           this.log('received status for %s unknown', key)
-          throw new CodeError('Unknown response status', ERR_INVALID_MESSAGE)
+          throw new InvalidMessageError('Unknown response status')
         }
       }
     } catch (err: any) {
@@ -204,7 +204,7 @@ export class Fetch implements Startable, FetchInterface {
    */
   registerLookupFunction (prefix: string, lookup: LookupFunction): void {
     if (this.lookupFunctions.has(prefix)) {
-      throw new CodeError(`Fetch protocol handler for key prefix '${prefix}' already registered`, 'ERR_KEY_ALREADY_EXISTS')
+      throw new InvalidParametersError(`Fetch protocol handler for key prefix '${prefix}' already registered`)
     }
 
     this.lookupFunctions.set(prefix, lookup)

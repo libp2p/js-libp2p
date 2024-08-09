@@ -84,7 +84,7 @@ export class ConnectionPruner {
           return acc + curr.value
         }, 0))
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           this.log.error('error loading peer tags', err)
         }
       }

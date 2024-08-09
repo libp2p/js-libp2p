@@ -180,7 +180,7 @@ describe('stream', () => {
 
     const err = await deferred.promise
     expect(err).to.exist()
-    expect(err).to.have.property('code', 'ERR_STREAM_RESET')
+    expect(err).to.have.property('name', 'StreamResetError')
   })
 
   it('should send data with MESSAGE_INITIATOR messages if stream initiator', async () => {
@@ -554,7 +554,7 @@ describe('stream', () => {
 
     // cannot sink twice
     await expect(stream.sink([]))
-      .to.eventually.be.rejected.with.property('code', 'ERR_SINK_INVALID_STATE')
+      .to.eventually.be.rejected.with.property('name', 'StreamStateError')
   })
 
   it('should error on double sink after sink has ended', async () => {
@@ -567,7 +567,7 @@ describe('stream', () => {
 
     // cannot sink twice
     await expect(stream.sink([]))
-      .to.eventually.be.rejected.with.property('code', 'ERR_SINK_INVALID_STATE')
+      .to.eventually.be.rejected.with.property('name', 'StreamStateError')
   })
 
   it('should chunk really big messages', async () => {

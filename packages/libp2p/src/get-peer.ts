@@ -1,7 +1,6 @@
-import { CodeError, isPeerId } from '@libp2p/interface'
+import { InvalidMultiaddrError, InvalidParametersError, isPeerId } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isMultiaddr } from '@multiformats/multiaddr'
-import { codes } from './errors.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -31,20 +30,20 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
     // ensure PeerId is either not set or is consistent
     peer.forEach(ma => {
       if (!isMultiaddr(ma)) {
-        throw new CodeError('Invalid Multiaddr', codes.ERR_INVALID_MULTIADDR)
+        throw new InvalidMultiaddrError('Invalid multiaddr')
       }
 
       const maPeerIdStr = ma.getPeerId()
 
       if (maPeerIdStr == null) {
         if (peerId != null) {
-          throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
+          throw new InvalidParametersError('Multiaddrs must all have the same peer id or have no peer id')
         }
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr)
 
         if (peerId?.equals(maPeerId) !== true) {
-          throw new CodeError('Multiaddrs must all have the same peer id or have no peer id', codes.ERR_INVALID_PARAMETERS)
+          throw new InvalidParametersError('Multiaddrs must all have the same peer id or have no peer id')
         }
       }
     })

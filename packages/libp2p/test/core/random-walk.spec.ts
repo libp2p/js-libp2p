@@ -227,7 +227,7 @@ describe('random-walk', () => {
     await expect(drain(randomwalk.walk({
       signal: AbortSignal.timeout(10)
     }))).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 
   it('should allow an impatient consumer to abort a slow query but other consumers to receive values', async () => {
@@ -250,7 +250,7 @@ describe('random-walk', () => {
     ])
 
     expect(results).to.have.nested.property('[0].status', 'rejected')
-    expect(results).to.have.nested.property('[0].reason.code', 'ABORT_ERR')
+    expect(results).to.have.nested.property('[0].reason.name', 'AbortError')
 
     expect(results).to.have.nested.property('[1].status', 'fulfilled')
     expect(results).to.have.nested.property('[1].value').with.lengthOf(2)

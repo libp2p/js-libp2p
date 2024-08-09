@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import { verifyRecord } from '../../record/validators.js'
 import { bufferToRecordKey } from '../../utils.js'
@@ -39,7 +39,7 @@ export class PutValueHandler implements DHTMessageHandler {
       const errMsg = `Empty record from: ${peerId.toString()}`
 
       this.log.error(errMsg)
-      throw new CodeError(errMsg, 'ERR_EMPTY_RECORD')
+      throw new InvalidMessageError(errMsg)
     }
 
     try {

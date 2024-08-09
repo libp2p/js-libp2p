@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { TooManyOutboundProtocolStreamsError } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { pipe } from 'it-pipe'
@@ -6,6 +6,7 @@ import { type Pushable, pushable } from 'it-pushable'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { Decoder } from './decode.js'
 import { encode } from './encode.js'
+import { StreamInputBufferError } from './errors.js'
 import { MessageTypes, MessageTypeNames, type Message } from './message-types.js'
 import { createStream, type MplexStream } from './stream.js'
 import type { MplexInit } from './index.js'
@@ -205,7 +206,7 @@ export class MplexStreamMuxer implements StreamMuxer {
     this.log('new %s stream %s', type, id)
 
     if (type === 'initiator' && this._streams.initiators.size === (this._init.maxOutboundStreams ?? MAX_STREAMS_OUTBOUND_STREAMS_PER_CONNECTION)) {
-      throw new CodeError('Too many outbound streams open', 'ERR_TOO_MANY_OUTBOUND_STREAMS')
+      throw new TooManyOutboundProtocolStreamsError('Too many outbound streams open')
     }
 
     if (registry.has(id)) {
@@ -345,7 +346,7 @@ export class MplexStreamMuxer implements StreamMuxer {
             })
 
             // Inform the stream consumer they are not fast enough
-            throw new CodeError('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers', 'ERR_STREAM_INPUT_BUFFER_FULL')
+            throw new StreamInputBufferError('Input buffer full - increase Mplex maxBufferSize to accommodate slow consumers')
           }
 
           // We got data from the remote, push it into our local stream

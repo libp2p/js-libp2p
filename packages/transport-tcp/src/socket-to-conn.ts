@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { AbortError, InvalidParametersError, TimeoutError } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { duplex } from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
@@ -47,7 +47,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     if (socket.remoteAddress == null || socket.remotePort == null) {
       // this can be undefined if the socket is destroyed (for example, if the client disconnected)
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketremoteaddress
-      throw new CodeError('Could not determine remote address or port', 'ERR_NO_REMOTE_ADDRESS')
+      throw new InvalidParametersError('Could not determine remote address or port')
     }
 
     remoteAddr = toMultiaddr(socket.remoteAddress, socket.remotePort)
@@ -66,7 +66,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     // only destroy with an error if the remote has not sent the FIN message
     let err: Error | undefined
     if (socket.readable) {
-      err = new CodeError('Socket read timeout', 'ERR_SOCKET_READ_TIMEOUT')
+      err = new TimeoutError('Socket read timeout')
     }
 
     // if the socket times out due to inactivity we must manually close the connection
@@ -147,7 +147,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       }
 
       const abortSignalListener = (): void => {
-        socket.destroy(new CodeError('Destroying socket after timeout', 'ERR_CLOSE_TIMEOUT'))
+        socket.destroy(new AbortError('Destroying socket after timeout'))
       }
 
       options.signal?.addEventListener('abort', abortSignalListener)

@@ -223,7 +223,7 @@ export class QueryManager implements Startable {
 
       queryFinished = true
     } catch (err: any) {
-      if (!this.running && err.code === 'ERR_QUERY_ABORTED') {
+      if (!this.running && err.name === 'QueryAbortedError') {
         // ignore query aborted errors that were thrown during query manager shutdown
       } else {
         throw err

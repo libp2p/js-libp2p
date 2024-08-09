@@ -1,4 +1,4 @@
-import { AbortError, CodeError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
 import { Job } from './job.js'
@@ -374,7 +374,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     // clear the queue and throw if the query is aborted
     const onSignalAbort = (): void => {
-      cleanup(new CodeError('Queue aborted', 'ERR_QUEUE_ABORTED'))
+      cleanup(new AbortError('Queue aborted'))
     }
 
     // add listeners

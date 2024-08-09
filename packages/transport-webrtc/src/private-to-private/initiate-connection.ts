@@ -1,7 +1,8 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
 import { CustomProgressEvent } from 'progress-events'
+import { SDPHandshakeFailedError } from '../error.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
@@ -41,7 +42,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const relayPeer = baseAddr.getPeerId()
 
   if (relayPeer == null) {
-    throw new CodeError('Relay peer was missing', 'ERR_INVALID_ADDRESS')
+    throw new InvalidParametersError('Relay peer was missing')
   }
 
   const connections = connectionManager.getConnections(peerIdFromString(relayPeer))
@@ -117,7 +118,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       // create an offer
       const offerSdp = await peerConnection.createOffer().catch(err => {
         log.error('could not execute createOffer', err)
-        throw new CodeError('Failed to set createOffer', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new SDPHandshakeFailedError('Failed to set createOffer')
       })
 
       log.trace('initiator send SDP offer %s', offerSdp.sdp)
@@ -132,7 +133,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       // set offer as local description
       await peerConnection.setLocalDescription(offerSdp).catch(err => {
         log.error('could not execute setLocalDescription', err)
-        throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new SDPHandshakeFailedError('Failed to set localDescription')
       })
 
       onProgress?.(new CustomProgressEvent('webrtc:read-sdp-answer'))
@@ -143,7 +144,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       })
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
-        throw new CodeError('Remote should send an SDP answer', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new SDPHandshakeFailedError('Remote should send an SDP answer')
       }
 
       log.trace('initiator receive SDP answer %s', answerMessage.data)
@@ -151,7 +152,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
       await peerConnection.setRemoteDescription(answerSdp).catch(err => {
         log.error('could not execute setRemoteDescription', err)
-        throw new CodeError('Failed to set remoteDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+        throw new SDPHandshakeFailedError('Failed to set remoteDescription')
       })
 
       log.trace('initiator read candidates until connected')
