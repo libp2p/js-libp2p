@@ -67,7 +67,7 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -82,6 +82,13 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
 
 export interface WebSocketsComponents {
   logger: ComponentLogger
+  metrics?: Metrics
+}
+
+export interface WebSocketsMetrics {
+  dialerEvents: CounterGroup
+  listenerEvents: CounterGroup
+  component: Metrics
 }
 
 export type WebSocketsDialEvents =
@@ -92,11 +99,26 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
+  private readonly metrics?: WebSocketsMetrics
 
   constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
     this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
     this.init = init
+
+    if (components.metrics != null) {
+      this.metrics = {
+        component: components.metrics,
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_websockets_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebSockets dialer events by type'
+        }),
+        listenerEvents: components.metrics.registerCounterGroup('libp2p_websockets_listener_events_total', {
+          label: 'event',
+          help: 'Total count of WebSockets listener events by type'
+        })
+      }
+    }
   }
 
   readonly [transportSymbol] = true
@@ -113,11 +135,14 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     const socket = await this._connect(ma, options)
     const maConn = socketToMaConn(socket, ma, {
-      logger: this.logger
+      logger: this.logger,
+      metrics: this.metrics?.dialerEvents
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
+    this.metrics?.dialerEvents.increment({ upgrade_start: true })
     const conn = await options.upgrader.upgradeOutbound(maConn, options)
+    this.metrics?.dialerEvents.increment({ upgrade_success: true })
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
@@ -136,22 +161,29 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
       this.log.error('connection error:', err)
+      this.metrics?.dialerEvents.increment({ socket_open_error: true })
       errorPromise.reject(err)
     })
 
     try {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
+      this.metrics?.dialerEvents.increment({ socket_open_start: true })
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
+      if (options.signal?.aborted === true) {
+        this.metrics?.dialerEvents.increment({ socket_open_abort: true })
+      }
       rawSocket.close()
         .catch(err => {
           this.log.error('error closing raw socket', err)
+          this.metrics?.dialerEvents.increment({ socket_close_error: true })
         })
 
       throw err
     }
 
     this.log('connected %s', ma)
+    this.metrics?.dialerEvents.increment({ socket_open_success: true })
     return rawSocket
   }
 
@@ -162,7 +194,8 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
-      logger: this.logger
+      logger: this.logger,
+      metrics: this.metrics?.listenerEvents
     }, {
       ...this.init,
       ...options

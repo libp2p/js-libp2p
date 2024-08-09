@@ -4,7 +4,7 @@ import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multi
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Connection, Listener, ListenerEvents, CreateListenerOptions } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Listener, ListenerEvents, CreateListenerOptions, CounterGroup } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -12,6 +12,7 @@ import type { WebSocketServer } from 'it-ws/server'
 
 export interface WebSocketListenerComponents {
   logger: ComponentLogger
+  metrics?: CounterGroup
 }
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
@@ -28,6 +29,7 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
     super()
 
     this.log = components.logger.forComponent('libp2p:websockets:listener')
+    const metrics = components.metrics
     // Keep track of open connections to destroy when the listener is closed
     this.connections = new Set<DuplexWebSocket>()
 
@@ -36,8 +38,10 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
     this.server = createServer({
       ...init,
       onConnection: (stream: DuplexWebSocket) => {
+        metrics?.increment({ socket_open_start: true })
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
-          logger: components.logger
+          logger: components.logger,
+          metrics
         })
         this.log('new inbound connection %s', maConn.remoteAddr)
 
@@ -48,9 +52,11 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
         })
 
         try {
+          metrics?.increment({ upgrade_start: true })
           void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
               this.log('inbound connection %s upgraded', maConn.remoteAddr)
+              metrics?.increment({ upgrade_success: true })
 
               if (init?.handler != null) {
                 init?.handler(conn)
@@ -62,11 +68,13 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
             })
             .catch(async err => {
               this.log.error('inbound connection failed to upgrade', err)
+              metrics?.increment({ upgrade_error: true })
 
               await maConn.close().catch(err => {
                 this.log.error('inbound connection failed to close after upgrade failed', err)
               })
             })
+          metrics?.increment({ socket_open_success: true })
         } catch (err) {
           this.log.error('inbound connection failed to upgrade', err)
           maConn.close().catch(err => {
