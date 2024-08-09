@@ -99,7 +99,7 @@
     "@types/which": "^3.0.3",
     "aegir": "^44.0.1",
     "datastore-core": "^9.2.9",
-    "datastore-level": "^10.1.8",
+    "datastore-level": "^11.0.0",
     "delay": "^6.0.0",
     "execa": "^9.1.0",
     "it-all": "^3.0.6",
