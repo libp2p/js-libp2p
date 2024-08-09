@@ -1,11 +1,24 @@
+import forEach from 'it-foreach'
+import { pipe } from 'it-pipe'
 import type { ComponentLogger, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface StreamProperties {
   stream: Stream
   remoteAddr: Multiaddr
   localAddr: Multiaddr
   logger: ComponentLogger
+
+  /**
+   * A callback invoked when data is read from the stream
+   */
+  onDataRead?(buf: Uint8ArrayList | Uint8Array): void
+
+  /**
+   * A callback invoked when data is written to the stream
+   */
+  onDataWrite?(buf: Uint8ArrayList | Uint8Array): void
 }
 
 /**
@@ -13,7 +26,7 @@ export interface StreamProperties {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export function streamToMaConnection (props: StreamProperties): MultiaddrConnection {
-  const { stream, remoteAddr, logger } = props
+  const { stream, remoteAddr, logger, onDataRead, onDataWrite } = props
   const log = logger.forComponent('libp2p:stream:converter')
 
   let closedRead = false
@@ -37,7 +50,12 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
   const streamSink = stream.sink.bind(stream)
   stream.sink = async (source) => {
     try {
-      await streamSink(source)
+      await streamSink(
+        pipe(
+          source,
+          (source) => forEach(source, buf => onDataWrite?.(buf))
+        )
+      )
     } catch (err: any) {
       // If aborted we can safely ignore
       if (err.type !== 'aborted') {
@@ -57,12 +75,9 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
     sink: stream.sink,
     source: (async function * () {
       try {
-        for await (const list of stream.source) {
-          if (list instanceof Uint8Array) {
-            yield list
-          } else {
-            yield * list
-          }
+        for await (const buf of stream.source) {
+          onDataRead?.(buf)
+          yield buf
         }
       } finally {
         closedRead = true

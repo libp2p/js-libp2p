@@ -71,7 +71,7 @@ describe('basics', () => {
     await remoteNode.handle(echo, (info) => {
       streamHandler(info)
     }, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     const connection = await localNode.dial(remoteAddr)
@@ -138,7 +138,7 @@ describe('basics', () => {
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     // send and receive some data
@@ -170,7 +170,7 @@ describe('basics', () => {
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     // close for reading
@@ -204,7 +204,7 @@ describe('basics', () => {
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     // close for reading
@@ -241,7 +241,7 @@ describe('basics', () => {
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     // close the write end immediately
@@ -302,7 +302,7 @@ describe('basics', () => {
 
     // open a stream on the echo protocol
     const stream = await connection.newStream(echo, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     // keep the remote write end open, this should delay the FIN_ACK reply to the local stream

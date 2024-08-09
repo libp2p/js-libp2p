@@ -83,7 +83,7 @@ export interface PerfInit {
   protocolName?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 
   /**
    * Data sent/received will be sent in chunks of this size (default: 64KiB)

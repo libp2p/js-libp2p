@@ -35,7 +35,7 @@ export interface PingServiceInit {
   protocolPrefix?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 
   /**
    * How long we should wait for a ping response

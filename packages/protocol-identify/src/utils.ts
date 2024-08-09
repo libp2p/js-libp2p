@@ -19,7 +19,7 @@ export const defaultValues = {
   maxMessageSize: MAX_IDENTIFY_MESSAGE_SIZE,
   runOnConnectionOpen: true,
   runOnSelfUpdate: true,
-  runOnTransientConnection: true,
+  runOnLimitedConnection: true,
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
@@ -207,7 +207,7 @@ export abstract class AbstractIdentify implements Startable {
   protected readonly maxMessageSize: number
   protected readonly maxObservedAddresses: number
   protected readonly events: TypedEventTarget<Libp2pEvents>
-  protected readonly runOnTransientConnection: boolean
+  protected readonly runOnLimitedConnection: boolean
   protected readonly log: Logger
 
   constructor (components: IdentifyComponents, init: AbstractIdentifyInit) {
@@ -225,7 +225,7 @@ export abstract class AbstractIdentify implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
     this.maxMessageSize = init.maxMessageSize ?? defaultValues.maxMessageSize
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
-    this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues.runOnLimitedConnection
 
     // Store self host metadata
     this.host = {
@@ -257,7 +257,7 @@ export abstract class AbstractIdentify implements Startable {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
 
     this.started = true

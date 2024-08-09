@@ -230,7 +230,7 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
-        if (connection.transient && topology.notifyOnTransient !== true) {
+        if (connection.limits != null && topology.notifyOnLimitedConnection !== true) {
           continue
         }
 

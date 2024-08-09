@@ -471,7 +471,7 @@ export class DialQueue {
     try {
       const addresses = await this.calculateMultiaddrs(undefined, new Set(multiaddr.map(ma => ma.toString())), options)
 
-      if (options.runOnTransientConnection === false) {
+      if (options.runOnLimitedConnection === false) {
         // return true if any resolved multiaddrs are not relay addresses
         return addresses.find(addr => {
           return !Circuit.matches(addr.multiaddr)

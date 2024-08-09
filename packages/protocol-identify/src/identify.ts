@@ -53,7 +53,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
-        runOnTransientConnection: this.runOnTransientConnection
+        runOnLimitedConnection: this.runOnLimitedConnection
       })
 
       const pb = pbStream(stream, {

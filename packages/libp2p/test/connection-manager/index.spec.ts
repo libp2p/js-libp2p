@@ -516,7 +516,7 @@ describe('Connection Manager', () => {
       .to.eventually.be.true()
   })
 
-  it('should allow dialing peers when an existing transient connection exists', async () => {
+  it('should allow dialing peers when an existing limited connection exists', async () => {
     connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
@@ -527,7 +527,9 @@ describe('Connection Manager', () => {
     const addr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${targetPeer}`)
 
     const existingConnection = stubInterface<Connection>({
-      transient: true
+      limits: {
+        bytes: 100n
+      }
     })
     const newConnection = stubInterface<Connection>()
 
@@ -535,7 +537,7 @@ describe('Connection Manager', () => {
       .withArgs(addr)
       .resolves(newConnection)
 
-    // we have an existing transient connection
+    // we have an existing limited connection
     const map = connectionManager.getConnectionsMap()
     map.set(targetPeer, [
       existingConnection

@@ -45,7 +45,7 @@ describe('core', () => {
     await expect(libp2p.isDialable(ma)).to.eventually.be.true()
   })
 
-  it('should test if a protocol can run over a transient connection', async () => {
+  it('should test if a protocol can run over a limited connection', async () => {
     libp2p = await createLibp2p({
       transports: [
         webSockets(),
@@ -57,15 +57,15 @@ describe('core', () => {
     })
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws'), {
-      runOnTransientConnection: false
+      runOnLimitedConnection: false
     })).to.eventually.be.true()
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE2'), {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })).to.eventually.be.true()
 
     await expect(libp2p.isDialable(multiaddr('/dns4/example.com/tls/ws/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE2'), {
-      runOnTransientConnection: false
+      runOnLimitedConnection: false
     })).to.eventually.be.false()
   })
 })

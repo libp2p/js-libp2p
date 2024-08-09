@@ -331,7 +331,7 @@ export interface IsDialableOptions extends AbortOptions {
    * because that protocol would not be allowed to run over a data/time limited
    * connection.
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 }
 
 export type TransportManagerDialProgressEvents =

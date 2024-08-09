@@ -144,7 +144,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     }, {
       maxInboundStreams: this.maxInboundHopStreams,
       maxOutboundStreams: this.maxOutboundHopStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     this.reservationStore.start()
@@ -383,7 +383,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.log('starting circuit relay v2 stop request to %s', connection.remotePeer)
     const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
       maxOutboundStreams: this.maxOutboundStopStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
     const pbstr = pbStream(stream)
     const stopstr = pbstr.pb(StopMessage)

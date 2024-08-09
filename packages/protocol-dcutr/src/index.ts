@@ -36,11 +36,11 @@
  * await node.dial(ma)
  *
  * // after a while the connection should automatically get upgraded to a
- * // direct connection (e.g. non-transient)
+ * // direct connection (e.g. non-limited)
  * while (true) {
  *   const connections = node.getConnections()
  *
- *   if (connections.find(conn => conn.transient === false)) {
+ *   if (connections.find(conn => conn.limits == null)) {
  *     console.info('have direct connection')
  *     break
  *   } else {

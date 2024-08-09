@@ -99,7 +99,7 @@ export interface IdentifyInit {
    *
    * @default true
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 
   /**
    * Whether to automatically run identify on newly opened connections
