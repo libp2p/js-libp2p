@@ -1,10 +1,11 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/src/keys/index.js'
 import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { expect } from 'aegir/chai'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -23,8 +24,12 @@ describe('floodsub', () => {
   before(async () => {
     expect(multicodec).to.exist()
 
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = await createFromPrivKey(privateKey)
+
     floodsub = new FloodSub({
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey,
       registrar: mockRegistrar(),
       logger: defaultLogger()
     }, {

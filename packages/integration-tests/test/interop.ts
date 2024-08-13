@@ -12,7 +12,6 @@ import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -20,7 +19,7 @@ import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
 import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from 'libp2p'
 import pDefer from 'p-defer'
-import type { ServiceMap, PeerId } from '@libp2p/interface'
+import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 
 /**
@@ -119,16 +118,15 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 }
 
 async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
-  let peerId: PeerId | undefined
+  let privateKey: PrivateKey | undefined
 
   if (options.key != null) {
     const keyFile = fs.readFileSync(options.key)
-    const privateKey = await unmarshalPrivateKey(keyFile)
-    peerId = await peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
+    privateKey = await unmarshalPrivateKey(keyFile)
   }
 
   const opts: Libp2pOptions<ServiceMap> = {
-    peerId,
+    privateKey,
     addresses: {
       listen: []
     },

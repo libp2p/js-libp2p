@@ -1,11 +1,12 @@
 /* eslint-disable max-nested-callbacks */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, isStartable } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { type MessageStream, pbStream } from 'it-protobuf-stream'
@@ -15,11 +16,12 @@ import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODE
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../src/index.js'
 import { HopMessage, Status } from '../src/pb/index.js'
 import type { CircuitRelayServerInit } from '../src/server/index.js'
-import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, Transport } from '@libp2p/interface'
+import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, Transport, PrivateKey } from '@libp2p/interface'
 import type { RandomWalk, AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 interface Node {
   peerId: PeerId
+  privateKey: PrivateKey
   multiaddr: Multiaddr
   registrar: Registrar
   peerStore: StubbedInstance<PeerStore>
@@ -43,7 +45,8 @@ describe('circuit-relay hop protocol', function () {
   async function createNode (circuitRelayInit?: CircuitRelayServerInit): Promise<Node> {
     peerIndex++
 
-    const peerId = await createEd25519PeerId()
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = await createFromPrivKey(privateKey)
     const registrar = mockRegistrar()
     const connections = new PeerMap<Connection>()
 
@@ -84,6 +87,7 @@ describe('circuit-relay hop protocol', function () {
       addressManager,
       connectionManager,
       peerId,
+      privateKey,
       peerStore,
       registrar,
       connectionGater,
@@ -114,6 +118,7 @@ describe('circuit-relay hop protocol', function () {
 
     const node: Node = {
       peerId,
+      privateKey,
       multiaddr: ma,
       registrar,
       circuitRelayService: service,

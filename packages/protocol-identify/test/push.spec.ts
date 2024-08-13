@@ -1,7 +1,8 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
@@ -18,8 +19,12 @@ describe('identify (push)', () => {
   let identify: IdentifyPush
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = await createFromPrivKey(privateKey)
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey,
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),

@@ -275,9 +275,7 @@ describe('Routing Table', () => {
     const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
     const localNodeId = await kadUtils.convertPeerId(components.peerId)
     const sortedPeerList = await sortClosestPeers(
-      await Promise.all(
-        new Array(KBUCKET_SIZE + 1).fill(0).map(async () => createEd25519PeerId())
-      ),
+      await createPeerIds(KBUCKET_SIZE + 1),
       localNodeId
     )
 

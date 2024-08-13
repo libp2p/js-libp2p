@@ -121,7 +121,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     setMaxListeners(Infinity, signal)
 
     try {
-      const publicKey = this.peerId.publicKey ?? new Uint8Array(0)
       const peerData = await this.peerStore.get(this.peerId)
       const multiaddrs = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
       let signedPeerRecord = peerData.peerRecordEnvelope
@@ -132,7 +131,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
           multiaddrs
         })
 
-        const envelope = await RecordEnvelope.seal(peerRecord, this.peerId)
+        const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey)
         signedPeerRecord = envelope.marshal().subarray()
       }
 
@@ -147,7 +146,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       await pb.write({
         protocolVersion: this.host.protocolVersion,
         agentVersion: this.host.agentVersion,
-        publicKey,
+        publicKey: this.privateKey.public.marshal(),
         listenAddrs: multiaddrs.map(addr => addr.bytes),
         signedPeerRecord,
         observedAddr,

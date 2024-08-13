@@ -1,5 +1,4 @@
 import tests from '@libp2p/interface-compliance-tests/connection'
-import peers from '@libp2p/interface-compliance-tests/peers'
 import { logger, peerLogger } from '@libp2p/logger'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -16,7 +15,7 @@ describe('connection compliance', () => {
     async setup (properties) {
       const localPeer = await PeerIdFactory.createEd25519PeerId()
       const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/8081')
-      const remotePeer = await PeerIdFactory.createFromJSON(peers[0])
+      const remotePeer = await PeerIdFactory.createEd25519PeerId()
       let openStreams: Stream[] = []
       let streamId = 0
 

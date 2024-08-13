@@ -1,10 +1,11 @@
+import { generateKeyPair } from '@libp2p/crypto/src/keys/index.js'
 import { defaultLogger } from '@libp2p/logger'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import sinon from 'sinon'
 import { PubSubBaseProtocol } from '../src/index.js'
 import {
-  createPeerId,
   PubsubImplementation,
   ConnectionPair,
   MockRegistrar,
@@ -42,7 +43,9 @@ describe('pubsub base lifecycle', () => {
     let sinonMockRegistrar: Registrar
 
     beforeEach(async () => {
-      const peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = await createFromPrivKey(privateKey)
+
       // @ts-expect-error incomplete implementation
       sinonMockRegistrar = {
         handle: sinon.stub(),
@@ -53,6 +56,7 @@ describe('pubsub base lifecycle', () => {
 
       pubsub = new PubsubProtocol({
         peerId,
+        privateKey,
         registrar: sinonMockRegistrar,
         logger: defaultLogger()
       }, {
@@ -105,14 +109,18 @@ describe('pubsub base lifecycle', () => {
 
     // mount pubsub
     beforeEach(async () => {
-      peerIdA = await createPeerId()
-      peerIdB = await createPeerId()
+      const privateKeyA = await generateKeyPair('Ed25519')
+      const peerIdA = await createFromPrivKey(privateKeyA)
+
+      const privateKeyB = await generateKeyPair('Ed25519')
+      const peerIdB = await createFromPrivKey(privateKeyB)
 
       registrarA = new MockRegistrar()
       registrarB = new MockRegistrar()
 
       pubsubA = new PubsubImplementation({
         peerId: peerIdA,
+        privateKey: privateKeyA,
         registrar: registrarA,
         logger: defaultLogger()
       }, {
@@ -120,6 +128,7 @@ describe('pubsub base lifecycle', () => {
       })
       pubsubB = new PubsubImplementation({
         peerId: peerIdB,
+        privateKey: privateKeyB,
         registrar: registrarB,
         logger: defaultLogger()
       }, {

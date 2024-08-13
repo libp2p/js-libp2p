@@ -1,18 +1,16 @@
 /* eslint-env mocha */
 
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
-import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
+import { createLibp2p } from '../../src/index.js'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('Consume peer record', () => {
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p
 
   beforeEach(async () => {
-    const peerId = await createEd25519PeerId()
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         webSockets()
       ],
@@ -40,6 +38,7 @@ describe('Consume peer record', () => {
 
     await libp2p.start()
 
+    // @ts-expect-error components field is private
     libp2p.components.addressManager.confirmObservedAddr(multiaddr('/ip4/123.123.123.123/tcp/3983'))
 
     await p

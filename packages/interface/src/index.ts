@@ -347,7 +347,10 @@ export type OpenConnectionProgressEvents =
   OutboundConnectionUpgradeEvents
 
 export interface DialOptions extends AbortOptions, ProgressOptions {
-
+  /**
+   * If true, open a new connection to the remote even if one already exists
+   */
+  force?: boolean
 }
 
 export interface DialProtocolOptions extends NewStreamOptions {

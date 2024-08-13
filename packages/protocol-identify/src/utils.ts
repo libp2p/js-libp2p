@@ -1,5 +1,6 @@
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
+import { createFromPubKey } from '@libp2p/peer-id-factory'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -7,7 +8,7 @@ import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isR
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
 
 export const defaultValues = {
@@ -91,9 +92,10 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     let peerRecordEnvelope = message.signedPeerRecord
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
     let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    const envelopePeer = await createFromPubKey(envelope.publicKey)
 
     // Verify peerId
-    if (!peerRecord.peerId.equals(envelope.peerId)) {
+    if (!peerRecord.peerId.equals(envelopePeer)) {
       throw new InvalidMessageError('signing key does not match PeerId in the PeerRecord')
     }
 
@@ -199,6 +201,7 @@ export abstract class AbstractIdentify implements Startable {
   protected started: boolean
   protected readonly timeout: number
   protected readonly peerId: PeerId
+  protected readonly privateKey: PrivateKey
   protected readonly peerStore: PeerStore
   protected readonly registrar: Registrar
   protected readonly addressManager: AddressManager
@@ -214,6 +217,7 @@ export abstract class AbstractIdentify implements Startable {
     this.protocol = init.protocol
     this.started = false
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.peerStore = components.peerStore
     this.registrar = components.registrar
     this.addressManager = components.addressManager

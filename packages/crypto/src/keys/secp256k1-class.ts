@@ -11,6 +11,7 @@ import type { Multibase } from 'multiformats'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Secp256k1PublicKey implements PublicKey<'secp256k1'> {
+  public readonly type = 'secp256k1'
   private readonly _key: Uint8Array
 
   constructor (key: Uint8Array) {
@@ -52,6 +53,7 @@ export class Secp256k1PublicKey implements PublicKey<'secp256k1'> {
 }
 
 export class Secp256k1PrivateKey implements PrivateKey<'secp256k1'> {
+  public readonly type = 'secp256k1'
   private readonly _key: Uint8Array
   private readonly _publicKey: Uint8Array
 

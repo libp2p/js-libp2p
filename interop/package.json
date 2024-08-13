@@ -21,7 +21,7 @@
     "@chainsafe/libp2p-noise": "^15.0.0",
     "@chainsafe/libp2p-yamux": "^6.0.2",
     "@libp2p/circuit-relay-v2": "^1.0.24",
-    "@libp2p/interface": "^1.4.0",
+    "@libp2p/interface": "^1.7.0",
     "@libp2p/identify": "^2.0.2",
     "@libp2p/mplex": "^10.0.24",
     "@libp2p/ping": "^1.0.19",

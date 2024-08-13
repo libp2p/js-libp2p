@@ -4,8 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { type Connection, type ConnectionProtector, isConnection, type PeerId, type Stream, type Libp2p } from '@libp2p/interface'
-import { AbortError, TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { isConnection, AbortError, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -30,10 +29,10 @@ import { defaultComponents, type Components } from '../../src/components.js'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { createLibp2pNode } from '../../src/libp2p.js'
 import { DefaultPeerRouting } from '../../src/peer-routing.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
+import type { Connection, ConnectionProtector, Stream, Libp2p } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -278,20 +277,12 @@ describe('dialing (direct, TCP)', () => {
 })
 
 describe('libp2p.dialer (direct, TCP)', () => {
-  let peerId: PeerId
-  let remotePeerId: PeerId
   let libp2p: Libp2p
   let remoteLibp2p: Libp2p
   let remoteAddr: Multiaddr
 
   beforeEach(async () => {
-    [peerId, remotePeerId] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
-    ])
-
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeerId,
       addresses: {
         listen: [listenAddr.toString()]
       },
@@ -327,8 +318,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should use the dialer for connecting to a peer', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -343,11 +333,11 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     await libp2p.start()
 
-    await libp2p.peerStore.patch(remotePeerId, {
+    await libp2p.peerStore.patch(remoteLibp2p.peerId, {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
 
-    const connection = await libp2p.dial(remotePeerId)
+    const connection = await libp2p.dial(remoteLibp2p.peerId)
     expect(connection).to.exist()
     const stream = await connection.newStream(ECHO_PROTOCOL)
     expect(stream).to.exist()
@@ -356,8 +346,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should close all streams when the connection closes', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -420,8 +409,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should throw when using dialProtocol with no protocols', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -447,8 +435,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should be able to use hangup to close connections', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -477,8 +464,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       }
     }
 
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -506,8 +492,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should coalesce parallel dials to the same peer (id in multiaddr)', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -526,7 +511,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     // PeerId should be in multiaddr
     expect(remoteAddr.getPeerId()).to.equal(remoteLibp2p.peerId.toString())
 
-    await libp2p.peerStore.patch(remotePeerId, {
+    await libp2p.peerStore.patch(remoteLibp2p.peerId, {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.all([...new Array(dials)].map(async (_, index) => {
@@ -546,8 +531,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should coalesce parallel dials to the same error on failure', async () => {
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -567,7 +551,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     // @ts-expect-error private field access
     Sinon.stub(libp2p.components.transportManager, 'dial').callsFake(async () => Promise.reject(error))
 
-    await libp2p.peerStore.patch(remotePeerId, {
+    await libp2p.peerStore.patch(remoteLibp2p.peerId, {
       multiaddrs: remoteLibp2p.getMultiaddrs()
     })
     const dialResults = await Promise.allSettled([...new Array(dials)].map(async (_, index) => {
@@ -601,8 +585,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
     const unixAddr = path.join(os.tmpdir(), `test-${Math.random()}.sock`)
     const unixMultiaddr = multiaddr('/unix' + unixAddr)
 
-    remoteLibp2p = await createLibp2pNode({
-      peerId: remotePeerId,
+    remoteLibp2p = await createLibp2p({
       addresses: {
         listen: [
           unixMultiaddr.toString()
@@ -624,8 +607,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     expect(fs.existsSync(unixAddr)).to.be.true()
 
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -642,11 +624,11 @@ describe('libp2p.dialer (direct, TCP)', () => {
 
     const connection = await libp2p.dial(unixMultiaddr)
 
-    expect(connection.remotePeer.toString()).to.equal(remotePeerId.toString())
+    expect(connection.remotePeer.toString()).to.equal(remoteLibp2p.peerId.toString())
   })
 
   it('should negotiate protocol fully when dialing a protocol', async () => {
-    remoteLibp2p = await createLibp2pNode({
+    remoteLibp2p = await createLibp2p({
       addresses: {
         listen: [
           '/ip4/0.0.0.0/tcp/0'
@@ -663,8 +645,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       ]
     })
 
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],
@@ -696,7 +677,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
   })
 
   it('should negotiate protocol fully when opening on a connection', async () => {
-    remoteLibp2p = await createLibp2pNode({
+    remoteLibp2p = await createLibp2p({
       addresses: {
         listen: [
           '/ip4/0.0.0.0/tcp/0'
@@ -713,8 +694,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       ]
     })
 
-    libp2p = await createLibp2pNode({
-      peerId,
+    libp2p = await createLibp2p({
       transports: [
         tcp()
       ],

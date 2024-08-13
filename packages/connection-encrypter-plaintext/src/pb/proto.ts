@@ -81,14 +81,14 @@ export namespace Exchange {
 export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
-  Secp256k1 = 'Secp256k1',
+  secp256k1 = 'secp256k1',
   ECDSA = 'ECDSA'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
-  Secp256k1 = 2,
+  secp256k1 = 2,
   ECDSA = 3
 }
 

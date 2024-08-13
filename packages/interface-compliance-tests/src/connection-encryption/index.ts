@@ -1,16 +1,16 @@
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import peers from '../peers.js'
 import { createMaConnPair } from './utils/index.js'
 import type { TestSetup } from '../index.js'
-import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
+import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 
 export interface ConnectionEncrypterSetupArgs {
-  peerId: PeerId
+  privateKey: PrivateKey
 }
 
 export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupArgs>): void => {
@@ -29,11 +29,15 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
         remotePeer,
         mitmPeer
       ] = await Promise.all([
-        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[0]) }),
-        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[1]) }),
-        PeerIdFactory.createFromJSON(peers[0]),
-        PeerIdFactory.createFromJSON(peers[1]),
-        PeerIdFactory.createFromJSON(peers[2])
+        common.setup({
+          privateKey: await generateKeyPair('Ed25519')
+        }),
+        common.setup({
+          privateKey: await generateKeyPair('Ed25519')
+        }),
+        await createEd25519PeerId(),
+        await createEd25519PeerId(),
+        await createEd25519PeerId()
       ])
     })
 

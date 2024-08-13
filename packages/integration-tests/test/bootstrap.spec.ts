@@ -25,13 +25,12 @@ class TestPeerDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implement
 }
 
 describe('bootstrap', () => {
-  let peerId: PeerId
   let remotePeerId1: PeerId
   let remotePeerId2: PeerId
   let libp2p: Libp2p
 
   beforeEach(async () => {
-    [peerId, remotePeerId1, remotePeerId2] = await Promise.all([
+    [remotePeerId1, remotePeerId2] = await Promise.all([
       createEd25519PeerId(),
       createEd25519PeerId(),
       createEd25519PeerId()
@@ -48,7 +47,6 @@ describe('bootstrap', () => {
     const discovery = new TestPeerDiscovery()
 
     libp2p = await createLibp2p({
-      peerId,
       peerDiscovery: [
         () => discovery
       ]

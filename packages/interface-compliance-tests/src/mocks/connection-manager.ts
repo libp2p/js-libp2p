@@ -1,5 +1,4 @@
-import { UnsupportedOperationError } from '@libp2p/interface'
-import { isPeerId, type PeerId, type ComponentLogger, type Libp2pEvents, type PendingDial, type Connection, type TypedEventTarget, type PubSub, type Startable } from '@libp2p/interface'
+import { UnsupportedOperationError, type PrivateKey, isPeerId, type PeerId, type ComponentLogger, type Libp2pEvents, type PendingDial, type Connection, type TypedEventTarget, type PubSub, type Startable } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -8,6 +7,7 @@ import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface MockNetworkComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: Registrar
   connectionManager: ConnectionManager
   events: TypedEventTarget<Libp2pEvents>

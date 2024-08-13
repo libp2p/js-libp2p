@@ -26,7 +26,7 @@ import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { Libp2p, Connection, PeerId, Transport } from '@libp2p/interface'
+import type { Libp2p, Connection, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -326,11 +326,6 @@ describe('dialing (direct, WebSockets)', () => {
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
   let libp2p: Libp2p<{ identify: Identify }>
-  let peerId: PeerId
-
-  beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-  })
 
   afterEach(async () => {
     sinon.restore()
@@ -342,7 +337,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should run identify automatically after connecting', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -387,7 +381,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should not run identify automatically after connecting', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -429,7 +422,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should be able to use hangup to close connections', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -459,7 +451,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should be able to use hangup when no connection exists', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -480,7 +471,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should fail to dial self', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -498,7 +488,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
+    await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${libp2p.peerId.toString()}`)))
       .to.eventually.be.rejected()
       .and.to.have.property('name', 'DialError')
   })
@@ -513,7 +503,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     })
 
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         () => transport
       ],

@@ -12,6 +12,7 @@ import type { Multibase } from 'multiformats'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Ed25519PublicKey implements PublicKey<'Ed25519'> {
+  public readonly type = 'Ed25519'
   private readonly _key: Uint8Array
 
   constructor (key: Uint8Array) {
@@ -49,6 +50,7 @@ export class Ed25519PublicKey implements PublicKey<'Ed25519'> {
 }
 
 export class Ed25519PrivateKey implements PrivateKey<'Ed25519'> {
+  public readonly type = 'Ed25519'
   private readonly _key: Uint8Array
   private readonly _publicKey: Uint8Array
 

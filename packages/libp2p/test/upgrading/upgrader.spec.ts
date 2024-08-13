@@ -2,11 +2,12 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { identify } from '@libp2p/identify'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
@@ -28,7 +29,7 @@ import { type Components, defaultComponents } from '../../src/components.js'
 import { createLibp2p } from '../../src/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader } from '@libp2p/interface'
+import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader, PrivateKey } from '@libp2p/interface'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -595,14 +596,14 @@ describe('Upgrader', () => {
 })
 
 describe('libp2p.upgrader', () => {
-  let peers: PeerId[]
+  let peers: PrivateKey[]
   let libp2p: Libp2p
   let remoteLibp2p: Libp2p
 
   before(async () => {
     peers = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      generateKeyPair('Ed25519'),
+      generateKeyPair('Ed25519')
     ])
   })
 
@@ -628,7 +629,7 @@ describe('libp2p.upgrader', () => {
     }
 
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       transports: [
         webSockets()
       ],
@@ -659,7 +660,7 @@ describe('libp2p.upgrader', () => {
 
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       transports: [
         webSockets()
       ],
@@ -680,7 +681,7 @@ describe('libp2p.upgrader', () => {
     await libp2p.handle(['/echo/1.0.0'], echoHandler)
 
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeer,
+      privateKey: remotePeer,
       transports: [
         webSockets()
       ],
@@ -702,7 +703,7 @@ describe('libp2p.upgrader', () => {
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
     const [localConnection] = await Promise.all([
       localComponents.upgrader.upgradeOutbound(outbound),
       remoteComponents.upgrader.upgradeInbound(inbound)
@@ -719,7 +720,7 @@ describe('libp2p.upgrader', () => {
   it('should emit connect and disconnect events', async () => {
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       addresses: {
         listen: [
           `${process.env.RELAY_MULTIADDR}/p2p-circuit`
@@ -746,7 +747,7 @@ describe('libp2p.upgrader', () => {
     await libp2p.start()
 
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeer,
+      privateKey: remotePeer,
       transports: [
         webSockets({
           filter: filters.all
@@ -800,7 +801,7 @@ describe('libp2p.upgrader', () => {
     const protocol = '/a-test-protocol/1.0.0'
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       transports: [
         webSockets()
       ],
@@ -819,7 +820,7 @@ describe('libp2p.upgrader', () => {
     })
 
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeer,
+      privateKey: remotePeer,
       transports: [
         webSockets()
       ],
@@ -837,7 +838,7 @@ describe('libp2p.upgrader', () => {
       connectionGater: mockConnectionGater()
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
@@ -879,7 +880,7 @@ describe('libp2p.upgrader', () => {
     const protocol = '/a-test-protocol/1.0.0'
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       transports: [
         webSockets()
       ],
@@ -898,7 +899,7 @@ describe('libp2p.upgrader', () => {
     })
 
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeer,
+      privateKey: remotePeer,
       transports: [
         webSockets()
       ],
@@ -915,7 +916,7 @@ describe('libp2p.upgrader', () => {
       }
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
@@ -955,7 +956,7 @@ describe('libp2p.upgrader', () => {
     const protocol = '/a-test-protocol/1.0.0'
     const remotePeer = peers[1]
     libp2p = await createLibp2p({
-      peerId: peers[0],
+      privateKey: peers[0],
       transports: [
         webSockets()
       ],
@@ -974,7 +975,7 @@ describe('libp2p.upgrader', () => {
     })
 
     remoteLibp2p = await createLibp2p({
-      peerId: remotePeer,
+      privateKey: remotePeer,
       transports: [
         webSockets()
       ],
@@ -991,7 +992,7 @@ describe('libp2p.upgrader', () => {
       }
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise

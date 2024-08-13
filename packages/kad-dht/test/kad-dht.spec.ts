@@ -18,7 +18,7 @@ import * as c from '../src/constants.js'
 import { EventTypes, MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
-import { createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIds, type PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
@@ -48,7 +48,7 @@ async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Prom
 }
 
 describe('KadDHT', () => {
-  let peerIds: PeerId[]
+  let peerIds: PeerIdWithPrivateKey[]
   let values: Array<{ cid: CID, value: Uint8Array }>
   let tdht: TestDHT
 
@@ -696,7 +696,12 @@ describe('KadDHT', () => {
         new Array(nDHTs).fill(0).map(async () => tdht.spawn())
       )
 
-      const dhtsById = new Map<PeerId, KadDHT>(dhts.map((d) => [d.components.peerId, d]))
+      const dhtsById = new Map<PeerIdWithPrivateKey, KadDHT>(dhts.map((d) => {
+        const peerId = d.components.peerId as unknown as PeerIdWithPrivateKey
+        peerId.privateKey = d.components.privateKey
+
+        return [peerId, d]
+      }))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query
@@ -710,7 +715,7 @@ describe('KadDHT', () => {
       // Make connections between nodes close to each other
       const sorted = await sortClosestPeers(ids, rtval)
 
-      const conns: PeerId[][] = []
+      const conns: PeerIdWithPrivateKey[][] = []
       const maxRightIndex = sorted.length - 1
       for (let i = 0; i < sorted.length; i++) {
         // Connect to 5 nodes on either side (10 in total)

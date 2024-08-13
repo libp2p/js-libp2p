@@ -7,16 +7,17 @@ import * as crypto from '../../src/index.js'
 import * as Secp256k1 from '../../src/keys/secp256k1-class.js'
 import * as secp256k1Crypto from '../../src/keys/secp256k1.js'
 import fixtures from '../fixtures/go-key-secp256k1.js'
+import type { PrivateKey } from '@libp2p/interface'
 
 const secp256k1 = crypto.keys.supportedKeys.secp256k1
 const keysPBM = crypto.keys.keysPBM
 const randomBytes = crypto.randomBytes
 
 describe('secp256k1 keys', () => {
-  let key: Secp256k1.Secp256k1PrivateKey
+  let key: PrivateKey<'secp256k1'>
 
   before(async () => {
-    key = await secp256k1.generateKeyPair()
+    key = await crypto.keys.generateKeyPair('secp256k1')
   })
 
   it('generates a valid key', async () => {

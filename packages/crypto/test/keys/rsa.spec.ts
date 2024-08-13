@@ -9,15 +9,16 @@ import { importFromPem } from '../../src/keys/rsa-utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
 import { RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
+import type { PrivateKey } from '@libp2p/interface'
 
 const rsa = crypto.keys.supportedKeys.rsa
 
 describe('RSA', function () {
   this.timeout(20 * 1000)
-  let key: RsaPrivateKey
+  let key: PrivateKey<'RSA'>
 
   before(async () => {
-    key = await rsa.generateKeyPair(512)
+    key = await crypto.keys.generateKeyPair('RSA', 512)
   })
 
   it('generates a valid key', async () => {
@@ -43,7 +44,7 @@ describe('RSA', function () {
   })
 
   it('signs', async () => {
-    const text = key.genSecret()
+    const text = uint8ArrayFromString('hello world')
     const sig = await key.sign(text)
     const res = await key.public.verify(text, sig)
     expect(res).to.be.eql(true)

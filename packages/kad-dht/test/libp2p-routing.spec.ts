@@ -14,14 +14,15 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { kadDHT, passthroughMapper, type KadDHT } from '../src/index.js'
 import { Message, MessageType } from '../src/message/dht.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIds, type PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting } from '@libp2p/interface'
+import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 
 interface StubbedKadDHTComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: StubbedInstance<Registrar>
   addressManager: StubbedInstance<AddressManager>
   peerStore: StubbedInstance<PeerStore>
@@ -80,7 +81,7 @@ describe('content routing', () => {
   let contentRouting: ContentRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerId[]
+  let peers: PeerIdWithPrivateKey[]
   let key: CID
 
   beforeEach(async () => {
@@ -93,6 +94,7 @@ describe('content routing', () => {
 
     components = {
       peerId: peers[peers.length - 1],
+      privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>({
@@ -209,7 +211,7 @@ describe('peer routing', () => {
   let peerRouting: PeerRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerId[]
+  let peers: PeerIdWithPrivateKey[]
   let key: CID
 
   beforeEach(async () => {
@@ -222,6 +224,7 @@ describe('peer routing', () => {
 
     components = {
       peerId: peers[peers.length - 1],
+      privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>({

@@ -62,13 +62,13 @@
     "@libp2p/interface": "^1.7.0",
     "@libp2p/peer-id": "^4.2.4",
     "protons-runtime": "^5.4.0",
-    "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "aegir": "^44.0.1",
     "multiformats": "^13.1.0",
-    "protons": "^7.5.0"
+    "protons": "^7.5.0",
+    "uint8arrays": "^5.1.0"
   },
   "sideEffects": false
 }

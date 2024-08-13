@@ -6,6 +6,7 @@ import * as crypto from '../../src/index.js'
 import { Ed25519PrivateKey } from '../../src/keys/ed25519-class.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
+import type { PrivateKey } from '@libp2p/interface'
 
 const ed25519 = crypto.keys.supportedKeys.ed25519
 
@@ -13,11 +14,12 @@ const ed25519 = crypto.keys.supportedKeys.ed25519
 
 describe('ed25519', function () {
   this.timeout(20 * 1000)
-  let key: Ed25519PrivateKey
-  before(async () => {
-    const generated = await crypto.keys.generateKeyPair('Ed25519', 512)
+  let key: PrivateKey<'Ed25519'>
 
-    if (!(generated instanceof Ed25519PrivateKey)) {
+  before(async () => {
+    const generated = await crypto.keys.generateKeyPair('Ed25519')
+
+    if (generated.type !== 'Ed25519') {
       throw new Error('Key was incorrect type')
     }
 
@@ -32,7 +34,7 @@ describe('ed25519', function () {
 
   it('generates a valid key from seed', async () => {
     const seed = crypto.randomBytes(32)
-    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
+    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed)
     expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
     const digest = await seededkey.hash()
     expect(digest).to.have.length(34)
@@ -40,24 +42,24 @@ describe('ed25519', function () {
 
   it('generates the same key from the same seed', async () => {
     const seed = crypto.randomBytes(32)
-    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
-    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
+    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed)
+    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed)
     expect(seededkey1.equals(seededkey2)).to.eql(true)
     expect(seededkey1.public.equals(seededkey2.public)).to.eql(true)
   })
 
   it('generates different keys for different seeds', async () => {
     const seed1 = crypto.randomBytes(32)
-    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed1, 512)
+    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed1)
     const seed2 = crypto.randomBytes(32)
-    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed2, 512)
+    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed2)
     expect(seededkey1.equals(seededkey2)).to.eql(false)
     expect(seededkey1.public.equals(seededkey2.public)).to.eql(false)
   })
 
   it('signs', async () => {
     const text = crypto.randomBytes(512)
-    const sig = key.sign(text)
+    const sig = await key.sign(text)
     const res = key.public.verify(text, sig)
     expect(res).to.be.eql(true)
   })
@@ -67,7 +69,7 @@ describe('ed25519', function () {
       crypto.randomBytes(512),
       crypto.randomBytes(512)
     )
-    const sig = key.sign(text)
+    const sig = await key.sign(text)
 
     expect(key.sign(text.subarray()))
       .to.deep.equal(sig, 'list did not have same signature as a single buffer')
@@ -163,7 +165,7 @@ describe('ed25519', function () {
     })
 
     it('not equals other key', async () => {
-      const key2 = await crypto.keys.generateKeyPair('Ed25519', 512)
+      const key2 = await crypto.keys.generateKeyPair('Ed25519')
 
       if (!(key2 instanceof Ed25519PrivateKey)) {
         throw new Error('Key was incorrect type')
@@ -178,7 +180,7 @@ describe('ed25519', function () {
 
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = key.sign(data)
+    const sig = await key.sign(data)
     const valid = key.public.verify(data, sig)
     expect(valid).to.eql(true)
   })
@@ -194,7 +196,7 @@ describe('ed25519', function () {
 
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = key.sign(data)
+    const sig = await key.sign(data)
     const valid = key.public.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.eql(false)
   })

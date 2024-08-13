@@ -22,10 +22,10 @@
  */
 
 import { generateKeyPair, marshalPrivateKey, unmarshalPrivateKey, marshalPublicKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { InvalidParametersError } from '@libp2p/interface'
 import { peerIdFromKeys, peerIdFromBytes } from '@libp2p/peer-id'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerIdProto } from './proto.js'
-import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, KeyType } from '@libp2p/interface'
+import type { PublicKey, PrivateKey, RSAPeerId, Ed25519PeerId, Secp256k1PeerId, KeyType, PeerId } from '@libp2p/interface'
 
 export const createEd25519PeerId = async (): Promise<Ed25519PeerId> => {
   const key = await generateKeyPair('Ed25519')
@@ -49,6 +49,9 @@ export const createSecp256k1PeerId = async (): Promise<Secp256k1PeerId> => {
   throw new Error(`Generated unexpected PeerId type "${id.type}"`)
 }
 
+/**
+ * @deprecated Please use Ed25519 or secp256k1 keys instead
+ */
 export const createRSAPeerId = async (opts?: { bits: number }): Promise<RSAPeerId> => {
   const key = await generateKeyPair('RSA', opts?.bits ?? 2048)
   const id = await createFromPrivKey(key)
@@ -64,15 +67,19 @@ export async function createFromPubKey <T extends KeyType > (publicKey: PublicKe
   return peerIdFromKeys(marshalPublicKey(publicKey))
 }
 
+export async function createFromPrivKey (privateKey: PrivateKey<'Ed25519'>): Promise<Ed25519PeerId>
+export async function createFromPrivKey (privateKey: PrivateKey<'RSA'>): Promise<RSAPeerId>
+export async function createFromPrivKey (privateKey: PrivateKey<'secp256k1'>): Promise<Secp256k1PeerId>
+export async function createFromPrivKey <T extends KeyType > (privateKey: PrivateKey<T>): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId>
 export async function createFromPrivKey <T extends KeyType > (privateKey: PrivateKey<T>): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
   return peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey))
 }
 
-export function exportToProtobuf (peerId: RSAPeerId | Ed25519PeerId | Secp256k1PeerId, excludePrivateKey?: boolean): Uint8Array {
+export function exportToProtobuf (peerId: PeerId, privateKey?: PrivateKey): Uint8Array {
   return PeerIdProto.encode({
     id: peerId.multihash.bytes,
     pubKey: peerId.publicKey,
-    privKey: excludePrivateKey === true || peerId.privateKey == null ? undefined : peerId.privateKey
+    privKey: privateKey?.bytes
   })
 }
 
@@ -87,14 +94,6 @@ export async function createFromProtobuf (buf: Uint8Array): Promise<Ed25519PeerI
     id ?? new Uint8Array(0),
     privKey,
     pubKey
-  )
-}
-
-export async function createFromJSON (obj: { id: string, privKey?: string, pubKey?: string }): Promise<Ed25519PeerId | Secp256k1PeerId | RSAPeerId> {
-  return createFromParts(
-    uint8ArrayFromString(obj.id, 'base58btc'),
-    obj.privKey != null ? uint8ArrayFromString(obj.privKey, 'base64pad') : undefined,
-    obj.pubKey != null ? uint8ArrayFromString(obj.pubKey, 'base64pad') : undefined
   )
 }
 
@@ -114,7 +113,7 @@ async function createFromParts (multihash: Uint8Array, privKey?: Uint8Array, pub
   if (peerId.type !== 'Ed25519' && peerId.type !== 'secp256k1' && peerId.type !== 'RSA') {
     // should not be possible since `multihash` is derived from keys and these
     // are the cryptographic peer id types
-    throw new Error('Supplied PeerID is invalid')
+    throw new InvalidParametersError('Supplied PeerID is invalid')
   }
 
   return peerId

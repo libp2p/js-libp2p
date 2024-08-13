@@ -189,8 +189,7 @@ const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 class URLPeerIdImpl implements URLPeerId {
   readonly type = 'url'
   readonly multihash: MultihashDigest
-  readonly privateKey?: Uint8Array
-  readonly publicKey?: Uint8Array
+  readonly publicKey: undefined
   readonly url: string
 
   constructor (url: URL) {
@@ -229,7 +228,7 @@ class URLPeerIdImpl implements URLPeerId {
   }
 }
 
-export function createPeerId (init: PeerIdInit): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
+export function createPeerId (init: PeerIdInit): PeerId {
   if (init.type === 'RSA') {
     return new RSAPeerIdImpl(init)
   }
@@ -245,7 +244,7 @@ export function createPeerId (init: PeerIdInit): Ed25519PeerId | Secp256k1PeerId
   throw new InvalidParametersError('Type must be "RSA", "Ed25519" or "secp256k1"')
 }
 
-export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId | RSAPeerId {
+export function peerIdFromPeerId (other: any): PeerId {
   if (other.type === 'RSA') {
     return new RSAPeerIdImpl(other)
   }
@@ -261,7 +260,7 @@ export function peerIdFromPeerId (other: any): Ed25519PeerId | Secp256k1PeerId |
   throw new InvalidParametersError('Not a PeerId')
 }
 
-export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
+export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): PeerId {
   decoder = decoder ?? baseDecoder
 
   if (str.charAt(0) === '1' || str.charAt(0) === 'Q') {
@@ -281,7 +280,7 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
   return peerIdFromBytes(baseDecoder.decode(str))
 }
 
-export function peerIdFromBytes (buf: Uint8Array): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
+export function peerIdFromBytes (buf: Uint8Array): PeerId {
   try {
     const multihash = Digest.decode(buf)
 

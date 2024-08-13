@@ -50,7 +50,7 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^4.1.1",
+    "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface": "^1.3.1",
     "it-byte-stream": "^1.0.10",
     "it-map": "^3.1.0",

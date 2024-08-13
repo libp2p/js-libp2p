@@ -1,16 +1,15 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
-import { generateKeyPair, importKey, unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { importKey } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { KeychainComponents, KeychainInit, Keychain, KeyInfo } from './index.js'
-import type { Logger, KeyType, PeerId } from '@libp2p/interface'
+import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.js'
+import type { Logger, PrivateKey } from '@libp2p/interface'
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
@@ -79,7 +78,7 @@ function DsInfoName (name: string): Key {
  * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
  *
  */
-export class DefaultKeychain implements Keychain {
+export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
   private readonly log: Logger
@@ -146,46 +145,65 @@ export class DefaultKeychain implements Keychain {
     return defaultOptions
   }
 
-  /**
-   * Create a new key.
-   *
-   * @param {string} name - The local key name; cannot already exist.
-   * @param {string} type - One of the key types; 'rsa'.
-   * @param {number} [size = 2048] - The key size in bits. Used for rsa keys only
-   */
-  async createKey (name: string, type: KeyType, size = 2048): Promise<KeyInfo> {
+  async findKeyByName (name: string): Promise<KeyInfo> {
+    if (!validateKeyName(name)) {
+      await randomDelay()
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
+    }
+
+    const dsname = DsInfoName(name)
+
+    try {
+      const res = await this.components.datastore.get(dsname)
+      return JSON.parse(uint8ArrayToString(res))
+    } catch (err: any) {
+      await randomDelay()
+      this.log.error(err)
+      throw new NotFoundError(`Key '${name}' does not exist.`)
+    }
+  }
+
+  async findKeyById (id: string): Promise<KeyInfo> {
+    try {
+      const query = {
+        prefix: infoPrefix
+      }
+
+      for await (const value of this.components.datastore.query(query)) {
+        const key = JSON.parse(uint8ArrayToString(value.value))
+
+        if (key.id === id) {
+          return key
+        }
+      }
+
+      throw new InvalidParametersError(`Key with id '${id}' does not exist.`)
+    } catch (err: any) {
+      await randomDelay()
+      throw err
+    }
+  }
+
+  async importKey (name: string, key: PrivateKey): Promise<KeyInfo> {
     if (!validateKeyName(name) || name === 'self') {
       await randomDelay()
-      throw new InvalidParametersError('Invalid key name')
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
-
-    if (typeof type !== 'string') {
+    if (key == null) {
       await randomDelay()
-      throw new InvalidParametersError('Invalid key type')
+      throw new InvalidParametersError('Key is required')
     }
-
     const dsname = DsName(name)
     const exists = await this.components.datastore.has(dsname)
     if (exists) {
       await randomDelay()
-      throw new InvalidParametersError('Key name already exists')
+      throw new InvalidParametersError(`Key '${name}' already exists`)
     }
 
-    switch (type.toLowerCase()) {
-      case 'rsa':
-        if (!Number.isSafeInteger(size) || size < 2048) {
-          await randomDelay()
-          throw new InvalidParametersError('Invalid RSA key size')
-        }
-        break
-      default:
-        break
-    }
-
-    let keyInfo
+    let kid: string
+    let pem: string
     try {
-      const keypair = await generateKeyPair(type, size)
-      const kid = await keypair.id()
+      kid = await key.id()
       const cached = privates.get(this)
 
       if (cached == null) {
@@ -193,20 +211,61 @@ export class DefaultKeychain implements Keychain {
       }
 
       const dek = cached.dek
-      const pem = await keypair.export(dek)
-      keyInfo = {
-        name,
-        id: kid
-      }
-      const batch = this.components.datastore.batch()
-      batch.put(dsname, uint8ArrayFromString(pem))
-      batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-
-      await batch.commit()
+      pem = await key.export(dek)
     } catch (err: any) {
       await randomDelay()
       throw err
     }
+
+    const keyInfo = {
+      name,
+      id: kid
+    }
+    const batch = this.components.datastore.batch()
+    batch.put(dsname, uint8ArrayFromString(pem))
+    batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
+    await batch.commit()
+
+    return keyInfo
+  }
+
+  async exportKey (name: string): Promise<PrivateKey> {
+    if (!validateKeyName(name)) {
+      await randomDelay()
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
+    }
+
+    const dsname = DsName(name)
+    try {
+      const res = await this.components.datastore.get(dsname)
+      const pem = uint8ArrayToString(res)
+      const cached = privates.get(this)
+
+      if (cached == null) {
+        throw new InvalidParametersError('dek missing')
+      }
+
+      const dek = cached.dek
+
+      return await importKey(pem, dek)
+    } catch (err: any) {
+      await randomDelay()
+      throw err
+    }
+  }
+
+  async removeKey (name: string): Promise<KeyInfo> {
+    if (!validateKeyName(name) || name === 'self') {
+      await randomDelay()
+      throw new InvalidParametersError(`Invalid key name '${name}'`)
+    }
+
+    const dsname = DsName(name)
+    const keyInfo = await this.findKeyByName(name)
+    const batch = this.components.datastore.batch()
+    batch.delete(dsname)
+    batch.delete(DsInfoName(name))
+    await batch.commit()
 
     return keyInfo
   }
@@ -227,68 +286,6 @@ export class DefaultKeychain implements Keychain {
     }
 
     return info
-  }
-
-  /**
-   * Find a key by it's id
-   */
-  async findKeyById (id: string): Promise<KeyInfo> {
-    try {
-      const keys = await this.listKeys()
-      const key = keys.find((k) => k.id === id)
-
-      if (key == null) {
-        throw new InvalidParametersError(`Key with id '${id}' does not exist.`)
-      }
-
-      return key
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
-  }
-
-  /**
-   * Find a key by it's name.
-   *
-   * @param {string} name - The local key name.
-   * @returns {Promise<KeyInfo>}
-   */
-  async findKeyByName (name: string): Promise<KeyInfo> {
-    if (!validateKeyName(name)) {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-
-    const dsname = DsInfoName(name)
-    try {
-      const res = await this.components.datastore.get(dsname)
-      return JSON.parse(uint8ArrayToString(res))
-    } catch (err: any) {
-      await randomDelay()
-      this.log.error(err)
-      throw new NotFoundError(`Key '${name}' does not exist.`)
-    }
-  }
-
-  /**
-   * Remove an existing key.
-   *
-   * @param {string} name - The local key name; must already exist.
-   * @returns {Promise<KeyInfo>}
-   */
-  async removeKey (name: string): Promise<KeyInfo> {
-    if (!validateKeyName(name) || name === 'self') {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-    const dsname = DsName(name)
-    const keyInfo = await this.findKeyByName(name)
-    const batch = this.components.datastore.batch()
-    batch.delete(dsname)
-    batch.delete(DsInfoName(name))
-    await batch.commit()
-    return keyInfo
   }
 
   /**
@@ -334,178 +331,6 @@ export class DefaultKeychain implements Keychain {
     } catch (err: any) {
       await randomDelay()
       throw err
-    }
-  }
-
-  /**
-   * Export an existing key as a PEM encrypted PKCS #8 string
-   */
-  async exportKey (name: string, password: string): Promise<string> {
-    if (!validateKeyName(name)) {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-    if (password == null) {
-      await randomDelay()
-      throw new InvalidParametersError('Password is required')
-    }
-
-    const dsname = DsName(name)
-    try {
-      const res = await this.components.datastore.get(dsname)
-      const pem = uint8ArrayToString(res)
-      const cached = privates.get(this)
-
-      if (cached == null) {
-        throw new InvalidParametersError('dek missing')
-      }
-
-      const dek = cached.dek
-      const privateKey = await importKey(pem, dek)
-      const keyString = await privateKey.export(password)
-
-      return keyString
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
-  }
-
-  /**
-   * Export an existing key as a PeerId
-   */
-  async exportPeerId (name: string): Promise<PeerId> {
-    const password = 'temporary-password'
-    const pem = await this.exportKey(name, password)
-    const privateKey = await importKey(pem, password)
-
-    return peerIdFromKeys(privateKey.public.bytes, privateKey.bytes)
-  }
-
-  /**
-   * Import a new key from a PEM encoded PKCS #8 string
-   *
-   * @param {string} name - The local key name; must not already exist.
-   * @param {string} pem - The PEM encoded PKCS #8 string
-   * @param {string} password - The password.
-   * @returns {Promise<KeyInfo>}
-   */
-  async importKey (name: string, pem: string, password: string): Promise<KeyInfo> {
-    if (!validateKeyName(name) || name === 'self') {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-    if (pem == null) {
-      await randomDelay()
-      throw new InvalidParametersError('PEM encoded key is required')
-    }
-    const dsname = DsName(name)
-    const exists = await this.components.datastore.has(dsname)
-    if (exists) {
-      await randomDelay()
-      throw new InvalidParametersError(`Key '${name}' already exists`)
-    }
-
-    let privateKey
-    try {
-      privateKey = await importKey(pem, password)
-    } catch (err: any) {
-      await randomDelay()
-      throw new InvalidParametersError('Cannot read the key, most likely the password is wrong')
-    }
-
-    let kid
-    try {
-      kid = await privateKey.id()
-      const cached = privates.get(this)
-
-      if (cached == null) {
-        throw new InvalidParametersError('dek missing')
-      }
-
-      const dek = cached.dek
-      pem = await privateKey.export(dek)
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
-
-    const keyInfo = {
-      name,
-      id: kid
-    }
-    const batch = this.components.datastore.batch()
-    batch.put(dsname, uint8ArrayFromString(pem))
-    batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-    await batch.commit()
-
-    return keyInfo
-  }
-
-  /**
-   * Import a peer key
-   */
-  async importPeer (name: string, peer: PeerId): Promise<KeyInfo> {
-    try {
-      if (!validateKeyName(name)) {
-        throw new InvalidParametersError(`Invalid key name '${name}'`)
-      }
-      if (peer == null) {
-        throw new InvalidParametersError('PeerId is required')
-      }
-      if (peer.privateKey == null) {
-        throw new InvalidParametersError('PeerId.privKey is required')
-      }
-
-      const privateKey = await unmarshalPrivateKey(peer.privateKey)
-
-      const dsname = DsName(name)
-      const exists = await this.components.datastore.has(dsname)
-      if (exists) {
-        await randomDelay()
-        throw new InvalidParametersError(`Key '${name}' already exists`)
-      }
-
-      const cached = privates.get(this)
-
-      if (cached == null) {
-        throw new InvalidParametersError('dek missing')
-      }
-
-      const dek = cached.dek
-      const pem = await privateKey.export(dek)
-      const keyInfo: KeyInfo = {
-        name,
-        id: peer.toString()
-      }
-      const batch = this.components.datastore.batch()
-      batch.put(dsname, uint8ArrayFromString(pem))
-      batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-      await batch.commit()
-      return keyInfo
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
-  }
-
-  /**
-   * Gets the private key as PEM encoded PKCS #8 string
-   */
-  async getPrivateKey (name: string): Promise<string> {
-    if (!validateKeyName(name)) {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
-
-    try {
-      const dsname = DsName(name)
-      const res = await this.components.datastore.get(dsname)
-      return uint8ArrayToString(res)
-    } catch (err: any) {
-      await randomDelay()
-      this.log.error(err)
-      throw new InvalidParametersError(`Key '${name}' does not exist.`)
     }
   }
 

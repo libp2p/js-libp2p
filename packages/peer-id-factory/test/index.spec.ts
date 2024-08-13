@@ -14,7 +14,6 @@ import { identity } from 'multiformats/hashes/identity'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as PeerIdFactory from '../src/index.js'
-import goId from './fixtures/go-private-key.js'
 import testId from './fixtures/sample-id.js'
 
 const LIBP2P_KEY_CODE = 0x72
@@ -126,7 +125,9 @@ describe('PeerId', () => {
   })
 
   it('recreate from a Private Key', async () => {
-    const id = await PeerIdFactory.createFromPrivKey(await keys.unmarshalPrivateKey(uint8ArrayFromString(testId.privKey, 'base64pad')))
+    const buf = uint8ArrayFromString(testId.privKey, 'base64pad')
+    const privateKey = await keys.unmarshalPrivateKey(buf)
+    const id = await PeerIdFactory.createFromPrivKey(privateKey)
     expect(testIdB58String).to.equal(id.toString())
 
     const encoded = await keys.unmarshalPrivateKey(uint8ArrayFromString(testId.privKey, 'base64pad'))
@@ -185,7 +186,7 @@ describe('PeerId', () => {
   })
 
   it('can be created from a secp256k1 public key', async () => {
-    const privKey = await keys.generateKeyPair('secp256k1', 256)
+    const privKey = await keys.generateKeyPair('secp256k1')
     const id = await PeerIdFactory.createFromPubKey(privKey.public)
 
     if (id.publicKey == null) {
@@ -197,7 +198,7 @@ describe('PeerId', () => {
   })
 
   it('can be created from a Secp256k1 private key', async () => {
-    const privKey = await keys.generateKeyPair('secp256k1', 256)
+    const privKey = await keys.generateKeyPair('secp256k1')
     const id = await PeerIdFactory.createFromPrivKey(privKey)
 
     if (id.publicKey == null) {
@@ -220,17 +221,6 @@ describe('PeerId', () => {
     expect(id.toString().length).to.equal(52)
   })
 
-  it('Non-default # of bits', async function () {
-    const shortId = await PeerIdFactory.createRSAPeerId({ bits: 512 })
-    const longId = await PeerIdFactory.createRSAPeerId({ bits: 1024 })
-
-    if (longId.privateKey == null) {
-      throw new Error('No private key found on peer id')
-    }
-
-    expect(shortId.privateKey).to.have.property('length').that.is.lessThan(longId.privateKey.length)
-  })
-
   it('equals', async () => {
     const ids = await Promise.all([
       PeerIdFactory.createEd25519PeerId(),
@@ -241,39 +231,6 @@ describe('PeerId', () => {
     expect(ids[0].equals(ids[1])).to.equal(false)
     expect(ids[0].equals(ids[0].multihash.bytes)).to.equal(true)
     expect(ids[0].equals(ids[1].multihash.bytes)).to.equal(false)
-  })
-
-  describe('fromJSON', () => {
-    it('full node', async () => {
-      const id = await PeerIdFactory.createEd25519PeerId()
-      const other = await PeerIdFactory.createFromJSON({
-        id: id.toString(),
-        privKey: id.privateKey != null ? uint8ArrayToString(id.privateKey, 'base64pad') : undefined,
-        pubKey: uint8ArrayToString(id.publicKey, 'base64pad')
-      })
-      expect(id.toString()).to.equal(other.toString())
-      expect(id.privateKey).to.equalBytes(other.privateKey)
-      expect(id.publicKey).to.equalBytes(other.publicKey)
-    })
-
-    it('only id', async () => {
-      const key = await keys.generateKeyPair('RSA', 1024)
-      const digest = await key.public.hash()
-      const id = peerIdFromBytes(digest)
-      expect(id.privateKey).to.not.exist()
-      expect(id.publicKey).to.not.exist()
-      const other = await PeerIdFactory.createFromJSON({
-        id: id.toString(),
-        privKey: id.privateKey != null ? uint8ArrayToString(id.privateKey, 'base64pad') : undefined,
-        pubKey: id.publicKey != null ? uint8ArrayToString(id.publicKey, 'base64pad') : undefined
-      })
-      expect(id.toString()).to.equal(other.toString())
-    })
-
-    it('go interop', async () => {
-      const id = await PeerIdFactory.createFromJSON(goId)
-      expect(id.toString()).to.eql(goId.id)
-    })
   })
 
   it('keys are equal after one is stringified', async () => {
@@ -295,7 +252,7 @@ describe('PeerId', () => {
       uint8ArrayFromString(''), 'aGVsbG93b3JsZA==', 'helloworld', ''
     ]
 
-    const fncs = ['createFromPubKey', 'createFromPrivKey', 'createFromJSON', 'createFromProtobuf']
+    const fncs = ['createFromPubKey', 'createFromPrivKey', 'createFromProtobuf']
 
     for (const gb of garbage) {
       for (const fn of fncs) {

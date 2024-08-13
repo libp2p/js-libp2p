@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -24,8 +25,12 @@ describe('identify', () => {
   let identify: Identify
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = await createFromPrivKey(privateKey)
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey,
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
@@ -214,7 +219,8 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = await createFromPrivKey(remotePrivateKey)
 
     const oldPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -222,7 +228,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(1n)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     const connection = identifyConnection(remotePeer, {
       listenAddrs: [],
@@ -238,7 +244,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     components.peerStore.get.resolves({
       id: remotePeer,
@@ -297,7 +303,8 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = await createFromPrivKey(remotePrivateKey)
 
     const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -305,7 +312,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/5678')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
     const peerRecordEnvelope = signedPeerRecord.marshal()
 
     const message = {

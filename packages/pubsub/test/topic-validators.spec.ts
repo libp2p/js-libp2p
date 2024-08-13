@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type PubSubRPC, TopicValidatorResult, type PeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -16,15 +17,16 @@ const protocol = '/pubsub/1.0.0'
 
 describe('topic validators', () => {
   let pubsub: PubsubImplementation
-  let peerId: PeerId
   let otherPeerId: PeerId
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = await createFromPrivKey(privateKey)
     otherPeerId = await createEd25519PeerId()
 
     pubsub = new PubsubImplementation({
       peerId,
+      privateKey,
       registrar: new MockRegistrar(),
       logger: defaultLogger()
     }, {

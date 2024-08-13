@@ -40,16 +40,18 @@ Create an envelope with an instance of an [interface-record](https://github.com/
 
 ```TypeScript
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { createFromPrivKey } from '@libp2p/peer-id-factory'
 
-const peerId = await createEd25519PeerId()
+const privateKey = await generateKeyPair('Ed25519')
+const peerId = await createFromPrivKey(privateKey)
 
 const record = new PeerRecord({
   peerId,
   // ...other data
 })
 
-const envelope = await RecordEnvelope.seal(record, peerId)
+const envelope = await RecordEnvelope.seal(record, privateKey)
 const wireData = envelope.marshal()
 ```
 

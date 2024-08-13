@@ -13,6 +13,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export const MAX_RSA_KEY_SIZE = 8192
 
 export class RsaPublicKey implements PublicKey<'RSA'> {
+  public readonly type = 'RSA'
   private readonly _key: JsonWebKey
 
   constructor (key: JsonWebKey) {
@@ -50,6 +51,7 @@ export class RsaPublicKey implements PublicKey<'RSA'> {
 }
 
 export class RsaPrivateKey implements PrivateKey<'RSA'> {
+  public readonly type = 'RSA'
   private readonly _key: JsonWebKey
   private readonly _publicKey: JsonWebKey
 

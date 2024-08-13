@@ -2,12 +2,11 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { createLibp2pNode } from '../../src/libp2p.js'
+import { createLibp2p } from '../../src/index.js'
 import type { Components } from '../../src/components.js'
 import type { Libp2p } from '@libp2p/interface'
 
@@ -17,8 +16,7 @@ describe('registrar protocols', () => {
   it('should be able to register and unregister a handler', async () => {
     const deferred = pDefer<Components>()
 
-    libp2p = await createLibp2pNode({
-      peerId: await createEd25519PeerId(),
+    libp2p = await createLibp2p({
       transports: [
         webSockets()
       ],

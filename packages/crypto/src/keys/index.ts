@@ -19,13 +19,13 @@ import * as keysPBM from './keys.js'
 import * as RSA from './rsa-class.js'
 import { importFromPem } from './rsa-utils.js'
 import * as Secp256k1 from './secp256k1-class.js'
-import type { PrivateKey, PublicKey, KeyType as KeyTypes } from '@libp2p/interface'
+import type { PrivateKey, PublicKey, KeyType } from '@libp2p/interface'
 
 export { keyStretcher }
 export { generateEphemeralKeyPair }
 export { keysPBM }
 
-export type { KeyTypes }
+export type { KeyType }
 
 export { RsaPrivateKey, RsaPublicKey, MAX_RSA_KEY_SIZE } from './rsa-class.js'
 export { Ed25519PrivateKey, Ed25519PublicKey } from './ed25519-class.js'
@@ -56,17 +56,23 @@ function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k
 /**
  * Generates a keypair of the given type and bitsize
  */
-export async function generateKeyPair <T extends KeyTypes> (type: T, bits?: number): Promise<PrivateKey<T>> {
+export async function generateKeyPair (type: 'Ed25519'): Promise<PrivateKey<'Ed25519'>>
+export async function generateKeyPair (type: 'secp256k1'): Promise<PrivateKey<'secp256k1'>>
+export async function generateKeyPair (type: 'RSA', bits?: number): Promise<PrivateKey<'RSA'>>
+export async function generateKeyPair (type: KeyType, bits?: number): Promise<PrivateKey<KeyType>> {
   return typeToKey(type).generateKeyPair(bits ?? 2048)
 }
 
 /**
- * Generates a keypair of the given type and bitsize.
+ * Generates a keypair of the given type from the passed seed.  Currently only
+ * supports Ed25519 keys.
  *
  * Seed is a 32 byte uint8array
  */
-export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, seed: Uint8Array, bits?: number): Promise<PrivateKey<T>> {
-  if (type.toLowerCase() !== 'ed25519') {
+export async function generateKeyPairFromSeed (type: 'Ed25519', seed: Uint8Array): Promise<PrivateKey<'Ed25519'>>
+export async function generateKeyPairFromSeed <T extends KeyType> (type: T, seed: Uint8Array, bits?: number): Promise<never>
+export async function generateKeyPairFromSeed (type: string, seed: Uint8Array): Promise<PrivateKey<'Ed25519'>> {
+  if (type !== 'Ed25519') {
     throw new InvalidParametersError('Seed key derivation is unimplemented for RSA or secp256k1')
   }
 
@@ -76,7 +82,7 @@ export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, see
 /**
  * Converts a protobuf serialized public key into its representative object
  */
-export function unmarshalPublicKey <T extends KeyTypes> (buf: Uint8Array): PublicKey<T> {
+export function unmarshalPublicKey (buf: Uint8Array): PublicKey<KeyType> {
   const decoded = keysPBM.PublicKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -104,7 +110,7 @@ export function marshalPublicKey (key: { bytes: Uint8Array }, type?: string): Ui
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function unmarshalPrivateKey <T extends KeyTypes> (buf: Uint8Array): Promise<PrivateKey<T>> {
+export async function unmarshalPrivateKey (buf: Uint8Array): Promise<PrivateKey<KeyType>> {
   const decoded = keysPBM.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -134,7 +140,7 @@ export function marshalPrivateKey (key: { bytes: Uint8Array }, type?: string): U
  *
  * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
  */
-export async function importKey <T extends KeyTypes> (encryptedKey: string, password: string): Promise<PrivateKey<T>> {
+export async function importKey (encryptedKey: string, password: string): Promise<PrivateKey<KeyType>> {
   try {
     const key = await importer(encryptedKey, password)
     return await unmarshalPrivateKey(key)
