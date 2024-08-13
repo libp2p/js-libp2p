@@ -140,7 +140,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
-    this.metrics?.dialerEvents.increment({ upgrade_start: true })
     const conn = await options.upgrader.upgradeOutbound(maConn, options)
     this.metrics?.dialerEvents.increment({ upgrade_success: true })
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
@@ -167,11 +166,12 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     try {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
-      this.metrics?.dialerEvents.increment({ socket_open_start: true })
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
       if (options.signal?.aborted === true) {
         this.metrics?.dialerEvents.increment({ socket_open_abort: true })
+      } else {
+        this.metrics?.dialerEvents.increment({ socket_open_error: true })
       }
       rawSocket.close()
         .catch(err => {

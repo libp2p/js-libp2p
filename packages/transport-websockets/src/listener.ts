@@ -38,7 +38,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
     this.server = createServer({
       ...init,
       onConnection: (stream: DuplexWebSocket) => {
-        metrics?.increment({ socket_open_start: true })
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
           logger: components.logger,
           metrics
@@ -52,7 +51,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
         })
 
         try {
-          metrics?.increment({ upgrade_start: true })
           void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
               this.log('inbound connection %s upgraded', maConn.remoteAddr)

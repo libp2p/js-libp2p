@@ -16,8 +16,6 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
   const log = options.logger.forComponent('libp2p:websockets:maconn')
   const metrics = options.metrics
 
-  metrics?.increment({ maconn_open_start: true })
-
   const maConn: MultiaddrConnection = {
     log,
 
@@ -49,7 +47,6 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
     async close (options: AbortOptions = {}) {
       const start = Date.now()
-      metrics?.increment({ maconn_close_start: true })
 
       if (options.signal == null) {
         const signal = AbortSignal.timeout(CLOSE_TIMEOUT)
