@@ -38,9 +38,12 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
     this.server = createServer({
       ...init,
       onConnection: (stream: DuplexWebSocket) => {
+        const listeningAddrDetails = this.listeningMultiaddr?.toOptions()
+
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
           logger: components.logger,
-          metrics
+          metrics,
+          metricPrefix: `${listeningAddrDetails?.transport}_${listeningAddrDetails?.host}:${listeningAddrDetails?.port} `
         })
         this.log('new inbound connection %s', maConn.remoteAddr)
 
