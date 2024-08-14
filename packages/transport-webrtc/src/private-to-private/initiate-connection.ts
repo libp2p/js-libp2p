@@ -73,7 +73,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     const stream = await connection.newStream(SIGNALING_PROTO_ID, {
       signal,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     const messageStream = pbStream(stream).pb(Message)

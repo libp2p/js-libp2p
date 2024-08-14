@@ -30,7 +30,7 @@
  * ```
  */
 
-import { TypedEventEmitter, CustomEvent, TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
+import { TypedEventEmitter, TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'

@@ -90,7 +90,7 @@ const echoService = (components: EchoServiceComponents): unknown => {
           stream, stream
         )
       }, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
     },
     stop () {}
@@ -560,7 +560,7 @@ describe('circuit-relay', () => {
 
       // open hop stream and try to connect to remote
       const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
 
       const hopStream = pbStream(stream).pb(HopMessage)
@@ -638,12 +638,12 @@ describe('circuit-relay', () => {
       expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(1)
     })
 
-    it('should mark an outgoing relayed connection as transient', async () => {
+    it('should mark an outgoing relayed connection as limited', async () => {
       // discover relay and make reservation
       const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
 
-      // connection to relay should not be marked transient
-      expect(connectionToRelay).to.have.property('transient', false)
+      // connection to relay should not be limited
+      expect(connectionToRelay).to.have.property('limits').that.is.undefined()
 
       await usingAsRelay(remote, relay1)
 
@@ -651,16 +651,16 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       const connection = await local.dial(ma)
 
-      // connection to remote through relay should be marked transient
-      expect(connection).to.have.property('transient', true)
+      // connection to remote through relay should be limited
+      expect(connection).to.have.property('limits').that.is.ok()
     })
 
-    it('should mark an incoming relayed connection as transient', async () => {
+    it('should mark an incoming relayed connection as limited', async () => {
       // discover relay and make reservation
       const connectionToRelay = await remote.dial(relay1.getMultiaddrs()[0])
 
-      // connection to relay should not be marked transient
-      expect(connectionToRelay).to.have.property('transient', false)
+      // connection to relay should not be limited
+      expect(connectionToRelay).to.have.property('limits').that.is.undefined()
 
       await usingAsRelay(remote, relay1)
 
@@ -668,13 +668,13 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       await local.dial(ma)
 
-      // connection from local through relay should be marked transient
+      // connection from local through relay should be limited
       const connections = remote.getConnections(local.peerId)
       expect(connections).to.have.lengthOf(1)
-      expect(connections).to.have.nested.property('[0].transient', true)
+      expect(connections).to.have.nested.property('[0].limits').that.is.ok()
     })
 
-    it('should not open streams on a transient connection', async () => {
+    it('should not open streams on a limited connection', async () => {
       // discover relay and make reservation
       await remote.dial(relay1.getMultiaddrs()[0])
       await usingAsRelay(remote, relay1)
@@ -683,21 +683,21 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       const connection = await local.dial(ma)
 
-      // connection should be marked transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be marked limited
+      expect(connection).to.have.property('limits').that.is.ok()
 
       await expect(connection.newStream('/my-protocol/1.0.0'))
         .to.eventually.be.rejected.with.property('name', 'LimitedConnectionError')
     })
 
-    it('should not allow incoming streams on a transient connection', async () => {
+    it('should not allow incoming streams on a limited connection', async () => {
       const protocol = '/my-protocol/1.0.0'
 
-      // remote registers handler, disallow running over transient streams
+      // remote registers handler, disallow running over limited connections
       await remote.handle(protocol, ({ stream }) => {
         void pipe(stream, stream)
       }, {
-        runOnTransientConnection: false
+        runOnLimitedConnection: false
       })
 
       // discover relay and make reservation
@@ -708,23 +708,23 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       const connection = await local.dial(ma)
 
-      // connection should be marked transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be marked limited
+      expect(connection).to.have.property('limits').that.is.ok()
 
       await expect(connection.newStream('/my-protocol/1.0.0', {
-        runOnTransientConnection: false
+        runOnLimitedConnection: false
       }))
         .to.eventually.be.rejected.with.property('name', 'LimitedConnectionError')
     })
 
-    it('should open streams on a transient connection when told to do so', async () => {
+    it('should open streams on a limited connection when told to do so', async () => {
       const protocol = '/my-protocol/1.0.0'
 
-      // remote registers handler, allow running over transient streams
+      // remote registers handler, allow running over limited streams
       await remote.handle(protocol, ({ stream }) => {
         void pipe(stream, stream)
       }, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
 
       // discover relay and make reservation
@@ -735,11 +735,11 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       const connection = await local.dial(ma)
 
-      // connection should be marked transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be marked limited
+      expect(connection).to.have.property('limits').that.is.ok()
 
       await expect(connection.newStream('/my-protocol/1.0.0', {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       }))
         .to.eventually.be.ok()
     })
@@ -912,7 +912,7 @@ describe('circuit-relay', () => {
           } catch {}
         })
       }, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
 
       // dial the remote from the local through the relay
@@ -920,7 +920,7 @@ describe('circuit-relay', () => {
 
       try {
         const stream = await local.dialProtocol(ma, protocol, {
-          runOnTransientConnection: true
+          runOnLimitedConnection: true
         })
 
         await stream.sink(async function * () {
@@ -1056,7 +1056,7 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
 
       const stream = await local.dialProtocol(ma, ECHO_PROTOCOL, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
 
       // write more than the default data limit
@@ -1075,7 +1075,7 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
 
       const stream = await local.dialProtocol(ma, ECHO_PROTOCOL, {
-        runOnTransientConnection: true
+        runOnLimitedConnection: true
       })
 
       let finished = false
@@ -1107,21 +1107,21 @@ describe('circuit-relay', () => {
       expect(finish - start).to.be.greaterThan(defaultDurationLimit)
     })
 
-    it('should not mark an outgoing connection as transient', async () => {
+    it('should not mark an outgoing connection as limited', async () => {
       const ma = getRelayAddress(remote)
 
       const connection = await local.dial(ma)
-      expect(connection).to.have.property('transient', false)
+      expect(connection).to.have.property('limits').that.is.undefined()
     })
 
-    it('should not mark an incoming connection as transient', async () => {
+    it('should not mark an incoming connection as limited', async () => {
       const ma = getRelayAddress(remote)
 
       await local.dial(ma)
 
       const connections = remote.getConnections(local.peerId)
       expect(connections).to.have.lengthOf(1)
-      expect(connections).to.have.nested.property('[0].transient', false)
+      expect(connections).to.have.nested.property('[0].limits').that.is.undefined()
     })
   })
 })

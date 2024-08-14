@@ -63,7 +63,7 @@ await node.dial(ma)
 while (true) {
   const connections = node.getConnections()
 
-  if (connections.find(conn => conn.transient === false)) {
+  if (connections.find(conn => conn.limits == null)) {
     console.info('have direct connection')
     break
   } else {

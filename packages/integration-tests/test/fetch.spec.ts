@@ -20,7 +20,7 @@ async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
 
 describe('fetch', () => {
   if (isWebWorker) {
-    it.skip('tests are skipped because WebWorkers can only have transient connections', () => {
+    it.skip('tests are skipped because WebWorkers can only have limited connections', () => {
 
     })
     return

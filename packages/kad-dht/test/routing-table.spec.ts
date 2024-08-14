@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent, stop, start } from '@libp2p/interface'
+import { TypedEventEmitter, stop, start } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'

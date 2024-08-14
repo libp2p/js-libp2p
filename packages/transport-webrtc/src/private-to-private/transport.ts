@@ -107,7 +107,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
       this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
     }, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
     this._started = true
   }

@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
+import { TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import multicastDNS from 'multicast-dns'
 import * as query from './query.js'
 import { stringGen } from './utils.js'

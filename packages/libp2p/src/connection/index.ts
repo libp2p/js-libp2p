@@ -1,5 +1,5 @@
 import { connectionSymbol, setMaxListeners, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError } from '@libp2p/interface'
-import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId } from '@libp2p/interface'
+import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const CLOSE_TIMEOUT = 500
@@ -16,7 +16,7 @@ interface ConnectionInit {
   timeline: ConnectionTimeline
   multiplexer?: string
   encryption?: string
-  transient?: boolean
+  limits?: ConnectionLimits
   logger: ComponentLogger
 }
 
@@ -45,7 +45,7 @@ export class ConnectionImpl implements Connection {
   public multiplexer?: string
   public encryption?: string
   public status: ConnectionStatus
-  public transient: boolean
+  public limits?: ConnectionLimits
   public readonly log: Logger
 
   /**
@@ -86,7 +86,7 @@ export class ConnectionImpl implements Connection {
     this.timeline = init.timeline
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
-    this.transient = init.transient ?? false
+    this.limits = init.limits
     this.log = init.logger.forComponent(`libp2p:connection:${this.direction}:${this.id}`)
 
     if (this.remoteAddr.getPeerId() == null) {
@@ -127,8 +127,8 @@ export class ConnectionImpl implements Connection {
       protocols = [protocols]
     }
 
-    if (this.transient && options?.runOnTransientConnection !== true) {
-      throw new LimitedConnectionError('Cannot open protocol stream on transient connection')
+    if (this.limits != null && options?.runOnLimitedConnection !== true) {
+      throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
     const stream = await this._newStream(protocols, options)

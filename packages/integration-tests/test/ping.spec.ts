@@ -76,7 +76,7 @@ describe('ping', () => {
         stream
       )
     }, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     const latency = await nodes[0].services.ping.ping(nodes[1].getMultiaddrs())

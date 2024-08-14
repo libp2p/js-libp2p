@@ -1,5 +1,5 @@
 import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, InvalidPeerIdError } from '@libp2p/interface'
+import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, InvalidPeerIdError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
