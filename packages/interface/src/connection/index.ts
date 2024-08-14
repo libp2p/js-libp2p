@@ -185,12 +185,16 @@ export interface NewStreamOptions extends AbortOptions {
   maxOutboundStreams?: number
 
   /**
-   * Opt-in to running over a transient connection - one that has time/data limits
-   * placed on it.
+   * Opt-in to running over a limited connection - one that has restrictions
+   * on the amount of data that may be transferred or how long it may be open for.
+   *
+   * These limits are typically enforced by a relay server, if the protocol
+   * will be transferring a lot of data or the stream will be open for a long time
+   * consider upgrading to a direct connection before opening the stream.
    *
    * @default false
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 
   /**
    * By default when negotiating a protocol the dialer writes then protocol name
@@ -221,6 +225,29 @@ export interface NewStreamOptions extends AbortOptions {
 }
 
 export type ConnectionStatus = 'open' | 'closing' | 'closed'
+
+/**
+ * Connection limits are present on connections that are only allowed to
+ * transfer a certain amount of bytes or be open for a certain number
+ * of seconds.
+ *
+ * These limits are applied by Circuit Relay v2 servers, for example and
+ * the connection will normally be closed abruptly if the limits are
+ * exceeded.
+ */
+export interface ConnectionLimits {
+  /**
+   * If present this is the number of bytes remaining that may be
+   * transferred over this connection
+   */
+  bytes?: bigint
+
+  /**
+   * If present this is the number of seconds that this connection will
+   * remain open for
+   */
+  seconds?: number
+}
 
 /**
  * A Connection is a high-level representation of a connection
@@ -280,12 +307,11 @@ export interface Connection {
   status: ConnectionStatus
 
   /**
-   * A transient connection is one that is not expected to be open for very long
-   * or one that cannot transfer very much data, such as one being used as a
-   * circuit relay connection. Protocols need to explicitly opt-in to being run
-   * over transient connections.
+   * If present, this connection has limits applied to it, perhaps by an
+   * intermediate relay. Once the limits have been reached the connection will
+   * be closed by the relay.
    */
-  transient: boolean
+  limits?: ConnectionLimits
 
   /**
    * Create a new stream on this connection and negotiate one of the passed protocols

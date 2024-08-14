@@ -9,7 +9,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { mockMultiaddrConnection } from './multiaddr-connection.js'
 import { mockMuxer } from './muxer.js'
 import { mockRegistrar } from './registrar.js'
-import type { AbortOptions, ComponentLogger, Logger, MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus, PeerId, StreamMuxer, StreamMuxerFactory, NewStreamOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus, PeerId, StreamMuxer, StreamMuxerFactory, NewStreamOptions, ConnectionLimits } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
@@ -41,7 +41,7 @@ class MockConnection implements Connection {
   public status: ConnectionStatus
   public streams: Stream[]
   public tags: string[]
-  public transient: boolean
+  public limits?: ConnectionLimits
   public log: Logger
 
   private readonly muxer: StreamMuxer
@@ -64,7 +64,6 @@ class MockConnection implements Connection {
     this.tags = []
     this.muxer = muxer
     this.maConn = maConn
-    this.transient = false
     this.logger = logger
     this.log = logger.forComponent(this.id)
   }
