@@ -14,6 +14,7 @@ import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
+import { ConnectionMonitor } from './connection-monitor.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
@@ -119,6 +120,11 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
 
     // Create the Connection Manager
     this.configureComponent('connectionManager', new DefaultConnectionManager(this.components, init.connectionManager))
+
+    if (init.connectionMonitor?.enabled !== false) {
+      // Create the Connection Monitor if not disabled
+      this.configureComponent('connectionMonitor', new ConnectionMonitor(this.components, init.connectionMonitor))
+    }
 
     // Create the Registrar
     this.configureComponent('registrar', new DefaultRegistrar(this.components))
