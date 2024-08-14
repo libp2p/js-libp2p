@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -116,7 +116,7 @@ export class Ed25519PrivateKey implements PrivateKey<'Ed25519'> {
     if (format === 'libp2p-key') {
       return exporter(this.bytes, password)
     } else {
-      throw new CodeError(`export format '${format}' is not supported`, 'ERR_INVALID_EXPORT_FORMAT')
+      throw new InvalidParametersError(`export format '${format}' is not supported`)
     }
   }
 }
@@ -154,7 +154,7 @@ export async function generateKeyPairFromSeed (seed: Uint8Array): Promise<Ed2551
 function ensureKey (key: Uint8Array, length: number): Uint8Array {
   key = Uint8Array.from(key ?? [])
   if (key.length !== length) {
-    throw new CodeError(`Key must be a Uint8Array of length ${length}, got ${key.length}`, 'ERR_INVALID_KEY_TYPE')
+    throw new InvalidParametersError(`Key must be a Uint8Array of length ${length}, got ${key.length}`)
   }
   return key
 }

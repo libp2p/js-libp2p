@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -23,9 +23,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
   const validator = validators[parts[1].toString()]
 
   if (validator == null) {
-    const errMsg = `No validator available for key type "${parts[1]}"`
-
-    throw new CodeError(errMsg, 'ERR_INVALID_RECORD_KEY_TYPE')
+    throw new InvalidParametersError(`No validator available for key type "${parts[1]}"`)
   }
 
   await validator(key, record.value)
@@ -42,17 +40,17 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
  */
 const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): Promise<void> => {
   if (!(key instanceof Uint8Array)) {
-    throw new CodeError('"key" must be a Uint8Array', 'ERR_INVALID_RECORD_KEY_NOT_BUFFER')
+    throw new InvalidParametersError('"key" must be a Uint8Array')
   }
 
   if (key.byteLength < 5) {
-    throw new CodeError('invalid public key record', 'ERR_INVALID_RECORD_KEY_TOO_SHORT')
+    throw new InvalidParametersError('Invalid public key record')
   }
 
   const prefix = uint8ArrayToString(key.subarray(0, 4))
 
   if (prefix !== '/pk/') {
-    throw new CodeError('key was not prefixed with /pk/', 'ERR_INVALID_RECORD_KEY_BAD_PREFIX')
+    throw new InvalidParametersError('key was not prefixed with /pk/')
   }
 
   const keyhash = key.slice(4)
@@ -60,7 +58,7 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): 
   const publicKeyHash = await sha256.digest(publicKey)
 
   if (!uint8ArrayEquals(keyhash, publicKeyHash.bytes)) {
-    throw new CodeError('public key does not match passed in key', 'ERR_INVALID_RECORD_HASH_MISMATCH')
+    throw new InvalidParametersError('public key does not match passed in key')
   }
 }
 

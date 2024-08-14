@@ -1,9 +1,10 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { base64urlToBuffer } from '../util.js'
 import webcrypto from '../webcrypto.js'
+import type { Curve } from './ecdh.js'
 import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from './interface.js'
 
 const bits = {
@@ -15,9 +16,9 @@ const bits = {
 const curveTypes = Object.keys(bits)
 const names = curveTypes.join(' / ')
 
-export async function generateEphmeralKeyPair (curve: string): Promise<ECDHKey> {
+export async function generateEphmeralKeyPair (curve: Curve): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
+    throw new InvalidParametersError(`Unknown curve: ${curve}. Must be ${names}`)
   }
 
   const pair = await webcrypto.get().subtle.generateKey(
@@ -94,11 +95,11 @@ const curveLengths = {
 // go-ipfs uses)
 function marshalPublicKey (jwk: JsonWebKey): Uint8Array {
   if (jwk.crv == null || jwk.x == null || jwk.y == null) {
-    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
+    throw new InvalidParametersError('JWK was missing components')
   }
 
   if (jwk.crv !== 'P-256' && jwk.crv !== 'P-384' && jwk.crv !== 'P-521') {
-    throw new CodeError(`Unknown curve: ${jwk.crv}. Must be ${names}`, 'ERR_INVALID_CURVE')
+    throw new InvalidParametersError(`Unknown curve: ${jwk.crv}. Must be ${names}`)
   }
 
   const byteLen = curveLengths[jwk.crv]
@@ -110,16 +111,18 @@ function marshalPublicKey (jwk: JsonWebKey): Uint8Array {
   ], 1 + byteLen * 2)
 }
 
-// Unmarshal converts a point, serialized by Marshal, into an jwk encoded key
-function unmarshalPublicKey (curve: string, key: Uint8Array): JWKEncodedPublicKey {
+/**
+ * Unmarshal converts a point, serialized by Marshal, into an jwk encoded key
+ */
+function unmarshalPublicKey (curve: Curve, key: Uint8Array): JWKEncodedPublicKey {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
-    throw new CodeError(`Unknown curve: ${curve}. Must be ${names}`, 'ERR_INVALID_CURVE')
+    throw new InvalidParametersError(`Unknown curve: ${curve}. Must be ${names}`)
   }
 
   const byteLen = curveLengths[curve]
 
   if (!uint8ArrayEquals(key.subarray(0, 1), Uint8Array.from([4]))) {
-    throw new CodeError('Cannot unmarshal public key - invalid key format', 'ERR_INVALID_KEY_FORMAT')
+    throw new InvalidParametersError('Cannot unmarshal public key - invalid key format')
   }
 
   return {
@@ -131,7 +134,7 @@ function unmarshalPublicKey (curve: string, key: Uint8Array): JWKEncodedPublicKe
   }
 }
 
-const unmarshalPrivateKey = (curve: string, key: ECDHKeyPair): JWKEncodedPrivateKey => ({
+const unmarshalPrivateKey = (curve: Curve, key: ECDHKeyPair): JWKEncodedPrivateKey => ({
   ...unmarshalPublicKey(curve, key.public),
   d: uint8ArrayToString(key.private, 'base64url')
 })

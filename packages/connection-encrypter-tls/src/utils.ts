@@ -1,6 +1,6 @@
 import { Duplex as DuplexStream } from 'node:stream'
 import { Ed25519PublicKey, Secp256k1PublicKey, marshalPublicKey, supportedKeys, unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { CodeError, InvalidCryptoExchangeError, UnexpectedPeerError } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, InvalidParametersError, UnexpectedPeerError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
@@ -11,7 +11,8 @@ import { pushable } from 'it-pushable'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { KeyType, PublicKey } from '../src/pb/index.js'
+import { InvalidCertificateError } from './errors.js'
+import { KeyType, PublicKey } from './pb/index.js'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -33,12 +34,12 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
 
   if (x509Cert.notBefore.getTime() > now) {
     log?.error('the certificate was not valid yet')
-    throw new CodeError('The certificate is not valid yet', 'ERR_INVALID_CERTIFICATE')
+    throw new InvalidCertificateError('The certificate is not valid yet')
   }
 
   if (x509Cert.notAfter.getTime() < now) {
     log?.error('the certificate has expired')
-    throw new CodeError('The certificate has expired', 'ERR_INVALID_CERTIFICATE')
+    throw new InvalidCertificateError('The certificate has expired')
   }
 
   const certSignatureValid = await x509Cert.verify()
@@ -59,7 +60,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
 
   if (libp2pPublicKeyExtension == null || libp2pPublicKeyExtension.type !== LIBP2P_PUBLIC_KEY_EXTENSION) {
     log?.error('the certificate did not include the libp2p public key extension')
-    throw new CodeError('The certificate did not include the libp2p public key extension', 'ERR_INVALID_CERTIFICATE')
+    throw new InvalidCertificateError('The certificate did not include the libp2p public key extension')
   }
 
   const { result: libp2pKeySequence } = asn1js.fromBER(libp2pPublicKeyExtension.value)
@@ -104,34 +105,17 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
 }
 
 export async function generateCertificate (peerId: PeerId): Promise<{ cert: string, key: string }> {
-  const now = Date.now()
-
-  const alg = {
-    name: 'ECDSA',
-    namedCurve: 'P-256',
-    hash: 'SHA-256'
-  }
-
-  const keys = await crypto.subtle.generateKey(alg, true, ['sign'])
-
-  const certPublicKeySpki = await crypto.subtle.exportKey('spki', keys.publicKey)
-  const dataToSign = encodeSignatureData(certPublicKeySpki)
-
   if (peerId.privateKey == null) {
-    throw new InvalidCryptoExchangeError('Private key was missing from PeerId')
+    throw new InvalidParametersError('Private key was missing from PeerId')
   }
-
-  const privateKey = await unmarshalPrivateKey(peerId.privateKey)
-  const sig = await privateKey.sign(dataToSign)
-
-  let keyType: KeyType
-  let keyData: Uint8Array
 
   if (peerId.publicKey == null) {
-    throw new CodeError('Public key missing from PeerId', 'ERR_INVALID_PEER_ID')
+    throw new InvalidParametersError('Public key missing from PeerId')
   }
 
   const publicKey = unmarshalPublicKey(peerId.publicKey)
+  let keyType: KeyType
+  let keyData: Uint8Array
 
   if (peerId.type === 'Ed25519') {
     // Ed25519: Only the 32 bytes of the public key
@@ -146,9 +130,22 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
     keyType = KeyType.RSA
     keyData = publicKey.marshal()
   } else {
-    throw new CodeError('Unknown PeerId type', 'ERR_UNKNOWN_PEER_ID_TYPE')
+    throw new InvalidParametersError('PeerId had unknown or unsupported type')
   }
 
+  const now = Date.now()
+
+  const alg = {
+    name: 'ECDSA',
+    namedCurve: 'P-256',
+    hash: 'SHA-256'
+  }
+
+  const keys = await crypto.subtle.generateKey(alg, true, ['sign'])
+  const certPublicKeySpki = await crypto.subtle.exportKey('spki', keys.publicKey)
+  const dataToSign = encodeSignatureData(certPublicKeySpki)
+  const privateKey = await unmarshalPrivateKey(peerId.privateKey)
+  const sig = await privateKey.sign(dataToSign)
   const notAfter = new Date(now + CERT_VALIDITY_PERIOD_TO)
   // workaround for https://github.com/PeculiarVentures/x509/issues/73
   notAfter.setMilliseconds(0)

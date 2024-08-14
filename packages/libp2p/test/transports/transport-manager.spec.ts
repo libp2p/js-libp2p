@@ -11,7 +11,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
@@ -71,7 +70,7 @@ describe('Transport Manager (WebSockets)', () => {
       }))
     })
       .to.throw()
-      .and.to.have.property('code', ErrorCodes.ERR_DUPLICATE_TRANSPORT)
+      .and.to.have.property('name', 'InvalidParametersError')
   })
 
   it('should be able to dial', async () => {
@@ -91,7 +90,7 @@ describe('Transport Manager (WebSockets)', () => {
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TRANSPORT_UNAVAILABLE)
+      .and.to.have.property('name', 'TransportUnavailableError')
   })
 
   it('should fail to listen with no valid address', async () => {
@@ -102,7 +101,7 @@ describe('Transport Manager (WebSockets)', () => {
 
     await expect(start(tm))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.property('name', 'NoValidAddressesError')
 
     await stop(tm)
   })
@@ -136,7 +135,7 @@ describe('libp2p.transportManager (dial only)', () => {
     })
 
     await expect(libp2p.start()).to.eventually.be.rejected
-      .with.property('code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .with.property('name', 'NoValidAddressesError')
   })
 
   it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
