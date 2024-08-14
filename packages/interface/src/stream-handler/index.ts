@@ -21,10 +21,10 @@ export interface StreamHandlerOptions {
   maxOutboundStreams?: number
 
   /**
-   * Opt-in to running over a transient connection - one that has time/data limits
-   * placed on it.
+   * Opt-in to running over connections with limits on how much data can be
+   * transferred or how long it can be open for.
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 }
 
 export interface StreamHandlerRecord {
