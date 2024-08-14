@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { CodeError } from '@libp2p/interface'
+import { NotFoundError } from '@libp2p/interface'
 import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerLogger } from '@libp2p/logger'
@@ -89,7 +89,7 @@ describe('dial queue', () => {
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
-    components.peerStore.get.withArgs(peerId).rejects(new CodeError('Not found', 'ERR_NOT_FOUND'))
+    components.peerStore.get.withArgs(peerId).rejects(new NotFoundError('Not found'))
     components.peerRouting.findPeer.withArgs(peerId).resolves({
       id: peerId,
       multiaddrs: [
@@ -198,7 +198,7 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateCodeError')
+      expect(err).to.have.property('name', 'AggregateError')
     }
 
     expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
@@ -234,7 +234,7 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateCodeError')
+      expect(err).to.have.property('name', 'AggregateError')
     }
 
     expect(reject).to.have.property('callCount', addrs.length)

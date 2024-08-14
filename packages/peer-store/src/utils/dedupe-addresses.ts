@@ -1,6 +1,5 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
-import { codes } from '../errors.js'
 import type { AddressFilter } from '../index.js'
 import type { Address as AddressPB } from '../pb/peer.js'
 import type { PeerId, Address } from '@libp2p/interface'
@@ -18,7 +17,7 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     }
 
     if (!isMultiaddr(addr.multiaddr)) {
-      throw new CodeError('Multiaddr was invalid', codes.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('Multiaddr was invalid')
     }
 
     if (!(await filter(peerId, addr.multiaddr))) {

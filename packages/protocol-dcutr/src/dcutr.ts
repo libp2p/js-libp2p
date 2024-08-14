@@ -1,4 +1,4 @@
-import { CodeError, ERR_INVALID_MESSAGE, serviceDependencies } from '@libp2p/interface'
+import { InvalidMessageError, serviceDependencies } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
@@ -164,14 +164,14 @@ export class DefaultDCUtRService implements Startable {
 
         if (connect.type !== HolePunch.Type.CONNECT) {
           this.log('A sent wrong message type')
-          throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+          throw new InvalidMessageError('DCUtR message type was incorrect')
         }
 
         const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
         if (multiaddrs.length === 0) {
           this.log('A did not have any dialable multiaddrs')
-          throw new CodeError('DCUtR connect message had no multiaddrs', ERR_INVALID_MESSAGE)
+          throw new InvalidMessageError('DCUtR connect message had no multiaddrs')
         }
 
         const rtt = Date.now() - connectTimer
@@ -301,19 +301,19 @@ export class DefaultDCUtRService implements Startable {
 
       if (connect.type !== HolePunch.Type.CONNECT) {
         this.log('B sent wrong message type')
-        throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR message type was incorrect')
       }
 
       if (connect.observedAddresses.length === 0) {
         this.log('B sent no multiaddrs')
-        throw new CodeError('DCUtR connect message had no multiaddrs', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR connect message had no multiaddrs')
       }
 
       const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
       if (multiaddrs.length === 0) {
         this.log('B had no dialable multiaddrs')
-        throw new CodeError('DCUtR connect message had no dialable multiaddrs', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR connect message had no dialable multiaddrs')
       }
 
       this.log('A sending connect')
@@ -326,7 +326,7 @@ export class DefaultDCUtRService implements Startable {
       const sync = await pb.read(options)
 
       if (sync.type !== HolePunch.Type.SYNC) {
-        throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR message type was incorrect')
       }
 
       // TODO: when we have a QUIC transport, the dial step is different - for

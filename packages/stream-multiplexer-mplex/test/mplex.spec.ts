@@ -34,7 +34,7 @@ describe('mplex', () => {
     await expect((async () => {
       await muxer.newStream()
     })()).eventually.be.rejected
-      .with.property('code', 'ERR_TOO_MANY_OUTBOUND_STREAMS')
+      .with.property('name', 'TooManyOutboundProtocolStreamsError')
   })
 
   it('should restrict number of recipient streams per connection', async () => {
@@ -172,7 +172,7 @@ describe('mplex', () => {
 
     // source should have errored with appropriate code
     const err = await streamSourceError.promise
-    expect(err).to.have.property('code', 'ERR_STREAM_INPUT_BUFFER_FULL')
+    expect(err).to.have.property('name', 'StreamInputBufferError')
 
     // should have sent reset message to peer for this stream
     await muxerFinished.promise

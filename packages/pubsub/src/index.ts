@@ -30,11 +30,10 @@
  * ```
  */
 
-import { CodeError, TypedEventEmitter, TopicValidatorResult } from '@libp2p/interface'
+import { TypedEventEmitter, TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
 import Queue from 'p-queue'
-import { codes } from './errors.js'
 import { PeerStreams as PeerStreamsImpl } from './peer-streams.js'
 import {
   signMessage,
@@ -486,22 +485,22 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     switch (signaturePolicy) {
       case 'StrictSign':
         if (msg.type !== 'signed') {
-          throw new CodeError('Message type should be "signed" when signature policy is StrictSign but it was not', codes.ERR_MISSING_SIGNATURE)
+          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not')
         }
 
         if (msg.sequenceNumber == null) {
-          throw new CodeError('Need seqno when signature policy is StrictSign but it was missing', codes.ERR_MISSING_SEQNO)
+          throw new InvalidMessageError('Need seqno when signature policy is StrictSign but it was missing')
         }
 
         if (msg.key == null) {
-          throw new CodeError('Need key when signature policy is StrictSign but it was missing', codes.ERR_MISSING_KEY)
+          throw new InvalidMessageError('Need key when signature policy is StrictSign but it was missing')
         }
 
         return msgId(msg.key, msg.sequenceNumber)
       case 'StrictNoSign':
         return noSignMsgId(msg.data)
       default:
-        throw new CodeError('Cannot get message id: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new InvalidMessageError('Cannot get message id: unhandled signature policy')
     }
   }
 
@@ -573,51 +572,51 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     switch (signaturePolicy) {
       case 'StrictNoSign':
         if (message.type !== 'unsigned') {
-          throw new CodeError('Message type should be "unsigned" when signature policy is StrictNoSign but it was not', codes.ERR_MISSING_SIGNATURE)
+          throw new InvalidMessageError('Message type should be "unsigned" when signature policy is StrictNoSign but it was not')
         }
 
         // @ts-expect-error should not be present
         if (message.signature != null) {
-          throw new CodeError('StrictNoSigning: signature should not be present', codes.ERR_UNEXPECTED_SIGNATURE)
+          throw new InvalidMessageError('StrictNoSigning: signature should not be present')
         }
 
         // @ts-expect-error should not be present
         if (message.key != null) {
-          throw new CodeError('StrictNoSigning: key should not be present', codes.ERR_UNEXPECTED_KEY)
+          throw new InvalidMessageError('StrictNoSigning: key should not be present')
         }
 
         // @ts-expect-error should not be present
         if (message.sequenceNumber != null) {
-          throw new CodeError('StrictNoSigning: seqno should not be present', codes.ERR_UNEXPECTED_SEQNO)
+          throw new InvalidMessageError('StrictNoSigning: seqno should not be present')
         }
         break
       case 'StrictSign':
         if (message.type !== 'signed') {
-          throw new CodeError('Message type should be "signed" when signature policy is StrictSign but it was not', codes.ERR_MISSING_SIGNATURE)
+          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not')
         }
 
         if (message.signature == null) {
-          throw new CodeError('StrictSigning: Signing required and no signature was present', codes.ERR_MISSING_SIGNATURE)
+          throw new InvalidMessageError('StrictSigning: Signing required and no signature was present')
         }
 
         if (message.sequenceNumber == null) {
-          throw new CodeError('StrictSigning: Signing required and no sequenceNumber was present', codes.ERR_MISSING_SEQNO)
+          throw new InvalidMessageError('StrictSigning: Signing required and no sequenceNumber was present')
         }
 
         if (!(await verifySignature(message, this.encodeMessage.bind(this)))) {
-          throw new CodeError('StrictSigning: Invalid message signature', codes.ERR_INVALID_SIGNATURE)
+          throw new InvalidMessageError('StrictSigning: Invalid message signature')
         }
 
         break
       default:
-        throw new CodeError('Cannot validate message: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new InvalidMessageError('Cannot validate message: unhandled signature policy')
     }
 
     const validatorFn = this.topicValidators.get(message.topic)
     if (validatorFn != null) {
       const result = await validatorFn(from, message)
       if (result === TopicValidatorResult.Reject || result === TopicValidatorResult.Ignore) {
-        throw new CodeError('Message validation failed', codes.ERR_TOPIC_VALIDATOR_REJECT)
+        throw new InvalidMessageError('Message validation failed')
       }
     }
   }
@@ -637,7 +636,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
           ...message
         })
       default:
-        throw new CodeError('Cannot build message: unhandled signature policy', codes.ERR_UNHANDLED_SIGNATURE_POLICY)
+        throw new InvalidMessageError('Cannot build message: unhandled signature policy')
     }
   }
 
@@ -648,11 +647,11 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    */
   getSubscribers (topic: string): PeerId[] {
     if (!this.started) {
-      throw new CodeError('not started yet', 'ERR_NOT_STARTED_YET')
+      throw new NotStartedError('not started yet')
     }
 
     if (topic == null) {
-      throw new CodeError('topic is required', 'ERR_NOT_VALID_TOPIC')
+      throw new InvalidParametersError('Topic is required')
     }
 
     const peersInTopic = this.topics.get(topic.toString())

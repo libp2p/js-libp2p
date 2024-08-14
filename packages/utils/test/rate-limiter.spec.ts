@@ -20,7 +20,7 @@ describe('RateLimiter with fixed window', function () {
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 5 })
 
     await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected
-      .with.nested.property('props.msBeforeNext').that.is.gte(0)
+      .with.property('msBeforeNext').that.is.gte(0)
   })
 
   it('execute evenly over duration with minimum delay 20 ms', async () => {
@@ -98,7 +98,7 @@ describe('RateLimiter with fixed window', function () {
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
     await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected
-      .with.nested.property('props.msBeforeNext').that.is.greaterThan(1000)
+      .with.property('msBeforeNext').that.is.greaterThan(1000)
   })
 
   it('do not block key second time until block expires no matter how many points consumed', async () => {
@@ -110,7 +110,7 @@ describe('RateLimiter with fixed window', function () {
     await delay(1201)
 
     await expect(rateLimiterMemory.consume(testKey)).to.eventually.be.rejected()
-      .with.nested.property('props.msBeforeNext').that.is.lessThan(1000)
+      .with.property('msBeforeNext').that.is.lessThan(1000)
   })
 
   it('block expires in blockDuration seconds', async () => {
@@ -132,7 +132,7 @@ describe('RateLimiter with fixed window', function () {
     rateLimiterMemory.block(testKey, 2)
 
     await expect(rateLimiterMemory.consume(testKey)).to.eventually.be.rejected()
-      .with.nested.property('props.msBeforeNext').that.is.within(1000, 2000)
+      .with.property('msBeforeNext').that.is.within(1000, 2000)
   })
 
   it('get by key', async () => {

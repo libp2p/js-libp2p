@@ -3,7 +3,6 @@ import { expect } from 'aegir/chai'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { RecordEnvelope } from '../src/envelope/index.js'
-import { codes as ErrorCodes } from '../src/errors.js'
 import type { PeerId, Record } from '@libp2p/interface'
 
 const domain = 'libp2p-testing'
@@ -83,6 +82,6 @@ describe('Envelope', () => {
 
     await expect(RecordEnvelope.openAndCertify(rawEnvelope, '/bad-domain'))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_SIGNATURE_NOT_VALID)
+      .and.to.have.property('name', 'InvalidSignatureError')
   })
 })
