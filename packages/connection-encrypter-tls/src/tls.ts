@@ -19,7 +19,8 @@
  */
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
-import { CodeError, serviceCapabilities } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
+import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents, TLSInit } from './index.js'
@@ -84,7 +85,7 @@ export class TLS implements ConnectionEncrypter {
 
     return new Promise((resolve, reject) => {
       const abortTimeout = setTimeout(() => {
-        socket.destroy(new CodeError('Handshake timeout', 'ERR_HANDSHAKE_TIMEOUT'))
+        socket.destroy(new HandshakeTimeoutError())
       }, this.timeout)
 
       const verifyRemote = (): void => {

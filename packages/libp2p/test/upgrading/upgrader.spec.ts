@@ -25,7 +25,6 @@ import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Components, defaultComponents } from '../../src/components.js'
-import { codes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
@@ -272,7 +271,7 @@ describe('Upgrader', () => {
     expect(results).to.have.length(2)
     results.forEach(result => {
       expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.code', codes.ERR_ENCRYPTION_FAILED)
+      expect(result).to.have.nested.property('reason.name', 'EncryptionFailedError')
     })
   })
 
@@ -380,7 +379,7 @@ describe('Upgrader', () => {
     expect(results).to.have.length(2)
     results.forEach(result => {
       expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.code', codes.ERR_MUXER_UNAVAILABLE)
+      expect(result).to.have.nested.property('reason.name', 'MuxerUnavailableError')
     })
   })
 
@@ -469,7 +468,7 @@ describe('Upgrader', () => {
     expect(results).to.have.length(2)
     results.forEach(result => {
       expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.code', codes.ERR_UNSUPPORTED_PROTOCOL)
+      expect(result).to.have.nested.property('reason.name', 'UnsupportedProtocolError')
     })
   })
 
@@ -504,7 +503,7 @@ describe('Upgrader', () => {
     await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'], {
       signal
     }))
-      .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+      .to.eventually.be.rejected.with.property('name', 'AbortError')
   })
 
   it('should close streams when protocol negotiation fails', async () => {
@@ -521,7 +520,7 @@ describe('Upgrader', () => {
     expect(connections[1].streams).to.have.lengthOf(0)
 
     await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1']))
-      .to.eventually.be.rejected.with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+      .to.eventually.be.rejected.with.property('name', 'UnsupportedProtocolError')
 
     // wait for remote to close
     await delay(100)
@@ -871,7 +870,7 @@ describe('libp2p.upgrader', () => {
     const s = await localToRemote.newStream(protocol)
 
     await expect(drain(s.source)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_STREAM_RESET')
+      .with.property('name', 'StreamResetError')
   })
 
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
@@ -947,7 +946,7 @@ describe('libp2p.upgrader', () => {
     expect(streamCount).to.equal(1)
 
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+      .with.property('name', 'TooManyOutboundProtocolStreamsError')
   })
 
   it('should allow overriding the number of outgoing streams that can be opened using a protocol without a handler', async () => {
@@ -1025,12 +1024,12 @@ describe('libp2p.upgrader', () => {
 
     // should reject without overriding limit
     await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+      .with.property('name', 'TooManyOutboundProtocolStreamsError')
 
     // should reject even with overriding limit
     await expect(localToRemote.newStream(protocol, {
       maxOutboundStreams: limit
     })).to.eventually.be.rejected()
-      .with.property('code', codes.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS)
+      .with.property('name', 'TooManyOutboundProtocolStreamsError')
   })
 })

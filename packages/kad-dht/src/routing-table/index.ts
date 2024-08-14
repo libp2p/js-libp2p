@@ -1,4 +1,4 @@
-import { CodeError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidMessageError, TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { pbStream } from 'it-protobuf-stream'
@@ -254,7 +254,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             await pb.unwrap().close()
 
             if (response.type !== MessageType.PING) {
-              throw new CodeError(`Incorrect message type received, expected PING got ${response.type}`, 'ERR_BAD_PING_RESPONSE')
+              throw new InvalidMessageError(`Incorrect message type received, expected PING got ${response.type}`)
             }
 
             return true

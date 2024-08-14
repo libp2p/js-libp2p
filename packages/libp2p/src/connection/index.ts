@@ -1,4 +1,4 @@
-import { connectionSymbol, CodeError, setMaxListeners } from '@libp2p/interface'
+import { connectionSymbol, setMaxListeners, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError } from '@libp2p/interface'
 import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -116,11 +116,11 @@ export class ConnectionImpl implements Connection {
    */
   async newStream (protocols: string | string[], options?: NewStreamOptions): Promise<Stream> {
     if (this.status === 'closing') {
-      throw new CodeError('the connection is being closed', 'ERR_CONNECTION_BEING_CLOSED')
+      throw new ConnectionClosingError('the connection is being closed')
     }
 
     if (this.status === 'closed') {
-      throw new CodeError('the connection is closed', 'ERR_CONNECTION_CLOSED')
+      throw new ConnectionClosedError('the connection is closed')
     }
 
     if (!Array.isArray(protocols)) {
@@ -128,7 +128,7 @@ export class ConnectionImpl implements Connection {
     }
 
     if (this.limits != null && options?.runOnLimitedConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on limited connection', 'ERR_LIMITED_CONNECTION')
+      throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
     const stream = await this._newStream(protocols, options)

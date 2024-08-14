@@ -1,6 +1,7 @@
+import { InvalidParametersError } from '@libp2p/interface'
 import { type Multiaddr } from '@multiformats/multiaddr'
 import { bases, digest } from 'multiformats/basics'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithmCode } from '../error.js'
+import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../error.js'
 import { MAX_MESSAGE_SIZE } from '../stream.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
@@ -32,7 +33,7 @@ export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptio
 
   const fingerprint = localCert.getFingerprints()[0].value
   if (fingerprint == null) {
-    throw invalidFingerprint('', 'no fingerprint on local certificate')
+    throw new InvalidFingerprintError('', 'no fingerprint on local certificate')
   }
 
   return fingerprint
@@ -63,7 +64,7 @@ export function certhash (ma: Multiaddr): string {
   const certhash = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0]
 
   if (certhash === undefined || certhash === '') {
-    throw inappropriateMultiaddr(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
+    throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
   }
 
   return certhash
@@ -86,7 +87,7 @@ export function ma2Fingerprint (ma: Multiaddr): string[] {
   const sdp = fingerprint.match(/.{1,2}/g)
 
   if (sdp == null) {
-    throw invalidFingerprint(fingerprint, ma.toString())
+    throw new InvalidFingerprintError(fingerprint, ma.toString())
   }
 
   return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
@@ -104,7 +105,7 @@ export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'S
     case 0x13:
       return 'SHA-512'
     default:
-      throw unsupportedHashAlgorithmCode(code)
+      throw new UnsupportedHashAlgorithmError(code)
   }
 }
 
@@ -148,7 +149,7 @@ export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescript
  */
 export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp === undefined) {
-    throw invalidArgument("Can't munge a missing SDP")
+    throw new InvalidParametersError("Can't munge a missing SDP")
   }
 
   desc.sdp = desc.sdp

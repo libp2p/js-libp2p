@@ -14,7 +14,6 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes } from '../../src/errors.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
@@ -465,7 +464,7 @@ describe('libp2p.connections', () => {
       })
 
       await expect(libp2p.dial(remoteLibp2p.peerId))
-        .to.eventually.be.rejected().with.property('code', codes.ERR_PEER_DIAL_INTERCEPTED)
+        .to.eventually.be.rejected().with.property('name', 'DialDeniedError')
     })
 
     it('intercept addr dial', async () => {

@@ -57,7 +57,7 @@
  * ```
  */
 
-import { CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
@@ -152,7 +152,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       // the WebSocket.ErrorEvent type doesn't actually give us any useful
       // information about what happened
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
-      const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
+      const err = new ConnectionFailedError(`Could not connect to ${ma.toString()}`)
       this.log.error('connection error:', err)
       this.metrics?.dialerEvents.increment({ error: true })
       errorPromise.reject(err)

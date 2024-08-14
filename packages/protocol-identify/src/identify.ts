@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
 
-import { CodeError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { InvalidMessageError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
@@ -81,17 +81,17 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     } = message
 
     if (publicKey == null) {
-      throw new CodeError('public key was missing from identify message', 'ERR_MISSING_PUBLIC_KEY')
+      throw new InvalidMessageError('public key was missing from identify message')
     }
 
     const id = await peerIdFromKeys(publicKey)
 
     if (!connection.remotePeer.equals(id)) {
-      throw new CodeError('identified peer does not match the expected peer', 'ERR_INVALID_PEER')
+      throw new InvalidMessageError('identified peer does not match the expected peer')
     }
 
     if (this.peerId.equals(id)) {
-      throw new CodeError('identified peer is our own peer id?', 'ERR_INVALID_PEER')
+      throw new InvalidMessageError('identified peer is our own peer id?')
     }
 
     // Get the observedAddr if there is one

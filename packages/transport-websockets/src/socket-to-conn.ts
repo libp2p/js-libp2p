@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
 import { CLOSE_TIMEOUT } from './constants.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -62,7 +62,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
 
-        this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
+        this.abort(new AbortError('Socket close timeout'))
       }
 
       options.signal?.addEventListener('abort', listener)

@@ -543,7 +543,7 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1).encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
 
       await expect(local.dial(ma)).to.eventually.be.rejected
-        .with.property('code', 'ERR_RELAYED_DIAL')
+        .with.property('name', 'DialError')
     })
     /*
     it('should fail to open connection over relayed connection', async () => {
@@ -687,7 +687,7 @@ describe('circuit-relay', () => {
       expect(connection).to.have.property('limits').that.is.ok()
 
       await expect(connection.newStream('/my-protocol/1.0.0'))
-        .to.eventually.be.rejected.with.property('code', 'ERR_LIMITED_CONNECTION')
+        .to.eventually.be.rejected.with.property('name', 'LimitedConnectionError')
     })
 
     it('should not allow incoming streams on a limited connection', async () => {
@@ -714,7 +714,7 @@ describe('circuit-relay', () => {
       await expect(connection.newStream('/my-protocol/1.0.0', {
         runOnLimitedConnection: false
       }))
-        .to.eventually.be.rejected.with.property('code', 'ERR_LIMITED_CONNECTION')
+        .to.eventually.be.rejected.with.property('name', 'LimitedConnectionError')
     })
 
     it('should open streams on a limited connection when told to do so', async () => {

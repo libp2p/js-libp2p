@@ -1,10 +1,15 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as hmac from '../hmac/index.js'
 import type { EnhancedKey, EnhancedKeyPair } from './interface.js'
 
-const cipherMap = {
+interface Cipher {
+  ivSize: number
+  keySize: number
+}
+
+const cipherMap: Record<string, Cipher> = {
   'AES-128': {
     ivSize: 16,
     keySize: 16
@@ -24,17 +29,19 @@ const cipherMap = {
  * (myIV, theirIV, myCipherKey, theirCipherKey, myMACKey, theirMACKey)
  */
 export async function keyStretcher (cipherType: 'AES-128' | 'AES-256' | 'Blowfish', hash: 'SHA1' | 'SHA256' | 'SHA512', secret: Uint8Array): Promise<EnhancedKeyPair> {
+  if (cipherType !== 'AES-128' && cipherType !== 'AES-256' && cipherType !== 'Blowfish') {
+    throw new InvalidParametersError('Cipher type was missing or unsupported')
+  }
+
+  if (hash !== 'SHA1' && hash !== 'SHA256' && hash !== 'SHA512') {
+    throw new InvalidParametersError('Hash type was missing or unsupported')
+  }
+
+  if (secret == null || !(secret instanceof Uint8Array)) {
+    throw new InvalidParametersError('Secret was missing or an incorrect type')
+  }
+
   const cipher = cipherMap[cipherType]
-
-  if (cipher == null) {
-    const allowed = Object.keys(cipherMap).join(' / ')
-    throw new CodeError(`unknown cipher type '${cipherType}'. Must be ${allowed}`, 'ERR_INVALID_CIPHER_TYPE')
-  }
-
-  if (hash == null) {
-    throw new CodeError('missing hash type', 'ERR_MISSING_HASH_TYPE')
-  }
-
   const cipherKeySize = cipher.keySize
   const ivSize = cipher.ivSize
   const hmacKeySize = 20

@@ -1,11 +1,10 @@
-import { CodeError, KEEP_ALIVE } from '@libp2p/interface'
+import { InvalidParametersError, KEEP_ALIVE, NotStartedError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
-import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
 import { ConnectionPruner } from './connection-pruner.js'
@@ -190,7 +189,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     const minConnections = init.minConnections ?? defaultOptions.minConnections
 
     if (this.maxConnections < minConnections) {
-      throw new CodeError('Connection Manager maxConnections must be greater than minConnections', codes.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('Connection Manager maxConnections must be greater than minConnections')
     }
 
     /**
@@ -495,7 +494,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     if (!this.isStarted()) {
-      throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
+      throw new NotStartedError('Not started')
     }
 
     options.signal?.throwIfAborted()
