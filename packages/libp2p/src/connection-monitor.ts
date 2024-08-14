@@ -85,7 +85,7 @@ export class ConnectionMonitor implements Startable {
             })
             const stream = await conn.newStream('/ipfs/ping/1.0.0', {
               signal,
-              runOnTransientConnection: true
+              runOnLimitedConnection: true
             })
             const bs = byteStream(stream)
             start = Date.now()
