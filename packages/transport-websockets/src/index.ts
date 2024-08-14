@@ -88,7 +88,6 @@ export interface WebSocketsComponents {
 export interface WebSocketsMetrics {
   dialerEvents: CounterGroup
   listenerEvents: CounterGroup
-  component: Metrics
 }
 
 export type WebSocketsDialEvents =
@@ -108,7 +107,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     if (components.metrics != null) {
       this.metrics = {
-        component: components.metrics,
         dialerEvents: components.metrics.registerCounterGroup('libp2p_websockets_dialer_events_total', {
           label: 'event',
           help: 'Total count of WebSockets dialer events by type'
