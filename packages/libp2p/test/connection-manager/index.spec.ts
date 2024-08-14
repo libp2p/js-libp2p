@@ -19,7 +19,6 @@ import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
   maxConnections: 10,
-  autoDialInterval: Infinity,
   inboundUpgradeTimeout: 10000
 }
 
