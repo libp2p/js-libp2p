@@ -104,5 +104,3 @@ export class TypedEventEmitter<EventMap extends Record<string, any>> extends Eve
     return this.dispatchEvent(new CustomEvent<Detail>(type as string, detail))
   }
 }
-
-export const CustomEvent = globalThis.CustomEvent
