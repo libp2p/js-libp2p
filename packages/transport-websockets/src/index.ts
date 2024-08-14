@@ -87,7 +87,6 @@ export interface WebSocketsComponents {
 
 export interface WebSocketsMetrics {
   dialerEvents: CounterGroup
-  listenerEvents: CounterGroup
 }
 
 export type WebSocketsDialEvents =
@@ -99,10 +98,12 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
   private readonly metrics?: WebSocketsMetrics
+  private readonly components: WebSocketsComponents
 
   constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
     this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
+    this.components = components
     this.init = init
 
     if (components.metrics != null) {
@@ -110,10 +111,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
         dialerEvents: components.metrics.registerCounterGroup('libp2p_websockets_dialer_events_total', {
           label: 'event',
           help: 'Total count of WebSockets dialer events by type'
-        }),
-        listenerEvents: components.metrics.registerCounterGroup('libp2p_websockets_listener_events_total', {
-          label: 'event',
-          help: 'Total count of WebSockets listener events by type'
         })
       }
     }
@@ -139,7 +136,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     this.log('new outbound connection %s', maConn.remoteAddr)
 
     const conn = await options.upgrader.upgradeOutbound(maConn, options)
-    this.metrics?.dialerEvents.increment({ upgrade_success: true })
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
@@ -158,7 +154,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
       this.log.error('connection error:', err)
-      this.metrics?.dialerEvents.increment({ socket_open_error: true })
+      this.metrics?.dialerEvents.increment({ error: true })
       errorPromise.reject(err)
     })
 
@@ -167,21 +163,20 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
       if (options.signal?.aborted === true) {
-        this.metrics?.dialerEvents.increment({ socket_open_abort: true })
+        this.metrics?.dialerEvents.increment({ abort: true })
       } else {
-        this.metrics?.dialerEvents.increment({ socket_open_error: true })
+        this.metrics?.dialerEvents.increment({ error: true })
       }
       rawSocket.close()
         .catch(err => {
           this.log.error('error closing raw socket', err)
-          this.metrics?.dialerEvents.increment({ socket_close_error: true })
         })
 
       throw err
     }
 
     this.log('connected %s', ma)
-    this.metrics?.dialerEvents.increment({ socket_open_success: true })
+    this.metrics?.dialerEvents.increment({ connect: true })
     return rawSocket
   }
 
@@ -193,7 +188,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       logger: this.logger,
-      metrics: this.metrics?.listenerEvents
+      metrics: this.components.metrics
     }, {
       ...this.init,
       ...options

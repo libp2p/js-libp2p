@@ -4,7 +4,7 @@ import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multi
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Connection, Listener, ListenerEvents, CreateListenerOptions, CounterGroup } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -12,11 +12,31 @@ import type { WebSocketServer } from 'it-ws/server'
 
 export interface WebSocketListenerComponents {
   logger: ComponentLogger
-  metrics?: CounterGroup
+  metrics?: Metrics
 }
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
+}
+
+export interface WebSocketListenerMetrics {
+  status: MetricGroup
+  errors: CounterGroup
+  events: CounterGroup
+}
+
+enum WebSocketListenerStatusCode {
+  /**
+   * When server object is initialized but we don't know the listening address
+   * yet or the server object is stopped manually, can be resumed only by
+   * calling listen()
+   **/
+  INACTIVE = 0,
+  ACTIVE = 1
+}
+
+type Status = { code: WebSocketListenerStatusCode.INACTIVE } | {
+  code: Exclude<WebSocketListenerStatusCode, WebSocketListenerStatusCode.INACTIVE>
 }
 
 class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
@@ -24,6 +44,9 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   private listeningMultiaddr?: Multiaddr
   private readonly server: WebSocketServer
   private readonly log: Logger
+  private metrics?: WebSocketListenerMetrics
+  private addr: string
+  private status: Status = { code: WebSocketListenerStatusCode.INACTIVE }
 
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
@@ -35,15 +58,15 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
 
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
+    this.addr = 'unknown'
+
     this.server = createServer({
       ...init,
       onConnection: (stream: DuplexWebSocket) => {
-        const listeningAddrDetails = this.listeningMultiaddr?.toOptions()
-
         const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
           logger: components.logger,
-          metrics,
-          metricPrefix: `${listeningAddrDetails?.transport}_${listeningAddrDetails?.host}:${listeningAddrDetails?.port} `
+          metrics: this.metrics?.events,
+          metricPrefix: `${this.addr} `
         })
         this.log('new inbound connection %s', maConn.remoteAddr)
 
@@ -57,7 +80,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
           void init.upgrader.upgradeInbound(maConn)
             .then((conn) => {
               this.log('inbound connection %s upgraded', maConn.remoteAddr)
-              metrics?.increment({ upgrade_success: true })
 
               if (init?.handler != null) {
                 init?.handler(conn)
@@ -69,31 +91,68 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
             })
             .catch(async err => {
               this.log.error('inbound connection failed to upgrade', err)
-              metrics?.increment({ upgrade_error: true })
+              this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
 
               await maConn.close().catch(err => {
                 this.log.error('inbound connection failed to close after upgrade failed', err)
               })
             })
-          metrics?.increment({ socket_open_success: true })
         } catch (err) {
           this.log.error('inbound connection failed to upgrade', err)
           maConn.close().catch(err => {
             this.log.error('inbound connection failed to close after upgrade failed', err)
+            this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
           })
         }
       }
     })
 
     this.server.on('listening', () => {
+      if (metrics != null) {
+        const { host, port } = this.listeningMultiaddr?.toOptions() ?? {}
+        this.addr = `${host}:${port}`
+
+        metrics.registerMetricGroup('libp2p_websockets_inbound_connections_total', {
+          label: 'address',
+          help: 'Current active connections in WebSocket listener',
+          calculate: () => {
+            return {
+              [this.addr]: this.connections.size
+            }
+          }
+        })
+
+        this.metrics = {
+          status: metrics?.registerMetricGroup('libp2p_websockets_listener_status_info', {
+            label: 'address',
+            help: 'Current status of the WebSocket listener socket'
+          }),
+          errors: metrics?.registerMetricGroup('libp2p_websockets_listener_errors_total', {
+            label: 'address',
+            help: 'Total count of WebSocket listener errors by type'
+          }),
+          events: metrics?.registerMetricGroup('libp2p_websockets_listener_events_total', {
+            label: 'address',
+            help: 'Total count of WebSocket listener events by type'
+          })
+        }
+
+        this.metrics?.status.update({
+          [this.addr]: WebSocketListenerStatusCode.ACTIVE
+        })
+      }
       this.dispatchEvent(new CustomEvent('listening'))
     })
     this.server.on('error', (err: Error) => {
+      this.metrics?.errors.increment({ [`${this.addr} listen_error`]: true })
       this.dispatchEvent(new CustomEvent('error', {
         detail: err
       }))
     })
     this.server.on('close', () => {
+      this.metrics?.status.update({
+        [this.addr]: this.status.code
+      })
       this.dispatchEvent(new CustomEvent('close'))
     })
   }
@@ -114,7 +173,15 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   async listen (ma: Multiaddr): Promise<void> {
     this.listeningMultiaddr = ma
 
-    await this.server.listen(ma.toOptions())
+    try {
+      await this.server.listen(ma.toOptions())
+      this.status = {
+        code: WebSocketListenerStatusCode.ACTIVE
+      }
+    } catch (err) {
+      this.status = { code: WebSocketListenerStatusCode.INACTIVE }
+      throw err
+    }
   }
 
   getAddrs (): Multiaddr[] {

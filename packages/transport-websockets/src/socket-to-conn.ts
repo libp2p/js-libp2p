@@ -32,12 +32,14 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
             }
           }
         })())
+        metrics?.increment({ [`${metricPrefix}sink_success`]: true })
       } catch (err: any) {
         if (err.type !== 'aborted') {
-          metrics?.increment({ [`${metricPrefix}maconn_sink_error`]: true })
           log.error(err)
+          metrics?.increment({ [`${metricPrefix}sink_error`]: true })
+        } else {
+          metrics?.increment({ [`${metricPrefix}sink_abort`]: true })
         }
-        metrics?.increment({ [`${metricPrefix}maconn_sink_abort`]: true })
       }
     },
 
@@ -63,7 +65,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         const { host, port } = maConn.remoteAddr.toOptions()
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
-        metrics?.increment({ [`${metricPrefix}maconn_close_abort`]: true })
+        metrics?.increment({ [`${metricPrefix}close_abort`]: true })
 
         this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
       }
@@ -72,10 +74,10 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
       try {
         await stream.close()
-        metrics?.increment({ [`${metricPrefix}maconn_close_success`]: true })
+        metrics?.increment({ [`${metricPrefix}close_success`]: true })
       } catch (err: any) {
         log.error('error closing WebSocket gracefully', err)
-        metrics?.increment({ [`${metricPrefix}maconn_close_error`]: true })
+        metrics?.increment({ [`${metricPrefix}close_error`]: true })
         this.abort(err)
       } finally {
         options.signal?.removeEventListener('abort', listener)
@@ -94,13 +96,13 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
   }
 
   stream.socket.addEventListener('close', () => {
+    metrics?.increment({ [`${metricPrefix}close`]: true })
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline
     if (maConn.timeline.close == null) {
       maConn.timeline.close = Date.now()
     }
-    metrics?.increment({ [`${metricPrefix}maconn_socket_close_success`]: true })
   }, { once: true })
 
   return maConn
