@@ -1,4 +1,4 @@
-import { InvalidParametersError, KEEP_ALIVE, NotStartedError } from '@libp2p/interface'
+import { InvalidParametersError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
@@ -9,7 +9,8 @@ import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, Peer, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
+import { ReconnectQueue } from './reconnect-queue.js'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
 
@@ -91,6 +92,31 @@ export interface ConnectionManagerInit {
    * (default: 10)
    */
   maxIncomingPendingConnections?: number
+
+  /**
+   * When a peer tagged with `KEEP_ALIVE` disconnects, attempt to redial them
+   * this many times.
+   *
+   * @default 5
+   */
+  reconnectRetries?: number
+
+  /**
+   * When a peer tagged with `KEEP_ALIVE` disconnects, wait this long between
+   * each retry. Note this will be multiplied by `reconnectFactor` to create an
+   * increasing retry backoff.
+   *
+   * @default 1000
+   */
+  reconnectInterval?: number
+
+  /**
+   * When a peer tagged with `KEEP_ALIVE` disconnects, apply this multiplication
+   * factor to the time interval between each retry.
+   *
+   * @default 2
+   */
+  reconnectFactor?: number
 }
 
 const defaultOptions = {
@@ -123,6 +149,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
+  public readonly reconnectQueue: ReconnectQueue
   public readonly connectionPruner: ConnectionPruner
   private readonly inboundConnectionRateLimiter: RateLimiter
   private readonly peerStore: PeerStore
@@ -187,6 +214,17 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         dnsaddr: dnsaddrResolver
       },
       connections: this.connections
+    })
+
+    this.reconnectQueue = new ReconnectQueue({
+      events: components.events,
+      peerStore: components.peerStore,
+      logger: components.logger,
+      connectionManager: this
+    }, {
+      retries: init.reconnectRetries,
+      interval: init.reconnectInterval,
+      factor: init.reconnectFactor
     })
   }
 
@@ -279,41 +317,23 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
-    this.dialQueue.start()
+    await start(
+      this.dialQueue,
+      this.reconnectQueue
+    )
 
     this.started = true
     this.log('started')
-  }
-
-  async afterStart (): Promise<void> {
-    // re-connect to any peers with the KEEP_ALIVE tag
-    void Promise.resolve()
-      .then(async () => {
-        const keepAlivePeers: Peer[] = await this.peerStore.all({
-          filters: [(peer) => {
-            return peer.tags.has(KEEP_ALIVE)
-          }]
-        })
-
-        await Promise.all(
-          keepAlivePeers.map(async peer => {
-            await this.openConnection(peer.id)
-              .catch(err => {
-                this.log.error(err)
-              })
-          })
-        )
-      })
-      .catch(err => {
-        this.log.error(err)
-      })
   }
 
   /**
    * Stops the Connection Manager
    */
   async stop (): Promise<void> {
-    this.dialQueue.stop()
+    await stop(
+      this.reconnectQueue,
+      this.dialQueue
+    )
 
     // Close all connections we're tracking
     const tasks: Array<Promise<void>> = []
