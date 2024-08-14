@@ -10,9 +10,14 @@ import { createMaConnPair } from './utils/index.js'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
-export default (common: TestSetup<ConnectionEncrypter>): void => {
+export interface ConnectionEncrypterSetupArgs {
+  peerId: PeerId
+}
+
+export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupArgs>): void => {
   describe('interface-connection-encrypter compliance tests', () => {
     let crypto: ConnectionEncrypter
+    let cryptoRemote: ConnectionEncrypter
     let localPeer: PeerId
     let remotePeer: PeerId
     let mitmPeer: PeerId
@@ -20,11 +25,13 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
     before(async () => {
       [
         crypto,
+        cryptoRemote,
         localPeer,
         remotePeer,
         mitmPeer
       ] = await Promise.all([
-        common.setup(),
+        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[0]) }),
+        common.setup({ peerId: await PeerIdFactory.createFromJSON(peers[1]) }),
         PeerIdFactory.createFromJSON(peers[0]),
         PeerIdFactory.createFromJSON(peers[1]),
         PeerIdFactory.createFromJSON(peers[2])
@@ -47,8 +54,8 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         inboundResult,
         outboundResult
       ] = await Promise.all([
-        crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, {
+        cryptoRemote.secureInbound(localConn),
+        crypto.secureOutbound(remoteConn, {
           remotePeer
         })
       ])
@@ -79,8 +86,8 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         inboundResult,
         outboundResult
       ] = await Promise.all([
-        crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, {
+        cryptoRemote.secureInbound(localConn),
+        crypto.secureOutbound(remoteConn, {
           remotePeer
         })
       ])
@@ -95,10 +102,10 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
       const [localConn, remoteConn] = createMaConnPair()
 
       await Promise.all([
-        crypto.secureInbound(remotePeer, localConn, {
+        cryptoRemote.secureInbound(localConn, {
           remotePeer: mitmPeer
         }),
-        crypto.secureOutbound(localPeer, remoteConn, {
+        crypto.secureOutbound(remoteConn, {
           remotePeer
         })
       ]).then(() => expect.fail(), (err) => {

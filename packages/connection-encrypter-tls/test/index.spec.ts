@@ -28,6 +28,7 @@ describe('tls', () => {
     ])
 
     encrypter = tls()({
+      peerId: await createEd25519PeerId(),
       logger: defaultLogger()
     })
   })
@@ -46,8 +47,10 @@ describe('tls', () => {
     })
 
     await Promise.all([
-      encrypter.secureInbound(remotePeer, inbound),
-      encrypter.secureOutbound(localPeer, outbound, {
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
         remotePeer: wrongPeer
       })
     ]).then(() => expect.fail('should have failed'), (err) => {
@@ -60,6 +63,11 @@ describe('tls', () => {
     const peer = await createRSAPeerId()
     remotePeer = peerIdFromBytes(peer.toBytes())
 
+    encrypter = tls()({
+      peerId: remotePeer,
+      logger: defaultLogger()
+    })
+
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
@@ -69,8 +77,10 @@ describe('tls', () => {
     })
 
     await expect(Promise.all([
-      encrypter.secureInbound(localPeer, inbound),
-      encrypter.secureOutbound(remotePeer, outbound, {
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
         remotePeer: localPeer
       })
     ]))

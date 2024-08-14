@@ -85,7 +85,6 @@ export type WebTransportDialEvents =
 
 interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransportDialEvents> {
   wt: WebTransport
-  localPeer: PeerId
   remotePeer?: PeerId
   certhashes: Array<MultihashDigest<number>>
 }
@@ -129,10 +128,6 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     }
 
     this.log('dialing %s', ma)
-    const localPeer = this.components.peerId
-    if (localPeer === undefined) {
-      throw new CodeError('Need a local peerid', 'ERR_INVALID_PARAMETERS')
-    }
 
     options = options ?? {}
 
@@ -206,7 +201,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           cleanUpWTSession('remote_close')
         })
 
-      authenticated = await raceSignal(this.authenticateWebTransport({ wt, localPeer, remotePeer, certhashes, ...options }), options.signal)
+      authenticated = await raceSignal(this.authenticateWebTransport({ wt, remotePeer, certhashes, ...options }), options.signal)
 
       if (!authenticated) {
         throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
@@ -257,7 +252,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     }
   }
 
-  async authenticateWebTransport ({ wt, localPeer, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
+  async authenticateWebTransport ({ wt, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
     signal?.throwIfAborted()
 
     onProgress?.(new CustomProgressEvent('webtransport:open-authentication-stream'))
@@ -295,7 +290,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const n = noise()(this.components)
 
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
-    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, {
+    const { remoteExtensions } = await n.secureOutbound(duplex, {
       signal,
       remotePeer
     })

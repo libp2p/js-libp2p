@@ -505,10 +505,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     if (peerId != null && options.force !== true) {
       this.log('dial %p', peerId)
       const existingConnection = this.getConnections(peerId)
-        .find(conn => !conn.transient)
+        .find(conn => conn.limits == null)
 
       if (existingConnection != null) {
-        this.log('had an existing non-transient connection to %p', peerId)
+        this.log('had an existing non-limited connection to %p', peerId)
 
         options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection

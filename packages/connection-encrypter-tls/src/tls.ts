@@ -30,9 +30,11 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
   private readonly log: Logger
+  private readonly peerId: PeerId
 
   constructor (components: TLSComponents) {
     this.log = components.logger.forComponent('libp2p:tls')
+    this.peerId = components.peerId
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/tls'
@@ -41,20 +43,20 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, true, options)
+  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(conn, true, options)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, false, options)
+  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(conn, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     const opts: TLSSocketOptions = {
-      ...await generateCertificate(localId),
+      ...await generateCertificate(this.peerId),
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',

@@ -31,14 +31,17 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 const PROTOCOL = '/plaintext/2.0.0'
 
 export interface PlaintextComponents {
+  peerId: PeerId
   logger: ComponentLogger
 }
 
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
+  private readonly peerId: PeerId
   private readonly log: Logger
 
   constructor (components: PlaintextComponents) {
+    this.peerId = components.peerId
     this.log = components.logger.forComponent('libp2p:plaintext')
   }
 
@@ -48,12 +51,12 @@ class Plaintext implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, options)
+  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(this.peerId, conn, options)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, options)
+  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(this.peerId, conn, options)
   }
 
   /**
