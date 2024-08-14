@@ -16,7 +16,7 @@ export class PingService implements Startable, PingServiceInterface {
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private readonly runOnTransientConnection: boolean
+  private readonly runOnLimitedConnection: boolean
   private readonly log: Logger
 
   constructor (components: PingServiceComponents, init: PingServiceInit = {}) {
@@ -27,7 +27,7 @@ export class PingService implements Startable, PingServiceInterface {
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? true
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? true
 
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -38,7 +38,7 @@ export class PingService implements Startable, PingServiceInterface {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
     this.started = true
   }
@@ -119,7 +119,7 @@ export class PingService implements Startable, PingServiceInterface {
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
-        runOnTransientConnection: this.runOnTransientConnection
+        runOnLimitedConnection: this.runOnLimitedConnection
       })
 
       onAbort = () => {

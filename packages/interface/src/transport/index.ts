@@ -1,4 +1,4 @@
-import type { Connection, MultiaddrConnection } from '../connection/index.js'
+import type { Connection, ConnectionLimits, MultiaddrConnection } from '../connection/index.js'
 import type { TypedEventTarget } from '../event-target.js'
 import type { AbortOptions } from '../index.js'
 import type { StreamMuxerFactory } from '../stream-muxer/index.js'
@@ -104,12 +104,7 @@ export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent =
   skipEncryption?: boolean
   skipProtection?: boolean
   muxerFactory?: StreamMuxerFactory
-
-  /**
-   * The passed MultiaddrConnection has limits place on duration and/or data
-   * transfer amounts so is not expected to be open for very long.
-   */
-  transient?: boolean
+  limits?: ConnectionLimits
 }
 
 export type InboundConnectionUpgradeEvents =
