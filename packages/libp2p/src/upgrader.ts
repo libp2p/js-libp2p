@@ -644,7 +644,7 @@ export class DefaultUpgrader implements Upgrader {
       connection.log('encrypting inbound connection using', protocol)
 
       return {
-        ...await encrypter.secureInbound(this.components.peerId, stream),
+        ...await encrypter.secureInbound(stream),
         protocol
       }
     } catch (err: any) {
@@ -681,7 +681,7 @@ export class DefaultUpgrader implements Upgrader {
       connection.log('encrypting outbound connection to %p using %s', remotePeerId, encrypter)
 
       return {
-        ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
+        ...await encrypter.secureOutbound(stream, remotePeerId),
         protocol
       }
     } catch (err: any) {

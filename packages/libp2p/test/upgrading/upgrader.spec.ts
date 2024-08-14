@@ -174,7 +174,7 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()(localComponents)
+        plaintext()(remoteComponents)
       ],
       muxers: [],
       inboundUpgradeTimeout: 1000
@@ -361,19 +361,19 @@ describe('Upgrader', () => {
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
       connectionEncryption: [
-        plaintext()(localComponents)
+        plaintext()(remoteComponents)
       ],
       muxers: [
-        yamux()(localComponents),
-        mplex()(localComponents)
+        yamux()(remoteComponents),
+        mplex()(remoteComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
 
     // Wait for the results of each side of the connection
     const results = await Promise.allSettled([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
+      localUpgrader.upgradeOutbound(inbound),
+      remoteUpgrader.upgradeInbound(outbound)
     ])
 
     // Ensure both sides fail
