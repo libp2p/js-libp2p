@@ -15,6 +15,7 @@ describe('plaintext', () => {
   let remotePeer: PeerId
   let wrongPeer: PeerId
   let encrypter: ConnectionEncrypter
+  let encrypterRemote: ConnectionEncrypter
 
   beforeEach(async () => {
     [localPeer, remotePeer, wrongPeer] = await Promise.all([
@@ -24,6 +25,11 @@ describe('plaintext', () => {
     ])
 
     encrypter = plaintext()({
+      peerId: localPeer,
+      logger: defaultLogger()
+    })
+    encrypterRemote = plaintext()({
+      peerId: remotePeer,
       logger: defaultLogger()
     })
   })
@@ -42,8 +48,8 @@ describe('plaintext', () => {
     })
 
     await Promise.all([
-      encrypter.secureInbound(remotePeer, inbound),
-      encrypter.secureOutbound(localPeer, outbound, wrongPeer)
+      encrypterRemote.secureInbound(inbound),
+      encrypter.secureOutbound(outbound, wrongPeer)
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('name', 'UnexpectedPeerError')
@@ -54,6 +60,11 @@ describe('plaintext', () => {
     const peer = await createRSAPeerId()
     remotePeer = peerIdFromBytes(peer.toBytes())
 
+    encrypter = plaintext()({
+      peerId: remotePeer,
+      logger: defaultLogger()
+    })
+
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
       addrs: [
@@ -63,8 +74,8 @@ describe('plaintext', () => {
     })
 
     await expect(Promise.all([
-      encrypter.secureInbound(localPeer, inbound),
-      encrypter.secureOutbound(remotePeer, outbound, localPeer)
+      encrypter.secureInbound(inbound),
+      encrypterRemote.secureOutbound(outbound, localPeer)
     ]))
       .to.eventually.be.rejected.with.property('name', 'InvalidCryptoExchangeError')
   })
