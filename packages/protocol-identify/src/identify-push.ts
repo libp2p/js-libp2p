@@ -82,7 +82,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
           try {
             stream = await connection.newStream(self.protocol, {
               signal,
-              runOnTransientConnection: self.runOnTransientConnection
+              runOnLimitedConnection: self.runOnLimitedConnection
             })
 
             const pb = pbStream(stream, {

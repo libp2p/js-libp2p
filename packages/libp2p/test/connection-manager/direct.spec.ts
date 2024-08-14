@@ -2,7 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { type Identify, identify } from '@libp2p/identify'
-import { AbortError, ERR_TIMEOUT, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
@@ -24,7 +24,6 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Libp2p, Connection, PeerId, Transport } from '@libp2p/interface'
@@ -100,7 +99,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should mark a peer as having recently failed to connect', async () => {
@@ -140,7 +139,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should abort dials on queue task timeout', async () => {
@@ -165,7 +164,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ERR_TIMEOUT)
+      .and.to.have.property('name', 'TimeoutError')
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {
@@ -181,7 +180,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TOO_MANY_ADDRESSES)
+      .and.to.have.property('name', 'DialError')
   })
 
   it('should sort addresses on dial', async () => {
@@ -290,7 +289,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([])).to.eventually.rejected
-      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
+      .with.property('name', 'NoValidAddressesError')
   })
 
   it('should throw if dialling multiaddrs with mismatched peer ids', async () => {
@@ -302,7 +301,7 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
       multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createEd25519PeerId()).toString()}`)
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
   })
 
   it('should throw if dialling multiaddrs with inconsistent peer ids', async () => {
@@ -314,14 +313,14 @@ describe('dialing (direct, WebSockets)', () => {
       multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
 
     // Perform dial
     await expect(connectionManager.openConnection([
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
       multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`)
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
   })
 })
 
@@ -501,7 +500,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_DIALED_SELF)
+      .and.to.have.property('name', 'DialError')
   })
 
   it('should limit the maximum dial queue size', async () => {
@@ -528,6 +527,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1234')),
       libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1235'))
     ])).to.eventually.be.rejected
-      .with.property('code', 'ERR_DIAL_QUEUE_FULL')
+      .with.property('name', 'DialError')
   })
 })

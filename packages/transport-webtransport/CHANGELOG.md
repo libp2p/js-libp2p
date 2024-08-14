@@ -96,6 +96,23 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.4](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.1.3...webtransport-v4.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/utils bumped from ^5.4.7 to ^5.4.8
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/ping bumped from ^1.1.3 to ^1.1.4
+    * libp2p bumped from ^1.8.2 to ^1.8.3
+
 ## [4.1.3](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.1.2...webtransport-v4.1.3) (2024-07-29)
 
 

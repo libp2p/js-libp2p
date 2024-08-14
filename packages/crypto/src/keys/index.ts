@@ -10,7 +10,7 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import * as Ed25519 from './ed25519-class.js'
 import generateEphemeralKeyPair from './ephemeral-keys.js'
 import { importer } from './importer.js'
@@ -38,9 +38,9 @@ export const supportedKeys = {
   secp256k1: Secp256k1
 }
 
-function unsupportedKey (type: string): CodeError<Record<string, never>> {
+function unsupportedKey (type: string): Error {
   const supported = Object.keys(supportedKeys).join(' / ')
-  return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, 'ERR_UNSUPPORTED_KEY_TYPE')
+  return new InvalidParametersError(`invalid or unsupported key type ${type}. Must be ${supported}`)
 }
 
 function typeToKey (type: string): typeof RSA | typeof Ed25519 | typeof Secp256k1 {
@@ -67,7 +67,7 @@ export async function generateKeyPair <T extends KeyTypes> (type: T, bits?: numb
  */
 export async function generateKeyPairFromSeed <T extends KeyTypes> (type: T, seed: Uint8Array, bits?: number): Promise<PrivateKey<T>> {
   if (type.toLowerCase() !== 'ed25519') {
-    throw new CodeError('Seed key derivation is unimplemented for RSA or secp256k1', 'ERR_UNSUPPORTED_KEY_DERIVATION_TYPE')
+    throw new InvalidParametersError('Seed key derivation is unimplemented for RSA or secp256k1')
   }
 
   return Ed25519.generateKeyPairFromSeed(seed)
@@ -143,7 +143,7 @@ export async function importKey <T extends KeyTypes> (encryptedKey: string, pass
   }
 
   if (!encryptedKey.includes('BEGIN')) {
-    throw new CodeError('Encrypted key was not a libp2p-key or a PEM file', 'ERR_INVALID_IMPORT_FORMAT')
+    throw new InvalidParametersError('Encrypted key was not a libp2p-key or a PEM file')
   }
 
   return importFromPem(encryptedKey, password)

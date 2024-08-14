@@ -1,11 +1,10 @@
-import { CodeError, KEEP_ALIVE } from '@libp2p/interface'
+import { InvalidParametersError, KEEP_ALIVE, NotStartedError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
-import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
@@ -134,8 +133,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
 
-    if (this.maxConnections < 0) {
-      throw new CodeError('Connection Manager maxConnections must be greater than zero', codes.ERR_INVALID_PARAMETERS)
+    if (this.maxConnections < 1) {
+      throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
     }
 
     /**
@@ -421,7 +420,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     if (!this.isStarted()) {
-      throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
+      throw new NotStartedError('Not started')
     }
 
     options.signal?.throwIfAborted()
@@ -431,10 +430,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     if (peerId != null && options.force !== true) {
       this.log('dial %p', peerId)
       const existingConnection = this.getConnections(peerId)
-        .find(conn => !conn.transient)
+        .find(conn => conn.limits == null)
 
       if (existingConnection != null) {
-        this.log('had an existing non-transient connection to %p', peerId)
+        this.log('had an existing non-limited connection to %p', peerId)
 
         options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection

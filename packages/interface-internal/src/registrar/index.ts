@@ -30,9 +30,11 @@ export interface StreamHandlerOptions {
   /**
    * If true, allow this protocol to run on limited connections (e.g.
    * connections with data or duration limits such as circuit relay
-   * connections) (default: false)
+   * connections)
+   *
+   * @default false
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 }
 
 export interface StreamHandlerRecord {

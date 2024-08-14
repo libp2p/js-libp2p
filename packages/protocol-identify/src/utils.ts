@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
@@ -19,7 +19,7 @@ export const defaultValues = {
   maxMessageSize: MAX_IDENTIFY_MESSAGE_SIZE,
   runOnConnectionOpen: true,
   runOnSelfUpdate: true,
-  runOnTransientConnection: true,
+  runOnLimitedConnection: true,
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
@@ -56,7 +56,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   log('received identify from %p', connection.remotePeer)
 
   if (message == null) {
-    throw new CodeError('message was null or undefined', 'ERR_INVALID_MESSAGE')
+    throw new InvalidMessageError('message was null or undefined')
   }
 
   const peer: PeerData = {}
@@ -78,7 +78,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     const peerId = await peerIdFromKeys(message.publicKey)
 
     if (!peerId.equals(connection.remotePeer)) {
-      throw new CodeError('public key did not match remote PeerId', 'ERR_INVALID_PUBLIC_KEY')
+      throw new InvalidMessageError('public key did not match remote PeerId')
     }
   }
 
@@ -94,12 +94,12 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
     // Verify peerId
     if (!peerRecord.peerId.equals(envelope.peerId)) {
-      throw new CodeError('signing key does not match PeerId in the PeerRecord', 'ERR_INVALID_SIGNING_KEY')
+      throw new InvalidMessageError('signing key does not match PeerId in the PeerRecord')
     }
 
     // Make sure remote peer is the one sending the record
     if (!connection.remotePeer.equals(peerRecord.peerId)) {
-      throw new CodeError('signing key does not match remote PeerId', 'ERR_INVALID_PEER_RECORD_KEY')
+      throw new InvalidMessageError('signing key does not match remote PeerId')
     }
 
     let existingPeer: Peer | undefined
@@ -107,7 +107,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     try {
       existingPeer = await peerStore.get(peerRecord.peerId)
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }
@@ -207,7 +207,7 @@ export abstract class AbstractIdentify implements Startable {
   protected readonly maxMessageSize: number
   protected readonly maxObservedAddresses: number
   protected readonly events: TypedEventTarget<Libp2pEvents>
-  protected readonly runOnTransientConnection: boolean
+  protected readonly runOnLimitedConnection: boolean
   protected readonly log: Logger
 
   constructor (components: IdentifyComponents, init: AbstractIdentifyInit) {
@@ -225,7 +225,7 @@ export abstract class AbstractIdentify implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
     this.maxMessageSize = init.maxMessageSize ?? defaultValues.maxMessageSize
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
-    this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues.runOnLimitedConnection
 
     // Store self host metadata
     this.host = {
@@ -257,7 +257,7 @@ export abstract class AbstractIdentify implements Startable {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
 
     this.started = true

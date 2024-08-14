@@ -27,12 +27,13 @@ export interface Topology {
   filter?: TopologyFilter
 
   /**
-   * If true, invoke `onConnect` for this topology on transient (e.g. short-lived
-   * and/or data-limited) connections
+   * If true, invoke `onConnect` for this topology on limited connections, e.g.
+   * ones with limits on how much data can be transferred or how long they can
+   * be open for.
    *
    * @default false
    */
-  notifyOnTransient?: boolean
+  notifyOnLimitedConnection?: boolean
 
   /**
    * Invoked when a new connection is opened to a peer that supports the

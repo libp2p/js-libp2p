@@ -29,12 +29,14 @@ describe('keyStretcher', () => {
 
     it('handles invalid cipher type', () => {
       // @ts-expect-error cipher name is invalid
-      return expect(crypto.keys.keyStretcher('invalid-cipher', 'SHA256', 'secret')).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CIPHER_TYPE')
+      return expect(crypto.keys.keyStretcher('invalid-cipher', 'SHA256', 'secret')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('handles missing hash type', () => {
       // @ts-expect-error secret name is invalid
-      return expect(crypto.keys.keyStretcher('AES-128', undefined, 'secret')).to.eventually.be.rejected().with.property('code', 'ERR_MISSING_HASH_TYPE')
+      return expect(crypto.keys.keyStretcher('AES-128', undefined, 'secret')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
   })
 

@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { pbkdf2Async } from '@noble/hashes/pbkdf2'
 import { sha512 } from '@noble/hashes/sha512'
 import * as asn1js from 'asn1js'
@@ -39,7 +39,7 @@ export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
  */
 export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
   if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
+    throw new InvalidParametersError('JWK was missing components')
   }
 
   const root = new asn1js.Sequence({
@@ -83,7 +83,7 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
  */
 export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   if (jwk.n == null || jwk.e == null) {
-    throw new CodeError('JWK was missing components', 'ERR_INVALID_PARAMETERS')
+    throw new InvalidParametersError('JWK was missing components')
   }
 
   const root = new asn1js.Sequence({
@@ -336,7 +336,7 @@ export async function importFromPem (pem: string, password: string): Promise<Rsa
 
     plaintext = findPEMData(result)
   } else {
-    throw new CodeError('Could not parse private key from PEM data', 'ERR_INVALID_PARAMETERS')
+    throw new InvalidParametersError('Could not parse private key from PEM data')
   }
 
   return unmarshalRsaPrivateKey(plaintext)
@@ -347,14 +347,14 @@ function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Ar
   const scheme = encryptionAlgorithm.valueBlock.value[0].toString()
 
   if (scheme !== 'OBJECT IDENTIFIER : 1.2.840.113549.1.5.13') {
-    throw new CodeError('Only pkcs5PBES2 encrypted private keys are supported', 'ERR_INVALID_PARAMS')
+    throw new InvalidParametersError('Only pkcs5PBES2 encrypted private keys are supported')
   }
 
   const keyDerivationFunc = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[0]
   const keyDerivationFuncName = keyDerivationFunc.valueBlock.value[0].toString()
 
   if (keyDerivationFuncName !== 'OBJECT IDENTIFIER : 1.2.840.113549.1.5.12') {
-    throw new CodeError('Only pkcs5PBKDF2 key derivation functions are supported', 'ERR_INVALID_PARAMS')
+    throw new InvalidParametersError('Only pkcs5PBKDF2 key derivation functions are supported')
   }
 
   const pbkdf2Params = keyDerivationFunc.valueBlock.value[1]
@@ -368,7 +368,7 @@ function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Ar
     iterations = Number((pbkdf2Params.valueBlock.value[1] as asn1js.Integer).toBigInt())
     keySize = Number((pbkdf2Params.valueBlock.value[2]).toBigInt())
   } else if (pbkdf2Params.valueBlock.value.length === 2) {
-    throw new CodeError('Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key', 'ERR_INVALID_PARAMS')
+    throw new InvalidParametersError('Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key')
   }
 
   const encryptionScheme = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[1]
@@ -385,7 +385,7 @@ function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Ar
   } else if (encryptionSchemeName === 'OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.42') {
     // aes256-CBC
   } else {
-    throw new CodeError('Only AES-CBC encryption schemes are supported', 'ERR_INVALID_PARAMS')
+    throw new InvalidParametersError('Only AES-CBC encryption schemes are supported')
   }
 
   const iv = toUint8Array(encryptionScheme.valueBlock.value[1].getValue())

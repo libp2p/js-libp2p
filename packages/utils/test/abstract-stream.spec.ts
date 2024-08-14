@@ -143,7 +143,7 @@ describe('abstract stream', () => {
     expect(stream).to.have.nested.property('timeline.abort').that.is.a('number')
 
     await expect(stream.sink([])).to.eventually.be.rejected
-      .with.property('code', 'ERR_SINK_INVALID_STATE')
+      .with.property('name', 'StreamStateError')
     await expect(drain(stream.source)).to.eventually.be.rejected
       .with('Urk!')
   })
@@ -161,9 +161,9 @@ describe('abstract stream', () => {
     expect(stream).to.not.have.nested.property('timeline.abort')
 
     await expect(stream.sink([])).to.eventually.be.rejected
-      .with.property('code', 'ERR_SINK_INVALID_STATE')
+      .with.property('name', 'StreamStateError')
     await expect(drain(stream.source)).to.eventually.be.rejected
-      .with.property('code', 'ERR_STREAM_RESET')
+      .with.property('name', 'StreamResetError')
   })
 
   it('does not send close read when remote closes write', async () => {
@@ -257,6 +257,6 @@ describe('abstract stream', () => {
     await expect(stream.close({
       signal: AbortSignal.timeout(1)
     })).to.eventually.be.rejected
-      .with.property('code', 'ABORT_ERR')
+      .with.property('name', 'AbortError')
   })
 })
