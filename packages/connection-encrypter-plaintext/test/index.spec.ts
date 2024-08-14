@@ -47,7 +47,9 @@ describe('plaintext', () => {
 
     await Promise.all([
       encrypter.secureInbound(remotePeer, inbound),
-      encrypter.secureOutbound(localPeer, outbound, wrongPeer)
+      encrypter.secureOutbound(localPeer, outbound, {
+        remotePeer: wrongPeer
+      })
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('code', UnexpectedPeerError.code)
@@ -68,7 +70,9 @@ describe('plaintext', () => {
 
     await expect(Promise.all([
       encrypter.secureInbound(localPeer, inbound),
-      encrypter.secureOutbound(remotePeer, outbound, localPeer)
+      encrypter.secureOutbound(remotePeer, outbound, {
+        remotePeer: localPeer
+      })
     ]))
       .to.eventually.be.rejected.with.property('code', InvalidCryptoExchangeError.code)
   })

@@ -27,14 +27,6 @@ export interface TLSComponents {
   logger: ComponentLogger
 }
 
-export interface TLSInit {
-  /**
-   * The peer id exchange must complete within this many milliseconds
-   * (default: 1000)
-   */
-  timeout?: number
-}
-
-export function tls (init?: TLSInit): (components: TLSComponents) => ConnectionEncrypter {
-  return (components) => new TLS(components, init)
+export function tls (): (components: TLSComponents) => ConnectionEncrypter {
+  return (components) => new TLS(components)
 }

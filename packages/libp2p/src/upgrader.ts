@@ -6,7 +6,7 @@ import { createConnection } from './connection/index.js'
 import { INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { codes } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions, SecureConnectionOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 const DEFAULT_PROTOCOL_SELECT_TIMEOUT = 30000
@@ -296,7 +296,10 @@ export class DefaultUpgrader implements Upgrader {
           conn: encryptedConn,
           remotePeer,
           protocol: cryptoProtocol
-        } = await this._encryptOutbound(protectedConn, remotePeerId))
+        } = await this._encryptOutbound(protectedConn, {
+          ...opts,
+          remotePeer: remotePeerId
+        }))
 
         const maConn: MultiaddrConnection = {
           ...protectedConn,
@@ -627,7 +630,7 @@ export class DefaultUpgrader implements Upgrader {
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (connection: MultiaddrConnection): Promise<CryptoResult> {
+  async _encryptInbound (connection: MultiaddrConnection, options?: AbortOptions): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
     connection.log('handling inbound crypto protocol selection', protocols)
 
@@ -644,7 +647,7 @@ export class DefaultUpgrader implements Upgrader {
       connection.log('encrypting inbound connection using', protocol)
 
       return {
-        ...await encrypter.secureInbound(this.components.peerId, stream),
+        ...await encrypter.secureInbound(this.components.peerId, stream, options),
         protocol
       }
     } catch (err: any) {
@@ -657,7 +660,7 @@ export class DefaultUpgrader implements Upgrader {
    * Attempts to encrypt the given `connection` with the provided connection encrypters.
    * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound (connection: MultiaddrConnection, remotePeerId?: PeerId): Promise<CryptoResult> {
+  async _encryptOutbound (connection: MultiaddrConnection, options?: SecureConnectionOptions): Promise<CryptoResult> {
     const protocols = Array.from(this.connectionEncryption.keys())
     connection.log('selecting outbound crypto protocol', protocols)
 
@@ -678,14 +681,14 @@ export class DefaultUpgrader implements Upgrader {
         throw new Error(`no crypto module found for ${protocol}`)
       }
 
-      connection.log('encrypting outbound connection to %p using %s', remotePeerId, encrypter)
+      connection.log('encrypting outbound connection to %p using %s', options?.remotePeer, encrypter)
 
       return {
-        ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
+        ...await encrypter.secureOutbound(this.components.peerId, stream, options),
         protocol
       }
     } catch (err: any) {
-      connection.log.error('encrypting outbound connection to %p failed', remotePeerId, err)
+      connection.log.error('encrypting outbound connection to %p failed', options?.remotePeer, err)
       throw new CodeError(err.message, codes.ERR_ENCRYPTION_FAILED)
     }
   }

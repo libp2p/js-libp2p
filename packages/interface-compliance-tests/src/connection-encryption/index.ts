@@ -48,7 +48,9 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         outboundResult
       ] = await Promise.all([
         crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        crypto.secureOutbound(localPeer, remoteConn, {
+          remotePeer
+        })
       ])
 
       // Echo server
@@ -78,7 +80,9 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         outboundResult
       ] = await Promise.all([
         crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        crypto.secureOutbound(localPeer, remoteConn, {
+          remotePeer
+        })
       ])
 
       // Inbound should return the initiator (local) peer
@@ -91,8 +95,12 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
       const [localConn, remoteConn] = createMaConnPair()
 
       await Promise.all([
-        crypto.secureInbound(remotePeer, localConn, mitmPeer),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        crypto.secureInbound(remotePeer, localConn, {
+          remotePeer: mitmPeer
+        }),
+        crypto.secureOutbound(localPeer, remoteConn, {
+          remotePeer
+        })
       ]).then(() => expect.fail(), (err) => {
         expect(err).to.exist()
         expect(err).to.have.property('code', UnexpectedPeerError.code)

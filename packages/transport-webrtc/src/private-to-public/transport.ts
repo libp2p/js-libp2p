@@ -260,7 +260,10 @@ export class WebRTCDirectTransport implements Transport {
 
       // For outbound connections, the remote is expected to start the noise handshake.
       // Therefore, we need to secure an inbound noise connection from the remote.
-      await connectionEncrypter.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+      await connectionEncrypter.secureInbound(myPeerId, wrappedDuplex, {
+        signal,
+        remotePeer: theirPeerId
+      })
 
       return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
     } catch (err) {

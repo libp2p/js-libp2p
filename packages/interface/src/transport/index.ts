@@ -100,7 +100,7 @@ export enum FaultTolerance {
   NO_FATAL
 }
 
-export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents> {
+export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents>, AbortOptions {
   skipEncryption?: boolean
   skipProtection?: boolean
   muxerFactory?: StreamMuxerFactory

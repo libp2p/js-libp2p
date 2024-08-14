@@ -295,7 +295,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const n = noise()(this.components)
 
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
-    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, remotePeer)
+    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, {
+      signal,
+      remotePeer
+    })
 
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))
     // We're done with this authentication stream
