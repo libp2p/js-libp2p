@@ -32,13 +32,9 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
             }
           }
         })())
-        metrics?.increment({ [`${metricPrefix}sink_success`]: true })
       } catch (err: any) {
         if (err.type !== 'aborted') {
           log.error(err)
-          metrics?.increment({ [`${metricPrefix}sink_error`]: true })
-        } else {
-          metrics?.increment({ [`${metricPrefix}sink_abort`]: true })
         }
       }
     },
