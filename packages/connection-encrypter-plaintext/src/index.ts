@@ -33,6 +33,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 const PROTOCOL = '/plaintext/2.0.0'
 
 export interface PlaintextComponents {
+  peerId: PeerId
   logger: ComponentLogger
 }
 
@@ -46,10 +47,12 @@ export interface PlaintextInit {
 
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
+  private readonly peerId: PeerId
   private readonly log: Logger
   private readonly timeout: number
 
   constructor (components: PlaintextComponents, init: PlaintextInit = {}) {
+    this.peerId = components.peerId
     this.log = components.logger.forComponent('libp2p:plaintext')
     this.timeout = init.timeout ?? 1000
   }
@@ -60,12 +63,12 @@ class Plaintext implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, remoteId)
+  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(this.peerId, conn, remoteId)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, remoteId)
+  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(this.peerId, conn, remoteId)
   }
 
   /**
