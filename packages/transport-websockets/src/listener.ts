@@ -1,5 +1,5 @@
 import os from 'os'
-import { TypedEventEmitter, CustomEvent } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
@@ -25,20 +25,6 @@ export interface WebSocketListenerMetrics {
   events: CounterGroup
 }
 
-enum WebSocketListenerStatusCode {
-  /**
-   * When server object is initialized but we don't know the listening address
-   * yet or the server object is stopped manually, can be resumed only by
-   * calling listen()
-   **/
-  INACTIVE = 0,
-  ACTIVE = 1
-}
-
-type Status = { code: WebSocketListenerStatusCode.INACTIVE } | {
-  code: Exclude<WebSocketListenerStatusCode, WebSocketListenerStatusCode.INACTIVE>
-}
-
 class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly connections: Set<DuplexWebSocket>
   private listeningMultiaddr?: Multiaddr
@@ -46,7 +32,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   private readonly log: Logger
   private metrics?: WebSocketListenerMetrics
   private addr: string
-  private status: Status = { code: WebSocketListenerStatusCode.INACTIVE }
 
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
@@ -136,10 +121,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
             help: 'Total count of WebSocket listener events by type'
           })
         }
-
-        this.metrics?.status.update({
-          [this.addr]: WebSocketListenerStatusCode.ACTIVE
-        })
       }
       this.dispatchEvent(new CustomEvent('listening'))
     })
@@ -150,9 +131,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
       }))
     })
     this.server.on('close', () => {
-      this.metrics?.status.update({
-        [this.addr]: this.status.code
-      })
       this.dispatchEvent(new CustomEvent('close'))
     })
   }
@@ -173,15 +151,7 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
   async listen (ma: Multiaddr): Promise<void> {
     this.listeningMultiaddr = ma
 
-    try {
-      await this.server.listen(ma.toOptions())
-      this.status = {
-        code: WebSocketListenerStatusCode.ACTIVE
-      }
-    } catch (err) {
-      this.status = { code: WebSocketListenerStatusCode.INACTIVE }
-      throw err
-    }
+    await this.server.listen(ma.toOptions())
   }
 
   getAddrs (): Multiaddr[] {
