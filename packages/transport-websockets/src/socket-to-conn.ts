@@ -61,7 +61,6 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         const { host, port } = maConn.remoteAddr.toOptions()
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
-        metrics?.increment({ [`${metricPrefix}close_abort`]: true })
 
         this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
       }
@@ -70,10 +69,8 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
       try {
         await stream.close()
-        metrics?.increment({ [`${metricPrefix}close_success`]: true })
       } catch (err: any) {
         log.error('error closing WebSocket gracefully', err)
-        metrics?.increment({ [`${metricPrefix}close_error`]: true })
         this.abort(err)
       } finally {
         options.signal?.removeEventListener('abort', listener)
@@ -88,11 +85,18 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
       stream.destroy()
       maConn.timeline.close = Date.now()
+
+      // ws WebSocket.terminate does not accept an Error arg to emit an 'error'
+      // event on destroy like other node streams so we can't update a metric
+      // with an event listener
+      // https://github.com/websockets/ws/issues/1752#issuecomment-622380981
+      metrics?.increment({ [`${metricPrefix}error`]: true })
     }
   }
 
   stream.socket.addEventListener('close', () => {
     metrics?.increment({ [`${metricPrefix}close`]: true })
+
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline
