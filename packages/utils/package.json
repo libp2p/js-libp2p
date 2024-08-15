@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "5.4.8",
+  "version": "5.4.9",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -152,9 +152,9 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
-    "@libp2p/crypto": "^4.1.8",
-    "@libp2p/interface": "^1.6.3",
-    "@libp2p/logger": "^4.0.19",
+    "@libp2p/crypto": "^4.1.9",
+    "@libp2p/interface": "^1.7.0",
+    "@libp2p/logger": "^4.0.20",
     "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-matcher": "^1.2.1",
     "@sindresorhus/fnv1a": "^3.1.0",
@@ -174,7 +174,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^4.2.3",
+    "@libp2p/peer-id-factory": "^4.2.4",
     "@types/netmask": "^2.0.5",
     "aegir": "^44.0.1",
     "delay": "^6.0.0",
