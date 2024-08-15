@@ -18,8 +18,10 @@ export const DEFAULT_DIAL_PRIORITY = 50
 
 export interface ConnectionManagerInit {
   /**
-   * The maximum number of connections libp2p is willing to have before it starts
-   * pruning connections to reduce resource usage. (default: 300, 100 in browsers)
+   * The maximum number of connections libp2p is willing to have before it
+   * starts pruning connections to reduce resource usage.
+   *
+   * @default 300/100
    */
   maxConnections?: number
 
@@ -31,7 +33,8 @@ export interface ConnectionManagerInit {
 
   /**
    * The maximum number of dials across all peers to execute in parallel.
-   * (default: 100, 50 in browsers)
+   *
+   * @default 100/50
    */
   maxParallelDials?: number
 
@@ -59,7 +62,9 @@ export interface ConnectionManagerInit {
 
   /**
    * When a new inbound connection is opened, the upgrade process (e.g. protect,
-   * encrypt, multiplex etc) must complete within this number of ms. (default: 30s)
+   * encrypt, multiplex etc) must complete within this number of ms.
+   *
+   * @default 30000
    */
   inboundUpgradeTimeout?: number
 
@@ -70,7 +75,8 @@ export interface ConnectionManagerInit {
 
   /**
    * A list of multiaddrs that will always be allowed (except if they are in the
-   * deny list) to open connections to this node even if we've reached maxConnections
+   * deny list) to open connections to this node even if we've reached
+   * maxConnections
    */
   allow?: string[]
 
@@ -87,9 +93,11 @@ export interface ConnectionManagerInit {
   inboundConnectionThreshold?: number
 
   /**
-   * The maximum number of parallel incoming connections allowed that have yet to
-   * complete the connection upgrade - e.g. choosing connection encryption, muxer, etc.
-   * (default: 10)
+   * The maximum number of parallel incoming connections allowed that have yet
+   * to complete the connection upgrade - e.g. choosing connection encryption,
+   * muxer, etc.
+   *
+   * @default 10
    */
   maxIncomingPendingConnections?: number
 
@@ -108,7 +116,7 @@ export interface ConnectionManagerInit {
    *
    * @default 1000
    */
-  reconnectInterval?: number
+  reconnectRetryInterval?: number
 
   /**
    * When a peer tagged with `KEEP_ALIVE` disconnects, apply this multiplication
@@ -116,7 +124,15 @@ export interface ConnectionManagerInit {
    *
    * @default 2
    */
-  reconnectFactor?: number
+  reconnectBackoffFactor?: number
+
+  /**
+   * When a peers tagged with `KEEP_ALIVE` disconnect, reconnect to this many at
+   * once.
+   *
+   * @default 5
+   */
+  maxParallelReconnects?: number
 }
 
 const defaultOptions = {
@@ -223,8 +239,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       connectionManager: this
     }, {
       retries: init.reconnectRetries,
-      interval: init.reconnectInterval,
-      factor: init.reconnectFactor
+      retryInterval: init.reconnectRetryInterval,
+      backoffFactor: init.reconnectBackoffFactor,
+      maxParallelReconnects: init.maxParallelReconnects
     })
   }
 

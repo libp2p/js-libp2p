@@ -1,7 +1,8 @@
 import { KEEP_ALIVE } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import pRetry from 'p-retry'
-import type { ComponentLogger, Libp2pEvents, Logger, Peer, PeerId, PeerStore, Startable, TypedEventTarget } from '@libp2p/interface'
+import { MAX_PARALLEL_RECONNECTS } from './constants.js'
+import type { ComponentLogger, Libp2pEvents, Logger, Metrics, Peer, PeerId, PeerStore, Startable, TypedEventTarget } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export interface ReconnectQueueComponents {
@@ -9,12 +10,14 @@ export interface ReconnectQueueComponents {
   events: TypedEventTarget<Libp2pEvents>
   peerStore: PeerStore
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export interface ReconnectQueueInit {
   retries?: number
-  interval?: number
-  factor?: number
+  retryInterval?: number
+  backoffFactor?: number
+  maxParallelReconnects?: number
 }
 
 /**
@@ -27,18 +30,23 @@ export class ReconnectQueue implements Startable {
   private started: boolean
   private readonly peerStore: PeerStore
   private readonly retries: number
-  private readonly interval?: number
-  private readonly factor?: number
+  private readonly retryInterval?: number
+  private readonly backoffFactor?: number
   private readonly connectionManager: ConnectionManager
 
   constructor (components: ReconnectQueueComponents, init: ReconnectQueueInit = {}) {
     this.log = components.logger.forComponent('libp2p:reconnect-queue')
     this.peerStore = components.peerStore
     this.connectionManager = components.connectionManager
-    this.queue = new PeerQueue()
+    this.queue = new PeerQueue({
+      concurrency: init.maxParallelReconnects ?? MAX_PARALLEL_RECONNECTS,
+      metricName: 'libp2p_reconnect_queue',
+      metrics: components.metrics
+    })
     this.started = false
     this.retries = init.retries ?? 5
-    this.factor = init.factor
+    this.backoffFactor = init.backoffFactor
+    this.retryInterval = init.retryInterval
 
     components.events.addEventListener('peer:disconnect', (evt) => {
       this.maybeReconnect(evt.detail)
@@ -80,8 +88,8 @@ export class ReconnectQueue implements Startable {
       }, {
         signal: options?.signal,
         retries: this.retries,
-        factor: this.factor,
-        minTimeout: this.interval
+        factor: this.backoffFactor,
+        minTimeout: this.retryInterval
       })
     }, {
       peerId
