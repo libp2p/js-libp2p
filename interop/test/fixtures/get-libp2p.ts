@@ -25,9 +25,6 @@ const IP = process.env.ip ?? '0.0.0.0'
 export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   const options: Libp2pOptions<{ ping: PingService, identify: Identify }> = {
     start: true,
-    connectionManager: {
-      minConnections: 0
-    },
     connectionGater: {
       denyDialMultiaddr: async () => false
     },

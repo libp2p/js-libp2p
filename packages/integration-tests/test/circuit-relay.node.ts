@@ -42,9 +42,6 @@ async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
     connectionEncryption: [
       plaintext()
     ],
-    connectionManager: {
-      minConnections: 0
-    },
     services: {
       identify: identify()
     },
