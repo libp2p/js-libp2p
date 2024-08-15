@@ -98,7 +98,7 @@
     "@types/sinon": "^17.0.3",
     "@types/which": "^3.0.3",
     "aegir": "^44.0.1",
-    "datastore-core": "^9.2.9",
+    "datastore-core": "^10.0.0",
     "datastore-level": "^10.1.8",
     "delay": "^6.0.0",
     "execa": "^9.1.0",

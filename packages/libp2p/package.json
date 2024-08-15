@@ -99,7 +99,7 @@
     "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-matcher": "^1.2.1",
     "any-signal": "^4.1.1",
-    "datastore-core": "^9.2.9",
+    "datastore-core": "^10.0.0",
     "interface-datastore": "^8.2.11",
     "it-byte-stream": "^1.0.12",
     "it-merge": "^3.0.5",
