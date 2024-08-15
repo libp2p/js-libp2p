@@ -95,7 +95,7 @@ describe('identify', () => {
     // run identify
     await expect(identify.identify(connection))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', 'ERR_INVALID_PEER')
+      .and.to.have.property('name', 'InvalidMessageError')
   })
 
   it('should store own host data and protocol version into metadataBook on start', async () => {
@@ -135,7 +135,7 @@ describe('identify', () => {
     await expect(identify.identify(connection, {
       signal: AbortSignal.timeout(timeout)
     }))
-      .to.eventually.be.rejected.with.property('code', 'ABORT_ERR')
+      .to.eventually.be.rejected.with.property('name', 'AbortError')
 
     // should have aborted stream
     expect(stream.abort.called).to.be.true()
@@ -163,7 +163,7 @@ describe('identify', () => {
 
     // run identify
     await expect(identify.identify(connection))
-      .to.eventually.be.rejected.with.property('code', 'ERR_MSG_DATA_TOO_LONG')
+      .to.eventually.be.rejected.with.property('name', 'InvalidDataLengthError')
 
     // should have aborted stream
     expect(stream.abort.called).to.be.true()

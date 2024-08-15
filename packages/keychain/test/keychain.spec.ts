@@ -148,7 +148,7 @@ describe('keychain', () => {
 
       expect(errors).to.have.length(5)
       errors.forEach(error => {
-        expect(error).to.have.property('code', 'ERR_INVALID_KEY_NAME')
+        expect(error).to.have.property('name', 'InvalidParametersError')
       })
     })
   })
@@ -168,39 +168,47 @@ describe('keychain', () => {
 
     it('throws if an invalid private key name is given', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.getPrivateKey(undefined)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.getPrivateKey(undefined)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('throws if a private key cant be found', async () => {
-      await expect(ks.getPrivateKey('not real')).to.eventually.be.rejected.with.property('code', 'ERR_KEY_NOT_FOUND')
+      await expect(ks.getPrivateKey('not real')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('does not overwrite existing key', async () => {
-      await expect(ks.createKey(rsaKeyName, 'RSA', 2048)).to.eventually.be.rejected.with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      await expect(ks.createKey(rsaKeyName, 'RSA', 2048)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot create the "self" key', async () => {
-      await expect(ks.createKey('self', 'RSA', 2048)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.createKey('self', 'RSA', 2048)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('should validate name is string', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.createKey(5, 'rsa', 2048)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.createKey(5, 'rsa', 2048)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('should validate type is string', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.createKey(`TEST-${Date.now()}`, null, 2048)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_TYPE')
+      await expect(ks.createKey(`TEST-${Date.now()}`, null, 2048)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('should validate size is integer', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.createKey(`TEST-${Date.now()}`, 'RSA', 'string')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_SIZE')
+      await expect(ks.createKey(`TEST-${Date.now()}`, 'RSA', 'string')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     describe('implements NIST SP 800-131A', () => {
       it('disallows RSA length < 2048', async () => {
-        await expect(ks.createKey('bad-nist-rsa', 'RSA', 1024)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_SIZE')
+        await expect(ks.createKey('bad-nist-rsa', 'RSA', 1024)).to.eventually.be.rejected
+          .with.property('name', 'InvalidParametersError')
       })
     })
   })
@@ -215,7 +223,8 @@ describe('keychain', () => {
     })
 
     it('does not overwrite existing key', async () => {
-      await expect(ks.createKey(keyName, 'Ed25519')).to.eventually.be.rejected.with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      await expect(ks.createKey(keyName, 'Ed25519')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('can export/import a key', async () => {
@@ -230,7 +239,8 @@ describe('keychain', () => {
     })
 
     it('cannot create the "self" key', async () => {
-      await expect(ks.createKey('self', 'Ed25519')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.createKey('self', 'Ed25519')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -269,12 +279,14 @@ describe('keychain', () => {
 
     it('requires the password', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.exportKey(rsaKeyName)).to.eventually.be.rejected.with.property('code', 'ERR_PASSWORD_REQUIRED')
+      await expect(ks.exportKey(rsaKeyName)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('requires the key name', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.exportKey(undefined, 'password')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.exportKey(undefined, 'password')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('is a PKCS #8 encrypted pem', async () => {
@@ -290,15 +302,18 @@ describe('keychain', () => {
 
     it('requires the pem', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.importKey('imported-key', undefined, 'password')).to.eventually.be.rejected.with.property('code', 'ERR_PEM_REQUIRED')
+      await expect(ks.importKey('imported-key', undefined, 'password')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot be imported as an existing key name', async () => {
-      await expect(ks.importKey(rsaKeyName, pemKey, 'password')).to.eventually.be.rejected.with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      await expect(ks.importKey(rsaKeyName, pemKey, 'password')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot be imported with the wrong password', async () => {
-      await expect(ks.importKey('a-new-name-for-import', pemKey, 'not the password')).to.eventually.be.rejected.with.property('code', 'ERR_CANNOT_READ_KEY')
+      await expect(ks.importKey('a-new-name-for-import', pemKey, 'not the password')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -328,12 +343,14 @@ describe('keychain', () => {
 
     it('private key import requires a valid name', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.importPeer(undefined, alice)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.importPeer(undefined, alice)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('private key import requires the peer', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.importPeer('alice')).to.eventually.be.rejected.with.property('code', 'ERR_MISSING_PRIVATE_KEY')
+      await expect(ks.importPeer('alice')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('key id exists', async () => {
@@ -383,19 +400,23 @@ describe('keychain', () => {
 
   describe('rename', () => {
     it('requires an existing key name', async () => {
-      await expect(ks.renameKey('not-there', renamedRsaKeyName)).to.eventually.be.rejected.with.property('code', 'ERR_NOT_FOUND')
+      await expect(ks.renameKey('not-there', renamedRsaKeyName)).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
     })
 
     it('requires a valid new key name', async () => {
-      await expect(ks.renameKey(rsaKeyName, '..\not-valid')).to.eventually.be.rejected.with.property('code', 'ERR_NEW_KEY_NAME_INVALID')
+      await expect(ks.renameKey(rsaKeyName, '..\not-valid')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('does not overwrite existing key', async () => {
-      await expect(ks.renameKey(rsaKeyName, rsaKeyName)).to.eventually.be.rejected.with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      await expect(ks.renameKey(rsaKeyName, rsaKeyName)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot create the "self" key', async () => {
-      await expect(ks.renameKey(rsaKeyName, 'self')).to.eventually.be.rejected.with.property('code', 'ERR_NEW_KEY_NAME_INVALID')
+      await expect(ks.renameKey(rsaKeyName, 'self')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('removes the existing key name', async () => {
@@ -422,17 +443,20 @@ describe('keychain', () => {
 
     it('throws with invalid key names', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.findKeyByName(undefined)).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.findKeyByName(undefined)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
   describe('key removal', () => {
     it('cannot remove the "self" key', async () => {
-      await expect(ks.removeKey('self')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_KEY_NAME')
+      await expect(ks.removeKey('self')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot remove an unknown key', async () => {
-      await expect(ks.removeKey('not-there')).to.eventually.be.rejected.with.property('code', 'ERR_KEY_NOT_FOUND')
+      await expect(ks.removeKey('not-there')).to.eventually.be.rejected
+        .with.property('name', 'NotFoundError')
     })
 
     it('can remove a known key', async () => {

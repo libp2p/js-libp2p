@@ -1,17 +1,16 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { isMultiaddr } from '@multiformats/multiaddr'
 import { equals as uint8arrayEquals } from 'uint8arrays/equals'
-import { codes } from '../errors.js'
 import type { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId, PeerData } from '@libp2p/interface'
 
 export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
   if (data == null) {
-    throw new CodeError('Invalid PeerData', codes.ERR_INVALID_PARAMETERS)
+    throw new InvalidParametersError('Invalid PeerData')
   }
 
   if (data.publicKey != null && peerId.publicKey != null && !uint8arrayEquals(data.publicKey, peerId.publicKey)) {
-    throw new CodeError('publicKey bytes do not match peer id publicKey bytes', codes.ERR_INVALID_PARAMETERS)
+    throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
   }
 
   // merge addresses and multiaddrs, and dedupe
@@ -22,7 +21,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       .concat((data.multiaddrs ?? []).map(multiaddr => ({ multiaddr, isCertified: false })))
       .filter(address => {
         if (!isMultiaddr(address.multiaddr)) {
-          throw new CodeError('Invalid mulitaddr', codes.ERR_INVALID_PARAMETERS)
+          throw new InvalidParametersError('Invalid mulitaddr')
         }
 
         if (addressSet.has(address.multiaddr.toString())) {
@@ -52,7 +51,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
 
     for (const [key, value] of metadataEntries) {
       if (typeof key !== 'string') {
-        throw new CodeError('Peer metadata keys must be strings', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('Peer metadata keys must be strings')
       }
 
       if (value == null) {
@@ -60,7 +59,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       }
 
       if (!(value instanceof Uint8Array)) {
-        throw new CodeError('Peer metadata values must be Uint8Arrays', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('Peer metadata values must be Uint8Arrays')
       }
 
       output.metadata.set(key, value)
@@ -72,7 +71,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
 
     for (const [key, value] of tagsEntries) {
       if (typeof key !== 'string') {
-        throw new CodeError('Peer tag keys must be strings', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('Peer tag keys must be strings')
       }
 
       if (value == null) {
@@ -86,20 +85,20 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       }
 
       if (tag.value < 0 || tag.value > 100) {
-        throw new CodeError('Tag value must be between 0-100', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('Tag value must be between 0-100')
       }
 
       if (parseInt(`${tag.value}`, 10) !== tag.value) {
-        throw new CodeError('Tag value must be an integer', codes.ERR_INVALID_PARAMETERS)
+        throw new InvalidParametersError('Tag value must be an integer')
       }
 
       if (tag.ttl != null) {
         if (tag.ttl < 0) {
-          throw new CodeError('Tag ttl must be between greater than 0', codes.ERR_INVALID_PARAMETERS)
+          throw new InvalidParametersError('Tag ttl must be between greater than 0')
         }
 
         if (parseInt(`${tag.ttl}`, 10) !== tag.ttl) {
-          throw new CodeError('Tag ttl must be an integer', codes.ERR_INVALID_PARAMETERS)
+          throw new InvalidParametersError('Tag ttl must be an integer')
         }
       }
 

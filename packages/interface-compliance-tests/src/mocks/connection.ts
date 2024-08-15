@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { ConnectionClosedError } from '@libp2p/interface'
 import { defaultLogger, logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -78,7 +78,7 @@ class MockConnection implements Connection {
     }
 
     if (this.status !== 'open') {
-      throw new CodeError('connection must be open to create streams', 'ERR_CONNECTION_CLOSED')
+      throw new ConnectionClosedError('connection must be open to create streams')
     }
 
     const id = `${Math.random()}`

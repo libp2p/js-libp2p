@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { type Codec, decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -54,7 +54,7 @@ export namespace Record {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -101,8 +101,8 @@ export namespace Record {
     return encodeMessage(obj, Record.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Record => {
-    return decodeMessage(buf, Record.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record => {
+    return decodeMessage(buf, Record.codec(), opts)
   }
 }
 
@@ -184,7 +184,7 @@ export namespace PeerInfo {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           id: uint8ArrayAlloc(0),
           multiaddrs: []
@@ -201,6 +201,10 @@ export namespace PeerInfo {
               break
             }
             case 2: {
+              if (opts.limits?.multiaddrs != null && obj.multiaddrs.length === opts.limits.multiaddrs) {
+                throw new MaxLengthError('Decode error - map field "multiaddrs" had too many elements')
+              }
+
               obj.multiaddrs.push(reader.bytes())
               break
             }
@@ -226,8 +230,8 @@ export namespace PeerInfo {
     return encodeMessage(obj, PeerInfo.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PeerInfo => {
-    return decodeMessage(buf, PeerInfo.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerInfo>): PeerInfo => {
+    return decodeMessage(buf, PeerInfo.codec(), opts)
   }
 }
 
@@ -287,7 +291,7 @@ export namespace Message {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           type: MessageType.PUT_VALUE,
           closer: [],
@@ -317,11 +321,23 @@ export namespace Message {
               break
             }
             case 8: {
-              obj.closer.push(PeerInfo.codec().decode(reader, reader.uint32()))
+              if (opts.limits?.closer != null && obj.closer.length === opts.limits.closer) {
+                throw new MaxLengthError('Decode error - map field "closer" had too many elements')
+              }
+
+              obj.closer.push(PeerInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.closer$
+              }))
               break
             }
             case 9: {
-              obj.providers.push(PeerInfo.codec().decode(reader, reader.uint32()))
+              if (opts.limits?.providers != null && obj.providers.length === opts.limits.providers) {
+                throw new MaxLengthError('Decode error - map field "providers" had too many elements')
+              }
+
+              obj.providers.push(PeerInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.providers$
+              }))
               break
             }
             default: {
@@ -342,7 +358,7 @@ export namespace Message {
     return encodeMessage(obj, Message.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Message => {
-    return decodeMessage(buf, Message.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message => {
+    return decodeMessage(buf, Message.codec(), opts)
   }
 }

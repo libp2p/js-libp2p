@@ -30,7 +30,7 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
@@ -123,9 +123,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
   ]
 
   async dial (ma: Multiaddr, options: DialTransportOptions<WebTransportDialEvents>): Promise<Connection> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
+    options?.signal?.throwIfAborted()
 
     this.log('dialing %s', ma)
 
@@ -204,7 +202,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       authenticated = await raceSignal(this.authenticateWebTransport({ wt, remotePeer, certhashes, ...options }), options.signal)
 
       if (!authenticated) {
-        throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
+        throw new InvalidCryptoExchangeError('Failed to authenticate webtransport')
       }
 
       this.metrics?.dialerEvents.increment({ open: true })
@@ -307,7 +305,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
     // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
     if (!isSubset(remoteExtensions?.webtransportCerthashes ?? [], certhashes.map(ch => ch.bytes))) {
-      throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
+      throw new InvalidParametersError("Our certhashes are not a subset of the remote's reported certhashes")
     }
 
     return true

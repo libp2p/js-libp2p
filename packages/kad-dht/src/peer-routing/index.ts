@@ -1,8 +1,9 @@
 import { keys } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface'
+import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromKeys } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
 import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
 import {
@@ -63,7 +64,7 @@ export class PeerRouting {
       try {
         peerData = await this.peerStore.get(p)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }
@@ -73,7 +74,7 @@ export class PeerRouting {
       try {
         peerData = await this.peerStore.get(peer)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }
@@ -117,18 +118,18 @@ export class PeerRouting {
 
         // compare hashes of the pub key
         if (!recPeer.equals(peer)) {
-          throw new CodeError('public key does not match id', 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
+          throw new InvalidPublicKeyError('public key does not match id')
         }
 
         if (recPeer.publicKey == null) {
-          throw new CodeError('public key missing', 'ERR_PUBLIC_KEY_MISSING')
+          throw new InvalidPublicKeyError('public key missing')
         }
 
         yield valueEvent({ from: peer, value: recPeer.publicKey }, options)
       }
     }
 
-    throw new CodeError(`Node not responding with its public key: ${peer.toString()}`, 'ERR_INVALID_RECORD')
+    throw new QueryError(`Node not responding with its public key: ${peer.toString()}`)
   }
 
   /**
@@ -190,7 +191,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
+      yield queryErrorEvent({ from: this.peerId, error: new NotFoundError('Not found') }, options)
     }
   }
 
@@ -257,7 +258,7 @@ export class PeerRouting {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
 
-            yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') }, options)
+            yield queryErrorEvent({ from: event.from, error: new QueryError(errMsg) }, options)
             continue
           }
         }
@@ -273,7 +274,7 @@ export class PeerRouting {
    */
   async _verifyRecordOnline (record: DHTRecord): Promise<void> {
     if (record.timeReceived == null) {
-      throw new CodeError('invalid record received', 'ERR_INVALID_RECORD')
+      throw new InvalidRecordError('invalid record received')
     }
 
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived))
@@ -301,7 +302,7 @@ export class PeerRouting {
           multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }

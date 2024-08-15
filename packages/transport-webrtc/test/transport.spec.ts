@@ -88,7 +88,7 @@ describe('WebRTCDirect Transport', () => {
 
     try {
       await transport.dial(ma, ignoredDialOption())
-    } catch (error) {
+    } catch (error: any) {
       const expected = 'WebRTC transport error: There was a problem with the Multiaddr which was passed in: we need to have the remote\'s PeerId'
       expectError(error, expected)
     }

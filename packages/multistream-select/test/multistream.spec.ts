@@ -53,7 +53,7 @@ describe('Multistream', () => {
       await expect(Multistream.read(outputStream, {
         log: logger('mss:test')
       })).to.eventually.be.rejected()
-        .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+        .with.property('name', 'InvalidMessageError')
     })
 
     it('should throw for a large message', async () => {
@@ -71,7 +71,7 @@ describe('Multistream', () => {
       await expect(Multistream.read(outputStream, {
         log: logger('mss:test')
       })).to.eventually.be.rejected()
-        .with.property('code', 'ERR_MSG_DATA_TOO_LONG')
+        .with.property('name', 'InvalidDataLengthError')
     })
 
     it('should throw for a 0-length message', async () => {
@@ -86,7 +86,7 @@ describe('Multistream', () => {
       await expect(Multistream.read(outputStream, {
         log: logger('mss:test')
       })).to.eventually.be.rejected()
-        .with.property('code', 'ERR_INVALID_MULTISTREAM_SELECT_MESSAGE')
+        .with.property('name', 'InvalidMessageError')
     })
 
     it('should be abortable', async () => {

@@ -179,7 +179,8 @@ describe('crypto functions', () => {
   it('errors when signing with an invalid key', async () => {
     await expect((async () => {
       await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
-    })()).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_INPUT')
+    })()).to.eventually.be.rejected
+      .with.property('name', 'SigningError')
   })
 
   it('errors if given a null Uint8Array to validate', async () => {

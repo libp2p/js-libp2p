@@ -1,4 +1,3 @@
-import { UnexpectedPeerError } from '@libp2p/interface'
 import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -110,7 +109,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
         })
       ]).then(() => expect.fail(), (err) => {
         expect(err).to.exist()
-        expect(err).to.have.property('code', UnexpectedPeerError.code)
+        expect(err).to.have.property('name', 'UnexpectedPeerError')
       })
     })
   })

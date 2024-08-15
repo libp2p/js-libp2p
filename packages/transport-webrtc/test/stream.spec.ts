@@ -103,7 +103,7 @@ describe('Max message size', () => {
     const t0 = Date.now()
 
     await expect(webrtcStream.sink([new Uint8Array(1)])).to.eventually.be.rejected
-      .with.property('code', 'ERR_BUFFER_CLEAR_TIMEOUT')
+      .with.property('name', 'TimeoutError')
     const t1 = Date.now()
     expect(t1 - t0).greaterThanOrEqual(timeout)
     expect(t1 - t0).lessThan(timeout + 1000) // Some upper bound

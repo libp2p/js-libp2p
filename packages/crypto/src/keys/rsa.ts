@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../random-bytes.js'
 import * as utils from './rsa-utils.js'
@@ -30,7 +30,7 @@ export async function generateKey (bits: number): Promise<JWKKeyPair> {
 // Takes a jwk key
 export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> {
   if (key == null) {
-    throw new CodeError('Missing key parameter', 'ERR_MISSING_KEY')
+    throw new InvalidParametersError('Missing key parameter')
   }
   return {
     privateKey: key,
@@ -76,9 +76,9 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
 
 export function keySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
-    throw new CodeError('invalid key type', 'ERR_INVALID_KEY_TYPE')
+    throw new InvalidParametersError('Invalid key type')
   } else if (jwk.n == null) {
-    throw new CodeError('invalid key modulus', 'ERR_INVALID_KEY_MODULUS')
+    throw new InvalidParametersError('Invalid key modulus')
   }
   const modulus = uint8ArrayFromString(jwk.n, 'base64url')
   return modulus.length * 8
