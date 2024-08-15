@@ -16,7 +16,8 @@ import {
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL,
   LAST_DIAL_FAILURE_KEY,
-  MAX_DIAL_QUEUE_LENGTH
+  MAX_DIAL_QUEUE_LENGTH,
+  LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
@@ -244,6 +245,20 @@ export class DialQueue {
 
             this.log('dial to %a succeeded', address.multiaddr)
 
+            // record the successful dial and the address
+            try {
+              await this.components.peerStore.merge(conn.remotePeer, {
+                multiaddrs: [
+                  conn.remoteAddr
+                ],
+                metadata: {
+                  [LAST_DIAL_SUCCESS_KEY]: uint8ArrayFromString(Date.now().toString())
+                }
+              })
+            } catch (err: any) {
+              this.log.error('could not update last dial failure key for %p', peerId, err)
+            }
+
             return conn
           } catch (err: any) {
             this.log.error('dial failed to %a', address.multiaddr, err)
@@ -251,7 +266,7 @@ export class DialQueue {
             if (peerId != null) {
               // record the failed dial
               try {
-                await this.components.peerStore.patch(peerId, {
+                await this.components.peerStore.merge(peerId, {
                   metadata: {
                     [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
                   }
