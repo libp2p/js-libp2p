@@ -164,9 +164,8 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     } catch (err: any) {
       if (options.signal?.aborted === true) {
         this.metrics?.dialerEvents.increment({ abort: true })
-      } else {
-        this.metrics?.dialerEvents.increment({ error: true })
       }
+
       rawSocket.close()
         .catch(err => {
           this.log.error('error closing raw socket', err)
