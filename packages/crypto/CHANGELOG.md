@@ -17,6 +17,52 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [4.1.9](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.8...crypto-v4.1.9) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+
+## [4.1.8](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.7...crypto-v4.1.8) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+
+## [4.1.7](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.6...crypto-v4.1.7) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+
+## [4.1.6](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.5...crypto-v4.1.6) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+
+## [4.1.5](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.4...crypto-v4.1.5) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+
 ## [4.1.4](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.3...crypto-v4.1.4) (2024-06-18)
 
 

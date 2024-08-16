@@ -6,7 +6,7 @@ export default {
   get (win = globalThis) {
     const nativeCrypto = win.crypto
 
-    if (nativeCrypto == null || nativeCrypto.subtle == null) {
+    if (nativeCrypto?.subtle == null) {
       throw Object.assign(
         new Error(
           'Missing Web Crypto API. ' +

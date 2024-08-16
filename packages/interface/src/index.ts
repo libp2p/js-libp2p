@@ -25,9 +25,9 @@ import type { Address, Peer, PeerStore } from './peer-store/index.js'
 import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index.js'
 import type { Topology } from './topology/index.js'
-import type { Listener } from './transport/index.js'
+import type { Listener, OutboundConnectionUpgradeEvents } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProgressOptions } from 'progress-events'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -334,6 +334,26 @@ export interface IsDialableOptions extends AbortOptions {
   runOnTransientConnection?: boolean
 }
 
+export type TransportManagerDialProgressEvents =
+  ProgressEvent<'transport-manager:selected-transport', string>
+
+export type OpenConnectionProgressEvents =
+  TransportManagerDialProgressEvents |
+  ProgressEvent<'dial-queue:already-connected'> |
+  ProgressEvent<'dial-queue:already-in-dial-queue'> |
+  ProgressEvent<'dial-queue:add-to-dial-queue'> |
+  ProgressEvent<'dial-queue:start-dial'> |
+  ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
+  OutboundConnectionUpgradeEvents
+
+export interface DialOptions extends AbortOptions, ProgressOptions {
+
+}
+
+export interface DialProtocolOptions extends NewStreamOptions {
+
+}
+
 /**
  * Libp2p nodes implement this interface.
  */
@@ -507,7 +527,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
-   * const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
+   * const stream = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
    *
    * // protocol negotiated: 'echo/1.0.0' means that the other party only supports the older version
    *
@@ -515,7 +535,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * await conn.close()
    * ```
    */
-  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection>
+  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: DialOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -533,7 +553,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
+  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the

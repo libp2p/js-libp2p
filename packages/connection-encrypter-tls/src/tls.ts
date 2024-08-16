@@ -100,7 +100,7 @@ export class TLS implements ConnectionEncrypter {
               }
             })
           })
-          .catch(err => {
+          .catch((err: Error) => {
             reject(err)
           })
           .finally(() => {
@@ -108,7 +108,7 @@ export class TLS implements ConnectionEncrypter {
           })
       }
 
-      socket.on('error', err => {
+      socket.on('error', (err: Error) => {
         reject(err)
         clearTimeout(abortTimeout)
       })

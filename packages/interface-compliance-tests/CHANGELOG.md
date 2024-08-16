@@ -75,6 +75,88 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [5.4.12](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.11...interface-compliance-tests-v5.4.12) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^1.3.4
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+    * @libp2p/multistream-select bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-collections bumped from ^5.2.8 to ^5.2.9
+    * @libp2p/peer-id bumped from ^4.2.3 to ^4.2.4
+    * @libp2p/peer-id-factory bumped from ^4.2.3 to ^4.2.4
+    * @libp2p/utils bumped from ^5.4.8 to ^5.4.9
+
+## [5.4.11](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.10...interface-compliance-tests-v5.4.11) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/multistream-select bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/peer-collections bumped from ^5.2.7 to ^5.2.8
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/utils bumped from ^5.4.7 to ^5.4.8
+
+## [5.4.10](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.9...interface-compliance-tests-v5.4.10) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+    * @libp2p/interface-internal bumped from ^1.3.1 to ^1.3.2
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+    * @libp2p/multistream-select bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/peer-collections bumped from ^5.2.6 to ^5.2.7
+    * @libp2p/peer-id bumped from ^4.2.1 to ^4.2.2
+    * @libp2p/peer-id-factory bumped from ^4.2.1 to ^4.2.2
+    * @libp2p/utils bumped from ^5.4.6 to ^5.4.7
+
+## [5.4.9](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.8...interface-compliance-tests-v5.4.9) (2024-07-13)
+
+
+### Dependencies
+
+* bump p-limit from 5.0.0 to 6.0.0 ([#2609](https://github.com/libp2p/js-libp2p/issues/2609)) ([151bc46](https://github.com/libp2p/js-libp2p/commit/151bc46fb4b41626143499cf9ebe0fcb309a78e2))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/interface-internal bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+    * @libp2p/multistream-select bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-collections bumped from ^5.2.5 to ^5.2.6
+    * @libp2p/peer-id bumped from ^4.2.0 to ^4.2.1
+    * @libp2p/peer-id-factory bumped from ^4.2.0 to ^4.2.1
+    * @libp2p/utils bumped from ^5.4.5 to ^5.4.6
+
+## [5.4.8](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.7...interface-compliance-tests-v5.4.8) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/multistream-select bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/peer-collections bumped from ^5.2.4 to ^5.2.5
+    * @libp2p/peer-id bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+    * @libp2p/utils bumped from ^5.4.4 to ^5.4.5
+
 ## [5.4.7](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.6...interface-compliance-tests-v5.4.7) (2024-06-18)
 
 

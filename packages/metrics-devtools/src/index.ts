@@ -17,11 +17,22 @@
  */
 
 import { serviceCapabilities, start, stop } from '@libp2p/interface'
-import { enable, disable } from '@libp2p/logger'
 import { simpleMetrics } from '@libp2p/simple-metrics'
+import { pipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
+import { rpc, type RPC } from 'it-rpc'
 import { base64 } from 'multiformats/bases/base64'
-import type { ComponentLogger, Connection, Libp2pEvents, Logger, Metrics, MultiaddrConnection, PeerId, Peer as PeerStorePeer, PeerStore, PeerUpdate, Stream, TypedEventTarget } from '@libp2p/interface'
-import type { TransportManager, Registrar, ConnectionManager } from '@libp2p/interface-internal'
+import { valueCodecs } from './rpc/index.js'
+import { metricsRpc } from './rpc/rpc.js'
+import { debounce } from './utils/debounce.js'
+import { getPeers } from './utils/get-peers.js'
+import { getSelf } from './utils/get-self.js'
+import type { DevToolsRPC } from './rpc/index.js'
+import type { ComponentLogger, Connection, Libp2pEvents, Logger, Metrics, MultiaddrConnection, PeerId, PeerStore, Stream, ContentRouting, PeerRouting, TypedEventTarget, Startable } from '@libp2p/interface'
+import type { TransportManager, Registrar, ConnectionManager, AddressManager } from '@libp2p/interface-internal'
+import type { Pushable } from 'it-pushable'
+
+export * from './rpc/index.js'
 
 export const SOURCE_DEVTOOLS = '@libp2p/devtools-metrics:devtools'
 export const SOURCE_SERVICE_WORKER = '@libp2p/devtools-metrics:worker'
@@ -37,38 +48,11 @@ Object.defineProperty(globalThis, LIBP2P_DEVTOOLS_METRICS_KEY, {
 })
 
 /**
- * Sent when new metrics are available
- */
-export interface MetricsMessage {
-  source: typeof SOURCE_METRICS
-  type: 'metrics'
-  metrics: Record<string, any>
-}
-
-/**
- * This message represents the current state of the libp2p node
- */
-export interface SelfMessage {
-  source: typeof SOURCE_METRICS
-  type: 'self'
-  peer: SelfPeer
-}
-
-/**
- * This message represents the current state of the libp2p node
- */
-export interface PeersMessage {
-  source: typeof SOURCE_METRICS
-  type: 'peers'
-  peers: Peer[]
-}
-
-/**
  * Sent by the DevTools service worker to the DevTools panel when the inspected
  * page has finished (re)loading
  */
 export interface PageLoadedMessage {
-  source: '@libp2p/devtools-metrics:devtools'
+  source: typeof SOURCE_DEVTOOLS
   type: 'page-loaded'
   tabId: number
 }
@@ -81,47 +65,40 @@ export interface PageLoadedMessage {
  * not having granted permission for the script to run.
  */
 export interface PermissionsErrorMessage {
-  source: '@libp2p/devtools-metrics:devtools'
+  source: typeof SOURCE_DEVTOOLS
   type: 'permissions-error'
   tabId: number
 }
 
 /**
- * This message is sent by DevTools when no `self` message has been received
- */
-export interface IdentifyMessage {
-  source: '@libp2p/devtools-metrics:devtools'
-  type: 'identify'
-  tabId: number
-}
-
-/**
- * This message is sent by DevTools when no `self` message has been received
- */
-export interface EnableDebugMessage {
-  source: '@libp2p/devtools-metrics:devtools'
-  type: 'debug'
-  namespace: string
-  tabId: number
-}
-
-/**
- * We cannot use the web extension API to copy text to the cliboard yet as it's
- * not supported in Firefox yet, so get the page to do it
- *
- * @see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Interact_with_the_clipboard#writing_to_the_clipboard
+ * This event is intercepted by the service worker which injects a content
+ * script into the current page which copies the passed value to the clipboard.
  */
 export interface CopyToClipboardMessage {
-  source: '@libp2p/devtools-metrics:devtools'
+  source: typeof SOURCE_DEVTOOLS
   type: 'copy-to-clipboard'
-  value: string
   tabId: number
+  value: string
+}
+
+/**
+ * Invoke a method on the libp2p object
+ */
+export interface RPCMessage {
+  source: typeof SOURCE_DEVTOOLS | typeof SOURCE_METRICS
+  type: 'libp2p-rpc'
+  tabId: number
+
+  /**
+   * The RPC message encoded as a multibase string
+   */
+  message: string
 }
 
 /**
  * Messages that are sent from the application page to the DevTools panel
  */
-export type ApplicationMessage = MetricsMessage | SelfMessage | PeersMessage
+export type ApplicationMessage = RPCMessage
 
 /**
  * Messages that are sent from the service worker
@@ -131,34 +108,7 @@ export type WorkerMessage = PageLoadedMessage | PermissionsErrorMessage
 /**
  * Messages that are sent from the DevTools panel page to the application page
  */
-export type DevToolsMessage = IdentifyMessage | EnableDebugMessage | CopyToClipboardMessage
-
-export interface SelfPeer {
-  /**
-   * The identifier of the peer
-   */
-  id: string
-
-  /**
-   * The list of multiaddrs the peer is listening on
-   */
-  multiaddrs: string[]
-
-  /**
-   * Any peer store tags the peer has
-   */
-  tags: Record<string, number>
-
-  /**
-   * Any peer store metadata the peer has
-   */
-  metadata: Record<string, string>
-
-  /**
-   * The protocols the peer supports
-   */
-  protocols: string[]
-}
+export type DevToolsMessage = CopyToClipboardMessage | RPCMessage
 
 export interface Address {
   /**
@@ -178,33 +128,6 @@ export interface Address {
   isConnected?: boolean
 }
 
-export interface Peer {
-  /**
-   * The identifier of the remote peer
-   */
-  id: string
-
-  /**
-   * The list of addresses the peer has that we know about
-   */
-  addresses: Address[]
-
-  /**
-   * Any peer store tags the peer has
-   */
-  tags: Record<string, number>
-
-  /**
-   * Any peer store metadata the peer has
-   */
-  metadata: Record<string, string>
-
-  /**
-   * The protocols the peer supports, if known
-   */
-  protocols: string[]
-}
-
 export interface DevToolsMetricsInit {
   /**
    * How often to pass metrics to the DevTools panel
@@ -220,36 +143,47 @@ export interface DevToolsMetricsComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
   peerStore: PeerStore
+
+  contentRouting: ContentRouting
+  peerRouting: PeerRouting
+  addressManager: AddressManager
 }
 
-class DevToolsMetrics implements Metrics {
+class DevToolsMetrics implements Metrics, Startable {
   private readonly log: Logger
   private readonly components: DevToolsMetricsComponents
   private readonly simpleMetrics: Metrics
   private readonly intervalMs?: number
+  private readonly rpcQueue: Pushable<Uint8Array>
+  private readonly rpc: RPC
+  private readonly devTools: DevToolsRPC
 
   constructor (components: DevToolsMetricsComponents, init?: Partial<DevToolsMetricsInit>) {
     this.log = components.logger.forComponent('libp2p:devtools-metrics')
     this.intervalMs = init?.intervalMs
     this.components = components
 
+    // create RPC endpoint
+    this.rpcQueue = pushable()
+    this.rpc = rpc({
+      valueCodecs
+    })
+    this.devTools = this.rpc.createClient('devTools')
+
     // collect information on current peers and sent it to the dev tools panel
     this.onPeersUpdate = debounce(this.onPeersUpdate.bind(this), 1000)
-    this.onSelfUpdate = this.onSelfUpdate.bind(this)
+    this.onSelfUpdate = debounce(this.onSelfUpdate.bind(this), 1000)
     this.onIncomingMessage = this.onIncomingMessage.bind(this)
 
     // collect metrics
     this.simpleMetrics = simpleMetrics({
       intervalMs: this.intervalMs,
       onMetrics: (metrics) => {
-        const message: MetricsMessage = {
-          source: SOURCE_METRICS,
-          type: 'metrics',
-          metrics
-        }
-
-        this.log('post metrics message')
-        window.postMessage(message, '*')
+        this.devTools.safeDispatchEvent('metrics', {
+          detail: metrics
+        }).catch(err => {
+          this.log.error('error sending metrics', err)
+        })
       }
     })({})
   }
@@ -297,8 +231,32 @@ class DevToolsMetrics implements Metrics {
     // process incoming messages from devtools
     window.addEventListener('message', this.onIncomingMessage)
 
+    // create rpc target
+    this.rpc.createTarget('metrics', metricsRpc(this.components))
+
     // send metrics
     await start(this.simpleMetrics)
+
+    // send RPC messages
+    Promise.resolve()
+      .then(async () => {
+        await pipe(
+          this.rpcQueue,
+          this.rpc,
+          async source => {
+            for await (const buf of source) {
+              window.postMessage({
+                source: SOURCE_METRICS,
+                type: 'libp2p-rpc',
+                message: base64.encode(buf)
+              })
+            }
+          }
+        )
+      })
+      .catch(err => {
+        this.log.error('error while reading RPC messages', err)
+      })
   }
 
   async stop (): Promise<void> {
@@ -309,90 +267,6 @@ class DevToolsMetrics implements Metrics {
     this.components.events.removeEventListener('peer:identify', this.onPeersUpdate)
     this.components.events.removeEventListener('peer:update', this.onPeersUpdate)
     await stop(this.simpleMetrics)
-  }
-
-  private onPeersUpdate (): void {
-    Promise.resolve().then(async () => {
-      const message: PeersMessage = {
-        source: SOURCE_METRICS,
-        type: 'peers',
-        peers: []
-      }
-
-      const connections = this.components.connectionManager.getConnectionsMap()
-      const connectedAddresses = [...connections.values()].flatMap(conn => conn).map(conn => conn.remoteAddr.toString())
-
-      for (const [peerId, conns] of connections.entries()) {
-        try {
-          const peer = await this.components.peerStore.get(peerId)
-
-          message.peers.push({
-            id: peerId.toString(),
-            addresses: peer.addresses.map(({ isCertified, multiaddr }) => {
-              const addr = multiaddr.toString()
-
-              return {
-                multiaddr: addr,
-                isCertified,
-                isConnected: connectedAddresses.includes(addr)
-              }
-            }),
-            protocols: [...peer.protocols],
-            tags: toObject(peer.tags, (t) => t.value),
-            metadata: toObject(peer.metadata, (buf) => base64.encode(buf))
-          })
-        } catch (err) {
-          this.log.error('could not load peer data from peer store', err)
-
-          message.peers.push({
-            id: peerId.toString(),
-            addresses: conns.map(conn => {
-              const addr = conn.remoteAddr.toString()
-
-              return {
-                multiaddr: addr,
-                isConnected: connectedAddresses.includes(addr)
-              }
-            }),
-            protocols: [],
-            tags: {},
-            metadata: {}
-          })
-        }
-      }
-
-      window.postMessage(message, '*')
-    })
-      .catch(err => {
-        this.log.error('error sending peers message', err)
-      })
-  }
-
-  private onSelfUpdate (evt: CustomEvent<PeerUpdate>): void {
-    this.sendSelfUpdate(evt.detail.peer)
-  }
-
-  private sendSelfUpdate (peer: PeerStorePeer): void {
-    Promise.resolve()
-      .then(async () => {
-        const message: SelfMessage = {
-          source: SOURCE_METRICS,
-          type: 'self',
-          peer: {
-            id: peer.id.toString(),
-            multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr.toString()),
-            protocols: [...peer.protocols],
-            tags: toObject(peer.tags, (t) => t.value),
-            metadata: toObject(peer.metadata, (buf) => base64.encode(buf))
-          }
-        }
-
-        this.log('post node update message')
-        window.postMessage(message, '*')
-      })
-      .catch(err => {
-        this.log.error('error sending self update', err)
-      })
   }
 
   private onIncomingMessage (event: MessageEvent<DevToolsMessage>): void {
@@ -408,68 +282,38 @@ class DevToolsMetrics implements Metrics {
       return
     }
 
-    // respond to identify request
-    if (message.type === 'identify') {
-      Promise.resolve()
-        .then(async () => {
-          const peer = await this.components.peerStore.get(this.components.peerId)
-
-          this.sendSelfUpdate(peer)
-          // also send our current peer list
-          this.onPeersUpdate()
-        })
-        .catch(err => {
-          this.log.error('error sending identify response', err)
-        })
+    if (message.type === 'libp2p-rpc') {
+      this.rpcQueue.push(base64.decode(message.message))
     }
+  }
 
-    // handle enabling/disabling debug namespaces
-    if (message.type === 'debug') {
-      if (message.namespace.length > 0) {
-        enable(message.namespace)
-      } else {
-        disable()
-      }
-    }
+  private onSelfUpdate (): void {
+    Promise.resolve()
+      .then(async () => {
+        await this.devTools.safeDispatchEvent('self', {
+          detail: await getSelf(this.components)
+        })
+      })
+      .catch(err => {
+        this.log.error('error sending peers message', err)
+      })
+  }
+
+  private onPeersUpdate (): void {
+    Promise.resolve()
+      .then(async () => {
+        await this.devTools.safeDispatchEvent('peers', {
+          detail: await getPeers(this.components, this.log)
+        })
+      })
+      .catch(err => {
+        this.log.error('error sending peers message', err)
+      })
   }
 }
 
 export function devToolsMetrics (init?: Partial<DevToolsMetricsInit>): (components: DevToolsMetricsComponents) => Metrics {
   return (components) => {
     return new DevToolsMetrics(components, init)
-  }
-}
-
-function toObject <T, R> (map: Map<string, T>, transform: (value: T) => R): Record<string, R> {
-  const output: Record<string, any> = {}
-
-  for (const [key, value] of map.entries()) {
-    output[key] = transform(value)
-  }
-
-  return output
-}
-
-function debounce (callback: () => void, wait: number = 100): () => void {
-  let timeout: ReturnType<typeof setTimeout>
-  let start: number | undefined
-
-  return (): void => {
-    if (start == null) {
-      start = Date.now()
-    }
-
-    if (timeout != null && Date.now() - start > wait) {
-      clearTimeout(timeout)
-      start = undefined
-      callback()
-      return
-    }
-
-    clearTimeout(timeout)
-    timeout = setTimeout(() => {
-      start = undefined
-      callback()
-    }, wait)
   }
 }

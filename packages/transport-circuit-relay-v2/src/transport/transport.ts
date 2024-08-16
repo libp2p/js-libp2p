@@ -5,15 +5,17 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, ERR_HOP_REQUEST_FAILED, ERR_RELAYED_DIAL, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Upgrader, AbortOptions, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 const isValidStop = (request: StopMessage): request is Required<StopMessage> => {
   if (request.peer == null) {
@@ -29,7 +31,7 @@ const isValidStop = (request: StopMessage): request is Required<StopMessage> => 
   return true
 }
 
-interface ConnectOptions {
+interface ConnectOptions extends ProgressOptions<CircuitRelayDialEvents> {
   stream: Stream
   connection: Connection
   destinationPeer: PeerId
@@ -45,7 +47,16 @@ const defaults = {
   stopTimeout: 30000
 }
 
-export class CircuitRelayTransport implements Transport {
+export type CircuitRelayDialEvents =
+  OutboundConnectionUpgradeEvents |
+  OpenConnectionProgressEvents |
+  ProgressEvent<'circuit-relay:open-connection'> |
+  ProgressEvent<'circuit-relay:reuse-connection'> |
+  ProgressEvent<'circuit-relay:open-hop-stream'> |
+  ProgressEvent<'circuit-relay:write-connect-message'> |
+  ProgressEvent<'circuit-relay:read-connect-response'>
+
+export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> {
   private readonly discovery?: RelayDiscovery
   private readonly registrar: Registrar
   private readonly peerStore: PeerStore
@@ -156,7 +167,7 @@ export class CircuitRelayTransport implements Transport {
   /**
    * Dial a peer over a relay
    */
-  async dial (ma: Multiaddr, options: AbortOptions = {}): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<CircuitRelayDialEvents>): Promise<Connection> {
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
       this.log.error(errMsg, ma)
@@ -187,13 +198,18 @@ export class CircuitRelayTransport implements Transport {
       await this.peerStore.merge(relayPeer, {
         multiaddrs: [relayAddr]
       })
+
+      options.onProgress?.(new CustomProgressEvent('circuit-relay:open-connection'))
       relayConnection = await this.connectionManager.openConnection(relayPeer, options)
       disconnectOnFailure = true
+    } else {
+      options.onProgress?.(new CustomProgressEvent('circuit-relay:reuse-connection'))
     }
 
     let stream: Stream | undefined
 
     try {
+      options.onProgress?.(new CustomProgressEvent('circuit-relay:open-hop-stream'))
       stream = await relayConnection.newStream(RELAY_V2_HOP_CODEC)
 
       return await this.connectV2({
@@ -203,7 +219,8 @@ export class CircuitRelayTransport implements Transport {
         destinationAddr,
         relayAddr,
         ma,
-        disconnectOnFailure
+        disconnectOnFailure,
+        onProgress: options.onProgress
       })
     } catch (err: any) {
       this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
@@ -220,12 +237,15 @@ export class CircuitRelayTransport implements Transport {
     {
       stream, connection, destinationPeer,
       destinationAddr, relayAddr, ma,
-      disconnectOnFailure
+      disconnectOnFailure,
+      onProgress
     }: ConnectOptions
   ): Promise<Connection> {
     try {
       const pbstr = pbStream(stream)
       const hopstr = pbstr.pb(HopMessage)
+
+      onProgress?.(new CustomProgressEvent('circuit-relay:write-connect-message'))
       await hopstr.write({
         type: HopMessage.Type.CONNECT,
         peer: {
@@ -234,6 +254,7 @@ export class CircuitRelayTransport implements Transport {
         }
       })
 
+      onProgress?.(new CustomProgressEvent('circuit-relay:read-connect-response'))
       const status = await hopstr.read()
 
       if (status.status !== Status.OK) {
@@ -249,7 +270,8 @@ export class CircuitRelayTransport implements Transport {
 
       this.log('new outbound relayed connection %a', maConn.remoteAddr)
       return await this.upgrader.upgradeOutbound(maConn, {
-        transient: status.limit != null
+        transient: status.limit != null,
+        onProgress
       })
     } catch (err: any) {
       this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)

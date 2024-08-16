@@ -4,6 +4,7 @@ import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { CustomProgressEvent } from 'progress-events'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { AutoDial } from './auto-dial.js'
@@ -509,6 +510,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       if (existingConnection != null) {
         this.log('had an existing non-transient connection to %p', peerId)
 
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection
       }
     }

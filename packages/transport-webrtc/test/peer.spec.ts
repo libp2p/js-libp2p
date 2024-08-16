@@ -107,7 +107,7 @@ describe('webrtc basic', () => {
     // transport manager dials recipient
     initiator.transportManager.dial.resolves(initiator.connection)
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
     ;[{ peerConnection: initiatorPeerConnection }] = await expect(
@@ -143,7 +143,7 @@ describe('webrtc basic', () => {
       abortController.abort(new Error('Oh noes!'))
       // opening the stream takes some time
       await delay(100)
-      // signalling stream opens successfully
+      // signaling stream opens successfully
       return initiator.stream
     })
 
@@ -196,7 +196,7 @@ describe('webrtc dialer', () => {
       initiator.connection
     ])
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)
@@ -217,7 +217,7 @@ describe('webrtc dialer', () => {
       initiator.connection
     ])
 
-    // signalling stream opens successfully
+    // signaling stream opens successfully
     initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)

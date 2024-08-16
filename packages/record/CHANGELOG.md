@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.4](https://github.com/libp2p/js-libp2p/compare/record-v4.0.3...record-v4.0.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+
 ## [4.0.3](https://github.com/libp2p/js-libp2p/compare/record-v4.0.2...record-v4.0.3) (2024-06-07)
 
 

@@ -156,11 +156,11 @@ describe('dialing (direct, WebSockets)', () => {
     })
 
     sinon.stub(localTM, 'dial').callsFake(async (addr, options) => {
-      expect(options.signal).to.exist()
-      expect(options.signal.aborted).to.equal(false)
+      expect(options?.signal).to.exist()
+      expect(options?.signal?.aborted).to.equal(false)
       expect(addr.toString()).to.eql(remoteAddr.toString())
       await delay(60)
-      expect(options.signal.aborted).to.equal(true)
+      expect(options?.signal?.aborted).to.equal(true)
       throw new AbortError()
     })
 
@@ -235,10 +235,10 @@ describe('dialing (direct, WebSockets)', () => {
     sinon.stub(localTM, 'dial').callsFake(async (_, options) => {
       const deferredDial = pDefer<Connection>()
       const onAbort = (): void => {
-        options.signal.removeEventListener('abort', onAbort)
+        options?.signal?.removeEventListener('abort', onAbort)
         deferredDial.reject(new AbortError())
       }
-      options.signal.addEventListener('abort', onAbort)
+      options?.signal?.addEventListener('abort', onAbort)
       return deferredDial.promise
     })
 

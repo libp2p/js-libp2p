@@ -1,5 +1,66 @@
 # Changelog
 
+## [1.1.5](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.4...echo-v1.1.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^1.3.4
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+
+## [1.1.4](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.3...echo-v1.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+
+## [1.1.3](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.2...echo-v1.1.3) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+    * @libp2p/interface-internal bumped from ^1.3.1 to ^1.3.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+
+## [1.1.2](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.1...echo-v1.1.2) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/interface-internal bumped from ^1.3.0 to ^1.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+
+## [1.1.1](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.0...echo-v1.1.1) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+
 ## [1.1.0](https://github.com/libp2p/js-libp2p/compare/echo-v1.0.8...echo-v1.1.0) (2024-06-18)
 
 

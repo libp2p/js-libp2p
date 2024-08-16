@@ -19,6 +19,62 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [5.1.17](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.16...multistream-select-v5.1.17) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+
+## [5.1.16](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.15...multistream-select-v5.1.16) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+
+## [5.1.15](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.14...multistream-select-v5.1.15) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+
+## [5.1.14](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.13...multistream-select-v5.1.14) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+
+## [5.1.13](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.12...multistream-select-v5.1.13) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+
 ## [5.1.12](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.11...multistream-select-v5.1.12) (2024-06-18)
 
 

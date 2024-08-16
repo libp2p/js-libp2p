@@ -174,7 +174,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
       this.pending++
 
-      job.run()
+      void job.run()
         .finally(() => {
           // remove the job from the queue
           for (let i = 0; i < this.queue.length; i++) {

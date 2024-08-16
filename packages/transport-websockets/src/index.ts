@@ -57,18 +57,21 @@
  * ```
  */
 
-import { AbortError, CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
+import { CodeError, transportSymbol, serviceCapabilities } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
@@ -79,17 +82,38 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
 
 export interface WebSocketsComponents {
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
-class WebSockets implements Transport {
+export interface WebSocketsMetrics {
+  dialerEvents: CounterGroup
+}
+
+export type WebSocketsDialEvents =
+  OutboundConnectionUpgradeEvents |
+  ProgressEvent<'websockets:open-connection'>
+
+class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
   private readonly init?: WebSocketsInit
   private readonly logger: ComponentLogger
+  private readonly metrics?: WebSocketsMetrics
+  private readonly components: WebSocketsComponents
 
   constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
     this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
+    this.components = components
     this.init = init
+
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup('libp2p_websockets_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of WebSockets dialer events by type'
+        })
+      }
+    }
   }
 
   readonly [transportSymbol] = true
@@ -100,25 +124,25 @@ class WebSockets implements Transport {
     '@libp2p/transport'
   ]
 
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
     const socket = await this._connect(ma, options)
     const maConn = socketToMaConn(socket, ma, {
-      logger: this.logger
+      logger: this.logger,
+      metrics: this.metrics?.dialerEvents
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
-    const conn = await options.upgrader.upgradeOutbound(maConn)
+    const conn = await options.upgrader.upgradeOutbound(maConn, options)
     this.log('outbound connection %s upgraded', maConn.remoteAddr)
     return conn
   }
 
-  async _connect (ma: Multiaddr, options: AbortOptions): Promise<DuplexWebSocket> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
+  async _connect (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<DuplexWebSocket> {
+    options?.signal?.throwIfAborted()
+
     const cOpts = ma.toOptions()
     this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
@@ -130,43 +154,28 @@ class WebSockets implements Transport {
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new CodeError(`Could not connect to ${ma.toString()}`, 'ERR_CONNECTION_FAILED')
       this.log.error('connection error:', err)
+      this.metrics?.dialerEvents.increment({ error: true })
       errorPromise.reject(err)
     })
 
-    if (options.signal == null) {
-      await Promise.race([rawSocket.connected(), errorPromise.promise])
+    try {
+      options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
+      await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
+    } catch (err: any) {
+      if (options.signal?.aborted === true) {
+        this.metrics?.dialerEvents.increment({ abort: true })
+      }
 
-      this.log('connected %s', ma)
-      return rawSocket
-    }
-
-    // Allow abort via signal during connect
-    let onAbort
-    const abort = new Promise((resolve, reject) => {
-      onAbort = () => {
-        reject(new AbortError())
-        rawSocket.close().catch(err => {
+      rawSocket.close()
+        .catch(err => {
           this.log.error('error closing raw socket', err)
         })
-      }
 
-      // Already aborted?
-      if (options?.signal?.aborted === true) {
-        onAbort(); return
-      }
-
-      options?.signal?.addEventListener('abort', onAbort)
-    })
-
-    try {
-      await Promise.race([abort, errorPromise.promise, rawSocket.connected()])
-    } finally {
-      if (onAbort != null) {
-        options?.signal?.removeEventListener('abort', onAbort)
-      }
+      throw err
     }
 
     this.log('connected %s', ma)
+    this.metrics?.dialerEvents.increment({ connect: true })
     return rawSocket
   }
 
@@ -177,7 +186,8 @@ class WebSockets implements Transport {
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
-      logger: this.logger
+      logger: this.logger,
+      metrics: this.components.metrics
     }, {
       ...this.init,
       ...options

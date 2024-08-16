@@ -7,6 +7,7 @@ import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiforma
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { type ClearableSignal, anySignal } from 'any-signal'
+import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { codes } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
@@ -19,21 +20,17 @@ import {
 } from './constants.js'
 import { resolveMultiaddrs } from './utils.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, AbortOptions, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions } from '@libp2p/interface'
-import type { TransportManager } from '@libp2p/interface-internal'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
+import type { ProgressOptions } from 'progress-events'
 
 export interface PendingDialTarget {
   resolve(value: any): void
   reject(err: Error): void
 }
 
-export interface DialOptions extends AbortOptions {
-  priority?: number
-  force?: boolean
-}
-
-interface DialQueueJobOptions extends PriorityQueueJobOptions {
+interface DialQueueJobOptions extends PriorityQueueJobOptions, ProgressOptions<OpenConnectionProgressEvents> {
   peerId?: PeerId
   multiaddrs: Set<string>
 }
@@ -134,7 +131,7 @@ export class DialQueue {
    * The dial to the first address that is successfully able to upgrade a
    * connection will be used, all other dials will be aborted when that happens.
    */
-  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: DialOptions = {}): Promise<Connection> {
+  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
     // make sure we don't have an existing connection to any of the addresses we
@@ -155,6 +152,7 @@ export class DialQueue {
 
     if (existingConnection != null) {
       this.log('already connected to %a', existingConnection.remoteAddr)
+      options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
       return existingConnection
     }
 
@@ -189,6 +187,7 @@ export class DialQueue {
         existingDial.options.multiaddrs.add(multiaddr.toString())
       }
 
+      options.onProgress?.(new CustomProgressEvent('dial-queue:already-in-dial-queue'))
       return existingDial.join(options)
     }
 
@@ -198,7 +197,9 @@ export class DialQueue {
 
     this.log('creating dial target for %p', peerId, multiaddrs.map(ma => ma.toString()))
 
+    options.onProgress?.(new CustomProgressEvent('dial-queue:add-to-dial-queue'))
     return this.queue.add(async (options) => {
+      options?.onProgress?.(new CustomProgressEvent('dial-queue:start-dial'))
       // create abort conditions - need to do this before `calculateMultiaddrs` as
       // we may be about to resolve a dns addr which can time out
       const signal = this.createDialAbortController(options?.signal)
@@ -211,6 +212,8 @@ export class DialQueue {
           ...options,
           signal
         })
+
+        options?.onProgress?.(new CustomProgressEvent<Address[]>('dial-queue:calculated-addresses', addrsToDial))
 
         addrsToDial.map(({ multiaddr }) => multiaddr.toString()).forEach(addr => {
           options?.multiaddrs.add(addr)
@@ -280,7 +283,8 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
-      signal: options.signal
+      signal: options.signal,
+      onProgress: options.onProgress
     })
   }
 
@@ -299,7 +303,7 @@ export class DialQueue {
   }
 
   // eslint-disable-next-line complexity
-  private async calculateMultiaddrs (peerId?: PeerId, multiaddrs: Set<string> = new Set<string>(), options: DialOptions = {}): Promise<Address[]> {
+  private async calculateMultiaddrs (peerId?: PeerId, multiaddrs: Set<string> = new Set<string>(), options: OpenConnectionOptions = {}): Promise<Address[]> {
     const addrs: Address[] = [...multiaddrs].map(ma => ({
       multiaddr: multiaddr(ma),
       isCertified: false
