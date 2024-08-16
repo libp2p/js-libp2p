@@ -13,6 +13,7 @@ import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromKeys } from '@libp2p/peer-id'
+import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -160,6 +161,8 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     opts.connectionEncryption?.push(noise())
   } else if (options.encryption === 'tls') {
     opts.connectionEncryption?.push(tls())
+  } else if (options.encryption === 'plaintext') {
+    opts.connectionEncryption?.push(plaintext())
   }
 
   if (options.muxer === 'mplex') {
