@@ -20,8 +20,10 @@
  * ```
  */
 
+import { supportedKeys } from '@libp2p/crypto/keys'
 import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createFromPubKey } from '@libp2p/peer-id-factory'
 import { pbStream } from 'it-protobuf-stream'
 import { Exchange, KeyType } from './pb/proto.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, PrivateKey } from '@libp2p/interface'
@@ -111,7 +113,19 @@ class Plaintext implements ConnectionEncrypter {
         throw new Error('Remote id missing')
       }
 
-      peerId = await peerIdFromKeys(response.pubkey.Data)
+      let pubKey: PubKey
+
+      if (response.pubkey.Type === KeyType.RSA) {
+        pubKey = supportedKeys.rsa.unmarshalRsaPublicKey(response.pubkey.Data)
+      } else if (response.pubkey.Type === KeyType.Ed25519) {
+        pubKey = supportedKeys.ed25519.unmarshalEd25519PublicKey(response.pubkey.Data)
+      } else if (response.pubkey.Type === KeyType.Secp256k1) {
+        pubKey = supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(response.pubkey.Data)
+      } else {
+        throw new Error('Unknown public key type')
+      }
+
+      peerId = await createFromPubKey(pubKey)
 
       if (!peerId.equals(peerIdFromBytes(response.id))) {
         throw new Error('Public key did not match id')
