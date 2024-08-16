@@ -53,7 +53,7 @@ describe('connection monitor', () => {
   it('should monitor the liveness of a connection with a custom ping protocol prefix', async () => {
     monitor = new ConnectionMonitor(components, {
       pingInterval: 10,
-      protocolPrefix: 'foobar',
+      protocolPrefix: 'foobar'
     })
 
     await start(monitor)
