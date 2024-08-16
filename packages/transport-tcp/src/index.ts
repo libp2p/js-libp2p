@@ -128,7 +128,7 @@ export interface TCPComponents {
 }
 
 export interface TCPMetrics {
-  dialerEvents: CounterGroup
+  dialerEvents: CounterGroup<'error' | 'timeout' | 'connect' | 'abort'>
 }
 
 class TCP implements Transport<TCPDialEvents> {
