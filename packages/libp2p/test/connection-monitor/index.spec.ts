@@ -50,6 +50,27 @@ describe('connection monitor', () => {
     expect(connection.rtt).to.be.gte(0)
   })
 
+  it('should monitor the liveness of a connection with a custom ping protocol prefix', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10,
+      protocolPrefix: 'foobar',
+    })
+
+    await start(monitor)
+
+    const connection = stubInterface<Connection>()
+    const stream = stubInterface<Stream>({
+      ...pair<any>()
+    })
+    connection.newStream.withArgs('/foobar/ping/1.0.0').resolves(stream)
+
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(100)
+
+    expect(connection.rtt).to.be.gte(0)
+  })
+
   it('should monitor the liveness of a connection that does not support ping', async () => {
     monitor = new ConnectionMonitor(components, {
       pingInterval: 10
