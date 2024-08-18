@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [1.9.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.9.1...libp2p-v1.9.2) (2024-08-17)
+
+
+### Bug Fixes
+
+* accept custom ping protocol prefix in connection monitor ([#2667](https://github.com/libp2p/js-libp2p/issues/2667)) ([3c8dd5b](https://github.com/libp2p/js-libp2p/commit/3c8dd5bbfc57489a0b10b555c81e773058a58156))
+
 ## [1.9.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.9.0...libp2p-v1.9.1) (2024-08-16)
 
 
