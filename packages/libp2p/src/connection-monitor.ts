@@ -1,3 +1,4 @@
+import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { byteStream } from 'it-byte-stream'
@@ -9,6 +10,7 @@ const DEFAULT_PING_INTERVAL_MS = 10000
 const PROTOCOL_VERSION = '1.0.0'
 const PROTOCOL_NAME = 'ping'
 const PROTOCOL_PREFIX = 'ipfs'
+const PING_LENGTH = 32
 
 export interface ConnectionMonitorInit {
   /**
@@ -103,10 +105,10 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(new Uint8Array(32), {
+              bs.write(randomBytes(PING_LENGTH), {
                 signal
               }),
-              bs.read(1, {
+              bs.read(PING_LENGTH, {
                 signal
               })
             ])
