@@ -103,7 +103,7 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(new Uint8Array(1), {
+              bs.write(new Uint8Array(32), {
                 signal
               }),
               bs.read(1, {
