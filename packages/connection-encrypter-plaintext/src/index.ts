@@ -42,7 +42,7 @@ class Plaintext implements ConnectionEncrypter {
   private readonly peerId: PeerId
   private readonly log: Logger
 
-  constructor(components: PlaintextComponents) {
+  constructor (components: PlaintextComponents) {
     this.peerId = components.peerId
     this.log = components.logger.forComponent('libp2p:plaintext')
   }
@@ -141,6 +141,6 @@ class Plaintext implements ConnectionEncrypter {
   }
 }
 
-export function plaintext(): (components: PlaintextComponents) => ConnectionEncrypter {
+export function plaintext (): (components: PlaintextComponents) => ConnectionEncrypter {
   return (components) => new Plaintext(components)
 }
