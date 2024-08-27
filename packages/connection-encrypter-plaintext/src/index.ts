@@ -20,11 +20,13 @@
  * ```
  */
 
+import { supportedKeys } from '@libp2p/crypto/keys'
 import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromBytes } from '@libp2p/peer-id'
+import { createFromPubKey } from '@libp2p/peer-id-factory'
 import { pbStream } from 'it-protobuf-stream'
-import { Exchange, KeyType } from './pb/proto.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, SecureConnectionOptions } from '@libp2p/interface'
+import { Exchange, KeyType, PublicKey } from './pb/proto.js'
+import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, PublicKey as PubKey, SecureConnectionOptions } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -40,7 +42,7 @@ class Plaintext implements ConnectionEncrypter {
   private readonly peerId: PeerId
   private readonly log: Logger
 
-  constructor (components: PlaintextComponents) {
+  constructor(components: PlaintextComponents) {
     this.peerId = components.peerId
     this.log = components.logger.forComponent('libp2p:plaintext')
   }
@@ -51,18 +53,18 @@ class Plaintext implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureInbound<Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection>(conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     return this._encrypt(this.peerId, conn, options)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureOutbound<Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection>(conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     return this._encrypt(this.peerId, conn, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async _encrypt<Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection>(localId: PeerId, conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     const pb = pbStream(conn).pb(Exchange)
 
     let type = KeyType.RSA
@@ -83,7 +85,7 @@ class Plaintext implements ConnectionEncrypter {
         id: localId.toBytes(),
         pubkey: {
           Type: type,
-          Data: localId.publicKey ?? new Uint8Array(0)
+          Data: localId.publicKey == null ? new Uint8Array(0) : (PublicKey.decode(localId.publicKey).Data ?? new Uint8Array(0))
         }
       }, options),
       // Get the Exchange message
@@ -104,7 +106,19 @@ class Plaintext implements ConnectionEncrypter {
         throw new Error('Remote id missing')
       }
 
-      peerId = await peerIdFromKeys(response.pubkey.Data)
+      let pubKey: PubKey
+
+      if (response.pubkey.Type === KeyType.RSA) {
+        pubKey = supportedKeys.rsa.unmarshalRsaPublicKey(response.pubkey.Data)
+      } else if (response.pubkey.Type === KeyType.Ed25519) {
+        pubKey = supportedKeys.ed25519.unmarshalEd25519PublicKey(response.pubkey.Data)
+      } else if (response.pubkey.Type === KeyType.Secp256k1) {
+        pubKey = supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(response.pubkey.Data)
+      } else {
+        throw new Error('Unknown public key type')
+      }
+
+      peerId = await createFromPubKey(pubKey)
 
       if (!peerId.equals(peerIdFromBytes(response.id))) {
         throw new Error('Public key did not match id')
@@ -127,6 +141,6 @@ class Plaintext implements ConnectionEncrypter {
   }
 }
 
-export function plaintext (): (components: PlaintextComponents) => ConnectionEncrypter {
+export function plaintext(): (components: PlaintextComponents) => ConnectionEncrypter {
   return (components) => new Plaintext(components)
 }
