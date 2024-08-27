@@ -111,6 +111,65 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.7](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.6...webrtc-v4.1.7) (2024-08-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.9.1 to ^1.9.2
+
+## [4.1.6](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.5...webrtc-v4.1.6) (2024-08-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^1.9.0 to ^1.9.1
+
+## [4.1.5](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.4...webrtc-v4.1.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^1.3.4
+    * @libp2p/peer-id bumped from ^4.2.3 to ^4.2.4
+    * @libp2p/utils bumped from ^5.4.8 to ^5.4.9
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.1.4 to ^1.1.5
+    * @libp2p/identify bumped from ^2.1.4 to ^2.1.5
+    * @libp2p/interface-compliance-tests bumped from ^5.4.11 to ^5.4.12
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+    * @libp2p/peer-id-factory bumped from ^4.2.3 to ^4.2.4
+    * @libp2p/websockets bumped from ^8.1.4 to ^8.2.0
+    * libp2p bumped from ^1.8.3 to ^1.9.0
+
+## [4.1.4](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.3...webrtc-v4.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/utils bumped from ^5.4.7 to ^5.4.8
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^1.1.3 to ^1.1.4
+    * @libp2p/identify bumped from ^2.1.3 to ^2.1.4
+    * @libp2p/interface-compliance-tests bumped from ^5.4.10 to ^5.4.11
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/websockets bumped from ^8.1.3 to ^8.1.4
+    * libp2p bumped from ^1.8.2 to ^1.8.3
+
 ## [4.1.3](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.2...webrtc-v4.1.3) (2024-07-29)
 
 

@@ -82,6 +82,33 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/perf-v3.1.4...perf-v3.1.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^1.3.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.11 to ^5.4.12
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/perf-v3.1.3...perf-v3.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.10 to ^5.4.11
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p/compare/perf-v3.1.2...perf-v3.1.3) (2024-07-29)
 
 

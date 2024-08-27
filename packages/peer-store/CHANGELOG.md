@@ -68,6 +68,37 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [10.1.5](https://github.com/libp2p/js-libp2p/compare/peer-store-v10.1.4...peer-store-v10.1.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/peer-collections bumped from ^5.2.8 to ^5.2.9
+    * @libp2p/peer-id bumped from ^4.2.3 to ^4.2.4
+    * @libp2p/peer-record bumped from ^7.0.24 to ^7.0.25
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+    * @libp2p/peer-id-factory bumped from ^4.2.3 to ^4.2.4
+
+## [10.1.4](https://github.com/libp2p/js-libp2p/compare/peer-store-v10.1.3...peer-store-v10.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/peer-collections bumped from ^5.2.7 to ^5.2.8
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+    * @libp2p/peer-record bumped from ^7.0.23 to ^7.0.24
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+
 ## [10.1.3](https://github.com/libp2p/js-libp2p/compare/peer-store-v10.1.2...peer-store-v10.1.3) (2024-07-29)
 
 

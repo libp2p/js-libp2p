@@ -5,6 +5,25 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [1.7.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.3...interface-v1.7.0) (2024-08-15)
+
+
+### Features
+
+* add connection monitor ([#2644](https://github.com/libp2p/js-libp2p/issues/2644)) ([7939dbd](https://github.com/libp2p/js-libp2p/commit/7939dbd5cbab1c7b4be671ff976d0258e9b48178))
+
+
+### Bug Fixes
+
+* remove CustomEvent polyfill ([#2652](https://github.com/libp2p/js-libp2p/issues/2652)) ([0edbfe7](https://github.com/libp2p/js-libp2p/commit/0edbfe7af1ccf4bd23dd78b2bcc29ecf54ea02eb))
+
+## [1.6.3](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.2...interface-v1.6.3) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+
 ## [1.6.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.1...interface-v1.6.2) (2024-07-29)
 
 

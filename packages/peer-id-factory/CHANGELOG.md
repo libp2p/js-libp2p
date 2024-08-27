@@ -27,6 +27,29 @@
   * dependencies
     * @libp2p/crypto bumped from ^3.0.4 to ^4.0.0
 
+## [4.2.4](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.2.3...peer-id-factory-v4.2.4) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.8 to ^4.1.9
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/peer-id bumped from ^4.2.3 to ^4.2.4
+
+## [4.2.3](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.2.2...peer-id-factory-v4.2.3) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.7 to ^4.1.8
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/peer-id bumped from ^4.2.2 to ^4.2.3
+
 ## [4.2.2](https://github.com/libp2p/js-libp2p/compare/peer-id-factory-v4.2.1...peer-id-factory-v4.2.2) (2024-07-29)
 
 
