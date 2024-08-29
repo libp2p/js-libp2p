@@ -50,6 +50,13 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [1.1.6](https://github.com/libp2p/js-libp2p/compare/ping-v1.1.5...ping-v1.1.6) (2024-08-29)
+
+
+### Bug Fixes
+
+* limit incoming ping bytes to 32 ([#2673](https://github.com/libp2p/js-libp2p/issues/2673)) ([50b8971](https://github.com/libp2p/js-libp2p/commit/50b897139cbace820548194191b7481e1379b149))
+
 ## [1.1.5](https://github.com/libp2p/js-libp2p/compare/ping-v1.1.4...ping-v1.1.5) (2024-08-15)
 
 
