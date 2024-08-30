@@ -422,7 +422,7 @@ describe('libp2p.connections', () => {
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundEncryptedConnection.called).to.be.true()
-      expect(denyInboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
+      expect(denyInboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
     })
 
     it('intercept outbound encrypted', async () => {
@@ -444,7 +444,7 @@ describe('libp2p.connections', () => {
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundEncryptedConnection.called).to.be.true()
-      expect(denyOutboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
+      expect(denyOutboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
     })
 
     it('intercept inbound upgraded', async () => {
@@ -472,7 +472,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
-      expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
+      expect(denyInboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
 
@@ -498,7 +498,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
-      expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
+      expect(denyOutboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
   })

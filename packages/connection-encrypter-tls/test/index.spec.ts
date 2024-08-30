@@ -83,6 +83,6 @@ describe('tls', () => {
         remotePeer: localPeer
       })
     ]))
-      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
+      .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
   })
 })

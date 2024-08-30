@@ -53,19 +53,18 @@ describe('Upgrader', () => {
   let remoteComponents: Components
 
   beforeEach(async () => {
-    ([
-      localPeer,
-      remotePeer
-    ] = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ]))
+    const localKey = await generateKeyPair('Ed25519')
+    localPeer = peerIdFromPrivateKey(localKey)
+
+    const remoteKey = await generateKeyPair('Ed25519')
+    remotePeer = peerIdFromPrivateKey(remoteKey)
 
     localConnectionProtector = stubInterface<ConnectionProtector>()
     localConnectionProtector.protect.resolvesArg(0)
 
     localComponents = defaultComponents({
       peerId: localPeer,
+      privateKey: localKey,
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
@@ -93,6 +92,7 @@ describe('Upgrader', () => {
 
     remoteComponents = defaultComponents({
       peerId: remotePeer,
+      privateKey: remoteKey,
       connectionGater: mockConnectionGater(),
       registrar: mockRegistrar(),
       datastore: new MemoryDatastore(),
@@ -779,7 +779,7 @@ describe('libp2p.upgrader', () => {
       throw new Error(`Incorrect event type, expected: 'connection:open' actual: ${connectEvent.type}`)
     }
 
-    expect(remotePeer.equals(connectEvent.detail.remotePeer)).to.equal(true)
+    expect(remotePeer.publicKey.equals(connectEvent.detail.remotePeer.publicKey)).to.equal(true)
 
     const disconnectionPromise = pEvent<'peer:disconnect', CustomEvent<PeerId>>(libp2p, 'peer:disconnect')
 
@@ -792,7 +792,7 @@ describe('libp2p.upgrader', () => {
       throw new Error(`Incorrect event type, expected: 'peer:disconnect' actual: ${disconnectEvent.type}`)
     }
 
-    expect(remotePeer.equals(disconnectEvent.detail)).to.equal(true)
+    expect(remotePeer.publicKey.equals(disconnectEvent.detail.publicKey)).to.equal(true)
   })
 
   it('should limit the number of incoming streams that can be opened using a protocol', async () => {

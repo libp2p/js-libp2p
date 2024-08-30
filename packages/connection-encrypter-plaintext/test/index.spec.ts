@@ -84,6 +84,6 @@ describe('plaintext', () => {
         remotePeer: localPeer
       })
     ]))
-      .to.eventually.be.rejected.with.property('name', 'InvalidCryptoExchangeError')
+      .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
   })
 })

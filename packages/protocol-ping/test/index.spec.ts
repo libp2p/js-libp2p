@@ -143,6 +143,6 @@ describe('ping', () => {
 
     const err = await deferred.promise
 
-    expect(err).to.have.property('code', 'ERR_INVALID_MESSAGE')
+    expect(err).to.have.property('name', 'InvalidMessageError')
   })
 })
