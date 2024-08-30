@@ -13,6 +13,10 @@ import type { Libp2p } from '@libp2p/interface'
 describe('registrar protocols', () => {
   let libp2p: Libp2p
 
+  afterEach(async () => {
+    await libp2p?.stop()
+  })
+
   it('should be able to register and unregister a handler', async () => {
     const deferred = pDefer<Components>()
 
