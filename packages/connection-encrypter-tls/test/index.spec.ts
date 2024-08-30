@@ -43,8 +43,12 @@ describe('tls', () => {
     })
 
     await Promise.all([
-      encrypter.secureInbound(inbound, remotePeer),
-      encrypter.secureOutbound(outbound, wrongPeer)
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
+        remotePeer: wrongPeer
+      })
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('name', 'UnexpectedPeerError')
@@ -69,8 +73,12 @@ describe('tls', () => {
     })
 
     await expect(Promise.all([
-      encrypter.secureInbound(inbound),
-      encrypter.secureOutbound(outbound, localPeer)
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
+        remotePeer: localPeer
+      })
     ]))
       .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
