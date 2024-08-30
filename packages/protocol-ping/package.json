@@ -60,7 +60,6 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^4.0.20",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "aegir": "^44.0.1",
     "it-byte-stream": "^1.0.10",
     "it-pair": "^2.0.6",

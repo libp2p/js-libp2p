@@ -4,12 +4,12 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { isConnection, AbortError, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
@@ -50,8 +50,8 @@ describe('dialing (direct, TCP)', () => {
   beforeEach(async () => {
     resolver = Sinon.stub<[Multiaddr], Promise<string[]>>()
     const [localPeerId, remotePeerId] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
 
     const remoteEvents = new TypedEventEmitter()
@@ -154,7 +154,7 @@ describe('dialing (direct, TCP)', () => {
 
   it('should fail to connect if peer has no known addresses', async () => {
     const dialer = new DialQueue(localComponents)
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     await expect(dialer.dial(peerId))
       .to.eventually.be.rejectedWith(Error)
@@ -188,7 +188,7 @@ describe('dialing (direct, TCP)', () => {
   it('should only try to connect to addresses supported by the transports configured', async () => {
     const remoteAddrs = remoteTM.getAddrs()
 
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     await localComponents.peerStore.patch(peerId, {
       multiaddrs: [...remoteAddrs, unsupportedAddr]
     })
@@ -223,9 +223,9 @@ describe('dialing (direct, TCP)', () => {
   })
 
   it('should only dial to the max concurrency', async () => {
-    const peerId1 = await createEd25519PeerId()
-    const peerId2 = await createEd25519PeerId()
-    const peerId3 = await createEd25519PeerId()
+    const peerId1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peerId2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peerId3 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const addr1 = multiaddr(`/ip4/127.0.0.1/tcp/1234/p2p/${peerId1}`)
     const addr2 = multiaddr(`/ip4/127.0.12.4/tcp/3210/p2p/${peerId2}`)

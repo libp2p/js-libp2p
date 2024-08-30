@@ -30,7 +30,6 @@ jobs:
           - name: js-libp2p-example-chat
             repo: https://github.com/libp2p/js-libp2p-example-chat.git
             deps:
-              - '@libp2p/peer-id-factory@$PWD/packages/peer-id-factory'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'

@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
-import { generateKeyPair } from '@libp2p/crypto/src/keys/index.js'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PeerStreams } from '@libp2p/pubsub/peer-streams'
 import { expect } from 'aegir/chai'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -25,7 +25,7 @@ describe('floodsub', () => {
     expect(multicodec).to.exist()
 
     const privateKey = await generateKeyPair('Ed25519')
-    const peerId = await createFromPrivKey(privateKey)
+    const peerId = peerIdFromPrivateKey(privateKey)
 
     floodsub = new FloodSub({
       peerId,
@@ -48,7 +48,7 @@ describe('floodsub', () => {
   })
 
   it('checks cache when processing incoming message', async function () {
-    const otherPeer = await createEd25519PeerId()
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const sig = await sha256.encode(message)
     const key = uint8ArrayToString(sig, 'base64')
     let callCount = 0
@@ -62,7 +62,7 @@ describe('floodsub', () => {
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
-        from: otherPeer.multihash.bytes,
+        from: otherPeer.toMultihash().bytes,
         data: message,
         topic
       }]
@@ -100,7 +100,7 @@ describe('floodsub', () => {
   it('forwards normalized messages on publish', async () => {
     const spy = sinon.spy(floodsub, 'send')
 
-    const otherPeer = await createEd25519PeerId()
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     floodsub.getSubscribers = () => {
       return [otherPeer]
@@ -126,7 +126,7 @@ describe('floodsub', () => {
   it('does not send received message back to original sender', async () => {
     sinon.spy(floodsub, 'sendRpc')
 
-    const sender = await createEd25519PeerId()
+    const sender = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const peerStream = new PeerStreams({
       logger: defaultLogger()
@@ -137,7 +137,7 @@ describe('floodsub', () => {
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
-        from: sender.multihash.bytes,
+        from: sender.toMultihash().bytes,
         data: message,
         topic
       }]

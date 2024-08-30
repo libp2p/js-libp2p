@@ -4,7 +4,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PrivateKey } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -23,8 +23,8 @@ describe('PersistentPeerStore', () => {
 
   beforeEach(async () => {
     key = await generateKeyPair('Ed25519')
-    peerId = await createFromPrivKey(key)
-    otherPeerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(key)
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
       peerId,

@@ -115,7 +115,6 @@
     "@libp2p/multistream-select": "^5.1.17",
     "@libp2p/peer-collections": "^5.2.9",
     "@libp2p/peer-id": "^4.2.4",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/utils": "^5.4.9",
     "@multiformats/multiaddr": "^12.2.3",
     "abortable-iterator": "^5.0.1",

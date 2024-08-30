@@ -2,7 +2,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -26,7 +26,7 @@ export class TestDHT {
     const events = new TypedEventEmitter<Libp2pEvents>()
 
     const privateKey = await generateKeyPair('Ed25519')
-    const peerId = await createFromPrivKey(privateKey)
+    const peerId = peerIdFromPrivateKey(privateKey)
 
     const components: KadDHTComponents = {
       peerId,

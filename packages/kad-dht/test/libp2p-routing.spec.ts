@@ -152,7 +152,7 @@ describe('content routing', () => {
     await pb.write({
       type: MessageType.FIND_NODE,
       closer: [{
-        id: remotePeer.id.toBytes(),
+        id: remotePeer.id.toMultihash().bytes,
         multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
       }]
     }, Message)
@@ -190,7 +190,7 @@ describe('content routing', () => {
       await pb.write({
         type: MessageType.GET_PROVIDERS,
         providers: [{
-          id: providerPeer.id.toBytes(),
+          id: providerPeer.id.toMultihash().bytes,
           multiaddrs: providerPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
         }]
       }, Message)
@@ -277,13 +277,13 @@ describe('peer routing', () => {
     const pb = pbStream(incomingStream)
     const findNodeRequest = await pb.read(Message)
     expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
-    expect(findNodeRequest.key).to.equalBytes(peers[0].toBytes())
+    expect(findNodeRequest.key).to.equalBytes(peers[0].toMultihash().bytes)
 
     // reply with this node
     await pb.write({
       type: MessageType.FIND_NODE,
       closer: [{
-        id: targetPeer.id.toBytes(),
+        id: targetPeer.id.toMultihash().bytes,
         multiaddrs: targetPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
       }]
     }, Message)
@@ -335,7 +335,7 @@ describe('peer routing', () => {
       await pb.write({
         type: MessageType.FIND_NODE,
         closer: [{
-          id: closestPeer.id.toBytes(),
+          id: closestPeer.id.toMultihash().bytes,
           multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
         }]
       }, Message)

@@ -1,6 +1,6 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { PubSubBaseProtocol } from '../src/index.js'
 import { MockRegistrar } from './utils/index.js'
@@ -39,7 +39,7 @@ describe('pubsub instance', () => {
 
   it('should accept valid parameters', async () => {
     const privateKey = await generateKeyPair('Ed25519')
-    const peerId = await createFromPrivKey(privateKey)
+    const peerId = peerIdFromPrivateKey(privateKey)
 
     expect(() => {
       return new PubsubProtocol({

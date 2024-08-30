@@ -16,7 +16,7 @@ const bits = {
 const curveTypes = Object.keys(bits)
 const names = curveTypes.join(' / ')
 
-export async function generateEphmeralKeyPair (curve: Curve): Promise<ECDHKey> {
+export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new InvalidParametersError(`Unknown curve: ${curve}. Must be ${names}`)
   }

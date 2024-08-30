@@ -4,7 +4,7 @@
  * The peer store is where libp2p stores data about the peers it has encountered on the network.
  */
 
-import { createFromPubKey } from '@libp2p/peer-id-factory'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
@@ -168,7 +168,7 @@ export class PersistentPeerStore implements PeerStore {
 
   async consumePeerRecord (buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean> {
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN)
-    const peerId = await createFromPubKey(envelope.publicKey)
+    const peerId = peerIdFromCID(envelope.publicKey.toCID())
 
     if (expectedPeer?.equals(peerId) === false) {
       this.log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, peerId)

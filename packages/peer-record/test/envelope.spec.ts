@@ -43,14 +43,14 @@ describe('Envelope', () => {
     const signature = uint8arrayFromString(Math.random().toString(36).substring(7))
 
     const envelope = new RecordEnvelope({
-      publicKey: key.public,
+      publicKey: key.publicKey,
       payloadType,
       payload,
       signature
     })
 
     expect(envelope).to.exist()
-    expect(envelope.publicKey.equals(key.public)).to.eql(true)
+    expect(envelope.publicKey.equals(key.publicKey)).to.eql(true)
     expect(envelope.payloadType).to.equalBytes(payloadType)
     expect(envelope.payload.subarray()).to.equalBytes(payload.subarray())
     expect(envelope.signature).to.equalBytes(signature)
@@ -59,7 +59,7 @@ describe('Envelope', () => {
   it('can seal a record', async () => {
     const envelope = await RecordEnvelope.seal(testRecord, key)
     expect(envelope).to.exist()
-    expect(envelope.publicKey.equals(key.public)).to.eql(true)
+    expect(envelope.publicKey.equals(key.publicKey)).to.eql(true)
     expect(envelope.payloadType).to.eql(payloadType)
     expect(envelope.payload).to.exist()
     expect(envelope.signature).to.exist()

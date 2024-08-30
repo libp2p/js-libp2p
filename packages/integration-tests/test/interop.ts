@@ -3,7 +3,7 @@ import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
@@ -12,7 +12,6 @@ import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromKeys } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
@@ -124,7 +123,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.key != null) {
     const keyFile = fs.readFileSync(options.key)
-    privateKey = await unmarshalPrivateKey(keyFile)
+    privateKey = await privateKeyFromProtobuf(keyFile)
   }
 
   const opts: Libp2pOptions<ServiceMap> = {

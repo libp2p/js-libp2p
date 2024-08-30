@@ -1,10 +1,12 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
-import { importKey } from '@libp2p/crypto/keys'
+import { exportPrivateKey, importPrivateKey, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
+import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -68,6 +70,13 @@ function DsName (name: string): Key {
  */
 function DsInfoName (name: string): Key {
   return new Key(infoPrefix + name)
+}
+
+export async function keyId (key: PrivateKey): Promise<string> {
+  const pb = privateKeyToProtobuf(key)
+  const hash = await sha256.digest(pb)
+
+  return base58btc.encode(hash.bytes).substring(1)
 }
 
 /**
@@ -203,7 +212,7 @@ export class Keychain implements KeychainInterface {
     let kid: string
     let pem: string
     try {
-      kid = await key.id()
+      kid = await keyId(key)
       const cached = privates.get(this)
 
       if (cached == null) {
@@ -211,7 +220,7 @@ export class Keychain implements KeychainInterface {
       }
 
       const dek = cached.dek
-      pem = await key.export(dek)
+      pem = await exportPrivateKey(key, dek, key.type === 'RSA' ? 'pkcs-8' : 'libp2p-key')
     } catch (err: any) {
       await randomDelay()
       throw err
@@ -247,7 +256,7 @@ export class Keychain implements KeychainInterface {
 
       const dek = cached.dek
 
-      return await importKey(pem, dek)
+      return await importPrivateKey(pem, dek)
     } catch (err: any) {
       await randomDelay()
       throw err
@@ -372,9 +381,9 @@ export class Keychain implements KeychainInterface {
     for (const key of keys) {
       const res = await this.components.datastore.get(DsName(key.name))
       const pem = uint8ArrayToString(res)
-      const privateKey = await importKey(pem, oldDek)
+      const privateKey = await importPrivateKey(pem, oldDek)
       const password = newDek.toString()
-      const keyAsPEM = await privateKey.export(password)
+      const keyAsPEM = await exportPrivateKey(privateKey, password, privateKey.type === 'RSA' ? 'pkcs-8' : 'libp2p-key')
 
       // Update stored key
       const batch = this.components.datastore.batch()

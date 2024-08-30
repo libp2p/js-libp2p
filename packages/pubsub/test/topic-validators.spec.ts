@@ -1,7 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type PubSubRPC, TopicValidatorResult, type PeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -21,8 +21,8 @@ describe('topic validators', () => {
 
   beforeEach(async () => {
     const privateKey = await generateKeyPair('Ed25519')
-    const peerId = await createFromPrivKey(privateKey)
-    otherPeerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(privateKey)
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     pubsub = new PubsubImplementation({
       peerId,
@@ -63,7 +63,7 @@ describe('topic validators', () => {
     const validRpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
-        from: otherPeerId.multihash.bytes,
+        from: otherPeerId.toMultihash().bytes,
         data: uint8ArrayFromString('a message'),
         topic: filteredTopic
       }]
@@ -97,7 +97,7 @@ describe('topic validators', () => {
     const invalidRpc2: PubSubRPC = {
       subscriptions: [],
       messages: [{
-        from: otherPeerId.multihash.bytes,
+        from: otherPeerId.toMultihash().bytes,
         data: uint8ArrayFromString('a different message'),
         topic: filteredTopic
       }]

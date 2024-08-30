@@ -66,7 +66,6 @@
   "devDependencies": {
     "@libp2p/daemon-client": "^8.0.5",
     "@libp2p/logger": "^4.0.20",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/ping": "^1.1.5",
     "@noble/hashes": "^1.4.0",
     "aegir": "^44.0.1",

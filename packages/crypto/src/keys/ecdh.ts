@@ -18,7 +18,7 @@ const names = curveTypes.join(' / ')
  *
  * Focuses only on ECDH now, but can be made more general in the future.
  */
-export async function generateEphmeralKeyPair (curve: Curve): Promise<ECDHKey> {
+export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> {
   if (curve !== 'P-256' && curve !== 'P-384' && curve !== 'P-521') {
     throw new InvalidParametersError(`Unknown curve: ${curve}. Must be ${names}`)
   }

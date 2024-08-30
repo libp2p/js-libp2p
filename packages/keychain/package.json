@@ -63,6 +63,7 @@
     "@libp2p/interface": "^1.7.0",
     "interface-datastore": "^8.2.11",
     "merge-options": "^3.0.4",
+    "multiformats": "^13.2.2",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
   },

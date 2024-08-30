@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { byteStream } from 'it-byte-stream'
 import { pair } from 'it-pair'
@@ -47,7 +48,7 @@ describe('ping', () => {
 
     await start(ping)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
@@ -65,7 +66,7 @@ describe('ping', () => {
 
     await start(ping)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
@@ -99,7 +100,7 @@ describe('ping', () => {
 
     await start(ping)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)

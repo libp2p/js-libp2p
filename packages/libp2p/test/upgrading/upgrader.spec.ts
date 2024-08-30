@@ -7,7 +7,7 @@ import { identify } from '@libp2p/identify'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId, createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromCID, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
@@ -57,8 +57,8 @@ describe('Upgrader', () => {
       localPeer,
       remotePeer
     ] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ]))
 
     localConnectionProtector = stubInterface<ConnectionProtector>()
@@ -703,7 +703,7 @@ describe('libp2p.upgrader', () => {
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromCID(remotePeer.publicKey.toCID()) })
     const [localConnection] = await Promise.all([
       localComponents.upgrader.upgradeOutbound(outbound),
       remoteComponents.upgrader.upgradeInbound(inbound)
@@ -838,7 +838,7 @@ describe('libp2p.upgrader', () => {
       connectionGater: mockConnectionGater()
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
@@ -916,7 +916,7 @@ describe('libp2p.upgrader', () => {
       }
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise
@@ -992,7 +992,7 @@ describe('libp2p.upgrader', () => {
       }
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: await createFromPrivKey(remotePeer) })
+    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
 
     const localComponents = await localDeferred.promise
     const remoteComponents = await remoteDeferred.promise

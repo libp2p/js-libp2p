@@ -17,8 +17,9 @@
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { TypedEventTarget } from './event-target.js'
+import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
 import type { Metrics } from './metrics/index.js'
-import type { PeerId } from './peer-id/index.js'
+import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { Address, Peer, PeerStore } from './peer-store/index.js'
@@ -645,7 +646,11 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * type this may mean searching the routing if the peer's key is not present
    * in the peer store.
    */
-  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<Uint8Array>
+  getPublicKey(peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
+  getPublicKey(peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
+  getPublicKey(peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
+  getPublicKey(peer: URLPeerId, options?: AbortOptions): Promise<never>
+  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<PublicKey>
 
   /**
    * Given the current node configuration, returns a promise of `true` or

@@ -3,7 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -18,8 +18,8 @@ describe('plaintext', () => {
 
   beforeEach(async () => {
     [remotePeer, wrongPeer] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
 
     encrypter = plaintext()({

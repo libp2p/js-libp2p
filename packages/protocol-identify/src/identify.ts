@@ -1,7 +1,8 @@
 /* eslint-disable complexity */
 
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
@@ -84,7 +85,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       throw new InvalidMessageError('public key was missing from identify message')
     }
 
-    const id = await peerIdFromKeys(publicKey)
+    const key = publicKeyFromProtobuf(publicKey)
+    const id = peerIdFromCID(key.toCID())
 
     if (!connection.remotePeer.equals(id)) {
       throw new InvalidMessageError('identified peer does not match the expected peer')
@@ -146,7 +148,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       await pb.write({
         protocolVersion: this.host.protocolVersion,
         agentVersion: this.host.agentVersion,
-        publicKey: this.privateKey.public.marshal(),
+        publicKey: publicKeyToProtobuf(this.privateKey.publicKey),
         listenAddrs: multiaddrs.map(addr => addr.bytes),
         signedPeerRecord,
         observedAddr,

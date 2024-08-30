@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
 import { MulticastDNS } from '../src/mdns.js'
@@ -15,8 +16,8 @@ describe('compliance tests', () => {
 
   tests({
     async setup () {
-      const peerId1 = await createEd25519PeerId()
-      const peerId2 = await createEd25519PeerId()
+      const peerId1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const peerId2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       const addressManager = stubInterface<AddressManager>()
       addressManager.getAddresses.returns([

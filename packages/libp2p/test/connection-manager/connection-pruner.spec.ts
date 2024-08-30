@@ -1,7 +1,8 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { ConnectionPruner } from '../../src/connection-manager/connection-pruner.js'
@@ -47,7 +48,7 @@ describe('connection-pruner', () => {
           for (const a of age) {
             const connection = stubInterface<Connection>({
               id: `${t}-${s}-${d}-${a}`,
-              remotePeer: await createEd25519PeerId(),
+              remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
               streams: s === 'streams'
                 ? [stubInterface<Stream>()]
                 : [],

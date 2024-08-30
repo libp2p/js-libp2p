@@ -1,4 +1,4 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -22,7 +22,7 @@ import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
@@ -318,7 +318,12 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   /**
    * Get the public key for the given peer id
    */
-  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
+  async getPublicKey (peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
+  async getPublicKey (peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
+  async getPublicKey (peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
+  async getPublicKey (peer: URLPeerId, options?: AbortOptions): Promise<never>
+  async getPublicKey (peer: PeerId, options?: AbortOptions): Promise<PublicKey>
+  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<PublicKey> {
     this.log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
@@ -339,20 +344,20 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     const peerKey = uint8ArrayConcat([
       uint8ArrayFromString('/pk/'),
-      peer.multihash.digest
+      peer.toMultihash().bytes
     ])
 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
 
     // ensure the returned key is valid
-    unmarshalPublicKey(bytes)
+    const publicKey = publicKeyFromProtobuf(bytes)
 
     await this.peerStore.patch(peer, {
-      publicKey: bytes
+      publicKey
     })
 
-    return bytes
+    return publicKey
   }
 
   async handle (protocols: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void> {

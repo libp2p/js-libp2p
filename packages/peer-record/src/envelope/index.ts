@@ -1,4 +1,4 @@
-import { unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -20,7 +20,7 @@ export class RecordEnvelope implements Envelope {
    */
   static createFromProtobuf = async (data: Uint8Array | Uint8ArrayList): Promise<RecordEnvelope> => {
     const envelopeData = Protobuf.decode(data)
-    const publicKey = unmarshalPublicKey(envelopeData.publicKey)
+    const publicKey = publicKeyFromProtobuf(envelopeData.publicKey)
 
     return new RecordEnvelope({
       publicKey,
@@ -46,7 +46,7 @@ export class RecordEnvelope implements Envelope {
     const signature = await privateKey.sign(signData.subarray())
 
     return new RecordEnvelope({
-      publicKey: privateKey.public,
+      publicKey: privateKey.publicKey,
       payloadType,
       payload,
       signature
@@ -93,7 +93,7 @@ export class RecordEnvelope implements Envelope {
   marshal (): Uint8Array {
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
-        publicKey: this.publicKey.marshal(),
+        publicKey: publicKeyToProtobuf(this.publicKey),
         payloadType: this.payloadType,
         payload: this.payload.subarray(),
         signature: this.signature

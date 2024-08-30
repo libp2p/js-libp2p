@@ -20,11 +20,11 @@
  * ```
  */
 
-import { supportedKeys } from '@libp2p/crypto/keys'
-import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createFromPubKey } from '@libp2p/peer-id-factory'
+import { publicKeyFromRaw } from '@libp2p/crypto/keys'
+import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities, ProtocolError } from '@libp2p/interface'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { Exchange, KeyType } from './pb/proto.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, PrivateKey } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
@@ -64,31 +64,33 @@ class Plaintext implements ConnectionEncrypter {
   ]
 
   async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(this.privateKey, conn, remoteId)
+    return this._encrypt(conn, remoteId)
   }
 
   async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(this.privateKey, conn, remoteId)
+    return this._encrypt(conn, remoteId)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (privateKey: PrivateKey, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
+  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
     const signal = AbortSignal.timeout(this.timeout)
     const pb = pbStream(conn).pb(Exchange)
 
     this.log('write pubkey exchange to peer %p', remoteId)
+
+    const publicKey = this.privateKey.publicKey
 
     const [
       , response
     ] = await Promise.all([
       // Encode the public key and write it to the remote peer
       pb.write({
-        id: await privateKey.public.hash(),
+        id: publicKey.toMultihash().bytes,
         pubkey: {
-          Type: KeyType[privateKey.type],
-          Data: privateKey.public.marshal()
+          Type: KeyType[publicKey.type],
+          Data: publicKey.raw
         }
       }, {
         signal
@@ -102,33 +104,22 @@ class Plaintext implements ConnectionEncrypter {
     let peerId
     try {
       if (response.pubkey == null) {
-        throw new Error('Public key missing')
+        throw new ProtocolError('Public key missing')
       }
 
-      if (response.pubkey.Data.length === 0) {
-        throw new Error('Public key data too short')
+      if (response.pubkey.Data.byteLength === 0) {
+        throw new ProtocolError('Public key data too short')
       }
 
       if (response.id == null) {
-        throw new Error('Remote id missing')
+        throw new ProtocolError('Remote id missing')
       }
 
-      let pubKey: PubKey
+      const pubKey = publicKeyFromRaw(response.pubkey.Data)
+      peerId = peerIdFromPublicKey(pubKey)
 
-      if (response.pubkey.Type === KeyType.RSA) {
-        pubKey = supportedKeys.rsa.unmarshalRsaPublicKey(response.pubkey.Data)
-      } else if (response.pubkey.Type === KeyType.Ed25519) {
-        pubKey = supportedKeys.ed25519.unmarshalEd25519PublicKey(response.pubkey.Data)
-      } else if (response.pubkey.Type === KeyType.Secp256k1) {
-        pubKey = supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(response.pubkey.Data)
-      } else {
-        throw new Error('Unknown public key type')
-      }
-
-      peerId = await createFromPubKey(pubKey)
-
-      if (!peerId.equals(peerIdFromBytes(response.id))) {
-        throw new Error('Public key did not match id')
+      if (!uint8ArrayEquals(peerId.toMultihash().bytes, response.id)) {
+        throw new InvalidCryptoExchangeError('Public key did not match id')
       }
     } catch (err: any) {
       this.log.error(err)

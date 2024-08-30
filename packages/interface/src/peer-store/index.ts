@@ -1,3 +1,4 @@
+import type { PublicKey } from '../keys/index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -91,9 +92,11 @@ export interface PeerData {
   tags?: Map<string, TagOptions | undefined> | Record<string, TagOptions | undefined>
 
   /**
-   * If this Peer has an RSA key, it's public key can be set with this property
+   * If this Peer has an RSA key, it's public key can be set with this property.
+   *
+   * The byte array should be the protobuf encoded form of the public key.
    */
-  publicKey?: Uint8Array
+  publicKey?: PublicKey
 
   /**
    * The last peer record envelope received

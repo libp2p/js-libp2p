@@ -1,65 +1,49 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
+import { base58btc } from 'multiformats/bases/base58'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import * as crypto from '../src/index.js'
-import { RsaPrivateKey, RsaPublicKey } from '../src/keys/rsa-class.js'
+import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyToProtobuf } from '../src/keys/index.js'
+import pbkdf2 from '../src/pbkdf2.js'
+import randomBytes from '../src/random-bytes.js'
 import fixtures from './fixtures/go-key-rsa.js'
+import type { RSAPrivateKey } from '@libp2p/interface'
 
 describe('libp2p-crypto', function () {
   this.timeout(20 * 1000)
-  let key: RsaPrivateKey
+  let key: RSAPrivateKey
+
   before(async () => {
-    const generated = await crypto.keys.generateKeyPair('RSA', 512)
-
-    if (!(generated instanceof RsaPrivateKey)) {
-      throw new Error('Key was incorrect type')
-    }
-
-    key = generated
+    key = await generateKeyPair('RSA', 512)
   })
 
-  it('marshalPublicKey and unmarshalPublicKey', () => {
-    const key2 = crypto.keys.unmarshalPublicKey(crypto.keys.marshalPublicKey(key.public))
+  it('marshalPublicKey and unmarshalPublicKey', async () => {
+    const key2 = publicKeyFromProtobuf(publicKeyToProtobuf(key.publicKey))
 
-    if (!(key2 instanceof RsaPublicKey)) {
-      throw new Error('Wrong key type unmarshalled')
-    }
-
-    expect(key2.equals(key.public)).to.be.eql(true)
-
-    expect(() => {
-      crypto.keys.marshalPublicKey(key.public, 'invalid-key-type')
-    }).to.throw()
+    expect(key2).to.have.property('type', 'RSA')
+    expect(key2.equals(key.publicKey)).to.be.eql(true)
   })
 
   it('marshalPrivateKey and unmarshalPrivateKey', async () => {
-    expect(() => {
-      crypto.keys.marshalPrivateKey(key, 'invalid-key-type')
-    }).to.throw()
+    const key2 = await privateKeyFromProtobuf(privateKeyToProtobuf(key))
 
-    const key2 = await crypto.keys.unmarshalPrivateKey(crypto.keys.marshalPrivateKey(key))
-
-    if (!(key2 instanceof RsaPrivateKey)) {
-      throw new Error('Wrong key type unmarshalled')
-    }
-
+    expect(key2).to.have.property('type', 'RSA')
     expect(key2.equals(key)).to.be.true()
-    expect(key2.public.equals(key.public)).to.be.true()
+    expect(key2.publicKey.equals(key.publicKey)).to.be.true()
   })
 
   it('generateKeyPair', () => {
     // @ts-expect-error key type is invalid
-    return expect(crypto.keys.generateKeyPair('invalid-key-type', 512)).to.eventually.be.rejected
-      .with.property('name', 'InvalidParametersError')
+    return expect(generateKeyPair('invalid-key-type', 512)).to.eventually.be.rejected
+      .with.property('name', 'UnsupportedKeyTypeError')
   })
 
   it('generateKeyPairFromSeed', () => {
-    const seed = crypto.randomBytes(32)
+    const seed = randomBytes(32)
 
     // @ts-expect-error key type is invalid
-    return expect(crypto.keys.generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected
-      .with.property('name', 'InvalidParametersError')
+    return expect(generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected
+      .with.property('name', 'UnsupportedKeyTypeError')
   })
 
   // https://github.com/libp2p/js-libp2p-crypto/issues/314
@@ -78,64 +62,68 @@ describe('libp2p-crypto', function () {
         return
       }
 
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.private.key)
+      const key = await privateKeyFromProtobuf(fixtures.private.key)
+      expect(fixtures.private.key).to.equalBytes(key.raw)
+
       const hash = fixtures.private.hash
-      expect(fixtures.private.key).to.eql(key.bytes)
-      const digest = await key.hash()
-      expect(digest).to.eql(hash)
+      const digest = key.publicKey.toCID().multihash
+      expect(base58btc.encode(digest.bytes)).to.equal(hash)
     })
 
     it('unmarshals public key', async () => {
-      const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
+      const key = publicKeyFromProtobuf(fixtures.public.key)
       const hash = fixtures.public.hash
-      expect(crypto.keys.marshalPublicKey(key)).to.eql(fixtures.public.key)
-      const digest = await key.hash()
-      expect(digest).to.eql(hash)
+      expect(publicKeyToProtobuf(key)).to.equalBytes(fixtures.public.key)
+
+      const digest = key.toCID().multihash
+      expect(base58btc.encode(digest.bytes)).to.equal(hash)
     })
 
     it.skip('unmarshal -> marshal, private key', async () => {
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.private.key)
-      const marshalled = crypto.keys.marshalPrivateKey(key)
+      const key = await privateKeyFromProtobuf(fixtures.private.key)
+      const marshalled = privateKeyToProtobuf(key)
+
       if (isSafari()) {
         // eslint-disable-next-line no-console
         console.warn('Running differnt test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
-        const key2 = await crypto.keys.unmarshalPrivateKey(marshalled)
-        expect(key2.bytes).to.eql(key.bytes)
+        const key2 = await privateKeyFromProtobuf(marshalled)
+        expect(key2.raw).to.equalBytes(key.raw)
         return
       }
-      expect(marshalled).to.eql(fixtures.private.key)
+
+      expect(marshalled).to.equalBytes(fixtures.private.key)
     })
 
-    it('unmarshal -> marshal, public key', () => {
-      const key = crypto.keys.unmarshalPublicKey(fixtures.public.key)
-      const marshalled = crypto.keys.marshalPublicKey(key)
-      expect(uint8ArrayEquals(fixtures.public.key, marshalled)).to.eql(true)
+    it('unmarshal -> marshal, public key', async () => {
+      const key = publicKeyFromProtobuf(fixtures.public.key)
+      const marshalled = publicKeyToProtobuf(key)
+      expect(uint8ArrayEquals(fixtures.public.key, marshalled)).to.be.true()
     })
   })
 
   describe('pbkdf2', () => {
     it('generates a derived password using sha1', () => {
-      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha1')
+      const p1 = pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha1')
       expect(p1).to.exist()
       expect(p1).to.be.a('string')
     })
 
     it('generates a derived password using sha2-512', () => {
-      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha2-512')
+      const p1 = pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha2-512')
       expect(p1).to.exist()
       expect(p1).to.be.a('string')
     })
 
     it('generates the same derived password with the same options', () => {
-      const p1 = crypto.pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
-      const p2 = crypto.pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
-      const p3 = crypto.pbkdf2('password', 'at least 16 character salt', 11, 512 / 8, 'sha1')
+      const p1 = pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
+      const p2 = pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
+      const p3 = pbkdf2('password', 'at least 16 character salt', 11, 512 / 8, 'sha1')
       expect(p2).to.equal(p1)
       expect(p3).to.not.equal(p2)
     })
 
     it('throws on invalid hash name', () => {
-      const fn = (): string => crypto.pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
+      const fn = (): string => pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
       expect(fn).to.throw().with.property('name', 'InvalidParametersError')
     })
   })
@@ -143,14 +131,14 @@ describe('libp2p-crypto', function () {
   describe('randomBytes', () => {
     it('throws with invalid number passed', () => {
       expect(() => {
-        crypto.randomBytes(-1)
+        randomBytes(-1)
       }).to.throw()
     })
 
     it('generates different random things', () => {
-      const buf1 = crypto.randomBytes(10)
+      const buf1 = randomBytes(10)
       expect(buf1.length).to.equal(10)
-      const buf2 = crypto.randomBytes(10)
+      const buf2 = randomBytes(10)
       expect(buf1).to.not.eql(buf2)
     })
   })

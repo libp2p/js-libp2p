@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -22,7 +22,7 @@ describe('message signing', () => {
 
   before(async () => {
     privateKey = await generateKeyPair('Ed25519')
-    peerId = await createFromPrivKey(privateKey)
+    peerId = peerIdFromPrivateKey(privateKey)
   })
 
   it('should be able to sign and verify a message', async () => {
@@ -43,7 +43,7 @@ describe('message signing', () => {
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
-    expect(signedMessage.key).to.equalBytes(peerId.publicKey)
+    expect(signedMessage.key.equals(peerId.publicKey)).to.be.true()
 
     // Verify the signature
     const verified = await verifySignature({
@@ -55,7 +55,7 @@ describe('message signing', () => {
 
   it('should be able to extract the public key from an inlined key', async () => {
     const secPrivateKey = await generateKeyPair('secp256k1')
-    const secPeerId = await createFromPrivKey(secPrivateKey)
+    const secPeerId = peerIdFromPrivateKey(secPrivateKey)
 
     const message = {
       type: 'signed',
@@ -99,7 +99,7 @@ describe('message signing', () => {
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
-    expect(signedMessage.key).to.equalBytes(peerId.publicKey)
+    expect(signedMessage.key.equals(peerId.publicKey)).to.be.true()
 
     // Verify the signature
     const verified = await verifySignature({

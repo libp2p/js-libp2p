@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -25,7 +26,7 @@ describe('Transport Manager (WebSockets)', () => {
   beforeEach(async () => {
     const events = new TypedEventEmitter()
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       events,
       upgrader: mockUpgrader({ events }),
       logger: defaultLogger()

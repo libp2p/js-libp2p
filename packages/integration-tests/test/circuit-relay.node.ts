@@ -565,7 +565,7 @@ describe('circuit-relay', () => {
       await hopStream.write({
         type: HopMessage.Type.CONNECT,
         peer: {
-          id: remote.peerId.toBytes(),
+          id: remote.peerId.toMultihash().bytes,
           addrs: []
         }
       })

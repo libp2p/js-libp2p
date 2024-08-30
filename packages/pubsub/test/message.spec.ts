@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -18,7 +18,7 @@ describe('pubsub base messages', () => {
 
   before(async () => {
     const privateKey = await generateKeyPair('Ed25519')
-    peerId = await createFromPrivKey(privateKey)
+    peerId = peerIdFromPrivateKey(privateKey)
 
     pubsub = new PubsubImplementation({
       peerId,

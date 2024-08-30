@@ -1,12 +1,24 @@
-import { InvalidParametersError } from '@libp2p/interface'
+import { InvalidParametersError, InvalidPublicKeyError } from '@libp2p/interface'
 import { pbkdf2Async } from '@noble/hashes/pbkdf2'
+import { sha256 } from '@noble/hashes/sha256'
 import { sha512 } from '@noble/hashes/sha512'
 import * as asn1js from 'asn1js'
+import { create } from 'multiformats/hashes/digest'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import randomBytes from '../random-bytes.js'
 import webcrypto from '../webcrypto.js'
-import { type RsaPrivateKey, unmarshalRsaPrivateKey } from './rsa-class.js'
+import { exporter } from './exporter.js'
+import * as pb from './keys.js'
+import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from './rsa-class.js'
+import { generateRSAKey, jwkToJWKKeyPair, rsaKeySize } from './rsa.js'
+import { privateKeyToProtobuf } from './index.js'
+import type { ExportFormat } from './index.js'
+import type { RSAPrivateKey, RSAPublicKey } from '@libp2p/interface'
+import type { Multibase } from 'multiformats/bases/interface'
+
+export const MAX_RSA_KEY_SIZE = 8192
+const SHA2_256_CODE = 0x12
 
 /**
  * Convert a PKCS#1 in ASN1 DER format to a JWK key
@@ -62,7 +74,7 @@ export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
 }
 
 /**
- * Convert a PKCIX in ASN1 DER format to a JWK key
+ * Convert a PKIX in ASN1 DER format to a JWK key
  */
 export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
   const { result } = asn1js.fromBER(bytes)
@@ -79,7 +91,7 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
 }
 
 /**
- * Convert a JWK key to PKCIX in ASN1 DER format
+ * Convert a JWK key to PKIX in ASN1 DER format
  */
 export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   if (jwk.n == null || jwk.e == null) {
@@ -157,7 +169,7 @@ const SALT_LENGTH = 16
 const KEY_SIZE = 32
 const ITERATIONS = 10000
 
-export async function exportToPem (privateKey: RsaPrivateKey, password: string): Promise<string> {
+export async function exportToPem (privateKey: RSAPrivateKey, password: string): Promise<string> {
   const crypto = webcrypto.get()
 
   // PrivateKeyInfo
@@ -179,7 +191,7 @@ export async function exportToPem (privateKey: RsaPrivateKey, password: string):
 
       // PrivateKey
       new asn1js.OctetString({
-        valueHex: privateKey.marshal()
+        valueHex: privateKey.raw
       })
     ]
   })
@@ -281,7 +293,7 @@ export async function exportToPem (privateKey: RsaPrivateKey, password: string):
   ].join('\n')
 }
 
-export async function importFromPem (pem: string, password: string): Promise<RsaPrivateKey> {
+export async function importFromPem (pem: string, password: string): Promise<RSAPrivateKey> {
   const crypto = webcrypto.get()
   let plaintext: Uint8Array
 
@@ -339,7 +351,7 @@ export async function importFromPem (pem: string, password: string): Promise<Rsa
     throw new InvalidParametersError('Could not parse private key from PEM data')
   }
 
-  return unmarshalRsaPrivateKey(plaintext)
+  return pkcs1ToRSAPrivateKey(plaintext)
 }
 
 function findEncryptedPEMData (root: any): { cipherText: Uint8Array, iv: Uint8Array, salt: Uint8Array, iterations: number, keySize: number } {
@@ -405,4 +417,79 @@ function findPEMData (seq: any): Uint8Array {
 
 function toUint8Array (buf: ArrayBuffer): Uint8Array {
   return new Uint8Array(buf, 0, buf.byteLength)
+}
+
+/**
+ * Exports the key as libp2p-key - a aes-gcm encrypted value with the key
+ * derived from the password.
+ *
+ * To export it as a password protected PEM file, please use the `exportPEM`
+ * function from `@libp2p/rsa`.
+ */
+export async function exportRSAPrivateKey (key: RSAPrivateKey, password: string, format: ExportFormat = 'pkcs-8'): Promise<Multibase<'m'>> {
+  if (format === 'pkcs-8') {
+    return exportToPem(key, password)
+  } else if (format === 'libp2p-key') {
+    return exporter(privateKeyToProtobuf(key), password)
+  } else {
+    throw new InvalidParametersError('Export format is not supported')
+  }
+}
+
+/**
+ * Turn PCKS#1 DER bytes to a PrivateKey
+ */
+export async function pkcs1ToRSAPrivateKey (bytes: Uint8Array): Promise<RSAPrivateKey> {
+  const jwk = pkcs1ToJwk(bytes)
+
+  return jwkToRSAPrivateKey(jwk)
+}
+
+/**
+ * Turn PKIX bytes to a PublicKey
+ */
+export function pkixToRSAPublicKey (bytes: Uint8Array): RSAPublicKey {
+  const jwk = pkixToJwk(bytes)
+
+  if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
+    throw new InvalidPublicKeyError('Key size is too large')
+  }
+
+  const hash = sha256(pb.PublicKey.encode({
+    Type: pb.KeyType.RSA,
+    Data: bytes
+  }))
+  const digest = create(SHA2_256_CODE, hash)
+
+  return new RSAPublicKeyClass(jwk, digest)
+}
+
+export async function jwkToRSAPrivateKey (jwk: JsonWebKey): Promise<RSAPrivateKey> {
+  if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
+    throw new InvalidParametersError('Key size is too large')
+  }
+
+  const keys = await jwkToJWKKeyPair(jwk)
+  const hash = sha256(pb.PublicKey.encode({
+    Type: pb.KeyType.RSA,
+    Data: jwkToPkix(keys.publicKey)
+  }))
+  const digest = create(SHA2_256_CODE, hash)
+
+  return new RSAPrivateKeyClass(keys.privateKey, new RSAPublicKeyClass(keys.publicKey, digest))
+}
+
+export async function generateRSAKeyPair (bits: number): Promise<RSAPrivateKey> {
+  if (bits > MAX_RSA_KEY_SIZE) {
+    throw new InvalidParametersError('Key size is too large')
+  }
+
+  const keys = await generateRSAKey(bits)
+  const hash = sha256(pb.PublicKey.encode({
+    Type: pb.KeyType.RSA,
+    Data: jwkToPkix(keys.publicKey)
+  }))
+  const digest = create(SHA2_256_CODE, hash)
+
+  return new RSAPrivateKeyClass(keys.privateKey, new RSAPublicKeyClass(keys.publicKey, digest))
 }

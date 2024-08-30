@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { connectionPair, mockRegistrar, mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
@@ -26,7 +27,7 @@ describe('streams', () => {
 
   it('should track bytes sent over connections', async () => {
     const deferred = defer()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const { outbound, inbound } = mockMultiaddrConnPair({
       addrs: [
@@ -63,7 +64,7 @@ describe('streams', () => {
 
   it('should track bytes received over connections', async () => {
     const deferred = defer()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const { outbound, inbound } = mockMultiaddrConnPair({
       addrs: [
@@ -101,11 +102,11 @@ describe('streams', () => {
   it('should track sent stream metrics', async () => {
     const protocol = '/my-protocol-send/1.0.0'
     const peerA = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       registrar: mockRegistrar()
     }
     const peerB = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       registrar: mockRegistrar()
     }
     await peerB.registrar.handle(protocol, ({ stream }) => {
@@ -136,7 +137,7 @@ describe('streams', () => {
     const deferred = defer()
     const protocol = '/my-protocol-receive/1.0.0'
     const peerA = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       registrar: mockRegistrar()
     }
     await peerA.registrar.handle(protocol, ({ stream, connection }) => {
@@ -149,7 +150,7 @@ describe('streams', () => {
       })
     })
     const peerB = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       registrar: mockRegistrar()
     }
 

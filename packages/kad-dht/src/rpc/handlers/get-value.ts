@@ -1,3 +1,4 @@
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import {
@@ -64,7 +65,7 @@ export class GetValueHandler implements DHTMessageHandler {
           throw new NotFoundError('No public key found in key book')
         }
 
-        pubKey = peer.id.publicKey
+        pubKey = publicKeyToProtobuf(peer.id.publicKey)
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -91,7 +92,7 @@ export class GetValueHandler implements DHTMessageHandler {
     if (closer.length > 0) {
       this.log('had %s closer peers in routing table', closer.length)
       response.closer = closer.map(peerInfo => ({
-        id: peerInfo.id.toBytes(),
+        id: peerInfo.id.toMultihash().bytes,
         multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
       }))
     }

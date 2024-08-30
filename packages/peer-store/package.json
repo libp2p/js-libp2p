@@ -62,7 +62,6 @@
     "@libp2p/interface": "^1.7.0",
     "@libp2p/peer-collections": "^5.2.9",
     "@libp2p/peer-id": "^4.2.4",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/peer-record": "^7.0.25",
     "@multiformats/multiaddr": "^12.2.3",
     "interface-datastore": "^8.3.0",

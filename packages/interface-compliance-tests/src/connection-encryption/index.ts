@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
@@ -22,23 +22,19 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     let mitmPeer: PeerId
 
     before(async () => {
-      [
-        crypto,
-        cryptoRemote,
-        localPeer,
-        remotePeer,
-        mitmPeer
-      ] = await Promise.all([
-        common.setup({
-          privateKey: await generateKeyPair('Ed25519')
-        }),
-        common.setup({
-          privateKey: await generateKeyPair('Ed25519')
-        }),
-        await createEd25519PeerId(),
-        await createEd25519PeerId(),
-        await createEd25519PeerId()
-      ])
+      const localKey = await generateKeyPair('Ed25519')
+      localPeer = peerIdFromPrivateKey(localKey)
+      const remoteKey = await generateKeyPair('Ed25519')
+      remotePeer = peerIdFromPrivateKey(remoteKey)
+
+      crypto = await common.setup({
+        privateKey: localKey
+      })
+      cryptoRemote = await common.setup({
+        privateKey: remoteKey
+      })
+
+      mitmPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
 
     after(async () => {
@@ -92,9 +88,9 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       ])
 
       // Inbound should return the initiator (local) peer
-      expect(inboundResult.remotePeer.toBytes()).to.equalBytes(localPeer.toBytes())
+      expect(inboundResult.remotePeer.toString()).to.equal(localPeer.toString())
       // Outbound should return the receiver (remote) peer
-      expect(outboundResult.remotePeer.toBytes()).to.equalBytes(remotePeer.toBytes())
+      expect(outboundResult.remotePeer.toString()).to.equal(remotePeer.toString())
     })
 
     it('inbound connections should verify peer integrity if known', async () => {

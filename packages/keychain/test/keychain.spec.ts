@@ -1,7 +1,8 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { generateKeyPair, importKey } from '@libp2p/crypto/keys'
+import { pbkdf2 } from '@libp2p/crypto'
+import { generateKeyPair, importPrivateKey } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -252,7 +253,6 @@ describe('keychain', () => {
 
   describe('rename', () => {
     it('requires an existing key name', async () => {
-      await ks.renameKey('not-there', renamedRsaKeyName)
       await expect(ks.renameKey('not-there', renamedRsaKeyName)).to.eventually.be.rejected
         .with.property('name', 'NotFoundError')
     })
@@ -362,8 +362,9 @@ describe('keychain', () => {
     })
 
     it('can rotate keychain passphrase', async () => {
-      const key = await generateKeyPair('Ed25519')
+      const key = await generateKeyPair('RSA', 2048)
       await kc.importKey('keyCreatedWithOldPassword', key)
+
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       // Get Key PEM from datastore
@@ -371,12 +372,31 @@ describe('keychain', () => {
       const res = await ds.get(dsname)
       const pem = uint8ArrayToString(res)
 
+      const oldDek = options.pass != null
+        ? pbkdf2(
+          options.pass,
+          options.dek?.salt ?? 'salt',
+          options.dek?.iterationCount ?? 0,
+          options.dek?.keyLength ?? 0,
+          options.dek?.hash ?? 'sha2-256'
+        )
+        : ''
+
+      const newDek = pbkdf2(
+        'newInsecurePassphrase',
+        options.dek?.salt ?? 'salt',
+        options.dek?.iterationCount ?? 0,
+        options.dek?.keyLength ?? 0,
+        options.dek?.hash ?? 'sha2-256'
+      )
+
       // Dek with old password should not work:
-      await expect(importKey(pem, 'keyCreatedWithOldPassword'))
+      await expect(importPrivateKey(pem, oldDek))
         .to.eventually.be.rejected()
+
       // Dek with new password should work:
-      await expect(importKey(pem, 'newInsecurePassphrase'))
-        .to.eventually.have.property('type', 'Ed25519')
+      await expect(importPrivateKey(pem, newDek))
+        .to.eventually.have.property('type', 'RSA')
     }).timeout(10000)
   })
 

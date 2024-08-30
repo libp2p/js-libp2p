@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type Identify, identify } from '@libp2p/identify'
 import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
@@ -43,7 +43,7 @@ describe('dialing (direct, WebSockets)', () => {
   beforeEach(async () => {
     const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: localEvents }),
       connectionGater: mockConnectionGater(),
@@ -298,8 +298,8 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createEd25519PeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`)
     ])).to.eventually.rejected
       .with.property('name', 'InvalidParametersError')
   })
@@ -310,7 +310,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
     ])).to.eventually.rejected
       .with.property('name', 'InvalidParametersError')
@@ -318,7 +318,7 @@ describe('dialing (direct, WebSockets)', () => {
     // Perform dial
     await expect(connectionManager.openConnection([
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`)
     ])).to.eventually.rejected
       .with.property('name', 'InvalidParametersError')
   })

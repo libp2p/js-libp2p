@@ -8,7 +8,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { utils }
 
-export async function generateKey (bits: number): Promise<JWKKeyPair> {
+export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
   const pair = await webcrypto.get().subtle.generateKey(
     {
       name: 'RSASSA-PKCS1-v1_5',
@@ -29,7 +29,7 @@ export async function generateKey (bits: number): Promise<JWKKeyPair> {
 }
 
 // Takes a jwk key
-export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> {
+export async function jwkToJWKKeyPair (key: JsonWebKey): Promise<JWKKeyPair> {
   const privateKey = await webcrypto.get().subtle.importKey(
     'jwk',
     key,
@@ -128,7 +128,7 @@ async function derivePublicFromPrivate (jwKey: JsonWebKey): Promise<CryptoKey> {
   )
 }
 
-export function keySize (jwk: JsonWebKey): number {
+export function rsaKeySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
     throw new InvalidParametersError('invalid key type')
   } else if (jwk.n == null) {

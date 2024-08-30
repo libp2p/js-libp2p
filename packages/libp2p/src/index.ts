@@ -15,7 +15,7 @@
  */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { validateConfig } from './config.js'
 import { Libp2p as Libp2pClass } from './libp2p.js'
 import type { AddressManagerInit } from './address-manager/index.js'
@@ -199,7 +199,7 @@ export async function createLibp2p <T extends ServiceMap = ServiceMap> (options:
 
   const node = new Libp2pClass({
     ...await validateConfig(options),
-    peerId: await createFromPrivKey(options.privateKey)
+    peerId: peerIdFromPrivateKey(options.privateKey)
   })
 
   if (options.start !== false) {

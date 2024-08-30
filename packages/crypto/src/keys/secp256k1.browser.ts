@@ -1,17 +1,8 @@
-import { InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { SigningError, VerificationError } from '../errors.js'
 import { isPromise } from '../util.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const PRIVATE_KEY_BYTE_LENGTH = 32
-
-export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
-
-export function generateKey (): Uint8Array {
-  return secp.utils.randomPrivateKey()
-}
 
 /**
  * Hash and sign message with private key
@@ -50,39 +41,5 @@ export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array
     return secp.verify(sig, p.digest, key)
   } catch (err) {
     throw new VerificationError(String(err))
-  }
-}
-
-export function compressPublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(true)
-  return point
-}
-
-export function decompressPublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(false)
-  return point
-}
-
-export function validatePrivateKey (key: Uint8Array): void {
-  try {
-    secp.getPublicKey(key, true)
-  } catch (err) {
-    throw new InvalidPrivateKeyError(String(err))
-  }
-}
-
-export function validatePublicKey (key: Uint8Array): void {
-  try {
-    secp.ProjectivePoint.fromHex(key)
-  } catch (err) {
-    throw new InvalidPublicKeyError(String(err))
-  }
-}
-
-export function computePublicKey (privateKey: Uint8Array): Uint8Array {
-  try {
-    return secp.getPublicKey(privateKey, true)
-  } catch (err) {
-    throw new InvalidPrivateKeyError(String(err))
   }
 }

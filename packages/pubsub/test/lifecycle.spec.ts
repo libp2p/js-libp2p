@@ -1,6 +1,6 @@
-import { generateKeyPair } from '@libp2p/crypto/src/keys/index.js'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import sinon from 'sinon'
@@ -44,7 +44,7 @@ describe('pubsub base lifecycle', () => {
 
     beforeEach(async () => {
       const privateKey = await generateKeyPair('Ed25519')
-      const peerId = await createFromPrivKey(privateKey)
+      const peerId = peerIdFromPrivateKey(privateKey)
 
       // @ts-expect-error incomplete implementation
       sinonMockRegistrar = {
@@ -110,10 +110,10 @@ describe('pubsub base lifecycle', () => {
     // mount pubsub
     beforeEach(async () => {
       const privateKeyA = await generateKeyPair('Ed25519')
-      const peerIdA = await createFromPrivKey(privateKeyA)
+      peerIdA = peerIdFromPrivateKey(privateKeyA)
 
       const privateKeyB = await generateKeyPair('Ed25519')
-      const peerIdB = await createFromPrivKey(privateKeyB)
+      peerIdB = peerIdFromPrivateKey(privateKeyB)
 
       registrarA = new MockRegistrar()
       registrarB = new MockRegistrar()

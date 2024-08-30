@@ -1,10 +1,8 @@
-import { keys } from '@libp2p/crypto'
-import { peerIdFromKeys } from '@libp2p/peer-id'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toRpcMessage } from './utils.js'
-import type { PeerId, PrivateKey, PubSubRPCMessage, SignedMessage } from '@libp2p/interface'
+import type { PeerId, PrivateKey, PubSubRPCMessage, PublicKey, SignedMessage } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
@@ -18,7 +16,7 @@ export async function signMessage (privateKey: PrivateKey, message: { from: Peer
     topic: message.topic,
     data: message.data,
     sequenceNumber: message.sequenceNumber,
-    from: await createFromPrivKey(privateKey)
+    from: peerIdFromPrivateKey(privateKey)
   }
 
   // Get the message in bytes, and prepend with the pubsub prefix
@@ -28,7 +26,7 @@ export async function signMessage (privateKey: PrivateKey, message: { from: Peer
   ])
 
   outputMessage.signature = await privateKey.sign(bytes)
-  outputMessage.key = privateKey.public.marshal()
+  outputMessage.key = privateKey.publicKey
 
   return outputMessage
 }
@@ -60,8 +58,7 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
   ])
 
   // Get the public key
-  const pubKeyBytes = await messagePublicKey(message)
-  const pubKey = keys.unmarshalPublicKey(pubKeyBytes)
+  const pubKey = messagePublicKey(message)
 
   // verify the base message
   return pubKey.verify(bytes, message.signature)
@@ -71,7 +68,7 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
  * Returns the PublicKey associated with the given message.
  * If no valid PublicKey can be retrieved an error will be returned.
  */
-export async function messagePublicKey (message: SignedMessage): Promise<Uint8Array> {
+export function messagePublicKey (message: SignedMessage): PublicKey {
   if (message.type !== 'signed') {
     throw new Error('Message type must be "signed" to have a public key')
   }
@@ -82,11 +79,7 @@ export async function messagePublicKey (message: SignedMessage): Promise<Uint8Ar
   }
 
   if (message.key != null) {
-    const keyPeerId = await peerIdFromKeys(message.key)
-
-    if (keyPeerId.publicKey != null) {
-      return keyPeerId.publicKey
-    }
+    return message.key
   }
 
   if (message.from.publicKey != null) {

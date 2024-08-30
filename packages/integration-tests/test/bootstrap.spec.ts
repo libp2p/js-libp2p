@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
 import { bootstrap } from '@libp2p/bootstrap'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
 import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as Filter from '@libp2p/websockets/filters'
@@ -31,9 +32,9 @@ describe('bootstrap', () => {
 
   beforeEach(async () => {
     [remotePeerId1, remotePeerId2] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
   })
 

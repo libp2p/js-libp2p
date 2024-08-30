@@ -3,11 +3,11 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { identify } from '@libp2p/identify'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -110,7 +110,7 @@ describe('dialing (resolvable addresses)', () => {
   })
 
   it('resolves dnsaddr to ws local address', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     // ensure remote libp2p creates reservation on relay
     await remoteLibp2p.peerStore.merge(peerId, {
       protocols: [RELAY_V2_HOP_CODEC]

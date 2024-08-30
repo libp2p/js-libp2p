@@ -92,7 +92,6 @@
     "@libp2p/multistream-select": "^5.1.17",
     "@libp2p/peer-collections": "^5.2.9",
     "@libp2p/peer-id": "^4.2.4",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/peer-store": "^10.1.5",
     "@libp2p/utils": "^5.4.9",
     "@multiformats/dns": "^1.0.6",

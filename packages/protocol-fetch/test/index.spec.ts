@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
@@ -75,7 +76,7 @@ describe('fetch', () => {
 
   describe('outgoing', () => {
     it('should be able to fetch from another peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
       const value = Uint8Array.from([0, 1, 2, 3, 4])
 
@@ -99,7 +100,7 @@ describe('fetch', () => {
     })
 
     it('should be handle NOT_FOUND from the other peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {
@@ -121,7 +122,7 @@ describe('fetch', () => {
     })
 
     it('should be handle ERROR from the other peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {
@@ -144,7 +145,7 @@ describe('fetch', () => {
     })
 
     it('should time out fetching from another peer when waiting for the record', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {

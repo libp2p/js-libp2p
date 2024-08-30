@@ -11,7 +11,7 @@ const keypair = promisify(crypto.generateKeyPair)
 
 export { utils }
 
-export async function generateKey (bits: number): Promise<JWKKeyPair> {
+export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
   // @ts-expect-error node types are missing jwk as a format
   const key = await keypair('rsa', {
     modulusLength: bits,
@@ -27,8 +27,10 @@ export async function generateKey (bits: number): Promise<JWKKeyPair> {
   }
 }
 
-// Takes a jwk key
-export async function unmarshalPrivateKey (key: JsonWebKey): Promise<JWKKeyPair> {
+/**
+ * Takes a jwk key and returns a JWK KeyPair
+ */
+export async function jwkToJWKKeyPair (key: JsonWebKey): Promise<JWKKeyPair> {
   if (key == null) {
     throw new InvalidParametersError('Missing key parameter')
   }
@@ -74,7 +76,7 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
   return hash.verify({ format: 'jwk', key }, sig)
 }
 
-export function keySize (jwk: JsonWebKey): number {
+export function rsaKeySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
     throw new InvalidParametersError('Invalid key type')
   } else if (jwk.n == null) {

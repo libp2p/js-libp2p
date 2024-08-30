@@ -1,13 +1,15 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { generateKeyPair, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as validator from '../../src/record/validators.js'
 import * as fixture from '../fixtures/record/go-key-records.js'
 import type { Validators } from '../../src/index.js'
+import type { RSAPrivateKey } from '@libp2p/interface'
 
 interface Cases {
   valid: {
@@ -41,13 +43,13 @@ const generateCases = (hash: Uint8Array): Cases => {
 }
 
 describe('validator', () => {
-  let key: any
+  let key: RSAPrivateKey
   let hash: Uint8Array
   let cases: Cases
 
   before(async () => {
     key = await generateKeyPair('RSA', 1024)
-    hash = await key.public.hash()
+    hash = key.publicKey.toMultihash().bytes
     cases = generateCases(hash)
   })
 
@@ -94,7 +96,7 @@ describe('validator', () => {
 
       it('does not error on valid record', async () => {
         return Promise.all(cases.valid.publicKey.map(async (k) => {
-          await validator.validators.pk(k, key.public.bytes)
+          await validator.validators.pk(k, publicKeyToProtobuf(key.publicKey))
         }))
       })
 
@@ -102,7 +104,7 @@ describe('validator', () => {
         return Promise.all(cases.invalid.publicKey.map(async data => {
           try {
             //
-            await validator.validators.pk(data, key.public.bytes)
+            await validator.validators.pk(data, publicKeyToProtobuf(key.publicKey))
           } catch (err: any) {
             expect(err).to.have.property('name', 'InvalidParametersError')
             return
@@ -115,11 +117,13 @@ describe('validator', () => {
 
   describe('go interop', () => {
     it('record with key from from go', async () => {
-      const pubKey = unmarshalPublicKey(fixture.publicKey)
+      const pubKey = publicKeyFromProtobuf(fixture.publicKey)
+      const k = uint8ArrayConcat([
+        uint8ArrayFromString('/pk/'),
+        pubKey.toMultihash().bytes
+      ])
 
-      const hash = await pubKey.hash()
-      const k = Uint8Array.of(...uint8ArrayFromString('/pk/'), ...hash)
-      await validator.validators.pk(k, pubKey.bytes)
+      await validator.validators.pk(k, fixture.publicKey)
     })
   })
 })

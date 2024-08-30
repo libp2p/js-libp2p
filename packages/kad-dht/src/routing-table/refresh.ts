@@ -1,7 +1,8 @@
 import { randomBytes } from '@libp2p/crypto'
 import { setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import length from 'it-length'
+import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.js'
@@ -140,7 +141,7 @@ export class RoutingTableRefresh {
     const signal = AbortSignal.timeout(this.refreshQueryTimeout)
     setMaxListeners(Infinity, signal)
 
-    const peers = await length(this.peerRouting.getClosestPeers(peerId.toBytes(), {
+    const peers = await length(this.peerRouting.getClosestPeers(peerId.toMultihash().bytes, {
       signal
     }))
 
@@ -172,8 +173,9 @@ export class RoutingTableRefresh {
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
     const key = await this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)
+    const multihash = Digest.decode(key)
 
-    return peerIdFromBytes(key)
+    return peerIdFromMultihash(multihash)
   }
 
   async _makePeerId (localKadId: Uint8Array, randomPrefix: number, targetCommonPrefixLength: number): Promise<Uint8Array> {

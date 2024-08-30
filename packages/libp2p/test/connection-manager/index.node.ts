@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { dns } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -25,8 +26,8 @@ describe('Connection Manager', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
   })
 
@@ -421,7 +422,7 @@ describe('libp2p.connections', () => {
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundEncryptedConnection.called).to.be.true()
-      expect(denyInboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyInboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
     })
 
     it('intercept outbound encrypted', async () => {
@@ -443,7 +444,7 @@ describe('libp2p.connections', () => {
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundEncryptedConnection.called).to.be.true()
-      expect(denyOutboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyOutboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
     })
 
     it('intercept inbound upgraded', async () => {
@@ -471,7 +472,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
-      expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
 
@@ -497,7 +498,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
-      expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].toMultihash().digest').that.equalBytes(remoteLibp2p.peerId.toMultihash().digest)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
   })

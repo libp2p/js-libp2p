@@ -57,7 +57,6 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^5.4.12",
     "@libp2p/logger": "^4.0.20",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@multiformats/multiaddr": "^12.2.3",
     "aegir": "^44.0.1",
     "it-drain": "^3.0.7",

@@ -1,7 +1,7 @@
 import { Duplex as DuplexStream } from 'node:stream'
-import { Ed25519PublicKey, Secp256k1PublicKey, marshalPublicKey, supportedKeys } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidCryptoExchangeError, UnexpectedPeerError } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
@@ -68,20 +68,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   // @ts-expect-error deep chain
   const remotePeerIdPb = libp2pKeySequence.valueBlock.value[0].valueBlock.valueHex
   const marshalledPeerId = new Uint8Array(remotePeerIdPb, 0, remotePeerIdPb.byteLength)
-  const remotePublicKey = PublicKey.decode(marshalledPeerId)
-  const remotePublicKeyData = remotePublicKey.data ?? new Uint8Array(0)
-  let remoteLibp2pPublicKey: Libp2pPublicKey
-
-  if (remotePublicKey.type === KeyType.Ed25519) {
-    remoteLibp2pPublicKey = new Ed25519PublicKey(remotePublicKeyData)
-  } else if (remotePublicKey.type === KeyType.secp256k1) {
-    remoteLibp2pPublicKey = new Secp256k1PublicKey(remotePublicKeyData)
-  } else if (remotePublicKey.type === KeyType.RSA) {
-    remoteLibp2pPublicKey = supportedKeys.rsa.unmarshalRsaPublicKey(remotePublicKeyData)
-  } else {
-    log?.error('unknown or unsupported key type', remotePublicKey.type)
-    throw new InvalidCryptoExchangeError('Unknown or unsupported key type')
-  }
+  const remoteLibp2pPublicKey: Libp2pPublicKey = publicKeyFromProtobuf(marshalledPeerId)
 
   // @ts-expect-error deep chain
   const remoteSignature = libp2pKeySequence.valueBlock.value[1].valueBlock.valueHex
@@ -93,8 +80,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
     throw new InvalidCryptoExchangeError('Could not verify signature')
   }
 
-  const marshalled = marshalPublicKey(remoteLibp2pPublicKey)
-  const remotePeerId = await peerIdFromKeys(marshalled)
+  const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
     log?.error('invalid peer id')
@@ -135,7 +121,7 @@ export async function generateCertificate (privateKey: PrivateKey): Promise<{ ce
           new asn1js.OctetString({
             valueHex: PublicKey.encode({
               type: KeyType[privateKey.type],
-              data: privateKey.public.marshal()
+              data: privateKey.publicKey.raw
             })
           }),
           // signature

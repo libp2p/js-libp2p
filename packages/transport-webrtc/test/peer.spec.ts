@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockRegistrar, mockUpgrader, streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -45,9 +46,9 @@ interface PrivateToPrivateComponents {
 }
 
 async function getComponents (): Promise<PrivateToPrivateComponents> {
-  const relayPeerId = await createEd25519PeerId()
-  const initiatorPeerId = await createEd25519PeerId()
-  const receiverPeerId = await createEd25519PeerId()
+  const relayPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+  const initiatorPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+  const receiverPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   const receiverMultiaddr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${relayPeerId}/p2p-circuit/webrtc/p2p/${receiverPeerId}`)
   const [initiatorToReceiver, receiverToInitiator] = duplexPair<any>()
   const [initiatorStream, receiverStream] = streamPair({

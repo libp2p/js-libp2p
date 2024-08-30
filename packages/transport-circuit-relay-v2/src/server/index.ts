@@ -1,8 +1,9 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
+import * as Digest from 'multiformats/hashes/digest'
 import pDefer from 'p-defer'
 import {
   CIRCUIT_PROTO_CODE,
@@ -314,7 +315,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       }
 
       request.peer.addrs.forEach(multiaddr)
-      dstPeer = peerIdFromBytes(request.peer.id)
+      dstPeer = peerIdFromMultihash(Digest.decode(request.peer.id))
     } catch (err) {
       this.log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
@@ -349,7 +350,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       request: {
         type: StopMessage.Type.CONNECT,
         peer: {
-          id: connection.remotePeer.toBytes(),
+          id: connection.remotePeer.toMultihash().bytes,
           addrs: []
         },
         limit
