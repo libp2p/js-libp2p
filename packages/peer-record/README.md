@@ -47,7 +47,7 @@ const privateKey = await generateKeyPair('Ed25519')
 const peerId = peerIdFromPrivateKey(privateKey)
 
 const record = new PeerRecord({
-  peerId,
+   peerId,
   // ...other data
 })
 
@@ -84,10 +84,11 @@ Create a new Peer Record
 
 ```TypeScript
 import { PeerRecord } from '@libp2p/peer-record'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { multiaddr } from '@multiformats/multiaddr'
 
-const peerId = peerIdFromString('123Koo...')
+const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
 const record = new PeerRecord({
   peerId: peerId,

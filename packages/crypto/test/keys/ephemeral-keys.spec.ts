@@ -3,7 +3,7 @@
 import { expect } from 'aegir/chai'
 import { generateEphemeralKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-elliptic-key.js'
-import type { Curve } from '../../src/keys/ecdh.js'
+import type { Curve } from '../../src/keys/ecdh/index.js'
 
 const curves: Curve[] = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
 const lengths: Record<string, number> = {

@@ -179,10 +179,17 @@ export class URLPeerId implements URLPeerIdInterface {
   readonly multihash: MultihashDigest<0x0>
   readonly publicKey: undefined
   readonly url: string
+  private string?: string
 
   constructor (url: URL) {
     this.url = url.toString()
     this.multihash = identity.digest(uint8ArrayFromString(this.url))
+
+    // mark string cache as non-enumerable
+    Object.defineProperty(this, 'string', {
+      enumerable: false,
+      writable: true
+    })
   }
 
   [inspect] (): string {
@@ -192,7 +199,11 @@ export class URLPeerId implements URLPeerIdInterface {
   readonly [peerIdSymbol] = true
 
   toString (): string {
-    return this.toCID().toString()
+    if (this.string == null) {
+      this.string = base58btc.encode(this.multihash.bytes).slice(1)
+    }
+
+    return this.string
   }
 
   toMultihash (): MultihashDigest<0x0> {

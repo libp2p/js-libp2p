@@ -1,9 +1,9 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import randomBytes from '../random-bytes.js'
-import webcrypto from '../webcrypto.js'
-import * as utils from './rsa-utils.js'
-import type { JWKKeyPair } from './interface.js'
+import randomBytes from '../../random-bytes.js'
+import webcrypto from '../../webcrypto.js'
+import * as utils from './utils.js'
+import type { JWKKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { utils }

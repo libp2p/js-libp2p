@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { InvalidParametersError } from '@libp2p/interface'
-import type { ECDHKey, ECDHKeyPair } from './interface.js'
+import type { ECDHKey, ECDHKeyPair } from '../interface.js'
 
 export type Curve = 'P-256' | 'P-384' | 'P-521'
 

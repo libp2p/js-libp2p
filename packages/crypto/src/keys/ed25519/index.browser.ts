@@ -1,5 +1,5 @@
 import { ed25519 as ed } from '@noble/curves/ed25519'
-import type { Uint8ArrayKeyPair } from './interface.js'
+import type { Uint8ArrayKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const PUBLIC_KEY_BYTE_LENGTH = 32

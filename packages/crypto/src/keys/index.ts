@@ -11,15 +11,15 @@
  */
 
 import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
-import { exportEd25519PrivateKey, generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519-utils.js'
+import { exportEd25519PrivateKey, generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
 import { importer } from './importer.js'
 import * as pb from './keys.js'
-import { importFromPem, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, exportRSAPrivateKey, generateRSAKeyPair } from './rsa-utils.js'
-import { exportSecp256k1PrivateKey, generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1-utils.js'
+import { importFromPem, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, exportRSAPrivateKey, generateRSAKeyPair } from './rsa/utils.js'
+import { exportSecp256k1PrivateKey, generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey } from '@libp2p/interface'
 import type { Multibase, MultihashDigest } from 'multiformats'
 
-export { generateEphemeralKeyPair } from './ecdh.js'
+export { generateEphemeralKeyPair } from './ecdh/index.js'
 export { keyStretcher } from './key-stretcher.js'
 
 /**

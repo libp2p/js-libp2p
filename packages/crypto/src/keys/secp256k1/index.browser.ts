@@ -1,7 +1,7 @@
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { SigningError, VerificationError } from '../errors.js'
-import { isPromise } from '../util.js'
+import { SigningError, VerificationError } from '../../errors.js'
+import { isPromise } from '../../util.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**

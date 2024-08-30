@@ -102,10 +102,10 @@
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
     "./dist/src/hmac/index.js": "./dist/src/hmac/index.browser.js",
-    "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh.browser.js",
-    "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519.browser.js",
-    "./dist/src/keys/rsa.js": "./dist/src/keys/rsa.browser.js",
-    "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1.browser.js",
+    "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
+    "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
+    "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
+    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
     "./dist/src/webcrypto.js": "./dist/src/webcrypto.browser.js"
   },
   "sideEffects": false
