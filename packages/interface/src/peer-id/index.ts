@@ -121,7 +121,7 @@ export interface URLPeerId {
   readonly publicKey: undefined
 
   /**
-   * Returns the multihash from `toMultihash()` as a base58btc encoded string
+   * Returns CID from `toCID()` encoded as a base36 string
    */
   toString(): string
 
