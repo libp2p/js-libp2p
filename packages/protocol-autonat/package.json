@@ -62,10 +62,12 @@
     "it-map": "^3.1.0",
     "it-parallel": "^3.0.7",
     "it-pipe": "^3.0.1",
+    "multiformats": "^13.2.2",
     "protons-runtime": "^5.4.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
+    "@libp2p/crypto": "^4.1.9",
     "@libp2p/logger": "^4.0.20",
     "aegir": "^44.0.1",
     "it-all": "^3.0.6",

@@ -59,6 +59,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
+    "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface": "^1.7.0",
     "@libp2p/peer-collections": "^5.2.9",
     "@libp2p/peer-id": "^4.2.4",
@@ -73,7 +74,6 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^4.1.9",
     "@libp2p/logger": "^4.0.20",
     "@types/sinon": "^17.0.3",
     "aegir": "^44.0.1",

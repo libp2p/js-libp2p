@@ -81,6 +81,7 @@
     "progress-events": "^1.0.0"
   },
   "devDependencies": {
+    "@libp2p/crypto": "^4.1.9",
     "aegir": "^44.0.1",
     "sinon-ts": "^2.0.0"
   },
