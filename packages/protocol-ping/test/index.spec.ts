@@ -34,6 +34,7 @@ function echoStream (): StubbedInstance<Stream> {
 
 describe('ping', () => {
   let components: StubbedPingServiceComponents
+  let ping: PingService
 
   beforeEach(async () => {
     components = {
@@ -41,13 +42,13 @@ describe('ping', () => {
       connectionManager: stubInterface<ConnectionManager>(),
       logger: defaultLogger()
     }
+
+    ping = new PingService(components)
+
+    await start(ping)
   })
 
   it('should be able to ping another peer', async () => {
-    const ping = new PingService(components)
-
-    await start(ping)
-
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
@@ -62,10 +63,6 @@ describe('ping', () => {
 
   it('should time out pinging another peer when waiting for a pong', async () => {
     const timeout = 10
-    const ping = new PingService(components)
-
-    await start(ping)
-
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
@@ -96,18 +93,6 @@ describe('ping', () => {
   })
 
   it('should handle incoming ping', async () => {
-    const ping = new PingService(components)
-
-    await start(ping)
-
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-
-    const connection = stubInterface<Connection>()
-    components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
-
-    const stream = echoStream()
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
-
     const duplex = duplexPair<any>()
     const incomingStream = stubInterface<Stream>(duplex[0])
     const outgoingStream = stubInterface<Stream>(duplex[1])
@@ -128,5 +113,36 @@ describe('ping', () => {
     const output = await b.read()
 
     expect(output).to.equalBytes(input)
+  })
+
+  it('should abort stream if too much ping data received', async () => {
+    const deferred = pDefer<Error>()
+
+    const duplex = duplexPair<any>()
+    const incomingStream = stubInterface<Stream>({
+      ...duplex[0],
+      abort: (err) => {
+        deferred.resolve(err)
+      }
+    })
+    const outgoingStream = stubInterface<Stream>(duplex[1])
+
+    const handler = components.registrar.handle.getCall(0).args[1]
+
+    // handle incoming ping stream
+    handler({
+      stream: incomingStream,
+      connection: stubInterface<Connection>()
+    })
+
+    const input = new Uint8Array(100)
+    const b = byteStream(outgoingStream)
+
+    void b.read(100)
+    void b.write(input)
+
+    const err = await deferred.promise
+
+    expect(err).to.have.property('code', 'ERR_INVALID_MESSAGE')
   })
 })

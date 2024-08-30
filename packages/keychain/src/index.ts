@@ -150,8 +150,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.removeKey('keyTest')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.removeKey('keyTest')
    * ```
    */
   removeKey(name: string): Promise<KeyInfo>
@@ -163,8 +163,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewNtest')
    * ```
    */
   renameKey(oldName: string, newName: string): Promise<KeyInfo>
@@ -186,7 +186,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.rotateKeychainPass('oldPassword', 'newPassword')
+   * await libp2p.services.keychain.rotateKeychainPass('oldPassword', 'newPassword')
    * ```
    */
   rotateKeychainPass(oldPass: string, newPass: string): Promise<void>

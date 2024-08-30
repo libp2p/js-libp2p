@@ -3,7 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -11,6 +11,7 @@ import { plaintext } from '../src/index.js'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 describe('plaintext', () => {
+  let localPeer: PeerId
   let remotePeer: PeerId
   let wrongPeer: PeerId
   let encrypter: ConnectionEncrypter
@@ -22,8 +23,11 @@ describe('plaintext', () => {
       peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
 
+    const localKeyPair = await generateKeyPair('Ed25519')
+    localPeer = peerIdFromPrivateKey(localKeyPair)
+
     encrypter = plaintext()({
-      privateKey: await generateKeyPair('Ed25519'),
+      privateKey: localKeyPair,
       logger: defaultLogger()
     })
     encrypterRemote = plaintext()({
@@ -46,11 +50,40 @@ describe('plaintext', () => {
     })
 
     await Promise.all([
-      encrypterRemote.secureInbound(inbound),
-      encrypter.secureOutbound(outbound, wrongPeer)
+      encrypter.secureInbound(inbound),
+      encrypterRemote.secureOutbound(outbound, {
+        remotePeer: wrongPeer
+      })
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
       expect(err).to.have.property('name', 'UnexpectedPeerError')
     })
+  })
+
+  it('should fail if the peer does not provide its public key', async () => {
+    const keyPair = await generateKeyPair('RSA', 512)
+    const peer = peerIdFromPrivateKey(keyPair)
+    remotePeer = peerIdFromMultihash(peer.toMultihash())
+
+    encrypter = plaintext()({
+      privateKey: keyPair,
+      logger: defaultLogger()
+    })
+
+    const { inbound, outbound } = mockMultiaddrConnPair({
+      remotePeer,
+      addrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/1234'),
+        multiaddr('/ip4/127.0.0.1/tcp/1235')
+      ]
+    })
+
+    await expect(Promise.all([
+      encrypter.secureInbound(inbound),
+      encrypterRemote.secureOutbound(outbound, {
+        remotePeer: localPeer
+      })
+    ]))
+      .to.eventually.be.rejected.with.property('name', 'InvalidCryptoExchangeError')
   })
 })
