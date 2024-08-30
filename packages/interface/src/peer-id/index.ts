@@ -40,7 +40,7 @@ export interface RSAPeerId {
    * Returns a CID with the libp2p key code and the same multihash as
    * `toMultihash()`
    */
-  toCID(): CID
+  toCID(): CID<Uint8Array, 0x72, 0x12, 1>
 
   /**
    * Returns true if the passed argument is equivalent to this PeerId
@@ -72,7 +72,7 @@ export interface Ed25519PeerId {
    * Returns a CID with the libp2p key code and the same multihash as
    * `toMultihash()`
    */
-  toCID(): CID
+  toCID(): CID<Uint8Array, 0x72, 0x0, 1>
 
   /**
    * Returns true if the passed argument is equivalent to this PeerId
@@ -104,7 +104,7 @@ export interface Secp256k1PeerId {
    * Returns a CID with the libp2p key code and the same multihash as
    * `toMultihash()`
    */
-  toCID(): CID
+  toCID(): CID<Uint8Array, 0x72, 0x0, 1>
 
   /**
    * Returns true if the passed argument is equivalent to this PeerId
@@ -135,7 +135,7 @@ export interface URLPeerId {
    * Returns a CID with the Transport IPFS Gateway HTTP code and the same
    * multihash as `toMultihash()`
    */
-  toCID(): CID
+  toCID(): CID<Uint8Array, 0x0920, 0x0, 1>
 
   /**
    * Returns true if the passed argument is equivalent to this PeerId

@@ -86,16 +86,8 @@ class PeerIdImpl <DigestCode extends number> {
 
   // return self-describing String representation
   // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
-  toCID (): CID<unknown, 0x72, DigestCode, 1> {
+  toCID (): CID<Uint8Array, 0x72, DigestCode, 1> {
     return CID.createV1(LIBP2P_KEY_CODE, this.multihash)
-  }
-
-  /**
-   * Returns the multihash bytes that contain either a identity hash containing
-   * the public key as a protobuf or the sha256 hash of the public key bytes
-   */
-  toBytes (): Uint8Array {
-    return this.multihash.bytes
   }
 
   toJSON (): string {
@@ -210,12 +202,8 @@ export class URLPeerId implements URLPeerIdInterface {
     return this.multihash
   }
 
-  toCID (): CID {
+  toCID (): CID<Uint8Array, 0x0920, 0x0, 1> {
     return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.toMultihash())
-  }
-
-  toBytes (): Uint8Array {
-    return this.toCID().bytes
   }
 
   toJSON (): string {
