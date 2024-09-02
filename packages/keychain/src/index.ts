@@ -92,8 +92,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const pemKey = await libp2p.services.keychain.exportKey('keyTest', 'password123')
    * ```
    */
   exportKey(name: string, password: string): Promise<Multibase<'m'>>
@@ -104,9 +104,9 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
-   * const keyInfo = await libp2p.keychain.importKey('keyTestImport', pemKey, 'password123')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const pemKey = await libp2p.services.keychain.exportKey('keyTest', 'password123')
+   * const keyInfo = await libp2p.services.keychain.importKey('keyTestImport', pemKey, 'password123')
    * ```
    */
   importKey(name: string, pem: string, password: string): Promise<KeyInfo>
@@ -117,7 +117,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.importPeer('keyTestImport', peerIdFromString('12D3Foo...'))
+   * const keyInfo = await libp2p.services.keychain.importPeer('keyTestImport', peerIdFromString('12D3Foo...'))
    * ```
    */
   importPeer(name: string, peerId: PeerId): Promise<KeyInfo>
@@ -128,7 +128,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const peerId = await libp2p.keychain.exportPeerId('key-name')
+   * const peerId = await libp2p.services.keychain.exportPeerId('key-name')
    * ```
    */
   exportPeerId(name: string): Promise<PeerId>
@@ -139,7 +139,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
    * ```
    */
   createKey(name: string, type: KeyType, size?: number): Promise<KeyInfo>
@@ -150,7 +150,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfos = await libp2p.keychain.listKeys()
+   * const keyInfos = await libp2p.services.keychain.listKeys()
    * ```
    */
   listKeys(): Promise<KeyInfo[]>
@@ -161,8 +161,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.removeKey('keyTest')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.removeKey('keyTest')
    * ```
    */
   removeKey(name: string): Promise<KeyInfo>
@@ -173,8 +173,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewNtest')
    * ```
    */
   renameKey(oldName: string, newName: string): Promise<KeyInfo>
@@ -185,8 +185,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
+   * const keyInfo = await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo2 = await libp2p.services.keychain.findKeyById(keyInfo.id)
    * ```
    */
   findKeyById(id: string): Promise<KeyInfo>
@@ -197,8 +197,8 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo2 = await libp2p.keychain.findKeyByName('keyTest')
+   * const keyInfo = await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo2 = await libp2p.services.keychain.findKeyByName('keyTest')
    * ```
    */
   findKeyByName(name: string): Promise<KeyInfo>
@@ -209,7 +209,7 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.rotateKeychainPass('oldPassword', 'newPassword')
+   * await libp2p.services.keychain.rotateKeychainPass('oldPassword', 'newPassword')
    * ```
    */
   rotateKeychainPass(oldPass: string, newPass: string): Promise<void>

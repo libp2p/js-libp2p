@@ -1,3 +1,4 @@
+import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { byteStream } from 'it-byte-stream'
@@ -6,6 +7,10 @@ import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 const DEFAULT_PING_INTERVAL_MS = 10000
+const PROTOCOL_VERSION = '1.0.0'
+const PROTOCOL_NAME = 'ping'
+const PROTOCOL_PREFIX = 'ipfs'
+const PING_LENGTH = 32
 
 export interface ConnectionMonitorInit {
   /**
@@ -37,6 +42,13 @@ export interface ConnectionMonitorInit {
    * @default true
    */
   abortConnectionOnPingFailure?: boolean
+
+  /**
+   * Override the ping protocol prefix
+   *
+   * @default 'ipfs'
+   */
+  protocolPrefix?: string
 }
 
 export interface ConnectionMonitorComponents {
@@ -46,6 +58,7 @@ export interface ConnectionMonitorComponents {
 }
 
 export class ConnectionMonitor implements Startable {
+  private readonly protocol: string
   private readonly components: ConnectionMonitorComponents
   private readonly log: Logger
   private heartbeatInterval?: ReturnType<typeof setInterval>
@@ -55,6 +68,7 @@ export class ConnectionMonitor implements Startable {
 
   constructor (components: ConnectionMonitorComponents, init: ConnectionMonitorInit = {}) {
     this.components = components
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
 
     this.log = components.logger.forComponent('libp2p:connection-monitor')
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS
@@ -83,7 +97,7 @@ export class ConnectionMonitor implements Startable {
             const signal = this.timeout.getTimeoutSignal({
               signal: this.abortController?.signal
             })
-            const stream = await conn.newStream('/ipfs/ping/1.0.0', {
+            const stream = await conn.newStream(this.protocol, {
               signal,
               runOnTransientConnection: true
             })
@@ -91,10 +105,10 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(new Uint8Array(1), {
+              bs.write(randomBytes(PING_LENGTH), {
                 signal
               }),
-              bs.read(1, {
+              bs.read(PING_LENGTH, {
                 signal
               })
             ])
