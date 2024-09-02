@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
-import { exportPrivateKey, importPrivateKey, privateKeyToProtobuf } from '@libp2p/crypto/keys'
+import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
 import mergeOptions from 'merge-options'
@@ -10,6 +10,8 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { exportPrivateKey } from './utils/export.js'
+import { importPrivateKey } from './utils/import.js'
 import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.js'
 import type { Logger, PrivateKey } from '@libp2p/interface'
 

@@ -27,23 +27,6 @@ export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
   }
 }
 
-/**
- * Takes a jwk key and returns a JWK KeyPair
- */
-export async function jwkToJWKKeyPair (key: JsonWebKey): Promise<JWKKeyPair> {
-  if (key == null) {
-    throw new InvalidParametersError('Missing key parameter')
-  }
-  return {
-    privateKey: key,
-    publicKey: {
-      kty: key.kty,
-      n: key.n,
-      e: key.e
-    }
-  }
-}
-
 export { randomBytes as getRandomValues }
 
 export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {

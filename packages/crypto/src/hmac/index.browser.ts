@@ -1,4 +1,4 @@
-import webcrypto from '../webcrypto.js'
+import webcrypto from '../webcrypto/index.js'
 import lengths from './lengths.js'
 
 const hashTypes = {

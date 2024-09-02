@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-import { WebCryptoMissingError } from './errors.js'
+import { WebCryptoMissingError } from '../errors.js'
 
 // Check native crypto exists and is enabled (In insecure context `self.crypto`
 // exists but `self.crypto.subtle` does not).

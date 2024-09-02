@@ -25,7 +25,7 @@ describe('libp2p-crypto', function () {
   })
 
   it('marshalPrivateKey and unmarshalPrivateKey', async () => {
-    const key2 = await privateKeyFromProtobuf(privateKeyToProtobuf(key))
+    const key2 = privateKeyFromProtobuf(privateKeyToProtobuf(key))
 
     expect(key2).to.have.property('type', 'RSA')
     expect(key2.equals(key)).to.be.true()
@@ -62,7 +62,7 @@ describe('libp2p-crypto', function () {
         return
       }
 
-      const key = await privateKeyFromProtobuf(fixtures.private.key)
+      const key = privateKeyFromProtobuf(fixtures.private.key)
       expect(fixtures.private.key).to.equalBytes(key.raw)
 
       const hash = fixtures.private.hash
@@ -80,13 +80,13 @@ describe('libp2p-crypto', function () {
     })
 
     it.skip('unmarshal -> marshal, private key', async () => {
-      const key = await privateKeyFromProtobuf(fixtures.private.key)
+      const key = privateKeyFromProtobuf(fixtures.private.key)
       const marshalled = privateKeyToProtobuf(key)
 
       if (isSafari()) {
         // eslint-disable-next-line no-console
         console.warn('Running differnt test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
-        const key2 = await privateKeyFromProtobuf(marshalled)
+        const key2 = privateKeyFromProtobuf(marshalled)
         expect(key2.raw).to.equalBytes(key.raw)
         return
       }

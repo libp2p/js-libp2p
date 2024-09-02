@@ -61,6 +61,8 @@
   "dependencies": {
     "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface": "^1.7.0",
+    "@noble/hashes": "^1.5.0",
+    "asn1js": "^3.0.5",
     "interface-datastore": "^8.2.11",
     "merge-options": "^3.0.4",
     "multiformats": "^13.2.2",

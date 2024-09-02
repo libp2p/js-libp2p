@@ -1,26 +1,11 @@
-import { InvalidParametersError, InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
+import { InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
-import { exporter } from '../exporter.js'
-import { privateKeyToProtobuf } from '../index.js'
 import { Secp256k1PublicKey as Secp256k1PublicKeyClass, Secp256k1PrivateKey as Secp256k1PrivateKeyClass } from './secp256k1.js'
-import type { ExportFormat } from '../index.js'
 import type { Secp256k1PublicKey, Secp256k1PrivateKey } from '@libp2p/interface'
-import type { Multibase } from 'multiformats'
 
 const PRIVATE_KEY_BYTE_LENGTH = 32
 
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
-
-/**
- * Exports the key into a password protected `format`
- */
-export async function exportSecp256k1PrivateKey (key: Secp256k1PrivateKey, password: string, format: ExportFormat = 'libp2p-key'): Promise<Multibase<'m'>> {
-  if (format === 'libp2p-key') {
-    return exporter(privateKeyToProtobuf(key), password)
-  } else {
-    throw new InvalidParametersError('Export format is not supported')
-  }
-}
 
 export function unmarshalSecp256k1PrivateKey (bytes: Uint8Array): Secp256k1PrivateKey {
   return new Secp256k1PrivateKeyClass(bytes)

@@ -123,7 +123,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.key != null) {
     const keyFile = fs.readFileSync(options.key)
-    privateKey = await privateKeyFromProtobuf(keyFile)
+    privateKey = privateKeyFromProtobuf(keyFile)
   }
 
   const opts: Libp2pOptions<ServiceMap> = {

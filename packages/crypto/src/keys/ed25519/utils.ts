@@ -1,22 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { exporter } from '../exporter.js'
-import { privateKeyToProtobuf } from '../index.js'
 import { Ed25519PublicKey as Ed25519PublicKeyClass, Ed25519PrivateKey as Ed25519PrivateKeyClass } from './ed25519.js'
 import * as crypto from './index.js'
-import type { ExportFormat } from '../index.js'
 import type { Ed25519PublicKey, Ed25519PrivateKey } from '@libp2p/interface'
-import type { Multibase } from 'multiformats'
-
-/**
- * Exports the key into a password protected `format`
- */
-export async function exportEd25519PrivateKey (key: Ed25519PrivateKey, password: string, format: ExportFormat = 'libp2p-key'): Promise<Multibase<'m'>> {
-  if (format === 'libp2p-key') {
-    return exporter(privateKeyToProtobuf(key), password)
-  } else {
-    throw new InvalidParametersError(`export format '${format}' is not supported`)
-  }
-}
 
 export function unmarshalEd25519PrivateKey (bytes: Uint8Array): Ed25519PrivateKey {
   // Try the old, redundant public key version

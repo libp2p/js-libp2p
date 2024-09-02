@@ -4,7 +4,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
-import { generateKeyPair, generateKeyPairFromSeed, exportPrivateKey, importPrivateKey, privateKeyFromProtobuf, publicKeyFromProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Ed25519PrivateKey } from '@libp2p/interface'
@@ -92,42 +92,8 @@ describe('ed25519', function () {
   })
 
   it('publicKey toString', async () => {
-    const key = await privateKeyFromProtobuf(fixtures.verify.privateKey)
+    const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
     expect(key.publicKey.toString()).to.eql('12D3KooWLqLxEfJ9nDdEe8Kh8PFvNPQRYDQBwyL7CMM7HhVd5LsX')
-  })
-
-  it('should export a password encrypted libp2p-key', async () => {
-    const key = await generateKeyPair('Ed25519')
-    const encryptedKey = await exportPrivateKey(key, 'my secret')
-
-    // Import the key
-    const importedKey = await importPrivateKey(encryptedKey, 'my secret')
-
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should export a libp2p-key with no password to encrypt', async () => {
-    const key = await generateKeyPair('Ed25519')
-    const encryptedKey = await exportPrivateKey(key, '')
-
-    // Import the key
-    const importedKey = await importPrivateKey(encryptedKey, '')
-
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should fail to import libp2p-key with wrong password', async () => {
-    const key = await generateKeyPair('Ed25519')
-    const encryptedKey = await exportPrivateKey(key, 'my secret', 'libp2p-key')
-
-    try {
-      await importPrivateKey(encryptedKey, 'not my secret')
-    } catch (err) {
-      expect(err).to.exist()
-      return
-    }
-
-    expect.fail('should have thrown')
   })
 
   describe('key equals', () => {
@@ -170,10 +136,17 @@ describe('ed25519', function () {
     expect(valid).to.be.be.false()
   })
 
-  describe('throws error instead of crashing', () => {
+  it('throws error instead of crashing', () => {
     const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
     testGarbage('key.verify', key.verify.bind(key), 2)
     testGarbage('unmarshalPrivateKey', privateKeyFromProtobuf)
+  })
+
+  it('imports from raw', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const imported = privateKeyFromRaw(key.raw)
+
+    expect(key.equals(imported)).to.be.true()
   })
 
   describe('go interop', () => {
@@ -185,7 +158,7 @@ describe('ed25519', function () {
     })
 
     it('does not include the redundant public key when marshalling privatekey', async () => {
-      const key = await privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
+      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
       const bytes = key.raw
       expect(bytes.length).to.equal(64)
       expect(bytes.subarray(32)).to.eql(key.publicKey.raw)
@@ -198,13 +171,13 @@ describe('ed25519', function () {
     })
 
     it('generates the same signature as go', async () => {
-      const key = await privateKeyFromProtobuf(fixtures.verify.privateKey)
+      const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
       const sig = await key.sign(fixtures.verify.data)
       expect(sig).to.eql(fixtures.verify.signature)
     })
 
     it('generates the same signature as go with redundant public key', async () => {
-      const key = await privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
+      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
       const sig = await key.sign(fixtures.redundantPubKey.data)
       expect(sig).to.eql(fixtures.redundantPubKey.signature)
     })

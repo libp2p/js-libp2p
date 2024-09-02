@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { exportPrivateKey, generateKeyPair, importPrivateKey, privateKeyToProtobuf, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyToProtobuf } from '../../src/keys/index.js'
 import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
 import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
 import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
@@ -69,20 +69,11 @@ describe('secp256k1 keys', () => {
     expect(key.publicKey.toString()).to.equal('16Uiu2HAm5vpzEwJ41kQmnwDu9moFusdc16wV1oCUd1AHLgFgPpKY')
   })
 
-  it('should export a password encrypted libp2p-key', async () => {
+  it('imports from raw', async () => {
     const key = await generateKeyPair('secp256k1')
-    const encryptedKey = await exportPrivateKey(key, 'my secret')
-    // Import the key
-    const importedKey = await importPrivateKey(encryptedKey, 'my secret')
+    const imported = privateKeyFromRaw(key.raw)
 
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should fail to import libp2p-key with wrong password', async () => {
-    const key = await generateKeyPair('secp256k1')
-    const encryptedKey = await exportPrivateKey(key, 'my secret', 'libp2p-key')
-
-    await expect(importPrivateKey(encryptedKey, 'not my secret')).to.eventually.be.rejected()
+    expect(key.equals(imported)).to.be.true()
   })
 
   describe('key equals', () => {

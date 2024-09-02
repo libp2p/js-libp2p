@@ -10,14 +10,13 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
-import { exportEd25519PrivateKey, generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
-import { importer } from './importer.js'
+import { UnsupportedKeyTypeError } from '@libp2p/interface'
+import { generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
 import * as pb from './keys.js'
-import { importFromPem, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, exportRSAPrivateKey, generateRSAKeyPair } from './rsa/utils.js'
-import { exportSecp256k1PrivateKey, generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
+import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair } from './rsa/utils.js'
+import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey } from '@libp2p/interface'
-import type { Multibase, MultihashDigest } from 'multiformats'
+import type { MultihashDigest } from 'multiformats'
 
 export { generateEphemeralKeyPair } from './ecdh/index.js'
 export { keyStretcher } from './key-stretcher.js'
@@ -127,7 +126,7 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export async function privateKeyFromProtobuf (buf: Uint8Array): Promise<Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey> {
+export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey {
   const decoded = pb.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -144,6 +143,21 @@ export async function privateKeyFromProtobuf (buf: Uint8Array): Promise<Ed25519P
 }
 
 /**
+ * Creates a private key from the raw key bytes. For Ed25519 keys this requires
+ * the public key to be appended to the private key otherwise we can't
+ * differentiate between Ed25519 and secp256k1 keys as they are the same length.
+ */
+export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
+  if (buf.byteLength === 64) {
+    return unmarshalEd25519PrivateKey(buf)
+  } else if (buf.byteLength === 32) {
+    return unmarshalSecp256k1PrivateKey(buf)
+  } else {
+    return pkcs1ToRSAPrivateKey(buf)
+  }
+}
+
+/**
  * Converts a private key object into a protobuf serialized private key
  */
 export function privateKeyToProtobuf (key: PrivateKey): Uint8Array {
@@ -151,47 +165,4 @@ export function privateKeyToProtobuf (key: PrivateKey): Uint8Array {
     Type: pb.KeyType[key.type],
     Data: key.raw
   })
-}
-
-/**
- * Converts an exported private key into its representative object.
- *
- * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
- */
-export async function importPrivateKey (encryptedKey: string, password: string): Promise<PrivateKey> {
-  try {
-    const key = await importer(encryptedKey, password)
-    return await privateKeyFromProtobuf(key)
-  } catch {
-    // Ignore and try the old pem decrypt
-  }
-
-  if (!encryptedKey.includes('BEGIN')) {
-    throw new InvalidParametersError('Encrypted key was not a libp2p-key or a PEM file')
-  }
-
-  return importFromPem(encryptedKey, password)
-}
-
-export type ExportFormat = 'pkcs-8' | 'libp2p-key'
-
-/**
- * Converts an exported private key into its representative object.
- *
- * Supported formats are 'pem' (RSA only) and 'libp2p-key'.
- */
-export async function exportPrivateKey (key: PrivateKey, password: string, format?: ExportFormat): Promise<Multibase<'m'>> {
-  if (key.type === 'RSA') {
-    return exportRSAPrivateKey(key, password, format)
-  }
-
-  if (key.type === 'Ed25519') {
-    return exportEd25519PrivateKey(key, password, format)
-  }
-
-  if (key.type === 'secp256k1') {
-    return exportSecp256k1PrivateKey(key, password, format)
-  }
-
-  throw new UnsupportedKeyTypeError()
 }

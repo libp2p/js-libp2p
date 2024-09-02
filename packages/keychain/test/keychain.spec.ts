@@ -2,13 +2,14 @@
 /* eslint-env mocha */
 
 import { pbkdf2 } from '@libp2p/crypto'
-import { generateKeyPair, importPrivateKey } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore/key'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Keychain as KeychainClass } from '../src/keychain.js'
+import { importPrivateKey } from '../src/utils/import.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
 import type { PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
