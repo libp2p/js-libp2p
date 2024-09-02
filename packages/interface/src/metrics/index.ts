@@ -80,19 +80,19 @@ export interface MetricGroup<T extends string = any> {
   /**
    * Update the stored metric group to the passed value
    */
-  update(values: Partial<Record<T, number | unknown>>): void
+  update(values: Partial<Record<T, number>>): void
 
   /**
    * Increment the metric group keys by the passed number or
-   * any non-numeric value to increment by 1
+   * `true` to increment by 1
    */
-  increment(values: Partial<Record<T, number | unknown>>): void
+  increment(values: Partial<Record<T, number | true>>): void
 
   /**
    * Decrement the metric group keys by the passed number or
-   * any non-numeric value to decrement by 1
+   * `true` to decrement by 1
    */
-  decrement(values: Partial<Record<T, number | unknown>>): void
+  decrement(values: Partial<Record<T, number | true>>): void
 
   /**
    * Reset the passed key in this metric group to its default value
@@ -133,7 +133,7 @@ export interface CounterGroup<T extends string = any> {
    * Increment the metric group keys by the passed number or
    * any non-numeric value to increment by 1
    */
-  increment(values: Partial<Record<T, true>>): void
+  increment(values: Partial<Record<T, number | true>>): void
 
   /**
    * Reset the passed key in this metric group to its default value
