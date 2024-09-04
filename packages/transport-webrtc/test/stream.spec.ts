@@ -26,8 +26,12 @@ describe('Max message size', () => {
       }
     })
 
-    // Make sure that the data that ought to be sent will result in a message with exactly MAX_MESSAGE_SIZE
-    const messageLengthEncoded = lengthPrefixed.encode.single(Message.encode({ message: data }))
+    // Make sure that a message with all fields will be exactly MAX_MESSAGE_SIZE
+    const messageLengthEncoded = lengthPrefixed.encode.single(Message.encode({
+      flag: Message.Flag.STOP_SENDING,
+      message: data
+    }))
+
     expect(messageLengthEncoded.length).eq(MAX_MESSAGE_SIZE)
     const webrtcStream = createStream({
       channel,

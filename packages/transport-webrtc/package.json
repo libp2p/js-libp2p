@@ -72,6 +72,7 @@
     "protons-runtime": "^5.4.0",
     "race-signal": "^1.0.2",
     "react-native-webrtc": "^118.0.7",
+    "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
