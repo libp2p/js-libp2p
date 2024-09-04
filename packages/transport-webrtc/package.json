@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "4.1.8",
+  "version": "4.1.9",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc#readme",
@@ -72,6 +72,7 @@
     "protons-runtime": "^5.4.0",
     "race-signal": "^1.0.2",
     "react-native-webrtc": "^118.0.7",
+    "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
