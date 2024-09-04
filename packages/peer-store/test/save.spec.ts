@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerUpdate, type PeerId, type PeerData } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -23,8 +24,8 @@ describe('save', () => {
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-    otherPeerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
       peerId,
@@ -148,7 +149,7 @@ describe('save', () => {
   })
 
   it('should not set public key when key does not match', async () => {
-    const edKey = await createEd25519PeerId()
+    const edKey = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     if (peerId.publicKey == null) {
       throw new Error('Public key was missing')
@@ -186,7 +187,7 @@ describe('save', () => {
       throw new Error('Public key was missing')
     }
 
-    const edKey = await createEd25519PeerId()
+    const edKey = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     await peerStore.save(edKey, {
       publicKey: edKey.publicKey
     })
@@ -194,7 +195,7 @@ describe('save', () => {
     const dbPeerEdKey = PeerPB.decode(spy.getCall(0).args[1])
     expect(dbPeerEdKey).to.not.have.property('publicKey')
 
-    const secpKey = await createSecp256k1PeerId()
+    const secpKey = peerIdFromPrivateKey(await generateKeyPair('secp256k1'))
     await peerStore.save(secpKey, {
       publicKey: secpKey.publicKey
     })
@@ -202,13 +203,14 @@ describe('save', () => {
     const dbPeerSecpKey = PeerPB.decode(spy.getCall(1).args[1])
     expect(dbPeerSecpKey).to.not.have.property('publicKey')
 
-    const rsaKey = await createRSAPeerId()
-    await peerStore.save(rsaKey, {
+    const rsaKey = await generateKeyPair('RSA', 512)
+    const rsaPeer = peerIdFromPrivateKey(rsaKey)
+    await peerStore.save(rsaPeer, {
       publicKey: rsaKey.publicKey
     })
 
     const dbPeerRsaKey = PeerPB.decode(spy.getCall(2).args[1])
-    expect(dbPeerRsaKey).to.have.property('publicKey').that.equalBytes(rsaKey.publicKey)
+    expect(dbPeerRsaKey).to.have.property('publicKey').that.equalBytes(publicKeyToProtobuf(rsaKey.publicKey))
   })
 
   it('saves all of the fields', async () => {

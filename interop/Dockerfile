@@ -7,6 +7,7 @@ WORKDIR /app
 COPY package.json ./
 COPY ./packages ./packages
 COPY ./interop ./interop
+COPY ./patches ./patches
 
 # disable colored output and CLI animation from test runners
 ENV CI=true

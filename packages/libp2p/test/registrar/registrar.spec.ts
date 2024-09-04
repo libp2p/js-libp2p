@@ -1,11 +1,12 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockDuplex, mockMultiaddrConnection, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
@@ -21,7 +22,7 @@ describe('registrar topologies', () => {
   let peerId: PeerId
 
   before(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   let connectionManager: StubbedInstance<ConnectionManager>
@@ -29,7 +30,7 @@ describe('registrar topologies', () => {
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     connectionManager = stubInterface<ConnectionManager>()
     peerStore = stubInterface<PeerStore>()
     events = new TypedEventEmitter<Libp2pEvents>()
@@ -83,7 +84,7 @@ describe('registrar topologies', () => {
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // return connection from connection manager
@@ -138,7 +139,7 @@ describe('registrar topologies', () => {
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // return connection from connection manager
@@ -217,7 +218,7 @@ describe('registrar topologies', () => {
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // connection is limited
@@ -264,7 +265,7 @@ describe('registrar topologies', () => {
     const onConnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // connection is limited
@@ -316,7 +317,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const limitedConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
     limitedConnection.limits = {
       bytes: 100n
@@ -363,7 +364,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // remote peer runs identify a few times
@@ -405,7 +406,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     // peer exists in peer store with the regsitered protocol
     peerStore.get.withArgs(remotePeerId).resolves(stubInterface<Peer>({

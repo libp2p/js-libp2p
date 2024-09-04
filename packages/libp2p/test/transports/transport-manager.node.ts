@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -28,7 +29,7 @@ describe('Transport Manager (TCP)', () => {
   let components: Components
 
   before(async () => {
-    localPeer = await createEd25519PeerId()
+    localPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   beforeEach(async () => {

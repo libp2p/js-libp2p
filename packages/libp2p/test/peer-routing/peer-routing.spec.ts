@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerRoutingSymbol, NotFoundError } from '@libp2p/interface'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -17,7 +18,7 @@ describe('peer-routing', () => {
   let peerId: PeerId
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   describe('no routers', () => {
@@ -39,7 +40,7 @@ describe('peer-routing', () => {
 
     it('.getClosestPeers should return an error', async () => {
       try {
-        for await (const _ of node.peerRouting.getClosestPeers(peerId.toBytes())) { } // eslint-disable-line
+        for await (const _ of node.peerRouting.getClosestPeers(peerId.toMultihash().bytes)) { } // eslint-disable-line
         throw new Error('.getClosestPeers should return an error')
       } catch (err: any) {
         expect(err).to.exist()
@@ -70,7 +71,7 @@ describe('peer-routing', () => {
 
     it('should use the configured service', async () => {
       const peerInfo = {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/4001')
         ]
@@ -87,7 +88,7 @@ describe('peer-routing', () => {
       const deferred = pDefer()
       router.getClosestPeers.callsFake(async function * () {
         yield {
-          id: await createEd25519PeerId(),
+          id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
           multiaddrs: [
             multiaddr('/ip4/123.123.123.123/tcp/49320')
           ]
@@ -108,7 +109,7 @@ describe('peer-routing', () => {
     })
 
     it('should handle error thrown synchronously during find peer', async () => {
-      const unknownPeer = await createEd25519PeerId()
+      const unknownPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       router.findPeer.callsFake(function () {
         throw new Error('Thrown sync')
@@ -120,7 +121,7 @@ describe('peer-routing', () => {
     })
 
     it('should handle error thrown asynchronously during find peer', async () => {
-      const unknownPeer = await createEd25519PeerId()
+      const unknownPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       router.findPeer.callsFake(async function () {
         throw new Error('Thrown async')
@@ -132,7 +133,7 @@ describe('peer-routing', () => {
     })
 
     it('should handle error thrown asynchronously after delay during find peer', async () => {
-      const unknownPeer = await createEd25519PeerId()
+      const unknownPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       router.findPeer.callsFake(async function () {
         await delay(100)
@@ -164,7 +165,7 @@ describe('peer-routing', () => {
     })
 
     it('should use the delegate router to find peers', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       delegate.findPeer.callsFake(async function () {
         return {
@@ -181,7 +182,7 @@ describe('peer-routing', () => {
     })
 
     it('should use the delegate router to get the closest peers', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       delegate.getClosestPeers.callsFake(async function * () {
         yield {
@@ -193,7 +194,7 @@ describe('peer-routing', () => {
       })
 
       expect(delegate.getClosestPeers.called).to.be.false()
-      await drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
+      await drain(node.peerRouting.getClosestPeers(remotePeerId.toMultihash().bytes))
       expect(delegate.getClosestPeers.called).to.be.true()
     })
 
@@ -204,14 +205,14 @@ describe('peer-routing', () => {
     })
 
     it('should handle errors from the delegate when finding closest peers', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       delegate.getClosestPeers.callsFake(async function * () { // eslint-disable-line require-yield
         throw new Error('Could not find closer peers')
       })
 
       expect(delegate.getClosestPeers.called).to.be.false()
-      await expect(drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes())))
+      await expect(drain(node.peerRouting.getClosestPeers(remotePeerId.toMultihash().bytes)))
         .to.eventually.be.rejectedWith('Could not find closer peers')
     })
   })
@@ -242,7 +243,7 @@ describe('peer-routing', () => {
     })
 
     it('should use the delegate if the service fails to find the peer', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const results = {
         id: remotePeerId,
         multiaddrs: [
@@ -263,7 +264,7 @@ describe('peer-routing', () => {
     })
 
     it('should not wait for the service to return if the delegate does first', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const results = {
         id: remotePeerId,
         multiaddrs: [
@@ -288,7 +289,7 @@ describe('peer-routing', () => {
     })
 
     it('should not wait for the delegate to return if the service does first', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const result = {
         id: remotePeerId,
         multiaddrs: [
@@ -313,7 +314,7 @@ describe('peer-routing', () => {
     })
 
     it('should return value when one router errors synchronously and another returns a value', async () => {
-      const peer = await createEd25519PeerId()
+      const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       router.findPeer.callsFake(function () {
         throw new Error('Thrown sync')
@@ -338,7 +339,7 @@ describe('peer-routing', () => {
     })
 
     it('should return value when one router errors asynchronously and another returns a value', async () => {
-      const peer = await createEd25519PeerId()
+      const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       router.findPeer.callsFake(async function () {
         throw new Error('Thrown async')
@@ -363,7 +364,7 @@ describe('peer-routing', () => {
     })
 
     it('should store the addresses of the found peer', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const result = {
         id: remotePeerId,
         multiaddrs: [
@@ -390,7 +391,7 @@ describe('peer-routing', () => {
     })
 
     it('should use the delegate if the service fails to get the closest peer', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const results = [{
         id: remotePeerId,
         multiaddrs: [
@@ -404,14 +405,14 @@ describe('peer-routing', () => {
         yield results[0]
       })
 
-      const closest = await all(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
+      const closest = await all(node.peerRouting.getClosestPeers(remotePeerId.toMultihash().bytes))
 
       expect(closest).to.have.length.above(0)
       expect(closest).to.eql(results)
     })
 
     it('should store the addresses of the closest peer', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const result = {
         id: remotePeerId,
         multiaddrs: [
@@ -427,7 +428,7 @@ describe('peer-routing', () => {
         yield result
       })
 
-      await drain(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
+      await drain(node.peerRouting.getClosestPeers(remotePeerId.toMultihash().bytes))
 
       expect(spy.calledWith(result.id, {
         multiaddrs: result.multiaddrs
@@ -435,7 +436,7 @@ describe('peer-routing', () => {
     })
 
     it('should dedupe closest peers', async () => {
-      const remotePeerId = await createEd25519PeerId()
+      const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const results = [{
         id: remotePeerId,
         multiaddrs: [
@@ -453,7 +454,7 @@ describe('peer-routing', () => {
         yield * results
       })
 
-      const peers = await all(node.peerRouting.getClosestPeers(remotePeerId.toBytes()))
+      const peers = await all(node.peerRouting.getClosestPeers(remotePeerId.toMultihash().bytes))
 
       expect(peers).to.be.an('array').with.a.lengthOf(1).that.deep.equals(results)
     })

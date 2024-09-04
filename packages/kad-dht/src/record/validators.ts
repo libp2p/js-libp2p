@@ -1,5 +1,5 @@
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
-import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Validators } from '../index.js'
@@ -53,11 +53,10 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): 
     throw new InvalidParametersError('key was not prefixed with /pk/')
   }
 
+  const pubKey = publicKeyFromProtobuf(publicKey)
   const keyhash = key.slice(4)
 
-  const publicKeyHash = await sha256.digest(publicKey)
-
-  if (!uint8ArrayEquals(keyhash, publicKeyHash.bytes)) {
+  if (!uint8ArrayEquals(keyhash, pubKey.toMultihash().bytes)) {
     throw new InvalidParametersError('public key does not match passed in key')
   }
 }

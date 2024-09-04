@@ -17,16 +17,18 @@
  *
  * ```TypeScript
  * import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { generateKeyPair } from '@libp2p/crypto/keys'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
  *
- * const peerId = await createEd25519PeerId()
+ * const privateKey = await generateKeyPair('Ed25519')
+ * const peerId = peerIdFromPrivateKey(privateKey)
  *
  * const record = new PeerRecord({
- *   peerId,
+ *    peerId,
  *   // ...other data
  * })
  *
- * const envelope = await RecordEnvelope.seal(record, peerId)
+ * const envelope = await RecordEnvelope.seal(record, privateKey)
  * const wireData = envelope.marshal()
  * ```
  *
@@ -59,10 +61,11 @@
  *
  * ```TypeScript
  * import { PeerRecord } from '@libp2p/peer-record'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  * import { multiaddr } from '@multiformats/multiaddr'
  *
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const record = new PeerRecord({
  *   peerId: peerId,

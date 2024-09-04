@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { LIBP2P_DEVTOOLS_METRICS_KEY, devToolsMetrics } from '../src/index.js'
@@ -28,7 +29,7 @@ describe('devtools-metrics', () => {
     components = {
       logger: defaultLogger(),
       events: new TypedEventEmitter(),
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       transportManager: stubInterface(),
       registrar: stubInterface(),
       connectionManager: stubInterface(),

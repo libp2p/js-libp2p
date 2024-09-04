@@ -121,11 +121,11 @@ export class DefaultPeerRouting implements PeerRouting {
       }
 
       // deduplicate peers
-      if (seen.has(peer.id.toBytes())) {
+      if (seen.has(peer.id.toMultihash().bytes)) {
         continue
       }
 
-      seen.add(peer.id.toBytes())
+      seen.add(peer.id.toMultihash().bytes)
 
       yield peer
     }

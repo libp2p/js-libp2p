@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { dns } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -16,7 +17,6 @@ import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import { ECHO_PROTOCOL, echo } from '../fixtures/echo-service.js'
 import type { Libp2p } from '../../src/index.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
 import type { ConnectionGater, PeerId, PeerStore } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
@@ -26,15 +26,14 @@ describe('Connection Manager', () => {
 
   before(async () => {
     peerIds = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
   })
 
   beforeEach(async () => {
     libp2p = await createNode({
       config: createBaseOptions({
-        peerId: peerIds[0],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/0/ws']
         }
@@ -115,15 +114,7 @@ describe('Connection Manager', () => {
 })
 
 describe('libp2p.connections', () => {
-  let peerIds: PeerId[]
   let libp2p: Libp2p
-
-  before(async () => {
-    peerIds = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
-    ])
-  })
 
   afterEach(async () => {
     if (libp2p != null) {
@@ -134,7 +125,6 @@ describe('libp2p.connections', () => {
   it('libp2p.connections gets the connectionManager conns', async () => {
     libp2p = await createNode({
       config: createBaseOptions({
-        peerId: peerIds[0],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/15003/ws']
         }
@@ -142,7 +132,6 @@ describe('libp2p.connections', () => {
     })
     const remoteLibp2p = await createNode({
       config: createBaseOptions({
-        peerId: peerIds[1],
         addresses: {
           listen: ['/ip4/127.0.0.1/tcp/15004/ws']
         }
@@ -162,7 +151,7 @@ describe('libp2p.connections', () => {
   })
 
   describe('proactive connections', () => {
-    let libp2p: Libp2pNode
+    let libp2p: Libp2p
     let nodes: Libp2p[] = []
 
     beforeEach(async () => {
@@ -197,7 +186,6 @@ describe('libp2p.connections', () => {
     it('should be closed status once immediately stopping', async () => {
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/15003/ws']
           }
@@ -205,7 +193,6 @@ describe('libp2p.connections', () => {
       })
       const remoteLibp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[1],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/15004/ws']
           }
@@ -217,7 +204,7 @@ describe('libp2p.connections', () => {
       })
       await libp2p.dial(remoteLibp2p.peerId)
 
-      const conns = libp2p.components.connectionManager.getConnections()
+      const conns = libp2p.getConnections()
       expect(conns.length).to.eql(1)
       const conn = conns[0]
 
@@ -237,20 +224,18 @@ describe('libp2p.connections', () => {
       })
 
       // connect once, should have one connection
-      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs())
-      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(1)
+      await libp2p.dial(nodes[0].getMultiaddrs())
+      expect(libp2p.getConnections()).to.have.lengthOf(1)
 
       // connect twice, should still only have one connection
-      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs(), {
-        force: false
-      })
-      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(1)
+      await libp2p.dial(nodes[0].getMultiaddrs())
+      expect(libp2p.getConnections()).to.have.lengthOf(1)
 
       // force connection, should have two connections now
-      await libp2p.components.connectionManager.openConnection(nodes[0].getMultiaddrs(), {
+      await libp2p.dial(nodes[0].getMultiaddrs(), {
         force: true
       })
-      expect(libp2p.components.connectionManager.getConnections()).to.have.lengthOf(2)
+      expect(libp2p.getConnections()).to.have.lengthOf(2)
     })
 
     it('should use custom DNS resolver', async () => {
@@ -285,7 +270,6 @@ describe('libp2p.connections', () => {
     beforeEach(async () => {
       remoteLibp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[1],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -311,7 +295,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -333,7 +316,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -357,7 +339,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -385,7 +366,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -407,7 +387,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -429,7 +408,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -444,7 +422,7 @@ describe('libp2p.connections', () => {
       await remoteLibp2p.dial(libp2p.peerId)
 
       expect(denyInboundEncryptedConnection.called).to.be.true()
-      expect(denyInboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyInboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
     })
 
     it('intercept outbound encrypted', async () => {
@@ -452,7 +430,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -467,7 +444,7 @@ describe('libp2p.connections', () => {
       await libp2p.dial(remoteLibp2p.peerId)
 
       expect(denyOutboundEncryptedConnection.called).to.be.true()
-      expect(denyOutboundEncryptedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyOutboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
     })
 
     it('intercept inbound upgraded', async () => {
@@ -475,7 +452,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -496,7 +472,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyInboundUpgradedConnection.called).to.be.true()
-      expect(denyInboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyInboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
 
@@ -505,7 +481,6 @@ describe('libp2p.connections', () => {
 
       libp2p = await createNode({
         config: createBaseOptions({
-          peerId: peerIds[0],
           addresses: {
             listen: ['/ip4/127.0.0.1/tcp/0/ws']
           },
@@ -523,7 +498,7 @@ describe('libp2p.connections', () => {
       const output = await pipe(input, stream, async (source) => all(source))
 
       expect(denyOutboundUpgradedConnection.called).to.be.true()
-      expect(denyOutboundUpgradedConnection.getCall(0)).to.have.nested.property('args[0].multihash.digest').that.equalBytes(remoteLibp2p.peerId.multihash.digest)
+      expect(denyOutboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(remoteLibp2p.peerId.toMultihash().bytes)
       expect(output.map(b => b.subarray())).to.deep.equal(input)
     })
   })

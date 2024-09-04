@@ -2,17 +2,16 @@
 /* eslint-env mocha */
 
 import { pbkdf2 } from '@libp2p/crypto'
-import { unmarshalPrivateKey } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createFromPrivKey } from '@libp2p/peer-id-factory'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore/key'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DefaultKeychain } from '../src/keychain.js'
+import { Keychain as KeychainClass } from '../src/keychain.js'
+import { importPrivateKey } from '../src/utils/import.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 describe('keychain', () => {
@@ -21,13 +20,13 @@ describe('keychain', () => {
   const renamedRsaKeyName = 'ชื่อลับ'
   const logger = defaultLogger()
   let rsaKeyInfo: KeyInfo
-  let ks: DefaultKeychain
+  let ks: Keychain
   let datastore2: Datastore
 
   before(async () => {
     datastore2 = new MemoryDatastore()
 
-    ks = new DefaultKeychain({
+    ks = new KeychainClass({
       datastore: datastore2,
       logger
     }, { pass: passPhrase })
@@ -35,7 +34,7 @@ describe('keychain', () => {
 
   it('can start without a password', async () => {
     await expect(async function () {
-      return new DefaultKeychain({
+      return new KeychainClass({
         datastore: datastore2,
         logger
       }, {})
@@ -44,7 +43,7 @@ describe('keychain', () => {
 
   it('needs a NIST SP 800-132 non-weak pass phrase', async () => {
     await expect(async function () {
-      return new DefaultKeychain({
+      return new KeychainClass({
         datastore: datastore2,
         logger
       }, { pass: '< 20 character' })
@@ -52,11 +51,11 @@ describe('keychain', () => {
   })
 
   it('has default options', () => {
-    expect(DefaultKeychain.options).to.exist()
+    expect(KeychainClass.options).to.exist()
   })
 
   it('supports supported hashing alorithms', async () => {
-    const ok = new DefaultKeychain({
+    const ok = new KeychainClass({
       datastore: datastore2,
       logger
     }, { pass: passPhrase, dek: { hash: 'sha2-256', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })
@@ -65,7 +64,7 @@ describe('keychain', () => {
 
   it('does not support unsupported hashing alorithms', async () => {
     await expect(async function () {
-      return new DefaultKeychain({
+      return new KeychainClass({
         datastore: datastore2,
         logger
       }, { pass: passPhrase, dek: { hash: 'my-hash', salt: 'salt-salt-salt-salt', iterationCount: 1000, keyLength: 14 } })
@@ -73,7 +72,7 @@ describe('keychain', () => {
   })
 
   it('can list keys without a password', async () => {
-    const keychain = new DefaultKeychain({
+    const keychain = new KeychainClass({
       datastore: datastore2,
       logger
     }, {})
@@ -82,52 +81,45 @@ describe('keychain', () => {
   })
 
   it('can find a key without a password', async () => {
-    const keychain = new DefaultKeychain({
+    const keychain = new KeychainClass({
       datastore: datastore2,
       logger
     }, {})
-    const keychainWithPassword = new DefaultKeychain({
+    const keychainWithPassword = new KeychainClass({
       datastore: datastore2,
       logger
     }, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
-    const { id } = await keychainWithPassword.createKey(name, 'Ed25519')
+    const key = await generateKeyPair('Ed25519')
+    await keychainWithPassword.importKey(name, key)
 
-    await expect(keychain.findKeyById(id)).to.eventually.be.ok()
+    await expect(keychain.findKeyByName(name)).to.eventually.be.ok()
   })
 
   it('can remove a key without a password', async () => {
-    const keychainWithoutPassword = new DefaultKeychain({
+    const keychainWithoutPassword = new KeychainClass({
       datastore: datastore2,
       logger
     }, {})
-    const keychainWithPassword = new DefaultKeychain({
+    const keychainWithPassword = new KeychainClass({
       datastore: datastore2,
       logger
     }, { pass: `hello-${Date.now()}-${Date.now()}` })
     const name = `key-${Math.random()}`
 
-    expect(await keychainWithPassword.createKey(name, 'Ed25519')).to.have.property('name', name)
+    const key = await generateKeyPair('Ed25519')
+    await keychainWithPassword.importKey(name, key)
+
     expect(await keychainWithoutPassword.findKeyByName(name)).to.have.property('name', name)
     await keychainWithoutPassword.removeKey(name)
     await expect(keychainWithoutPassword.findKeyByName(name)).to.be.rejectedWith(/does not exist/)
   })
 
-  it('requires a name to create a password', async () => {
-    const keychain = new DefaultKeychain({
-      datastore: datastore2,
-      logger
-    }, {})
-
-    // @ts-expect-error invalid parameters
-    await expect(keychain.createKey(undefined, 'derp')).to.eventually.be.rejected()
-  })
-
   it('can generate options', async () => {
-    const options = DefaultKeychain.generateOptions()
+    const options = KeychainClass.generateOptions()
     options.pass = passPhrase
-    const chain = new DefaultKeychain({
+    const chain = new KeychainClass({
       datastore: datastore2,
       logger
     }, options)
@@ -153,98 +145,52 @@ describe('keychain', () => {
     })
   })
 
-  describe('key', () => {
-    it('can be an RSA key', async () => {
-      rsaKeyInfo = await ks.createKey(rsaKeyName, 'RSA', 2048)
-      expect(rsaKeyInfo).to.exist()
-      expect(rsaKeyInfo).to.have.property('name', rsaKeyName)
-      expect(rsaKeyInfo).to.have.property('id')
-    })
-
-    it('is encrypted PEM encoded PKCS #8', async () => {
-      const pem = await ks.getPrivateKey(rsaKeyName)
-      return expect(pem).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
-    })
-
-    it('throws if an invalid private key name is given', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.getPrivateKey(undefined)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('throws if a private key cant be found', async () => {
-      await expect(ks.getPrivateKey('not real')).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('does not overwrite existing key', async () => {
-      await expect(ks.createKey(rsaKeyName, 'RSA', 2048)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('cannot create the "self" key', async () => {
-      await expect(ks.createKey('self', 'RSA', 2048)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('should validate name is string', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.createKey(5, 'rsa', 2048)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('should validate type is string', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.createKey(`TEST-${Date.now()}`, null, 2048)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('should validate size is integer', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.createKey(`TEST-${Date.now()}`, 'RSA', 'string')).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    describe('implements NIST SP 800-131A', () => {
-      it('disallows RSA length < 2048', async () => {
-        await expect(ks.createKey('bad-nist-rsa', 'RSA', 1024)).to.eventually.be.rejected
-          .with.property('name', 'InvalidParametersError')
-      })
-    })
-  })
-
   describe('Ed25519 keys', () => {
     const keyName = 'my custom key'
+
     it('can be an Ed25519 key', async () => {
-      const keyInfo = await ks.createKey(keyName, 'Ed25519')
+      const key = await generateKeyPair('Ed25519')
+      const keyInfo = await ks.importKey(keyName, key)
+
       expect(keyInfo).to.exist()
       expect(keyInfo).to.have.property('name', keyName)
       expect(keyInfo).to.have.property('id')
     })
 
     it('does not overwrite existing key', async () => {
-      await expect(ks.createKey(keyName, 'Ed25519')).to.eventually.be.rejected
+      const key = await generateKeyPair('Ed25519')
+
+      await expect(ks.importKey(keyName, key)).to.eventually.be.rejected
         .with.property('name', 'InvalidParametersError')
     })
 
     it('can export/import a key', async () => {
       const keyName = 'a new key'
-      const password = 'my sneaky password'
-      const keyInfo = await ks.createKey(keyName, 'Ed25519')
-      const exportedKey = await ks.exportKey(keyName, password)
-      // remove it so we can import it
+      const key = await generateKeyPair('Ed25519')
+      const keyInfo = await ks.importKey(keyName, key)
+      const exportedKey = await ks.exportKey(keyName)
+      // remove it so we can re-import it
       await ks.removeKey(keyName)
-      const importedKey = await ks.importKey(keyName, exportedKey, password)
+      const importedKey = await ks.importKey(keyName, exportedKey)
       expect(importedKey.id).to.eql(keyInfo.id)
     })
 
     it('cannot create the "self" key', async () => {
-      await expect(ks.createKey('self', 'Ed25519')).to.eventually.be.rejected
+      const key = await generateKeyPair('Ed25519')
+
+      await expect(ks.importKey('self', key)).to.eventually.be.rejected
         .with.property('name', 'InvalidParametersError')
     })
   })
 
   describe('query', () => {
+    before(async () => {
+      const key = await generateKeyPair('RSA')
+      await ks.importKey(rsaKeyName, key)
+
+      rsaKeyInfo = await ks.findKeyByName(rsaKeyName)
+    })
+
     it('finds all existing keys', async () => {
       const keys = await ks.listKeys()
       expect(keys).to.exist()
@@ -275,13 +221,7 @@ describe('keychain', () => {
   })
 
   describe('exported key', () => {
-    let pemKey: string
-
-    it('requires the password', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.exportKey(rsaKeyName)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
+    let key: PrivateKey
 
     it('requires the key name', async () => {
       // @ts-expect-error invalid parameters
@@ -290,111 +230,25 @@ describe('keychain', () => {
     })
 
     it('is a PKCS #8 encrypted pem', async () => {
-      pemKey = await ks.exportKey(rsaKeyName, 'password')
-      expect(pemKey).to.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')
+      key = await ks.exportKey(rsaKeyName)
+      expect(key).to.be.ok()
     })
 
     it('can be imported', async () => {
-      const key = await ks.importKey('imported-key', pemKey, 'password')
-      expect(key.name).to.equal('imported-key')
-      expect(key.id).to.equal(rsaKeyInfo.id)
+      const keyInfo = await ks.importKey('imported-key', key)
+      expect(keyInfo.name).to.equal('imported-key')
+      expect(keyInfo.id).to.equal(rsaKeyInfo.id)
     })
 
-    it('requires the pem', async () => {
+    it('requires the key', async () => {
       // @ts-expect-error invalid parameters
-      await expect(ks.importKey('imported-key', undefined, 'password')).to.eventually.be.rejected
+      await expect(ks.importKey('imported-key', undefined)).to.eventually.be.rejected
         .with.property('name', 'InvalidParametersError')
     })
 
     it('cannot be imported as an existing key name', async () => {
-      await expect(ks.importKey(rsaKeyName, pemKey, 'password')).to.eventually.be.rejected
+      await expect(ks.importKey(rsaKeyName, key)).to.eventually.be.rejected
         .with.property('name', 'InvalidParametersError')
-    })
-
-    it('cannot be imported with the wrong password', async () => {
-      await expect(ks.importKey('a-new-name-for-import', pemKey, 'not the password')).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-  })
-
-  describe('peer id', () => {
-    const alicePrivKey = 'CAASpgkwggSiAgEAAoIBAQC2SKo/HMFZeBml1AF3XijzrxrfQXdJzjePBZAbdxqKR1Mc6juRHXij6HXYPjlAk01BhF1S3Ll4Lwi0cAHhggf457sMg55UWyeGKeUv0ucgvCpBwlR5cQ020i0MgzjPWOLWq1rtvSbNcAi2ZEVn6+Q2EcHo3wUvWRtLeKz+DZSZfw2PEDC+DGPJPl7f8g7zl56YymmmzH9liZLNrzg/qidokUv5u1pdGrcpLuPNeTODk0cqKB+OUbuKj9GShYECCEjaybJDl9276oalL9ghBtSeEv20kugatTvYy590wFlJkkvyl+nPxIH0EEYMKK9XRWlu9XYnoSfboiwcv8M3SlsjAgMBAAECggEAZtju/bcKvKFPz0mkHiaJcpycy9STKphorpCT83srBVQi59CdFU6Mj+aL/xt0kCPMVigJw8P3/YCEJ9J+rS8BsoWE+xWUEsJvtXoT7vzPHaAtM3ci1HZd302Mz1+GgS8Epdx+7F5p80XAFLDUnELzOzKftvWGZmWfSeDnslwVONkL/1VAzwKy7Ce6hk4SxRE7l2NE2OklSHOzCGU1f78ZzVYKSnS5Ag9YrGjOAmTOXDbKNKN/qIorAQ1bovzGoCwx3iGIatQKFOxyVCyO1PsJYT7JO+kZbhBWRRE+L7l+ppPER9bdLFxs1t5CrKc078h+wuUr05S1P1JjXk68pk3+kQKBgQDeK8AR11373Mzib6uzpjGzgNRMzdYNuExWjxyxAzz53NAR7zrPHvXvfIqjDScLJ4NcRO2TddhXAfZoOPVH5k4PJHKLBPKuXZpWlookCAyENY7+Pd55S8r+a+MusrMagYNljb5WbVTgN8cgdpim9lbbIFlpN6SZaVjLQL3J8TWH6wKBgQDSChzItkqWX11CNstJ9zJyUE20I7LrpyBJNgG1gtvz3ZMUQCn3PxxHtQzN9n1P0mSSYs+jBKPuoSyYLt1wwe10/lpgL4rkKWU3/m1Myt0tveJ9WcqHh6tzcAbb/fXpUFT/o4SWDimWkPkuCb+8j//2yiXk0a/T2f36zKMuZvujqQKBgC6B7BAQDG2H2B/ijofp12ejJU36nL98gAZyqOfpLJ+FeMz4TlBDQ+phIMhnHXA5UkdDapQ+zA3SrFk+6yGk9Vw4Hf46B+82SvOrSbmnMa+PYqKYIvUzR4gg34rL/7AhwnbEyD5hXq4dHwMNsIDq+l2elPjwm/U9V0gdAl2+r50HAoGALtsKqMvhv8HucAMBPrLikhXP/8um8mMKFMrzfqZ+otxfHzlhI0L08Bo3jQrb0Z7ByNY6M8epOmbCKADsbWcVre/AAY0ZkuSZK/CaOXNX/AhMKmKJh8qAOPRY02LIJRBCpfS4czEdnfUhYV/TYiFNnKRj57PPYZdTzUsxa/yVTmECgYBr7slQEjb5Onn5mZnGDh+72BxLNdgwBkhO0OCdpdISqk0F0Pxby22DFOKXZEpiyI9XYP1C8wPiJsShGm2yEwBPWXnrrZNWczaVuCbXHrZkWQogBDG3HGXNdU4MAWCyiYlyinIBpPpoAJZSzpGLmWbMWh28+RJS6AQX6KHrK1o2uw=='
-    let alice: PeerId
-
-    before(async function () {
-      const encoded = uint8ArrayFromString(alicePrivKey, 'base64pad')
-      const privateKey = await unmarshalPrivateKey(encoded)
-      alice = await createFromPrivKey(privateKey)
-    })
-
-    it('private key can be imported', async () => {
-      const key = await ks.importPeer('alice', alice)
-      expect(key.name).to.equal('alice')
-      expect(key.id).to.equal(alice.toString())
-    })
-
-    it('private key can be exported', async () => {
-      const alice2 = await ks.exportPeerId('alice')
-
-      expect(alice.equals(alice2)).to.be.true()
-      expect(alice2).to.have.property('privateKey').that.is.ok()
-      expect(alice2).to.have.property('publicKey').that.is.ok()
-    })
-
-    it('private key import requires a valid name', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.importPeer(undefined, alice)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('private key import requires the peer', async () => {
-      // @ts-expect-error invalid parameters
-      await expect(ks.importPeer('alice')).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('key id exists', async () => {
-      const key = await ks.findKeyById(alice.toString())
-      expect(key).to.exist()
-      expect(key).to.have.property('name', 'alice')
-      expect(key).to.have.property('id', alice.toString())
-    })
-
-    it('key name exists', async () => {
-      const key = await ks.findKeyByName('alice')
-      expect(key).to.exist()
-      expect(key).to.have.property('name', 'alice')
-      expect(key).to.have.property('id', alice.toString())
-    })
-
-    it('can create Ed25519 peer id', async () => {
-      const name = 'ed-key'
-      await ks.createKey(name, 'Ed25519')
-      const peer = await ks.exportPeerId(name)
-
-      expect(peer).to.have.property('type', 'Ed25519')
-      expect(peer).to.have.property('privateKey').that.is.ok()
-      expect(peer).to.have.property('publicKey').that.is.ok()
-    })
-
-    it('can create RSA peer id', async () => {
-      const name = 'rsa-key'
-      await ks.createKey(name, 'RSA', 2048)
-      const peer = await ks.exportPeerId(name)
-
-      expect(peer).to.have.property('type', 'RSA')
-      expect(peer).to.have.property('privateKey').that.is.ok()
-      expect(peer).to.have.property('publicKey').that.is.ok()
-    })
-
-    it('can create secp256k1 peer id', async () => {
-      const name = 'secp256k1-key'
-      await ks.createKey(name, 'secp256k1')
-      const peer = await ks.exportPeerId(name)
-
-      expect(peer).to.have.property('type', 'secp256k1')
-      expect(peer).to.have.property('privateKey').that.is.ok()
-      expect(peer).to.have.property('publicKey').that.is.ok()
     })
   })
 
@@ -484,7 +338,7 @@ describe('keychain', () => {
           hash: 'sha2-512'
         }
       }
-      kc = new DefaultKeychain({
+      kc = new KeychainClass({
         datastore: ds,
         logger
       }, options)
@@ -509,7 +363,9 @@ describe('keychain', () => {
     })
 
     it('can rotate keychain passphrase', async () => {
-      await kc.createKey('keyCreatedWithOldPassword', 'RSA', 2048)
+      const key = await generateKeyPair('RSA', 2048)
+      await kc.importKey('keyCreatedWithOldPassword', key)
+
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       // Get Key PEM from datastore
@@ -536,17 +392,18 @@ describe('keychain', () => {
       )
 
       // Dek with old password should not work:
-      await expect(kc.importKey('keyWhosePassChanged', pem, oldDek))
+      await expect(importPrivateKey(pem, oldDek))
         .to.eventually.be.rejected()
+
       // Dek with new password should work:
-      await expect(kc.importKey('keyWhosePasswordChanged', pem, newDek))
-        .to.eventually.have.property('name', 'keyWhosePasswordChanged')
+      await expect(importPrivateKey(pem, newDek))
+        .to.eventually.have.property('type', 'RSA')
     }).timeout(10000)
   })
 
   it('needs a passphrase to be used, otherwise throws an error', async () => {
     expect(() => {
-      return new DefaultKeychain({
+      return new KeychainClass({
         datastore: new MemoryDatastore(),
         logger
       }, {
@@ -556,38 +413,40 @@ describe('keychain', () => {
   })
 
   it('can be used when a passphrase is provided', async () => {
-    const keychain = new DefaultKeychain({
+    const keychain = new KeychainClass({
       datastore: new MemoryDatastore(),
       logger
     }, {
       pass: '12345678901234567890'
     })
 
-    const kInfo = await keychain.createKey('keyName', 'Ed25519')
+    const key = await generateKeyPair('Ed25519')
+    const kInfo = await keychain.importKey('keyName', key)
     expect(kInfo).to.exist()
   })
 
   it('can reload keys', async () => {
     const datastore = new MemoryDatastore()
-    const keychain = new DefaultKeychain({
+    const keychain = new KeychainClass({
       datastore,
       logger
     }, {
       pass: '12345678901234567890'
     })
 
-    const kInfo = await keychain.createKey('keyName', 'Ed25519')
+    const key = await generateKeyPair('Ed25519')
+    const kInfo = await keychain.importKey('keyName', key)
     expect(kInfo).to.exist()
 
-    const keychain2 = new DefaultKeychain({
+    const keychain2 = new KeychainClass({
       datastore,
       logger
     }, {
       pass: '12345678901234567890'
     })
 
-    const key = await keychain2.findKeyByName('keyName')
+    const key2 = await keychain2.findKeyByName('keyName')
 
-    expect(key).to.exist()
+    expect(key2).to.exist()
   })
 })

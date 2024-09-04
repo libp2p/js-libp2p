@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, KEEP_ALIVE } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
@@ -13,8 +14,8 @@ import { stubInterface } from 'sinon-ts'
 import { DefaultConnectionManager, type DefaultConnectionManagerComponents } from '../../src/connection-manager/index.js'
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import type { AbortOptions, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
+import { getComponent } from '../fixtures/get-component.js'
+import type { AbortOptions, Connection, ConnectionGater, Libp2p, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
@@ -35,7 +36,7 @@ function defaultComponents (peerId: PeerId): DefaultConnectionManagerComponents 
 }
 
 describe('Connection Manager', () => {
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p
   let connectionManager: DefaultConnectionManager
 
   afterEach(async () => {
@@ -56,7 +57,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const spy = sinon.spy(libp2p.components.connectionManager as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(getComponent(libp2p, 'connectionManager'), 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
@@ -71,7 +72,7 @@ describe('Connection Manager', () => {
       started: false
     })
 
-    const spy = sinon.spy(libp2p.components.connectionManager as DefaultConnectionManager, 'start')
+    const spy = sinon.spy(getComponent(libp2p, 'connectionManager'), 'start')
 
     await libp2p.start()
     expect(spy).to.have.property('callCount', 1)
@@ -91,7 +92,7 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
 
@@ -100,7 +101,7 @@ describe('Connection Manager', () => {
 
     // Add 1 connection too many
     for (let i = 0; i < max + 1; i++) {
-      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
       const spy = sinon.spy(connection, 'close')
 
       const value = i * 10
@@ -113,7 +114,7 @@ describe('Connection Manager', () => {
         }
       })
 
-      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+      getComponent(libp2p, 'events').safeDispatchEvent('connection:open', { detail: connection })
     }
 
     await eventPromise
@@ -149,14 +150,14 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<string, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     const createConnection = async (value: number, open: number = Date.now(), peerTag: string = 'test-tag'): Promise<void> => {
       // #TODO: Mock the connection timeline to simulate an older connection
-      const connection = mockConnection(mockMultiaddrConnection({ ...mockDuplex(), timeline: { open } }, await createEd25519PeerId()))
+      const connection = mockConnection(mockMultiaddrConnection({ ...mockDuplex(), timeline: { open } }, peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
       const spy = sinon.spy(connection, 'close')
 
       // The lowest tag value will have the longest connection
@@ -169,7 +170,7 @@ describe('Connection Manager', () => {
         }
       })
 
-      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+      getComponent(libp2p, 'events').safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // Create one short of enough connections to initiate pruning
@@ -216,14 +217,14 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Max out connections
     for (let i = 0; i < max; i++) {
-      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
       const spy = sinon.spy(connection, 'close')
       const value = (i + 1) * 10
       spies.set(value, spy)
@@ -234,11 +235,11 @@ describe('Connection Manager', () => {
           }
         }
       })
-      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+      getComponent(libp2p, 'events').safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // an outbound connection is opened from an address in the allow list
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = mockConnection(mockMultiaddrConnection({
       remoteAddr,
       source: (async function * () {
@@ -260,7 +261,7 @@ describe('Connection Manager', () => {
       }
     })
 
-    libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+    getComponent(libp2p, 'events').safeDispatchEvent('connection:open', { detail: connection })
 
     // wait for prune event
     await eventPromise
@@ -297,16 +298,16 @@ describe('Connection Manager', () => {
 
     await libp2p.start()
 
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Add 1 too many connections
     const spy = sinon.spy()
     for (let i = 0; i < max + 1; i++) {
-      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+      const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
       sinon.stub(connection, 'close').callsFake(async () => spy()) // eslint-disable-line
-      libp2p.components.events.safeDispatchEvent('connection:open', { detail: connection })
+      getComponent(libp2p, 'events').safeDispatchEvent('connection:open', { detail: connection })
     }
 
     // wait for prune event
@@ -329,14 +330,14 @@ describe('Connection Manager', () => {
   })
 
   it('should reconnect to important peers on startup', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     libp2p = await createNode({
       config: createBaseOptions(),
       started: false
     })
 
-    const connectionManager = libp2p.components.connectionManager as DefaultConnectionManager
+    const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerOpenConnectionSpy = sinon.spy(connectionManager, 'openConnection')
 
     await libp2p.start()
@@ -370,7 +371,7 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const maConn = mockMultiaddrConnection({
       remoteAddr,
       source: (async function * () {
@@ -393,11 +394,11 @@ describe('Connection Manager', () => {
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
     // max out the connection limit
-    await connectionManager.openConnection(await createEd25519PeerId())
+    await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
     // an inbound connection is opened
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const maConn = mockMultiaddrConnection({
       source: (async function * () {
         yield * []
@@ -419,7 +420,7 @@ describe('Connection Manager', () => {
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
     // an inbound connection is opened
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const maConn = mockMultiaddrConnection({
       source: (async function * () {
         yield * []
@@ -452,11 +453,11 @@ describe('Connection Manager', () => {
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
     // max out the connection limit
-    await connectionManager.openConnection(await createEd25519PeerId())
+    await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
     // an inbound connection is opened from an address in the allow list
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const maConn = mockMultiaddrConnection({
       remoteAddr,
       source: (async function * () {
@@ -484,7 +485,7 @@ describe('Connection Manager', () => {
         yield * []
       })(),
       sink: async () => {}
-    }, await createEd25519PeerId())
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
 
     await expect(connectionManager.acceptIncomingConnection(maConn1))
       .to.eventually.be.true()
@@ -495,7 +496,7 @@ describe('Connection Manager', () => {
         yield * []
       })(),
       sink: async () => {}
-    }, await createEd25519PeerId())
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
 
     // should be false because we have not completed the upgrade of maConn1
     await expect(connectionManager.acceptIncomingConnection(maConn2))
@@ -516,7 +517,7 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    const targetPeer = await createEd25519PeerId()
+    const targetPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const addr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${targetPeer}`)
 
     const existingConnection = stubInterface<Connection>({

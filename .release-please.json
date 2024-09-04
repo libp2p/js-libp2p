@@ -27,7 +27,6 @@
     "packages/peer-discovery-bootstrap": {},
     "packages/peer-discovery-mdns": {},
     "packages/peer-id": {},
-    "packages/peer-id-factory": {},
     "packages/peer-record": {},
     "packages/peer-store": {},
     "packages/protocol-autonat": {},

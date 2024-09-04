@@ -1,4 +1,3 @@
-import { peerIdFromString } from '@libp2p/peer-id'
 import { mapIterable } from './util.js'
 import type { PeerId } from '@libp2p/interface'
 
@@ -20,14 +19,14 @@ import type { PeerId } from '@libp2p/interface'
  * ```
  */
 export class PeerMap <T> {
-  private readonly map: Map<string, T>
+  private readonly map: Map<string, { key: PeerId, value: T }>
 
   constructor (map?: PeerMap<T>) {
     this.map = new Map()
 
     if (map != null) {
       for (const [key, value] of map.entries()) {
-        this.map.set(key.toString(), value)
+        this.map.set(key.toString(), { key, value })
       }
     }
   }
@@ -45,22 +44,22 @@ export class PeerMap <T> {
   }
 
   entries (): IterableIterator<[PeerId, T]> {
-    return mapIterable<[string, T], [PeerId, T]>(
+    return mapIterable<[string, { key: PeerId, value: T }], [PeerId, T]>(
       this.map.entries(),
       (val) => {
-        return [peerIdFromString(val[0]), val[1]]
+        return [val[1].key, val[1].value]
       }
     )
   }
 
   forEach (fn: (value: T, key: PeerId, map: PeerMap<T>) => void): void {
     this.map.forEach((value, key) => {
-      fn(value, peerIdFromString(key), this)
+      fn(value.value, value.key, this)
     })
   }
 
   get (peer: PeerId): T | undefined {
-    return this.map.get(peer.toString())
+    return this.map.get(peer.toString())?.value
   }
 
   has (peer: PeerId): boolean {
@@ -68,20 +67,20 @@ export class PeerMap <T> {
   }
 
   set (peer: PeerId, value: T): void {
-    this.map.set(peer.toString(), value)
+    this.map.set(peer.toString(), { key: peer, value })
   }
 
   keys (): IterableIterator<PeerId> {
-    return mapIterable<string, PeerId>(
-      this.map.keys(),
+    return mapIterable<{ key: PeerId, value: T }, PeerId>(
+      this.map.values(),
       (val) => {
-        return peerIdFromString(val)
+        return val.key
       }
     )
   }
 
   values (): IterableIterator<T> {
-    return this.map.values()
+    return mapIterable(this.map.values(), (val) => val.value)
   }
 
   get size (): number {
