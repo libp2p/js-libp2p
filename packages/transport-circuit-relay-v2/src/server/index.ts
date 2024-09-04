@@ -1,8 +1,9 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
+import * as Digest from 'multiformats/hashes/digest'
 import pDefer from 'p-defer'
 import {
   CIRCUIT_PROTO_CODE,
@@ -17,7 +18,7 @@ import { createLimitedRelay } from '../utils.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
@@ -68,6 +69,7 @@ export interface CircuitRelayServerComponents {
   peerStore: PeerStore
   addressManager: AddressManager
   peerId: PeerId
+  privateKey: PrivateKey
   connectionManager: ConnectionManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
@@ -88,6 +90,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   private readonly peerStore: PeerStore
   private readonly addressManager: AddressManager
   private readonly peerId: PeerId
+  private readonly privateKey: PrivateKey
   private readonly connectionManager: ConnectionManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
@@ -110,6 +113,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.peerStore = components.peerStore
     this.addressManager = components.addressManager
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
@@ -282,7 +286,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       peer: remotePeer,
       relay: this.peerId,
       expiration: Number(expire)
-    }), this.peerId)
+    }), this.privateKey)
 
     return {
       addrs,
@@ -311,7 +315,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       }
 
       request.peer.addrs.forEach(multiaddr)
-      dstPeer = peerIdFromBytes(request.peer.id)
+      dstPeer = peerIdFromMultihash(Digest.decode(request.peer.id))
     } catch (err) {
       this.log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
@@ -346,7 +350,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       request: {
         type: StopMessage.Type.CONNECT,
         peer: {
-          id: connection.remotePeer.toBytes(),
+          id: connection.remotePeer.toMultihash().bytes,
           addrs: []
         },
         limit

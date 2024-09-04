@@ -23,8 +23,8 @@ export class ReservationVoucherRecord implements Record {
 
   marshal (): Uint8Array {
     return ReservationVoucher.encode({
-      relay: this.relay.toBytes(),
-      peer: this.peer.toBytes(),
+      relay: this.relay.toMultihash().bytes,
+      peer: this.peer.toMultihash().bytes,
       expiration: BigInt(this.expiration)
     })
   }

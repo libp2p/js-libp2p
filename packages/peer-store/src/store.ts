@@ -1,8 +1,9 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import mortice, { type Mortice } from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
+import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { Peer as PeerPB } from './pb/peer.js'
 import { bytesToPeer } from './utils/bytes-to-peer.js'
@@ -22,8 +23,8 @@ export interface PeerUpdate extends PeerUpdateExternal {
 function decodePeer (key: Key, value: Uint8Array, cache: PeerMap<Peer>): Peer {
   // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
   const base32Str = key.toString().split('/')[2]
-  const buf = base32.decode(base32Str)
-  const peerId = peerIdFromBytes(buf)
+  const buf = CID.parse(base32Str, base32)
+  const peerId = peerIdFromCID(buf)
 
   const cached = cache.get(peerId)
 

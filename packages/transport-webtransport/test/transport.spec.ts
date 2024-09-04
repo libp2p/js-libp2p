@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { webTransport, type WebTransportComponents } from '../src/index.js'
@@ -11,8 +12,11 @@ describe('WebTransport Transport', () => {
   let components: WebTransportComponents
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(privateKey),
+      privateKey,
       logger: defaultLogger()
     }
   })

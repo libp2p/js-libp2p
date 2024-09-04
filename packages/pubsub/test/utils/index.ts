@@ -1,15 +1,8 @@
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
 import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
 import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology } from '@libp2p/interface'
 import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord } from '@libp2p/interface-internal'
-
-export const createPeerId = async (): Promise<PeerId> => {
-  const peerId = await PeerIdFactory.createEd25519PeerId()
-
-  return peerId
-}
 
 export class PubsubImplementation extends PubSubBaseProtocol {
   async publishMessage (): Promise<PublishResult> {

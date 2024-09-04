@@ -114,7 +114,7 @@ describe('QueryManager', () => {
 
     const unsortedPeers = await createPeerIds(39)
     ourPeerId = await createPeerId()
-    key = (await createPeerId()).toBytes()
+    key = (await createPeerId()).toMultihash().bytes
 
     // sort remaining peers by XOR distance to the key, low -> high
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key))

@@ -3,7 +3,7 @@ syntax = "proto3";
 enum KeyType {
   RSA = 0;
   Ed25519 = 1;
-  Secp256k1 = 2;
+  secp256k1 = 2;
 }
 message PublicKey {
   // the proto2 version of this field is "required" which means it will have

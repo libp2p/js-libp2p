@@ -145,6 +145,20 @@ export class InvalidMultiaddrError extends Error {
   }
 }
 
+export class InvalidCIDError extends Error {
+  constructor (message = 'Invalid CID') {
+    super(message)
+    this.name = 'InvalidCIDError'
+  }
+}
+
+export class InvalidMultihashError extends Error {
+  constructor (message = 'Invalid Multihash') {
+    super(message)
+    this.name = 'InvalidMultihashError'
+  }
+}
+
 export class UnsupportedProtocolError extends Error {
   constructor (message = 'Unsupported protocol error') {
     super(message)
@@ -222,5 +236,15 @@ export class TooManyOutboundProtocolStreamsError extends Error {
   constructor (message = 'Too many outbound protocol streams') {
     super(message)
     this.name = 'TooManyOutboundProtocolStreamsError'
+  }
+}
+
+/**
+ * Thrown when and attempt to operate on an unsupported key was made
+ */
+export class UnsupportedKeyTypeError extends Error {
+  constructor (message = 'Unsupported key type') {
+    super(message)
+    this.name = 'UnsupportedKeyTypeError'
   }
 }

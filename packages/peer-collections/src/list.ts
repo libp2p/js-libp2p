@@ -1,4 +1,3 @@
-import { peerIdFromString } from '@libp2p/peer-id'
 import { mapIterable } from './util.js'
 import type { PeerId } from '@libp2p/interface'
 
@@ -20,23 +19,23 @@ import type { PeerId } from '@libp2p/interface'
  * ```
  */
 export class PeerList {
-  private list: string[]
+  private list: PeerId[]
 
   constructor (list?: PeerList | Iterable<PeerId>) {
     this.list = []
 
     if (list != null) {
       for (const value of list) {
-        this.list.push(value.toString())
+        this.list.push(value)
       }
     }
   }
 
   [Symbol.iterator] (): IterableIterator<PeerId> {
-    return mapIterable<[number, string], PeerId>(
+    return mapIterable<[number, PeerId], PeerId>(
       this.list.entries(),
       (val) => {
-        return peerIdFromString(val[1])
+        return val[1]
       }
     )
   }
@@ -52,26 +51,24 @@ export class PeerList {
   }
 
   entries (): IterableIterator<[number, PeerId]> {
-    return mapIterable<[number, string], [number, PeerId]>(
+    return mapIterable<[number, PeerId], [number, PeerId]>(
       this.list.entries(),
       (val) => {
-        return [val[0], peerIdFromString(val[1])]
+        return [val[0], val[1]]
       }
     )
   }
 
   every (predicate: (peerId: PeerId, index: number, arr: PeerList) => boolean): boolean {
-    return this.list.every((str, index) => {
-      return predicate(peerIdFromString(str), index, this)
+    return this.list.every((peerId, index) => {
+      return predicate(peerId, index, this)
     })
   }
 
   filter (predicate: (peerId: PeerId, index: number, arr: PeerList) => boolean): PeerList {
     const output = new PeerList()
 
-    this.list.forEach((str, index) => {
-      const peerId = peerIdFromString(str)
-
+    this.list.forEach((peerId, index) => {
       if (predicate(peerId, index, this)) {
         output.push(peerId)
       }
@@ -81,68 +78,68 @@ export class PeerList {
   }
 
   find (predicate: (peerId: PeerId, index: number, arr: PeerList) => boolean): PeerId | undefined {
-    const str = this.list.find((str, index) => {
-      return predicate(peerIdFromString(str), index, this)
+    const peerId = this.list.find((peerId, index) => {
+      return predicate(peerId, index, this)
     })
 
-    if (str == null) {
+    if (peerId == null) {
       return undefined
     }
 
-    return peerIdFromString(str)
+    return peerId
   }
 
   findIndex (predicate: (peerId: PeerId, index: number, arr: PeerList) => boolean): number {
-    return this.list.findIndex((str, index) => {
-      return predicate(peerIdFromString(str), index, this)
+    return this.list.findIndex((peerId, index) => {
+      return predicate(peerId, index, this)
     })
   }
 
   forEach (predicate: (peerId: PeerId, index: number, arr: PeerList) => void): void {
-    this.list.forEach((str, index) => {
-      predicate(peerIdFromString(str), index, this)
+    this.list.forEach((peerId, index) => {
+      predicate(peerId, index, this)
     })
   }
 
   includes (peerId: PeerId): boolean {
-    return this.list.includes(peerId.toString())
+    return this.includes(peerId)
   }
 
   indexOf (peerId: PeerId): number {
-    return this.list.indexOf(peerId.toString())
+    return this.list.findIndex(id => id.equals(peerId))
   }
 
   pop (): PeerId | undefined {
-    const str = this.list.pop()
+    const peerId = this.list.pop()
 
-    if (str == null) {
+    if (peerId == null) {
       return undefined
     }
 
-    return peerIdFromString(str)
+    return peerId
   }
 
   push (...peerIds: PeerId[]): void {
     for (const peerId of peerIds) {
-      this.list.push(peerId.toString())
+      this.list.push(peerId)
     }
   }
 
   shift (): PeerId | undefined {
-    const str = this.list.shift()
+    const peerId = this.list.shift()
 
-    if (str == null) {
+    if (peerId == null) {
       return undefined
     }
 
-    return peerIdFromString(str)
+    return peerId
   }
 
   unshift (...peerIds: PeerId[]): number {
     let len = this.list.length
 
     for (let i = peerIds.length - 1; i > -1; i--) {
-      len = this.list.unshift(peerIds[i].toString())
+      len = this.list.unshift(peerIds[i])
     }
 
     return len

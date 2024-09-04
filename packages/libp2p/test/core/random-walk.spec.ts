@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -20,7 +21,7 @@ async function createRandomPeerInfo (): Promise<PeerInfo> {
   port++
 
   return {
-    id: await createEd25519PeerId(),
+    id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
     multiaddrs: [
       multiaddr(`/ip4/123.123.123.123/tcp/${port}`)
     ]
@@ -155,7 +156,7 @@ describe('random-walk', () => {
       drain(take(randomwalk.walk(), 2))
     ])
 
-    expect(yielded).to.equal(2)
+    expect(yielded).to.equal(3)
   })
 
   it('should not block walk on slow consumers', async () => {
@@ -179,7 +180,7 @@ describe('random-walk', () => {
       }))
     ])
 
-    expect(yielded).to.equal(7)
+    expect(yielded).to.equal(10)
   })
 
   it('should unpause query if second consumer requires peers', async () => {

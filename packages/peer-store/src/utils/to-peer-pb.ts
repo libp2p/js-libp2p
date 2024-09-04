@@ -1,5 +1,5 @@
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
-import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
@@ -15,7 +15,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     throw new InvalidParametersError('Invalid PeerData')
   }
 
-  if (data.publicKey != null && peerId.publicKey != null && !uint8arrayEquals(data.publicKey, peerId.publicKey)) {
+  if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
     throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
   }
 
@@ -130,6 +130,16 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     }
   }
 
+  let publicKey: Uint8Array | undefined
+
+  if (existingPeer?.id.publicKey != null) {
+    publicKey = publicKeyToProtobuf(existingPeer.id.publicKey)
+  } else if (data.publicKey != null) {
+    publicKey = publicKeyToProtobuf(data.publicKey)
+  } else if (peerId.publicKey != null) {
+    publicKey = publicKeyToProtobuf(peerId.publicKey)
+  }
+
   const output: PeerPB = {
     addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addresses),
     protocols: [...protocols.values()].sort((a, b) => {
@@ -137,8 +147,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     }),
     metadata,
     tags,
-
-    publicKey: existingPeer?.id.publicKey ?? data.publicKey ?? peerId.publicKey,
+    publicKey,
     peerRecordEnvelope
   }
 

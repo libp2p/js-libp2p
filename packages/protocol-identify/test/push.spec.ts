@@ -1,7 +1,8 @@
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
@@ -18,8 +19,12 @@ describe('identify (push)', () => {
   let identify: IdentifyPush
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromPrivateKey(privateKey)
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey,
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
@@ -51,7 +56,7 @@ describe('identify (push)', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const { stream, connection } = identifyPushStream(remotePeer)
     const duplex = pair<any>()
     stream.source = duplex.source
@@ -98,7 +103,7 @@ describe('identify (push)', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const { stream, connection } = identifyPushStream(remotePeer)
     const duplex = pair<any>()
     stream.source = duplex.source
@@ -109,7 +114,7 @@ describe('identify (push)', () => {
 
     const pb = pbStream(stream)
     void pb.write({
-      publicKey: remotePeer.publicKey,
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       protocols: [
         updatedProtocol
       ],
@@ -141,7 +146,7 @@ describe('identify (push)', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const { stream, connection } = identifyPushStream(remotePeer)
     const duplex = pair<any>()
     stream.source = duplex.source

@@ -1,7 +1,8 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
@@ -20,7 +21,7 @@ describe('Query Self', () => {
   let initialQuerySelfHasRun: DeferredPromise<void>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     initialQuerySelfHasRun = pDefer()
     routingTable = stubInterface<RoutingTable>()
     peerRouting = stubInterface<PeerRouting>()
@@ -60,7 +61,7 @@ describe('Query Self', () => {
     routingTable.size = 0
 
     const querySelfPromise = querySelf.querySelf()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     let initialQuerySelfHasRunResolved = false
 
@@ -73,7 +74,7 @@ describe('Query Self', () => {
     expect(routingTable.addEventListener.getCall(0)).to.have.nested.property('args[0]', 'peer:add')
 
     // self query results
-    peerRouting.getClosestPeers.withArgs(peerId.toBytes()).returns(async function * () {
+    peerRouting.getClosestPeers.withArgs(peerId.toMultihash().bytes).returns(async function * () {
       yield finalPeerEvent({
         from: remotePeer,
         peer: {
@@ -101,10 +102,10 @@ describe('Query Self', () => {
 
     const querySelfPromise1 = querySelf.querySelf()
     const querySelfPromise2 = querySelf.querySelf()
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     // self query results
-    peerRouting.getClosestPeers.withArgs(peerId.toBytes()).returns(async function * () {
+    peerRouting.getClosestPeers.withArgs(peerId.toMultihash().bytes).returns(async function * () {
       yield finalPeerEvent({
         from: remotePeer,
         peer: {

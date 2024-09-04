@@ -3,136 +3,107 @@
 import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as crypto from '../../src/index.js'
-import * as Secp256k1 from '../../src/keys/secp256k1-class.js'
-import * as secp256k1Crypto from '../../src/keys/secp256k1.js'
+import { randomBytes } from '../../src/index.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
+import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
+import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
 import fixtures from '../fixtures/go-key-secp256k1.js'
-
-const secp256k1 = crypto.keys.supportedKeys.secp256k1
-const keysPBM = crypto.keys.keysPBM
-const randomBytes = crypto.randomBytes
+import type { Secp256k1PrivateKey } from '@libp2p/interface'
 
 describe('secp256k1 keys', () => {
-  let key: Secp256k1.Secp256k1PrivateKey
+  let key: Secp256k1PrivateKey
 
   before(async () => {
-    key = await secp256k1.generateKeyPair()
+    key = await generateKeyPair('secp256k1')
   })
 
   it('generates a valid key', async () => {
-    expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
-    expect(key.public).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
-
-    const digest = await key.hash()
-    expect(digest).to.have.length(34)
-
-    const publicDigest = await key.public.hash()
-    expect(publicDigest).to.have.length(34)
-  })
-
-  it('optionally accepts a `bits` argument when generating a key', async () => {
-    const _key = await secp256k1.generateKeyPair()
-    expect(_key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
+    expect(key).to.have.property('type', 'secp256k1')
+    expect(key.equals(key)).to.be.true()
+    expect(key.raw).to.have.length(32)
   })
 
   it('signs', async () => {
     const text = randomBytes(512)
     const sig = await key.sign(text)
-    const res = await key.public.verify(text, sig)
+    const res = await key.publicKey.verify(text, sig)
     expect(res).to.equal(true)
   })
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      crypto.randomBytes(512),
-      crypto.randomBytes(512)
+      randomBytes(512),
+      randomBytes(512)
     )
     const sig = await key.sign(text)
 
     expect(await key.sign(text.subarray()))
       .to.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    expect(await key.public.verify(text, sig))
+    expect(await key.publicKey.verify(text, sig))
       .to.be.true('did not verify message as list')
-    expect(await key.public.verify(text.subarray(), sig))
+    expect(await key.publicKey.verify(text.subarray(), sig))
       .to.be.true('did not verify message as single buffer')
   })
 
   it('encoding', () => {
-    const keyMarshal = key.marshal()
-    const key2 = secp256k1.unmarshalSecp256k1PrivateKey(keyMarshal)
-    const keyMarshal2 = key2.marshal()
+    const keyMarshal = key.raw
+    const key2 = unmarshalSecp256k1PrivateKey(keyMarshal)
+    const keyMarshal2 = key2.raw
 
-    expect(keyMarshal).to.eql(keyMarshal2)
+    expect(keyMarshal).to.equalBytes(keyMarshal2)
 
-    const pk = key.public
-    const pkMarshal = pk.marshal()
-    const pk2 = secp256k1.unmarshalSecp256k1PublicKey(pkMarshal)
-    const pkMarshal2 = pk2.marshal()
+    const pk = key.publicKey
+    const pkMarshal = pk.raw
+    const pk2 = unmarshalSecp256k1PublicKey(pkMarshal)
+    const pkMarshal2 = pk2.raw
 
-    expect(pkMarshal).to.eql(pkMarshal2)
+    expect(pkMarshal).to.equalBytes(pkMarshal2)
   })
 
-  it('key id', async () => {
-    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
-    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
-    const id = await key.id()
-    expect(id).to.eql('QmPCyMBGEyifPtx5aa6k6wkY9N1eBf9vHK1eKfNc35q9uq')
+  it('publicKey toString()', async () => {
+    const decoded = PrivateKey.decode(fixtures.privateKey)
+    const key = unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+
+    expect(key.publicKey.toString()).to.equal('16Uiu2HAm5vpzEwJ41kQmnwDu9moFusdc16wV1oCUd1AHLgFgPpKY')
   })
 
-  it('should export a password encrypted libp2p-key', async () => {
-    const key = await crypto.keys.generateKeyPair('secp256k1')
+  it('imports from raw', async () => {
+    const key = await generateKeyPair('secp256k1')
+    const imported = privateKeyFromRaw(key.raw)
 
-    if (!(key instanceof Secp256k1.Secp256k1PrivateKey)) {
-      throw new Error('Generated wrong key type')
-    }
-
-    const encryptedKey = await key.export('my secret')
-    // Import the key
-    const importedKey = await crypto.keys.importKey(encryptedKey, 'my secret')
-
-    if (!(importedKey instanceof Secp256k1.Secp256k1PrivateKey)) {
-      throw new Error('Imported wrong key type')
-    }
-
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should fail to import libp2p-key with wrong password', async () => {
-    const key = await crypto.keys.generateKeyPair('secp256k1')
-    const encryptedKey = await key.export('my secret', 'libp2p-key')
-
-    await expect(crypto.keys.importKey(encryptedKey, 'not my secret')).to.eventually.be.rejected()
+    expect(key.equals(imported)).to.be.true()
   })
 
   describe('key equals', () => {
     it('equals itself', () => {
-      expect(key.equals(key)).to.eql(true)
+      expect(key.equals(key)).to.be.true()
 
-      expect(key.public.equals(key.public)).to.eql(true)
+      expect(key.publicKey.equals(key.publicKey)).to.be.true()
     })
 
     it('not equals other key', async () => {
-      const key2 = await secp256k1.generateKeyPair()
-      expect(key.equals(key2)).to.eql(false)
-      expect(key2.equals(key)).to.eql(false)
-      expect(key.public.equals(key2.public)).to.eql(false)
-      expect(key2.public.equals(key.public)).to.eql(false)
+      const key2 = await generateKeyPair('secp256k1')
+      expect(key.equals(key2)).to.be.false()
+      expect(key2.equals(key)).to.be.false()
+      expect(key.publicKey.equals(key2.publicKey)).to.be.false()
+      expect(key2.publicKey.equals(key.publicKey)).to.be.false()
     })
   })
 
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = await key.public.verify(data, sig)
-    expect(valid).to.eql(true)
+    const valid = await key.publicKey.verify(data, sig)
+    expect(valid).to.be.true()
   })
 
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = await key.public.verify(uint8ArrayFromString('hello'), sig)
-    expect(valid).to.eql(false)
+    const valid = await key.publicKey.verify(uint8ArrayFromString('hello'), sig)
+    expect(valid).to.be.false()
   })
 })
 
@@ -141,30 +112,30 @@ describe('crypto functions', () => {
   let pubKey: Uint8Array
 
   before(() => {
-    privKey = secp256k1Crypto.generateKey()
-    pubKey = secp256k1Crypto.computePublicKey(privKey)
+    privKey = generateSecp256k1PrivateKey()
+    pubKey = computeSecp256k1PublicKey(privKey)
   })
 
   it('generates valid keys', () => {
     expect(() => {
-      secp256k1Crypto.validatePrivateKey(privKey)
-      secp256k1Crypto.validatePublicKey(pubKey)
+      validateSecp256k1PrivateKey(privKey)
+      validateSecp256k1PublicKey(pubKey)
     }).to.not.throw()
   })
 
   it('does not validate an invalid key', () => {
-    expect(() => { secp256k1Crypto.validatePublicKey(uint8ArrayFromString('42')) }).to.throw()
-    expect(() => { secp256k1Crypto.validatePrivateKey(uint8ArrayFromString('42')) }).to.throw()
+    expect(() => { validateSecp256k1PublicKey(uint8ArrayFromString('42')) }).to.throw()
+    expect(() => { validateSecp256k1PrivateKey(uint8ArrayFromString('42')) }).to.throw()
   })
 
   it('validates a correct signature', async () => {
-    const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
-    const valid = await secp256k1Crypto.hashAndVerify(pubKey, sig, uint8ArrayFromString('hello'))
+    const sig = await hashAndSign(privKey, uint8ArrayFromString('hello'))
+    const valid = await hashAndVerify(pubKey, sig, uint8ArrayFromString('hello'))
     expect(valid).to.equal(true)
   })
 
   it('does not validate when validating a message with an invalid signature', async () => {
-    const result = await secp256k1Crypto.hashAndVerify(pubKey, uint8ArrayFromString('invalid-sig'), uint8ArrayFromString('hello'))
+    const result = await hashAndVerify(pubKey, uint8ArrayFromString('invalid-sig'), uint8ArrayFromString('hello'))
 
     expect(result).to.be.false()
   })
@@ -172,40 +143,40 @@ describe('crypto functions', () => {
   it('errors if given a null Uint8Array to sign', async () => {
     await expect((async () => {
       // @ts-expect-error incorrect args
-      await secp256k1Crypto.hashAndSign(privKey, null)
+      await hashAndSign(privKey, null)
     })()).to.eventually.be.rejected()
   })
 
   it('errors when signing with an invalid key', async () => {
     await expect((async () => {
-      await secp256k1Crypto.hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
+      await hashAndSign(uint8ArrayFromString('42'), uint8ArrayFromString('Hello'))
     })()).to.eventually.be.rejected
       .with.property('name', 'SigningError')
   })
 
   it('errors if given a null Uint8Array to validate', async () => {
-    const sig = await secp256k1Crypto.hashAndSign(privKey, uint8ArrayFromString('hello'))
+    const sig = await hashAndSign(privKey, uint8ArrayFromString('hello'))
 
     await expect((async () => {
       // @ts-expect-error incorrect args
-      await secp256k1Crypto.hashAndVerify(privKey, sig, null)
+      await hashAndVerify(privKey, sig, null)
     })()).to.eventually.be.rejected()
   })
 
   it('throws when compressing an invalid public key', () => {
-    expect(() => secp256k1Crypto.compressPublicKey(uint8ArrayFromString('42'))).to.throw()
+    expect(() => compressSecp256k1PublicKey(uint8ArrayFromString('42'))).to.throw()
   })
 
   it('throws when decompressing an invalid public key', () => {
-    expect(() => secp256k1Crypto.decompressPublicKey(uint8ArrayFromString('42'))).to.throw()
+    expect(() => decompressSecp256k1PublicKey(uint8ArrayFromString('42'))).to.throw()
   })
 
   it('compresses/decompresses a valid public key', () => {
-    const decompressed = secp256k1Crypto.decompressPublicKey(pubKey)
+    const decompressed = decompressSecp256k1PublicKey(pubKey)
     expect(decompressed).to.exist()
-    expect(decompressed.length).to.be.eql(65)
-    const recompressed = secp256k1Crypto.compressPublicKey(decompressed)
-    expect(recompressed).to.eql(pubKey)
+    expect(decompressed).to.have.lengthOf(65)
+    const recompressed = compressSecp256k1PublicKey(decompressed)
+    expect(recompressed).to.equalBytes(pubKey)
   })
 })
 
@@ -213,29 +184,27 @@ describe('go interop', () => {
   it('loads a private key marshaled by go-libp2p-crypto', () => {
     // we need to first extract the key data from the protobuf, which is
     // normally handled by js-libp2p-crypto
-    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
-    expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
+    const decoded = PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.equal(KeyType.secp256k1)
 
-    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
-    expect(key).to.be.an.instanceof(secp256k1.Secp256k1PrivateKey)
-    expect(key.bytes).to.eql(fixtures.privateKey)
+    const key = unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+    expect(privateKeyToProtobuf(key)).to.equalBytes(fixtures.privateKey)
   })
 
   it('loads a public key marshaled by go-libp2p-crypto', () => {
-    const decoded = keysPBM.PublicKey.decode(fixtures.publicKey)
-    expect(decoded.Type).to.be.eql(keysPBM.KeyType.Secp256k1)
+    const decoded = PublicKey.decode(fixtures.publicKey)
+    expect(decoded.Type).to.equal(KeyType.secp256k1)
 
-    const key = secp256k1.unmarshalSecp256k1PublicKey(decoded.Data ?? new Uint8Array())
-    expect(key).to.be.an.instanceof(secp256k1.Secp256k1PublicKey)
-    expect(key.bytes).to.eql(fixtures.publicKey)
+    const key = unmarshalSecp256k1PublicKey(decoded.Data ?? new Uint8Array())
+    expect(publicKeyToProtobuf(key)).to.equalBytes(fixtures.publicKey)
   })
 
   it('generates the same signature as go-libp2p-crypto', async () => {
-    const decoded = keysPBM.PrivateKey.decode(fixtures.privateKey)
-    expect(decoded.Type).to.eql(keysPBM.KeyType.Secp256k1)
+    const decoded = PrivateKey.decode(fixtures.privateKey)
+    expect(decoded.Type).to.equal(KeyType.secp256k1)
 
-    const key = secp256k1.unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
+    const key = unmarshalSecp256k1PrivateKey(decoded.Data ?? new Uint8Array())
     const sig = await key.sign(fixtures.message)
-    expect(sig).to.eql(fixtures.signature)
+    expect(sig).to.equalBytes(fixtures.signature)
   })
 })

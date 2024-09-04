@@ -1,10 +1,11 @@
 import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
-import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
@@ -250,7 +251,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await hopstr.write({
         type: HopMessage.Type.CONNECT,
         peer: {
-          id: destinationPeer.toBytes(),
+          id: destinationPeer.toMultihash().bytes,
           addrs: [multiaddr(destinationAddr).bytes]
         }
       })
@@ -365,7 +366,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       return
     }
 
-    const remotePeerId = peerIdFromBytes(request.peer.id)
+    const remotePeerId = peerIdFromMultihash(Digest.decode(request.peer.id))
 
     if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
       this.log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)

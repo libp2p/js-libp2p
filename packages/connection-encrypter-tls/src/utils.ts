@@ -1,7 +1,7 @@
 import { Duplex as DuplexStream } from 'node:stream'
-import { Ed25519PublicKey, Secp256k1PublicKey, marshalPublicKey, supportedKeys, unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { InvalidCryptoExchangeError, InvalidParametersError, UnexpectedPeerError } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { InvalidCryptoExchangeError, UnexpectedPeerError } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
@@ -13,7 +13,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
-import type { PeerId, PublicKey as Libp2pPublicKey, Logger } from '@libp2p/interface'
+import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -68,20 +68,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   // @ts-expect-error deep chain
   const remotePeerIdPb = libp2pKeySequence.valueBlock.value[0].valueBlock.valueHex
   const marshalledPeerId = new Uint8Array(remotePeerIdPb, 0, remotePeerIdPb.byteLength)
-  const remotePublicKey = PublicKey.decode(marshalledPeerId)
-  const remotePublicKeyData = remotePublicKey.data ?? new Uint8Array(0)
-  let remoteLibp2pPublicKey: Libp2pPublicKey
-
-  if (remotePublicKey.type === KeyType.Ed25519) {
-    remoteLibp2pPublicKey = new Ed25519PublicKey(remotePublicKeyData)
-  } else if (remotePublicKey.type === KeyType.Secp256k1) {
-    remoteLibp2pPublicKey = new Secp256k1PublicKey(remotePublicKeyData)
-  } else if (remotePublicKey.type === KeyType.RSA) {
-    remoteLibp2pPublicKey = supportedKeys.rsa.unmarshalRsaPublicKey(remotePublicKeyData)
-  } else {
-    log?.error('unknown or unsupported key type', remotePublicKey.type)
-    throw new InvalidCryptoExchangeError('Unknown or unsupported key type')
-  }
+  const remoteLibp2pPublicKey: Libp2pPublicKey = publicKeyFromProtobuf(marshalledPeerId)
 
   // @ts-expect-error deep chain
   const remoteSignature = libp2pKeySequence.valueBlock.value[1].valueBlock.valueHex
@@ -93,8 +80,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
     throw new InvalidCryptoExchangeError('Could not verify signature')
   }
 
-  const marshalled = marshalPublicKey(remoteLibp2pPublicKey)
-  const remotePeerId = await peerIdFromKeys(marshalled)
+  const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
     log?.error('invalid peer id')
@@ -104,35 +90,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   return remotePeerId
 }
 
-export async function generateCertificate (peerId: PeerId): Promise<{ cert: string, key: string }> {
-  if (peerId.privateKey == null) {
-    throw new InvalidParametersError('Private key was missing from PeerId')
-  }
-
-  if (peerId.publicKey == null) {
-    throw new InvalidParametersError('Public key missing from PeerId')
-  }
-
-  const publicKey = unmarshalPublicKey(peerId.publicKey)
-  let keyType: KeyType
-  let keyData: Uint8Array
-
-  if (peerId.type === 'Ed25519') {
-    // Ed25519: Only the 32 bytes of the public key
-    keyType = KeyType.Ed25519
-    keyData = publicKey.marshal()
-  } else if (peerId.type === 'secp256k1') {
-    // Secp256k1: Only the compressed form of the public key. 33 bytes.
-    keyType = KeyType.Secp256k1
-    keyData = publicKey.marshal()
-  } else if (peerId.type === 'RSA') {
-    // The rest of the keys are encoded as a SubjectPublicKeyInfo structure in PKIX, ASN.1 DER form.
-    keyType = KeyType.RSA
-    keyData = publicKey.marshal()
-  } else {
-    throw new InvalidParametersError('PeerId had unknown or unsupported type')
-  }
-
+export async function generateCertificate (privateKey: PrivateKey): Promise<{ cert: string, key: string }> {
   const now = Date.now()
 
   const alg = {
@@ -144,7 +102,6 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
   const keys = await crypto.subtle.generateKey(alg, true, ['sign'])
   const certPublicKeySpki = await crypto.subtle.exportKey('spki', keys.publicKey)
   const dataToSign = encodeSignatureData(certPublicKeySpki)
-  const privateKey = await unmarshalPrivateKey(peerId.privateKey)
   const sig = await privateKey.sign(dataToSign)
   const notAfter = new Date(now + CERT_VALIDITY_PERIOD_TO)
   // workaround for https://github.com/PeculiarVentures/x509/issues/73
@@ -163,8 +120,8 @@ export async function generateCertificate (peerId: PeerId): Promise<{ cert: stri
           // publicKey
           new asn1js.OctetString({
             valueHex: PublicKey.encode({
-              type: keyType,
-              data: keyData
+              type: KeyType[privateKey.type],
+              data: privateKey.publicKey.raw
             })
           }),
           // signature

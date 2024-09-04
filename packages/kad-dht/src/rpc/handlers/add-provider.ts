@@ -1,7 +1,8 @@
 import { InvalidMessageError } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import type { Message } from '../../message/dht.js'
 import type { Providers } from '../../providers'
 import type { DHTMessageHandler } from '../index.js'
@@ -59,7 +60,9 @@ export class AddProviderHandler implements DHTMessageHandler {
 
         this.log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
 
-        await this.providers.addProvider(cid, peerIdFromBytes(pi.id))
+        const multihash = Digest.decode(pi.id)
+
+        await this.providers.addProvider(cid, peerIdFromMultihash(multihash))
       })
     )
 

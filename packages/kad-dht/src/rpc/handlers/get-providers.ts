@@ -67,14 +67,14 @@ export class GetProvidersHandler implements DHTMessageHandler {
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: providerPeers
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         }))
     }

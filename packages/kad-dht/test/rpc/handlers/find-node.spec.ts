@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import * as Digest from 'multiformats/hashes/digest'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { type Message, MessageType } from '../../../src/message/dht.js'
@@ -47,7 +48,7 @@ describe('rpc - handlers - FindNode', () => {
   it('returns nodes close to self and includes self, if asked for self', async () => {
     const msg: Message = {
       type: T,
-      key: peerId.multihash.bytes,
+      key: peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
@@ -59,7 +60,7 @@ describe('rpc - handlers - FindNode', () => {
     ])
 
     peerRouting.getCloserPeersOffline
-      .withArgs(peerId.multihash.bytes, peerId)
+      .withArgs(peerId.toMultihash().bytes, peerId)
       .resolves([{
         id: targetPeer, // closer peer
         multiaddrs: [
@@ -78,23 +79,23 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(2)
     const peer = response.closer[0]
 
-    expect(peerIdFromBytes(peer.id).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
     expect(peer.multiaddrs).to.not.be.empty()
 
     const self = response.closer[1]
-    expect(peerIdFromBytes(self.id).toString()).to.equal(peerId.toString())
+    expect(peerIdFromMultihash(Digest.decode(self.id)).toString()).to.equal(peerId.toString())
   })
 
   it('returns closer peers', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.multihash.bytes,
+      key: targetPeer.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, sourcePeer)
+      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [
@@ -113,14 +114,14 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromBytes(peer.id).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
     expect(peer.multiaddrs).to.not.be.empty()
   })
 
   it('handles no peers found', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.multihash.bytes,
+      key: targetPeer.toMultihash().bytes,
       closer: [],
       providers: []
     }
@@ -135,13 +136,13 @@ describe('rpc - handlers - FindNode', () => {
   it('returns only lan addresses', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.multihash.bytes,
+      key: targetPeer.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, sourcePeer)
+      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [
@@ -170,7 +171,7 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromBytes(peer.id).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/192.168.1.5/tcp/4002')
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/221.4.67.0/tcp/4002')
   })
@@ -178,13 +179,13 @@ describe('rpc - handlers - FindNode', () => {
   it('returns only wan addresses', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.multihash.bytes,
+      key: targetPeer.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
     peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.multihash.bytes, sourcePeer)
+      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
       .resolves([{
         id: targetPeer,
         multiaddrs: [
@@ -213,7 +214,7 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromBytes(peer.id).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/192.168.1.5/tcp/4002')
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/221.4.67.0/tcp/4002')
   })

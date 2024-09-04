@@ -50,7 +50,7 @@ export class FindNodeHandler implements DHTMessageHandler {
 
     const closer: PeerInfo[] = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
 
-    if (uint8ArrayEquals(this.peerId.toBytes(), msg.key)) {
+    if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
       closer.push({
         id: this.peerId,
         multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
@@ -64,7 +64,7 @@ export class FindNodeHandler implements DHTMessageHandler {
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: []

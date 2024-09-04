@@ -8,15 +8,16 @@ import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { createNode } from '../fixtures/creators/peer.js'
+import { getComponent } from '../fixtures/get-component.js'
 import { AddressesOptions } from './utils.js'
-import type { Libp2pNode } from '../../src/libp2p.js'
-import type { PeerUpdate } from '@libp2p/interface'
+import type { Libp2p, PeerUpdate } from '@libp2p/interface'
+import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
 const announceAddresses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
 
 describe('libp2p.addressManager', () => {
-  let libp2p: Libp2pNode
+  let libp2p: Libp2p
 
   afterEach(async () => {
     if (libp2p != null) {
@@ -36,7 +37,8 @@ describe('libp2p.addressManager', () => {
       }
     })
 
-    let listenAddrs = libp2p.components.addressManager.getListenAddrs().map(ma => ma.toString())
+    const addressManager = getComponent<AddressManager>(libp2p, 'addressManager')
+    let listenAddrs = addressManager.getListenAddrs().map(ma => ma.toString())
     expect(listenAddrs).to.have.lengthOf(listenAddresses.length)
     expect(listenAddrs).to.include(listenAddresses[0])
     expect(listenAddrs).to.include(listenAddresses[1])
@@ -45,7 +47,7 @@ describe('libp2p.addressManager', () => {
     // Only transportManager has visibility of the port used
     await libp2p.start()
 
-    listenAddrs = libp2p.components.addressManager.getListenAddrs().map(ma => ma.toString())
+    listenAddrs = addressManager.getListenAddrs().map(ma => ma.toString())
     expect(listenAddrs).to.have.lengthOf(listenAddresses.length)
     expect(listenAddrs).to.include(listenAddresses[0])
     expect(listenAddrs).to.include(listenAddresses[1])
@@ -64,10 +66,10 @@ describe('libp2p.addressManager', () => {
 
     await libp2p.start()
 
-    const tmListen = libp2p.components.transportManager.getAddrs().map((ma) => ma.toString())
+    const tmListen = getComponent<TransportManager>(libp2p, 'transportManager').getAddrs().map((ma) => ma.toString())
 
     // Announce 2 listen (transport)
-    const advertiseMultiaddrs = libp2p.components.addressManager.getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
+    const advertiseMultiaddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
 
     expect(advertiseMultiaddrs).to.have.lengthOf(2)
     tmListen.forEach((m) => {
@@ -90,10 +92,10 @@ describe('libp2p.addressManager', () => {
 
     await libp2p.start()
 
-    const tmListen = libp2p.components.transportManager.getAddrs().map((ma) => ma.toString())
+    const tmListen = getComponent<TransportManager>(libp2p, 'transportManager').getAddrs().map((ma) => ma.toString())
 
     // Announce 1 announce addr
-    const advertiseMultiaddrs = libp2p.components.addressManager.getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
+    const advertiseMultiaddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
     expect(advertiseMultiaddrs.length).to.equal(announceAddresses.length)
     advertiseMultiaddrs.forEach((m) => {
       expect(tmListen).to.not.include(m)
@@ -115,16 +117,16 @@ describe('libp2p.addressManager', () => {
 
     await libp2p.start()
 
-    expect(libp2p.components.addressManager.getAddresses()).to.have.lengthOf(0)
+    expect(getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()).to.have.lengthOf(0)
 
     // Stub transportManager addresses to add a public address
     const stubMa = multiaddr('/ip4/120.220.10.1/tcp/1000')
-    sinon.stub(libp2p.components.transportManager, 'getAddrs').returns([
+    sinon.stub(getComponent<TransportManager>(libp2p, 'transportManager'), 'getAddrs').returns([
       ...listenAddresses.map((a) => multiaddr(a)),
       stubMa
     ])
 
-    const multiaddrs = libp2p.components.addressManager.getAddresses()
+    const multiaddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()
     expect(multiaddrs.length).to.equal(1)
     expect(multiaddrs[0].decapsulateCode(protocols('p2p').code).equals(stubMa)).to.eql(true)
   })
@@ -142,14 +144,14 @@ describe('libp2p.addressManager', () => {
       }
     })
 
-    const listenAddrs = libp2p.components.addressManager.getListenAddrs().map((ma) => ma.toString())
+    const listenAddrs = getComponent<AddressManager>(libp2p, 'addressManager').getListenAddrs().map((ma) => ma.toString())
     expect(listenAddrs).to.have.lengthOf(listenAddresses.length)
     expect(listenAddrs).to.include(listenAddresses[0])
     expect(listenAddrs).to.include(listenAddresses[1])
 
     await libp2p.start()
 
-    const loopbackAddrs = libp2p.components.addressManager.getAddresses().filter(ma => isLoopback(ma))
+    const loopbackAddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses().filter(ma => isLoopback(ma))
     expect(loopbackAddrs).to.be.empty()
   })
 
@@ -167,12 +169,14 @@ describe('libp2p.addressManager', () => {
 
     await libp2p.start()
 
-    expect(libp2p.components.addressManager.getAddresses()).to.have.lengthOf(listenAddresses.length)
+    const addressManager = getComponent<AddressManager>(libp2p, 'addressManager')
 
-    libp2p.components.addressManager.confirmObservedAddr(multiaddr(ma))
+    expect(addressManager.getAddresses()).to.have.lengthOf(listenAddresses.length)
 
-    expect(libp2p.components.addressManager.getAddresses()).to.have.lengthOf(listenAddresses.length + 1)
-    expect(libp2p.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.include(ma)
+    addressManager.confirmObservedAddr(multiaddr(ma))
+
+    expect(addressManager.getAddresses()).to.have.lengthOf(listenAddresses.length + 1)
+    expect(addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.include(ma)
   })
 
   it('should populate the AddressManager from the config', async () => {
@@ -250,10 +254,10 @@ describe('libp2p.addressManager', () => {
     const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update')
 
     const unconfirmedAddress = multiaddr('/ip4/127.0.0.1/tcp/4010/ws')
-    libp2p.components.addressManager.addObservedAddr(unconfirmedAddress)
+    getComponent<AddressManager>(libp2p, 'addressManager').addObservedAddr(unconfirmedAddress)
 
     const confirmedAddress = multiaddr('/ip4/127.0.0.1/tcp/4011/ws')
-    libp2p.components.addressManager.confirmObservedAddr(confirmedAddress)
+    getComponent<AddressManager>(libp2p, 'addressManager').confirmObservedAddr(confirmedAddress)
 
     const event = await eventPromise
 
