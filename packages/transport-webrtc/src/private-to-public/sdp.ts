@@ -1,6 +1,7 @@
 import { type Multiaddr } from '@multiformats/multiaddr'
 import { bases, digest } from 'multiformats/basics'
 import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithmCode } from '../error.js'
+import { MAX_MESSAGE_SIZE } from '../stream.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -42,6 +43,7 @@ export function getFingerprintFromSdp (sdp: string): string | undefined {
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
 }
+
 /**
  * Get base2 | identity decoders
  */
@@ -127,7 +129,7 @@ a=ice-ufrag:${ufrag}
 a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
-a=max-message-size:16384
+a=max-message-size:${MAX_MESSAGE_SIZE}
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
 }
 
