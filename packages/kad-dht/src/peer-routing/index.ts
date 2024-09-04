@@ -1,6 +1,6 @@
-import { keys } from '@libp2p/crypto'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { QueryError, InvalidRecordError } from '../errors.js'
@@ -114,7 +114,8 @@ export class PeerRouting {
       yield event
 
       if (event.name === 'PEER_RESPONSE' && event.record != null) {
-        const recPeer = await peerIdFromKeys(keys.marshalPublicKey({ bytes: event.record.value }))
+        const publicKey = publicKeyFromProtobuf(event.record.value)
+        const recPeer = peerIdFromPublicKey(publicKey)
 
         // compare hashes of the pub key
         if (!recPeer.equals(peer)) {
@@ -125,7 +126,10 @@ export class PeerRouting {
           throw new InvalidPublicKeyError('public key missing')
         }
 
-        yield valueEvent({ from: peer, value: recPeer.publicKey }, options)
+        yield valueEvent({
+          from: peer,
+          value: event.record.value
+        }, options)
       }
     }
 
@@ -161,7 +165,7 @@ export class PeerRouting {
       const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
         const request: Partial<Message> = {
           type: MessageType.FIND_NODE,
-          key: id.toBytes()
+          key: id.toMultihash().bytes
         }
 
         for await (const event of self.network.sendRequest(peer, request, {
@@ -181,7 +185,7 @@ export class PeerRouting {
         }
       }
 
-      for await (const event of this.queryManager.run(id.toBytes(), findPeerQuery, options)) {
+      for await (const event of this.queryManager.run(id.toMultihash().bytes, findPeerQuery, options)) {
         if (event.name === 'FINAL_PEER') {
           foundPeer = true
         }

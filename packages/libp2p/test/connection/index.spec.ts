@@ -1,5 +1,6 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
@@ -25,7 +26,7 @@ function defaultConnectionInit (): any {
 
 describe('connection', () => {
   it('should not require local or remote addrs', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     return createConnection({
       remotePeer,
@@ -35,7 +36,7 @@ describe('connection', () => {
   })
 
   it('should append remote peer id to address if not already present', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const conn = createConnection({
       remotePeer,
@@ -47,8 +48,8 @@ describe('connection', () => {
   })
 
   it('should not append remote peer id to address if present', async () => {
-    const remotePeer = await createEd25519PeerId()
-    const otherPeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const conn = createConnection({
       remotePeer,

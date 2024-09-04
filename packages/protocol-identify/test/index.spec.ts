@@ -1,6 +1,7 @@
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -24,8 +25,12 @@ describe('identify', () => {
   let identify: Identify
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromPrivateKey(privateKey)
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId,
+      privateKey,
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
@@ -57,7 +62,7 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const message: IdentifyMessage = {
       listenAddrs: [
         multiaddr('/ip4/123.123.123.123/tcp/123').bytes
@@ -65,7 +70,7 @@ describe('identify', () => {
       protocols: [
         '/foo/bar/1.0'
       ],
-      publicKey: remotePeer.publicKey
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
     }
 
     const connection = identifyConnection(remotePeer, message)
@@ -83,13 +88,13 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
-    const otherPeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = identifyConnection(remotePeer, {
       listenAddrs: [],
       protocols: [],
-      publicKey: otherPeer.publicKey
+      publicKey: publicKeyToProtobuf(otherPeer.publicKey)
     })
 
     // run identify
@@ -123,7 +128,7 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const { connection, stream } = identifyStream(remotePeer)
 
     // eslint-disable-next-line require-yield
@@ -150,7 +155,7 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const { connection, stream } = identifyStream(remotePeer)
 
@@ -174,12 +179,12 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = identifyConnection(remotePeer, {
       listenAddrs: [],
       protocols: [],
-      publicKey: remotePeer.publicKey,
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       agentVersion: 'secret-agent',
       protocolVersion: '9000'
     })
@@ -214,7 +219,8 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
 
     const oldPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -222,12 +228,12 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(1n)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     const connection = identifyConnection(remotePeer, {
       listenAddrs: [],
       protocols: [],
-      publicKey: remotePeer.publicKey,
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       signedPeerRecord: oldPeerRecord.marshal()
     })
 
@@ -238,7 +244,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
 
     components.peerStore.get.resolves({
       id: remotePeer,
@@ -265,14 +271,14 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const message = {
+    const message: IdentifyMessage = {
       protocolVersion: 'protocol version',
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: remotePeer.publicKey
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
     }
 
     const connection = identifyConnection(remotePeer, message)
@@ -289,7 +295,7 @@ describe('identify', () => {
       isCertified: false,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
     }])
-    expect(peer.publicKey).to.equalBytes(remotePeer.publicKey)
+    expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
   it('should prefer addresses from signed peer record', async () => {
@@ -297,7 +303,8 @@ describe('identify', () => {
 
     await start(identify)
 
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
 
     const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
       peerId: remotePeer,
@@ -305,15 +312,15 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/5678')
       ],
       seqNumber: BigInt(Date.now() * 2)
-    }), remotePeer)
+    }), remotePrivateKey)
     const peerRecordEnvelope = signedPeerRecord.marshal()
 
-    const message = {
+    const message: IdentifyMessage = {
       protocolVersion: 'protocol version',
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: remotePeer.publicKey,
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       signedPeerRecord: peerRecordEnvelope
     }
 
@@ -330,7 +337,7 @@ describe('identify', () => {
       isCertified: true,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
     }])
-    expect(peer.publicKey).to.equalBytes(remotePeer.publicKey)
+    expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
   it('should not send unroutable observed addresses', async () => {

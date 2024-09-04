@@ -1,5 +1,4 @@
-import { peerIdFromString } from '@libp2p/peer-id'
-import { mapIterable } from './util.js'
+import { mapIterable, peerIdFromString } from './util.js'
 import type { PeerId } from '@libp2p/interface'
 
 /**
@@ -65,9 +64,9 @@ export class PeerSet {
 
   forEach (predicate: (peerId: PeerId, index: PeerId, set: PeerSet) => void): void {
     this.set.forEach((str) => {
-      const id = peerIdFromString(str)
+      const peerId = peerIdFromString(str)
 
-      predicate(id, id, this)
+      predicate(peerId, peerId, this)
     })
   }
 

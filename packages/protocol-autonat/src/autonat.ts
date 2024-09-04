@@ -1,5 +1,5 @@
 import { AbortError, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import first from 'it-first'
@@ -7,6 +7,7 @@ import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
+import * as Digest from 'multiformats/hashes/digest'
 import {
   MAX_INBOUND_STREAMS,
   MAX_OUTBOUND_STREAMS,
@@ -191,7 +192,8 @@ export class AutoNATService implements Startable {
     }
 
     try {
-      peerId = peerIdFromBytes(peer.id)
+      const digest = Digest.decode(peer.id)
+      peerId = peerIdFromMultihash(digest)
     } catch (err) {
       this.log.error('invalid PeerId', err)
 
@@ -362,7 +364,7 @@ export class AutoNATService implements Startable {
         type: Message.MessageType.DIAL,
         dial: {
           peer: {
-            id: this.components.peerId.toBytes(),
+            id: this.components.peerId.toMultihash().bytes,
             addrs: multiaddrs.map(map => map.bytes)
           }
         }

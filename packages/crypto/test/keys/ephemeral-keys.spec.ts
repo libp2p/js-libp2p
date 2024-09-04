@@ -1,9 +1,9 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import * as crypto from '../../src/index.js'
+import { generateEphemeralKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-elliptic-key.js'
-import type { Curve } from '../../src/keys/ecdh.js'
+import type { Curve } from '../../src/keys/ecdh/index.js'
 
 const curves: Curve[] = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
 const lengths: Record<string, number> = {
@@ -22,8 +22,8 @@ describe('generateEphemeralKeyPair', () => {
   curves.forEach((curve) => {
     it(`generate and shared key ${curve}`, async () => {
       const keys = await Promise.all([
-        crypto.keys.generateEphemeralKeyPair(curve),
-        crypto.keys.generateEphemeralKeyPair(curve)
+        generateEphemeralKeyPair(curve),
+        generateEphemeralKeyPair(curve)
       ])
 
       expect(keys[0].key).to.have.length(lengths[curve])
@@ -39,8 +39,8 @@ describe('generateEphemeralKeyPair', () => {
       const curve = fixtures.curve
 
       const keys = await Promise.all([
-        crypto.keys.generateEphemeralKeyPair(curve),
-        crypto.keys.generateEphemeralKeyPair(curve)
+        generateEphemeralKeyPair(curve),
+        generateEphemeralKeyPair(curve)
       ])
 
       const alice = keys[0]
@@ -59,7 +59,7 @@ describe('generateEphemeralKeyPair', () => {
 
   it('handles bad curve name', async () => {
     // @ts-expect-error argument is not a Curve
-    await expect(crypto.keys.generateEphemeralKeyPair('bad name')).to.eventually.be.rejected
+    await expect(generateEphemeralKeyPair('bad name')).to.eventually.be.rejected
       .with.property('name', 'InvalidParametersError')
   })
 })

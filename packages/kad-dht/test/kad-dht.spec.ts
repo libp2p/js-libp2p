@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 8] */
 
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -11,6 +11,7 @@ import filter from 'it-filter'
 import last from 'it-last'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import * as Digest from 'multiformats/hashes/digest'
 import sinon from 'sinon'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -18,7 +19,7 @@ import * as c from '../src/constants.js'
 import { EventTypes, MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
-import { createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIds, type PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
@@ -48,7 +49,7 @@ async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Prom
 }
 
 describe('KadDHT', () => {
-  let peerIds: PeerId[]
+  let peerIds: PeerIdWithPrivateKey[]
   let values: Array<{ cid: CID, value: Uint8Array }>
   let tdht: TestDHT
 
@@ -477,7 +478,7 @@ describe('KadDHT', () => {
         expect(msg.type).equals(MessageType.ADD_PROVIDER)
         expect(valuesBuffs).includes(msg.key)
         expect(msg.providers.length).equals(1)
-        expect(peerIdFromBytes(msg.providers[0].id).toString()).equals(idsB58[3])
+        expect(peerIdFromMultihash(Digest.decode(msg.providers[0].id)).toString()).equals(idsB58[3])
       }
 
       // Expect each DHT to find the provider of each value
@@ -696,7 +697,12 @@ describe('KadDHT', () => {
         new Array(nDHTs).fill(0).map(async () => tdht.spawn())
       )
 
-      const dhtsById = new Map<PeerId, KadDHT>(dhts.map((d) => [d.components.peerId, d]))
+      const dhtsById = new Map<PeerIdWithPrivateKey, KadDHT>(dhts.map((d) => {
+        const peerId = d.components.peerId as unknown as PeerIdWithPrivateKey
+        peerId.privateKey = d.components.privateKey
+
+        return [peerId, d]
+      }))
       const ids = [...dhtsById.keys()]
 
       // The origin node for the FIND_PEER query
@@ -710,7 +716,7 @@ describe('KadDHT', () => {
       // Make connections between nodes close to each other
       const sorted = await sortClosestPeers(ids, rtval)
 
-      const conns: PeerId[][] = []
+      const conns: PeerIdWithPrivateKey[][] = []
       const maxRightIndex = sorted.length - 1
       for (let i = 0; i < sorted.length; i++) {
         // Connect to 5 nodes on either side (10 in total)
@@ -750,7 +756,7 @@ describe('KadDHT', () => {
         rtableSet[p.toString()] = true
       })
 
-      const originNodeIndex = ids.findIndex(i => uint8ArrayEquals(i.multihash.bytes, originNode.components.peerId.multihash.bytes))
+      const originNodeIndex = ids.findIndex(i => uint8ArrayEquals(i.toMultihash().bytes, originNode.components.peerId.toMultihash().bytes))
       const otherIds = ids.slice(0, originNodeIndex).concat(ids.slice(originNodeIndex + 1))
 
       // Make the query
@@ -815,7 +821,7 @@ describe('KadDHT', () => {
 
       await Promise.all(connected)
 
-      const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toBytes()))
+      const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
       expect(res).to.not.be.empty()
 
       // no peer should include itself in the response, only other peers that it

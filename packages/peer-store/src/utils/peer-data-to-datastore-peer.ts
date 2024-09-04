@@ -1,6 +1,6 @@
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { isMultiaddr } from '@multiformats/multiaddr'
-import { equals as uint8arrayEquals } from 'uint8arrays/equals'
 import type { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId, PeerData } from '@libp2p/interface'
 
@@ -9,7 +9,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
     throw new InvalidParametersError('Invalid PeerData')
   }
 
-  if (data.publicKey != null && peerId.publicKey != null && !uint8arrayEquals(data.publicKey, peerId.publicKey)) {
+  if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
     throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
   }
 
@@ -41,7 +41,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
     protocols: (data.protocols ?? []).sort(),
     metadata: new Map(),
     tags: new Map(),
-    publicKey: data.publicKey,
+    publicKey: data.publicKey != null ? publicKeyToProtobuf(data.publicKey) : undefined,
     peerRecordEnvelope: data.peerRecordEnvelope
   }
 

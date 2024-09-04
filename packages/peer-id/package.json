@@ -54,6 +54,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
+    "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface": "^1.7.0",
     "multiformats": "^13.1.0",
     "uint8arrays": "^5.1.0"

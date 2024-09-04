@@ -56,10 +56,11 @@
   "dependencies": {
     "@libp2p/interface": "^1.7.0",
     "@libp2p/peer-id": "^4.2.4",
-    "@libp2p/utils": "^5.4.9"
+    "@libp2p/utils": "^5.4.9",
+    "multiformats": "^13.2.2"
   },
   "devDependencies": {
-    "@libp2p/peer-id-factory": "^4.2.4",
+    "@libp2p/crypto": "^4.1.9",
     "@types/sinon": "^17.0.3",
     "aegir": "^44.0.1",
     "sinon": "^18.0.0",

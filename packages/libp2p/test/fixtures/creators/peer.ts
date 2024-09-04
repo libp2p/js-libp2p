@@ -1,10 +1,9 @@
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
-import { createLibp2pNode, type Libp2pNode } from '../../../src/libp2p.js'
+import { createLibp2p } from '../../../src/index.js'
 import { createBaseOptions } from '../base-options.browser.js'
 import type { AddressManagerInit } from '../../../src/address-manager/index.js'
 import type { Libp2pOptions } from '../../../src/index.js'
-import type { ServiceMap } from '@libp2p/interface'
+import type { Libp2p, ServiceMap } from '@libp2p/interface'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
@@ -25,10 +24,9 @@ export interface CreatePeerOptions <T extends ServiceMap> {
 /**
  * Create libp2p nodes.
  */
-export async function createNode <T extends ServiceMap> (options: CreatePeerOptions<T> = {}): Promise<Libp2pNode<T>> {
+export async function createNode <T extends ServiceMap> (options: CreatePeerOptions<T> = {}): Promise<Libp2p<T>> {
   const started = options.started ?? true
   const config = options.config ?? {}
-  const peerId = await createEd25519PeerId()
   const addresses: AddressManagerInit = started
     ? {
         listen: [listenAddr.toString()],
@@ -42,8 +40,7 @@ export async function createNode <T extends ServiceMap> (options: CreatePeerOpti
         noAnnounce: [],
         announceFilter: (addrs) => addrs
       }
-  const peer = await createLibp2pNode(createBaseOptions({
-    peerId,
+  const peer = await createLibp2p(createBaseOptions({
     addresses,
     start: started,
     ...config

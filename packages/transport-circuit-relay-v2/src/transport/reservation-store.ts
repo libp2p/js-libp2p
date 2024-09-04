@@ -166,7 +166,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       return
     }
 
-    if (this.relayFilter.has(peerId.toBytes())) {
+    if (this.relayFilter.has(peerId.toMultihash().bytes)) {
       this.log('potential relay peer %p has failed previously, not trying again', peerId)
       return
     }
@@ -268,7 +268,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         this.reservations.delete(peerId)
 
         // don't try this peer again
-        this.relayFilter.add(peerId.toBytes())
+        this.relayFilter.add(peerId.toMultihash().bytes)
       }
     }, {
       peerId

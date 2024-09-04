@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -14,7 +15,7 @@ describe('Message', () => {
     this.timeout(10 * 1000)
 
     const peers = await Promise.all(
-      Array.from({ length: 5 }).map(async () => createEd25519PeerId()))
+      Array.from({ length: 5 }).map(async () => peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
 
     const closer = peers.slice(0, 5).map((p) => ({
       id: p,

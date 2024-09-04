@@ -1,5 +1,6 @@
 import type { Stream } from '../connection/index.js'
 import type { TypedEventTarget } from '../event-target.js'
+import type { PublicKey } from '../keys/index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -35,7 +36,7 @@ export interface SignedMessage {
   data: Uint8Array
   sequenceNumber: bigint
   signature: Uint8Array
-  key: Uint8Array
+  key: PublicKey
 }
 
 export interface UnsignedMessage {

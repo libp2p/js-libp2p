@@ -21,9 +21,6 @@
       "path": "../peer-collections"
     },
     {
-      "path": "../peer-id-factory"
-    },
-    {
       "path": "../pubsub"
     }
   ]

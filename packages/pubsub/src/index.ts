@@ -40,12 +40,13 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId } from '@libp2p/interface'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey } from '@libp2p/interface'
 import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PubSubComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: Registrar
   logger: ComponentLogger
 }
@@ -260,9 +261,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    * Registrar notifies a closing connection with pubsub protocol
    */
   protected _onPeerDisconnected (peerId: PeerId, conn?: Connection): void {
-    const idB58Str = peerId.toString()
-
-    this.log('connection ended', idB58Str)
+    this.log('connection ended %p', peerId)
     this._removePeer(peerId)
   }
 
@@ -629,7 +628,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictSign':
-        return signMessage(this.components.peerId, message, this.encodeMessage.bind(this))
+        return signMessage(this.components.privateKey, message, this.encodeMessage.bind(this))
       case 'StrictNoSign':
         return Promise.resolve({
           type: 'unsigned',

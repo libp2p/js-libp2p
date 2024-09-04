@@ -1,4 +1,4 @@
-import { generateEphmeralKeyPair } from './ecdh.js'
+import { generateEphemeralKeyPair } from './ecdh/index.js'
 
 /**
  * Generates an ephemeral public key and returns a function that will compute
@@ -6,4 +6,4 @@ import { generateEphmeralKeyPair } from './ecdh.js'
  *
  * Focuses only on ECDH now, but can be made more general in the future.
  */
-export default generateEphmeralKeyPair
+export default generateEphemeralKeyPair

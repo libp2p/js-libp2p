@@ -1,10 +1,12 @@
 import { randomBytes } from '@libp2p/crypto'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
-import { peerIdFromBytes, peerIdFromKeys } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPublicKey } from '@libp2p/peer-id'
+import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Message, PubSubRPCMessage } from '@libp2p/interface'
+import type { Message, PubSubRPCMessage, PublicKey } from '@libp2p/interface'
 
 /**
  * Generate a random sequence number
@@ -16,12 +18,13 @@ export function randomSeqno (): bigint {
 /**
  * Generate a message id, based on the `key` and `seqno`
  */
-export const msgId = (key: Uint8Array, seqno: bigint): Uint8Array => {
+export const msgId = (key: PublicKey, seqno: bigint): Uint8Array => {
   const seqnoBytes = uint8ArrayFromString(seqno.toString(16).padStart(16, '0'), 'base16')
+  const keyBytes = publicKeyToProtobuf(key)
 
-  const msgId = new Uint8Array(key.length + seqnoBytes.length)
-  msgId.set(key, 0)
-  msgId.set(seqnoBytes, key.length)
+  const msgId = new Uint8Array(keyBytes.byteLength + seqnoBytes.length)
+  msgId.set(keyBytes, 0)
+  msgId.set(seqnoBytes, keyBytes.byteLength)
 
   return msgId
 }
@@ -70,13 +73,15 @@ const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
     return false
   }
   // if a public key is present in the `from` field, the message should be signed
-  const fromID = peerIdFromBytes(message.from)
+  const fromID = peerIdFromMultihash(Digest.decode(message.from))
   if (fromID.publicKey != null) {
     return true
   }
 
   if (message.key != null) {
-    const signingID = await peerIdFromKeys(message.key)
+    const signingKey = message.key
+    const signingID = peerIdFromPublicKey(publicKeyFromProtobuf(signingKey))
+
     return signingID.equals(fromID)
   }
 
@@ -96,20 +101,21 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     }
   }
 
-  const from = peerIdFromBytes(message.from)
+  const from = peerIdFromMultihash(Digest.decode(message.from))
+  const key = message.key ?? from.publicKey
+
+  if (key == null) {
+    throw new InvalidMessageError('RPC message was missing public key')
+  }
 
   const msg: Message = {
     type: 'signed',
-    from: peerIdFromBytes(message.from),
+    from,
     topic: message.topic ?? '',
     sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
     data: message.data ?? new Uint8Array(0),
     signature: message.signature ?? new Uint8Array(0),
-    key: message.key ?? from.publicKey ?? new Uint8Array(0)
-  }
-
-  if (msg.key.length === 0) {
-    throw new InvalidMessageError('Signed RPC message was missing key')
+    key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
   }
 
   return msg
@@ -118,12 +124,13 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
 export const toRpcMessage = (message: Message): PubSubRPCMessage => {
   if (message.type === 'signed') {
     return {
-      from: message.from.multihash.bytes,
+      from: message.from.toMultihash().bytes,
       data: message.data,
       sequenceNumber: bigIntToBytes(message.sequenceNumber),
       topic: message.topic,
       signature: message.signature,
-      key: message.key
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      key: message.key ? publicKeyToProtobuf(message.key) : undefined
     }
   }
 

@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { KEEP_ALIVE, TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pRetry from 'p-retry'
@@ -22,7 +23,7 @@ describe('reconnect queue', () => {
   let queue: ReconnectQueue
 
   beforeEach(async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     components = {
       connectionManager: stubInterface(),
@@ -41,7 +42,7 @@ describe('reconnect queue', () => {
   it('should reconnect to KEEP_ALIVE peers on startup', async () => {
     queue = new ReconnectQueue(components)
 
-    const keepAlivePeer = await createEd25519PeerId()
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     components.peerStore.all.resolves([
       stubInterface<Peer>({
@@ -65,7 +66,7 @@ describe('reconnect queue', () => {
   it('should reconnect to KEEP_ALIVE peers on disconnect', async () => {
     queue = new ReconnectQueue(components)
 
-    const keepAlivePeer = await createEd25519PeerId()
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     components.peerStore.all.resolves([])
     components.peerStore.get.withArgs(keepAlivePeer).resolves(
@@ -94,7 +95,7 @@ describe('reconnect queue', () => {
   it('should not reconnect to non-KEEP_ALIVE peers on disconnect', async () => {
     queue = new ReconnectQueue(components)
 
-    const nonKeepAlivePeer = await createEd25519PeerId()
+    const nonKeepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     components.peerStore.all.resolves([])
     components.peerStore.get.withArgs(nonKeepAlivePeer).resolves(

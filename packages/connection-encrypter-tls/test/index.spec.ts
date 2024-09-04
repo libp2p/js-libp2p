@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -17,14 +17,16 @@ describe('tls', () => {
   let encrypter: ConnectionEncrypter
 
   beforeEach(async () => {
-    [localPeer, remotePeer, wrongPeer] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId(),
-      createEd25519PeerId()
+    [remotePeer, wrongPeer] = await Promise.all([
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
 
+    const localKeyPair = await generateKeyPair('Ed25519')
+    localPeer = peerIdFromPrivateKey(localKeyPair)
+
     encrypter = tls()({
-      peerId: await createEd25519PeerId(),
+      privateKey: localKeyPair,
       logger: defaultLogger()
     })
   })
@@ -56,11 +58,12 @@ describe('tls', () => {
   })
 
   it('should fail if the peer does not provide its public key', async () => {
-    const peer = await createRSAPeerId()
-    remotePeer = peerIdFromBytes(peer.toBytes())
+    const keyPair = await generateKeyPair('RSA', 512)
+    const peer = peerIdFromPrivateKey(keyPair)
+    remotePeer = peerIdFromMultihash(peer.toMultihash())
 
     encrypter = tls()({
-      peerId: remotePeer,
+      privateKey: keyPair,
       logger: defaultLogger()
     })
 
@@ -80,6 +83,6 @@ describe('tls', () => {
         remotePeer: localPeer
       })
     ]))
-      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
+      .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
   })
 })

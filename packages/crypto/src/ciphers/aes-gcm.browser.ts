@@ -1,6 +1,6 @@
 import { concat } from 'uint8arrays/concat'
 import { fromString } from 'uint8arrays/from-string'
-import webcrypto from '../webcrypto.js'
+import webcrypto from '../webcrypto/index.js'
 import type { CreateOptions, AESCipher } from './interface.js'
 
 // WebKit on Linux does not support deriving a key from an empty PBKDF2 key.
