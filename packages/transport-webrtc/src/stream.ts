@@ -6,6 +6,7 @@ import pDefer from 'p-defer'
 import { pEvent, TimeoutError } from 'p-event'
 import pTimeout from 'p-timeout'
 import { raceSignal } from 'race-signal'
+import { encodingLength } from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './pb/message.js'
 import type { DataChannelOptions } from './index.js'
@@ -35,22 +36,40 @@ export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
 export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 /**
- * protobuf field definition overhead + length encoding prefix length
- */
-export const PROTOBUF_OVERHEAD = 7
-
-/**
- * Length of varint, in bytes
- */
-export const VARINT_LENGTH = 2
-
-/**
- * Max message size that can be sent to the DataChannel
+ * Max message size that can be sent to the DataChannel. In browsers this is
+ * 256KiB but go-libp2p and rust-libp2p only support 16KiB at the time of
+ * writing.
  *
  * @see https://blog.mozilla.org/webrtc/large-data-channel-messages/
  * @see https://issues.webrtc.org/issues/40644524
  */
-export const MAX_MESSAGE_SIZE = 256 * 1024
+export const MAX_MESSAGE_SIZE = 16 * 1024
+
+/**
+ * max protobuf overhead:
+ *
+ * ```
+ * [message-length][flag-field-id+type][flag-field-length][flag-field][message-field-id+type][message-field-length][message-field]
+ * ```
+ */
+function calculateProtobufOverhead (maxMessageSize = MAX_MESSAGE_SIZE): number {
+  // these have a fixed size
+  const messageLength = encodingLength(maxMessageSize - encodingLength(maxMessageSize))
+  const flagField = 1 + encodingLength(Object.keys(Message.Flag).length - 1) // id+type/value
+  const messageFieldIdType = 1 // id+type
+  const available = maxMessageSize - messageLength - flagField - messageFieldIdType
+
+  // let message-length/message-data fill the rest of the message
+  const messageFieldLengthLength = encodingLength(available)
+
+  return messageLength + flagField + messageFieldIdType + messageFieldLengthLength
+}
+
+/**
+ * The protobuf message overhead includes the maximum amount of all bytes in the
+ * protobuf that aren't message field bytes
+ */
+export const PROTOBUF_OVERHEAD = calculateProtobufOverhead()
 
 /**
  * When closing streams we send a FIN then wait for the remote to
@@ -132,7 +151,7 @@ export class WebRTCStream extends AbstractStream {
     this.incomingData = pushable<Uint8Array>()
     this.bufferedAmountLowEventTimeout = init.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
+    this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
     this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
