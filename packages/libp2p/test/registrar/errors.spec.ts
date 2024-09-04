@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type ConnectionGater, type PeerId } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -19,7 +20,7 @@ describe('registrar errors', () => {
   let peerId: PeerId
 
   before(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const events = new TypedEventEmitter()
     components = defaultComponents({
       peerId,
@@ -31,7 +32,6 @@ describe('registrar errors', () => {
     })
     components.peerStore = new PersistentPeerStore(components)
     components.connectionManager = new DefaultConnectionManager(components, {
-      minConnections: 50,
       maxConnections: 1000,
       inboundUpgradeTimeout: 1000
     })

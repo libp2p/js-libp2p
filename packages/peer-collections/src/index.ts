@@ -11,9 +11,10 @@
  *
  * ```TypeScript
  * import { peerList } from '@libp2p/peer-collections'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const list = peerList()
  * list.push(peerId)
@@ -23,11 +24,12 @@
  *
  * ```TypeScript
  * import { trackedPeerList } from '@libp2p/peer-collections'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  * import { createLibp2p } from 'libp2p'
  *
  * const libp2p = await createLibp2p()
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const list = trackedPeerList({ name: 'my_metric_name', metrics: libp2p.metrics })
  * list.push(peerId)
@@ -37,9 +39,10 @@
  *
  * ```TypeScript
  * import { peerMap } from '@libp2p/peer-collections'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const map = peerMap<string>()
  * map.set(peerId, 'value')
@@ -50,10 +53,11 @@
  * ```TypeScript
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
  * const libp2p = await createLibp2p()
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const map = trackedPeerMap({ name: 'my_metric_name', metrics: libp2p.metrics })
  * map.set(peerId, 'value')
@@ -63,9 +67,10 @@
  *
  * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const set = peerSet()
  * set.add(peerId)
@@ -76,10 +81,11 @@
  * ```TypeScript
  * import { trackedPeerSet } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
  * const libp2p = await createLibp2p()
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const set = trackedPeerSet({ name: 'my_metric_name', metrics: libp2p.metrics })
  * set.add(peerId)
@@ -89,9 +95,10 @@
  *
  * ```TypeScript
  * import { peerFilter } from '@libp2p/peer-collections'
- * import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+ * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { generateKeyPair } from '@libp2p/crypto/keys'
  *
- * const peerId = await createEd25519PeerId()
+ * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
  * const filter = peerFilter(1024)
  * filter.has(peerId) // false

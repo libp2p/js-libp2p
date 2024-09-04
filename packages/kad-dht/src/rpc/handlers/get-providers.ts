@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { CID } from 'multiformats/cid'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
@@ -40,14 +40,14 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
     if (msg.key == null) {
-      throw new CodeError('Invalid GET_PROVIDERS message received - key was missing', 'ERR_INVALID_MESSAGE')
+      throw new InvalidMessageError('Invalid GET_PROVIDERS message received - key was missing')
     }
 
     let cid
     try {
       cid = CID.decode(msg.key)
     } catch (err: any) {
-      throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
+      throw new InvalidMessageError('Invalid CID')
     }
 
     this.log('%p asking for providers for %s', peerId, cid)
@@ -67,14 +67,14 @@ export class GetProvidersHandler implements DHTMessageHandler {
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: providerPeers
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         }))
     }
@@ -104,7 +104,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
           output.push(peerAfterFilter)
         }
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }

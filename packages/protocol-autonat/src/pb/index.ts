@@ -4,8 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Message {
@@ -83,7 +82,7 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {
             addrs: []
           }
@@ -94,15 +93,22 @@ export namespace Message {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.id = reader.bytes()
                 break
-              case 2:
+              }
+              case 2: {
+                if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
+                  throw new MaxLengthError('Decode error - map field "addrs" had too many elements')
+                }
+
                 obj.addrs.push(reader.bytes())
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -117,8 +123,8 @@ export namespace Message {
       return encodeMessage(obj, PeerInfo.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): PeerInfo => {
-      return decodeMessage(buf, PeerInfo.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerInfo>): PeerInfo => {
+      return decodeMessage(buf, PeerInfo.codec(), opts)
     }
   }
 
@@ -144,7 +150,7 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {}
 
           const end = length == null ? reader.len : reader.pos + length
@@ -153,12 +159,16 @@ export namespace Message {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
-                obj.peer = Message.PeerInfo.codec().decode(reader, reader.uint32())
+              case 1: {
+                obj.peer = Message.PeerInfo.codec().decode(reader, reader.uint32(), {
+                  limits: opts.limits?.peer
+                })
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -173,8 +183,8 @@ export namespace Message {
       return encodeMessage(obj, Dial.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): Dial => {
-      return decodeMessage(buf, Dial.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Dial>): Dial => {
+      return decodeMessage(buf, Dial.codec(), opts)
     }
   }
 
@@ -212,7 +222,7 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {}
 
           const end = length == null ? reader.len : reader.pos + length
@@ -221,18 +231,22 @@ export namespace Message {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.status = Message.ResponseStatus.codec().decode(reader)
                 break
-              case 2:
+              }
+              case 2: {
                 obj.statusText = reader.string()
                 break
-              case 3:
+              }
+              case 3: {
                 obj.addr = reader.bytes()
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -247,8 +261,8 @@ export namespace Message {
       return encodeMessage(obj, DialResponse.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): DialResponse => {
-      return decodeMessage(buf, DialResponse.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialResponse>): DialResponse => {
+      return decodeMessage(buf, DialResponse.codec(), opts)
     }
   }
 
@@ -279,7 +293,7 @@ export namespace Message {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -288,18 +302,26 @@ export namespace Message {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = Message.MessageType.codec().decode(reader)
               break
-            case 2:
-              obj.dial = Message.Dial.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.dial = Message.Dial.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.dial
+              })
               break
-            case 3:
-              obj.dialResponse = Message.DialResponse.codec().decode(reader, reader.uint32())
+            }
+            case 3: {
+              obj.dialResponse = Message.DialResponse.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.dialResponse
+              })
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -314,7 +336,7 @@ export namespace Message {
     return encodeMessage(obj, Message.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Message => {
-    return decodeMessage(buf, Message.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message => {
+    return decodeMessage(buf, Message.codec(), opts)
   }
 }

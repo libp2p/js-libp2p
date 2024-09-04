@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerStore } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -20,7 +21,7 @@ describe('Address Manager', () => {
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     peerStore = stubInterface<PeerStore>({
       patch: Sinon.stub().resolves({})
     })

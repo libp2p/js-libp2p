@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type Identify, identify } from '@libp2p/identify'
-import { AbortError, ERR_TIMEOUT, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
@@ -24,10 +24,9 @@ import { stubInterface } from 'sinon-ts'
 import { defaultComponents, type Components } from '../../src/components.js'
 import { LAST_DIAL_FAILURE_KEY } from '../../src/connection-manager/constants.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { codes as ErrorCodes } from '../../src/errors.js'
 import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
-import type { Libp2p, Connection, PeerId, Transport } from '@libp2p/interface'
+import type { Libp2p, Connection, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -44,7 +43,7 @@ describe('dialing (direct, WebSockets)', () => {
   beforeEach(async () => {
     const localEvents = new TypedEventEmitter()
     localComponents = defaultComponents({
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       datastore: new MemoryDatastore(),
       upgrader: mockUpgrader({ events: localEvents }),
       connectionGater: mockConnectionGater(),
@@ -56,7 +55,6 @@ describe('dialing (direct, WebSockets)', () => {
     })
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
       maxConnections: 100,
-      minConnections: 50,
       inboundUpgradeTimeout: 1000
     })
 
@@ -101,7 +99,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(unsupportedAddr.encapsulate(`/p2p/${remoteComponents.peerId.toString()}`)))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should mark a peer as having recently failed to connect', async () => {
@@ -141,7 +139,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejectedWith(Error)
-      .and.to.have.nested.property('.code', ErrorCodes.ERR_NO_VALID_ADDRESSES)
+      .and.to.have.nested.property('.name', 'NoValidAddressesError')
   })
 
   it('should abort dials on queue task timeout', async () => {
@@ -166,7 +164,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remoteAddr))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ERR_TIMEOUT)
+      .and.to.have.property('name', 'TimeoutError')
   })
 
   it('should throw when a peer advertises more than the allowed number of addresses', async () => {
@@ -182,7 +180,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     await expect(connectionManager.openConnection(remotePeerId))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_TOO_MANY_ADDRESSES)
+      .and.to.have.property('name', 'DialError')
   })
 
   it('should sort addresses on dial', async () => {
@@ -291,7 +289,7 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([])).to.eventually.rejected
-      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
+      .with.property('name', 'NoValidAddressesError')
   })
 
   it('should throw if dialling multiaddrs with mismatched peer ids', async () => {
@@ -300,10 +298,10 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
-      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(await createEd25519PeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8001/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`)
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
   })
 
   it('should throw if dialling multiaddrs with inconsistent peer ids', async () => {
@@ -312,27 +310,22 @@ describe('dialing (direct, WebSockets)', () => {
 
     // Perform dial
     await expect(connectionManager.openConnection([
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`),
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`),
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws')
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
 
     // Perform dial
     await expect(connectionManager.openConnection([
       multiaddr('/ip4/0.0.0.0/tcp/8001/ws'),
-      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(await createEd25519PeerId()).toString()}`)
+      multiaddr(`/ip4/0.0.0.0/tcp/8000/ws/p2p/${(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toString()}`)
     ])).to.eventually.rejected
-      .with.property('code', 'ERR_INVALID_PARAMETERS')
+      .with.property('name', 'InvalidParametersError')
   })
 })
 
 describe('libp2p.dialer (direct, WebSockets)', () => {
   let libp2p: Libp2p<{ identify: Identify }>
-  let peerId: PeerId
-
-  beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-  })
 
   afterEach(async () => {
     sinon.restore()
@@ -344,7 +337,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should run identify automatically after connecting', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -389,7 +381,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should not run identify automatically after connecting', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -431,7 +422,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should be able to use hangup to close connections', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -461,7 +451,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should be able to use hangup when no connection exists', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -482,7 +471,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
   it('should fail to dial self', async () => {
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         webSockets({
           filter: filters.all
@@ -500,9 +488,9 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await libp2p.start()
 
-    await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${peerId.toString()}`)))
+    await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${libp2p.peerId.toString()}`)))
       .to.eventually.be.rejected()
-      .and.to.have.property('code', ErrorCodes.ERR_DIALED_SELF)
+      .and.to.have.property('name', 'DialError')
   })
 
   it('should limit the maximum dial queue size', async () => {
@@ -515,7 +503,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
     })
 
     libp2p = await createLibp2p({
-      peerId,
       transports: [
         () => transport
       ],
@@ -529,6 +516,6 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1234')),
       libp2p.dial(multiaddr('/ip4/127.0.0.1/tcp/1235'))
     ])).to.eventually.be.rejected
-      .with.property('code', 'ERR_DIAL_QUEUE_FULL')
+      .with.property('name', 'DialError')
   })
 })

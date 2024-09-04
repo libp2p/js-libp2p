@@ -1,13 +1,9 @@
 /* eslint-env mocha */
 
-import {
-  InvalidCryptoExchangeError,
-  UnexpectedPeerError
-} from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId, createRSAPeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
@@ -21,13 +17,16 @@ describe('tls', () => {
   let encrypter: ConnectionEncrypter
 
   beforeEach(async () => {
-    [localPeer, remotePeer, wrongPeer] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId(),
-      createEd25519PeerId()
+    [remotePeer, wrongPeer] = await Promise.all([
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     ])
 
+    const localKeyPair = await generateKeyPair('Ed25519')
+    localPeer = peerIdFromPrivateKey(localKeyPair)
+
     encrypter = tls()({
+      privateKey: localKeyPair,
       logger: defaultLogger()
     })
   })
@@ -46,17 +45,27 @@ describe('tls', () => {
     })
 
     await Promise.all([
-      encrypter.secureInbound(remotePeer, inbound),
-      encrypter.secureOutbound(localPeer, outbound, wrongPeer)
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
+        remotePeer: wrongPeer
+      })
     ]).then(() => expect.fail('should have failed'), (err) => {
       expect(err).to.exist()
-      expect(err).to.have.property('code', UnexpectedPeerError.code)
+      expect(err).to.have.property('name', 'UnexpectedPeerError')
     })
   })
 
   it('should fail if the peer does not provide its public key', async () => {
-    const peer = await createRSAPeerId()
-    remotePeer = peerIdFromBytes(peer.toBytes())
+    const keyPair = await generateKeyPair('RSA', 512)
+    const peer = peerIdFromPrivateKey(keyPair)
+    remotePeer = peerIdFromMultihash(peer.toMultihash())
+
+    encrypter = tls()({
+      privateKey: keyPair,
+      logger: defaultLogger()
+    })
 
     const { inbound, outbound } = mockMultiaddrConnPair({
       remotePeer,
@@ -67,9 +76,13 @@ describe('tls', () => {
     })
 
     await expect(Promise.all([
-      encrypter.secureInbound(localPeer, inbound),
-      encrypter.secureOutbound(remotePeer, outbound, localPeer)
+      encrypter.secureInbound(inbound, {
+        remotePeer
+      }),
+      encrypter.secureOutbound(outbound, {
+        remotePeer: localPeer
+      })
     ]))
-      .to.eventually.be.rejected.with.property('code', InvalidCryptoExchangeError.code)
+      .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
   })
 })

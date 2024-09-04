@@ -1,6 +1,7 @@
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { arrayEquals } from '@libp2p/utils/array-equals'
 import { multiaddr } from '@multiformats/multiaddr'
+import * as Digest from 'multiformats/hashes/digest'
 import {
   ENVELOPE_DOMAIN_PEER_RECORD,
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
@@ -34,7 +35,7 @@ export class PeerRecord {
    */
   static createFromProtobuf = (buf: Uint8Array | Uint8ArrayList): PeerRecord => {
     const peerRecord = Protobuf.decode(buf)
-    const peerId = peerIdFromBytes(peerRecord.peerId)
+    const peerId = peerIdFromMultihash(Digest.decode(peerRecord.peerId))
     const multiaddrs = (peerRecord.addresses ?? []).map((a) => multiaddr(a.multiaddr))
     const seqNumber = peerRecord.seq
 
@@ -65,7 +66,7 @@ export class PeerRecord {
   marshal (): Uint8Array {
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
-        peerId: this.peerId.toBytes(),
+        peerId: this.peerId.toMultihash().bytes,
         seq: BigInt(this.seqNumber),
         addresses: this.multiaddrs.map((m) => ({
           multiaddr: m.bytes

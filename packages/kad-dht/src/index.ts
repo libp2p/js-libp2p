@@ -84,7 +84,7 @@ import { KadDHT as KadDHTClass } from './kad-dht.js'
 import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
 import type { ProvidersInit } from './providers.js'
-import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
 import type { Datastore } from 'interface-datastore'
@@ -445,6 +445,7 @@ export interface KadDHTInit {
 
 export interface KadDHTComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: Registrar
   addressManager: AddressManager
   peerStore: PeerStore

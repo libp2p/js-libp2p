@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "4.1.8",
+  "version": "4.1.9",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -51,6 +51,10 @@
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./ciphers": {
+      "types": "./dist/src/ciphers/index.d.ts",
+      "import": "./dist/src/ciphers/index.js"
+    },
     "./hmac": {
       "types": "./dist/src/hmac/index.d.ts",
       "import": "./dist/src/hmac/index.js"
@@ -58,6 +62,10 @@
     "./keys": {
       "types": "./dist/src/keys/index.d.ts",
       "import": "./dist/src/keys/index.js"
+    },
+    "./webcrypto": {
+      "types": "./dist/src/webcrypto/index.d.ts",
+      "import": "./dist/src/webcrypto/index.js"
     }
   },
   "eslintConfig": {
@@ -84,7 +92,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.6.3",
+    "@libp2p/interface": "^1.7.0",
     "@noble/curves": "^1.4.0",
     "@noble/hashes": "^1.4.0",
     "asn1js": "^3.0.5",
@@ -101,12 +109,12 @@
   },
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
-    "./dist/src/hmac/index.js": "./dist/src/hmac/index-browser.js",
-    "./dist/src/keys/ecdh.js": "./dist/src/keys/ecdh-browser.js",
-    "./dist/src/keys/ed25519.js": "./dist/src/keys/ed25519-browser.js",
-    "./dist/src/keys/rsa.js": "./dist/src/keys/rsa-browser.js",
-    "./dist/src/keys/secp256k1.js": "./dist/src/keys/secp256k1-browser.js",
-    "./dist/src/webcrypto.js": "./dist/src/webcrypto-browser.js"
+    "./dist/src/hmac/index.js": "./dist/src/hmac/index.browser.js",
+    "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
+    "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
+    "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
+    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
+    "./dist/src/webcrypto/webcrypto.js": "./dist/src/webcrypto/webcrypto.browser.js"
   },
   "sideEffects": false
 }

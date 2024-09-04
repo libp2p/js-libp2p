@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PersistentPeerStore } from '@libp2p/peer-store'
@@ -66,7 +67,7 @@ describe('rpc - handlers - GetValue', () => {
     try {
       await handler.handle(sourcePeer, msg)
     } catch (err: any) {
-      expect(err.code).to.eql('ERR_INVALID_KEY')
+      expect(err.name).to.equal('InvalidMessageError')
       return
     }
 
@@ -125,7 +126,7 @@ describe('rpc - handlers - GetValue', () => {
       throw new Error('No response received from handler')
     }
 
-    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.toBytes())
+    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.toMultihash().bytes)
   })
 
   describe('public key', () => {
@@ -158,7 +159,7 @@ describe('rpc - handlers - GetValue', () => {
 
       const responseRecord = Libp2pRecord.deserialize(response.record)
 
-      expect(responseRecord).to.have.property('value').that.equalBytes(targetPeer.publicKey)
+      expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.publicKey))
     })
 
     it('peer not in peerstore', async () => {

@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, MaxLengthError, MaxSizeError, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Peer {
@@ -46,10 +46,10 @@ export namespace Peer {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {
             key: '',
-            value: new Uint8Array(0)
+            value: uint8ArrayAlloc(0)
           }
 
           const end = length == null ? reader.len : reader.pos + length
@@ -58,15 +58,18 @@ export namespace Peer {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.key = reader.string()
                 break
-              case 2:
+              }
+              case 2: {
                 obj.value = reader.bytes()
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -81,8 +84,8 @@ export namespace Peer {
       return encodeMessage(obj, Peer$metadataEntry.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer$metadataEntry => {
-      return decodeMessage(buf, Peer$metadataEntry.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer$metadataEntry>): Peer$metadataEntry => {
+      return decodeMessage(buf, Peer$metadataEntry.codec(), opts)
     }
   }
 
@@ -114,7 +117,7 @@ export namespace Peer {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length) => {
+        }, (reader, length, opts = {}) => {
           const obj: any = {
             key: ''
           }
@@ -125,15 +128,20 @@ export namespace Peer {
             const tag = reader.uint32()
 
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.key = reader.string()
                 break
-              case 2:
-                obj.value = Tag.codec().decode(reader, reader.uint32())
+              }
+              case 2: {
+                obj.value = Tag.codec().decode(reader, reader.uint32(), {
+                  limits: opts.limits?.value
+                })
                 break
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7)
                 break
+              }
             }
           }
 
@@ -148,8 +156,8 @@ export namespace Peer {
       return encodeMessage(obj, Peer$tagsEntry.codec())
     }
 
-    export const decode = (buf: Uint8Array | Uint8ArrayList): Peer$tagsEntry => {
-      return decodeMessage(buf, Peer$tagsEntry.codec())
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer$tagsEntry>): Peer$tagsEntry => {
+      return decodeMessage(buf, Peer$tagsEntry.codec(), opts)
     }
   }
 
@@ -203,7 +211,7 @@ export namespace Peer {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           addresses: [],
           protocols: [],
@@ -217,31 +225,58 @@ export namespace Peer {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
-              obj.addresses.push(Address.codec().decode(reader, reader.uint32()))
+            case 1: {
+              if (opts.limits?.addresses != null && obj.addresses.length === opts.limits.addresses) {
+                throw new MaxLengthError('Decode error - map field "addresses" had too many elements')
+              }
+
+              obj.addresses.push(Address.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.addresses$
+              }))
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.protocols != null && obj.protocols.length === opts.limits.protocols) {
+                throw new MaxLengthError('Decode error - map field "protocols" had too many elements')
+              }
+
               obj.protocols.push(reader.string())
               break
-            case 4:
+            }
+            case 4: {
               obj.publicKey = reader.bytes()
               break
-            case 5:
+            }
+            case 5: {
               obj.peerRecordEnvelope = reader.bytes()
               break
+            }
             case 6: {
+              if (opts.limits?.metadata != null && obj.metadata.size === opts.limits.metadata) {
+                throw new MaxSizeError('Decode error - map field "metadata" had too many elements')
+              }
+
               const entry = Peer.Peer$metadataEntry.codec().decode(reader, reader.uint32())
               obj.metadata.set(entry.key, entry.value)
               break
             }
             case 7: {
-              const entry = Peer.Peer$tagsEntry.codec().decode(reader, reader.uint32())
+              if (opts.limits?.tags != null && obj.tags.size === opts.limits.tags) {
+                throw new MaxSizeError('Decode error - map field "tags" had too many elements')
+              }
+
+              const entry = Peer.Peer$tagsEntry.codec().decode(reader, reader.uint32(), {
+                limits: {
+                  value: opts.limits?.tags$value
+                }
+              })
               obj.tags.set(entry.key, entry.value)
               break
             }
-            default:
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -256,8 +291,8 @@ export namespace Peer {
     return encodeMessage(obj, Peer.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
-    return decodeMessage(buf, Peer.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Peer => {
+    return decodeMessage(buf, Peer.codec(), opts)
   }
 }
 
@@ -289,9 +324,9 @@ export namespace Address {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          multiaddr: new Uint8Array(0)
+          multiaddr: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -300,15 +335,18 @@ export namespace Address {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.multiaddr = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.isCertified = reader.bool()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -323,8 +361,8 @@ export namespace Address {
     return encodeMessage(obj, Address.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Address => {
-    return decodeMessage(buf, Address.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Address>): Address => {
+    return decodeMessage(buf, Address.codec(), opts)
   }
 }
 
@@ -356,7 +394,7 @@ export namespace Tag {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           value: 0
         }
@@ -367,15 +405,18 @@ export namespace Tag {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.value = reader.uint32()
               break
-            case 2:
+            }
+            case 2: {
               obj.expiry = reader.uint64()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -390,7 +431,7 @@ export namespace Tag {
     return encodeMessage(obj, Tag.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Tag => {
-    return decodeMessage(buf, Tag.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Tag>): Tag => {
+    return decodeMessage(buf, Tag.codec(), opts)
   }
 }

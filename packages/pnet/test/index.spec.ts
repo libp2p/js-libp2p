@@ -1,7 +1,8 @@
 /* eslint-env mocha */
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -34,7 +35,7 @@ describe('private network', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234'),
         multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
-      remotePeer: await createEd25519PeerId()
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
     const protector = preSharedKey({
       psk: swarmKeyBuffer
@@ -74,7 +75,7 @@ describe('private network', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234'),
         multiaddr('/ip4/127.0.0.1/tcp/1235')
       ],
-      remotePeer: await createEd25519PeerId()
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
     const protector = preSharedKey({
       psk: swarmKeyBuffer

@@ -1,9 +1,8 @@
-import { unmarshalPrivateKey, unmarshalPublicKey } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, CodeError, TypedEventEmitter, CustomEvent, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol } from '@libp2p/interface'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -12,10 +11,9 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultAddressManager } from './address-manager/index.js'
 import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
-import { validateConfig } from './config.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
+import { ConnectionMonitor } from './connection-monitor.js'
 import { CompoundContentRouting } from './content-routing.js'
-import { codes } from './errors.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
@@ -23,11 +21,11 @@ import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
-import type { Libp2p, Libp2pInit, Libp2pOptions } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions } from '@libp2p/interface'
+import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey } from '@libp2p/interface'
 import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
 
-export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2p<T> {
+export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
@@ -40,7 +38,7 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
   public components: Components & T
   private readonly log: Logger
 
-  constructor (init: Libp2pInit<T> & Required<Pick<Libp2pInit<T>, 'peerId'>>) {
+  constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
     super()
 
     this.status = 'stopped'
@@ -120,6 +118,11 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
 
     // Create the Connection Manager
     this.configureComponent('connectionManager', new DefaultConnectionManager(this.components, init.connectionManager))
+
+    if (init.connectionMonitor?.enabled !== false) {
+      // Create the Connection Monitor if not disabled
+      this.configureComponent('connectionMonitor', new ConnectionMonitor(this.components, init.connectionMonitor))
+    }
 
     // Create the Registrar
     this.configureComponent('registrar', new DefaultRegistrar(this.components))
@@ -282,13 +285,13 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
 
   async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
     if (protocols == null) {
-      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
     protocols = Array.isArray(protocols) ? protocols : [protocols]
 
     if (protocols.length === 0) {
-      throw new CodeError('no protocols were provided to open a stream', codes.ERR_INVALID_PROTOCOLS_FOR_STREAM)
+      throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
     const connection = await this.dial(peer, options)
@@ -315,7 +318,12 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
   /**
    * Get the public key for the given peer id
    */
-  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<Uint8Array> {
+  async getPublicKey (peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
+  async getPublicKey (peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
+  async getPublicKey (peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
+  async getPublicKey (peer: URLPeerId, options?: AbortOptions): Promise<never>
+  async getPublicKey (peer: PeerId, options?: AbortOptions): Promise<PublicKey>
+  async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<PublicKey> {
     this.log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
@@ -329,27 +337,27 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
         return peerInfo.id.publicKey
       }
     } catch (err: any) {
-      if (err.code !== codes.ERR_NOT_FOUND) {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }
 
     const peerKey = uint8ArrayConcat([
       uint8ArrayFromString('/pk/'),
-      peer.multihash.digest
+      peer.toMultihash().bytes
     ])
 
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
 
     // ensure the returned key is valid
-    unmarshalPublicKey(bytes)
+    const publicKey = publicKeyFromProtobuf(bytes)
 
     await this.peerStore.patch(peer, {
-      publicKey: bytes
+      publicKey
     })
 
-    return bytes
+    return publicKey
   }
 
   async handle (protocols: string | string[], handler: StreamHandler, options?: StreamHandlerOptions): Promise<void> {
@@ -396,7 +404,7 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
     const { detail: peer } = evt
 
     if (peer.id.toString() === this.peerId.toString()) {
-      this.log.error(new Error(codes.ERR_DISCOVERED_SELF))
+      this.log.error('peer discovery mechanism discovered self')
       return
     }
 
@@ -405,20 +413,4 @@ export class Libp2pNode<T extends ServiceMap = ServiceMap> extends TypedEventEmi
     })
       .catch(err => { this.log.error(err) })
   }
-}
-
-/**
- * Returns a new Libp2pNode instance - this exposes more of the internals than the
- * libp2p interface and is useful for testing and debugging.
- */
-export async function createLibp2pNode <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2pNode<T>> {
-  const peerId = options.peerId ??= await createEd25519PeerId()
-
-  if (peerId.privateKey == null) {
-    throw new CodeError('peer id was missing private key', 'ERR_MISSING_PRIVATE_KEY')
-  }
-
-  options.privateKey ??= await unmarshalPrivateKey(peerId.privateKey)
-
-  return new Libp2pNode(await validateConfig(options))
 }

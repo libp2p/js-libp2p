@@ -2,11 +2,12 @@
 
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import * as Digest from 'multiformats/hashes/digest'
 import Sinon, { type SinonStubbedInstance } from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Message, MessageType } from '../../../src/message/dht.js'
@@ -68,7 +69,8 @@ describe('rpc - handlers - GetProviders', () => {
       providers: []
     }
 
-    await expect(handler.handle(sourcePeer, msg)).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CID')
+    await expect(handler.handle(sourcePeer, msg)).to.eventually.be.rejected
+      .with.property('name', 'InvalidMessageError')
   })
 
   it('responds with providers and closer peers', async () => {
@@ -116,8 +118,8 @@ describe('rpc - handlers - GetProviders', () => {
 
     expect(response.key).to.be.eql(v.cid.bytes)
     expect(response.providers).to.have.lengthOf(1)
-    expect(peerIdFromBytes(response.providers[0].id).toString()).to.equal(provider[0].id.toString())
+    expect(peerIdFromMultihash(Digest.decode(response.providers[0].id)).toString()).to.equal(provider[0].id.toString())
     expect(response.closer).to.have.lengthOf(1)
-    expect(peerIdFromBytes(response.closer[0].id).toString()).to.equal(closer[0].id.toString())
+    expect(peerIdFromMultihash(Digest.decode(response.closer[0].id)).toString()).to.equal(closer[0].id.toString())
   })
 })

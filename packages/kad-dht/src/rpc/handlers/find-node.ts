@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
 import { protocols } from '@multiformats/multiaddr'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
 import { MessageType } from '../../message/dht.js'
@@ -45,12 +45,12 @@ export class FindNodeHandler implements DHTMessageHandler {
     this.log('incoming request from %p for peers closer to %b', peerId, msg.key)
 
     if (msg.key == null) {
-      throw new CodeError('Invalid FIND_NODE message received - key was missing', 'ERR_INVALID_MESSAGE')
+      throw new InvalidMessageError('Invalid FIND_NODE message received - key was missing')
     }
 
     const closer: PeerInfo[] = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
 
-    if (uint8ArrayEquals(this.peerId.toBytes(), msg.key)) {
+    if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
       closer.push({
         id: this.peerId,
         multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
@@ -64,7 +64,7 @@ export class FindNodeHandler implements DHTMessageHandler {
         .map(this.peerInfoMapper)
         .filter(({ multiaddrs }) => multiaddrs.length)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: []

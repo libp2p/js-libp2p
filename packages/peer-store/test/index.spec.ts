@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PrivateKey } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -14,14 +15,16 @@ import { PersistentPeerStore } from '../src/index.js'
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 
 describe('PersistentPeerStore', () => {
+  let key: PrivateKey
   let peerId: PeerId
   let otherPeerId: PeerId
   let peerStore: PersistentPeerStore
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-    otherPeerId = await createEd25519PeerId()
+    key = await generateKeyPair('Ed25519')
+    peerId = peerIdFromPrivateKey(key)
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
     peerStore = new PersistentPeerStore({
       peerId,
@@ -70,7 +73,7 @@ describe('PersistentPeerStore', () => {
       })
 
       await expect(peerStore.delete(peerId)).to.eventually.be.rejected()
-        .with.property('code', 'ERR_INVALID_PARAMETERS')
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -108,21 +111,21 @@ describe('PersistentPeerStore', () => {
           [name]: { value: -1 }
         }
       }), 'PeerStore contain tag for peer where value was too small')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
 
       await expect(peerStore.save(peerId, {
         tags: {
           [name]: { value: 101 }
         }
       }), 'PeerStore contain tag for peer where value was too large')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
 
       await expect(peerStore.save(peerId, {
         tags: {
           [name]: { value: 5.5 }
         }
       }), 'PeerStore contain tag for peer where value was not an integer')
-        .to.eventually.be.rejected().with.property('code', 'ERR_INVALID_PARAMETERS')
+        .to.eventually.be.rejected().with.property('name', 'InvalidParametersError')
     })
 
     it('tags a peer with an expiring value', async () => {
@@ -176,7 +179,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ]
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, key)
 
       await expect(peerStore.has(peerId)).to.eventually.be.false()
       await peerStore.consumePeerRecord(signedPeerRecord.marshal())
@@ -205,7 +208,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ]
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, key)
 
       await peerStore.consumePeerRecord(signedPeerRecord.marshal())
 
@@ -228,7 +231,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/1234')
         ],
         seqNumber: 1n
-      }), peerId)
+      }), key)
 
       const newSignedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
         peerId,
@@ -236,7 +239,7 @@ describe('PersistentPeerStore', () => {
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ],
         seqNumber: 2n
-      }), peerId)
+      }), key)
 
       await expect(peerStore.consumePeerRecord(newSignedPeerRecord.marshal())).to.eventually.equal(true)
       await expect(peerStore.consumePeerRecord(oldSignedPeerRecord.marshal())).to.eventually.equal(false)
@@ -257,7 +260,7 @@ describe('PersistentPeerStore', () => {
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4567')
         ]
-      }), peerId)
+      }), key)
 
       await expect(peerStore.has(peerId)).to.eventually.be.false()
       await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), otherPeerId)).to.eventually.equal(false)

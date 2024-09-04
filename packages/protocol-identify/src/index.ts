@@ -43,7 +43,7 @@
 
 import { IdentifyPush as IdentifyPushClass } from './identify-push.js'
 import { Identify as IdentifyClass } from './identify.js'
-import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection } from '@libp2p/interface'
+import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface IdentifyInit {
@@ -99,7 +99,7 @@ export interface IdentifyInit {
    *
    * @default true
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 
   /**
    * Whether to automatically run identify on newly opened connections
@@ -127,6 +127,7 @@ export interface IdentifyPushInit extends Omit<IdentifyInit, 'runOnConnectionOpe
 
 export interface IdentifyComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   peerStore: PeerStore
   registrar: Registrar
   addressManager: AddressManager

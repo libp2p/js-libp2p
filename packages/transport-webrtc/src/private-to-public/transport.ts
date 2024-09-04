@@ -1,12 +1,12 @@
 import { noise } from '@chainsafe/libp2p-noise'
-import { transportSymbol, serviceCapabilities } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities, InvalidParametersError } from '@libp2p/interface'
 import * as p from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { dataChannelError, inappropriateMultiaddr, unimplemented, invalidArgument } from '../error.js'
+import { DataChannelError, InappropriateMultiaddrError, UnimplementedError } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
@@ -16,7 +16,7 @@ import * as sdp from './sdp.js'
 import { genUfrag } from './util.js'
 import type { WebRTCDialOptions } from './options.js'
 import type { DataChannelOptions } from '../index.js'
-import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId } from '@libp2p/interface'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -43,6 +43,7 @@ export const CERTHASH_CODE: number = protocols('certhash').code
  */
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   metrics?: Metrics
   logger: ComponentLogger
 }
@@ -96,7 +97,7 @@ export class WebRTCDirectTransport implements Transport {
    * Create transport listeners no supported by browsers
    */
   createListener (options: CreateListenerOptions): Listener {
-    throw unimplemented('WebRTCTransport.createListener')
+    throw new UnimplementedError('WebRTCTransport.createListener')
   }
 
   /**
@@ -122,7 +123,7 @@ export class WebRTCDirectTransport implements Transport {
 
     const remotePeerString = ma.getPeerId()
     if (remotePeerString === null) {
-      throw inappropriateMultiaddr("we need to have the remote's PeerId")
+      throw new InappropriateMultiaddrError("we need to have the remote's PeerId")
     }
     const theirPeerId = p.peerIdFromString(remotePeerString)
 
@@ -153,7 +154,7 @@ export class WebRTCDirectTransport implements Transport {
           const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
           this.log.error(error)
           this.metrics?.dialerEvents.increment({ open_error: true })
-          reject(dataChannelError('data', error))
+          reject(new DataChannelError('data', error))
         }, HANDSHAKE_TIMEOUT_MS)
 
         handshakeDataChannel.onopen = (_) => {
@@ -169,7 +170,7 @@ export class WebRTCDirectTransport implements Transport {
           this.log.error(error)
           // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
           this.metrics?.dialerEvents.increment({ unknown_error: true })
-          reject(dataChannelError('data', error))
+          reject(new DataChannelError('data', error))
         }
       })
 
@@ -189,8 +190,6 @@ export class WebRTCDirectTransport implements Transport {
 
       // wait for peerconnection.onopen to fire, or for the datachannel to open
       const handshakeDataChannel = await dataChannelOpenPromise
-
-      const myPeerId = this.components.peerId
 
       // Do noise handshake.
       // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
@@ -260,7 +259,10 @@ export class WebRTCDirectTransport implements Transport {
 
       // For outbound connections, the remote is expected to start the noise handshake.
       // Therefore, we need to secure an inbound noise connection from the remote.
-      await connectionEncrypter.secureInbound(myPeerId, wrappedDuplex, theirPeerId)
+      await connectionEncrypter.secureInbound(wrappedDuplex, {
+        signal,
+        remotePeer: theirPeerId
+      })
 
       return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
     } catch (err) {
@@ -275,14 +277,14 @@ export class WebRTCDirectTransport implements Transport {
    */
   private generateNoisePrologue (pc: RTCPeerConnection, hashCode: number, ma: Multiaddr): Uint8Array {
     if (pc.getConfiguration().certificates?.length === 0) {
-      throw invalidArgument('no local certificate')
+      throw new InvalidParametersError('no local certificate')
     }
 
     const localFingerprint = sdp.getLocalFingerprint(pc, {
       log: this.log
     })
     if (localFingerprint == null) {
-      throw invalidArgument('no local fingerprint found')
+      throw new InvalidParametersError('no local fingerprint found')
     }
 
     const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')

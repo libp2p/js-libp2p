@@ -14,15 +14,15 @@ export class PeerFilter {
   }
 
   has (peerId: PeerId): boolean {
-    return this.filter.has(peerId.toBytes())
+    return this.filter.has(peerId.toMultihash().bytes)
   }
 
   add (peerId: PeerId): void {
-    this.filter.add(peerId.toBytes())
+    this.filter.add(peerId.toMultihash().bytes)
   }
 
   remove (peerId: PeerId): void {
-    this.filter.remove?.(peerId.toBytes())
+    this.filter.remove?.(peerId.toMultihash().bytes)
   }
 }
 

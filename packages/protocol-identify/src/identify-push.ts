@@ -58,7 +58,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       peerId: this.peerId,
       multiaddrs: listenAddresses
     })
-    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId)
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey)
     const supportedProtocols = this.registrar.getProtocols()
     const peer = await this.peerStore.get(this.peerId)
     const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
@@ -82,7 +82,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
           try {
             stream = await connection.newStream(self.protocol, {
               signal,
-              runOnTransientConnection: self.runOnTransientConnection
+              runOnLimitedConnection: self.runOnLimitedConnection
             })
 
             const pb = pbStream(stream, {

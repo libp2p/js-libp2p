@@ -1,9 +1,9 @@
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError, ERR_TIMEOUT } from '@libp2p/interface'
+import { AbortError, ProtocolError, InvalidMessageError, TimeoutError } from '@libp2p/interface'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, ERR_WRONG_PING_ACK } from './constants.js'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
@@ -16,7 +16,7 @@ export class PingService implements Startable, PingServiceInterface {
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private readonly runOnTransientConnection: boolean
+  private readonly runOnLimitedConnection: boolean
   private readonly log: Logger
 
   constructor (components: PingServiceComponents, init: PingServiceInit = {}) {
@@ -27,7 +27,7 @@ export class PingService implements Startable, PingServiceInterface {
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? true
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? true
 
     this.handleMessage = this.handleMessage.bind(this)
   }
@@ -38,7 +38,7 @@ export class PingService implements Startable, PingServiceInterface {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
     this.started = true
   }
@@ -61,9 +61,32 @@ export class PingService implements Startable, PingServiceInterface {
     const { stream } = data
     const start = Date.now()
 
-    void pipe(stream, stream)
+    const signal = AbortSignal.timeout(this.timeout)
+    signal.addEventListener('abort', () => {
+      stream?.abort(new TimeoutError('Ping timeout'))
+    })
+
+    void pipe(
+      stream,
+      async function * (source) {
+        let received = 0
+
+        for await (const buf of source) {
+          received += buf.byteLength
+
+          if (received > PING_LENGTH) {
+            stream?.abort(new InvalidMessageError('Too much data received'))
+            return
+          }
+
+          yield buf
+        }
+      },
+      stream
+    )
       .catch(err => {
         this.log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
+        stream?.abort(err)
       })
       .finally(() => {
         const ms = Date.now() - start
@@ -96,11 +119,11 @@ export class PingService implements Startable, PingServiceInterface {
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
-        runOnTransientConnection: this.runOnTransientConnection
+        runOnLimitedConnection: this.runOnLimitedConnection
       })
 
       onAbort = () => {
-        stream?.abort(new CodeError('ping timeout', ERR_TIMEOUT))
+        stream?.abort(new AbortError())
       }
 
       // make stream abortable
@@ -115,11 +138,11 @@ export class PingService implements Startable, PingServiceInterface {
       const ms = Date.now() - start
 
       if (result == null) {
-        throw new CodeError(`Did not receive a ping ack after ${ms}ms`, ERR_WRONG_PING_ACK)
+        throw new ProtocolError(`Did not receive a ping ack after ${ms}ms`)
       }
 
       if (!uint8ArrayEquals(data, result.subarray())) {
-        throw new CodeError(`Received wrong ping ack after ${ms}ms`, ERR_WRONG_PING_ACK)
+        throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
       }
 
       this.log('ping %p complete in %dms', connection.remotePeer, ms)

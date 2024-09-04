@@ -1,8 +1,8 @@
-import { CodeError } from '@libp2p/interface'
+import { NotFoundError } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import merge from 'it-merge'
 import parallel from 'it-parallel'
-import { codes, messages } from './errors.js'
+import { NoPeerRoutersError, QueriedForSelfError } from './errors.js'
 import type { Logger, PeerId, PeerInfo, PeerRouting, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ComponentLogger } from '@libp2p/logger'
 
@@ -36,11 +36,11 @@ export class DefaultPeerRouting implements PeerRouting {
    */
   async findPeer (id: PeerId, options?: RoutingOptions): Promise<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new NoPeerRoutersError('No peer routers available')
     }
 
     if (id.toString() === this.peerId.toString()) {
-      throw new CodeError('Should not try to find self', codes.ERR_FIND_SELF)
+      throw new QueriedForSelfError('Should not try to find self')
     }
 
     const self = this
@@ -69,7 +69,7 @@ export class DefaultPeerRouting implements PeerRouting {
       return peer
     }
 
-    throw new CodeError(messages.NOT_FOUND, codes.ERR_NOT_FOUND)
+    throw new NotFoundError()
   }
 
   /**
@@ -77,7 +77,7 @@ export class DefaultPeerRouting implements PeerRouting {
    */
   async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
     if (this.routers.length === 0) {
-      throw new CodeError('No peer routers available', codes.ERR_NO_ROUTERS_AVAILABLE)
+      throw new NoPeerRoutersError('No peer routers available')
     }
 
     const self = this
@@ -121,11 +121,11 @@ export class DefaultPeerRouting implements PeerRouting {
       }
 
       // deduplicate peers
-      if (seen.has(peer.id.toBytes())) {
+      if (seen.has(peer.id.toMultihash().bytes)) {
         continue
       }
 
-      seen.add(peer.id.toBytes())
+      seen.add(peer.id.toMultihash().bytes)
 
       yield peer
     }

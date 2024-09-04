@@ -14,12 +14,16 @@
  * ```
  */
 
-import { createLibp2pNode } from './libp2p.js'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { validateConfig } from './config.js'
+import { Libp2p as Libp2pClass } from './libp2p.js'
 import type { AddressManagerInit } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
+import type { ConnectionMonitorInit } from './connection-monitor.js'
 import type { TransportManagerInit } from './transport-manager.js'
-import type { Libp2p, ServiceMap, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerId, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
+import type { Libp2p, ServiceMap, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -33,12 +37,11 @@ export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
  */
 export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   /**
-   * peerId instance (it will be created if not provided)
-   */
-  peerId?: PeerId
-
-  /**
-   * Private key associated with the peerId
+   * The private key is used in cryptographic operations and the Peer ID derived
+   * from it's corresponding public key is used to identify the node to other
+   * peers on the network.
+   *
+   * If this is not passed a new Ed25519 private key will be generated.
    */
   privateKey?: PrivateKey
 
@@ -56,6 +59,11 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
    * libp2p Connection Manager configuration
    */
   connectionManager?: ConnectionManagerInit
+
+  /**
+   * libp2p Connection Monitor configuration
+   */
+  connectionMonitor?: ConnectionMonitorInit
 
   /**
    * A connection gater can deny new connections based on user criteria
@@ -80,13 +88,36 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   peerStore?: PersistentPeerStoreInit
 
   /**
-   * An array that must include at least 1 compliant transport
+   * Transports are low-level communication channels
    */
   transports?: Array<(components: Components) => Transport>
+
+  /**
+   * Stream muxers allow the creation of many data streams over a single
+   * connection.
+   */
   streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
+
+  /**
+   * Connection encrypters ensure that data sent over connections cannot be
+   * eavesdropped on, and that the remote peer posesses the private key that
+   * corresponds to the public key that it's Peer ID is derived from.
+   */
   connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
+
+  /**
+   * Peer discovery mechanisms allow finding peers on the network
+   */
   peerDiscovery?: Array<(components: Components) => PeerDiscovery>
+
+  /**
+   * Peer routers provide implementations for peer routing queries
+   */
   peerRouters?: Array<(components: Components) => PeerRouting>
+
+  /**
+   * Content routers provide implementations for content routing queries
+   */
   contentRouters?: Array<(components: Components) => ContentRouting>
 
   /**
@@ -164,7 +195,12 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * ```
  */
 export async function createLibp2p <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
-  const node = await createLibp2pNode(options)
+  options.privateKey ??= await generateKeyPair('Ed25519')
+
+  const node = new Libp2pClass({
+    ...await validateConfig(options),
+    peerId: peerIdFromPrivateKey(options.privateKey)
+  })
 
   if (options.start !== false) {
     await node.start()

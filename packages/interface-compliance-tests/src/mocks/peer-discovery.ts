@@ -1,5 +1,6 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { PeerDiscovery, PeerDiscoveryEvents, PeerInfo } from '@libp2p/interface'
 
@@ -41,8 +42,9 @@ export class MockDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implem
   _discoverPeer (): void {
     if (!this._isRunning) return
 
-    PeerIdFactory.createEd25519PeerId()
-      .then(peerId => {
+    generateKeyPair('Ed25519')
+      .then(key => {
+        const peerId = peerIdFromPrivateKey(key)
         this._timer = setTimeout(() => {
           this.safeDispatchEvent<PeerInfo>('peer', {
             detail: {

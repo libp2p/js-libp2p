@@ -30,7 +30,7 @@
  */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { AbortError, CodeError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
@@ -40,7 +40,7 @@ import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import WebTransport from './webtransport.js'
-import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -68,6 +68,7 @@ export interface WebTransportInit {
 
 export interface WebTransportComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   metrics?: Metrics
   logger: ComponentLogger
 }
@@ -85,7 +86,6 @@ export type WebTransportDialEvents =
 
 interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransportDialEvents> {
   wt: WebTransport
-  localPeer: PeerId
   remotePeer?: PeerId
   certhashes: Array<MultihashDigest<number>>
 }
@@ -124,15 +124,9 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
   ]
 
   async dial (ma: Multiaddr, options: DialTransportOptions<WebTransportDialEvents>): Promise<Connection> {
-    if (options?.signal?.aborted === true) {
-      throw new AbortError()
-    }
+    options?.signal?.throwIfAborted()
 
     this.log('dialing %s', ma)
-    const localPeer = this.components.peerId
-    if (localPeer === undefined) {
-      throw new CodeError('Need a local peerid', 'ERR_INVALID_PARAMETERS')
-    }
 
     options = options ?? {}
 
@@ -206,10 +200,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           cleanUpWTSession('remote_close')
         })
 
-      authenticated = await raceSignal(this.authenticateWebTransport({ wt, localPeer, remotePeer, certhashes, ...options }), options.signal)
+      authenticated = await raceSignal(this.authenticateWebTransport({ wt, remotePeer, certhashes, ...options }), options.signal)
 
       if (!authenticated) {
-        throw new CodeError('Failed to authenticate webtransport', 'ERR_AUTHENTICATION_FAILED')
+        throw new InvalidCryptoExchangeError('Failed to authenticate webtransport')
       }
 
       this.metrics?.dialerEvents.increment({ open: true })
@@ -257,7 +251,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     }
   }
 
-  async authenticateWebTransport ({ wt, localPeer, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
+  async authenticateWebTransport ({ wt, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
     signal?.throwIfAborted()
 
     onProgress?.(new CustomProgressEvent('webtransport:open-authentication-stream'))
@@ -295,7 +289,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const n = noise()(this.components)
 
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
-    const { remoteExtensions } = await n.secureOutbound(localPeer, duplex, remotePeer)
+    const { remoteExtensions } = await n.secureOutbound(duplex, {
+      signal,
+      remotePeer
+    })
 
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))
     // We're done with this authentication stream
@@ -309,7 +306,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
     // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
     if (!isSubset(remoteExtensions?.webtransportCerthashes ?? [], certhashes.map(ch => ch.bytes))) {
-      throw new Error("Our certhashes are not a subset of the remote's reported certhashes")
+      throw new InvalidParametersError("Our certhashes are not a subset of the remote's reported certhashes")
     }
 
     return true

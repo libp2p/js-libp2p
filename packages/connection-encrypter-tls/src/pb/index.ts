@@ -4,20 +4,20 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { type Codec, decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
-  Secp256k1 = 'Secp256k1',
+  secp256k1 = 'secp256k1',
   ECDSA = 'ECDSA'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
-  Secp256k1 = 2,
+  secp256k1 = 2,
   ECDSA = 3
 }
 
@@ -54,7 +54,7 @@ export namespace PublicKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -89,7 +89,7 @@ export namespace PublicKey {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PublicKey => {
-    return decodeMessage(buf, PublicKey.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+    return decodeMessage(buf, PublicKey.codec(), opts)
   }
 }

@@ -1,5 +1,6 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { MissingSelectorError } from '../errors.js'
 import type { Selectors } from '../index.js'
 
 /**
@@ -7,26 +8,20 @@ import type { Selectors } from '../index.js'
  */
 export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]): number {
   if (records.length === 0) {
-    const errMsg = 'No records given'
-
-    throw new CodeError(errMsg, 'ERR_NO_RECORDS_RECEIVED')
+    throw new InvalidParametersError('No records given')
   }
 
   const kStr = uint8ArrayToString(k)
   const parts = kStr.split('/')
 
   if (parts.length < 3) {
-    const errMsg = 'Record key does not have a selector function'
-
-    throw new CodeError(errMsg, 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY')
+    throw new InvalidParametersError('Record key does not have a selector function')
   }
 
   const selector = selectors[parts[1].toString()]
 
   if (selector == null) {
-    const errMsg = `No selector function configured for key type "${parts[1]}"`
-
-    throw new CodeError(errMsg, 'ERR_UNRECOGNIZED_KEY_PREFIX')
+    throw new MissingSelectorError(`No selector function configured for key type "${parts[1]}"`)
   }
 
   if (records.length === 1) {
