@@ -111,6 +111,14 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [4.1.9](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.8...webrtc-v4.1.9) (2024-09-04)
+
+
+### Bug Fixes
+
+* parameterise max message size in SDP messages ([#2681](https://github.com/libp2p/js-libp2p/issues/2681)) ([737b3ea](https://github.com/libp2p/js-libp2p/commit/737b3ea5bd8555f09a0f63f2e0562aa9f0b73f62))
+* revert WebRTC message size increase ([#2679](https://github.com/libp2p/js-libp2p/issues/2679)) ([2265e59](https://github.com/libp2p/js-libp2p/commit/2265e59baa489141192a6cdcc1f47bb736575b92))
+
 ## [4.1.8](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.7...webrtc-v4.1.8) (2024-08-29)
 
 
