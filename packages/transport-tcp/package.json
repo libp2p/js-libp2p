@@ -52,6 +52,10 @@
     "doc-check": "aegir doc-check",
     "build": "aegir build",
     "test": "aegir test -t node -t electron-main",
+    "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
+    "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
+    "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main"
   },
@@ -73,6 +77,9 @@
     "p-defer": "^4.0.1",
     "sinon": "^18.0.0",
     "uint8arrays": "^5.1.0"
+  },
+  "browser": {
+    "./dist/src/tcp.js": "./dist/src/tcp.browser.js"
   },
   "sideEffects": false
 }
