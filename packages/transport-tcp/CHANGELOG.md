@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.1.6](https://github.com/libp2p/js-libp2p/compare/tcp-v9.1.5...tcp-v9.1.6) (2024-09-05)
+
+
+### Bug Fixes
+
+* allow importing @libp2p/tcp in browsers ([#2682](https://github.com/libp2p/js-libp2p/issues/2682)) ([dd7b329](https://github.com/libp2p/js-libp2p/commit/dd7b329c483d9d06964e212d71d3090dae0556f9))
+
 ## [9.1.5](https://github.com/libp2p/js-libp2p/compare/tcp-v9.1.4...tcp-v9.1.5) (2024-08-15)
 
 
