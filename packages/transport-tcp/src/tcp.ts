@@ -228,4 +228,3 @@ export class TCP implements Transport<TCPDialEvents> {
     return this.listenFilter(multiaddrs)
   }
 }
-

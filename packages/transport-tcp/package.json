@@ -76,7 +76,8 @@
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.1",
     "sinon": "^18.0.0",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^5.1.0",
+    "wherearewe": "^2.0.1"
   },
   "browser": {
     "./dist/src/tcp.js": "./dist/src/tcp.browser.js"

@@ -29,7 +29,7 @@
 
 import { TCP } from './tcp.js'
 import type { CloseServerOnMaxConnectionsOpts } from './listener.js'
-import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, Listener, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
+import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
