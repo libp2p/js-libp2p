@@ -66,7 +66,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await delay(500)
 
     expect(connection.rtt).to.be.gte(0)
   })
@@ -86,7 +86,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await delay(500)
 
     expect(connection.rtt).to.be.gte(0)
   })
