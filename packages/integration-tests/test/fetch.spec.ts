@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { type Fetch, fetch } from '@libp2p/fetch'
-import { ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { isWebWorker } from 'wherearewe'
@@ -12,16 +11,13 @@ async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
   return createLibp2p(createBaseOptions({
     services: {
       fetch: fetch()
-    },
-    connectionManager: {
-      minConnections: 0
     }
   }))
 }
 
 describe('fetch', () => {
   if (isWebWorker) {
-    it.skip('tests are skipped because WebWorkers can only have transient connections', () => {
+    it.skip('tests are skipped because WebWorkers can only have limited connections', () => {
 
     })
     return
@@ -113,14 +109,14 @@ describe('fetch', () => {
     receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
     await expect(sender.services.fetch.fetch(receiver.peerId, '/moduleUNKNOWN/foobar'))
-      .to.eventually.be.rejected.with.property('code', ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'ProtocolError')
   })
 
   it('registering multiple handlers for same prefix errors', async () => {
     receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
     expect(() => { receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B)) })
-      .to.throw().with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      .to.throw().with.property('name', 'InvalidParametersError')
   })
 
   it('can unregister handler', async () => {

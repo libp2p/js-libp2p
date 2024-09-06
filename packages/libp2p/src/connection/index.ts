@@ -1,5 +1,5 @@
-import { connectionSymbol, CodeError, setMaxListeners } from '@libp2p/interface'
-import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId } from '@libp2p/interface'
+import { connectionSymbol, setMaxListeners, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError } from '@libp2p/interface'
+import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const CLOSE_TIMEOUT = 500
@@ -16,7 +16,7 @@ interface ConnectionInit {
   timeline: ConnectionTimeline
   multiplexer?: string
   encryption?: string
-  transient?: boolean
+  limits?: ConnectionLimits
   logger: ComponentLogger
 }
 
@@ -45,7 +45,7 @@ export class ConnectionImpl implements Connection {
   public multiplexer?: string
   public encryption?: string
   public status: ConnectionStatus
-  public transient: boolean
+  public limits?: ConnectionLimits
   public readonly log: Logger
 
   /**
@@ -86,7 +86,7 @@ export class ConnectionImpl implements Connection {
     this.timeline = init.timeline
     this.multiplexer = init.multiplexer
     this.encryption = init.encryption
-    this.transient = init.transient ?? false
+    this.limits = init.limits
     this.log = init.logger.forComponent(`libp2p:connection:${this.direction}:${this.id}`)
 
     if (this.remoteAddr.getPeerId() == null) {
@@ -116,19 +116,19 @@ export class ConnectionImpl implements Connection {
    */
   async newStream (protocols: string | string[], options?: NewStreamOptions): Promise<Stream> {
     if (this.status === 'closing') {
-      throw new CodeError('the connection is being closed', 'ERR_CONNECTION_BEING_CLOSED')
+      throw new ConnectionClosingError('the connection is being closed')
     }
 
     if (this.status === 'closed') {
-      throw new CodeError('the connection is closed', 'ERR_CONNECTION_CLOSED')
+      throw new ConnectionClosedError('the connection is closed')
     }
 
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
-    if (this.transient && options?.runOnTransientConnection !== true) {
-      throw new CodeError('Cannot open protocol stream on transient connection', 'ERR_TRANSIENT_CONNECTION')
+    if (this.limits != null && options?.runOnLimitedConnection !== true) {
+      throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
     const stream = await this._newStream(protocols, options)

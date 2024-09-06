@@ -1,7 +1,8 @@
 /* eslint max-nested-callbacks: ["error", 6] */
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -11,7 +12,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PeerStreams } from '../src/peer-streams.js'
 import { noSignMsgId } from '../src/utils.js'
 import {
-  createPeerId,
   MockRegistrar,
   ConnectionPair,
   PubsubImplementation,
@@ -28,9 +28,12 @@ describe('pubsub base implementation', () => {
     let pubsub: PubsubImplementation
 
     beforeEach(async () => {
-      const peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = peerIdFromPrivateKey(privateKey)
+
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -102,9 +105,12 @@ describe('pubsub base implementation', () => {
       let pubsub: PubsubImplementation
 
       beforeEach(async () => {
-        const peerId = await createPeerId()
+        const privateKey = await generateKeyPair('Ed25519')
+        const peerId = peerIdFromPrivateKey(privateKey)
+
         pubsub = new PubsubImplementation({
           peerId,
+          privateKey,
           registrar: new MockRegistrar(),
           logger: defaultLogger()
         }, {
@@ -130,14 +136,18 @@ describe('pubsub base implementation', () => {
       let registrarB: MockRegistrar
 
       beforeEach(async () => {
-        peerIdA = await createPeerId()
-        peerIdB = await createPeerId()
+        const privateKeyA = await generateKeyPair('Ed25519')
+        peerIdA = peerIdFromPrivateKey(privateKeyA)
+
+        const privateKeyB = await generateKeyPair('Ed25519')
+        peerIdB = peerIdFromPrivateKey(privateKeyB)
 
         registrarA = new MockRegistrar()
         registrarB = new MockRegistrar()
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
+          privateKey: privateKeyA,
           registrar: registrarA,
           logger: defaultLogger()
         }, {
@@ -145,6 +155,7 @@ describe('pubsub base implementation', () => {
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
+          privateKey: privateKeyB,
           registrar: registrarB,
           logger: defaultLogger()
         }, {
@@ -207,9 +218,12 @@ describe('pubsub base implementation', () => {
       let pubsub: PubsubImplementation
 
       beforeEach(async () => {
-        const peerId = await createPeerId()
+        const privateKey = await generateKeyPair('Ed25519')
+        const peerId = peerIdFromPrivateKey(privateKey)
+
         pubsub = new PubsubImplementation({
           peerId,
+          privateKey,
           registrar: new MockRegistrar(),
           logger: defaultLogger()
         }, {
@@ -239,14 +253,18 @@ describe('pubsub base implementation', () => {
       let registrarB: MockRegistrar
 
       beforeEach(async () => {
-        peerIdA = await createPeerId()
-        peerIdB = await createPeerId()
+        const privateKeyA = await generateKeyPair('Ed25519')
+        peerIdA = peerIdFromPrivateKey(privateKeyA)
+
+        const privateKeyB = await generateKeyPair('Ed25519')
+        peerIdB = peerIdFromPrivateKey(privateKeyB)
 
         registrarA = new MockRegistrar()
         registrarB = new MockRegistrar()
 
         pubsubA = new PubsubImplementation({
           peerId: peerIdA,
+          privateKey: privateKeyA,
           registrar: registrarA,
           logger: defaultLogger()
         }, {
@@ -254,6 +272,7 @@ describe('pubsub base implementation', () => {
         })
         pubsubB = new PubsubImplementation({
           peerId: peerIdB,
+          privateKey: privateKeyB,
           registrar: registrarB,
           logger: defaultLogger()
         }, {
@@ -336,13 +355,15 @@ describe('pubsub base implementation', () => {
   })
 
   describe('getTopics', () => {
-    let peerId: PeerId
     let pubsub: PubsubImplementation
 
     beforeEach(async () => {
-      peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = peerIdFromPrivateKey(privateKey)
+
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -370,9 +391,12 @@ describe('pubsub base implementation', () => {
     let pubsub: PubsubImplementation
 
     beforeEach(async () => {
-      peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      peerId = peerIdFromPrivateKey(privateKey)
+
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -389,7 +413,7 @@ describe('pubsub base implementation', () => {
         pubsub.getSubscribers(topic)
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_STARTED_YET')
+        expect(err.name).to.equal('NotStartedError')
         return
       }
       throw new Error('should fail if pubsub is not started')
@@ -404,7 +428,7 @@ describe('pubsub base implementation', () => {
         pubsub.getSubscribers()
       } catch (err: any) {
         expect(err).to.exist()
-        expect(err.code).to.eql('ERR_NOT_VALID_TOPIC')
+        expect(err.name).to.equal('InvalidParametersError')
         return
       }
       throw new Error('should fail if no topic is provided')
@@ -439,14 +463,16 @@ describe('pubsub base implementation', () => {
   })
 
   describe('verification', () => {
-    let peerId: PeerId
     let pubsub: PubsubImplementation
     const data = uint8ArrayFromString('bar')
 
     beforeEach(async () => {
-      peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = peerIdFromPrivateKey(privateKey)
+
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -464,13 +490,13 @@ describe('pubsub base implementation', () => {
       const peerStream = new PeerStreams({
         logger: defaultLogger()
       }, {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         protocol: 'test'
       })
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toBytes(),
+          from: peerStream.id.toMultihash().bytes,
           data,
           sequenceNumber: await noSignMsgId(data),
           topic
@@ -496,14 +522,14 @@ describe('pubsub base implementation', () => {
       const peerStream = new PeerStreams({
         logger: defaultLogger()
       }, {
-        id: await createEd25519PeerId(),
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         protocol: 'test'
       })
 
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toBytes(),
+          from: peerStream.id.toMultihash().bytes,
           data,
           topic
         }]

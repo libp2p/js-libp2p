@@ -1,4 +1,4 @@
-import type { PeerId } from '../peer-id/index.js'
+import type { PublicKey } from '../keys/index.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
@@ -24,7 +24,7 @@ export interface Record {
 }
 
 export interface Envelope {
-  peerId: PeerId
+  publicKey: PublicKey
   payloadType: Uint8Array | Uint8ArrayList
   payload: Uint8Array
   signature: Uint8Array | Uint8ArrayList

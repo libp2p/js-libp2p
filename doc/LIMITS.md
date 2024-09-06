@@ -39,12 +39,6 @@ const node = await createLibp2p({
     maxConnections: 100,
 
     /**
-     * If the number of open connections goes below this number, the node
-     * will try to connect to randomly selected peers from the peer store
-     */
-    minConnections: 50,
-
-    /**
      * How many connections can be open but not yet upgraded
      */
     maxIncomingPendingConnections: 100,
@@ -59,12 +53,12 @@ When choosing connections to close the connection manager sorts the list of conn
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 
 const libp2p = await createLibp2p({})
 
-const peerId = await createEd25519PeerId()
+const peerId = await peerIdFromString('123Koo...')
 
 // tag a peer
 await libp2p.peerStore.merge(peerId, {

@@ -125,7 +125,7 @@ export class QuerySelf implements Startable {
         const start = Date.now()
 
         const found = await pipe(
-          this.peerRouting.getClosestPeers(this.peerId.toBytes(), {
+          this.peerRouting.getClosestPeers(this.peerId.toMultihash().bytes, {
             signal,
             isSelfQuery: true
           }),

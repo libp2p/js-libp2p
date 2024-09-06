@@ -41,7 +41,7 @@
     "build": "aegir build",
     "test": "aegir test",
     "clean": "aegir clean",
-    "generate": "protons ./src/pb/index.proto",
+    "generate": "protons ./src/pb/proto.proto",
     "lint": "aegir lint",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
@@ -54,14 +54,15 @@
   "dependencies": {
     "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface": "^1.7.0",
-    "@libp2p/peer-id-factory": "^4.2.4",
     "@libp2p/peer-id": "^4.2.4",
     "it-protobuf-stream": "^1.1.3",
     "it-stream-types": "^2.0.1",
     "protons-runtime": "^5.4.0",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
+    "@libp2p/crypto": "^4.1.9",
     "@libp2p/interface-compliance-tests": "^5.4.12",
     "@libp2p/logger": "^4.0.20",
     "@multiformats/multiaddr": "^12.2.3",

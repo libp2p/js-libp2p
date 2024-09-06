@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, CustomEvent, stop, start } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { TypedEventEmitter, stop, start } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -85,7 +85,7 @@ describe('Routing Table', () => {
   })
 
   it('emits peer:add event', async () => {
-    const id = await createEd25519PeerId()
+    const id = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const eventPromise = pEvent<'peer:add', CustomEvent<PeerId>>(table, 'peer:add')
 
     await table.add(id)
@@ -109,7 +109,7 @@ describe('Routing Table', () => {
   })
 
   it('emits peer:remove event', async () => {
-    const id = await createEd25519PeerId()
+    const id = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const eventPromise = pEvent<'peer:remove', CustomEvent<PeerId>>(table, 'peer:remove')
 
     await table.add(id)
@@ -235,7 +235,7 @@ describe('Routing Table', () => {
   })
 
   it('tags newly found kad-close peers', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
 
     await table.add(remotePeer)
@@ -275,9 +275,7 @@ describe('Routing Table', () => {
     const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
     const localNodeId = await kadUtils.convertPeerId(components.peerId)
     const sortedPeerList = await sortClosestPeers(
-      await Promise.all(
-        new Array(KBUCKET_SIZE + 1).fill(0).map(async () => createEd25519PeerId())
-      ),
+      await createPeerIds(KBUCKET_SIZE + 1),
       localNodeId
     )
 
@@ -323,13 +321,13 @@ describe('Routing Table', () => {
 
   it('adds peerstore peers to the routing table on startup', async () => {
     const peer1 = stubInterface<Peer>({
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       protocols: [
         PROTOCOL
       ]
     })
     const peer2 = stubInterface<Peer>({
-      id: await createEd25519PeerId(),
+      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       protocols: [
         '/ipfs/id/1.0.0'
       ]

@@ -1,7 +1,8 @@
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { Key } from 'interface-datastore/key'
+import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -96,7 +97,7 @@ export async function convertBuffer (buf: Uint8Array): Promise<Uint8Array> {
  * Creates a DHT ID by hashing a Peer ID
  */
 export async function convertPeerId (peerId: PeerId): Promise<Uint8Array> {
-  return convertBuffer(peerId.toBytes())
+  return convertBuffer(peerId.toMultihash().bytes)
 }
 
 /**
@@ -116,10 +117,10 @@ export function bufferToRecordKey (buf: Uint8Array): Key {
 /**
  * Generate the key for a public key.
  */
-export function keyForPublicKey (peer: PeerId): Uint8Array {
+export function keyForPublicKey (peerId: PeerId): Uint8Array {
   return uint8ArrayConcat([
     PK_PREFIX,
-    peer.toBytes()
+    peerId.toMultihash().bytes
   ])
 }
 
@@ -132,7 +133,8 @@ export function isIPNSKey (key: Uint8Array): boolean {
 }
 
 export function fromPublicKeyKey (key: Uint8Array): PeerId {
-  return peerIdFromBytes(key.subarray(4))
+  const multihash = Digest.decode(key.subarray(4))
+  return peerIdFromMultihash(multihash)
 }
 
 /**

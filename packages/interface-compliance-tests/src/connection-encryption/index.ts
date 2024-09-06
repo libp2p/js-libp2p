@@ -1,34 +1,40 @@
-import { UnexpectedPeerError } from '@libp2p/interface'
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import peers from '../peers.js'
 import { createMaConnPair } from './utils/index.js'
 import type { TestSetup } from '../index.js'
-import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
+import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 
-export default (common: TestSetup<ConnectionEncrypter>): void => {
+export interface ConnectionEncrypterSetupArgs {
+  privateKey: PrivateKey
+}
+
+export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupArgs>): void => {
   describe('interface-connection-encrypter compliance tests', () => {
     let crypto: ConnectionEncrypter
+    let cryptoRemote: ConnectionEncrypter
     let localPeer: PeerId
     let remotePeer: PeerId
     let mitmPeer: PeerId
 
     before(async () => {
-      [
-        crypto,
-        localPeer,
-        remotePeer,
-        mitmPeer
-      ] = await Promise.all([
-        common.setup(),
-        PeerIdFactory.createFromJSON(peers[0]),
-        PeerIdFactory.createFromJSON(peers[1]),
-        PeerIdFactory.createFromJSON(peers[2])
-      ])
+      const localKey = await generateKeyPair('Ed25519')
+      localPeer = peerIdFromPrivateKey(localKey)
+      const remoteKey = await generateKeyPair('Ed25519')
+      remotePeer = peerIdFromPrivateKey(remoteKey)
+
+      crypto = await common.setup({
+        privateKey: localKey
+      })
+      cryptoRemote = await common.setup({
+        privateKey: remoteKey
+      })
+
+      mitmPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
 
     after(async () => {
@@ -47,8 +53,10 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         inboundResult,
         outboundResult
       ] = await Promise.all([
-        crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        cryptoRemote.secureInbound(localConn),
+        crypto.secureOutbound(remoteConn, {
+          remotePeer
+        })
       ])
 
       // Echo server
@@ -77,25 +85,31 @@ export default (common: TestSetup<ConnectionEncrypter>): void => {
         inboundResult,
         outboundResult
       ] = await Promise.all([
-        crypto.secureInbound(remotePeer, localConn),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        cryptoRemote.secureInbound(localConn),
+        crypto.secureOutbound(remoteConn, {
+          remotePeer
+        })
       ])
 
       // Inbound should return the initiator (local) peer
-      expect(inboundResult.remotePeer.toBytes()).to.equalBytes(localPeer.toBytes())
+      expect(inboundResult.remotePeer.toString()).to.equal(localPeer.toString())
       // Outbound should return the receiver (remote) peer
-      expect(outboundResult.remotePeer.toBytes()).to.equalBytes(remotePeer.toBytes())
+      expect(outboundResult.remotePeer.toString()).to.equal(remotePeer.toString())
     })
 
     it('inbound connections should verify peer integrity if known', async () => {
       const [localConn, remoteConn] = createMaConnPair()
 
       await Promise.all([
-        crypto.secureInbound(remotePeer, localConn, mitmPeer),
-        crypto.secureOutbound(localPeer, remoteConn, remotePeer)
+        cryptoRemote.secureInbound(localConn, {
+          remotePeer: mitmPeer
+        }),
+        crypto.secureOutbound(remoteConn, {
+          remotePeer
+        })
       ]).then(() => expect.fail(), (err) => {
         expect(err).to.exist()
-        expect(err).to.have.property('code', UnexpectedPeerError.code)
+        expect(err).to.have.property('name', 'UnexpectedPeerError')
       })
     })
   })

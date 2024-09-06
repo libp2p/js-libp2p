@@ -1,7 +1,7 @@
-import { CodeError, FaultTolerance } from '@libp2p/interface'
+import { FaultTolerance, InvalidParametersError, NotStartedError } from '@libp2p/interface'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import { CustomProgressEvent } from 'progress-events'
-import { codes } from './errors.js'
+import { NoValidAddressesError, TransportUnavailableError } from './errors.js'
 import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
 import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -47,11 +47,11 @@ export class DefaultTransportManager implements TransportManager, Startable {
     const tag = transport[Symbol.toStringTag]
 
     if (tag == null) {
-      throw new CodeError('Transport must have a valid tag', codes.ERR_INVALID_KEY)
+      throw new InvalidParametersError('Transport must have a valid tag')
     }
 
     if (this.transports.has(tag)) {
-      throw new CodeError(`There is already a transport with the tag ${tag}`, codes.ERR_DUPLICATE_TRANSPORT)
+      throw new InvalidParametersError(`There is already a transport with the tag ${tag}`)
     }
 
     this.log('adding transport %s', tag)
@@ -112,26 +112,18 @@ export class DefaultTransportManager implements TransportManager, Startable {
     const transport = this.dialTransportForMultiaddr(ma)
 
     if (transport == null) {
-      throw new CodeError(`No transport available for address ${String(ma)}`, codes.ERR_TRANSPORT_UNAVAILABLE)
+      throw new TransportUnavailableError(`No transport available for address ${String(ma)}`)
     }
 
     options?.onProgress?.(new CustomProgressEvent<string>('transport-manager:selected-transport', transport[Symbol.toStringTag]))
 
-    try {
-      // @ts-expect-error the transport has a typed onProgress option but we
-      // can't predict what transport implementation we selected so all we can
-      // do is pass the onProgress handler in and hope for the best
-      return await transport.dial(ma, {
-        ...options,
-        upgrader: this.components.upgrader
-      })
-    } catch (err: any) {
-      if (err.code == null) {
-        err.code = codes.ERR_TRANSPORT_DIAL_FAILED
-      }
-
-      throw err
-    }
+    // @ts-expect-error the transport has a typed onProgress option but we
+    // can't predict what transport implementation we selected so all we can
+    // do is pass the onProgress handler in and hope for the best
+    return transport.dial(ma, {
+      ...options,
+      upgrader: this.components.upgrader
+    })
   }
 
   /**
@@ -192,7 +184,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
    */
   async listen (addrs: Multiaddr[]): Promise<void> {
     if (!this.isStarted()) {
-      throw new CodeError('Not started', codes.ERR_NODE_NOT_STARTED)
+      throw new NotStartedError('Not started')
     }
 
     if (addrs == null || addrs.length === 0) {
@@ -256,7 +248,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       // just wait for any (`p-any`) listener to succeed on each transport before returning
       const isListening = results.find(r => r.status === 'fulfilled')
       if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw new CodeError(`Transport (${key}) could not listen on any available address`, codes.ERR_NO_VALID_ADDRESSES)
+        throw new NoValidAddressesError(`Transport (${key}) could not listen on any available address`)
       }
     }
 
@@ -265,7 +257,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     if (couldNotListen.length === this.transports.size) {
       const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw new CodeError(message, codes.ERR_NO_VALID_ADDRESSES)
+        throw new NoValidAddressesError(message)
       }
       this.log(`libp2p in dial mode only: ${message}`)
     }

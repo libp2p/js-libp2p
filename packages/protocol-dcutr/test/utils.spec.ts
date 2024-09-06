@@ -12,13 +12,13 @@ describe('dcutr utils', () => {
   describe('isPublicAndDialable', () => {
     const testCases = {
       // good addresses
-      '/ip4/123.123.123.123/tcp/80/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa': true,
-      '/dnsaddr/example.com/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa': true,
-      '/ip4/123.123.123.123/tcp/80/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa/p2p-circuit/webrtc/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN': true,
+      '/ip4/123.123.123.123/tcp/80/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ': true,
+      '/dnsaddr/example.com/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ': true,
+      '/ip4/123.123.123.123/tcp/80/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ/p2p-circuit/webrtc/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN': true,
 
       // bad addresses
-      '/dnsaddr/example.com/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa/p2p-circuit/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN': false,
-      '/ip4/10.0.0.1/tcp/123/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa': false
+      '/dnsaddr/example.com/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ/p2p-circuit/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN': false,
+      '/ip4/10.0.0.1/tcp/123/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ': false
     }
 
     for (const [key, value] of Object.entries(testCases)) {
@@ -34,7 +34,7 @@ describe('dcutr utils', () => {
     it('should not allow addresses for which there is no transport', () => {
       const transportManager = stubInterface<TransportManager>()
 
-      expect(isPublicAndDialable(multiaddr('/ip4/123.123.123.123/p2p/12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa'), transportManager)).to.be.false()
+      expect(isPublicAndDialable(multiaddr('/ip4/123.123.123.123/p2p/12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ'), transportManager)).to.be.false()
     })
   })
 })

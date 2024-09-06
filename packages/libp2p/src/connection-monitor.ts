@@ -100,7 +100,7 @@ export class ConnectionMonitor implements Startable {
             })
             const stream = await conn.newStream(this.protocol, {
               signal,
-              runOnTransientConnection: true
+              runOnLimitedConnection: true
             })
             const bs = byteStream(stream)
             start = Date.now()

@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import * as crypto from '../../src/index.js'
+import { keyStretcher, generateEphemeralKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-stretch-key.js'
 import type { ECDHKey } from '../../src/keys/interface.js'
 
@@ -13,14 +13,14 @@ describe('keyStretcher', () => {
     let secret: Uint8Array
 
     before(async () => {
-      res = await crypto.keys.generateEphemeralKeyPair('P-256')
+      res = await generateEphemeralKeyPair('P-256')
       secret = await res.genSharedKey(res.key)
     })
 
     ciphers.forEach((cipher) => {
       hashes.forEach((hash) => {
         it(`${cipher} - ${hash}`, async () => {
-          const keys = await crypto.keys.keyStretcher(cipher, hash, secret)
+          const keys = await keyStretcher(cipher, hash, secret)
           expect(keys.k1).to.exist()
           expect(keys.k2).to.exist()
         })
@@ -29,12 +29,14 @@ describe('keyStretcher', () => {
 
     it('handles invalid cipher type', () => {
       // @ts-expect-error cipher name is invalid
-      return expect(crypto.keys.keyStretcher('invalid-cipher', 'SHA256', 'secret')).to.eventually.be.rejected().with.property('code', 'ERR_INVALID_CIPHER_TYPE')
+      return expect(keyStretcher('invalid-cipher', 'SHA256', 'secret')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
 
     it('handles missing hash type', () => {
       // @ts-expect-error secret name is invalid
-      return expect(crypto.keys.keyStretcher('AES-128', undefined, 'secret')).to.eventually.be.rejected().with.property('code', 'ERR_MISSING_HASH_TYPE')
+      return expect(keyStretcher('AES-128', undefined, 'secret')).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -44,7 +46,7 @@ describe('keyStretcher', () => {
         const cipher = test.cipher
         const hash = test.hash
         const secret = test.secret
-        const keys = await crypto.keys.keyStretcher(cipher, hash, secret)
+        const keys = await keyStretcher(cipher, hash, secret)
 
         expect(keys.k1.iv).to.be.eql(test.k1.iv)
         expect(keys.k1.cipherKey).to.be.eql(test.k1.cipherKey)

@@ -28,9 +28,6 @@
       "path": "../peer-id"
     },
     {
-      "path": "../peer-id-factory"
-    },
-    {
       "path": "../transport-circuit-relay-v2"
     },
     {

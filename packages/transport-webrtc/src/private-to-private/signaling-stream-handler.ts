@@ -1,6 +1,6 @@
-import { CodeError } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { SDPHandshakeFailedError } from '../error.js'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { readCandidatesUntilConnected } from './util.js'
@@ -46,7 +46,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
 
     if (pbOffer.type !== Message.Type.SDP_OFFER) {
-      throw new CodeError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `, 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
     }
 
     log.trace('recipient receive SDP offer %s', pbOffer.data)
@@ -58,13 +58,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     await peerConnection.setRemoteDescription(offer).catch(err => {
       log.error('could not execute setRemoteDescription', err)
-      throw new CodeError('Failed to set remoteDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
       log.error('could not execute createAnswer', err)
-      throw new CodeError('Failed to create answer', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to create answer')
     })
 
     log.trace('recipient send SDP answer %s', answer.sdp)
@@ -76,7 +76,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     await peerConnection.setLocalDescription(answer).catch(err => {
       log.error('could not execute setLocalDescription', err)
-      throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
     log.trace('recipient read candidates until connected')

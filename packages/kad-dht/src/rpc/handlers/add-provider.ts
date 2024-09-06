@@ -1,7 +1,8 @@
-import { CodeError } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { InvalidMessageError } from '@libp2p/interface'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import type { Message } from '../../message/dht.js'
 import type { Providers } from '../../providers'
 import type { DHTMessageHandler } from '../index.js'
@@ -29,7 +30,7 @@ export class AddProviderHandler implements DHTMessageHandler {
     this.log('start')
 
     if (msg.key == null || msg.key.length === 0) {
-      throw new CodeError('Missing key', 'ERR_MISSING_KEY')
+      throw new InvalidMessageError('Missing key')
     }
 
     let cid: CID
@@ -37,7 +38,7 @@ export class AddProviderHandler implements DHTMessageHandler {
       // this is actually just the multihash, not the whole CID
       cid = CID.decode(msg.key)
     } catch (err: any) {
-      throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
+      throw new InvalidMessageError('Invalid CID')
     }
 
     if (msg.providers == null || msg.providers.length === 0) {
@@ -59,7 +60,9 @@ export class AddProviderHandler implements DHTMessageHandler {
 
         this.log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
 
-        await this.providers.addProvider(cid, peerIdFromBytes(pi.id))
+        const multihash = Digest.decode(pi.id)
+
+        await this.providers.addProvider(cid, peerIdFromMultihash(multihash))
       })
     )
 

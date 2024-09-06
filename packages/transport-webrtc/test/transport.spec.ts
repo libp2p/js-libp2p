@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { type CreateListenerOptions, transportSymbol, type Metrics } from '@libp2p/interface'
 import { mockMetrics, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { UnimplementedError } from '../src/error.js'
@@ -21,8 +22,12 @@ describe('WebRTCDirect Transport', () => {
 
   before(async () => {
     metrics = mockMetrics()()
+
+    const privateKey = await generateKeyPair('Ed25519')
+
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(privateKey),
+      privateKey,
       metrics,
       logger: defaultLogger()
     }
@@ -88,7 +93,7 @@ describe('WebRTCDirect Transport', () => {
 
     try {
       await transport.dial(ma, ignoredDialOption())
-    } catch (error) {
+    } catch (error: any) {
       const expected = 'WebRTC transport error: There was a problem with the Multiaddr which was passed in: we need to have the remote\'s PeerId'
       expectError(error, expected)
     }

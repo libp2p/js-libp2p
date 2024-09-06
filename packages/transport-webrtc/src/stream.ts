@@ -1,9 +1,9 @@
-import { CodeError } from '@libp2p/interface'
+import { StreamStateError, TimeoutError } from '@libp2p/interface'
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { type Pushable, pushable } from 'it-pushable'
 import pDefer from 'p-defer'
-import { pEvent, TimeoutError } from 'p-event'
+import { pEvent } from 'p-event'
 import pTimeout from 'p-timeout'
 import { raceSignal } from 'race-signal'
 import { encodingLength } from 'uint8-varint'
@@ -174,7 +174,7 @@ export class WebRTCStream extends AbstractStream {
 
       default:
         this.log.error('unknown datachannel state %s', this.channel.readyState)
-        throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
+        throw new StreamStateError('Unknown datachannel state')
     }
 
     // handle RTCDataChannel events
@@ -236,7 +236,7 @@ export class WebRTCStream extends AbstractStream {
         await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
       } catch (err: any) {
         if (err instanceof TimeoutError) {
-          throw new CodeError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`, 'ERR_BUFFER_CLEAR_TIMEOUT')
+          throw new TimeoutError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`)
         }
 
         throw err
@@ -244,7 +244,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
-      throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
+      throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
     if (this.channel.readyState !== 'open') {
@@ -285,7 +285,7 @@ export class WebRTCStream extends AbstractStream {
       try {
         await raceSignal(this.receiveFinAck.promise, options?.signal, {
           errorMessage: 'sending close-write was aborted before FIN_ACK was received',
-          errorCode: 'ERR_FIN_ACK_NOT_RECEIVED'
+          errorName: 'FinAckNotReceivedError'
         })
       } catch (err) {
         this.log.error('failed to await FIN_ACK', err)

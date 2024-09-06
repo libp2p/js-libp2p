@@ -1,5 +1,6 @@
-import { CodeError } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { InvalidMessageError } from '@libp2p/interface'
+import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -7,7 +8,7 @@ import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isR
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
 
 export const defaultValues = {
@@ -19,7 +20,7 @@ export const defaultValues = {
   maxMessageSize: MAX_IDENTIFY_MESSAGE_SIZE,
   runOnConnectionOpen: true,
   runOnSelfUpdate: true,
-  runOnTransientConnection: true,
+  runOnLimitedConnection: true,
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
@@ -56,7 +57,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   log('received identify from %p', connection.remotePeer)
 
   if (message == null) {
-    throw new CodeError('message was null or undefined', 'ERR_INVALID_MESSAGE')
+    throw new InvalidMessageError('message was null or undefined')
   }
 
   const peer: PeerData = {}
@@ -73,13 +74,14 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   }
 
   if (message.publicKey != null) {
-    peer.publicKey = message.publicKey
-
-    const peerId = await peerIdFromKeys(message.publicKey)
+    const publicKey = publicKeyFromProtobuf(message.publicKey)
+    const peerId = peerIdFromPublicKey(publicKey)
 
     if (!peerId.equals(connection.remotePeer)) {
-      throw new CodeError('public key did not match remote PeerId', 'ERR_INVALID_PUBLIC_KEY')
+      throw new InvalidMessageError('public key did not match remote PeerId')
     }
+
+    peer.publicKey = publicKey
   }
 
   let output: SignedPeerRecord | undefined
@@ -91,15 +93,16 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     let peerRecordEnvelope = message.signedPeerRecord
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
     let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+    const envelopePeer = peerIdFromCID(envelope.publicKey.toCID())
 
     // Verify peerId
-    if (!peerRecord.peerId.equals(envelope.peerId)) {
-      throw new CodeError('signing key does not match PeerId in the PeerRecord', 'ERR_INVALID_SIGNING_KEY')
+    if (!peerRecord.peerId.equals(envelopePeer)) {
+      throw new InvalidMessageError('signing key does not match PeerId in the PeerRecord')
     }
 
     // Make sure remote peer is the one sending the record
     if (!connection.remotePeer.equals(peerRecord.peerId)) {
-      throw new CodeError('signing key does not match remote PeerId', 'ERR_INVALID_PEER_RECORD_KEY')
+      throw new InvalidMessageError('signing key does not match remote PeerId')
     }
 
     let existingPeer: Peer | undefined
@@ -107,7 +110,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     try {
       existingPeer = await peerStore.get(peerRecord.peerId)
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }
@@ -199,6 +202,7 @@ export abstract class AbstractIdentify implements Startable {
   protected started: boolean
   protected readonly timeout: number
   protected readonly peerId: PeerId
+  protected readonly privateKey: PrivateKey
   protected readonly peerStore: PeerStore
   protected readonly registrar: Registrar
   protected readonly addressManager: AddressManager
@@ -207,13 +211,14 @@ export abstract class AbstractIdentify implements Startable {
   protected readonly maxMessageSize: number
   protected readonly maxObservedAddresses: number
   protected readonly events: TypedEventTarget<Libp2pEvents>
-  protected readonly runOnTransientConnection: boolean
+  protected readonly runOnLimitedConnection: boolean
   protected readonly log: Logger
 
   constructor (components: IdentifyComponents, init: AbstractIdentifyInit) {
     this.protocol = init.protocol
     this.started = false
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.peerStore = components.peerStore
     this.registrar = components.registrar
     this.addressManager = components.addressManager
@@ -225,7 +230,7 @@ export abstract class AbstractIdentify implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
     this.maxMessageSize = init.maxMessageSize ?? defaultValues.maxMessageSize
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
-    this.runOnTransientConnection = init.runOnTransientConnection ?? defaultValues.runOnTransientConnection
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues.runOnLimitedConnection
 
     // Store self host metadata
     this.host = {
@@ -257,7 +262,7 @@ export abstract class AbstractIdentify implements Startable {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
 
     this.started = true

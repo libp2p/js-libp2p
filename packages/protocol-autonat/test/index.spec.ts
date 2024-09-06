@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 5] */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
@@ -50,7 +51,7 @@ describe('autonat', () => {
     transportManager = stubInterface<TransportManager>()
 
     components = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       logger: defaultLogger(),
       randomWalk,
       registrar,
@@ -76,7 +77,7 @@ describe('autonat', () => {
     async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId): Promise<PeerInfo> {
       // stub random peer lookup
       const peer = {
-        id: peerId ?? await createEd25519PeerId(),
+        id: peerId ?? peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
         multiaddrs: [],
         protocols: []
       }
@@ -257,7 +258,7 @@ describe('autonat', () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
       addressManager.getObservedAddrs.returns([observedAddress])
 
-      const peerId = await createEd25519PeerId()
+      const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       // an attacker says OK, the rest of the network says ERROR
       const peers = [
@@ -410,7 +411,7 @@ describe('autonat', () => {
       transportSupported?: boolean
       canDial?: boolean
     } = {}): Promise<Message> {
-      const requestingPeer = opts.requestingPeer ?? await createEd25519PeerId()
+      const requestingPeer = opts.requestingPeer ?? peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const remotePeer = opts.remotePeer ?? requestingPeer
       const observedAddress = opts.observedAddress ?? multiaddr('/ip4/124.124.124.124/tcp/28319')
       const remoteAddr = opts.remoteAddr ?? observedAddress.encapsulate(`/p2p/${remotePeer.toString()}`)
@@ -460,7 +461,7 @@ describe('autonat', () => {
           type: Message.MessageType.DIAL,
           dial: {
             peer: {
-              id: requestingPeer.toBytes(),
+              id: requestingPeer.toMultihash().bytes,
               addrs: [
                 observedAddress.bytes
               ]
@@ -584,8 +585,8 @@ describe('autonat', () => {
     })
 
     it('should fail to dial a requested address when it arrives via a relay', async () => {
-      const remotePeer = await createEd25519PeerId()
-      const requestingPeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const requestingPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       const message = await stubIncomingStream({
         remotePeer,
@@ -599,7 +600,7 @@ describe('autonat', () => {
     })
 
     it('should refuse to dial a requested address when it is from a different host', async () => {
-      const requestingPeer = await createEd25519PeerId()
+      const requestingPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const observedAddress = multiaddr('/ip4/10.10.10.10/tcp/27132')
       const remoteAddr = multiaddr(`/ip4/129.129.129.129/tcp/27132/p2p/${requestingPeer.toString()}`)
 

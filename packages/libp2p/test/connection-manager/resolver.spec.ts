@@ -3,11 +3,11 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { identify } from '@libp2p/identify'
 import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -15,8 +15,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
-import { createLibp2pNode, type Libp2pNode } from '../../src/libp2p.js'
-import type { PeerId, Transport } from '@libp2p/interface'
+import { createLibp2p } from '../../src/index.js'
+import type { Libp2p, PeerId, Transport } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const relayAddr = multiaddr(process.env.RELAY_MULTIADDR)
@@ -28,15 +28,15 @@ const getDnsRelayedAddrStub = (peerId: PeerId): string[] => [
 ]
 
 describe('dialing (resolvable addresses)', () => {
-  let libp2p: Libp2pNode
-  let remoteLibp2p: Libp2pNode<{ relay: CircuitRelayService }>
+  let libp2p: Libp2p
+  let remoteLibp2p: Libp2p<{ relay: CircuitRelayService }>
   let resolver: sinon.SinonStub<[Multiaddr], Promise<string[]>>
 
   beforeEach(async () => {
     resolver = sinon.stub<[Multiaddr], Promise<string[]>>();
 
     [libp2p, remoteLibp2p] = await Promise.all([
-      createLibp2pNode({
+      createLibp2p({
         addresses: {
           listen: [`${relayAddr.toString()}/p2p-circuit`]
         },
@@ -63,7 +63,7 @@ describe('dialing (resolvable addresses)', () => {
           identify: identify()
         }
       }),
-      createLibp2pNode({
+      createLibp2p({
         addresses: {
           listen: [`${relayAddr.toString()}/p2p-circuit`]
         },
@@ -110,7 +110,7 @@ describe('dialing (resolvable addresses)', () => {
   })
 
   it('resolves dnsaddr to ws local address', async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     // ensure remote libp2p creates reservation on relay
     await remoteLibp2p.peerStore.merge(peerId, {
       protocols: [RELAY_V2_HOP_CODEC]
@@ -178,8 +178,8 @@ describe('dialing (resolvable addresses)', () => {
   })
 })
 
-function getTransport (libp2p: Libp2pNode, tag: string): Transport {
-  const transport = libp2p.components.transportManager.getTransports().find(t => {
+function getTransport (libp2p: any, tag: string): Transport {
+  const transport = libp2p.components.transportManager.getTransports().find((t: any) => {
     return t[Symbol.toStringTag] === tag
   })
 

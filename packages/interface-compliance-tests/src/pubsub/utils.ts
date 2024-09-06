@@ -1,6 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { mockConnectionManager, mockRegistrar, mockNetwork } from '../mocks/index.js'
@@ -16,8 +17,11 @@ export async function waitForSubscriptionUpdate (a: PubSub, b: PeerId): Promise<
 }
 
 export async function createComponents (): Promise<MockNetworkComponents> {
+  const privateKey = await generateKeyPair('Ed25519')
+
   const components: any = {
-    peerId: await createEd25519PeerId(),
+    peerId: peerIdFromPrivateKey(privateKey),
+    privateKey,
     registrar: mockRegistrar(),
     events: new TypedEventEmitter(),
     logger: defaultLogger()

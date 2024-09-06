@@ -1,4 +1,4 @@
-import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { NotFoundError, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
@@ -56,7 +56,7 @@ class DHTContentRouting implements ContentRouting {
       }
     }
 
-    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Could not find value for key')
   }
 }
 
@@ -77,7 +77,7 @@ class DHTPeerRouting implements PeerRouting {
       }
     }
 
-    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Peer not found')
   }
 
   async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {

@@ -114,7 +114,7 @@ describe('QueryManager', () => {
 
     const unsortedPeers = await createPeerIds(39)
     ourPeerId = await createPeerId()
-    key = (await createPeerId()).toBytes()
+    key = (await createPeerId()).toMultihash().bytes
 
     // sort remaining peers by XOR distance to the key, low -> high
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key))
@@ -341,7 +341,7 @@ describe('QueryManager', () => {
     }, 10)
 
     await expect(all(manager.run(key, queryFunc, { signal: controller.signal }))).to.eventually.be.rejected()
-      .with.property('code', 'ERR_QUERY_ABORTED')
+      .with.property('name', 'QueryAbortedError')
 
     expect(aborted).to.be.true()
 

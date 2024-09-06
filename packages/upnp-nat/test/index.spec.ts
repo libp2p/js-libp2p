@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS, stop } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
@@ -25,7 +26,7 @@ describe('UPnP NAT (TCP)', () => {
 
   async function createNatManager (natManagerOptions = {}): Promise<{ natManager: any, components: StubbedUPnPNATComponents }> {
     const components: StubbedUPnPNATComponents = {
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       nodeInfo: { name: 'test', version: 'test' },
       logger: defaultLogger(),
       addressManager: stubInterface<AddressManager>(),
@@ -90,7 +91,7 @@ describe('UPnP NAT (TCP)', () => {
     ])
 
     await expect(natManager.mapIpAddresses()).to.eventually.be.rejected
-      .with.property('code', 'ERR_DOUBLE_NAT')
+      .with.property('name', 'DoubleNATError')
 
     expect(client.map.called).to.be.false()
     expect(components.addressManager.addObservedAddr.called).to.be.false()
@@ -188,6 +189,6 @@ describe('UPnP NAT (TCP)', () => {
 
   it('should specify large enough TTL', async () => {
     await expect(createNatManager({ ttl: 5, keepAlive: true })).to.eventually.be.rejected
-      .with.property('code', ERR_INVALID_PARAMETERS)
+      .with.property('name', 'InvalidParametersError')
   })
 })

@@ -1,7 +1,7 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import tests from '@libp2p/interface-compliance-tests/connection'
-import peers from '@libp2p/interface-compliance-tests/peers'
 import { logger, peerLogger } from '@libp2p/logger'
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createConnection } from '../../src/connection/index.js'
 import { pair } from './fixtures/pair.js'
@@ -14,9 +14,9 @@ describe('connection compliance', () => {
      * certain values for testing.
      */
     async setup (properties) {
-      const localPeer = await PeerIdFactory.createEd25519PeerId()
+      const localPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/8081')
-      const remotePeer = await PeerIdFactory.createFromJSON(peers[0])
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       let openStreams: Stream[] = []
       let streamId = 0
 

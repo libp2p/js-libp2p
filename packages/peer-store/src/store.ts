@@ -1,10 +1,10 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import mortice, { type Mortice } from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
+import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { codes } from './errors.js'
 import { Peer as PeerPB } from './pb/peer.js'
 import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
@@ -23,8 +23,8 @@ export interface PeerUpdate extends PeerUpdateExternal {
 function decodePeer (key: Key, value: Uint8Array, cache: PeerMap<Peer>): Peer {
   // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
   const base32Str = key.toString().split('/')[2]
-  const buf = base32.decode(base32Str)
-  const peerId = peerIdFromBytes(buf)
+  const buf = CID.parse(base32Str, base32)
+  const peerId = peerIdFromCID(buf)
 
   const cached = cache.get(peerId)
 
@@ -77,7 +77,7 @@ export class PersistentStore {
 
   async delete (peerId: PeerId): Promise<void> {
     if (this.peerId.equals(peerId)) {
-      throw new CodeError('Cannot delete self peer', codes.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('Cannot delete self peer')
     }
 
     await this.datastore.delete(peerIdToDatastoreKey(peerId))
@@ -155,7 +155,7 @@ export class PersistentStore {
         existingPeer
       }
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }

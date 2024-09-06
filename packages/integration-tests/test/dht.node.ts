@@ -3,7 +3,6 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -38,23 +37,13 @@ async function getRemoteAddr (remotePeerId: PeerId, libp2p: Libp2p): Promise<Mul
 }
 
 describe('DHT subsystem operates correctly', () => {
-  let peerId: PeerId
-  let remotePeerId: PeerId
   let libp2p: Libp2p<{ dht: KadDHT }>
   let remoteLibp2p: Libp2p<{ dht: KadDHT }>
   let remAddr: Multiaddr
 
-  beforeEach(async () => {
-    [peerId, remotePeerId] = await Promise.all([
-      createEd25519PeerId(),
-      createEd25519PeerId()
-    ])
-  })
-
   describe('dht started before connect', () => {
     beforeEach(async () => {
       libp2p = await createLibp2p({
-        peerId,
         addresses: {
           listen: [listenAddr.toString()]
         },
@@ -78,7 +67,6 @@ describe('DHT subsystem operates correctly', () => {
       })
 
       remoteLibp2p = await createLibp2p({
-        peerId: remotePeerId,
         addresses: {
           listen: [remoteListenAddr.toString()]
         },
@@ -106,10 +94,10 @@ describe('DHT subsystem operates correctly', () => {
         remoteLibp2p.start()
       ])
 
-      await libp2p.peerStore.patch(remotePeerId, {
+      await libp2p.peerStore.patch(remoteLibp2p.peerId, {
         multiaddrs: [remoteListenAddr]
       })
-      remAddr = await getRemoteAddr(remotePeerId, libp2p)
+      remAddr = await getRemoteAddr(remoteLibp2p.peerId, libp2p)
     })
 
     afterEach(async () => {
@@ -139,7 +127,7 @@ describe('DHT subsystem operates correctly', () => {
       const key = uint8ArrayFromString('hello')
       const value = uint8ArrayFromString('world')
 
-      await libp2p.dialProtocol(remotePeerId, subsystemMulticodecs)
+      await libp2p.dialProtocol(remoteLibp2p.peerId, subsystemMulticodecs)
       await Promise.all([
         // @ts-expect-error private field
         pWaitFor(() => libp2p.services.dht.routingTable.size === 1),
@@ -155,13 +143,9 @@ describe('DHT subsystem operates correctly', () => {
   })
 
   it('kad-dht should discover other peers', async () => {
-    const remotePeerId1 = await createEd25519PeerId()
-    const remotePeerId2 = await createEd25519PeerId()
-
     const deferred = pDefer()
 
-    const getConfig = (peerId: PeerId): Libp2pOptions<{ dht: KadDHT }> => ({
-      peerId,
+    const getConfig = (): Libp2pOptions<{ dht: KadDHT }> => ({
       addresses: {
         listen: [
           listenAddr.toString()
@@ -176,17 +160,17 @@ describe('DHT subsystem operates correctly', () => {
       }
     })
 
-    const localConfig = getConfig(peerId)
+    const localConfig = getConfig()
 
     libp2p = await createLibp2p(localConfig)
 
-    const remoteLibp2p1 = await createLibp2p(getConfig(remotePeerId1))
-    const remoteLibp2p2 = await createLibp2p(getConfig(remotePeerId2))
+    const remoteLibp2p1 = await createLibp2p(getConfig())
+    const remoteLibp2p2 = await createLibp2p(getConfig())
 
     libp2p.addEventListener('peer:discovery', (evt) => {
       const { id } = evt.detail
 
-      if (id.equals(remotePeerId1)) {
+      if (id.equals(remoteLibp2p1.peerId)) {
         libp2p.removeEventListener('peer:discovery')
         deferred.resolve()
       }
@@ -198,10 +182,10 @@ describe('DHT subsystem operates correctly', () => {
       remoteLibp2p2.start()
     ])
 
-    await libp2p.peerStore.patch(remotePeerId1, {
+    await libp2p.peerStore.patch(remoteLibp2p1.peerId, {
       multiaddrs: remoteLibp2p1.getMultiaddrs()
     })
-    await remoteLibp2p2.peerStore.patch(remotePeerId1, {
+    await remoteLibp2p2.peerStore.patch(remoteLibp2p1.peerId, {
       multiaddrs: remoteLibp2p1.getMultiaddrs()
     })
 
@@ -209,8 +193,8 @@ describe('DHT subsystem operates correctly', () => {
     // A -> B
     // C -> B
     await Promise.all([
-      libp2p.dial(remotePeerId1),
-      remoteLibp2p2.dial(remotePeerId1)
+      libp2p.dial(remoteLibp2p1.peerId),
+      remoteLibp2p2.dial(remoteLibp2p1.peerId)
     ])
 
     await deferred.promise

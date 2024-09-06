@@ -16,9 +16,6 @@
     },
     {
       "path": "../logger"
-    },
-    {
-      "path": "../peer-id-factory"
     }
   ]
 }
