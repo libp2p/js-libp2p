@@ -65,6 +65,7 @@ export class ConnectionMonitor implements Startable {
   private readonly pingIntervalMs: number
   private abortController?: AbortController
   private readonly timeout: AdaptiveTimeout
+  private readonly abortConnectionOnPingFailure: boolean
 
   constructor (components: ConnectionMonitorComponents, init: ConnectionMonitorInit = {}) {
     this.components = components
@@ -72,7 +73,7 @@ export class ConnectionMonitor implements Startable {
 
     this.log = components.logger.forComponent('libp2p:connection-monitor')
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS
-
+    this.abortConnectionOnPingFailure = init.abortConnectionOnPingFailure ?? true
     this.timeout = new AdaptiveTimeout({
       ...(init.pingTimeout ?? {}),
       metrics: components.metrics,
@@ -130,10 +131,15 @@ export class ConnectionMonitor implements Startable {
             conn.rtt = (Date.now() - start) / 2
           }
         })
-          .catch(err => {
-            this.log.error('error during heartbeat, aborting connection', err)
+        .catch(err => {
+          this.log.error('error during heartbeat', err)
+          if (!this.abortConnectionOnPingFailure) {
+            this.log.error('aborting connection due to ping failure')
             conn.abort(err)
-          })
+          } else {
+            this.log.warn('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
+          }
+        })
       })
     }, this.pingIntervalMs)
   }
