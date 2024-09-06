@@ -121,7 +121,7 @@ export interface TCPComponents {
 }
 
 export interface TCPMetrics {
-  dialerEvents: CounterGroup
+  dialerEvents: CounterGroup<'error' | 'timeout' | 'connect' | 'abort'>
 }
 
 export function tcp (init: TCPOptions = {}): (components: TCPComponents) => Transport {

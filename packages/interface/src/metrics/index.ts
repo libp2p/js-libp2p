@@ -76,23 +76,23 @@ export interface Metric {
  * A group of related metrics loosely based on the interfaces exposed by the
  * prom-client module
  */
-export interface MetricGroup {
+export interface MetricGroup<T extends string = any> {
   /**
    * Update the stored metric group to the passed value
    */
-  update(values: Record<string, number>): void
+  update(values: Partial<Record<T, number>>): void
 
   /**
    * Increment the metric group keys by the passed number or
-   * any non-numeric value to increment by 1
+   * `true` to increment by 1
    */
-  increment(values: Record<string, number | unknown>): void
+  increment(values: Partial<Record<T, number | true>>): void
 
   /**
    * Decrement the metric group keys by the passed number or
-   * any non-numeric value to decrement by 1
+   * `true` to decrement by 1
    */
-  decrement(values: Record<string, number | unknown>): void
+  decrement(values: Partial<Record<T, number | true>>): void
 
   /**
    * Reset the passed key in this metric group to its default value
@@ -128,12 +128,12 @@ export interface Counter {
  * exposed by the prom-client module - counters are metrics that only
  * go up
  */
-export interface CounterGroup {
+export interface CounterGroup<T extends string = any> {
   /**
    * Increment the metric group keys by the passed number or
    * any non-numeric value to increment by 1
    */
-  increment(values: Record<string, number | unknown>): void
+  increment(values: Partial<Record<T, number | true>>): void
 
   /**
    * Reset the passed key in this metric group to its default value

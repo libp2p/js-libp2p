@@ -34,7 +34,7 @@ describe('metric groups', () => {
       label: metricLabel
     })
     metric.increment({
-      [metricKey]: false
+      [metricKey]: true
     })
 
     await expect(client.register.metrics()).to.eventually.include(`${metricName}{${metricLabel}="${metricKey}"} 1`, 'did not include updated metric')
@@ -69,7 +69,7 @@ describe('metric groups', () => {
       label: metricLabel
     })
     metric.decrement({
-      [metricKey]: false
+      [metricKey]: true
     })
 
     await expect(client.register.metrics()).to.eventually.include(`${metricName}{${metricLabel}="${metricKey}"} -1`, 'did not include updated metric')
