@@ -3,7 +3,7 @@ const Benchmark = require('benchmark')
 
 const suite = new Benchmark.Suite('bloom-filter')
 
-const bits = [8, 64, 512, 4096, 32768, 262144, 262145, 2097152]
+const bits = [8, 64, 512, 4096, 32768, 262144, 2097152, 251658240]
 
 bits.forEach((bit) => {
   suite.add(`Loop ${bit}bits`, () => {
