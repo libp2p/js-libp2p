@@ -131,15 +131,15 @@ export class ConnectionMonitor implements Startable {
             conn.rtt = (Date.now() - start) / 2
           }
         })
-        .catch(err => {
-          this.log.error('error during heartbeat', err)
-          if (this.abortConnectionOnPingFailure) {
-            this.log.error('aborting connection due to ping failure')
-            conn.abort(err)
-          } else {
-            this.log.error('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
-          }
-        })
+          .catch(err => {
+            this.log.error('error during heartbeat', err)
+            if (this.abortConnectionOnPingFailure) {
+              this.log.error('aborting connection due to ping failure')
+              conn.abort(err)
+            } else {
+              this.log.error('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
+            }
+          })
       })
     }, this.pingIntervalMs)
   }
