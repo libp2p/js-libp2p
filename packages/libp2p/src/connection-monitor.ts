@@ -133,7 +133,7 @@ export class ConnectionMonitor implements Startable {
         })
         .catch(err => {
           this.log.error('error during heartbeat', err)
-          if (!this.abortConnectionOnPingFailure) {
+          if (this.abortConnectionOnPingFailure) {
             this.log.error('aborting connection due to ping failure')
             conn.abort(err)
           } else {
