@@ -137,7 +137,7 @@ export class ConnectionMonitor implements Startable {
             this.log.error('aborting connection due to ping failure')
             conn.abort(err)
           } else {
-            this.log.warn('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
+            this.log.error('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
           }
         })
       })
