@@ -119,7 +119,7 @@ export class ConnectionMonitor implements Startable {
               signal
             })
           } catch (err: any) {
-            if (err.code !== 'ERR_UNSUPPORTED_PROTOCOL') {
+            if (err.name !== 'UnsupportedProtocolError') {
               throw err
             }
 
