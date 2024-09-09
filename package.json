@@ -34,7 +34,7 @@
     "release:rc": "aegir release-rc",
     "docs": "aegir docs",
     "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc",
-    "postinstall": "patch-package --exclude nothing"
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "aegir": "^44.0.1",
@@ -51,5 +51,8 @@
     "doc",
     "interop",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "protons-runtime": "^5.5.0"
+  }
 }
