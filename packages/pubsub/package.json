@@ -107,7 +107,7 @@
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "sinon": "^18.0.0"
   },
   "sideEffects": false

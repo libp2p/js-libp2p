@@ -63,7 +63,7 @@
     "it-parallel": "^3.0.7",
     "it-pipe": "^3.0.1",
     "multiformats": "^13.2.2",
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {

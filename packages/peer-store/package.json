@@ -69,7 +69,7 @@
     "it-all": "^3.0.6",
     "mortice": "^3.0.4",
     "multiformats": "^13.1.0",
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },

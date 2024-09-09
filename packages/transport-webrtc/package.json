@@ -69,7 +69,7 @@
     "p-event": "^6.0.1",
     "p-timeout": "^6.1.2",
     "progress-events": "^1.0.0",
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "race-signal": "^1.0.2",
     "react-native-webrtc": "^124.0.4",
     "uint8-varint": "^2.0.4",

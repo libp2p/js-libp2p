@@ -62,7 +62,7 @@
   "dependencies": {
     "@libp2p/interface": "^1.7.0",
     "@libp2p/pubsub": "^9.0.26",
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
