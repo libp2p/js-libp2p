@@ -10,43 +10,6 @@ export class AbortError extends Error {
   }
 }
 
-/**
- * @deprecated
- */
-export class CodeError<T extends Record<string, any> = Record<string, never>> extends Error {
-  public readonly props: T
-
-  constructor (
-    message: string,
-    public readonly code: string,
-    props?: T
-  ) {
-    super(message)
-
-    this.name = props?.name ?? 'CodeError'
-    this.props = props ?? {} as T // eslint-disable-line @typescript-eslint/consistent-type-assertions
-  }
-}
-
-/**
- * @deprecated
- */
-export class AggregateCodeError<T extends Record<string, any> = Record<string, never>> extends AggregateError {
-  public readonly props: T
-
-  constructor (
-    errors: Error[],
-    message: string,
-    public readonly code: string,
-    props?: T
-  ) {
-    super(errors, message)
-
-    this.name = props?.name ?? 'AggregateCodeError'
-    this.props = props ?? {} as T // eslint-disable-line @typescript-eslint/consistent-type-assertions
-  }
-}
-
 export class UnexpectedPeerError extends Error {
   constructor (message = 'Unexpected Peer') {
     super(message)
