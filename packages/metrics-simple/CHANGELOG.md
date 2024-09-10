@@ -5,6 +5,29 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.1.6...simple-metrics-v1.2.0) (2024-09-10)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* allow creating counter groups ([#2550](https://github.com/libp2p/js-libp2p/issues/2550)) ([8214dcf](https://github.com/libp2p/js-libp2p/commit/8214dcfb0e14e7bf377b5f0d9864551038c069fa))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^3.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^6.0.0
+
 ## [1.1.5](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.1.4...simple-metrics-v1.1.5) (2024-08-15)
 
 

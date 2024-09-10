@@ -81,6 +81,56 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.0.0...prometheus-metrics-v5.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+
+### Features
+
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+
+
+### Dependencies
+
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump prom-client from 14.2.0 to 15.0.0 ([#2142](https://github.com/libp2p/js-libp2p/issues/2142)) ([f9d1c07](https://github.com/libp2p/js-libp2p/commit/f9d1c07274df5cb281acaf26797be3b913b90052))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^3.0.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^6.0.0
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^7.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^6.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^6.0.0
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.4...prometheus-metrics-v3.1.5) (2024-08-15)
 
 

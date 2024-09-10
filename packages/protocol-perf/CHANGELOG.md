@@ -82,6 +82,117 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/perf-v4.0.0...perf-v5.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* the `perfService` export is now just `perf`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+* `measurePerformance` now returns an async generator that yields `PerfOutput`s and no longer accepts the `startTime` parameter
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* measure transfer perf over time ([#2067](https://github.com/libp2p/js-libp2p/issues/2067)) ([78db573](https://github.com/libp2p/js-libp2p/commit/78db573f9e8f28cd3d0a89f36094f5d566482b9f))
+
+
+### Bug Fixes
+
+* **@libp2p/protocol-perf:** use noise for encryption ([#1992](https://github.com/libp2p/js-libp2p/issues/1992)) ([24c1c24](https://github.com/libp2p/js-libp2p/commit/24c1c2489cd58397c4691d382d6260d56791dbce)), closes [#1991](https://github.com/libp2p/js-libp2p/issues/1991)
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+
+
+### Dependencies
+
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/perf-v4.0.0...perf-v5.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* the `perfService` export is now just `perf`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+* `measurePerformance` now returns an async generator that yields `PerfOutput`s and no longer accepts the `startTime` parameter
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* measure transfer perf over time ([#2067](https://github.com/libp2p/js-libp2p/issues/2067)) ([78db573](https://github.com/libp2p/js-libp2p/commit/78db573f9e8f28cd3d0a89f36094f5d566482b9f))
+
+
+### Bug Fixes
+
+* **@libp2p/protocol-perf:** use noise for encryption ([#1992](https://github.com/libp2p/js-libp2p/issues/1992)) ([24c1c24](https://github.com/libp2p/js-libp2p/commit/24c1c2489cd58397c4691d382d6260d56791dbce)), closes [#1991](https://github.com/libp2p/js-libp2p/issues/1991)
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+
+
+### Dependencies
+
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+
+
+### Refactors
+
+* extract plaintext into separate module ([#2221](https://github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* remove abortable-iterator usage ([#1785](https://github.com/libp2p/js-libp2p/issues/1785)) ([2b755a8](https://github.com/libp2p/js-libp2p/commit/2b755a82b5f302196c023dd851ab9f1cafd8d04e))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+* rename perf exports to remove Service ([#2227](https://github.com/libp2p/js-libp2p/issues/2227)) ([1034416](https://github.com/libp2p/js-libp2p/commit/10344168fe5f56c08a21d6b35468817e17ab0b25))
+
+
+### Refactors
+
+* extract plaintext into separate module ([#2221](https://github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* remove abortable-iterator usage ([#1785](https://github.com/libp2p/js-libp2p/issues/1785)) ([2b755a8](https://github.com/libp2p/js-libp2p/commit/2b755a82b5f302196c023dd851ab9f1cafd8d04e))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+* rename perf exports to remove Service ([#2227](https://github.com/libp2p/js-libp2p/issues/2227)) ([1034416](https://github.com/libp2p/js-libp2p/commit/10344168fe5f56c08a21d6b35468817e17ab0b25))
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p/compare/perf-v3.1.4...perf-v3.1.5) (2024-08-15)
 
 
