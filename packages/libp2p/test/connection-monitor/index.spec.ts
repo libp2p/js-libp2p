@@ -144,7 +144,7 @@ describe('connection monitor', () => {
 
     const connection = stubInterface<Connection>()
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
-      throw new CodeError('Connection closed', 'ERR_CONNECTION_CLOSED')
+      throw new ConnectionClosedError('Connection closed')
     })
 
     components.connectionManager.getConnections.returns([connection])
@@ -164,7 +164,7 @@ describe('connection monitor', () => {
 
     const connection = stubInterface<Connection>()
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
-      throw new CodeError('Connection closed', 'ERR_CONNECTION_CLOSED')
+      throw new ConnectionClosedError('Connection closed')
     })
 
     components.connectionManager.getConnections.returns([connection])

@@ -1,5 +1,5 @@
 import { randomBytes } from '@libp2p/crypto'
-import { serviceCapabilities } from '@libp2p/interface'
+import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { byteStream } from 'it-byte-stream'
 import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
@@ -11,6 +11,7 @@ const PROTOCOL_VERSION = '1.0.0'
 const PROTOCOL_NAME = 'ping'
 const PROTOCOL_PREFIX = 'ipfs'
 const PING_LENGTH = 32
+const DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE = true
 
 export interface ConnectionMonitorInit {
   /**
@@ -73,7 +74,7 @@ export class ConnectionMonitor implements Startable {
 
     this.log = components.logger.forComponent('libp2p:connection-monitor')
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS
-    this.abortConnectionOnPingFailure = init.abortConnectionOnPingFailure ?? true
+    this.abortConnectionOnPingFailure = init.abortConnectionOnPingFailure ?? DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE
     this.timeout = new AdaptiveTimeout({
       ...(init.pingTimeout ?? {}),
       metrics: components.metrics,
@@ -89,6 +90,7 @@ export class ConnectionMonitor implements Startable {
 
   start (): void {
     this.abortController = new AbortController()
+    setMaxListeners(Infinity, this.abortController.signal)
 
     this.heartbeatInterval = setInterval(() => {
       this.components.connectionManager.getConnections().forEach(conn => {
@@ -133,11 +135,12 @@ export class ConnectionMonitor implements Startable {
         })
           .catch(err => {
             this.log.error('error during heartbeat', err)
+
             if (this.abortConnectionOnPingFailure) {
               this.log.error('aborting connection due to ping failure')
               conn.abort(err)
             } else {
-              this.log.error('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
+              this.log('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
             }
           })
       })
