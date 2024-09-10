@@ -111,6 +111,227 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.0...webrtc-v6.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* the autodialer has been removed as well as the corresponding config keys
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+
+### Features
+
+* allow passing a function for rtcConfiguration ([#2590](https://github.com/libp2p/js-libp2p/issues/2590)) ([9e02366](https://github.com/libp2p/js-libp2p/commit/9e0236627b50a389df3350a90e58720cc205f0af)), closes [#2554](https://github.com/libp2p/js-libp2p/issues/2554)
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* collect dial/listen metrics in webrtc and webtransport ([#2061](https://github.com/libp2p/js-libp2p/issues/2061)) ([6cb80f7](https://github.com/libp2p/js-libp2p/commit/6cb80f7d3b308aff955f4de247680a3c9c26993b))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* **@libp2p/webrtc:** close data-channel on muxer stream end ([#1976](https://github.com/libp2p/js-libp2p/issues/1976)) ([7517082](https://github.com/libp2p/js-libp2p/commit/7517082d0ae5dcd8f3f2d13aee2a13067836a2be))
+* **@libp2p/webrtc:** set max message size in alignment with spec ([#2050](https://github.com/libp2p/js-libp2p/issues/2050)) ([122f1e6](https://github.com/libp2p/js-libp2p/commit/122f1e67d4c0aa8c4c8f50aa24a0c0dbe00411fa))
+* **@libp2p/webrtc:** update stream logger name to webrtc ([#2035](https://github.com/libp2p/js-libp2p/issues/2035)) ([0d228f9](https://github.com/libp2p/js-libp2p/commit/0d228f9f078b65fd5aa48ec644946e5c74ed2741))
+* **@libp2p/webrtc:** use correct udp port in remote address ([#2055](https://github.com/libp2p/js-libp2p/issues/2055)) ([0ce318e](https://github.com/libp2p/js-libp2p/commit/0ce318ecea222dc01776a3534d96351675ba9e0d))
+* **@libp2p/webrtc:** use stream logger instead of global logger ([#2042](https://github.com/libp2p/js-libp2p/issues/2042)) ([88c47f5](https://github.com/libp2p/js-libp2p/commit/88c47f51f9d67a6261e4ac65c494cd1e6e4ed8dd))
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add default STUN servers to WebRTC transport ([#2606](https://github.com/libp2p/js-libp2p/issues/2606)) ([af85a7c](https://github.com/libp2p/js-libp2p/commit/af85a7cadd2471c6d1ad730b659783453e9e5e37))
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* close early WebRTC streams properly ([#2200](https://github.com/libp2p/js-libp2p/issues/2200)) ([f4fac96](https://github.com/libp2p/js-libp2p/commit/f4fac961ccf60fe2c08799f6c55bbc0012d1779f))
+* close webrtc streams without data loss ([#2073](https://github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+* create RTCPeerConnection after dialing remote peer ([#2593](https://github.com/libp2p/js-libp2p/issues/2593)) ([8e4fdcd](https://github.com/libp2p/js-libp2p/commit/8e4fdcde999a64b6f6e573960b2a53cc78c0bebf)), closes [#2591](https://github.com/libp2p/js-libp2p/issues/2591)
+* datachannel label should be an empty string ([#2204](https://github.com/libp2p/js-libp2p/issues/2204)) ([dfbe0cc](https://github.com/libp2p/js-libp2p/commit/dfbe0cc05be428f3c1de36e10d28e3d1777e8f04))
+* decrease max buffered amount for WebRTC datachannels ([#2628](https://github.com/libp2p/js-libp2p/issues/2628)) ([4a994c5](https://github.com/libp2p/js-libp2p/commit/4a994c5effea95c363164c5ba51b8f78faa6bc8a))
+* delay notification of early WebRTC stream creation ([#2206](https://github.com/libp2p/js-libp2p/issues/2206)) ([d25d951](https://github.com/libp2p/js-libp2p/commit/d25d95104ee4eb353ed73cc0c7200e5a9d5b18d2))
+* do not run webrtc cleanup on transport close ([#2498](https://github.com/libp2p/js-libp2p/issues/2498)) ([2281f80](https://github.com/libp2p/js-libp2p/commit/2281f802bac80a4ffd3f7e099a6ff02f3db62b11))
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+* increase WebRTC max datachannel message size ([#2627](https://github.com/libp2p/js-libp2p/issues/2627)) ([9e92b0c](https://github.com/libp2p/js-libp2p/commit/9e92b0c5ea7b3e982f92b8ecd6d8c6b28e994012)), closes [#2612](https://github.com/libp2p/js-libp2p/issues/2612)
+* limit default WebRTC STUN servers to 4x ([#2615](https://github.com/libp2p/js-libp2p/issues/2615)) ([3319ff4](https://github.com/libp2p/js-libp2p/commit/3319ff41ec7a30a632343e3171136b57460e01cb))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* make initiator webrtc address dialable ([#2189](https://github.com/libp2p/js-libp2p/issues/2189)) ([051154d](https://github.com/libp2p/js-libp2p/commit/051154dd2d8ffadba4f8678f12341e5a4441dc66))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* parameterise max message size in SDP messages ([#2681](https://github.com/libp2p/js-libp2p/issues/2681)) ([737b3ea](https://github.com/libp2p/js-libp2p/commit/737b3ea5bd8555f09a0f63f2e0562aa9f0b73f62))
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+* remove autodialer ([#2639](https://github.com/libp2p/js-libp2p/issues/2639)) ([ab90179](https://github.com/libp2p/js-libp2p/commit/ab901790810d8ce59724af1706c9a9e74341b8ee))
+* remove deprecated multihashes library ([#2522](https://github.com/libp2p/js-libp2p/issues/2522)) ([e9b6a24](https://github.com/libp2p/js-libp2p/commit/e9b6a242ac8b485f5fe9c33710e100c660c308aa))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* revert WebRTC message size increase ([#2679](https://github.com/libp2p/js-libp2p/issues/2679)) ([2265e59](https://github.com/libp2p/js-libp2p/commit/2265e59baa489141192a6cdcc1f47bb736575b92))
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+* **transports:** filter circuit addresses ([#2060](https://github.com/libp2p/js-libp2p/issues/2060)) ([972b10a](https://github.com/libp2p/js-libp2p/commit/972b10a967653f60666a061bddfa46c0decfcc70))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use node-datachannel WebRTC polyfill ([#2306](https://github.com/libp2p/js-libp2p/issues/2306)) ([ad6f70b](https://github.com/libp2p/js-libp2p/commit/ad6f70bf3cb354823380af95462a85654a0e6ab1))
+* use optimistic protocol negotation ([#2253](https://github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+* webrtc hook cleanup ([#2455](https://github.com/libp2p/js-libp2p/issues/2455)) ([1fc929c](https://github.com/libp2p/js-libp2p/commit/1fc929c1c2267750a595a6b37950f53c9d26b31c))
+* WebRTC transport unhandled promise rejection during connect ([#2299](https://github.com/libp2p/js-libp2p/issues/2299)) ([64a915a](https://github.com/libp2p/js-libp2p/commit/64a915ae97c7ac837147e3229dac793ea61666cc))
+* WebRTC uncaught promise rejection on incoming connection ([#2302](https://github.com/libp2p/js-libp2p/issues/2302)) ([d105061](https://github.com/libp2p/js-libp2p/commit/d105061897b461789e0a8eef5094d9c136269952))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* change listener to dialler in webrtc example ([#2447](https://github.com/libp2p/js-libp2p/issues/2447)) ([a19a261](https://github.com/libp2p/js-libp2p/commit/a19a2616ad832d9a9359f49b23dac2b1a768066f))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* update webrtc readme to show difference between transports ([#2441](https://github.com/libp2p/js-libp2p/issues/2441)) ([fad3074](https://github.com/libp2p/js-libp2p/commit/fad3074b843cae69289c6da94f3797d59879ec1c))
+* update webrtc-direct support ([#2564](https://github.com/libp2p/js-libp2p/issues/2564)) ([169c9d8](https://github.com/libp2p/js-libp2p/commit/169c9d85e7c9cd65be964b5d08bd618d950f70ee))
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* bump @types/sinon from 10.0.20 to 17.0.0 ([#2203](https://github.com/libp2p/js-libp2p/issues/2203)) ([1d14133](https://github.com/libp2p/js-libp2p/commit/1d141331a8cf8392a5f90abc349a83adf8223207))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump node-datachannel from 0.10.1 to 0.11.0 ([#2635](https://github.com/libp2p/js-libp2p/issues/2635)) ([aa5528f](https://github.com/libp2p/js-libp2p/commit/aa5528fe7df53ce743453177873566e9b892b17c))
+* bump node-datachannel from 0.5.5 to 0.6.0 ([#2469](https://github.com/libp2p/js-libp2p/issues/2469)) ([d446c6c](https://github.com/libp2p/js-libp2p/commit/d446c6c31bfd0bebdad6a80926e4c571278fdee0))
+* bump node-datachannel from 0.6.0 to 0.7.0 ([#2488](https://github.com/libp2p/js-libp2p/issues/2488)) ([1c086c9](https://github.com/libp2p/js-libp2p/commit/1c086c94bb594ba0e68b2e0e290afd0093d6820c))
+* bump node-datachannel from 0.7.0 to 0.8.0 ([#2504](https://github.com/libp2p/js-libp2p/issues/2504)) ([90cfd25](https://github.com/libp2p/js-libp2p/commit/90cfd25e29a5642575f8aef3c60750f04129e1e5))
+* bump node-datachannel from 0.8.0 to 0.9.0 ([#2532](https://github.com/libp2p/js-libp2p/issues/2532)) ([d9366f9](https://github.com/libp2p/js-libp2p/commit/d9366f9aa1c88e3fc4ba281307dc11266a9e388b))
+* bump node-datachannel from 0.9.2 to 0.10.0 ([#2604](https://github.com/libp2p/js-libp2p/issues/2604)) ([3b9cbf7](https://github.com/libp2p/js-libp2p/commit/3b9cbf7d82fc24cd30b09ad2d3b768bdec741e99))
+* bump react-native-webrtc from 118.0.7 to 124.0.4 ([#2685](https://github.com/libp2p/js-libp2p/issues/2685)) ([5214dec](https://github.com/libp2p/js-libp2p/commit/5214dec4a0b7e7cb82056b9a681f1c77e82d34a2))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** update sinon-ts to 2.x.x ([#2186](https://github.com/libp2p/js-libp2p/issues/2186)) ([24ff6e9](https://github.com/libp2p/js-libp2p/commit/24ff6e939def30e9cb406779f9b12e9d053b36b9))
+## [6.0.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.0...webrtc-v6.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* the autodialer has been removed as well as the corresponding config keys
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+
+### Features
+
+* allow passing a function for rtcConfiguration ([#2590](https://github.com/libp2p/js-libp2p/issues/2590)) ([9e02366](https://github.com/libp2p/js-libp2p/commit/9e0236627b50a389df3350a90e58720cc205f0af)), closes [#2554](https://github.com/libp2p/js-libp2p/issues/2554)
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* collect dial/listen metrics in webrtc and webtransport ([#2061](https://github.com/libp2p/js-libp2p/issues/2061)) ([6cb80f7](https://github.com/libp2p/js-libp2p/commit/6cb80f7d3b308aff955f4de247680a3c9c26993b))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* **@libp2p/webrtc:** close data-channel on muxer stream end ([#1976](https://github.com/libp2p/js-libp2p/issues/1976)) ([7517082](https://github.com/libp2p/js-libp2p/commit/7517082d0ae5dcd8f3f2d13aee2a13067836a2be))
+* **@libp2p/webrtc:** set max message size in alignment with spec ([#2050](https://github.com/libp2p/js-libp2p/issues/2050)) ([122f1e6](https://github.com/libp2p/js-libp2p/commit/122f1e67d4c0aa8c4c8f50aa24a0c0dbe00411fa))
+* **@libp2p/webrtc:** update stream logger name to webrtc ([#2035](https://github.com/libp2p/js-libp2p/issues/2035)) ([0d228f9](https://github.com/libp2p/js-libp2p/commit/0d228f9f078b65fd5aa48ec644946e5c74ed2741))
+* **@libp2p/webrtc:** use correct udp port in remote address ([#2055](https://github.com/libp2p/js-libp2p/issues/2055)) ([0ce318e](https://github.com/libp2p/js-libp2p/commit/0ce318ecea222dc01776a3534d96351675ba9e0d))
+* **@libp2p/webrtc:** use stream logger instead of global logger ([#2042](https://github.com/libp2p/js-libp2p/issues/2042)) ([88c47f5](https://github.com/libp2p/js-libp2p/commit/88c47f51f9d67a6261e4ac65c494cd1e6e4ed8dd))
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add default STUN servers to WebRTC transport ([#2606](https://github.com/libp2p/js-libp2p/issues/2606)) ([af85a7c](https://github.com/libp2p/js-libp2p/commit/af85a7cadd2471c6d1ad730b659783453e9e5e37))
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* close early WebRTC streams properly ([#2200](https://github.com/libp2p/js-libp2p/issues/2200)) ([f4fac96](https://github.com/libp2p/js-libp2p/commit/f4fac961ccf60fe2c08799f6c55bbc0012d1779f))
+* close webrtc streams without data loss ([#2073](https://github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+* create RTCPeerConnection after dialing remote peer ([#2593](https://github.com/libp2p/js-libp2p/issues/2593)) ([8e4fdcd](https://github.com/libp2p/js-libp2p/commit/8e4fdcde999a64b6f6e573960b2a53cc78c0bebf)), closes [#2591](https://github.com/libp2p/js-libp2p/issues/2591)
+* datachannel label should be an empty string ([#2204](https://github.com/libp2p/js-libp2p/issues/2204)) ([dfbe0cc](https://github.com/libp2p/js-libp2p/commit/dfbe0cc05be428f3c1de36e10d28e3d1777e8f04))
+* decrease max buffered amount for WebRTC datachannels ([#2628](https://github.com/libp2p/js-libp2p/issues/2628)) ([4a994c5](https://github.com/libp2p/js-libp2p/commit/4a994c5effea95c363164c5ba51b8f78faa6bc8a))
+* delay notification of early WebRTC stream creation ([#2206](https://github.com/libp2p/js-libp2p/issues/2206)) ([d25d951](https://github.com/libp2p/js-libp2p/commit/d25d95104ee4eb353ed73cc0c7200e5a9d5b18d2))
+* do not run webrtc cleanup on transport close ([#2498](https://github.com/libp2p/js-libp2p/issues/2498)) ([2281f80](https://github.com/libp2p/js-libp2p/commit/2281f802bac80a4ffd3f7e099a6ff02f3db62b11))
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+* increase WebRTC max datachannel message size ([#2627](https://github.com/libp2p/js-libp2p/issues/2627)) ([9e92b0c](https://github.com/libp2p/js-libp2p/commit/9e92b0c5ea7b3e982f92b8ecd6d8c6b28e994012)), closes [#2612](https://github.com/libp2p/js-libp2p/issues/2612)
+* limit default WebRTC STUN servers to 4x ([#2615](https://github.com/libp2p/js-libp2p/issues/2615)) ([3319ff4](https://github.com/libp2p/js-libp2p/commit/3319ff41ec7a30a632343e3171136b57460e01cb))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* make initiator webrtc address dialable ([#2189](https://github.com/libp2p/js-libp2p/issues/2189)) ([051154d](https://github.com/libp2p/js-libp2p/commit/051154dd2d8ffadba4f8678f12341e5a4441dc66))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* parameterise max message size in SDP messages ([#2681](https://github.com/libp2p/js-libp2p/issues/2681)) ([737b3ea](https://github.com/libp2p/js-libp2p/commit/737b3ea5bd8555f09a0f63f2e0562aa9f0b73f62))
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+* remove autodialer ([#2639](https://github.com/libp2p/js-libp2p/issues/2639)) ([ab90179](https://github.com/libp2p/js-libp2p/commit/ab901790810d8ce59724af1706c9a9e74341b8ee))
+* remove deprecated multihashes library ([#2522](https://github.com/libp2p/js-libp2p/issues/2522)) ([e9b6a24](https://github.com/libp2p/js-libp2p/commit/e9b6a242ac8b485f5fe9c33710e100c660c308aa))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* revert WebRTC message size increase ([#2679](https://github.com/libp2p/js-libp2p/issues/2679)) ([2265e59](https://github.com/libp2p/js-libp2p/commit/2265e59baa489141192a6cdcc1f47bb736575b92))
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+* **transports:** filter circuit addresses ([#2060](https://github.com/libp2p/js-libp2p/issues/2060)) ([972b10a](https://github.com/libp2p/js-libp2p/commit/972b10a967653f60666a061bddfa46c0decfcc70))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use node-datachannel WebRTC polyfill ([#2306](https://github.com/libp2p/js-libp2p/issues/2306)) ([ad6f70b](https://github.com/libp2p/js-libp2p/commit/ad6f70bf3cb354823380af95462a85654a0e6ab1))
+* use optimistic protocol negotation ([#2253](https://github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+* webrtc hook cleanup ([#2455](https://github.com/libp2p/js-libp2p/issues/2455)) ([1fc929c](https://github.com/libp2p/js-libp2p/commit/1fc929c1c2267750a595a6b37950f53c9d26b31c))
+* WebRTC transport unhandled promise rejection during connect ([#2299](https://github.com/libp2p/js-libp2p/issues/2299)) ([64a915a](https://github.com/libp2p/js-libp2p/commit/64a915ae97c7ac837147e3229dac793ea61666cc))
+* WebRTC uncaught promise rejection on incoming connection ([#2302](https://github.com/libp2p/js-libp2p/issues/2302)) ([d105061](https://github.com/libp2p/js-libp2p/commit/d105061897b461789e0a8eef5094d9c136269952))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* change listener to dialler in webrtc example ([#2447](https://github.com/libp2p/js-libp2p/issues/2447)) ([a19a261](https://github.com/libp2p/js-libp2p/commit/a19a2616ad832d9a9359f49b23dac2b1a768066f))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* update webrtc readme to show difference between transports ([#2441](https://github.com/libp2p/js-libp2p/issues/2441)) ([fad3074](https://github.com/libp2p/js-libp2p/commit/fad3074b843cae69289c6da94f3797d59879ec1c))
+* update webrtc-direct support ([#2564](https://github.com/libp2p/js-libp2p/issues/2564)) ([169c9d8](https://github.com/libp2p/js-libp2p/commit/169c9d85e7c9cd65be964b5d08bd618d950f70ee))
+
+
+### Dependencies
+
+* bump @chainsafe/libp2p-noise from 14.1.0 to 15.0.0 ([#2364](https://github.com/libp2p/js-libp2p/issues/2364)) ([9376e61](https://github.com/libp2p/js-libp2p/commit/9376e61a1fbc21f3c0e350aa78846be2651d6c39))
+* bump @types/sinon from 10.0.20 to 17.0.0 ([#2203](https://github.com/libp2p/js-libp2p/issues/2203)) ([1d14133](https://github.com/libp2p/js-libp2p/commit/1d141331a8cf8392a5f90abc349a83adf8223207))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump node-datachannel from 0.10.1 to 0.11.0 ([#2635](https://github.com/libp2p/js-libp2p/issues/2635)) ([aa5528f](https://github.com/libp2p/js-libp2p/commit/aa5528fe7df53ce743453177873566e9b892b17c))
+* bump node-datachannel from 0.5.5 to 0.6.0 ([#2469](https://github.com/libp2p/js-libp2p/issues/2469)) ([d446c6c](https://github.com/libp2p/js-libp2p/commit/d446c6c31bfd0bebdad6a80926e4c571278fdee0))
+* bump node-datachannel from 0.6.0 to 0.7.0 ([#2488](https://github.com/libp2p/js-libp2p/issues/2488)) ([1c086c9](https://github.com/libp2p/js-libp2p/commit/1c086c94bb594ba0e68b2e0e290afd0093d6820c))
+* bump node-datachannel from 0.7.0 to 0.8.0 ([#2504](https://github.com/libp2p/js-libp2p/issues/2504)) ([90cfd25](https://github.com/libp2p/js-libp2p/commit/90cfd25e29a5642575f8aef3c60750f04129e1e5))
+* bump node-datachannel from 0.8.0 to 0.9.0 ([#2532](https://github.com/libp2p/js-libp2p/issues/2532)) ([d9366f9](https://github.com/libp2p/js-libp2p/commit/d9366f9aa1c88e3fc4ba281307dc11266a9e388b))
+* bump node-datachannel from 0.9.2 to 0.10.0 ([#2604](https://github.com/libp2p/js-libp2p/issues/2604)) ([3b9cbf7](https://github.com/libp2p/js-libp2p/commit/3b9cbf7d82fc24cd30b09ad2d3b768bdec741e99))
+* bump react-native-webrtc from 118.0.7 to 124.0.4 ([#2685](https://github.com/libp2p/js-libp2p/issues/2685)) ([5214dec](https://github.com/libp2p/js-libp2p/commit/5214dec4a0b7e7cb82056b9a681f1c77e82d34a2))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** update sinon-ts to 2.x.x ([#2186](https://github.com/libp2p/js-libp2p/issues/2186)) ([24ff6e9](https://github.com/libp2p/js-libp2p/commit/24ff6e939def30e9cb406779f9b12e9d053b36b9))
+
+
+### Refactors
+
+* extract circuit relay v2 to separate module ([#2222](https://github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
+
+### Refactors
+
+* extract circuit relay v2 to separate module ([#2222](https://github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
 ## [4.1.10](https://github.com/libp2p/js-libp2p/compare/webrtc-v4.1.9...webrtc-v4.1.10) (2024-09-05)
 
 

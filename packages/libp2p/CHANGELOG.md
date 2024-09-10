@@ -110,6 +110,361 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.0.0...libp2p-v3.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* instead of `CodeError`, use `TimeoutError`, `UnexpectedPeerError`, etc
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* the autodialer has been removed as well as the corresponding config keys
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* remove per-peer parallel dialling ([#2090](https://github.com/libp2p/js-libp2p/issues/2090)) (#2251)
+* imports from `libp2p/fetch` should be updated to `@libp2p/fetch`
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/ping` must be updated to `@libp2p/ping`
+* imports from `libp2p/upnp-nat` should be updated to `@libp2p/upnp-nat`
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+* move autonat into separate package ([#2107](https://github.com/libp2p/js-libp2p/issues/2107))
+* remove libp2p.keychain ([#2084](https://github.com/libp2p/js-libp2p/issues/2084))
+* remove dialler language ([#2143](https://github.com/libp2p/js-libp2p/issues/2143))
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+* add component logger ([#2198](https://github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://github.com/libp2p/js-libp2p/issues/2105)
+* add connection monitor ([#2644](https://github.com/libp2p/js-libp2p/issues/2644)) ([7939dbd](https://github.com/libp2p/js-libp2p/commit/7939dbd5cbab1c7b4be671ff976d0258e9b48178))
+* add isDialable method to libp2p ([#2479](https://github.com/libp2p/js-libp2p/issues/2479)) ([2c56203](https://github.com/libp2p/js-libp2p/commit/2c56203f9ccf4b6ed30541a871b9bd8c5a21526e))
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+* add private key to libp2p components ([#2348](https://github.com/libp2p/js-libp2p/issues/2348)) ([092861e](https://github.com/libp2p/js-libp2p/commit/092861e23271921b3cef2e673f6f0c9b0c3ab325))
+* add random walk component ([#2501](https://github.com/libp2p/js-libp2p/issues/2501)) ([998fcaf](https://github.com/libp2p/js-libp2p/commit/998fcaf94889251817a3bbaaad9b654bebdf3a6e))
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* invoke progress events during dialing ([#2596](https://github.com/libp2p/js-libp2p/issues/2596)) ([6573cb8](https://github.com/libp2p/js-libp2p/commit/6573cb8b072c9ab3b0b374a9d2a4270cbc5c19b6))
+* **libp2p:** add autodial retry threshold config option ([#1943](https://github.com/libp2p/js-libp2p/issues/1943)) ([4ef9c79](https://github.com/libp2p/js-libp2p/commit/4ef9c79cd1705f25170467d9268b89ba18d7e2a0))
+* **libp2p:** direct connection through relay protocol (DCUtR) ([#1928](https://github.com/libp2p/js-libp2p/issues/1928)) ([87dc7e9](https://github.com/libp2p/js-libp2p/commit/87dc7e9fc17becc4b5c3ce4f3febd28cf9f25c6e))
+* support custom DNS resolvers ([#2435](https://github.com/libp2p/js-libp2p/issues/2435)) ([f39ce5f](https://github.com/libp2p/js-libp2p/commit/f39ce5f13b56e2a18c7939b9d2ab38aa7e326d15))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* abort connection only when abortConnectionOnPingFailure is true ([#2684](https://github.com/libp2p/js-libp2p/issues/2684)) ([2022036](https://github.com/libp2p/js-libp2p/commit/2022036dfcbbd32289beac28f2fa4c1810f39f2b))
+* accept custom ping protocol prefix in connection monitor ([#2667](https://github.com/libp2p/js-libp2p/issues/2667)) ([3c8dd5b](https://github.com/libp2p/js-libp2p/commit/3c8dd5bbfc57489a0b10b555c81e773058a58156))
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+* add missing events dep to fix browser bundlers ([#2134](https://github.com/libp2p/js-libp2p/issues/2134)) ([f670307](https://github.com/libp2p/js-libp2p/commit/f670307a90fe6665f10630823dd7058aab2a1c2f)), closes [#2110](https://github.com/libp2p/js-libp2p/issues/2110)
+* add randomwalk to components ([#2518](https://github.com/libp2p/js-libp2p/issues/2518)) ([a11e135](https://github.com/libp2p/js-libp2p/commit/a11e135c221543b20fe746ab8ae85d54316ffe97))
+* add status property ([#2269](https://github.com/libp2p/js-libp2p/issues/2269)) ([a32e70b](https://github.com/libp2p/js-libp2p/commit/a32e70bac126a0746dff9f7c87a4d6211a00fa7a))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+* allow dialing a peer when we only have transient connections ([#2187](https://github.com/libp2p/js-libp2p/issues/2187)) ([dd400cd](https://github.com/libp2p/js-libp2p/commit/dd400cd57bd4943469af1ffc67b235a46c2b206c))
+* allow mss lazy select on read ([#2246](https://github.com/libp2p/js-libp2p/issues/2246)) ([d8f5bc2](https://github.com/libp2p/js-libp2p/commit/d8f5bc211185a963c2a5182d58d73629457bc78d))
+* allow no transports in config ([#2293](https://github.com/libp2p/js-libp2p/issues/2293)) ([16588d2](https://github.com/libp2p/js-libp2p/commit/16588d27c8ca9c52686146160234534ee3dac915))
+* append peer id to connection remote addr if not present ([#2182](https://github.com/libp2p/js-libp2p/issues/2182)) ([3bdaad3](https://github.com/libp2p/js-libp2p/commit/3bdaad3956cb015af1657f3f23061b47463953da))
+* append peer id to dial addresses before filtering ([#2199](https://github.com/libp2p/js-libp2p/issues/2199)) ([bafccd6](https://github.com/libp2p/js-libp2p/commit/bafccd6b8e90c2cf1c616aeeb5001ade940c523a))
+* **circuit-relay:** respect applyDefaultLimit when it is false ([#2139](https://github.com/libp2p/js-libp2p/issues/2139)) ([df2153e](https://github.com/libp2p/js-libp2p/commit/df2153e268a72edd00c7663ce9d196d5547e994d))
+* close webrtc streams without data loss ([#2073](https://github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+* connection monitor compatible with other ping implementations ([#2671](https://github.com/libp2p/js-libp2p/issues/2671)) ([7655e52](https://github.com/libp2p/js-libp2p/commit/7655e5200d32e7fe59387cedacb0fe640e260f1e))
+* decrease default dial timeout ([#2471](https://github.com/libp2p/js-libp2p/issues/2471)) ([936dbba](https://github.com/libp2p/js-libp2p/commit/936dbba108093503cb68ea248dd03c3f8ccde8e7))
+* do not overwrite addresses on identify push when none are sent ([#2192](https://github.com/libp2p/js-libp2p/issues/2192)) ([025c082](https://github.com/libp2p/js-libp2p/commit/025c082a4d3d08904f1f5b0209ed6f40648fb78d))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* ensure all listeners are properly closed on tcp shutdown ([#2058](https://github.com/libp2p/js-libp2p/issues/2058)) ([b57bca4](https://github.com/libp2p/js-libp2p/commit/b57bca4493e1634108fe187466024e374b76c114))
+* export version from libp2p ([#2279](https://github.com/libp2p/js-libp2p/issues/2279)) ([8c169db](https://github.com/libp2p/js-libp2p/commit/8c169db1bcc923fa2edd3749e6669eb69d93f6b3))
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+* include peer id in autodial log message ([#2075](https://github.com/libp2p/js-libp2p/issues/2075)) ([368ee26](https://github.com/libp2p/js-libp2p/commit/368ee26dbea5de8fb67d9a4596a169f327e73145))
+* **libp2p:** emit peer:discovered event on internal event bus ([#2019](https://github.com/libp2p/js-libp2p/issues/2019)) ([a6be8f0](https://github.com/libp2p/js-libp2p/commit/a6be8f0f4bbd81826c2ca5d48ea6175b1fdf3ab9))
+* **libp2p:** move delay dep to production dependencies ([#1977](https://github.com/libp2p/js-libp2p/issues/1977)) ([725f5df](https://github.com/libp2p/js-libp2p/commit/725f5df1782a200cf1d12e6d03a164d028a7cc3e))
+* **libp2p:** only dial one address at a time for peers ([#2028](https://github.com/libp2p/js-libp2p/issues/2028)) ([73b87c5](https://github.com/libp2p/js-libp2p/commit/73b87c5a1474f9acd47989b675724ea64d02c7b9))
+* **libp2p:** reduce dialer activity in browsers ([#1970](https://github.com/libp2p/js-libp2p/issues/1970)) ([d30f09f](https://github.com/libp2p/js-libp2p/commit/d30f09f29bcf34a0f1d7c7c984dad6dc34bb669a))
+* **libp2p:** sort addresses to dial as public, then relay ([#2031](https://github.com/libp2p/js-libp2p/issues/2031)) ([5294f14](https://github.com/libp2p/js-libp2p/commit/5294f14caa314bb150554afff3a7ff45d2bf17ba))
+* **libp2p:** update circuit relay and upgrader logs ([#2071](https://github.com/libp2p/js-libp2p/issues/2071)) ([f09ac4a](https://github.com/libp2p/js-libp2p/commit/f09ac4a7704070fd92bae8d4482d06eac45ddd2c))
+* **libp2p:** update peer store with supported protocols after unhandle ([#2013](https://github.com/libp2p/js-libp2p/issues/2013)) ([63041af](https://github.com/libp2p/js-libp2p/commit/63041afefbefd246ee1d6d6a4958b1999076dc17))
+* limit max dial queue size ([#2472](https://github.com/libp2p/js-libp2p/issues/2472)) ([0cfcc4d](https://github.com/libp2p/js-libp2p/commit/0cfcc4da195f6eb5b98f5b549cd92607fc3b8aa9))
+* log error correctly ([#2552](https://github.com/libp2p/js-libp2p/issues/2552)) ([a3e8bea](https://github.com/libp2p/js-libp2p/commit/a3e8beabdc2b551594952b5d5621555296eff79a))
+* log peer data in identify correctly ([#2197](https://github.com/libp2p/js-libp2p/issues/2197)) ([fdcb801](https://github.com/libp2p/js-libp2p/commit/fdcb801ee3180b740a25e0e05a75c32dd8e4ef63))
+* log upgrade messages on connection ([#2281](https://github.com/libp2p/js-libp2p/issues/2281)) ([f537b37](https://github.com/libp2p/js-libp2p/commit/f537b37316c78d26939e9c8d04bcf67599992554))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* make transports optional ([#2295](https://github.com/libp2p/js-libp2p/issues/2295)) ([887c6ff](https://github.com/libp2p/js-libp2p/commit/887c6ffe1b38bc9f0219b861b36d71de59095a8e))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* only send ip/domain observed address in identify ([#2201](https://github.com/libp2p/js-libp2p/issues/2201)) ([40855f4](https://github.com/libp2p/js-libp2p/commit/40855f4f38bf5e56ccb2890699ec0cdd60596a27))
+* opt-in to toplogy notifications on transient connections ([#2049](https://github.com/libp2p/js-libp2p/issues/2049)) ([346ff5a](https://github.com/libp2p/js-libp2p/commit/346ff5a2b81bded9f9b26051501ab9d25246961c))
+* pass autodial config thorugh in connection manager init ([#2523](https://github.com/libp2p/js-libp2p/issues/2523)) ([767b23e](https://github.com/libp2p/js-libp2p/commit/767b23e710b1a9b545421365f2f9603c37cbec78))
+* perform find peer during dial if peer has no multiaddrs ([#2345](https://github.com/libp2p/js-libp2p/issues/2345)) ([444d837](https://github.com/libp2p/js-libp2p/commit/444d83751fa5137c76d0a265544bb3522da24a3c))
+* prune connections based on stream counts and direction ([#2521](https://github.com/libp2p/js-libp2p/issues/2521)) ([8e36fc5](https://github.com/libp2p/js-libp2p/commit/8e36fc5094c69083989650ccf3dfff001e5b0034))
+* query routing for RSA public key ([#2350](https://github.com/libp2p/js-libp2p/issues/2350)) ([ee7ffe9](https://github.com/libp2p/js-libp2p/commit/ee7ffe9b9209d1ef0ffbd71389216b69e832b126))
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+* remove autodialer ([#2639](https://github.com/libp2p/js-libp2p/issues/2639)) ([ab90179](https://github.com/libp2p/js-libp2p/commit/ab901790810d8ce59724af1706c9a9e74341b8ee))
+* remove CodeError class ([#2688](https://github.com/libp2p/js-libp2p/issues/2688)) ([81ebe4e](https://github.com/libp2p/js-libp2p/commit/81ebe4e47e82508a847bb3af0af36cc249b78765))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove dialler language ([#2143](https://github.com/libp2p/js-libp2p/issues/2143)) ([a321f15](https://github.com/libp2p/js-libp2p/commit/a321f15329ba9b8e6a84a5a7429784edf7fa96e9))
+* remove duplicate autodial from startup ([#2289](https://github.com/libp2p/js-libp2p/issues/2289)) ([bcfa159](https://github.com/libp2p/js-libp2p/commit/bcfa15993fd533c56c7523384e4b135c4930855b))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* remove protocols from PeerInfo ([#2166](https://github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* remove relay:removed event listener after relay is removed ([#1998](https://github.com/libp2p/js-libp2p/issues/1998)) ([ab2c1f6](https://github.com/libp2p/js-libp2p/commit/ab2c1f6731ccfe21a39482bdab217a8abd3f027b))
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+* replace rate-limiter ([#2356](https://github.com/libp2p/js-libp2p/issues/2356)) ([ddaa59a](https://github.com/libp2p/js-libp2p/commit/ddaa59a600c031fe1f41ba2097ebfcfd74eff598))
+* reset dial queue shut down controller on node restart ([#2329](https://github.com/libp2p/js-libp2p/issues/2329)) ([cd8cafc](https://github.com/libp2p/js-libp2p/commit/cd8cafcd5c6aa141aba855a4de4c12336c429913)), closes [#2188](https://github.com/libp2p/js-libp2p/issues/2188)
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* set libp2p status to started before stopping ([#2288](https://github.com/libp2p/js-libp2p/issues/2288)) ([09dd029](https://github.com/libp2p/js-libp2p/commit/09dd02987d84770547f7dfd347fa09a0a98d3081))
+* silence max listeners warning ([#2417](https://github.com/libp2p/js-libp2p/issues/2417)) ([bedfd0a](https://github.com/libp2p/js-libp2p/commit/bedfd0aa20a83e0823744c298007ef58a76a26ae))
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+* update log messages ([#2324](https://github.com/libp2p/js-libp2p/issues/2324)) ([984f13e](https://github.com/libp2p/js-libp2p/commit/984f13e4223e724a358d8cc9134cbba435b08512))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* upgrader error msg to show current/max ([#2491](https://github.com/libp2p/js-libp2p/issues/2491)) ([eaf8ac7](https://github.com/libp2p/js-libp2p/commit/eaf8ac7cfb8a8ee00283de304dc4ec5280a41f1b))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use optimistic protocol negotation ([#2253](https://github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+* use randomwalk to find circuit relay servers ([#2563](https://github.com/libp2p/js-libp2p/issues/2563)) ([440c9b3](https://github.com/libp2p/js-libp2p/commit/440c9b360b8413149f4a1404c3368f124b0f8a5e)), closes [#2545](https://github.com/libp2p/js-libp2p/issues/2545)
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* add Peerbit logo ([#2402](https://github.com/libp2p/js-libp2p/issues/2402)) ([fb7c51c](https://github.com/libp2p/js-libp2p/commit/fb7c51c3c03c462ac4d2b42b32be95cd008c81fc))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* **libp2p:** fix typo in circuit-relay debug log ([#1981](https://github.com/libp2p/js-libp2p/issues/1981)) ([f3fd7b6](https://github.com/libp2p/js-libp2p/commit/f3fd7b62076a78252c64b93ab9d66c08cf4bca3d))
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* Update CHANGELOG.md ([#2046](https://github.com/libp2p/js-libp2p/issues/2046)) ([0ee4f78](https://github.com/libp2p/js-libp2p/commit/0ee4f784b1f48f16b8b6bd8f02aad59c5fffc315))
+* update libp2p readme ([bcf1826](https://github.com/libp2p/js-libp2p/commit/bcf18265eae4b91854dedcc7abbac0b7fe6755e2))
+* update typos in Address Manager and comments ([#2468](https://github.com/libp2p/js-libp2p/issues/2468)) ([a2b41f7](https://github.com/libp2p/js-libp2p/commit/a2b41f7939806dfb9583a6d43ddd8764fc861baf))
+* use ts in examples, ensure package docs are up to date ([#2323](https://github.com/libp2p/js-libp2p/issues/2323)) ([07f3afe](https://github.com/libp2p/js-libp2p/commit/07f3afe2d8ddc632ca7dc34f965524a3ab123276)), closes [#1777](https://github.com/libp2p/js-libp2p/issues/1777)
+
+
+### Dependencies
+
+* **@libp2p/mplex:** bump rate-limiter-flexible to 3.0.0 ([#2002](https://github.com/libp2p/js-libp2p/issues/2002)) ([9a69e6f](https://github.com/libp2p/js-libp2p/commit/9a69e6f76018d2df5c6e51de930557d4b60b2fca))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump p-queue from 7.4.1 to 8.0.0 ([#2311](https://github.com/libp2p/js-libp2p/issues/2311)) ([7429155](https://github.com/libp2p/js-libp2p/commit/742915567749072aa784cf179ce9810f66ac6c6e))
+* bump p-retry from 5.1.2 to 6.0.0 ([#2017](https://github.com/libp2p/js-libp2p/issues/2017)) ([24a5eda](https://github.com/libp2p/js-libp2p/commit/24a5edaeb1f2e24a5a1788c6698fd52f0392dd96))
+* bump rate-limiter-flexible from 3.0.6 to 4.0.0 ([#2326](https://github.com/libp2p/js-libp2p/issues/2326)) ([83dfc7d](https://github.com/libp2p/js-libp2p/commit/83dfc7dc807f363f7404b101accf2e1c1b9b3974))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** bump execa from 7.2.0 to 8.0.1 ([#1984](https://github.com/libp2p/js-libp2p/issues/1984)) ([b599905](https://github.com/libp2p/js-libp2p/commit/b599905c1acb18ae4717d74e415fd270659c451f))
+* **dev:** update sinon-ts to 2.x.x ([#2186](https://github.com/libp2p/js-libp2p/issues/2186)) ([24ff6e9](https://github.com/libp2p/js-libp2p/commit/24ff6e939def30e9cb406779f9b12e9d053b36b9))
+* switch varint for uint8-varint ([#1973](https://github.com/libp2p/js-libp2p/issues/1973)) ([6abcd22](https://github.com/libp2p/js-libp2p/commit/6abcd22fac48d5b2ed5c3973c28229c5d22ebdd7))
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.0.0...libp2p-v3.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* instead of `CodeError`, use `TimeoutError`, `UnexpectedPeerError`, etc
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* the autodialer has been removed as well as the corresponding config keys
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+* the `minSendBytes` option has been removed from Mplex since the transport can now decide how to optimise sending data
+* remove per-peer parallel dialling ([#2090](https://github.com/libp2p/js-libp2p/issues/2090)) (#2251)
+* imports from `libp2p/fetch` should be updated to `@libp2p/fetch`
+* imports from `libp2p/circuit-relay` should be updated to `@libp2p/circuit-relay-v2`
+* imports from `libp2p/plaintext` should be changed to `@libp2p/plaintext`
+* imports from `libp2p/dcutr` now need to be from `@libp2p/dcutr`
+* imports from `libp2p/identify` need to change to `@libp2p/identify`
+* imports from `libp2p/ping` must be updated to `@libp2p/ping`
+* imports from `libp2p/upnp-nat` should be updated to `@libp2p/upnp-nat`
+* the `isStarted` method has been removed from the `Startable` interface
+* the `.protocols` property has been removed from the `PeerInfo` interface
+* move autonat into separate package ([#2107](https://github.com/libp2p/js-libp2p/issues/2107))
+* remove libp2p.keychain ([#2084](https://github.com/libp2p/js-libp2p/issues/2084))
+* remove dialler language ([#2143](https://github.com/libp2p/js-libp2p/issues/2143))
+
+### Features
+
+* add `negotiateFully` option when opening streams ([#2331](https://github.com/libp2p/js-libp2p/issues/2331)) ([5d1f68e](https://github.com/libp2p/js-libp2p/commit/5d1f68e9257820c34aec07cf5c94b8f71ed8a69e))
+* add component logger ([#2198](https://github.com/libp2p/js-libp2p/issues/2198)) ([fb8a6f1](https://github.com/libp2p/js-libp2p/commit/fb8a6f1887e71852217355f65c2b22566dd26749)), closes [#2105](https://github.com/libp2p/js-libp2p/issues/2105)
+* add connection monitor ([#2644](https://github.com/libp2p/js-libp2p/issues/2644)) ([7939dbd](https://github.com/libp2p/js-libp2p/commit/7939dbd5cbab1c7b4be671ff976d0258e9b48178))
+* add isDialable method to libp2p ([#2479](https://github.com/libp2p/js-libp2p/issues/2479)) ([2c56203](https://github.com/libp2p/js-libp2p/commit/2c56203f9ccf4b6ed30541a871b9bd8c5a21526e))
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+* add private key to libp2p components ([#2348](https://github.com/libp2p/js-libp2p/issues/2348)) ([092861e](https://github.com/libp2p/js-libp2p/commit/092861e23271921b3cef2e673f6f0c9b0c3ab325))
+* add random walk component ([#2501](https://github.com/libp2p/js-libp2p/issues/2501)) ([998fcaf](https://github.com/libp2p/js-libp2p/commit/998fcaf94889251817a3bbaaad9b654bebdf3a6e))
+* allow stream muxers and connection encrypters to yield lists ([#2256](https://github.com/libp2p/js-libp2p/issues/2256)) ([4a474d5](https://github.com/libp2p/js-libp2p/commit/4a474d54d3299e0ac30fa143b57436b3cf45e426))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* invoke progress events during dialing ([#2596](https://github.com/libp2p/js-libp2p/issues/2596)) ([6573cb8](https://github.com/libp2p/js-libp2p/commit/6573cb8b072c9ab3b0b374a9d2a4270cbc5c19b6))
+* **libp2p:** add autodial retry threshold config option ([#1943](https://github.com/libp2p/js-libp2p/issues/1943)) ([4ef9c79](https://github.com/libp2p/js-libp2p/commit/4ef9c79cd1705f25170467d9268b89ba18d7e2a0))
+* **libp2p:** direct connection through relay protocol (DCUtR) ([#1928](https://github.com/libp2p/js-libp2p/issues/1928)) ([87dc7e9](https://github.com/libp2p/js-libp2p/commit/87dc7e9fc17becc4b5c3ce4f3febd28cf9f25c6e))
+* support custom DNS resolvers ([#2435](https://github.com/libp2p/js-libp2p/issues/2435)) ([f39ce5f](https://github.com/libp2p/js-libp2p/commit/f39ce5f13b56e2a18c7939b9d2ab38aa7e326d15))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* abort connection only when abortConnectionOnPingFailure is true ([#2684](https://github.com/libp2p/js-libp2p/issues/2684)) ([2022036](https://github.com/libp2p/js-libp2p/commit/2022036dfcbbd32289beac28f2fa4c1810f39f2b))
+* accept custom ping protocol prefix in connection monitor ([#2667](https://github.com/libp2p/js-libp2p/issues/2667)) ([3c8dd5b](https://github.com/libp2p/js-libp2p/commit/3c8dd5bbfc57489a0b10b555c81e773058a58156))
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+* add missing events dep to fix browser bundlers ([#2134](https://github.com/libp2p/js-libp2p/issues/2134)) ([f670307](https://github.com/libp2p/js-libp2p/commit/f670307a90fe6665f10630823dd7058aab2a1c2f)), closes [#2110](https://github.com/libp2p/js-libp2p/issues/2110)
+* add randomwalk to components ([#2518](https://github.com/libp2p/js-libp2p/issues/2518)) ([a11e135](https://github.com/libp2p/js-libp2p/commit/a11e135c221543b20fe746ab8ae85d54316ffe97))
+* add status property ([#2269](https://github.com/libp2p/js-libp2p/issues/2269)) ([a32e70b](https://github.com/libp2p/js-libp2p/commit/a32e70bac126a0746dff9f7c87a4d6211a00fa7a))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+* allow dialing a peer when we only have transient connections ([#2187](https://github.com/libp2p/js-libp2p/issues/2187)) ([dd400cd](https://github.com/libp2p/js-libp2p/commit/dd400cd57bd4943469af1ffc67b235a46c2b206c))
+* allow mss lazy select on read ([#2246](https://github.com/libp2p/js-libp2p/issues/2246)) ([d8f5bc2](https://github.com/libp2p/js-libp2p/commit/d8f5bc211185a963c2a5182d58d73629457bc78d))
+* allow no transports in config ([#2293](https://github.com/libp2p/js-libp2p/issues/2293)) ([16588d2](https://github.com/libp2p/js-libp2p/commit/16588d27c8ca9c52686146160234534ee3dac915))
+* append peer id to connection remote addr if not present ([#2182](https://github.com/libp2p/js-libp2p/issues/2182)) ([3bdaad3](https://github.com/libp2p/js-libp2p/commit/3bdaad3956cb015af1657f3f23061b47463953da))
+* append peer id to dial addresses before filtering ([#2199](https://github.com/libp2p/js-libp2p/issues/2199)) ([bafccd6](https://github.com/libp2p/js-libp2p/commit/bafccd6b8e90c2cf1c616aeeb5001ade940c523a))
+* **circuit-relay:** respect applyDefaultLimit when it is false ([#2139](https://github.com/libp2p/js-libp2p/issues/2139)) ([df2153e](https://github.com/libp2p/js-libp2p/commit/df2153e268a72edd00c7663ce9d196d5547e994d))
+* close webrtc streams without data loss ([#2073](https://github.com/libp2p/js-libp2p/issues/2073)) ([7d8b155](https://github.com/libp2p/js-libp2p/commit/7d8b15517a480e01a8ebd427ab0093509b78d5b0))
+* connection monitor compatible with other ping implementations ([#2671](https://github.com/libp2p/js-libp2p/issues/2671)) ([7655e52](https://github.com/libp2p/js-libp2p/commit/7655e5200d32e7fe59387cedacb0fe640e260f1e))
+* decrease default dial timeout ([#2471](https://github.com/libp2p/js-libp2p/issues/2471)) ([936dbba](https://github.com/libp2p/js-libp2p/commit/936dbba108093503cb68ea248dd03c3f8ccde8e7))
+* do not overwrite addresses on identify push when none are sent ([#2192](https://github.com/libp2p/js-libp2p/issues/2192)) ([025c082](https://github.com/libp2p/js-libp2p/commit/025c082a4d3d08904f1f5b0209ed6f40648fb78d))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* ensure all listeners are properly closed on tcp shutdown ([#2058](https://github.com/libp2p/js-libp2p/issues/2058)) ([b57bca4](https://github.com/libp2p/js-libp2p/commit/b57bca4493e1634108fe187466024e374b76c114))
+* export version from libp2p ([#2279](https://github.com/libp2p/js-libp2p/issues/2279)) ([8c169db](https://github.com/libp2p/js-libp2p/commit/8c169db1bcc923fa2edd3749e6669eb69d93f6b3))
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+* include peer id in autodial log message ([#2075](https://github.com/libp2p/js-libp2p/issues/2075)) ([368ee26](https://github.com/libp2p/js-libp2p/commit/368ee26dbea5de8fb67d9a4596a169f327e73145))
+* **libp2p:** emit peer:discovered event on internal event bus ([#2019](https://github.com/libp2p/js-libp2p/issues/2019)) ([a6be8f0](https://github.com/libp2p/js-libp2p/commit/a6be8f0f4bbd81826c2ca5d48ea6175b1fdf3ab9))
+* **libp2p:** move delay dep to production dependencies ([#1977](https://github.com/libp2p/js-libp2p/issues/1977)) ([725f5df](https://github.com/libp2p/js-libp2p/commit/725f5df1782a200cf1d12e6d03a164d028a7cc3e))
+* **libp2p:** only dial one address at a time for peers ([#2028](https://github.com/libp2p/js-libp2p/issues/2028)) ([73b87c5](https://github.com/libp2p/js-libp2p/commit/73b87c5a1474f9acd47989b675724ea64d02c7b9))
+* **libp2p:** reduce dialer activity in browsers ([#1970](https://github.com/libp2p/js-libp2p/issues/1970)) ([d30f09f](https://github.com/libp2p/js-libp2p/commit/d30f09f29bcf34a0f1d7c7c984dad6dc34bb669a))
+* **libp2p:** sort addresses to dial as public, then relay ([#2031](https://github.com/libp2p/js-libp2p/issues/2031)) ([5294f14](https://github.com/libp2p/js-libp2p/commit/5294f14caa314bb150554afff3a7ff45d2bf17ba))
+* **libp2p:** update circuit relay and upgrader logs ([#2071](https://github.com/libp2p/js-libp2p/issues/2071)) ([f09ac4a](https://github.com/libp2p/js-libp2p/commit/f09ac4a7704070fd92bae8d4482d06eac45ddd2c))
+* **libp2p:** update peer store with supported protocols after unhandle ([#2013](https://github.com/libp2p/js-libp2p/issues/2013)) ([63041af](https://github.com/libp2p/js-libp2p/commit/63041afefbefd246ee1d6d6a4958b1999076dc17))
+* limit max dial queue size ([#2472](https://github.com/libp2p/js-libp2p/issues/2472)) ([0cfcc4d](https://github.com/libp2p/js-libp2p/commit/0cfcc4da195f6eb5b98f5b549cd92607fc3b8aa9))
+* log error correctly ([#2552](https://github.com/libp2p/js-libp2p/issues/2552)) ([a3e8bea](https://github.com/libp2p/js-libp2p/commit/a3e8beabdc2b551594952b5d5621555296eff79a))
+* log peer data in identify correctly ([#2197](https://github.com/libp2p/js-libp2p/issues/2197)) ([fdcb801](https://github.com/libp2p/js-libp2p/commit/fdcb801ee3180b740a25e0e05a75c32dd8e4ef63))
+* log upgrade messages on connection ([#2281](https://github.com/libp2p/js-libp2p/issues/2281)) ([f537b37](https://github.com/libp2p/js-libp2p/commit/f537b37316c78d26939e9c8d04bcf67599992554))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* make transports optional ([#2295](https://github.com/libp2p/js-libp2p/issues/2295)) ([887c6ff](https://github.com/libp2p/js-libp2p/commit/887c6ffe1b38bc9f0219b861b36d71de59095a8e))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* only send ip/domain observed address in identify ([#2201](https://github.com/libp2p/js-libp2p/issues/2201)) ([40855f4](https://github.com/libp2p/js-libp2p/commit/40855f4f38bf5e56ccb2890699ec0cdd60596a27))
+* opt-in to toplogy notifications on transient connections ([#2049](https://github.com/libp2p/js-libp2p/issues/2049)) ([346ff5a](https://github.com/libp2p/js-libp2p/commit/346ff5a2b81bded9f9b26051501ab9d25246961c))
+* pass autodial config thorugh in connection manager init ([#2523](https://github.com/libp2p/js-libp2p/issues/2523)) ([767b23e](https://github.com/libp2p/js-libp2p/commit/767b23e710b1a9b545421365f2f9603c37cbec78))
+* perform find peer during dial if peer has no multiaddrs ([#2345](https://github.com/libp2p/js-libp2p/issues/2345)) ([444d837](https://github.com/libp2p/js-libp2p/commit/444d83751fa5137c76d0a265544bb3522da24a3c))
+* prune connections based on stream counts and direction ([#2521](https://github.com/libp2p/js-libp2p/issues/2521)) ([8e36fc5](https://github.com/libp2p/js-libp2p/commit/8e36fc5094c69083989650ccf3dfff001e5b0034))
+* query routing for RSA public key ([#2350](https://github.com/libp2p/js-libp2p/issues/2350)) ([ee7ffe9](https://github.com/libp2p/js-libp2p/commit/ee7ffe9b9209d1ef0ffbd71389216b69e832b126))
+* react native adjustments ([#2229](https://github.com/libp2p/js-libp2p/issues/2229)) ([3415811](https://github.com/libp2p/js-libp2p/commit/341581166fd5bd2ead6b9d9db1ffda84051b6262))
+* remove autodialer ([#2639](https://github.com/libp2p/js-libp2p/issues/2639)) ([ab90179](https://github.com/libp2p/js-libp2p/commit/ab901790810d8ce59724af1706c9a9e74341b8ee))
+* remove CodeError class ([#2688](https://github.com/libp2p/js-libp2p/issues/2688)) ([81ebe4e](https://github.com/libp2p/js-libp2p/commit/81ebe4e47e82508a847bb3af0af36cc249b78765))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove dialler language ([#2143](https://github.com/libp2p/js-libp2p/issues/2143)) ([a321f15](https://github.com/libp2p/js-libp2p/commit/a321f15329ba9b8e6a84a5a7429784edf7fa96e9))
+* remove duplicate autodial from startup ([#2289](https://github.com/libp2p/js-libp2p/issues/2289)) ([bcfa159](https://github.com/libp2p/js-libp2p/commit/bcfa15993fd533c56c7523384e4b135c4930855b))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* remove protocols from PeerInfo ([#2166](https://github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* remove relay:removed event listener after relay is removed ([#1998](https://github.com/libp2p/js-libp2p/issues/1998)) ([ab2c1f6](https://github.com/libp2p/js-libp2p/commit/ab2c1f6731ccfe21a39482bdab217a8abd3f027b))
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+* replace rate-limiter ([#2356](https://github.com/libp2p/js-libp2p/issues/2356)) ([ddaa59a](https://github.com/libp2p/js-libp2p/commit/ddaa59a600c031fe1f41ba2097ebfcfd74eff598))
+* reset dial queue shut down controller on node restart ([#2329](https://github.com/libp2p/js-libp2p/issues/2329)) ([cd8cafc](https://github.com/libp2p/js-libp2p/commit/cd8cafcd5c6aa141aba855a4de4c12336c429913)), closes [#2188](https://github.com/libp2p/js-libp2p/issues/2188)
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* set libp2p status to started before stopping ([#2288](https://github.com/libp2p/js-libp2p/issues/2288)) ([09dd029](https://github.com/libp2p/js-libp2p/commit/09dd02987d84770547f7dfd347fa09a0a98d3081))
+* silence max listeners warning ([#2417](https://github.com/libp2p/js-libp2p/issues/2417)) ([bedfd0a](https://github.com/libp2p/js-libp2p/commit/bedfd0aa20a83e0823744c298007ef58a76a26ae))
+* support validating asymmetric addresses ([#2515](https://github.com/libp2p/js-libp2p/issues/2515)) ([c824323](https://github.com/libp2p/js-libp2p/commit/c824323128bda325fc7af5a42cd0f1287c945bc4))
+* update log messages ([#2324](https://github.com/libp2p/js-libp2p/issues/2324)) ([984f13e](https://github.com/libp2p/js-libp2p/commit/984f13e4223e724a358d8cc9134cbba435b08512))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* upgrader error msg to show current/max ([#2491](https://github.com/libp2p/js-libp2p/issues/2491)) ([eaf8ac7](https://github.com/libp2p/js-libp2p/commit/eaf8ac7cfb8a8ee00283de304dc4ec5280a41f1b))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use optimistic protocol negotation ([#2253](https://github.com/libp2p/js-libp2p/issues/2253)) ([0b4a2ee](https://github.com/libp2p/js-libp2p/commit/0b4a2ee7983b4dc9dc0a7b705a202a4c550e7017))
+* use randomwalk to find circuit relay servers ([#2563](https://github.com/libp2p/js-libp2p/issues/2563)) ([440c9b3](https://github.com/libp2p/js-libp2p/commit/440c9b360b8413149f4a1404c3368f124b0f8a5e)), closes [#2545](https://github.com/libp2p/js-libp2p/issues/2545)
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* add Peerbit logo ([#2402](https://github.com/libp2p/js-libp2p/issues/2402)) ([fb7c51c](https://github.com/libp2p/js-libp2p/commit/fb7c51c3c03c462ac4d2b42b32be95cd008c81fc))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* **libp2p:** fix typo in circuit-relay debug log ([#1981](https://github.com/libp2p/js-libp2p/issues/1981)) ([f3fd7b6](https://github.com/libp2p/js-libp2p/commit/f3fd7b62076a78252c64b93ab9d66c08cf4bca3d))
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* Update CHANGELOG.md ([#2046](https://github.com/libp2p/js-libp2p/issues/2046)) ([0ee4f78](https://github.com/libp2p/js-libp2p/commit/0ee4f784b1f48f16b8b6bd8f02aad59c5fffc315))
+* update libp2p readme ([bcf1826](https://github.com/libp2p/js-libp2p/commit/bcf18265eae4b91854dedcc7abbac0b7fe6755e2))
+* update typos in Address Manager and comments ([#2468](https://github.com/libp2p/js-libp2p/issues/2468)) ([a2b41f7](https://github.com/libp2p/js-libp2p/commit/a2b41f7939806dfb9583a6d43ddd8764fc861baf))
+* use ts in examples, ensure package docs are up to date ([#2323](https://github.com/libp2p/js-libp2p/issues/2323)) ([07f3afe](https://github.com/libp2p/js-libp2p/commit/07f3afe2d8ddc632ca7dc34f965524a3ab123276)), closes [#1777](https://github.com/libp2p/js-libp2p/issues/1777)
+
+
+### Dependencies
+
+* **@libp2p/mplex:** bump rate-limiter-flexible to 3.0.0 ([#2002](https://github.com/libp2p/js-libp2p/issues/2002)) ([9a69e6f](https://github.com/libp2p/js-libp2p/commit/9a69e6f76018d2df5c6e51de930557d4b60b2fca))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump p-queue from 7.4.1 to 8.0.0 ([#2311](https://github.com/libp2p/js-libp2p/issues/2311)) ([7429155](https://github.com/libp2p/js-libp2p/commit/742915567749072aa784cf179ce9810f66ac6c6e))
+* bump p-retry from 5.1.2 to 6.0.0 ([#2017](https://github.com/libp2p/js-libp2p/issues/2017)) ([24a5eda](https://github.com/libp2p/js-libp2p/commit/24a5edaeb1f2e24a5a1788c6698fd52f0392dd96))
+* bump rate-limiter-flexible from 3.0.6 to 4.0.0 ([#2326](https://github.com/libp2p/js-libp2p/issues/2326)) ([83dfc7d](https://github.com/libp2p/js-libp2p/commit/83dfc7dc807f363f7404b101accf2e1c1b9b3974))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** bump execa from 7.2.0 to 8.0.1 ([#1984](https://github.com/libp2p/js-libp2p/issues/1984)) ([b599905](https://github.com/libp2p/js-libp2p/commit/b599905c1acb18ae4717d74e415fd270659c451f))
+* **dev:** update sinon-ts to 2.x.x ([#2186](https://github.com/libp2p/js-libp2p/issues/2186)) ([24ff6e9](https://github.com/libp2p/js-libp2p/commit/24ff6e939def30e9cb406779f9b12e9d053b36b9))
+* switch varint for uint8-varint ([#1973](https://github.com/libp2p/js-libp2p/issues/1973)) ([6abcd22](https://github.com/libp2p/js-libp2p/commit/6abcd22fac48d5b2ed5c3973c28229c5d22ebdd7))
+
+
+### Refactors
+
+* extract circuit relay v2 to separate module ([#2222](https://github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* extract DCUtR into separate module ([#2220](https://github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract DCUtR utils ([#2184](https://github.com/libp2p/js-libp2p/issues/2184)) ([29eb610](https://github.com/libp2p/js-libp2p/commit/29eb61098bff694981193e6948048938f8a28941))
+* extract fetch to separate module ([#2223](https://github.com/libp2p/js-libp2p/issues/2223)) ([9b19be2](https://github.com/libp2p/js-libp2p/commit/9b19be2796c2dbbe207029199b1ac203647744e3))
+* extract identify service into separate module ([#2219](https://github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract ping service into separate module ([#2218](https://github.com/libp2p/js-libp2p/issues/2218)) ([556282a](https://github.com/libp2p/js-libp2p/commit/556282afdc9b328fd58df1045dc7c792199be932))
+* extract plaintext into separate module ([#2221](https://github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* extract UPnP NAT into separate module ([#2217](https://github.com/libp2p/js-libp2p/issues/2217)) ([f29b73f](https://github.com/libp2p/js-libp2p/commit/f29b73f781afcea36cba0589aafdd81e1852e194))
+* **libp2p:** remove unnecessary any-signal ([#1988](https://github.com/libp2p/js-libp2p/issues/1988)) ([6a02d76](https://github.com/libp2p/js-libp2p/commit/6a02d765da84fa9fec194a444051803b5b486db2))
+* move autonat into separate package ([#2107](https://github.com/libp2p/js-libp2p/issues/2107)) ([b0e8f06](https://github.com/libp2p/js-libp2p/commit/b0e8f06f0dcdbda0e367186b093e42e8bff3ee27))
+* move setMaxListeners to @libp2p/interface ([#2154](https://github.com/libp2p/js-libp2p/issues/2154)) ([50442d7](https://github.com/libp2p/js-libp2p/commit/50442d7a213053f06910a74e42535415c48707e4))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* remove abortable-iterator usage ([#1785](https://github.com/libp2p/js-libp2p/issues/1785)) ([2b755a8](https://github.com/libp2p/js-libp2p/commit/2b755a82b5f302196c023dd851ab9f1cafd8d04e))
+* remove isStarted method from Startable ([#2145](https://github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+* remove libp2p.keychain ([#2084](https://github.com/libp2p/js-libp2p/issues/2084)) ([125c84b](https://github.com/libp2p/js-libp2p/commit/125c84bb8a30ac986fb5aed0a4de23bc806d3aea))
+* remove per-peer parallel dialling ([#2090](https://github.com/libp2p/js-libp2p/issues/2090)) ([#2251](https://github.com/libp2p/js-libp2p/issues/2251)) ([bb6ceb1](https://github.com/libp2p/js-libp2p/commit/bb6ceb19252de2c1441ef736127d13763837d644))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
+
+### Refactors
+
+* extract circuit relay v2 to separate module ([#2222](https://github.com/libp2p/js-libp2p/issues/2222)) ([24afba3](https://github.com/libp2p/js-libp2p/commit/24afba30004fb7f24af1f0180229bb164340f00b))
+* extract DCUtR into separate module ([#2220](https://github.com/libp2p/js-libp2p/issues/2220)) ([d2c3e72](https://github.com/libp2p/js-libp2p/commit/d2c3e7235b64558c6cace414c54a42659fee2970))
+* extract DCUtR utils ([#2184](https://github.com/libp2p/js-libp2p/issues/2184)) ([29eb610](https://github.com/libp2p/js-libp2p/commit/29eb61098bff694981193e6948048938f8a28941))
+* extract fetch to separate module ([#2223](https://github.com/libp2p/js-libp2p/issues/2223)) ([9b19be2](https://github.com/libp2p/js-libp2p/commit/9b19be2796c2dbbe207029199b1ac203647744e3))
+* extract identify service into separate module ([#2219](https://github.com/libp2p/js-libp2p/issues/2219)) ([72c2f77](https://github.com/libp2p/js-libp2p/commit/72c2f775bd85bd4928048dda0fd14740d6fb6a69))
+* extract ping service into separate module ([#2218](https://github.com/libp2p/js-libp2p/issues/2218)) ([556282a](https://github.com/libp2p/js-libp2p/commit/556282afdc9b328fd58df1045dc7c792199be932))
+* extract plaintext into separate module ([#2221](https://github.com/libp2p/js-libp2p/issues/2221)) ([a364d95](https://github.com/libp2p/js-libp2p/commit/a364d95bbd7b15a5ce6ce508321e7ff2fa40a5e5))
+* extract UPnP NAT into separate module ([#2217](https://github.com/libp2p/js-libp2p/issues/2217)) ([f29b73f](https://github.com/libp2p/js-libp2p/commit/f29b73f781afcea36cba0589aafdd81e1852e194))
+* **libp2p:** remove unnecessary any-signal ([#1988](https://github.com/libp2p/js-libp2p/issues/1988)) ([6a02d76](https://github.com/libp2p/js-libp2p/commit/6a02d765da84fa9fec194a444051803b5b486db2))
+* move autonat into separate package ([#2107](https://github.com/libp2p/js-libp2p/issues/2107)) ([b0e8f06](https://github.com/libp2p/js-libp2p/commit/b0e8f06f0dcdbda0e367186b093e42e8bff3ee27))
+* move setMaxListeners to @libp2p/interface ([#2154](https://github.com/libp2p/js-libp2p/issues/2154)) ([50442d7](https://github.com/libp2p/js-libp2p/commit/50442d7a213053f06910a74e42535415c48707e4))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* remove abortable-iterator usage ([#1785](https://github.com/libp2p/js-libp2p/issues/1785)) ([2b755a8](https://github.com/libp2p/js-libp2p/commit/2b755a82b5f302196c023dd851ab9f1cafd8d04e))
+* remove isStarted method from Startable ([#2145](https://github.com/libp2p/js-libp2p/issues/2145)) ([fca208f](https://github.com/libp2p/js-libp2p/commit/fca208f3763af041aa37b1cb915d2bc777acb96d))
+* remove libp2p.keychain ([#2084](https://github.com/libp2p/js-libp2p/issues/2084)) ([125c84b](https://github.com/libp2p/js-libp2p/commit/125c84bb8a30ac986fb5aed0a4de23bc806d3aea))
+* remove per-peer parallel dialling ([#2090](https://github.com/libp2p/js-libp2p/issues/2090)) ([#2251](https://github.com/libp2p/js-libp2p/issues/2251)) ([bb6ceb1](https://github.com/libp2p/js-libp2p/commit/bb6ceb19252de2c1441ef736127d13763837d644))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
 ## [1.9.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.9.3...libp2p-v1.9.4) (2024-09-05)
 
 

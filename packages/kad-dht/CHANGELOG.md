@@ -106,6 +106,179 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [14.0.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.0.0...kad-dht-v14.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+* the `kadDHT` function returns a single DHT - see the readme for how to configure amino/lan as before
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+* use single DHT only by default ([#2322](https://github.com/libp2p/js-libp2p/issues/2322)) ([c003789](https://github.com/libp2p/js-libp2p/commit/c00378909453ee58080aa4d30ba1f4794cff581b))
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* allow DHT self-query to time out ([#2169](https://github.com/libp2p/js-libp2p/issues/2169)) ([ce0e38d](https://github.com/libp2p/js-libp2p/commit/ce0e38d28240303f7afc7f37de441b067e3e855e))
+* begin routing table refresh after routing table has started ([#2511](https://github.com/libp2p/js-libp2p/issues/2511)) ([3bc94b4](https://github.com/libp2p/js-libp2p/commit/3bc94b403b117cdc5ed57f73da22c6fda8a3ef51))
+* count dht providers and abort when enough found ([#2470](https://github.com/libp2p/js-libp2p/issues/2470)) ([3e515f0](https://github.com/libp2p/js-libp2p/commit/3e515f007d685a35fe98ad9961fe1ccbb04f3e69))
+* crash during DHT query abort when reading is slow ([#2225](https://github.com/libp2p/js-libp2p/issues/2225)) ([c960eb6](https://github.com/libp2p/js-libp2p/commit/c960eb659d2deff0c29cb2f5fe2a506310b8f971)), closes [#2216](https://github.com/libp2p/js-libp2p/issues/2216)
+* do not find peer when DHT yields peers without multiaddrs ([#2344](https://github.com/libp2p/js-libp2p/issues/2344)) ([d011f61](https://github.com/libp2p/js-libp2p/commit/d011f61304433a647431163592e7a0171010bc2a))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* ensure dht query is aborted on early exit ([#2341](https://github.com/libp2p/js-libp2p/issues/2341)) ([388d02b](https://github.com/libp2p/js-libp2p/commit/388d02b3366ed2d9918102e6119bdf4bf133886e))
+* export DHT record class ([#2168](https://github.com/libp2p/js-libp2p/issues/2168)) ([2f6a239](https://github.com/libp2p/js-libp2p/commit/2f6a2397f7e8ec7cf2edda7c9996be263a423661))
+* increase default DHT query timeout ([#2525](https://github.com/libp2p/js-libp2p/issues/2525)) ([1488a73](https://github.com/libp2p/js-libp2p/commit/1488a7371eb80751662b7ab71967ab537d912119))
+* load peerstore peers into routing table at startup ([#2534](https://github.com/libp2p/js-libp2p/issues/2534)) ([510d9ce](https://github.com/libp2p/js-libp2p/commit/510d9ce6563095e9d01a64e88dd7dab8e18641ee))
+* make kad-dht init object optional ([#2618](https://github.com/libp2p/js-libp2p/issues/2618)) ([928801a](https://github.com/libp2p/js-libp2p/commit/928801a80232d437a058e79f5b21e12eac128f2c))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* remove protocols from PeerInfo ([#2166](https://github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* return closest peers from FIND_NODE ([#2499](https://github.com/libp2p/js-libp2p/issues/2499)) ([0d55966](https://github.com/libp2p/js-libp2p/commit/0d55966f1aa57ec9491d7e17ce3af58e6dd3ae1a))
+* return self in FIND_NODE for self ([#2512](https://github.com/libp2p/js-libp2p/issues/2512)) ([9e9a32b](https://github.com/libp2p/js-libp2p/commit/9e9a32b77d7f4ab9130a628f3f2bd0421e81d445))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* time out DHT network requests separately from query ([#2524](https://github.com/libp2p/js-libp2p/issues/2524)) ([bfa7660](https://github.com/libp2p/js-libp2p/commit/bfa7660d5f91d1b9bf4a6859d4567d3613404de2))
+* typescript enums need to be value-compatible ([#2433](https://github.com/libp2p/js-libp2p/issues/2433)) ([83ef371](https://github.com/libp2p/js-libp2p/commit/83ef3717e6f55c12606b145d519ae83ff64c6227))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use prefix binary tree for routing table ([#2536](https://github.com/libp2p/js-libp2p/issues/2536)) ([7ae6063](https://github.com/libp2p/js-libp2p/commit/7ae6063dfbc754f95a2c4bd0a6bd146f2989a5f5))
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* update dht readme ([#2347](https://github.com/libp2p/js-libp2p/issues/2347)) ([821a38e](https://github.com/libp2p/js-libp2p/commit/821a38e24f9be0bed51b0616e04d2c8533f5c5ab))
+
+
+### Dependencies
+
+* **@libp2p/kad-dht:** bump which from 3.0.1 to 4.0.0 ([#2009](https://github.com/libp2p/js-libp2p/issues/2009)) ([13f5b48](https://github.com/libp2p/js-libp2p/commit/13f5b48e4cfbd8c6591674f985088246949d5f02))
+* bump @types/sinon from 10.0.20 to 17.0.0 ([#2203](https://github.com/libp2p/js-libp2p/issues/2203)) ([1d14133](https://github.com/libp2p/js-libp2p/commit/1d141331a8cf8392a5f90abc349a83adf8223207))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump p-queue from 7.4.1 to 8.0.0 ([#2311](https://github.com/libp2p/js-libp2p/issues/2311)) ([7429155](https://github.com/libp2p/js-libp2p/commit/742915567749072aa784cf179ce9810f66ac6c6e))
+* bump p-retry from 5.1.2 to 6.0.0 ([#2017](https://github.com/libp2p/js-libp2p/issues/2017)) ([24a5eda](https://github.com/libp2p/js-libp2p/commit/24a5edaeb1f2e24a5a1788c6698fd52f0392dd96))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** bump execa from 7.2.0 to 8.0.1 ([#1984](https://github.com/libp2p/js-libp2p/issues/1984)) ([b599905](https://github.com/libp2p/js-libp2p/commit/b599905c1acb18ae4717d74e415fd270659c451f))
+* **dev:** bump execa from 8.0.1 to 9.0.2 ([#2542](https://github.com/libp2p/js-libp2p/issues/2542)) ([43046b9](https://github.com/libp2p/js-libp2p/commit/43046b9aebebfadeb1c092a1ef768c63c32298e3))
+* switch varint for uint8-varint ([#1973](https://github.com/libp2p/js-libp2p/issues/1973)) ([6abcd22](https://github.com/libp2p/js-libp2p/commit/6abcd22fac48d5b2ed5c3973c28229c5d22ebdd7))
+## [14.0.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.0.0...kad-dht-v14.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+* the `kadDHT` function returns a single DHT - see the readme for how to configure amino/lan as before
+* the `.protocols` property has been removed from the `PeerInfo` interface
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+* use single DHT only by default ([#2322](https://github.com/libp2p/js-libp2p/issues/2322)) ([c003789](https://github.com/libp2p/js-libp2p/commit/c00378909453ee58080aa4d30ba1f4794cff581b))
+
+
+### Bug Fixes
+
+* add @libp2p/record module to monorepo ([#2466](https://github.com/libp2p/js-libp2p/issues/2466)) ([3ffecc5](https://github.com/libp2p/js-libp2p/commit/3ffecc5bfe806a678c1b0228ff830f1811630718))
+* add local definition of isPrivateIp ([#2362](https://github.com/libp2p/js-libp2p/issues/2362)) ([f27138c](https://github.com/libp2p/js-libp2p/commit/f27138ca1f552c4ad3e5d325fef626ba6783f0fd))
+* align dependency versions and update project config ([#2357](https://github.com/libp2p/js-libp2p/issues/2357)) ([8bbd436](https://github.com/libp2p/js-libp2p/commit/8bbd43628343f995804eea3102d0571ddcebc5c4))
+* allow DHT self-query to time out ([#2169](https://github.com/libp2p/js-libp2p/issues/2169)) ([ce0e38d](https://github.com/libp2p/js-libp2p/commit/ce0e38d28240303f7afc7f37de441b067e3e855e))
+* begin routing table refresh after routing table has started ([#2511](https://github.com/libp2p/js-libp2p/issues/2511)) ([3bc94b4](https://github.com/libp2p/js-libp2p/commit/3bc94b403b117cdc5ed57f73da22c6fda8a3ef51))
+* count dht providers and abort when enough found ([#2470](https://github.com/libp2p/js-libp2p/issues/2470)) ([3e515f0](https://github.com/libp2p/js-libp2p/commit/3e515f007d685a35fe98ad9961fe1ccbb04f3e69))
+* crash during DHT query abort when reading is slow ([#2225](https://github.com/libp2p/js-libp2p/issues/2225)) ([c960eb6](https://github.com/libp2p/js-libp2p/commit/c960eb659d2deff0c29cb2f5fe2a506310b8f971)), closes [#2216](https://github.com/libp2p/js-libp2p/issues/2216)
+* do not find peer when DHT yields peers without multiaddrs ([#2344](https://github.com/libp2p/js-libp2p/issues/2344)) ([d011f61](https://github.com/libp2p/js-libp2p/commit/d011f61304433a647431163592e7a0171010bc2a))
+* do not overwrite signal property of options ([#2214](https://github.com/libp2p/js-libp2p/issues/2214)) ([70d5efc](https://github.com/libp2p/js-libp2p/commit/70d5efc2e901a2c419fe3f82d767f278b6d698fd))
+* ensure dht query is aborted on early exit ([#2341](https://github.com/libp2p/js-libp2p/issues/2341)) ([388d02b](https://github.com/libp2p/js-libp2p/commit/388d02b3366ed2d9918102e6119bdf4bf133886e))
+* export DHT record class ([#2168](https://github.com/libp2p/js-libp2p/issues/2168)) ([2f6a239](https://github.com/libp2p/js-libp2p/commit/2f6a2397f7e8ec7cf2edda7c9996be263a423661))
+* increase default DHT query timeout ([#2525](https://github.com/libp2p/js-libp2p/issues/2525)) ([1488a73](https://github.com/libp2p/js-libp2p/commit/1488a7371eb80751662b7ab71967ab537d912119))
+* load peerstore peers into routing table at startup ([#2534](https://github.com/libp2p/js-libp2p/issues/2534)) ([510d9ce](https://github.com/libp2p/js-libp2p/commit/510d9ce6563095e9d01a64e88dd7dab8e18641ee))
+* make kad-dht init object optional ([#2618](https://github.com/libp2p/js-libp2p/issues/2618)) ([928801a](https://github.com/libp2p/js-libp2p/commit/928801a80232d437a058e79f5b21e12eac128f2c))
+* mark all packages side-effect free ([#2360](https://github.com/libp2p/js-libp2p/issues/2360)) ([3c96210](https://github.com/libp2p/js-libp2p/commit/3c96210cf6343b21199996918bae3a0f60220046))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove extra deps ([#2340](https://github.com/libp2p/js-libp2p/issues/2340)) ([53e83ee](https://github.com/libp2p/js-libp2p/commit/53e83eea50410391ec9cff4cd8097210b93894ff))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* remove protocols from PeerInfo ([#2166](https://github.com/libp2p/js-libp2p/issues/2166)) ([5468cd1](https://github.com/libp2p/js-libp2p/commit/5468cd13a76281e46b221fdbd7d4005c0d3f2252))
+* rename event emitter class ([#2173](https://github.com/libp2p/js-libp2p/issues/2173)) ([50f912c](https://github.com/libp2p/js-libp2p/commit/50f912c2608caecc09acbcb0f46b4df4af073080))
+* replace p-queue with less restrictive queue ([#2339](https://github.com/libp2p/js-libp2p/issues/2339)) ([528d737](https://github.com/libp2p/js-libp2p/commit/528d73781f416ea97af044bb49d9701f97c9eeec))
+* restore lost commits ([#2268](https://github.com/libp2p/js-libp2p/issues/2268)) ([5775f1d](https://github.com/libp2p/js-libp2p/commit/5775f1df4f5561500e622dc0788fdacbc74e2755))
+* return closest peers from FIND_NODE ([#2499](https://github.com/libp2p/js-libp2p/issues/2499)) ([0d55966](https://github.com/libp2p/js-libp2p/commit/0d55966f1aa57ec9491d7e17ce3af58e6dd3ae1a))
+* return self in FIND_NODE for self ([#2512](https://github.com/libp2p/js-libp2p/issues/2512)) ([9e9a32b](https://github.com/libp2p/js-libp2p/commit/9e9a32b77d7f4ab9130a628f3f2bd0421e81d445))
+* revert "refactor: rename event emitter class" ([#2172](https://github.com/libp2p/js-libp2p/issues/2172)) ([0ef5f7f](https://github.com/libp2p/js-libp2p/commit/0ef5f7f62d9c6d822e0a4b99cc203a1516b11f2f))
+* time out DHT network requests separately from query ([#2524](https://github.com/libp2p/js-libp2p/issues/2524)) ([bfa7660](https://github.com/libp2p/js-libp2p/commit/bfa7660d5f91d1b9bf4a6859d4567d3613404de2))
+* typescript enums need to be value-compatible ([#2433](https://github.com/libp2p/js-libp2p/issues/2433)) ([83ef371](https://github.com/libp2p/js-libp2p/commit/83ef3717e6f55c12606b145d519ae83ff64c6227))
+* update patch versions of deps ([#2397](https://github.com/libp2p/js-libp2p/issues/2397)) ([0321812](https://github.com/libp2p/js-libp2p/commit/0321812e731515558f35ae2d53242035a343a21a))
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+* use logging component everywhere ([#2228](https://github.com/libp2p/js-libp2p/issues/2228)) ([e5dfde0](https://github.com/libp2p/js-libp2p/commit/e5dfde0883191c93903ca552433f177d48adf0b3))
+* use prefix binary tree for routing table ([#2536](https://github.com/libp2p/js-libp2p/issues/2536)) ([7ae6063](https://github.com/libp2p/js-libp2p/commit/7ae6063dfbc754f95a2c4bd0a6bd146f2989a5f5))
+* use xor-compare for finding closer peers ([#2538](https://github.com/libp2p/js-libp2p/issues/2538)) ([83c14d0](https://github.com/libp2p/js-libp2p/commit/83c14d08f4f10a207f142f0d7d383e0fbff7858a))
+
+
+### Documentation
+
+* add doc-check to all modules ([#2419](https://github.com/libp2p/js-libp2p/issues/2419)) ([6cdb243](https://github.com/libp2p/js-libp2p/commit/6cdb24362de9991e749f76b16fcd4c130e8106a0))
+* fix broken links in docs site ([#2497](https://github.com/libp2p/js-libp2p/issues/2497)) ([fd1f834](https://github.com/libp2p/js-libp2p/commit/fd1f8343db030d74cd08bca6a0cffda93532765f)), closes [#2423](https://github.com/libp2p/js-libp2p/issues/2423)
+* move docs to packageDocumentation ([#2180](https://github.com/libp2p/js-libp2p/issues/2180)) ([6958136](https://github.com/libp2p/js-libp2p/commit/69581367d89b7c581bc1b9b45d04d98ce88bbee2))
+* update dht readme ([#2347](https://github.com/libp2p/js-libp2p/issues/2347)) ([821a38e](https://github.com/libp2p/js-libp2p/commit/821a38e24f9be0bed51b0616e04d2c8533f5c5ab))
+
+
+### Dependencies
+
+* **@libp2p/kad-dht:** bump which from 3.0.1 to 4.0.0 ([#2009](https://github.com/libp2p/js-libp2p/issues/2009)) ([13f5b48](https://github.com/libp2p/js-libp2p/commit/13f5b48e4cfbd8c6591674f985088246949d5f02))
+* bump @types/sinon from 10.0.20 to 17.0.0 ([#2203](https://github.com/libp2p/js-libp2p/issues/2203)) ([1d14133](https://github.com/libp2p/js-libp2p/commit/1d141331a8cf8392a5f90abc349a83adf8223207))
+* bump aegir from 40.0.13 to 41.0.2 ([#2137](https://github.com/libp2p/js-libp2p/issues/2137)) ([f105315](https://github.com/libp2p/js-libp2p/commit/f10531592b3377d5935405881dcabd5939440c70))
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* bump multiformats from 12.1.3 to 13.0.0 ([#2334](https://github.com/libp2p/js-libp2p/issues/2334)) ([4e0135c](https://github.com/libp2p/js-libp2p/commit/4e0135c7d8dd46d63b88756c1a6252ab0f3cc676))
+* bump p-queue from 7.4.1 to 8.0.0 ([#2311](https://github.com/libp2p/js-libp2p/issues/2311)) ([7429155](https://github.com/libp2p/js-libp2p/commit/742915567749072aa784cf179ce9810f66ac6c6e))
+* bump p-retry from 5.1.2 to 6.0.0 ([#2017](https://github.com/libp2p/js-libp2p/issues/2017)) ([24a5eda](https://github.com/libp2p/js-libp2p/commit/24a5edaeb1f2e24a5a1788c6698fd52f0392dd96))
+* bump sinon from 15.2.0 to 16.0.0 ([#2052](https://github.com/libp2p/js-libp2p/issues/2052)) ([4db2f5f](https://github.com/libp2p/js-libp2p/commit/4db2f5f5f532e314970176c19b7e2de0885912f7))
+* bump sinon from 16.1.3 to 17.0.0 ([#2167](https://github.com/libp2p/js-libp2p/issues/2167)) ([6850493](https://github.com/libp2p/js-libp2p/commit/68504939a6af12eced6334fb41f033c3b1e2450d))
+* bump sinon from 17.0.2 to 18.0.0 ([#2548](https://github.com/libp2p/js-libp2p/issues/2548)) ([1eb5b27](https://github.com/libp2p/js-libp2p/commit/1eb5b2713585e0d4dde927ecd307ada0b774d824))
+* bump uint8arrays from 4.0.10 to 5.0.0 ([#2307](https://github.com/libp2p/js-libp2p/issues/2307)) ([6d11e82](https://github.com/libp2p/js-libp2p/commit/6d11e8268b16e0bf4bc520f42abb71a228d5dc57))
+* **dev:** bump execa from 7.2.0 to 8.0.1 ([#1984](https://github.com/libp2p/js-libp2p/issues/1984)) ([b599905](https://github.com/libp2p/js-libp2p/commit/b599905c1acb18ae4717d74e415fd270659c451f))
+* **dev:** bump execa from 8.0.1 to 9.0.2 ([#2542](https://github.com/libp2p/js-libp2p/issues/2542)) ([43046b9](https://github.com/libp2p/js-libp2p/commit/43046b9aebebfadeb1c092a1ef768c63c32298e3))
+* switch varint for uint8-varint ([#1973](https://github.com/libp2p/js-libp2p/issues/1973)) ([6abcd22](https://github.com/libp2p/js-libp2p/commit/6abcd22fac48d5b2ed5c3973c28229c5d22ebdd7))
+
+
+### Refactors
+
+* move setMaxListeners to @libp2p/interface ([#2154](https://github.com/libp2p/js-libp2p/issues/2154)) ([50442d7](https://github.com/libp2p/js-libp2p/commit/50442d7a213053f06910a74e42535415c48707e4))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
+
+### Refactors
+
+* move setMaxListeners to @libp2p/interface ([#2154](https://github.com/libp2p/js-libp2p/issues/2154)) ([50442d7](https://github.com/libp2p/js-libp2p/commit/50442d7a213053f06910a74e42535415c48707e4))
+* remove abortable iterator ([#2237](https://github.com/libp2p/js-libp2p/issues/2237)) ([6625a27](https://github.com/libp2p/js-libp2p/commit/6625a27fc16357c13a5b35373a86339f9069fbb4))
+* rename event emitter class ([#2159](https://github.com/libp2p/js-libp2p/issues/2159)) ([b5a808a](https://github.com/libp2p/js-libp2p/commit/b5a808af700207fe5e086133bb505367177a086e))
+
 ## [12.1.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v12.1.4...kad-dht-v12.1.5) (2024-08-15)
 
 

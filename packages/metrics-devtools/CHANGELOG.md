@@ -1,5 +1,39 @@
 # Changelog
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.0.0...devtools-metrics-v2.0.0) (2024-09-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+
+### Features
+
+* add devtools metrics ([#2551](https://github.com/libp2p/js-libp2p/issues/2551)) ([7464dc0](https://github.com/libp2p/js-libp2p/commit/7464dc00caef2d95bfcfc75346f48e0901458df6))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* add rpc to metrics-devtools ([#2595](https://github.com/libp2p/js-libp2p/issues/2595)) ([15eb664](https://github.com/libp2p/js-libp2p/commit/15eb66428d191e1c26db69ef3587bd2afb972d17))
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^3.0.0
+    * @libp2p/interface-internal bumped from ^1.3.4 to ^1.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^6.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^6.0.0
+    * @libp2p/simple-metrics bumped from ^1.1.5 to ^1.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^6.0.0
+
 ## [0.2.5](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.2.4...devtools-metrics-v0.2.5) (2024-08-15)
 
 
