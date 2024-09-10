@@ -312,6 +312,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
+    const deferred = pDefer()
     const controller = new AbortController()
     let aborted
 
@@ -331,16 +332,24 @@ describe('QueryManager', () => {
         aborted = true
       })
 
+      deferred.resolve()
+
       await delay(1000)
 
       yield topology[peer.toString()].event
     }
 
-    setTimeout(() => {
-      controller.abort()
-    }, 10)
+    // start the query
+    const queryPromise = all(manager.run(key, queryFunc, { signal: controller.signal }))
 
-    await expect(all(manager.run(key, queryFunc, { signal: controller.signal }))).to.eventually.be.rejected()
+    // wait for the query function to be invoked
+    await deferred.promise
+
+    // abort the query
+    controller.abort()
+
+    // the should have been aborted
+    await expect(queryPromise).to.eventually.be.rejected()
       .with.property('name', 'QueryAbortedError')
 
     expect(aborted).to.be.true()

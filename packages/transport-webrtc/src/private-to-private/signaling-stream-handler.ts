@@ -40,6 +40,8 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
         })
     }
 
+    log.trace('recipient read SDP offer')
+
     // read an SDP offer
     const pbOffer = await messageStream.read({
       signal
@@ -49,7 +51,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
     }
 
-    log.trace('recipient receive SDP offer %s', pbOffer.data)
+    log.trace('recipient received SDP offer %s', pbOffer.data)
 
     const offer = new RTCSessionDescription({
       type: 'offer',

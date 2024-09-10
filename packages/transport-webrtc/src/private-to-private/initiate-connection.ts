@@ -138,6 +138,8 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
       onProgress?.(new CustomProgressEvent('webrtc:read-sdp-answer'))
 
+      log.trace('initiator read SDP answer')
+
       // read answer
       const answerMessage = await messageStream.read({
         signal
@@ -147,7 +149,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
         throw new SDPHandshakeFailedError('Remote should send an SDP answer')
       }
 
-      log.trace('initiator receive SDP answer %s', answerMessage.data)
+      log.trace('initiator received SDP answer %s', answerMessage.data)
 
       const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
       await peerConnection.setRemoteDescription(answerSdp).catch(err => {
