@@ -61,7 +61,7 @@
  *   transports: [
  *     webSockets({filter: filters.all})
  *   ],
- *   connectionEncryption: [noise()],
+ *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
  *   services: {
  *     identify: identify(),
@@ -83,7 +83,7 @@
  *       discoverRelays: 1
  *     })
  *   ],
- *   connectionEncryption: [noise()],
+ *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
  *   services: {
  *     identify: identify(),
@@ -120,7 +120,7 @@
  *     webRTC(),
  *     circuitRelayTransport()
  *   ],
- *   connectionEncryption: [noise()],
+ *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
  *   services: {
  *     identify: identify(),
@@ -166,7 +166,7 @@
  *   transports: [
  *     webRTCDirect()
  *   ],
- *   connectionEncryption: [
+ *   connectionEncrypters: [
  *     noise()
  *   ]
  * })

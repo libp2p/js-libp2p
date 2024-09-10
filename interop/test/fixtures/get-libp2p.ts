@@ -94,7 +94,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       skipMuxer = true
       // Setup yamux and noise to connect to the relay node
       options.streamMuxers = [yamux()]
-      options.connectionEncryption = [noise()]
+      options.connectionEncrypters = [noise()]
       break
     default:
       // Do nothing
@@ -103,7 +103,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   if (!skipSecureChannel) {
     switch (SECURE_CHANNEL) {
       case 'noise':
-        options.connectionEncryption = [noise()]
+        options.connectionEncrypters = [noise()]
         break
       default:
         throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)

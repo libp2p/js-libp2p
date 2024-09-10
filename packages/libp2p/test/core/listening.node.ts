@@ -23,7 +23,7 @@ describe('Listening', () => {
       transports: [
         tcp()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })

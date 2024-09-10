@@ -33,7 +33,7 @@ export default {
           yamux(),
           mplex()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {

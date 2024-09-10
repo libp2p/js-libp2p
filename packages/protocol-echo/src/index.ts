@@ -18,7 +18,7 @@
  *   addresses: {
  *     listen: ['/ip4/0.0.0.0/tcp/0']
  *   },
- *   connectionEncryption: [noise()],
+ *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
  *   services: {
  *     echo: echo()
@@ -29,7 +29,7 @@
  *   addresses: {
  *     listen: ['/ip4/0.0.0.0/tcp/0']
  *   },
- *   connectionEncryption: [noise()],
+ *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
  *   services: {
  *     echo: echo()

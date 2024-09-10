@@ -207,7 +207,7 @@ When [creating a libp2p node](https://github.com/libp2p/js-libp2p/blob/main/doc/
 const modules = {
   transports: [],
   streamMuxers: [],
-  connectionEncryption: [],
+  connectionEncrypters: [],
   contentRouting: [],
   peerRouting: [],
   peerDiscovery: [],
@@ -267,7 +267,7 @@ const node = await createLibp2p({
     webSockets()
   ],
   streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   peerDiscovery: [MulticastDNS],
   services: {
     dht: kadDHT(),
@@ -290,7 +290,7 @@ import { bootstrap } from '@libp2p/bootstrap'
 const node = await createLibp2p({
   transports: [tcp()],
   streamMuxers: [yamux(), mplex()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   peerDiscovery: [
     mdns({
       interval: 1000
@@ -336,7 +336,7 @@ const node = await createLibp2p({
       yamux(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       noise()
     ],
     services: {
@@ -373,7 +373,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   services: {
@@ -421,7 +421,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   contentRouting: [
@@ -466,7 +466,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   connectionGater: {
@@ -521,7 +521,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
@@ -552,7 +552,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
@@ -589,7 +589,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   keychain: {
@@ -622,7 +622,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   connectionManager: {
@@ -772,7 +772,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   transportManager: {
@@ -810,7 +810,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   metrics: {
@@ -860,7 +860,7 @@ const node = await createLibp2p({
     yamux(),
     mplex()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   peerStore: {
@@ -892,7 +892,7 @@ const node = await createLibp2p({
   streamMuxers: [
     yamux()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
@@ -917,7 +917,7 @@ const node = await createLibp2p({
   streamMuxers: [
     yamux()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ],
   addresses: {

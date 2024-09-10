@@ -39,7 +39,7 @@ async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
       yamux(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       plaintext()
     ],
     services: {
@@ -62,7 +62,7 @@ async function createRelay (options: Libp2pOptions = {}): Promise<Libp2p<{ relay
       yamux(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       plaintext()
     ],
     ...options,

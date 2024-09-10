@@ -36,7 +36,7 @@ import { plaintext } from '@libp2p/plaintext'
 
 const node = await createLibp2p({
   // ...other options
-  connectionEncryption: [
+  connectionEncrypters: [
     plaintext()
   ]
 })

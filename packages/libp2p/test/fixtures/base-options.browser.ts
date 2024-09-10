@@ -21,7 +21,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       mplex(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       plaintext()
     ],
     connectionGater: mockConnectionGater(),

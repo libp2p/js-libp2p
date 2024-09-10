@@ -84,7 +84,7 @@ const relay = await createLibp2p({
   transports: [
     webSockets({filter: filters.all})
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -106,7 +106,7 @@ const listener = await createLibp2p({
       discoverRelays: 1
     })
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -143,7 +143,7 @@ const dialer = await createLibp2p({
     webRTC(),
     circuitRelayTransport()
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -189,7 +189,7 @@ const node = await createLibp2p({
   transports: [
     webRTCDirect()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })

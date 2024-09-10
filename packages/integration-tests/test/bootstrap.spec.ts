@@ -114,7 +114,7 @@ describe('bootstrap', () => {
     ]
 
     libp2p = await createLibp2p({
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       transports: [

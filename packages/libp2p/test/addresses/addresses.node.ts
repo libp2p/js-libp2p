@@ -190,7 +190,7 @@ describe('libp2p.addressManager', () => {
         transports: [
           webSockets()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ]
       }
@@ -211,7 +211,7 @@ describe('libp2p.addressManager', () => {
         transports: [
           webSockets()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ]
       }
@@ -243,7 +243,7 @@ describe('libp2p.addressManager', () => {
         transports: [
           webSockets()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ]
       }

@@ -17,7 +17,7 @@ describe('libp2p-webtransport', () => {
   beforeEach(async () => {
     node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()],
+      connectionEncrypters: [noise()],
       connectionGater: {
         denyDialMultiaddr: async () => false
       },

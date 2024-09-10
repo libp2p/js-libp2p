@@ -77,10 +77,10 @@ describe('Upgrader', () => {
     localYamuxerFactory = yamux()(localComponents)
     localConnectionEncrypter = plaintext()(localComponents)
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         localConnectionEncrypter
       ],
-      muxers: [
+      streamMuxers: [
         localMuxerFactory,
         localYamuxerFactory
       ],
@@ -105,10 +105,10 @@ describe('Upgrader', () => {
     remoteYamuxerFactory = yamux()(remoteComponents)
     remoteConnectionEncrypter = plaintext()(remoteComponents)
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         remoteConnectionEncrypter
       ],
-      muxers: [
+      streamMuxers: [
         remoteMuxerFactory,
         remoteYamuxerFactory
       ],
@@ -166,17 +166,17 @@ describe('Upgrader', () => {
 
     // No available muxers
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(localComponents)
       ],
-      muxers: [],
+      streamMuxers: [],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(remoteComponents)
       ],
-      muxers: [],
+      streamMuxers: [],
       inboundUpgradeTimeout: 1000
     })
 
@@ -248,17 +248,17 @@ describe('Upgrader', () => {
     }
 
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         new BoomCrypto()
       ],
-      muxers: [],
+      streamMuxers: [],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         new BoomCrypto()
       ],
-      muxers: [],
+      streamMuxers: [],
       inboundUpgradeTimeout: 1000
     })
 
@@ -280,19 +280,19 @@ describe('Upgrader', () => {
     const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
 
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(localComponents)
       ],
-      muxers: [
+      streamMuxers: [
         yamux()(localComponents)
       ],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(remoteComponents)
       ],
-      muxers: [
+      streamMuxers: [
         yamux()(remoteComponents)
       ],
       inboundUpgradeTimeout: 1000
@@ -350,20 +350,20 @@ describe('Upgrader', () => {
     }
 
     localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(localComponents)
       ],
-      muxers: [
+      streamMuxers: [
         new OtherMuxerFactory(),
         new OtherOtherMuxerFactory()
       ],
       inboundUpgradeTimeout: 1000
     })
     remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()(remoteComponents)
       ],
-      muxers: [
+      streamMuxers: [
         yamux()(remoteComponents),
         mplex()(remoteComponents)
       ],
@@ -637,7 +637,7 @@ describe('libp2p.upgrader', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionProtector: () => protector,
@@ -668,7 +668,7 @@ describe('libp2p.upgrader', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -689,7 +689,7 @@ describe('libp2p.upgrader', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -736,7 +736,7 @@ describe('libp2p.upgrader', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionGater: mockConnectionGater(),
@@ -758,7 +758,7 @@ describe('libp2p.upgrader', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionGater: mockConnectionGater(),
@@ -808,7 +808,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -827,7 +827,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -887,7 +887,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -906,7 +906,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -963,7 +963,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -982,7 +982,7 @@ describe('libp2p.upgrader', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {

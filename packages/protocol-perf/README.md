@@ -51,7 +51,7 @@ async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
     transports: [
       tcp()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       noise(), plaintext()
     ],
     streamMuxers: [

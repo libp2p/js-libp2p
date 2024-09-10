@@ -103,7 +103,7 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
    * eavesdropped on, and that the remote peer posesses the private key that
    * corresponds to the public key that it's Peer ID is derived from.
    */
-  connectionEncryption?: Array<(components: Components) => ConnectionEncrypter>
+  connectionEncrypters?: Array<(components: Components) => ConnectionEncrypter>
 
   /**
    * Peer discovery mechanisms allow finding peers on the network
@@ -187,7 +187,7 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * const options = {
  *   transports: [tcp()],
  *   streamMuxers: [yamux(), mplex()],
- *   connectionEncryption: [noise()]
+ *   connectionEncrypters: [noise()]
  * }
  *
  * // create libp2p

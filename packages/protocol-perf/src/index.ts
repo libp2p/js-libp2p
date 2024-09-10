@@ -28,7 +28,7 @@
  *     transports: [
  *       tcp()
  *     ],
- *     connectionEncryption: [
+ *     connectionEncrypters: [
  *       noise(), plaintext()
  *     ],
  *     streamMuxers: [

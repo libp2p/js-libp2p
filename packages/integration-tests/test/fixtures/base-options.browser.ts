@@ -29,7 +29,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       yamux(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       plaintext()
     ],
     connectionGater: mockConnectionGater(),

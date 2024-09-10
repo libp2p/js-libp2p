@@ -43,7 +43,7 @@ const node = await createLibp2p({
   transports: [
     webTransport()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
