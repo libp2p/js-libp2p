@@ -178,6 +178,7 @@
   "devDependencies": {
     "@types/netmask": "^2.0.5",
     "aegir": "^44.0.1",
+    "benchmark": "^2.1.4",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
