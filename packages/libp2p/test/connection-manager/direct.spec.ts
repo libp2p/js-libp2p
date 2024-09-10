@@ -346,7 +346,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -389,7 +389,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -431,7 +431,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionGater: mockConnectionGater()
@@ -460,7 +460,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionGater: mockConnectionGater()
@@ -480,7 +480,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionGater: mockConnectionGater()

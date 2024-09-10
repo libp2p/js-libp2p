@@ -50,7 +50,7 @@ describe('DHT subsystem operates correctly', () => {
         transports: [
           tcp()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         streamMuxers: [
@@ -73,7 +73,7 @@ describe('DHT subsystem operates correctly', () => {
         transports: [
           tcp()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         streamMuxers: [

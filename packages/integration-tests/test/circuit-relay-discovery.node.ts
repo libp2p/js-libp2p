@@ -33,7 +33,7 @@ describe('circuit-relay discovery', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -61,7 +61,7 @@ describe('circuit-relay discovery', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -103,7 +103,7 @@ describe('circuit-relay discovery', () => {
         streamMuxers: [
           yamux()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {
@@ -128,7 +128,7 @@ describe('circuit-relay discovery', () => {
         streamMuxers: [
           yamux()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {

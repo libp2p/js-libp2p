@@ -22,7 +22,7 @@
  *   transports: [
  *     webTransport()
  *   ],
- *   connectionEncryption: [
+ *   connectionEncrypters: [
  *     noise()
  *   ]
  * })

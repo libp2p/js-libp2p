@@ -34,7 +34,7 @@ import { tls } from '@libp2p/tls'
 
 const node = await createLibp2p({
   // ...other options
-  connectionEncryption: [
+  connectionEncrypters: [
     tls()
   ]
 })

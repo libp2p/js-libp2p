@@ -125,7 +125,7 @@ describe('libp2p.transportManager (dial only)', () => {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
       transports: [webSockets()],
-      connectionEncryption: [plaintext()],
+      connectionEncrypters: [plaintext()],
       start: false
     })
 
@@ -144,7 +144,7 @@ describe('libp2p.transportManager (dial only)', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       start: false
@@ -164,7 +164,7 @@ describe('libp2p.transportManager (dial only)', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       start: false

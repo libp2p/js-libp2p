@@ -32,8 +32,8 @@ export interface CryptoResult extends SecuredConnection<MultiaddrConnection> {
 }
 
 export interface UpgraderInit {
-  connectionEncryption: ConnectionEncrypter[]
-  muxers: StreamMuxerFactory[]
+  connectionEncrypters: ConnectionEncrypter[]
+  streamMuxers: StreamMuxerFactory[]
 
   /**
    * An amount of ms by which an inbound connection upgrade
@@ -100,23 +100,23 @@ type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection'
 
 export class DefaultUpgrader implements Upgrader {
   private readonly components: DefaultUpgraderComponents
-  private readonly connectionEncryption: Map<string, ConnectionEncrypter>
-  private readonly muxers: Map<string, StreamMuxerFactory>
+  private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
+  private readonly streamMuxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
 
   constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
     this.components = components
-    this.connectionEncryption = new Map()
+    this.connectionEncrypters = new Map()
 
-    init.connectionEncryption.forEach(encrypter => {
-      this.connectionEncryption.set(encrypter.protocol, encrypter)
+    init.connectionEncrypters.forEach(encrypter => {
+      this.connectionEncrypters.set(encrypter.protocol, encrypter)
     })
 
-    this.muxers = new Map()
+    this.streamMuxers = new Map()
 
-    init.muxers.forEach(muxer => {
-      this.muxers.set(muxer.protocol, muxer)
+    init.streamMuxers.forEach(muxer => {
+      this.streamMuxers.set(muxer.protocol, muxer)
     })
 
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
@@ -216,14 +216,14 @@ export class DefaultUpgrader implements Upgrader {
         upgradedConn = encryptedConn
         if (opts?.muxerFactory != null) {
           muxerFactory = opts.muxerFactory
-        } else if (this.muxers.size > 0) {
+        } else if (this.streamMuxers.size > 0) {
           opts?.onProgress?.(new CustomProgressEvent('upgrader:multiplex-inbound-connection'))
 
           // Multiplex the connection
           const multiplexed = await this._multiplexInbound({
             ...protectedConn,
             ...encryptedConn
-          }, this.muxers)
+          }, this.streamMuxers)
           muxerFactory = multiplexed.muxerFactory
           upgradedConn = multiplexed.stream
         }
@@ -319,12 +319,12 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn = encryptedConn
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
-      } else if (this.muxers.size > 0) {
+      } else if (this.streamMuxers.size > 0) {
         // Multiplex the connection
         const multiplexed = await this._multiplexOutbound({
           ...protectedConn,
           ...encryptedConn
-        }, this.muxers)
+        }, this.streamMuxers)
         muxerFactory = multiplexed.muxerFactory
         upgradedConn = multiplexed.stream
       }
@@ -627,14 +627,14 @@ export class DefaultUpgrader implements Upgrader {
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
   async _encryptInbound (connection: MultiaddrConnection, options?: AbortOptions): Promise<CryptoResult> {
-    const protocols = Array.from(this.connectionEncryption.keys())
+    const protocols = Array.from(this.connectionEncrypters.keys())
     connection.log('handling inbound crypto protocol selection', protocols)
 
     try {
       const { stream, protocol } = await mss.handle(connection, protocols, {
         log: connection.log
       })
-      const encrypter = this.connectionEncryption.get(protocol)
+      const encrypter = this.connectionEncrypters.get(protocol)
 
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)
@@ -657,7 +657,7 @@ export class DefaultUpgrader implements Upgrader {
    * The first `ConnectionEncrypter` module to succeed will be used
    */
   async _encryptOutbound (connection: MultiaddrConnection, options?: SecureConnectionOptions): Promise<CryptoResult> {
-    const protocols = Array.from(this.connectionEncryption.keys())
+    const protocols = Array.from(this.connectionEncrypters.keys())
     connection.log('selecting outbound crypto protocol', protocols)
 
     try {
@@ -671,7 +671,7 @@ export class DefaultUpgrader implements Upgrader {
         yieldBytes: true
       })
 
-      const encrypter = this.connectionEncryption.get(protocol)
+      const encrypter = this.connectionEncrypters.get(protocol)
 
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`)

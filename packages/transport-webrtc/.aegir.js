@@ -21,7 +21,7 @@ export default {
         transports: [
           webSockets()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           noise()
         ],
         streamMuxers: [

@@ -293,7 +293,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -326,7 +326,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -354,7 +354,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -417,7 +417,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -443,7 +443,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -472,7 +472,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       connectionProtector: () => protector
@@ -500,7 +500,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -539,7 +539,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -598,7 +598,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -615,7 +615,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -640,7 +640,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -652,7 +652,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -689,7 +689,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -701,7 +701,7 @@ describe('libp2p.dialer (direct, TCP)', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })

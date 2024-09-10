@@ -24,7 +24,7 @@ describe('status', () => {
       transports: [
         tcp()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })

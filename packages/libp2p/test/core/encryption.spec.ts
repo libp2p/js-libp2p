@@ -11,7 +11,7 @@ describe('Connection encryption configuration', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     }

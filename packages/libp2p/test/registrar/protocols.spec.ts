@@ -28,7 +28,7 @@ describe('registrar protocols', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {

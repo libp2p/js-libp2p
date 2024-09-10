@@ -35,7 +35,7 @@ async function createNode (): Promise<Libp2p> {
       circuitRelayTransport(),
       webRTC()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       noise()
     ],
     streamMuxers: [

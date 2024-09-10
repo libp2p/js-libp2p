@@ -133,7 +133,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport()],
     streamMuxers: [],
-    connectionEncryption: [noise()]
+    connectionEncrypters: [noise()]
   }
 
   if (options.noListen !== true) {
@@ -153,11 +153,11 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   }
 
   if (options.encryption === 'noise') {
-    opts.connectionEncryption?.push(noise())
+    opts.connectionEncrypters?.push(noise())
   } else if (options.encryption === 'tls') {
-    opts.connectionEncryption?.push(tls())
+    opts.connectionEncrypters?.push(tls())
   } else if (options.encryption === 'plaintext') {
-    opts.connectionEncryption?.push(plaintext())
+    opts.connectionEncrypters?.push(plaintext())
   }
 
   if (options.muxer === 'mplex') {

@@ -19,7 +19,7 @@ describe('peer-id', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })

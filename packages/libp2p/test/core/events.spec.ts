@@ -22,7 +22,7 @@ describe('events', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })
@@ -38,7 +38,7 @@ describe('events', () => {
       transports: [
         webSockets()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ]
     })

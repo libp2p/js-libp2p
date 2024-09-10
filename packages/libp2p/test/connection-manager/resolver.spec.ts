@@ -55,7 +55,7 @@ describe('dialing (resolvable addresses)', () => {
             dnsaddr: resolver
           }
         },
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         connectionGater: mockConnectionGater(),
@@ -82,7 +82,7 @@ describe('dialing (resolvable addresses)', () => {
             dnsaddr: resolver
           }
         },
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {

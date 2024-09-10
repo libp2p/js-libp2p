@@ -37,7 +37,7 @@ export default {
           yamux(),
           mplex()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           noise(),
           plaintext()
         ],

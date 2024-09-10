@@ -35,7 +35,7 @@ describe('circuit-relay discovery', () => {
         yamux(),
         mplex()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext(),
         noise()
       ],
