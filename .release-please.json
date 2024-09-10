@@ -29,6 +29,7 @@
     "packages/peer-id": {},
     "packages/peer-record": {},
     "packages/peer-store": {},
+    "packages/pnet": {},
     "packages/protocol-autonat": {},
     "packages/protocol-dcutr": {},
     "packages/protocol-echo": {},

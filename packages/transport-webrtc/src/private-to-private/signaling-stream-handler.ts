@@ -3,7 +3,7 @@ import { pbStream } from 'it-protobuf-stream'
 import { SDPHandshakeFailedError } from '../error.js'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { readCandidatesUntilConnected } from './util.js'
+import { getConnectionState, readCandidatesUntilConnected } from './util.js'
 import type { Logger } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
@@ -40,6 +40,8 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
         })
     }
 
+    log.trace('recipient read SDP offer')
+
     // read an SDP offer
     const pbOffer = await messageStream.read({
       signal
@@ -49,7 +51,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
     }
 
-    log.trace('recipient receive SDP offer %s', pbOffer.data)
+    log.trace('recipient received SDP offer %s', pbOffer.data)
 
     const offer = new RTCSessionDescription({
       type: 'offer',
@@ -88,7 +90,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       log
     })
   } catch (err: any) {
-    if (peerConnection.connectionState !== 'connected') {
+    if (getConnectionState(peerConnection) !== 'connected') {
       log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
 
       peerConnection.close()

@@ -67,13 +67,13 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
   } catch (err) {
     options.log.error('%s error parsing ICE candidate', options.direction, err)
 
-    if (options.signal?.aborted === true) {
+    if (options.signal?.aborted === true && getConnectionState(pc) !== 'connected') {
       throw err
     }
   }
 }
 
-function getConnectionState (pc: RTCPeerConnection): string {
+export function getConnectionState (pc: RTCPeerConnection): string {
   return isFirefox ? pc.iceConnectionState : pc.connectionState
 }
 
