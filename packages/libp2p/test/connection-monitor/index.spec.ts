@@ -129,6 +129,46 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
+    await delay(500)
+
+    expect(connection.abort).to.have.property('called', true)
+  })
+
+  it('should not abort a connection that fails when abortConnectionOnPingFailure is false', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10,
+      abortConnectionOnPingFailure: false
+    })
+
+    await start(monitor)
+
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
+      throw new ConnectionClosedError('Connection closed')
+    })
+
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(500)
+
+    expect(connection.abort).to.have.property('called', false)
+  })
+
+  it('should abort a connection that fails when abortConnectionOnPingFailure is true', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10,
+      abortConnectionOnPingFailure: true
+    })
+
+    await start(monitor)
+
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
+      throw new ConnectionClosedError('Connection closed')
+    })
+
+    components.connectionManager.getConnections.returns([connection])
+
     await delay(100)
 
     expect(connection.abort).to.have.property('called', true)
