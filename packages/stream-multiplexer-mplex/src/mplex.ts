@@ -1,4 +1,4 @@
-import { TooManyOutboundProtocolStreamsError } from '@libp2p/interface'
+import { TooManyOutboundProtocolStreamsError, MuxerClosedError } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { pipe } from 'it-pipe'
@@ -143,7 +143,7 @@ export class MplexStreamMuxer implements StreamMuxer {
    */
   newStream (name?: string): Stream {
     if (this.closeController.signal.aborted) {
-      throw new Error('Muxer already closed')
+      throw new MuxerClosedError('Muxer already closed')
     }
     const id = this._streamId++
     name = name == null ? id.toString() : name.toString()

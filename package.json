@@ -51,5 +51,8 @@
     "doc",
     "interop",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "protons-runtime": "^5.5.0"
+  }
 }
