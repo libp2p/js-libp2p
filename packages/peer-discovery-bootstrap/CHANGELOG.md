@@ -83,6 +83,29 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.0](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.1.5...bootstrap-v11.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* the autodialer has been removed as well as the corresponding config keys
+
+### Bug Fixes
+
+* remove autodialer ([#2639](https://github.com/libp2p/js-libp2p/issues/2639)) ([ab90179](https://github.com/libp2p/js-libp2p/commit/ab901790810d8ce59724af1706c9a9e74341b8ee))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^2.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^6.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+
 ## [10.1.5](https://github.com/libp2p/js-libp2p/compare/bootstrap-v10.1.4...bootstrap-v10.1.5) (2024-08-15)
 
 

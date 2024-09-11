@@ -19,6 +19,26 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [6.0.0](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.17...multistream-select-v6.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+
 ## [5.1.17](https://github.com/libp2p/js-libp2p/compare/multistream-select-v5.1.16...multistream-select-v5.1.17) (2024-08-15)
 
 
