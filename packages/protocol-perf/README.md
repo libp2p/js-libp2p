@@ -31,7 +31,6 @@ The PerfService implements the [perf protocol](https://github.com/libp2p/specs/b
 ```typescript
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { plaintext } from '@libp2p/plaintext'
@@ -55,7 +54,7 @@ async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
       noise(), plaintext()
     ],
     streamMuxers: [
-      yamux(), mplex()
+      yamux()
     ],
     services: {
       perf: perf()

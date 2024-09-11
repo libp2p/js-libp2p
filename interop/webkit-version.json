@@ -6,7 +6,7 @@
         "noise"
     ],
     "muxers": [
-        "mplex",
-        "yamux"
+        "yamux",
+        "mplex"
     ]
 }

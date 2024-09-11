@@ -89,7 +89,6 @@ If you want to know more about libp2p transports, you should read the following 
 
 Some available stream multiplexers are:
 
-- [@libp2p/mplex](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex)
 - [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
@@ -100,7 +99,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 - https://docs.libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
-- https://github.com/libp2p/specs/tree/master/mplex
+- https://github.com/libp2p/specs/tree/master/yamux
 
 #### Muxer Selection
 
@@ -239,7 +238,7 @@ It's important to note that some services depend on others in order to function 
 // Creating a libp2p node with:
 //   listen on tcp ports 9001 and 9002 on all interfaces
 //   transport: websockets + tcp
-//   stream-muxing: mplex
+//   stream-muxing: yamux
 //   crypto-channel: noise
 //   discovery: multicast-dns
 //   dht: kad-dht
@@ -248,7 +247,6 @@ It's important to note that some services depend on others in order to function 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
-import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 import { kadDHT } from '@libp2p/kad-dht'
@@ -266,7 +264,7 @@ const node = await createLibp2p({
     tcp(),
     webSockets()
   ],
-  streamMuxers: [yamux(), mplex()],
+  streamMuxers: [yamux()],
   connectionEncrypters: [noise()],
   peerDiscovery: [MulticastDNS],
   services: {
@@ -281,7 +279,6 @@ const node = await createLibp2p({
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
@@ -289,7 +286,7 @@ import { bootstrap } from '@libp2p/bootstrap'
 
 const node = await createLibp2p({
   transports: [tcp()],
-  streamMuxers: [yamux(), mplex()],
+  streamMuxers: [yamux()],
   connectionEncrypters: [noise()],
   peerDiscovery: [
     mdns({
@@ -321,7 +318,6 @@ Potential methods for discovering peers include:
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { gossipsub } from 'libp2p-gossipsub'
@@ -333,8 +329,7 @@ const node = await createLibp2p({
       tcp()
     ],
     streamMuxers: [
-      yamux(),
-      mplex()
+      yamux()
     ],
     connectionEncrypters: [
       noise()
@@ -360,7 +355,6 @@ The kadDHT service requires the Identify service to discover other peers that su
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { kadDHT } from '@libp2p/kad-dht'
 import { identify } from '@libp2p/identify'
@@ -370,8 +364,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -391,7 +384,6 @@ const node = await createLibp2p({
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
@@ -418,8 +410,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -447,7 +438,6 @@ Thus, it is recommended to include the Identify service in your services configu
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
@@ -463,8 +453,7 @@ const node = await createLibp2p({
     })
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -505,7 +494,6 @@ In this configuration the libp2p node will search the network for one relay with
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
@@ -518,8 +506,7 @@ const node = await createLibp2p({
     })
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -534,7 +521,6 @@ In this configuration the libp2p node is a circuit relay client which connects t
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
@@ -549,8 +535,7 @@ const node = await createLibp2p({
     ]
   },
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -572,7 +557,6 @@ The keychain will store keys encrypted in the datastore which default is an in m
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { FsDatastore } from 'datastore-fs';
@@ -586,8 +570,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -610,7 +593,6 @@ See the [API docs](https://libp2p.github.io/js-libp2p/interfaces/index._internal
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
@@ -619,8 +601,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -759,7 +740,6 @@ The Transport Manager is responsible for managing the libp2p transports life cyc
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { FaultTolerance } from '@libp2p/interface-transport'
@@ -769,8 +749,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -798,7 +777,6 @@ The below configuration example shows how the metrics should be configured. Asid
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 
@@ -807,8 +785,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
@@ -843,7 +820,6 @@ The below configuration example shows how the PeerStore should be configured. As
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { mplex } from '@libp2p/mplex'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
 import { LevelDatastore } from 'datastore-level'
@@ -857,8 +833,7 @@ const node = await createLibp2p({
     tcp()
   ],
   streamMuxers: [
-    yamux(),
-    mplex()
+    yamux()
   ],
   connectionEncrypters: [
     noise()
