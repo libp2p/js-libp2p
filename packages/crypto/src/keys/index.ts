@@ -85,7 +85,7 @@ export function publicKeyFromProtobuf (buf: Uint8Array): PublicKey {
 export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
   if (buf.byteLength === 32) {
     return unmarshalEd25519PublicKey(buf)
-  } else if (buf.byteLength === 34) {
+  } else if (buf.byteLength === 33) {
     return unmarshalSecp256k1PublicKey(buf)
   } else {
     return pkixToRSAPublicKey(buf)
