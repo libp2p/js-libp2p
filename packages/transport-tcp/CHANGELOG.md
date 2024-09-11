@@ -89,6 +89,35 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.0](https://github.com/libp2p/js-libp2p/compare/tcp-v9.1.6...tcp-v10.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* instead of `CodeError`, use `TimeoutError`, `UnexpectedPeerError`, etc
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* remove CodeError class ([#2688](https://github.com/libp2p/js-libp2p/issues/2688)) ([81ebe4e](https://github.com/libp2p/js-libp2p/commit/81ebe4e47e82508a847bb3af0af36cc249b78765))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/utils bumped from ^5.4.9 to ^6.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^6.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+
 ## [9.1.6](https://github.com/libp2p/js-libp2p/compare/tcp-v9.1.5...tcp-v9.1.6) (2024-09-05)
 
 

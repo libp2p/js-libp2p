@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.2.5...devtools-metrics-v1.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+
+### Bug Fixes
+
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/interface-internal bumped from ^1.3.4 to ^2.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+    * @libp2p/simple-metrics bumped from ^1.1.5 to ^1.1.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+
 ## [0.2.5](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v0.2.4...devtools-metrics-v0.2.5) (2024-08-15)
 
 

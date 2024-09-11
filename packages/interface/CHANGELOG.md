@@ -5,6 +5,34 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.7.0...interface-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* instead of `CodeError`, use `TimeoutError`, `UnexpectedPeerError`, etc
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* remove CodeError class ([#2688](https://github.com/libp2p/js-libp2p/issues/2688)) ([81ebe4e](https://github.com/libp2p/js-libp2p/commit/81ebe4e47e82508a847bb3af0af36cc249b78765))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+
 ## [1.7.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.3...interface-v1.7.0) (2024-08-15)
 
 

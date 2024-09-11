@@ -81,6 +81,30 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.0.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.5...prometheus-metrics-v4.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+
+### Bug Fixes
+
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^6.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.4...prometheus-metrics-v3.1.5) (2024-08-15)
 
 

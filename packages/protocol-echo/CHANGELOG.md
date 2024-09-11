@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.5...echo-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/interface-internal bumped from ^1.3.4 to ^2.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+
 ## [1.1.5](https://github.com/libp2p/js-libp2p/compare/echo-v1.1.4...echo-v1.1.5) (2024-08-15)
 
 

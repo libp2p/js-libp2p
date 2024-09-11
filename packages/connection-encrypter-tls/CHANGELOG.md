@@ -6,6 +6,41 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/tls-v1.1.5...tls-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `connectionEncryption` option has been renamed `connectionEncrypters`
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename connectionEncryption option to connectionEncrypters ([#2691](https://github.com/libp2p/js-libp2p/issues/2691)) ([6d72709](https://github.com/libp2p/js-libp2p/commit/6d72709ba5959388777610e2f71b8ba9522139b6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^6.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+
 ## [1.1.5](https://github.com/libp2p/js-libp2p/compare/tls-v1.1.4...tls-v1.1.5) (2024-08-15)
 
 

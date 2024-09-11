@@ -60,6 +60,33 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [8.0.0](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.25...peer-record-v8.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+    * @libp2p/utils bumped from ^5.4.9 to ^6.0.0
+
 ## [7.0.25](https://github.com/libp2p/js-libp2p/compare/peer-record-v7.0.24...peer-record-v7.0.25) (2024-08-15)
 
 

@@ -75,6 +75,45 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.0.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.12...interface-compliance-tests-v6.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/interface-internal bumped from ^1.3.4 to ^2.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+    * @libp2p/multistream-select bumped from ^5.1.17 to ^6.0.0
+    * @libp2p/peer-collections bumped from ^5.2.9 to ^6.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+    * @libp2p/utils bumped from ^5.4.9 to ^6.0.0
+
 ## [5.4.12](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v5.4.11...interface-compliance-tests-v5.4.12) (2024-08-15)
 
 

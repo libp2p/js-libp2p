@@ -32,6 +32,25 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.3.4...interface-internal-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+
+### Bug Fixes
+
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/peer-collections bumped from ^5.2.9 to ^6.0.0
+
 ## [1.3.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v1.3.3...interface-internal-v1.3.4) (2024-08-15)
 
 
