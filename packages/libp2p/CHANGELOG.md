@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.0.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.0.0...libp2p-v2.0.1) (2024-09-11)
+
+
+### Bug Fixes
+
+* remove patches for gossipsub, noise and the daemon modules ([#2694](https://github.com/libp2p/js-libp2p/issues/2694)) ([7cd9845](https://github.com/libp2p/js-libp2p/commit/7cd984569dbf0046861ec84e8e030ef62725fd14))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v1.9.4...libp2p-v2.0.0) (2024-09-11)
 
 

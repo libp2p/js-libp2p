@@ -96,6 +96,20 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.0...webtransport-v5.0.1) (2024-09-11)
+
+
+### Bug Fixes
+
+* remove patches for gossipsub, noise and the daemon modules ([#2694](https://github.com/libp2p/js-libp2p/issues/2694)) ([7cd9845](https://github.com/libp2p/js-libp2p/commit/7cd984569dbf0046861ec84e8e030ef62725fd14))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.0.0 to ^2.0.1
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p/compare/webtransport-v4.1.9...webtransport-v5.0.0) (2024-09-11)
 
 
