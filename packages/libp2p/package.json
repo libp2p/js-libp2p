@@ -113,7 +113,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-yamux": "^6.0.2",
+    "@chainsafe/libp2p-yamux": "^7.0.0",
     "@libp2p/circuit-relay-v2": "^2.0.0",
     "@libp2p/identify": "^3.0.0",
     "@libp2p/interface-compliance-tests": "^6.0.0",
