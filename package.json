@@ -33,14 +33,11 @@
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
     "docs": "aegir docs",
-    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc",
-    "postinstall": "patch-package && rm -rf node_modules/@chainsafe/libp2p-yamux/node_modules node_modules/@chainsafe/libp2p-noise/node_modules node_modules/@chainsafe/libp2p-gossipsub/node_modules node_modules/@libp2p/daemon-client/node_modules node_modules/@libp2p/daemon-server/node_modules node_modules/@libp2p/daemon-protocol/node_modules node_modules/@libp2p/interop/node_modules"
+    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
   },
   "devDependencies": {
     "aegir": "^44.0.1",
-    "npm-run-all": "^4.1.5",
-    "patch-package": "^8.0.0",
-    "rimraf": "^6.0.1"
+    "npm-run-all": "^4.1.5"
   },
   "eslintConfig": {
     "extends": "ipfs",
