@@ -106,6 +106,9 @@ class Mplex implements StreamMuxerFactory {
   }
 }
 
+/**
+ * @deprecated mplex is deprecated as it has no flow control. Please use yamux instead.
+ */
 export function mplex (init: MplexInit = {}): (components: MplexComponents) => StreamMuxerFactory {
   return (components) => new Mplex(components, init)
 }
