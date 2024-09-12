@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/mdns",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns#readme",
@@ -50,19 +50,19 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.0.0",
-    "@libp2p/interface-internal": "^2.0.0",
-    "@libp2p/peer-id": "^5.0.0",
-    "@libp2p/utils": "^6.0.0",
+    "@libp2p/interface": "^2.0.1",
+    "@libp2p/interface-internal": "^2.0.1",
+    "@libp2p/peer-id": "^5.0.1",
+    "@libp2p/utils": "^6.0.1",
     "@multiformats/multiaddr": "^12.2.3",
     "@types/multicast-dns": "^7.2.4",
     "dns-packet": "^5.6.1",
     "multicast-dns": "^7.2.5"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.0.0",
-    "@libp2p/interface-compliance-tests": "^6.0.0",
-    "@libp2p/logger": "^5.0.0",
+    "@libp2p/crypto": "^5.0.1",
+    "@libp2p/interface-compliance-tests": "^6.0.1",
+    "@libp2p/logger": "^5.0.1",
     "aegir": "^44.0.1",
     "p-wait-for": "^5.0.2",
     "sinon-ts": "^2.0.0"

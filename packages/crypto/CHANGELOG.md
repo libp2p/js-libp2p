@@ -17,6 +17,21 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.0...crypto-v5.0.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* add public/private key type disambiguators ([#2698](https://github.com/libp2p/js-libp2p/issues/2698)) ([18dd3cb](https://github.com/libp2p/js-libp2p/commit/18dd3cb2649412126b995c90e976ed06220c8590))
+* correct secp256k1 key length detection in publicKeyFromRaw ([#2697](https://github.com/libp2p/js-libp2p/issues/2697)) ([1210884](https://github.com/libp2p/js-libp2p/commit/1210884edfe724389bb99aaf67042626093ee60b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.0 to ^2.0.1
+
 ## [5.0.0](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.9...crypto-v5.0.0) (2024-09-11)
 
 
