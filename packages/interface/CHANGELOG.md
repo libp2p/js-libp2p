@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.0...interface-v2.0.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* add public/private key type disambiguators ([#2698](https://github.com/libp2p/js-libp2p/issues/2698)) ([18dd3cb](https://github.com/libp2p/js-libp2p/commit/18dd3cb2649412126b995c90e976ed06220c8590))
+
 ## [2.0.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.7.0...interface-v2.0.0) (2024-09-11)
 
 

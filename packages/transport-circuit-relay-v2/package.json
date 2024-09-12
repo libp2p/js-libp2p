@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/circuit-relay-v2",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Implementation of Circuit Relay v2",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-circuit-relay-v2#readme",
@@ -52,12 +52,12 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.0.0",
-    "@libp2p/interface-internal": "^2.0.0",
-    "@libp2p/peer-collections": "^6.0.0",
-    "@libp2p/peer-id": "^5.0.0",
-    "@libp2p/peer-record": "^8.0.0",
-    "@libp2p/utils": "^6.0.0",
+    "@libp2p/interface": "^2.0.1",
+    "@libp2p/interface-internal": "^2.0.1",
+    "@libp2p/peer-collections": "^6.0.1",
+    "@libp2p/peer-id": "^5.0.1",
+    "@libp2p/peer-record": "^8.0.1",
+    "@libp2p/utils": "^6.0.1",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.2.3",
     "any-signal": "^4.1.1",
@@ -72,7 +72,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^6.0.0",
+    "@libp2p/interface-compliance-tests": "^6.0.1",
     "aegir": "^44.0.1",
     "delay": "^6.0.0",
     "it-drain": "^3.0.7",
