@@ -57,6 +57,23 @@ export interface Secp256k1PublicKey extends PublicKeyBase<'secp256k1', 0x0> {}
 export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey
 
 /**
+ * Returns true if the passed argument has type overlap with the `PublicKey`
+ * interface. Can be used to disambiguate object types.
+ */
+export function isPublicKey (key?: any): key is PublicKey {
+  if (key == null) {
+    return false
+  }
+
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1') &&
+    key.raw instanceof Uint8Array &&
+    typeof key.equals === 'function' &&
+    typeof key.toMultihash === 'function' &&
+    typeof key.toCID === 'function' &&
+    typeof key.verify === 'function'
+}
+
+/**
  * Generic private key interface
  */
 interface PrivateKeyBase<KeyType extends string, PublicKeyType extends PublicKeyBase<KeyType>> {
@@ -92,3 +109,19 @@ export interface RSAPrivateKey extends PrivateKeyBase<'RSA', RSAPublicKey> {}
 export interface Ed25519PrivateKey extends PrivateKeyBase<'Ed25519', Ed25519PublicKey> {}
 export interface Secp256k1PrivateKey extends PrivateKeyBase<'secp256k1', Secp256k1PublicKey> {}
 export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey
+
+/**
+ * Returns true if the passed argument has type overlap with the `PrivateKey`
+ * interface. Can be used to disambiguate object types.
+ */
+export function isPrivateKey (key?: any): key is PrivateKey {
+  if (key == null) {
+    return false
+  }
+
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1') &&
+    isPublicKey(key.publicKey) &&
+    key.raw instanceof Uint8Array &&
+    typeof key.equals === 'function' &&
+    typeof key.sign === 'function'
+}
