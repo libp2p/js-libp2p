@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
 import { MAX_RSA_KEY_SIZE, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
@@ -101,11 +101,18 @@ describe('RSA', function () {
     expect(privateKey.raw).to.equalBytes(pkcs1)
   })
 
-  it('imports from raw', async () => {
+  it('imports private key from raw', async () => {
     const key = await generateKeyPair('RSA', 512)
     const imported = privateKeyFromRaw(key.raw)
 
     expect(key.equals(imported)).to.be.true()
+  })
+
+  it('imports public key from raw', async () => {
+    const key = await generateKeyPair('RSA', 512)
+    const imported = publicKeyFromRaw(key.publicKey.raw)
+
+    expect(key.publicKey.equals(imported)).to.be.true()
   })
 
   describe('key equals', () => {
