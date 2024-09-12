@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
 import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
 import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
 import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
@@ -69,11 +69,18 @@ describe('secp256k1 keys', () => {
     expect(key.publicKey.toString()).to.equal('16Uiu2HAm5vpzEwJ41kQmnwDu9moFusdc16wV1oCUd1AHLgFgPpKY')
   })
 
-  it('imports from raw', async () => {
+  it('imports private key from raw', async () => {
     const key = await generateKeyPair('secp256k1')
     const imported = privateKeyFromRaw(key.raw)
 
     expect(key.equals(imported)).to.be.true()
+  })
+
+  it('imports public key from raw', async () => {
+    const key = await generateKeyPair('secp256k1')
+    const imported = publicKeyFromRaw(key.publicKey.raw)
+
+    expect(key.publicKey.equals(imported)).to.be.true()
   })
 
   describe('key equals', () => {
