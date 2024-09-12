@@ -1,4 +1,5 @@
 /* eslint-env mocha */
+import { isPrivateKey, isPublicKey } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -154,6 +155,20 @@ describe('ed25519', function () {
     const imported = publicKeyFromRaw(key.publicKey.raw)
 
     expect(key.publicKey.equals(imported)).to.be.true()
+  })
+
+  it('is PrivateKey', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    expect(isPrivateKey(key)).to.be.true()
+    expect(isPublicKey(key)).to.be.false()
+  })
+
+  it('is PublicKey', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    expect(isPrivateKey(key.publicKey)).to.be.false()
+    expect(isPublicKey(key.publicKey)).to.be.true()
   })
 
   describe('go interop', () => {
