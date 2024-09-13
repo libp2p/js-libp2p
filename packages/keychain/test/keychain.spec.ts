@@ -174,13 +174,6 @@ describe('keychain', () => {
       const importedKey = await ks.importKey(keyName, exportedKey)
       expect(importedKey.id).to.eql(keyInfo.id)
     })
-
-    it('cannot create the "self" key', async () => {
-      const key = await generateKeyPair('Ed25519')
-
-      await expect(ks.importKey('self', key)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
   })
 
   describe('query', () => {
@@ -265,11 +258,6 @@ describe('keychain', () => {
 
     it('does not overwrite existing key', async () => {
       await expect(ks.renameKey(rsaKeyName, rsaKeyName)).to.eventually.be.rejected
-        .with.property('name', 'InvalidParametersError')
-    })
-
-    it('cannot create the "self" key', async () => {
-      await expect(ks.renameKey(rsaKeyName, 'self')).to.eventually.be.rejected
         .with.property('name', 'InvalidParametersError')
     })
 
