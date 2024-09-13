@@ -47,6 +47,13 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.0.2](https://github.com/libp2p/js-libp2p/compare/keychain-v5.0.1...keychain-v5.0.2) (2024-09-13)
+
+
+### Bug Fixes
+
+* allow importing the self key ([#2700](https://github.com/libp2p/js-libp2p/issues/2700)) ([34455b5](https://github.com/libp2p/js-libp2p/commit/34455b5f2848b4a7656699751e3cbe372641c13a))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/keychain-v5.0.0...keychain-v5.0.1) (2024-09-12)
 
 
