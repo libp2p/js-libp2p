@@ -196,7 +196,7 @@ export class Keychain implements KeychainInterface {
   }
 
   async importKey (name: string, key: PrivateKey): Promise<KeyInfo> {
-    if (!validateKeyName(name) || name === 'self') {
+    if (!validateKeyName(name)) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
