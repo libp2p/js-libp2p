@@ -216,7 +216,6 @@ class DefaultSummaryGroup implements SummaryGroup {
   }
 }
 
-
 class MockMetrics implements Metrics {
   public metrics = new Map<string, any>()
 
