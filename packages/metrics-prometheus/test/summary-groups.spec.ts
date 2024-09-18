@@ -82,7 +82,7 @@ describe('summary groups', () => {
 
     metric.reset()
 
-    await expect(client.register.metrics()).to.eventually.not.include(metricKey, 'still included metric key')
+    await expect(client.register.metrics()).to.eventually.include(`${metricName}_sum{${metricLabel}="${metricKey}"} 0`, 'did not include updated metric')
   })
 
   it('should allow use of the same summary group from multiple reporters', async () => {
