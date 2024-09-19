@@ -32,7 +32,7 @@
  * ```
  */
 
-import { serviceDependencies } from '@libp2p/interface'
+import { pubSubSymbol, serviceDependencies } from '@libp2p/interface'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
@@ -77,6 +77,8 @@ export class FloodSub extends PubSubBaseProtocol {
       validityMs: init?.seenTTL ?? 30000
     })
   }
+
+  readonly [pubSubSymbol] = true
 
   readonly [Symbol.toStringTag] = '@libp2p/floodsub'
 

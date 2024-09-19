@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { type Message, type PubSubRPC, StrictNoSign } from '@libp2p/interface'
+import { type Message, type PubSubRPC, StrictNoSign, isPubSub } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -45,6 +45,10 @@ describe('floodsub', () => {
   afterEach(async () => {
     sinon.restore()
     await floodsub.stop()
+  })
+
+  it('is a PubSub implementation', () => {
+    expect(isPubSub(floodsub)).to.be.true()
   })
 
   it('checks cache when processing incoming message', async function () {

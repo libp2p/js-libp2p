@@ -269,18 +269,15 @@ export interface PeerStreamEvents {
   'close': CustomEvent<never>
 }
 
-export function isPubSub (obj?: any): obj is PubSub {
-  if (obj == null) {
-    return false
-  }
+/**
+ * All Pubsub implementations must use this symbol as the name of a property
+ * with a boolean `true` value
+ */
+export const pubSubSymbol = Symbol.for('@libp2p/pubsub')
 
-  return obj.globalSignaturePolicy != null &&
-    Array.isArray(obj.multicodecs) &&
-    obj.topicValidators != null &&
-    typeof obj.getPeers === 'function' &&
-    typeof obj.getTopics === 'function' &&
-    typeof obj.subscribe === 'function' &&
-    typeof obj.unsubscribe === 'function' &&
-    typeof obj.getSubscribers === 'function' &&
-    typeof obj.publish === 'function'
+/**
+ * Returns true if the passed argument is a PubSub implementation
+ */
+export function isPubSub (obj?: any): obj is PubSub {
+  return Boolean(obj?.[pubSubSymbol])
 }
