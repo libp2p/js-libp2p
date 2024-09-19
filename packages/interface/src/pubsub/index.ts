@@ -268,3 +268,19 @@ export interface PeerStreamEvents {
   'stream:outbound': CustomEvent<never>
   'close': CustomEvent<never>
 }
+
+export function isPubSub (obj?: any): obj is PubSub {
+  if (obj == null) {
+    return false
+  }
+
+  return obj.globalSignaturePolicy != null &&
+    Array.isArray(obj.multicodecs) &&
+    obj.topicValidators != null &&
+    typeof obj.getPeers === 'function' &&
+    typeof obj.getTopics === 'function' &&
+    typeof obj.subscribe === 'function' &&
+    typeof obj.unsubscribe === 'function' &&
+    typeof obj.getSubscribers === 'function' &&
+    typeof obj.publish === 'function'
+}
