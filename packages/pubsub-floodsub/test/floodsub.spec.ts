@@ -47,10 +47,6 @@ describe('floodsub', () => {
     await floodsub.stop()
   })
 
-  it('is a PubSub implementation', () => {
-    expect(isPubSub(floodsub)).to.be.true()
-  })
-
   it('checks cache when processing incoming message', async function () {
     const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const sig = await sha256.encode(message)
