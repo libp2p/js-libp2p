@@ -2,7 +2,7 @@ import { cidCodec } from './codecs/cid.js'
 import { customProgressEventCodec } from './codecs/custom-progress-event.js'
 import { multiaddrCodec } from './codecs/multiaddr.js'
 import { peerIdCodec } from './codecs/peer-id.js'
-import type { ContentRouting, PeerId, PeerRouting, AbortOptions } from '@libp2p/interface'
+import type { ContentRouting, PeerId, PeerRouting, AbortOptions, PubSubRPCMessage, SubscriptionChangeData } from '@libp2p/interface'
 import type { OpenConnectionOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ValueCodec } from 'it-rpc'
@@ -13,21 +13,6 @@ export const valueCodecs: Array<ValueCodec<any>> = [
   peerIdCodec,
   customProgressEventCodec
 ]
-
-export interface NodeAddress {
-  multiaddr: Multiaddr
-  listen?: boolean
-  announce?: boolean
-  observed?: boolean
-  default?: boolean
-}
-
-export interface NodeStatus {
-  peerId: PeerId
-  agent?: string
-  addresses: NodeAddress[]
-  protocols: string[]
-}
 
 export interface PeerAddress {
   multiaddr: Multiaddr
@@ -69,7 +54,7 @@ export interface MetricsRPC {
   /**
    * Called by DevTools on initial connect
    */
-  init(options?: AbortOptions): Promise<{ self: Peer, peers: Peer[], debug: string }>
+  init(options?: AbortOptions): Promise<{ self: Peer, peers: Peer[], debug: string, capabilities: Record<string, string[]> }>
 
   /**
    * Update the currently active debugging namespaces
@@ -95,6 +80,36 @@ export interface MetricsRPC {
    * Make peer routing queries
    */
   peerRouting: PeerRouting
+
+  /**
+   * PubSub operations
+   */
+  pubsub: {
+    /**
+     * Subscribe to a PubSub topic
+     */
+    subscribe(component: string, topic: string): Promise<void>
+
+    /**
+     * Unsubscribe from a PubSub topic
+     */
+    unsubscribe(component: string, topic: string): Promise<void>
+
+    /**
+     * Get the list of subscriptions for the current node
+     */
+    getTopics (component: string): Promise<string[]>
+
+    /**
+     * Get the list of peers we know about who subscribe to the topic
+     */
+    getSubscribers (component: string, topic: string): Promise<PeerId[]>
+
+    /**
+     * Publish a message to a given topic
+     */
+    publish (component: string, topic: string, message: Uint8Array): Promise<void>
+  }
 }
 
 export interface DevToolsEvents {
@@ -112,6 +127,16 @@ export interface DevToolsEvents {
    * The node's connected peers have changed
    */
   'peers': CustomEvent<Peer[]>
+
+  /**
+   * A pubsub message was received
+   */
+  'pubsub:message': CustomEvent<PubSubRPCMessage>
+
+  /**
+   * The subscriptions of a peer have changed
+   */
+  'pubsub:subscription-change': CustomEvent<SubscriptionChangeData>
 }
 
 /**
