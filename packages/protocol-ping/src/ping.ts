@@ -73,7 +73,9 @@ export class PingService implements Startable, PingServiceInterface {
         const buf = await bytes.read(PING_LENGTH, {
           signal
         })
-        await bytes.write(buf)
+        await bytes.write(buf, {
+          signal
+        })
       }
     })
       .catch(err => {
