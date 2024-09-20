@@ -1,5 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
-import { AbortError, InvalidMessageError, ProtocolError, TimeoutError } from '@libp2p/interface'
+import { AbortError, ProtocolError, TimeoutError } from '@libp2p/interface'
+import { byteStream } from 'it-byte-stream'
 import first from 'it-first'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -60,37 +61,27 @@ export class PingService implements Startable, PingServiceInterface {
 
     const { stream } = data
     const start = Date.now()
+    const bytes = byteStream(stream)
 
-    const signal = AbortSignal.timeout(this.timeout)
-    signal.addEventListener('abort', () => {
-      stream?.abort(new TimeoutError('ping timeout'))
+    Promise.resolve().then(async () => {
+      while (true) {
+        const signal = AbortSignal.timeout(this.timeout)
+        signal.addEventListener('abort', () => {
+          stream?.abort(new TimeoutError('ping timeout'))
+        })
+
+        const buf = await bytes.read(PING_LENGTH, {
+          signal
+        })
+        await bytes.write(buf)
+      }
     })
-
-    void pipe(
-      stream,
-      async function * (source) {
-        let received = 0
-
-        for await (const buf of source) {
-          received += buf.byteLength
-
-          if (received > PING_LENGTH) {
-            stream?.abort(new InvalidMessageError('Too much data received'))
-            return
-          }
-
-          yield buf
-        }
-      },
-      stream
-    )
       .catch(err => {
         this.log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
         stream?.abort(err)
       })
       .finally(() => {
         const ms = Date.now() - start
-
         this.log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }

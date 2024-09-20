@@ -43,7 +43,9 @@ describe('ping', () => {
       logger: defaultLogger()
     }
 
-    ping = new PingService(components)
+    ping = new PingService(components, {
+      timeout: 50
+    })
 
     await start(ping)
   })
@@ -105,7 +107,7 @@ describe('ping', () => {
       connection: stubInterface<Connection>()
     })
 
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const input = new Uint8Array(32)
 
     const b = byteStream(outgoingStream)
     void b.write(input)
@@ -115,7 +117,7 @@ describe('ping', () => {
     expect(output).to.equalBytes(input)
   })
 
-  it('should abort stream if too much ping data received', async () => {
+  it('should abort stream if sending stalls', async () => {
     const deferred = pDefer<Error>()
 
     const duplex = duplexPair<any>()
@@ -135,14 +137,16 @@ describe('ping', () => {
       connection: stubInterface<Connection>()
     })
 
-    const input = new Uint8Array(100)
     const b = byteStream(outgoingStream)
 
-    void b.read(100)
-    void b.write(input)
+    // send a ping message plus a few extra bytes
+    void b.write(new Uint8Array(35))
 
+    const pong = await b.read()
+    expect(pong).to.have.lengthOf(32)
+
+    // never send the remaining 29 bytes (e.g. 64 - 35)
     const err = await deferred.promise
-
-    expect(err).to.have.property('name', 'InvalidMessageError')
+    expect(err).to.have.property('name', 'TimeoutError')
   })
 })
