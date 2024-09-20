@@ -55,8 +55,6 @@
     "@libp2p/interface-internal": "^2.0.1",
     "@multiformats/multiaddr": "^12.2.3",
     "it-byte-stream": "^1.1.0",
-    "it-first": "^3.0.6",
-    "it-pipe": "^3.0.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
