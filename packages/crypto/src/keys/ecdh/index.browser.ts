@@ -63,8 +63,6 @@ export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> 
     const buffer = await webcrypto.get().subtle.deriveBits(
       {
         name: 'ECDH',
-        // @ts-expect-error namedCurve is missing from the types
-        namedCurve: curve,
         public: key
       },
       privateKey,
