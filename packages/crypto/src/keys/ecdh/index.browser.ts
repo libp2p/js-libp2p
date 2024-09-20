@@ -7,13 +7,13 @@ import webcrypto from '../../webcrypto/index.js'
 import type { Curve } from './index.js'
 import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from '../interface.js'
 
-const bits = {
-  'P-256': 256,
-  'P-384': 384,
-  'P-521': 521
+const curveLengths = {
+  'P-256': 32,
+  'P-384': 48,
+  'P-521': 66
 }
 
-const curveTypes = Object.keys(bits)
+const curveTypes = Object.keys(curveLengths)
 const names = curveTypes.join(' / ')
 
 export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> {
@@ -68,7 +68,7 @@ export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> 
         public: key
       },
       privateKey,
-      bits[curve]
+      curveLengths[curve] * 8
     )
 
     return new Uint8Array(buffer, 0, buffer.byteLength)
@@ -82,12 +82,6 @@ export async function generateEphemeralKeyPair (curve: Curve): Promise<ECDHKey> 
   }
 
   return ecdhKey
-}
-
-const curveLengths = {
-  'P-256': 32,
-  'P-384': 48,
-  'P-521': 66
 }
 
 // Marshal converts a jwk encoded ECDH public key into the
