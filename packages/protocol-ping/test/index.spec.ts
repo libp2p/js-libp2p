@@ -107,14 +107,17 @@ describe('ping', () => {
       connection: stubInterface<Connection>()
     })
 
-    const input = new Uint8Array(32)
-
     const b = byteStream(outgoingStream)
+
+    const input = new Uint8Array(32).fill(1)
     void b.write(input)
-
     const output = await b.read()
-
     expect(output).to.equalBytes(input)
+
+    const input2 = new Uint8Array(32).fill(2)
+    void b.write(input2)
+    const output2 = await b.read()
+    expect(output2).to.equalBytes(input2)
   })
 
   it('should abort stream if sending stalls', async () => {
