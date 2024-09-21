@@ -19,7 +19,8 @@ import type { AbortOptions, Connection, ConnectionGater, Libp2p, PeerId, PeerRou
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
-  maxConnections: 10,
+  maxInboundConnections: 10,
+  maxOutboundConnections: 10,
   inboundUpgradeTimeout: 10000
 }
 
@@ -84,7 +85,8 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max
+          maxInboundConnections: max,
+          maxOutboundConnections: max
         }
       }),
       started: false
@@ -142,7 +144,8 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max
+          maxInboundConnections: max,
+          maxOutboundConnections: max
         }
       }),
       started: false
@@ -206,7 +209,8 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max,
+          maxInboundConnections: max,
+          maxOutboundConnections: max,
           allow: [
             '/ip4/83.13.55.32'
           ]
@@ -290,7 +294,7 @@ describe('Connection Manager', () => {
     libp2p = await createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: max
+          maxInboundConnections: max
         }
       }),
       started: false
@@ -322,11 +326,11 @@ describe('Connection Manager', () => {
     await expect(createNode({
       config: createBaseOptions({
         connectionManager: {
-          maxConnections: -1
+          maxInboundConnections: -1
         }
       }),
       started: false
-    })).to.eventually.rejected('maxConnections must be greater')
+    })).to.eventually.rejected('maxInboundConnections and maxOutboundConnections must be greater than 0')
   })
 
   it('should reconnect to important peers on startup', async () => {
@@ -384,29 +388,48 @@ describe('Connection Manager', () => {
       .to.eventually.be.false()
   })
 
-  it('should deny connections when maxConnections is exceeded', async () => {
+  it('should deny connections when maxOutboundConnections is exceeded', async () => {
     connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
-      maxConnections: 1
+      maxOutboundConnections: 1
     })
     await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
-    // max out the connection limit
     await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.false()
+  })
+
+  it('should deny connections when maxInboundConnections is exceeded', async () => {
+    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+      ...defaultOptions,
+      maxInboundConnections: 1
+    })
+    await connectionManager.start()
+
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+
     // an inbound connection is opened
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const maConn = mockMultiaddrConnection({
+    const maConn1 = mockMultiaddrConnection({
       source: (async function * () {
         yield * []
       })(),
       sink: async () => {}
-    }, remotePeer)
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
+    const maConn2 = mockMultiaddrConnection({
+      source: (async function * () {
+        yield * []
+      })(),
+      sink: async () => {}
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
+    await expect(connectionManager.acceptIncomingConnection(maConn1))
+      .to.eventually.be.true()
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.eventually.be.false()
   })
 
@@ -443,7 +466,7 @@ describe('Connection Manager', () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
-      maxConnections: 1,
+      maxInboundConnections: 1,
       allow: [
         '/ip4/83.13.55.32'
       ]
@@ -452,21 +475,27 @@ describe('Connection Manager', () => {
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
 
-    // max out the connection limit
-    await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
-    expect(connectionManager.getConnections()).to.have.lengthOf(1)
-
     // an inbound connection is opened from an address in the allow list
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const maConn = mockMultiaddrConnection({
+    const maConn1 = mockMultiaddrConnection({
       remoteAddr,
       source: (async function * () {
         yield * []
       })(),
       sink: async () => {}
-    }, remotePeer)
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
+    const maConn2 = mockMultiaddrConnection({
+      remoteAddr,
+      source: (async function * () {
+        yield * []
+      })(),
+      sink: async () => {}
+    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
+
+    await expect(connectionManager.acceptIncomingConnection(maConn1))
+      .to.eventually.be.true()
+
+    await expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.eventually.be.true()
   })
 

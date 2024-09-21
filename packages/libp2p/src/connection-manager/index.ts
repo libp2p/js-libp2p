@@ -7,7 +7,7 @@ import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
+import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_DIAL_QUEUE_LENGTH, MAX_INBOUND_CONNECTIONS, MAX_INCOMING_PENDING_CONNECTIONS, MAX_OUTBOUND_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
@@ -21,9 +21,26 @@ export interface ConnectionManagerInit {
    * The maximum number of connections libp2p is willing to have before it
    * starts pruning connections to reduce resource usage.
    *
+   * @deprecated Replaced by `maxInboundConnections` and `maxOutboundConnections` instead
    * @default 300/100
    */
-  maxConnections?: number
+  // maxConnections?: number
+
+  /**
+   * The maximum number of inbound connections libp2p is willing to have before it
+   * starts rejection new inbound connections to reduce resource usage.
+   *
+   * @default 300/100
+   */
+  maxInboundConnections?: number
+
+  /**
+   * The maximum number of outbound connections libp2p is willing to have before it
+   * starts rejection new outbound connections to reduce resource usage.
+   *
+   * @default 300/100
+   */
+  maxOutboundConnections?: number
 
   /**
    * Sort the known addresses of a peer before trying to dial, By default public
@@ -76,7 +93,7 @@ export interface ConnectionManagerInit {
   /**
    * A list of multiaddrs that will always be allowed (except if they are in the
    * deny list) to open connections to this node even if we've reached
-   * maxConnections
+   * `maxInboundConnections` maxOutboundConnections`.
    */
   allow?: string[]
 
@@ -136,7 +153,8 @@ export interface ConnectionManagerInit {
 }
 
 const defaultOptions = {
-  maxConnections: MAX_CONNECTIONS,
+  maxInboundConnections: MAX_INBOUND_CONNECTIONS,
+  maxOutboundConnections: MAX_OUTBOUND_CONNECTIONS,
   inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
   maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS
 }
@@ -162,7 +180,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly deny: Multiaddr[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
-  private readonly maxConnections: number
+  private readonly maxInboundConnections: number
+  private readonly maxOutboundConnections: number
 
   public readonly dialQueue: DialQueue
   public readonly reconnectQueue: ReconnectQueue
@@ -174,10 +193,11 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly log: Logger
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
+    this.maxInboundConnections = init.maxInboundConnections ?? defaultOptions.maxInboundConnections
+    this.maxOutboundConnections = init.maxOutboundConnections ?? defaultOptions.maxOutboundConnections
 
-    if (this.maxConnections < 1) {
-      throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
+    if (this.maxInboundConnections < 1 || this.maxOutboundConnections < 1) {
+      throw new InvalidParametersError('Connection Manager maxInboundConnections and maxOutboundConnections must be greater than 0')
     }
 
     /**
@@ -216,7 +236,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       events: components.events,
       logger: components.logger
     }, {
-      maxConnections: this.maxConnections,
+      maxInboundConnections: this.maxInboundConnections,
+      maxOutboundConnections: this.maxOutboundConnections,
       allow: this.allow
     })
 
@@ -559,13 +580,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     }
 
-    if (this.getConnections().length < this.maxConnections) {
+    if (this.getConnections().length < this.maxInboundConnections) {
       this.incomingPendingConnections++
 
       return true
     }
 
-    this.log('connection from %a refused - maxConnections exceeded', maConn.remoteAddr)
+    this.log('connection from %a refused - maxInboundConnections exceeded', maConn.remoteAddr)
     return false
   }
 

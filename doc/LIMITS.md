@@ -35,7 +35,7 @@ const node = await createLibp2p({
     /**
      * The total number of connections allowed to be open at one time
      */
-    maxConnections: 100,
+    maxInboundConnections: 100,
 
     /**
      * How many connections can be open but not yet upgraded
@@ -191,11 +191,12 @@ const node = await createLibp2p({
       outboundSocketInactivityTimeout: 20,
 
       /**
-       * Once this many connections are open on this listener any further connections
-       * will be rejected - this will have no effect if it is larger than the value
-       * configured for the ConnectionManager maxConnections parameter
+       * Once this many inbound connections are open on this listener any further 
+       * connections will be rejected - this will have no effect if it is larger
+       * than the value configured for the ConnectionManager maxInboundConnections
+       * parameter
        */
-      maxConnections: 50,
+      maxInboundConnections: 50,
     }),
   ],
 });
@@ -254,7 +255,7 @@ Important details for ascertaining this are:
 As a result, the max amount of memory buffered by libp2p is approximately:
 
 ```
-connectionManager.maxConnections *
+(connectionManager.maxInboundConnections + connectionManager.maxOutboundConnections) *
   (muxer.maxUnprocessedMessageQueueSize
    + (muxer.maxInboundStreams * muxer.maxStreamBufferSize)
    + (muxer.maxOutboundStreams * muxer.maxStreamBufferSize)

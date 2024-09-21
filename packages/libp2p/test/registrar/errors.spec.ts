@@ -32,7 +32,7 @@ describe('registrar errors', () => {
     })
     components.peerStore = new PersistentPeerStore(components)
     components.connectionManager = new DefaultConnectionManager(components, {
-      maxConnections: 1000,
+      maxInboundConnections: 1000,
       inboundUpgradeTimeout: 1000
     })
     registrar = new DefaultRegistrar(components)

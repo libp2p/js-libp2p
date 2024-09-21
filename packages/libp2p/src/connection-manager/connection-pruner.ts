@@ -1,12 +1,13 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
-import { MAX_CONNECTIONS } from './constants.js'
+import { MAX_INBOUND_CONNECTIONS, MAX_OUTBOUND_CONNECTIONS } from './constants.js'
 import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 interface ConnectionPrunerInit {
-  maxConnections?: number
+  maxInboundConnections?: number
+  maxOutboundConnections?: number
   allow?: Multiaddr[]
 }
 
@@ -18,7 +19,8 @@ interface ConnectionPrunerComponents {
 }
 
 const defaultOptions = {
-  maxConnections: MAX_CONNECTIONS,
+  maxInboundConnections: MAX_INBOUND_CONNECTIONS,
+  maxOutboundConnections: MAX_OUTBOUND_CONNECTIONS,
   allow: []
 }
 
@@ -26,7 +28,8 @@ const defaultOptions = {
  * If we go over the max connections limit, choose some connections to close
  */
 export class ConnectionPruner {
-  private readonly maxConnections: number
+  private readonly maxInboundConnections: number
+  private readonly maxOutboundConnections: number
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly allow: Multiaddr[]
@@ -34,7 +37,8 @@ export class ConnectionPruner {
   private readonly log: Logger
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
+    this.maxInboundConnections = init.maxInboundConnections ?? defaultOptions.maxInboundConnections
+    this.maxOutboundConnections = init.maxOutboundConnections ?? defaultOptions.maxOutboundConnections
     this.allow = init.allow ?? defaultOptions.allow
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
@@ -56,16 +60,41 @@ export class ConnectionPruner {
    */
   async maybePruneConnections (): Promise<void> {
     const connections = this.connectionManager.getConnections()
-    const numConnections = connections.length
+    const inboundConnections = connections.filter(c => c.direction === 'inbound')
+    const outboundConnections = connections.filter(c => c.direction === 'outbound')
 
-    this.log('checking max connections limit %d/%d', numConnections, this.maxConnections)
+    this.log('checking max inbound connections limit %d/%d', inboundConnections.length, this.maxInboundConnections)
+    this.log('checking max outbound connections limit %d/%d', outboundConnections.length, this.maxOutboundConnections)
 
-    if (numConnections <= this.maxConnections) {
+    if (inboundConnections.length <= this.maxInboundConnections && outboundConnections.length <= this.maxOutboundConnections) {
       return
     }
 
-    const peerValues = new PeerMap<number>()
+    const inboundPeerMap = await this.getPeerMap(inboundConnections)
+    const outboundPeerMap = await this.getPeerMap(outboundConnections)
 
+    const sortedInboundConnections = this.sortConnections(inboundConnections, inboundPeerMap)
+    const sortedOutboundConnections = this.sortConnections(outboundConnections, outboundPeerMap)
+
+    const inboundToClose = this.connectionsToClose(sortedInboundConnections, Math.max(inboundConnections.length - this.maxInboundConnections, 0))
+    const outboundToClose = this.connectionsToClose(sortedOutboundConnections, Math.max(outboundConnections.length - this.maxOutboundConnections, 0))
+
+    // close connections
+    await Promise.all(
+      [...inboundToClose, ...outboundToClose].map(async connection => {
+        await safelyCloseConnectionIfUnused(connection, {
+          signal: AbortSignal.timeout(1000)
+        })
+      })
+    )
+
+    // despatch prune event
+    this.events.safeDispatchEvent('connection:prune', { detail: [...inboundToClose, ...outboundToClose] })
+    this.events.safeDispatchEvent('connection:prune', { detail: outboundToClose })
+  }
+
+  async getPeerMap (connections: Connection[]): Promise<PeerMap<number>> {
+    const peerValues = new PeerMap<number>()
     // work out peer values
     for (const connection of connections) {
       const remotePeer = connection.remotePeer
@@ -79,7 +108,7 @@ export class ConnectionPruner {
       try {
         const peer = await this.peerStore.get(remotePeer)
 
-        // sum all tag values
+        // sum all tag values for the peer to determine its importance
         peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
           return acc + curr.value
         }, 0))
@@ -90,14 +119,13 @@ export class ConnectionPruner {
       }
     }
 
-    const sortedConnections = this.sortConnections(connections, peerValues)
+    return peerValues
+  }
 
-    // close some connections
-    const toPrune = Math.max(numConnections - this.maxConnections, 0)
-    const toClose = []
-
-    for (const connection of sortedConnections) {
-      this.log('too many connections open - closing a connection to %p', connection.remotePeer)
+  connectionsToClose (connections: Connection[], pruneCount: number): Connection[] {
+    const toClose: Connection[] = []
+    for (const connection of connections) {
+      this.log('too many inbound connections open - closing a connection to %p', connection.remotePeer)
       // check allow list
       const connectionInAllowList = this.allow.some((ma) => {
         return connection.remoteAddr.toString().startsWith(ma.toString())
@@ -108,25 +136,15 @@ export class ConnectionPruner {
         toClose.push(connection)
       }
 
-      if (toClose.length === toPrune) {
+      if (toClose.length === pruneCount) {
         break
       }
     }
 
-    // close connections
-    await Promise.all(
-      toClose.map(async connection => {
-        await safelyCloseConnectionIfUnused(connection, {
-          signal: AbortSignal.timeout(1000)
-        })
-      })
-    )
-
-    // despatch prune event
-    this.events.safeDispatchEvent('connection:prune', { detail: toClose })
+    return toClose
   }
 
-  sortConnections (connections: Connection[], peerValues: PeerMap<number>): Connection[] {
+  sortConnections (connections: Connection[], peerMap: PeerMap<number>): Connection[] {
     return connections
       // sort by connection age, newest to oldest
       .sort((a, b) => {
@@ -138,18 +156,6 @@ export class ConnectionPruner {
         }
 
         if (connectionALifespan > connectionBLifespan) {
-          return -1
-        }
-
-        return 0
-      })
-      // sort by direction, incoming first then outgoing
-      .sort((a, b) => {
-        if (a.direction === 'outbound' && b.direction === 'inbound') {
-          return 1
-        }
-
-        if (a.direction === 'inbound' && b.direction === 'outbound') {
           return -1
         }
 
@@ -169,8 +175,8 @@ export class ConnectionPruner {
       })
       // sort by tag value, lowest to highest
       .sort((a, b) => {
-        const peerAValue = peerValues.get(a.remotePeer) ?? 0
-        const peerBValue = peerValues.get(b.remotePeer) ?? 0
+        const peerAValue = peerMap.get(a.remotePeer) ?? 0
+        const peerBValue = peerMap.get(b.remotePeer) ?? 0
 
         if (peerAValue > peerBValue) {
           return 1

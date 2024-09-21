@@ -55,7 +55,7 @@ describe('Connection Manager', () => {
       events: new TypedEventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
-      maxConnections: 1000,
+      maxInboundConnections: 1000,
       inboundUpgradeTimeout: 1000
     })
 
@@ -92,7 +92,7 @@ describe('Connection Manager', () => {
       events: new TypedEventEmitter()
     })
     const connectionManager = new DefaultConnectionManager(components, {
-      maxConnections: 1000,
+      maxInboundConnections: 1000,
       inboundUpgradeTimeout: 1000
     })
 

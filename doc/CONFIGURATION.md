@@ -607,7 +607,8 @@ const node = await createLibp2p({
     noise()
   ],
   connectionManager: {
-    maxConnections: Infinity
+    maxInboundConnections: Infinity,
+    maxOutboundConnections: Infinity
   }
 })
 ```
