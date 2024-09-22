@@ -1,7 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
-import { AbortError, InvalidMessageError, ProtocolError, TimeoutError } from '@libp2p/interface'
-import first from 'it-first'
-import { pipe } from 'it-pipe'
+import { ProtocolError, TimeoutError } from '@libp2p/interface'
+import { byteStream } from 'it-byte-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
@@ -60,37 +59,29 @@ export class PingService implements Startable, PingServiceInterface {
 
     const { stream } = data
     const start = Date.now()
+    const bytes = byteStream(stream)
 
-    const signal = AbortSignal.timeout(this.timeout)
-    signal.addEventListener('abort', () => {
-      stream?.abort(new TimeoutError('ping timeout'))
+    Promise.resolve().then(async () => {
+      while (true) {
+        const signal = AbortSignal.timeout(this.timeout)
+        signal.addEventListener('abort', () => {
+          stream?.abort(new TimeoutError('ping timeout'))
+        })
+
+        const buf = await bytes.read(PING_LENGTH, {
+          signal
+        })
+        await bytes.write(buf, {
+          signal
+        })
+      }
     })
-
-    void pipe(
-      stream,
-      async function * (source) {
-        let received = 0
-
-        for await (const buf of source) {
-          received += buf.byteLength
-
-          if (received > PING_LENGTH) {
-            stream?.abort(new InvalidMessageError('Too much data received'))
-            return
-          }
-
-          yield buf
-        }
-      },
-      stream
-    )
       .catch(err => {
         this.log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
         stream?.abort(err)
       })
       .finally(() => {
         const ms = Date.now() - start
-
         this.log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
       })
   }
@@ -105,7 +96,6 @@ export class PingService implements Startable, PingServiceInterface {
     const data = randomBytes(PING_LENGTH)
     const connection = await this.components.connectionManager.openConnection(peer, options)
     let stream: Stream | undefined
-    let onAbort = (): void => {}
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout)
@@ -122,24 +112,14 @@ export class PingService implements Startable, PingServiceInterface {
         runOnLimitedConnection: this.runOnLimitedConnection
       })
 
-      onAbort = () => {
-        stream?.abort(new AbortError())
-      }
+      const bytes = byteStream(stream)
 
-      // make stream abortable
-      options.signal?.addEventListener('abort', onAbort, { once: true })
-
-      const result = await pipe(
-        [data],
-        stream,
-        async (source) => first(source)
-      )
+      const [, result] = await Promise.all([
+        bytes.write(data, options),
+        bytes.read(PING_LENGTH, options)
+      ])
 
       const ms = Date.now() - start
-
-      if (result == null) {
-        throw new ProtocolError(`Did not receive a ping ack after ${ms}ms`)
-      }
 
       if (!uint8ArrayEquals(data, result.subarray())) {
         throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
@@ -155,9 +135,8 @@ export class PingService implements Startable, PingServiceInterface {
 
       throw err
     } finally {
-      options.signal?.removeEventListener('abort', onAbort)
       if (stream != null) {
-        await stream.close()
+        await stream.close(options)
       }
     }
   }

@@ -54,15 +54,13 @@
     "@libp2p/interface": "^2.0.1",
     "@libp2p/interface-internal": "^2.0.1",
     "@multiformats/multiaddr": "^12.2.3",
-    "it-first": "^3.0.6",
-    "it-pipe": "^3.0.1",
+    "it-byte-stream": "^1.1.0",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.0.1",
     "@libp2p/peer-id": "^5.0.1",
     "aegir": "^44.0.1",
-    "it-byte-stream": "^1.0.10",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "sinon-ts": "^2.0.0"
