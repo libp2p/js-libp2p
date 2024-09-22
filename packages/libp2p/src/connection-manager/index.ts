@@ -278,6 +278,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
+    // track total number of pending inbound connections
+    this.metrics?.registerMetric('libp2p_connection_manager_pending_inbound_connections', {
+      calculate: () => {
+        return this.incomingPendingConnections
+      }
+    })
+
     // track total number of streams per protocol
     this.metrics?.registerMetricGroup('libp2p_protocol_streams_total', {
       label: 'protocol',
