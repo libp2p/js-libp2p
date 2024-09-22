@@ -1,4 +1,4 @@
-import { InvalidParametersError, NotStartedError, start, stop } from '@libp2p/interface'
+import { DialError, InvalidParametersError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
@@ -24,7 +24,7 @@ export interface ConnectionManagerInit {
    * @deprecated Replaced by `maxInboundConnections` and `maxOutboundConnections` instead
    * @default 300/100
    */
-  // maxConnections?: number
+  maxConnections?: number
 
   /**
    * The maximum number of inbound connections libp2p is willing to have before it
@@ -496,6 +496,11 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
         return existingConnection
       }
+    }
+
+    const outboundConnections = this.getConnections().filter(conn => conn.direction === 'outbound')
+    if(outboundConnections.length >= this.maxOutboundConnections) {
+      throw new DialError(`Max outbound connections reached: ${this.maxOutboundConnections}`)
     }
 
     const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {

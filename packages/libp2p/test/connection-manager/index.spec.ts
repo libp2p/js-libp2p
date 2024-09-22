@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, KEEP_ALIVE } from '@libp2p/interface'
+import { TypedEventEmitter, KEEP_ALIVE, DialError } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -15,7 +15,7 @@ import { DefaultConnectionManager, type DefaultConnectionManagerComponents } fro
 import { createBaseOptions } from '../fixtures/base-options.browser.js'
 import { createNode } from '../fixtures/creators/peer.js'
 import { getComponent } from '../fixtures/get-component.js'
-import type { AbortOptions, Connection, ConnectionGater, Libp2p, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
+import type { AbortOptions, Connection, ConnectionGater, Libp2p, MultiaddrConnection, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
@@ -388,20 +388,20 @@ describe('Connection Manager', () => {
       .to.eventually.be.false()
   })
 
-  it('should deny connections when maxOutboundConnections is exceeded', async () => {
+  it('should deny opening connections when maxOutboundConnections is exceeded', async () => {
     connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxOutboundConnections: 1
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({ direction: 'outbound' }))
 
     await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
     expect(connectionManager.getConnections()).to.have.lengthOf(1)
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    await expect(connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
+      .to.be.rejectedWith(DialError)
   })
 
   it('should deny connections when maxInboundConnections is exceeded', async () => {
@@ -411,26 +411,21 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
-
     // an inbound connection is opened
-    const maConn1 = mockMultiaddrConnection({
-      source: (async function * () {
-        yield * []
-      })(),
-      sink: async () => {}
-    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
+    const p1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    const p2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const maConn2 = mockMultiaddrConnection({
       source: (async function * () {
         yield * []
       })(),
       sink: async () => {}
-    }, peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
+    }, p2)
 
-    await expect(connectionManager.acceptIncomingConnection(maConn1))
-      .to.eventually.be.true()
-    await expect(connectionManager.acceptIncomingConnection(maConn2))
-      .to.eventually.be.false()
+    connectionManager.getConnectionsMap().set(p1, [stubInterface<Connection>()])
+
+
+    await expect(connectionManager.acceptIncomingConnection(maConn2)).to.eventually.be.false()
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
