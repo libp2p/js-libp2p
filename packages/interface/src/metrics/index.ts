@@ -142,6 +142,146 @@ export interface CounterGroup<T extends string = any> {
   reset(): void
 }
 
+export interface HistogramOptions extends MetricOptions {
+  /**
+   * Buckets for the histogram
+   */
+  buckets?: number[]
+}
+
+/**
+ * Create tracked metrics that are expensive to calculate by passing
+ * a function that is only invoked when metrics are being scraped
+ */
+export interface CalculatedHistogramOptions<T = number> extends HistogramOptions {
+  /**
+   * An optional function invoked to calculate the component metric instead of
+   * using `.observe`
+   */
+  calculate: CalculateMetric<T>
+}
+
+export interface Histogram {
+  /**
+   * Observe the passed value
+   */
+  observe(value: number): void
+
+  /**
+   * Reset this histogram to its default value
+   */
+  reset(): void
+
+  /**
+   * Start a timed metric, call the returned function to
+   * stop the timer
+   */
+  timer(): StopTimer
+}
+
+export interface HistogramGroup<T extends string = any> {
+  /**
+   * Observe the passed value for the named key in the group
+   */
+  observe(values: Partial<Record<T, number>>): void
+
+  /**
+   * Reset the passed key in this histogram group to its default value
+   * or all keys if no key is passed
+   */
+  reset(): void
+
+  /**
+   * Start a timed metric for the named key in the group, call
+   * the returned function to stop the timer
+   */
+  timer(key: string): StopTimer
+}
+
+export interface SummaryOptions extends MetricOptions {
+  /**
+   * Percentiles for the summary
+   */
+  percentiles?: number[]
+
+  /**
+   * Configure how old a bucket can be before it is reset for sliding window
+   */
+  maxAgeSeconds?: number
+
+  /**
+   * Configure how many buckets in the sliding window
+   */
+  ageBuckets?: number
+
+  /**
+   * Remove entries without any new values in the last `maxAgeSeconds`
+   */
+  pruneAgedBuckets?: boolean
+
+  /**
+   * Control compression of data in t-digest
+   */
+  compressCount?: number
+}
+
+/**
+ * Create tracked metrics that are expensive to calculate by passing
+ * a function that is only invoked when metrics are being scraped
+ */
+export interface CalculatedSummaryOptions<T = number> extends SummaryOptions {
+  /**
+   * An optional function invoked to calculate the component metric instead of
+   * using `.observe`
+   */
+  calculate: CalculateMetric<T>
+}
+
+/**
+ * A tracked summary loosely based on the Summary interface exposed
+ * by the prom-client module
+ */
+export interface Summary {
+  /**
+   * Observe the passed value
+   */
+  observe(value: number): void
+
+  /**
+   * Reset this summary to its default value
+   */
+  reset(): void
+
+  /**
+   * Start a timed metric, call the returned function to
+   * stop the timer
+   */
+  timer(): StopTimer
+}
+
+/**
+ * A group of tracked summaries loosely based on the Summary interface
+ * exposed by the prom-client module
+ */
+export interface SummaryGroup<T extends string = any> {
+  /**
+   * Observe the passed value for the named key in the group
+   */
+  observe(values: Partial<Record<T, number>>): void
+
+  /**
+   * Reset the passed key in this summary group to its default value
+   * or all keys if no key is passed
+   */
+  reset(): void
+
+  /**
+   * Start a timed metric for the named key in the group, call
+   * the returned function to stop the timer
+   */
+  timer(key: string): StopTimer
+}
+
 /**
  * The libp2p metrics tracking object. This interface is only concerned
  * with the collection of metrics, please see the individual implementations
@@ -322,4 +462,30 @@ export interface Metrics {
    * method on the returned counter group object
    */
   registerCounterGroup: ((name: string, options?: MetricOptions) => CounterGroup) & ((name: string, options: CalculatedMetricOptions<Record<string, number>>) => void)
+
+  /**
+   * Register an arbitrary histogram. Call this to set help/labels for histograms
+   * and observe them by calling methods on the returned histogram object
+   */
+  registerHistogram: ((name: string, options?: HistogramOptions) => Histogram) & ((name: string, options: CalculatedHistogramOptions) => void)
+
+  /**
+   * Register a a group of related histograms. Call this to set help/labels for
+   * groups of related histograms that will be updated with by calling the `.observe`
+   * method on the returned histogram group object
+   */
+  registerHistogramGroup: ((name: string, options?: HistogramOptions) => HistogramGroup) & ((name: string, options: CalculatedHistogramOptions<Record<string, number>>) => void)
+
+  /**
+   * Register an arbitrary summary. Call this to set help/labels for summaries
+   * and observe them by calling methods on the returned summary object
+   */
+  registerSummary: ((name: string, options?: SummaryOptions) => Summary) & ((name: string, options: CalculatedSummaryOptions) => void)
+
+  /**
+   * Register a a group of related summaries. Call this to set help/labels for
+   * groups of related summaries that will be updated with by calling the `.observe`
+   * method on the returned summary group object
+   */
+  registerSummaryGroup: ((name: string, options?: SummaryOptions) => SummaryGroup) & ((name: string, options: CalculatedSummaryOptions<Record<string, number>>) => void)
 }

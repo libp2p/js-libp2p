@@ -223,6 +223,22 @@ class DevToolsMetrics implements Metrics, Startable {
     return this.simpleMetrics.registerCounterGroup(name, options)
   }
 
+  registerHistogram (name: any, options: any): any {
+    return this.simpleMetrics.registerHistogram(name, options)
+  }
+
+  registerHistogramGroup (name: any, options: any): any {
+    return this.simpleMetrics.registerHistogramGroup(name, options)
+  }
+
+  registerSummary (name: any, options: any): any {
+    return this.simpleMetrics.registerSummary(name, options)
+  }
+
+  registerSummaryGroup (name: any, options: any): any {
+    return this.simpleMetrics.registerSummaryGroup(name, options)
+  }
+
   async start (): Promise<void> {
     // send peer updates
     this.components.events.addEventListener('peer:connect', this.onPeersUpdate)

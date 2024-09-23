@@ -138,10 +138,12 @@
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.4.0",
     "sinon": "^18.0.0",
+    "tdigest": "^0.1.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
+    "@types/tdigest": "^0.1.4",
     "protons": "^7.5.0"
   }
 }
