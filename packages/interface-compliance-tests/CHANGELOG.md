@@ -75,6 +75,28 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.1.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.0.1...interface-compliance-tests-v6.1.0) (2024-09-23)
+
+
+### Features
+
+* add histogram and summary metric types ([#2705](https://github.com/libp2p/js-libp2p/issues/2705)) ([21fe841](https://github.com/libp2p/js-libp2p/commit/21fe841f2584e0166253d78fc390401d7cee5601))
+* add isPubSub method to detect PubSub implementations ([#2707](https://github.com/libp2p/js-libp2p/issues/2707)) ([6ccbb06](https://github.com/libp2p/js-libp2p/commit/6ccbb06f0e76dcd1ba20d31e2518f3a1acb0efbc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+    * @libp2p/interface-internal bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/multistream-select bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/peer-collections bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/utils bumped from ^6.0.1 to ^6.0.2
+
 ## [6.0.1](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.0.0...interface-compliance-tests-v6.0.1) (2024-09-12)
 
 

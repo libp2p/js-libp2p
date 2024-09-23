@@ -98,6 +98,27 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.0](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.0.1...floodsub-v10.1.0) (2024-09-23)
+
+
+### Features
+
+* add isPubSub method to detect PubSub implementations ([#2707](https://github.com/libp2p/js-libp2p/issues/2707)) ([6ccbb06](https://github.com/libp2p/js-libp2p/commit/6ccbb06f0e76dcd1ba20d31e2518f3a1acb0efbc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+    * @libp2p/pubsub bumped from ^10.0.1 to ^10.0.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/interface-compliance-tests bumped from ^6.0.1 to ^6.1.0
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-collections bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+
 ## [10.0.1](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.0.0...floodsub-v10.0.1) (2024-09-12)
 
 
