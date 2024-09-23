@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.1...interface-v2.1.0) (2024-09-23)
+
+
+### Features
+
+* add histogram and summary metric types ([#2705](https://github.com/libp2p/js-libp2p/issues/2705)) ([21fe841](https://github.com/libp2p/js-libp2p/commit/21fe841f2584e0166253d78fc390401d7cee5601))
+* add isPubSub method to detect PubSub implementations ([#2707](https://github.com/libp2p/js-libp2p/issues/2707)) ([6ccbb06](https://github.com/libp2p/js-libp2p/commit/6ccbb06f0e76dcd1ba20d31e2518f3a1acb0efbc))
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.0...interface-v2.0.1) (2024-09-12)
 
 

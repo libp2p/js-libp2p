@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.0.1...devtools-metrics-v1.1.0) (2024-09-23)
+
+
+### Features
+
+* add capability detection to metrics-devtools ([#2708](https://github.com/libp2p/js-libp2p/issues/2708)) ([4fd7eb2](https://github.com/libp2p/js-libp2p/commit/4fd7eb2e14c2ac30150060adb2c8aca4c5e295f3))
+* add histogram and summary metric types ([#2705](https://github.com/libp2p/js-libp2p/issues/2705)) ([21fe841](https://github.com/libp2p/js-libp2p/commit/21fe841f2584e0166253d78fc390401d7cee5601))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+    * @libp2p/interface-internal bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/simple-metrics bumped from ^1.1.7 to ^1.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.0.0...devtools-metrics-v1.0.1) (2024-09-12)
 
 

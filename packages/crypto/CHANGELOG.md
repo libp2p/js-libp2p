@@ -17,6 +17,20 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.2](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.1...crypto-v5.0.2) (2024-09-23)
+
+
+### Bug Fixes
+
+* update P-521 bit length in Web Crypto ([#2710](https://github.com/libp2p/js-libp2p/issues/2710)) ([67587a2](https://github.com/libp2p/js-libp2p/commit/67587a273d7a65a14b513821ec7b129bf17504cc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.0...crypto-v5.0.1) (2024-09-12)
 
 

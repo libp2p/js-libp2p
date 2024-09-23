@@ -50,6 +50,25 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.2](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.1...ping-v2.0.2) (2024-09-23)
+
+
+### Bug Fixes
+
+* allow multiple ping messages ([#2711](https://github.com/libp2p/js-libp2p/issues/2711)) ([c628c44](https://github.com/libp2p/js-libp2p/commit/c628c44c588ad7102ce9522594ac888e751f35ba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+    * @libp2p/interface-internal bumped from ^2.0.1 to ^2.0.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+
 ## [2.0.1](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.0...ping-v2.0.1) (2024-09-12)
 
 
