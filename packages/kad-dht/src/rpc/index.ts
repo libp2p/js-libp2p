@@ -11,7 +11,7 @@ import type { PeerInfoMapper, Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing'
 import type { Providers } from '../providers'
 import type { RoutingTable } from '../routing-table'
-import type { Logger, PeerId } from '@libp2p/interface'
+import type { CounterGroup, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
 export interface DHTMessageHandler {
@@ -28,16 +28,18 @@ export interface RPCInit {
 }
 
 export interface RPCComponents extends GetValueHandlerComponents, PutValueHandlerComponents, FindNodeHandlerComponents, GetProvidersHandlerComponents {
-
+  metrics?: Metrics
 }
 
 export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
+  private readonly metrics?: CounterGroup
 
   constructor (components: RPCComponents, init: RPCInit) {
     const { providers, peerRouting, validators, logPrefix, peerInfoMapper } = init
+    this.metrics = components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_requests`)
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc`)
     this.routingTable = init.routingTable
@@ -69,7 +71,19 @@ export class RPC {
       return
     }
 
-    return handler.handle(peerId, msg)
+    try {
+      const value = await handler.handle(peerId, msg)
+
+      this.metrics?.increment({
+        [`${msg.type}_SUCCESS`]: true
+      })
+
+      return value
+    } catch {
+      this.metrics?.increment({
+        [`${msg.type}_ERROR`]: true
+      })
+    }
   }
 
   /**
