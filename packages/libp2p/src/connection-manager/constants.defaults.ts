@@ -4,9 +4,14 @@
 export const DIAL_TIMEOUT = 5e3
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundUpgradeTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#upgradeTimeout
  */
-export const INBOUND_UPGRADE_TIMEOUT = 2e3
+export const UPGRADE_TIMEOUT = 3e3
+
+/**
+ * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#protocolNegotiationTimeout
+ */
+export const PROTOCOL_NEGOTIATION_TIMEOUT = 2e3
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxPeerAddrsToDial

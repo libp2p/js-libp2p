@@ -89,28 +89,14 @@ export class TCP implements Transport<TCPDialEvents> {
       logger: this.components.logger
     })
 
-    const onAbort = (): void => {
-      maConn.close().catch(err => {
-        this.log.error('Error closing maConn after abort', err)
-      })
+    try {
+      this.log('new outbound connection %s', maConn.remoteAddr)
+      return await options.upgrader.upgradeOutbound(maConn, options)
+    } catch (err: any) {
+      this.log.error('error upgrading outbound connection', err)
+      maConn.abort(err)
+      throw err
     }
-    options.signal?.addEventListener('abort', onAbort, { once: true })
-
-    this.log('new outbound connection %s', maConn.remoteAddr)
-    const conn = await options.upgrader.upgradeOutbound(maConn)
-    this.log('outbound connection %s upgraded', maConn.remoteAddr)
-
-    options.signal?.removeEventListener('abort', onAbort)
-
-    if (options.signal?.aborted === true) {
-      conn.close().catch(err => {
-        this.log.error('Error closing conn after abort', err)
-      })
-
-      throw new AbortError()
-    }
-
-    return conn
   }
 
   async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {

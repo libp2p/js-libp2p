@@ -8,20 +8,8 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { ComponentLogger, Logger, LoggerOptions, MultiaddrConnection, Connection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, Connection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-/**
- * Attempts to close the given maConn. If a failure occurs, it will be logged
- */
-async function attemptClose (maConn: MultiaddrConnection, options: LoggerOptions): Promise<void> {
-  try {
-    await maConn.close()
-  } catch (err: any) {
-    options.log.error('an error occurred closing the connection', err)
-    maConn.abort(err)
-  }
-}
 
 export interface CloseServerOnMaxConnectionsOpts {
   /**
@@ -205,69 +193,51 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     this.log('new inbound connection %s', maConn.remoteAddr)
 
-    try {
-      this.context.upgrader.upgradeInbound(maConn)
-        .then((conn) => {
-          this.log('inbound connection upgraded %s', maConn.remoteAddr)
-          this.connections.add(maConn)
+    this.context.upgrader.upgradeInbound(maConn)
+      .then((conn) => {
+        this.log('inbound connection upgraded %s', maConn.remoteAddr)
+        this.connections.add(maConn)
 
-          socket.once('close', () => {
-            this.connections.delete(maConn)
-
-            if (
-              this.context.closeServerOnMaxConnections != null &&
-              this.connections.size < this.context.closeServerOnMaxConnections.listenBelow
-            ) {
-              // The most likely case of error is if the port taken by this
-              // application is bound by another process during the time the
-              // server if closed. In that case there's not much we can do.
-              // resume() will be called again every time a connection is
-              // dropped, which acts as an eventual retry mechanism.
-              // onListenError allows the consumer act on this.
-              this.resume().catch(e => {
-                this.log.error('error attempting to listen server once connection count under limit', e)
-                this.context.closeServerOnMaxConnections?.onListenError?.(e as Error)
-              })
-            }
-          })
-
-          if (this.context.handler != null) {
-            this.context.handler(conn)
-          }
+        socket.once('close', () => {
+          this.connections.delete(maConn)
 
           if (
             this.context.closeServerOnMaxConnections != null &&
-            this.connections.size >= this.context.closeServerOnMaxConnections.closeAbove
+            this.connections.size < this.context.closeServerOnMaxConnections.listenBelow
           ) {
-            this.pause(false).catch(e => {
-              this.log.error('error attempting to close server once connection count over limit', e)
+            // The most likely case of error is if the port taken by this
+            // application is bound by another process during the time the
+            // server if closed. In that case there's not much we can do.
+            // resume() will be called again every time a connection is
+            // dropped, which acts as an eventual retry mechanism.
+            // onListenError allows the consumer act on this.
+            this.resume().catch(e => {
+              this.log.error('error attempting to listen server once connection count under limit', e)
+              this.context.closeServerOnMaxConnections?.onListenError?.(e as Error)
             })
           }
-
-          this.safeDispatchEvent('connection', { detail: conn })
         })
-        .catch(async err => {
-          this.log.error('inbound connection failed', err)
-          this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-          await attemptClose(maConn, {
-            log: this.log
+        if (this.context.handler != null) {
+          this.context.handler(conn)
+        }
+
+        if (
+          this.context.closeServerOnMaxConnections != null &&
+          this.connections.size >= this.context.closeServerOnMaxConnections.closeAbove
+        ) {
+          this.pause(false).catch(e => {
+            this.log.error('error attempting to close server once connection count over limit', e)
           })
-        })
-        .catch(err => {
-          this.log.error('closing inbound connection failed', err)
-        })
-    } catch (err) {
-      this.log.error('inbound connection failed', err)
+        }
 
-      attemptClose(maConn, {
-        log: this.log
+        this.safeDispatchEvent('connection', { detail: conn })
       })
-        .catch(err => {
-          this.log.error('closing inbound connection failed', err)
-          this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
-        })
-    }
+      .catch(async err => {
+        this.log.error('inbound connection upgrade failed', err)
+        this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
+        maConn.abort(err)
+      })
   }
 
   getAddrs (): Multiaddr[] {
