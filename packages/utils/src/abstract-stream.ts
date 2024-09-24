@@ -59,7 +59,9 @@ export interface AbstractStreamInit {
 
   /**
    * How long to wait in ms for stream data to be written to the underlying
-   * connection when closing the writable end of the stream. (default: 500)
+   * connection when closing the writable end of the stream.
+   *
+   * @default 500
    */
   closeTimeout?: number
 

@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import tests from '@libp2p/interface-compliance-tests/pubsub'
-import { FloodSub } from '../src/index.js'
+import { floodsub } from '../src/index.js'
 
 describe('interface compliance', () => {
   tests({
@@ -10,7 +10,7 @@ describe('interface compliance', () => {
         throw new Error('PubSubOptions is required')
       }
 
-      const pubsub = new FloodSub(args.components, args.init)
+      const pubsub = floodsub(args.init)(args.components)
 
       return pubsub
     },

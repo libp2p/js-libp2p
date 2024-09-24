@@ -6,7 +6,7 @@ import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
@@ -47,7 +47,7 @@ describe('Routing Table', () => {
       registrar: stubInterface<Registrar>(),
       events
     })
-    components.peerStore = new PersistentPeerStore({
+    components.peerStore = persistentPeerStore({
       ...components,
       datastore: new MemoryDatastore(),
       events

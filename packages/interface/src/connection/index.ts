@@ -126,7 +126,7 @@ export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
    *
    * This will cause a `RESET` message to be sent to the remote, *unless* the sink has already ended.
    *
-   * The sink will return and the source will throw if an error is passed or return normally if not.
+   * The sink will return and the source will throw.
    */
   abort(err: Error): void
 

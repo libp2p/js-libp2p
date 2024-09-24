@@ -299,6 +299,8 @@ export type Selectors = Record<string, SelectFn>
  */
 export type Validators = Record<string, ValidateFn>
 
+export type { ProvidersInit }
+
 export interface KadDHTInit {
   /**
    * How many peers to store in each kBucket. Once there are more than this

@@ -1,2 +1,4 @@
-/** Noop for browser compatibility */
+/**
+ * Noop for browser compatibility
+ */
 export function setMaxListeners (): void {}

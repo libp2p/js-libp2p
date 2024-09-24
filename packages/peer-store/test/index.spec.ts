@@ -2,7 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PrivateKey } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -10,7 +10,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import { PersistentPeerStore } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.js'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 
@@ -18,7 +19,7 @@ describe('PersistentPeerStore', () => {
   let key: PrivateKey
   let peerId: PeerId
   let otherPeerId: PeerId
-  let peerStore: PersistentPeerStore
+  let peerStore: PeerStore
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
@@ -26,7 +27,7 @@ describe('PersistentPeerStore', () => {
     peerId = peerIdFromPrivateKey(key)
     otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
-    peerStore = new PersistentPeerStore({
+    peerStore = persistentPeerStore({
       peerId,
       events,
       datastore: new MemoryDatastore(),

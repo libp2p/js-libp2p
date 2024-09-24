@@ -113,5 +113,8 @@ export { PeerList, peerList } from './list.js'
 export { PeerFilter, peerFilter } from './filter.js'
 
 export { trackedPeerMap } from './tracked-map.js'
+export type { TrackedPeerMapInit } from './tracked-map.js'
 export { trackedPeerSet } from './tracked-set.js'
+export type { TrackedPeerSetInit } from './tracked-set.js'
 export { trackedPeerList } from './tracked-list.js'
+export type { TrackedPeerListInit } from './tracked-list.js'

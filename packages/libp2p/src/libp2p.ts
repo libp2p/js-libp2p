@@ -3,7 +3,7 @@ import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscovery
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -79,7 +79,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       dns: init.dns
     })
 
-    this.peerStore = this.configureComponent('peerStore', new PersistentPeerStore(components, {
+    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
       addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
       ...init.peerStore
     }))

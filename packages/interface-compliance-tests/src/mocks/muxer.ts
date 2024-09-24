@@ -309,6 +309,6 @@ class MockMuxerFactory implements StreamMuxerFactory {
   }
 }
 
-export function mockMuxer (): MockMuxerFactory {
+export function mockMuxer (): StreamMuxerFactory {
   return new MockMuxerFactory()
 }

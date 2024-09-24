@@ -88,7 +88,9 @@ export interface ConnectionManagerInit {
 
   /**
    * If more than this many connections are opened per second by a single
-   * host, reject subsequent connections. (default: 5)
+   * host, reject subsequent connections.
+   *
+   * @default 5
    */
   inboundConnectionThreshold?: number
 

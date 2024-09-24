@@ -3,7 +3,7 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -37,7 +37,7 @@ describe('rpc - handlers - GetValue', () => {
     targetPeer = await createPeerId()
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
-    peerStore = new PersistentPeerStore({
+    peerStore = persistentPeerStore({
       peerId,
       datastore,
       events: new TypedEventEmitter<Libp2pEvents>(),

@@ -39,7 +39,9 @@ export interface RelayStoreInit {
    * slot on at once. If set to more than one, we may end up listening on
    * more relays than the `maxReservations` value, but on networks with poor
    * connectivity the user may wish to attempt to reserve on multiple relays
-   * simultaneously. (default: 1)
+   * simultaneously.
+   *
+   * @default 1
    */
   reservationConcurrency?: number
 
@@ -49,13 +51,16 @@ export interface RelayStoreInit {
   discoverRelays?: number
 
   /**
-   * Limit the number of potential relays we will dial (default: 100)
+   * Limit the number of potential relays we will dial
+   *
+   * @default 100
    */
   maxReservationQueueLength?: number
 
   /**
    * When creating a reservation it must complete within this number of ms
-   * (default: 5000)
+   *
+   * @default 5000
    */
   reservationCompletionTimeout?: number
 }

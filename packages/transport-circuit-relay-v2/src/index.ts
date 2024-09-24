@@ -44,6 +44,8 @@ import type { TypedEventEmitter } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+export type { Limit }
+
 export interface RelayReservation {
   expire: Date
   addr: Multiaddr
@@ -61,7 +63,12 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 }
 
 export { circuitRelayServer } from './server/index.js'
+export type { CircuitRelayServerInit, CircuitRelayServerComponents } from './server/index.js'
+export type { ReservationStoreInit } from './server/reservation-store.js'
 export { circuitRelayTransport } from './transport/index.js'
+export type { RelayDiscoveryComponents } from './transport/discovery.js'
+export type { RelayStoreInit } from './transport/reservation-store.js'
+export type { CircuitRelayTransportInit, CircuitRelayTransportComponents } from './transport/index.js'
 
 export {
   RELAY_V2_HOP_CODEC,

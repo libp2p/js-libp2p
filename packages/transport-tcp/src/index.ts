@@ -33,6 +33,8 @@ import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, Dia
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
+export type { CloseServerOnMaxConnectionsOpts }
+
 export interface TCPOptions {
   /**
    * An optional number in ms that is used as an inactivity timeout after which the socket will be closed

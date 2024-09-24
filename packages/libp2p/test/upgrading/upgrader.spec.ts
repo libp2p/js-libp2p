@@ -8,7 +8,7 @@ import { TypedEventEmitter } from '@libp2p/interface'
 import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromCID, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -71,7 +71,7 @@ describe('Upgrader', () => {
       connectionProtector: localConnectionProtector,
       events: new TypedEventEmitter()
     })
-    localComponents.peerStore = new PersistentPeerStore(localComponents)
+    localComponents.peerStore = persistentPeerStore(localComponents)
     localComponents.connectionManager = mockConnectionManager(localComponents)
     localMuxerFactory = mplex()(localComponents)
     localYamuxerFactory = yamux()(localComponents)
@@ -99,7 +99,7 @@ describe('Upgrader', () => {
       connectionProtector: remoteConnectionProtector,
       events: new TypedEventEmitter()
     })
-    remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
+    remoteComponents.peerStore = persistentPeerStore(remoteComponents)
     remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
     remoteMuxerFactory = mplex()(remoteComponents)
     remoteYamuxerFactory = yamux()(remoteComponents)

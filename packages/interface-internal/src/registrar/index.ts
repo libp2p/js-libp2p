@@ -18,12 +18,16 @@ export interface StreamHandler {
 
 export interface StreamHandlerOptions {
   /**
-   * How many incoming streams can be open for this protocol at the same time on each connection (default: 32)
+   * How many incoming streams can be open for this protocol at the same time on each connection
+   *
+   * @default 32
    */
   maxInboundStreams?: number
 
   /**
-   * How many outgoing streams can be open for this protocol at the same time on each connection (default: 64)
+   * How many outgoing streams can be open for this protocol at the same time on each connection
+   *
+   * @default 64
    */
   maxOutboundStreams?: number
 

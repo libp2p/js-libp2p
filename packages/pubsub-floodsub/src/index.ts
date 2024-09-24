@@ -56,7 +56,7 @@ export interface FloodSubComponents extends PubSubComponents {
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
-export class FloodSub extends PubSubBaseProtocol {
+class FloodSub extends PubSubBaseProtocol {
   public seenCache: SimpleTimeCache<boolean>
 
   constructor (components: FloodSubComponents, init?: FloodSubInit) {

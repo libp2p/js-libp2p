@@ -10,7 +10,7 @@ import { mockConnection, mockConnectionGater, mockDuplex, mockMultiaddrConnectio
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -65,7 +65,7 @@ describe('dialing (direct, TCP)', () => {
         getAddrs: Sinon.stub().returns([])
       })
     })
-    remoteComponents.peerStore = new PersistentPeerStore(remoteComponents)
+    remoteComponents.peerStore = persistentPeerStore(remoteComponents)
     remoteComponents.addressManager = new DefaultAddressManager(remoteComponents, {
       listen: [
         listenAddr.toString()
@@ -86,7 +86,7 @@ describe('dialing (direct, TCP)', () => {
       transportManager: stubInterface<TransportManager>(),
       connectionGater: mockConnectionGater()
     })
-    localComponents.peerStore = new PersistentPeerStore(localComponents)
+    localComponents.peerStore = persistentPeerStore(localComponents)
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {
       maxConnections: 100,
       inboundUpgradeTimeout: 1000

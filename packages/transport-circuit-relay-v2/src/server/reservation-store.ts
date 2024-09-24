@@ -8,26 +8,39 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
 
 export interface ReservationStoreInit {
-  /*
-   * maximum number of reservations allowed, default: 15
+  /**
+   * maximum number of reservations allowed
+   *
+   * @default 15
    */
   maxReservations?: number
-  /*
-   * interval after which stale reservations are cleared, default: 300s
+
+  /**
+   * interval after which stale reservations are cleared
+   *
+   * @default 300000
    */
   reservationClearInterval?: number
-  /*
-   * apply default relay limits to a new reservation, default: true
+
+  /**
+   * apply default relay limits to a new reservation
+   *
+   * @default true
    */
   applyDefaultLimit?: boolean
+
   /**
-   * reservation ttl, default: 2 hours
+   * reservation ttl
+   *
+   * @default 7200000
    */
   reservationTtl?: number
+
   /**
    * The maximum time a relayed connection can be open for
    */
   defaultDurationLimit?: number
+
   /**
    * The maximum amount of data allowed to be transferred over a relayed connection
    */

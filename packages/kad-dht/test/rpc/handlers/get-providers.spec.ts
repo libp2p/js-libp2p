@@ -3,7 +3,7 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -41,7 +41,7 @@ describe('rpc - handlers - GetProviders', () => {
 
     peerRouting = Sinon.createStubInstance(PeerRouting)
     providers = Sinon.createStubInstance(Providers)
-    peerStore = new PersistentPeerStore({
+    peerStore = persistentPeerStore({
       peerId,
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<Libp2pEvents>(),

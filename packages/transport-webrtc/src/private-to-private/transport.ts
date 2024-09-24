@@ -25,7 +25,8 @@ export interface WebRTCTransportInit {
 
   /**
    * Inbound connections must complete the upgrade within this many ms
-   * (default: 30s)
+   *
+   * @default 30000
    */
   inboundConnectionTimeout?: number
 }

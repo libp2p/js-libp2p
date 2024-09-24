@@ -3,13 +3,13 @@ import type { Metric, Metrics, PeerId } from '@libp2p/interface'
 
 export interface TrackedPeerMapInit {
   name: string
-  metrics: Metrics
+  metrics?: Metrics
 }
 
 class TrackedPeerMap<V> extends PeerMap<V> {
   private readonly metric: Metric
 
-  constructor (init: TrackedPeerMapInit) {
+  constructor (init: Required<TrackedPeerMapInit>) {
     super()
 
     const { name, metrics } = init
@@ -40,18 +40,6 @@ class TrackedPeerMap<V> extends PeerMap<V> {
   }
 }
 
-export interface CreateTrackedPeerMapInit {
-  /**
-   * The metric name to use
-   */
-  name: string
-
-  /**
-   * A metrics implementation
-   */
-  metrics?: Metrics
-}
-
 /**
  * Creates a PeerMap that reports it's size to the libp2p Metrics service
  *
@@ -67,7 +55,7 @@ export interface CreateTrackedPeerMapInit {
  * map.set(peerId, 'value')
  * ```
  */
-export function trackedPeerMap <V> (config: CreateTrackedPeerMapInit): PeerMap<V> {
+export function trackedPeerMap <V> (config: TrackedPeerMapInit): PeerMap<V> {
   const { name, metrics } = config
   let map: PeerMap<V>
 

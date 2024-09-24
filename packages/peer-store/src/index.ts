@@ -33,7 +33,7 @@ export interface PersistentPeerStoreInit {
 /**
  * An implementation of PeerStore that stores data in a Datastore
  */
-export class PersistentPeerStore implements PeerStore {
+class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly peerId: PeerId
@@ -219,4 +219,8 @@ export class PersistentPeerStore implements PeerStore {
       this.events.safeDispatchEvent('peer:update', { detail: result })
     }
   }
+}
+
+export function persistentPeerStore (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}): PeerStore {
+  return new PersistentPeerStore(components, init)
 }
