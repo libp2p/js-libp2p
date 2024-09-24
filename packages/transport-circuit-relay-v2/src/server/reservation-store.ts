@@ -1,11 +1,16 @@
-import { PeerMap } from '@libp2p/peer-collections'
+import { trackedPeerMap } from '@libp2p/peer-collections'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { type Limit, Status } from '../pb/index.js'
 import type { RelayReservation } from '../index.js'
-import type { PeerId, Startable } from '@libp2p/interface'
+import type { Metrics, PeerId, Startable } from '@libp2p/interface'
+import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export type ReservationStatus = Status.OK | Status.PERMISSION_DENIED | Status.RESERVATION_REFUSED
+
+export interface ReservationStoreComponents {
+  metrics?: Metrics
+}
 
 export interface ReservationStoreInit {
   /**
@@ -48,7 +53,7 @@ export interface ReservationStoreInit {
 }
 
 export class ReservationStore implements Startable {
-  public readonly reservations = new PeerMap<RelayReservation>()
+  public readonly reservations: PeerMap<RelayReservation>
   private _started = false
   private interval: any
   private readonly maxReservations: number
@@ -58,13 +63,18 @@ export class ReservationStore implements Startable {
   private readonly defaultDurationLimit: number
   private readonly defaultDataLimit: bigint
 
-  constructor (options: ReservationStoreInit = {}) {
-    this.maxReservations = options.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
-    this.reservationClearInterval = options.reservationClearInterval ?? DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL
-    this.applyDefaultLimit = options.applyDefaultLimit !== false
-    this.reservationTtl = options.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL
-    this.defaultDurationLimit = options.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT
-    this.defaultDataLimit = options.defaultDataLimit ?? DEFAULT_DATA_LIMIT
+  constructor (components: ReservationStoreComponents, init: ReservationStoreInit = {}) {
+    this.maxReservations = init.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
+    this.reservationClearInterval = init.reservationClearInterval ?? DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL
+    this.applyDefaultLimit = init.applyDefaultLimit !== false
+    this.reservationTtl = init.reservationTtl ?? DEFAULT_MAX_RESERVATION_TTL
+    this.defaultDurationLimit = init.defaultDurationLimit ?? DEFAULT_DURATION_LIMIT
+    this.defaultDataLimit = init.defaultDataLimit ?? DEFAULT_DATA_LIMIT
+
+    this.reservations = trackedPeerMap<RelayReservation>({
+      metrics: components.metrics,
+      name: 'libp2p_circuit_relay_server_reservations_total'
+    })
   }
 
   isStarted (): boolean {
