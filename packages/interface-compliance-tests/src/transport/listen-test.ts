@@ -106,8 +106,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(upgradeSpy.callCount).to.equal(2)
     })
 
-    it('should not handle connection if upgradeInbound throws', async () => {
-      sinon.stub(upgrader, 'upgradeInbound').throws()
+    it('should not handle connection if upgradeInbound rejects', async () => {
+      sinon.stub(upgrader, 'upgradeInbound').rejects()
 
       const listen = listener.createListener({
         upgrader

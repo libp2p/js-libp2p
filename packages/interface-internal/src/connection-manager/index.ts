@@ -71,7 +71,7 @@ export interface ConnectionManager {
   acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
 
   /**
-   * Invoked after upgrading a multiaddr connection has finished
+   * Invoked after upgrading an inbound multiaddr connection has finished
    */
   afterUpgradeInbound(): void
 

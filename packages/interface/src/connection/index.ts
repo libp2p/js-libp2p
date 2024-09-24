@@ -354,7 +354,7 @@ export interface ConnectionProtector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    */
-  protect(connection: MultiaddrConnection): Promise<MultiaddrConnection>
+  protect(connection: MultiaddrConnection, options?: AbortOptions): Promise<MultiaddrConnection>
 }
 
 export interface MultiaddrConnectionTimeline {

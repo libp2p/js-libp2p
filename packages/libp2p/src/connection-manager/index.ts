@@ -57,16 +57,33 @@ export interface ConnectionManagerInit {
   /**
    * How long a dial attempt is allowed to take, including DNS resolution
    * of the multiaddr, opening a socket and upgrading it to a Connection.
+   *
+   * @default 5000
    */
   dialTimeout?: number
 
   /**
-   * When a new inbound connection is opened, the upgrade process (e.g. protect,
-   * encrypt, multiplex etc) must complete within this number of ms.
+   * When a new incoming connection is opened, the upgrade process (e.g.
+   * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 30000
+   * @default 3000
    */
   inboundUpgradeTimeout?: number
+
+  /**
+   * When a new outbound connection is opened, the upgrade process (e.g.
+   * protect, encrypt, multiplex etc) must complete within this number of ms.
+   *
+   * @default 3000
+   */
+  outboundUpgradeTimeout?: number
+
+  /**
+   * Protocol negotiation must complete within this number of ms
+   *
+   * @default 2000
+   */
+  protocolNegotiationTimeout?: number
 
   /**
    * Multiaddr resolvers to use when dialling
@@ -164,7 +181,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly deny: Multiaddr[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
-  private outboundPendingConnections: number
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
@@ -203,7 +219,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
     this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
 
-    this.outboundPendingConnections = 0
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
 
@@ -266,8 +281,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         const metric = {
           inbound: 0,
           'inbound pending': this.incomingPendingConnections,
-          outbound: 0,
-          'outbound pending': this.outboundPendingConnections
+          outbound: 0
         }
 
         for (const conns of this.connections.values()) {
@@ -468,54 +482,48 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     options.signal?.throwIfAborted()
 
-    try {
-      this.outboundPendingConnections++
+    const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+    if (peerId != null && options.force !== true) {
+      this.log('dial %p', peerId)
+      const existingConnection = this.getConnections(peerId)
+        .find(conn => conn.limits == null)
 
-      if (peerId != null && options.force !== true) {
-        this.log('dial %p', peerId)
-        const existingConnection = this.getConnections(peerId)
-          .find(conn => conn.limits == null)
+      if (existingConnection != null) {
+        this.log('had an existing non-limited connection to %p', peerId)
 
-        if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p', peerId)
-
-          options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-          return existingConnection
-        }
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        return existingConnection
       }
-
-      const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
-        ...options,
-        priority: options.priority ?? DEFAULT_DIAL_PRIORITY
-      })
-      let peerConnections = this.connections.get(connection.remotePeer)
-
-      if (peerConnections == null) {
-        peerConnections = []
-        this.connections.set(connection.remotePeer, peerConnections)
-      }
-
-      // we get notified of connections via the Upgrader emitting "connection"
-      // events, double check we aren't already tracking this connection before
-      // storing it
-      let trackedConnection = false
-
-      for (const conn of peerConnections) {
-        if (conn.id === connection.id) {
-          trackedConnection = true
-        }
-      }
-
-      if (!trackedConnection) {
-        peerConnections.push(connection)
-      }
-
-      return connection
-    } finally {
-      this.outboundPendingConnections--
     }
+
+    const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
+      ...options,
+      priority: options.priority ?? DEFAULT_DIAL_PRIORITY
+    })
+    let peerConnections = this.connections.get(connection.remotePeer)
+
+    if (peerConnections == null) {
+      peerConnections = []
+      this.connections.set(connection.remotePeer, peerConnections)
+    }
+
+    // we get notified of connections via the Upgrader emitting "connection"
+    // events, double check we aren't already tracking this connection before
+    // storing it
+    let trackedConnection = false
+
+    for (const conn of peerConnections) {
+      if (conn.id === connection.id) {
+        trackedConnection = true
+      }
+    }
+
+    if (!trackedConnection) {
+      peerConnections.push(connection)
+    }
+
+    return connection
   }
 
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {

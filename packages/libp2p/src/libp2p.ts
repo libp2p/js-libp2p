@@ -110,7 +110,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.upgrader = new DefaultUpgrader(this.components, {
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
+      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
+      outboundUpgradeTimeout: init.connectionManager?.outboundUpgradeTimeout
     })
 
     // Setup the transport manager
