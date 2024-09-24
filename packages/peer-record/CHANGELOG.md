@@ -60,6 +60,18 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [8.0.4](https://github.com/libp2p/js-libp2p/compare/peer-record-v8.0.3...peer-record-v8.0.4) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+    * @libp2p/peer-id bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/utils bumped from ^6.0.3 to ^6.0.4
+
 ## [8.0.3](https://github.com/libp2p/js-libp2p/compare/peer-record-v8.0.2...peer-record-v8.0.3) (2024-09-24)
 
 
