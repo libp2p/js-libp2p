@@ -16,7 +16,7 @@ export interface MockNetworkComponents {
   logger: ComponentLogger
 }
 
-class MockNetwork {
+export class MockNetwork {
   private components: MockNetworkComponents[] = []
 
   addNode (components: MockNetworkComponents): void {

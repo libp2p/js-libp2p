@@ -115,7 +115,7 @@ export interface PubSubInit {
   maxOutboundStreams?: number
 }
 
-interface Subscription {
+export interface Subscription {
   topic: string
   subscribe: boolean
 }

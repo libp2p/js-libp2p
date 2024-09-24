@@ -4,7 +4,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, type ConnectionGater, type PeerId } from '@libp2p/interface'
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { stubInterface } from 'sinon-ts'
@@ -30,7 +30,7 @@ describe('registrar errors', () => {
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
     })
-    components.peerStore = new PersistentPeerStore(components)
+    components.peerStore = persistentPeerStore(components)
     components.connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       inboundUpgradeTimeout: 1000

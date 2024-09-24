@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-The PerfService implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
+The Perf service implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
 
 ## Example
 

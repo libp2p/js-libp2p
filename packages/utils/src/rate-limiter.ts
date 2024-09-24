@@ -188,7 +188,7 @@ export class RateLimiter {
   }
 }
 
-class MemoryStorage {
+export class MemoryStorage {
   public readonly storage: Map<string, RateRecord>
 
   constructor () {

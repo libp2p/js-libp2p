@@ -27,7 +27,9 @@ const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT
 export interface CircuitRelayServerInit {
   /**
    * Incoming hop requests must complete within this time in ms otherwise
-   * the stream will be reset (default: 30s)
+   * the stream will be reset
+   *
+   * @default 30000
    */
   hopTimeout?: number
 
@@ -48,7 +50,9 @@ export interface CircuitRelayServerInit {
 
   /**
    * The maximum number of simultaneous STOP outbound streams that can be open at
-   * once. (default: 300)
+   * once.
+   *
+   * @default 300
    */
   maxOutboundStopStreams?: number
 }

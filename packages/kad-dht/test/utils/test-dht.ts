@@ -3,7 +3,7 @@ import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
@@ -44,7 +44,7 @@ export class TestDHT {
       ...components,
       events
     })
-    components.peerStore = new PersistentPeerStore({
+    components.peerStore = persistentPeerStore({
       ...components,
       events
     })

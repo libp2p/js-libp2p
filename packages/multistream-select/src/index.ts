@@ -43,4 +43,5 @@ export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Part
 }
 
 export { select } from './select.js'
+export type { SelectStream } from './select.js'
 export { handle } from './handle.js'

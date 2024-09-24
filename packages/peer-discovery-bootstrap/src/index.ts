@@ -62,7 +62,9 @@ export interface BootstrapInit {
   tagName?: string
 
   /**
-   * The bootstrap peer tag will have this value (default: 50)
+   * The bootstrap peer tag will have this value
+   *
+   * @default 50
    */
   tagValue?: number
 

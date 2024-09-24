@@ -9,12 +9,16 @@ const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 
 export interface CreatePeerOptions <T extends ServiceMap> {
   /**
-   * number of peers (default: 1)
+   * number of peers
+   *
+   * @default 1
    */
   number?: number
 
   /**
-   * nodes should start (default: true)
+   * nodes should start
+   *
+   * @default true
    */
   started?: boolean
 

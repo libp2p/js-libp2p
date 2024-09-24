@@ -5,7 +5,7 @@ import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interfac
 import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -41,7 +41,7 @@ describe('Transport Manager (TCP)', () => {
       upgrader: mockUpgrader({ events })
     })
     components.addressManager = new DefaultAddressManager(components, { listen: addrs.map(addr => addr.toString()) })
-    components.peerStore = new PersistentPeerStore(components)
+    components.peerStore = persistentPeerStore(components)
 
     tm = new DefaultTransportManager(components, {
       faultTolerance: FaultTolerance.NO_FATAL

@@ -4,6 +4,9 @@ import { raceEvent } from 'race-event'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 
+export type { Job, JobTimeline } from './job.js'
+export type { JobRecipient } from './recipient.js'
+
 export interface Comparator<T> {
   (a: T, b: T): -1 | 0 | 1
 }

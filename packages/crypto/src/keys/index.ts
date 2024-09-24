@@ -1,9 +1,7 @@
 /**
  * @packageDocumentation
  *
- * **Supported Key Types**
- *
- * The {@link generateKeyPair}, {@link marshalPublicKey}, and {@link marshalPrivateKey} functions accept a string `type` argument.
+ * ## Supported Key Types
  *
  * Currently the `'RSA'`, `'ed25519'`, and `secp256k1` types are supported, although ed25519 and secp256k1 keys support only signing and verification of messages.
  *
@@ -19,6 +17,8 @@ import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey
 import type { MultihashDigest } from 'multiformats'
 
 export { generateEphemeralKeyPair } from './ecdh/index.js'
+export type { Curve } from './ecdh/index.js'
+export type { ECDHKey, EnhancedKey, EnhancedKeyPair, ECDHKeyPair } from './interface.js'
 export { keyStretcher } from './key-stretcher.js'
 
 /**

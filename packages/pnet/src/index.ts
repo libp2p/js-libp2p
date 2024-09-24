@@ -81,7 +81,8 @@ export interface ProtectorInit {
   psk: Uint8Array
   /**
    * The initial nonce exchange must complete within this many milliseconds
-   * (default: 1000)
+   *
+   * @default 1000
    */
   timeout?: number
 }

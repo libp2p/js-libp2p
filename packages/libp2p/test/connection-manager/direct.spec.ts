@@ -8,7 +8,7 @@ import { mockConnectionGater, mockDuplex, mockMultiaddrConnection, mockUpgrader,
 import { defaultLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { plaintext } from '@libp2p/plaintext'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { webSockets } from '@libp2p/websockets'
@@ -50,7 +50,7 @@ describe('dialing (direct, WebSockets)', () => {
       transportManager: stubInterface<TransportManager>(),
       events: localEvents
     })
-    localComponents.peerStore = new PersistentPeerStore(localComponents, {
+    localComponents.peerStore = persistentPeerStore(localComponents, {
       addressFilter: localComponents.connectionGater.filterMultiaddrForPeer
     })
     localComponents.connectionManager = new DefaultConnectionManager(localComponents, {

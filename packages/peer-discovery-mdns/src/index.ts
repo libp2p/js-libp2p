@@ -80,6 +80,8 @@ import { MulticastDNS } from './mdns.js'
 import type { MulticastDNSInit, MulticastDNSComponents } from './mdns.js'
 import type { PeerDiscovery } from '@libp2p/interface'
 
+export type { MulticastDNSInit, MulticastDNSComponents }
+
 export function mdns (init: MulticastDNSInit = {}): (components: MulticastDNSComponents) => PeerDiscovery {
   return (components: MulticastDNSComponents) => new MulticastDNS(components, init)
 }

@@ -18,7 +18,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { validateConfig } from './config.js'
 import { Libp2p as Libp2pClass } from './libp2p.js'
-import type { AddressManagerInit } from './address-manager/index.js'
+import type { AddressManagerInit, AddressFilter } from './address-manager/index.js'
 import type { Components } from './components.js'
 import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { ConnectionMonitorInit } from './connection-monitor.js'
@@ -31,6 +31,8 @@ import type { Datastore } from 'interface-datastore'
 export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
   [Property in keyof T]: (components: Components & T) => T[Property]
 }
+
+export type { AddressManagerInit, AddressFilter }
 
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
@@ -164,7 +166,7 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   dns?: DNS
 }
 
-export type { Libp2p }
+export type { Libp2p, ConnectionManagerInit, ConnectionMonitorInit, TransportManagerInit }
 
 export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & { start?: boolean }
 

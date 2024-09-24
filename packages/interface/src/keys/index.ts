@@ -4,15 +4,14 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1'
 
-interface PublicKeyBase<KeyType extends string, DigestCode extends number = number> {
+export interface RSAPublicKey {
   /**
    * The type of this key
    */
-  readonly type: KeyType
+  readonly type: 'RSA'
 
   /**
-   * The raw public key bytes (for Ed25519 and secp256k1 keys) or PKIX in ASN1
-   * DER format (for RSA keys)
+   * PKIX in ASN1 DER format
    */
   readonly raw: Uint8Array
 
@@ -24,20 +23,17 @@ interface PublicKeyBase<KeyType extends string, DigestCode extends number = numb
   /**
    * Returns this public key as a Multihash digest.
    *
-   * It contains either an identity hash containing the protobuf version of the
-   * public key (for Ed25519 and secp256k1 keys) or a sha256 hash of the
-   * protobuf version of the public key (RSA keys).
+   * It contains a sha256 hash of the protobuf version of the public key.
    */
-  toMultihash(): MultihashDigest<DigestCode>
+  toMultihash(): MultihashDigest<0x12>
 
   /**
    * Return this public key as a CID encoded with the `libp2p-key` codec
    *
-   * The digest contains either an identity hash containing the protobuf version
-   * of the public key (for Ed25519 and secp256k1 keys) or a sha256 hash of the
-   * protobuf version of the public key (RSA keys).
+   * The digest contains a sha256 hash of the protobuf version of the public
+   * key.
    */
-  toCID(): CID<unknown, 0x72, DigestCode, 1>
+  toCID(): CID<unknown, 0x72, 0x12, 1>
 
   /**
    * Verify the passed data was signed by the private key corresponding to this
@@ -51,9 +47,90 @@ interface PublicKeyBase<KeyType extends string, DigestCode extends number = numb
   toString(): string
 }
 
-export interface RSAPublicKey extends PublicKeyBase<'RSA', 0x12> {}
-export interface Ed25519PublicKey extends PublicKeyBase<'Ed25519', 0x0> {}
-export interface Secp256k1PublicKey extends PublicKeyBase<'secp256k1', 0x0> {}
+export interface Ed25519PublicKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'Ed25519'
+
+  /**
+   * The raw public key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Returns this public key as an identity hash containing the protobuf wrapped
+   * public key
+   */
+  toMultihash(): MultihashDigest<0x0>
+
+  /**
+   * Return this public key as a CID encoded with the `libp2p-key` codec
+   *
+   * The digest contains an identity hash containing the protobuf wrapped
+   * version of the public key.
+   */
+  toCID(): CID<unknown, 0x72, 0x0, 1>
+
+  /**
+   * Verify the passed data was signed by the private key corresponding to this
+   * public key
+   */
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+
+  /**
+   * Returns this key as a multihash with base58btc encoding
+   */
+  toString(): string
+}
+
+export interface Secp256k1PublicKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'secp256k1'
+
+  /**
+   * The raw public key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Returns this public key as an identity hash containing the protobuf wrapped
+   * public key
+   */
+  toMultihash(): MultihashDigest<0x0>
+
+  /**
+   * Return this public key as a CID encoded with the `libp2p-key` codec
+   *
+   * The digest contains an identity hash containing the protobuf wrapped
+   * version of the public key.
+   */
+  toCID(): CID<unknown, 0x72, 0x0, 1>
+
+  /**
+   * Verify the passed data was signed by the private key corresponding to this
+   * public key
+   */
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+
+  /**
+   * Returns this key as a multihash with base58btc encoding
+   */
+  toString(): string
+}
+
 export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey
 
 /**
@@ -76,20 +153,19 @@ export function isPublicKey (key?: any): key is PublicKey {
 /**
  * Generic private key interface
  */
-interface PrivateKeyBase<KeyType extends string, PublicKeyType extends PublicKeyBase<KeyType>> {
+export interface RSAPrivateKey {
   /**
    * The type of this key
    */
-  readonly type: KeyType
+  readonly type: 'RSA'
 
   /**
    * The public key that corresponds to this private key
    */
-  readonly publicKey: PublicKeyType
+  readonly publicKey: RSAPublicKey
 
   /**
-   * The raw public key bytes (for Ed25519 and secp256k1 keys) or PKIX in ASN1
-   * DER format (for RSA keys)
+   * PKIX in ASN1 DER format
    */
   readonly raw: Uint8Array
 
@@ -105,9 +181,62 @@ interface PrivateKeyBase<KeyType extends string, PublicKeyType extends PublicKey
   sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
 }
 
-export interface RSAPrivateKey extends PrivateKeyBase<'RSA', RSAPublicKey> {}
-export interface Ed25519PrivateKey extends PrivateKeyBase<'Ed25519', Ed25519PublicKey> {}
-export interface Secp256k1PrivateKey extends PrivateKeyBase<'secp256k1', Secp256k1PublicKey> {}
+export interface Ed25519PrivateKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'Ed25519'
+
+  /**
+   * The public key that corresponds to this private key
+   */
+  readonly publicKey: Ed25519PublicKey
+
+  /**
+   * The raw public key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Sign the passed data with this private key and return the signature for
+   * later verification
+   */
+  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+}
+
+export interface Secp256k1PrivateKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'secp256k1'
+
+  /**
+   * The public key that corresponds to this private key
+   */
+  readonly publicKey: Secp256k1PublicKey
+
+  /**
+   * The raw public key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Sign the passed data with this private key and return the signature for
+   * later verification
+   */
+  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+}
+
 export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey
 
 /**
