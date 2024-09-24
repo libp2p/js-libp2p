@@ -21,6 +21,17 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.0.4](https://github.com/libp2p/js-libp2p/compare/logger-v5.0.3...logger-v5.0.4) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.3 to ^5.0.4
+
 ## [5.0.3](https://github.com/libp2p/js-libp2p/compare/logger-v5.0.2...logger-v5.0.3) (2024-09-24)
 
 

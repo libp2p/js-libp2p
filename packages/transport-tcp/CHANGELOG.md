@@ -89,6 +89,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.4](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.3...tcp-v10.0.4) (2024-09-24)
+
+
+### Bug Fixes
+
+* simplify connection upgrade ([#2719](https://github.com/libp2p/js-libp2p/issues/2719)) ([c258b35](https://github.com/libp2p/js-libp2p/commit/c258b35af60eec906437129ab31201bfb9c80d16))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+    * @libp2p/utils bumped from ^6.0.3 to ^6.0.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.1 to ^6.1.2
+    * @libp2p/logger bumped from ^5.0.3 to ^5.0.4
+
 ## [10.0.3](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.2...tcp-v10.0.3) (2024-09-24)
 
 
