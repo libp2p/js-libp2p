@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.1.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.0...interface-v2.1.1) (2024-09-24)
+
+
+### Bug Fixes
+
+* export transiently referenced types ([#2717](https://github.com/libp2p/js-libp2p/issues/2717)) ([7f7ec82](https://github.com/libp2p/js-libp2p/commit/7f7ec82ae4ee7761360bdfdd294de271feaf1841))
+
 ## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.1...interface-v2.1.0) (2024-09-23)
 
 

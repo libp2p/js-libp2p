@@ -17,6 +17,20 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.3](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.2...crypto-v5.0.3) (2024-09-24)
+
+
+### Bug Fixes
+
+* export transiently referenced types ([#2717](https://github.com/libp2p/js-libp2p/issues/2717)) ([7f7ec82](https://github.com/libp2p/js-libp2p/commit/7f7ec82ae4ee7761360bdfdd294de271feaf1841))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.0 to ^2.1.1
+
 ## [5.0.2](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.1...crypto-v5.0.2) (2024-09-23)
 
 

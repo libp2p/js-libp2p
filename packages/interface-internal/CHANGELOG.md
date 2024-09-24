@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.0.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.2...interface-internal-v2.0.3) (2024-09-24)
+
+
+### Bug Fixes
+
+* export transiently referenced types ([#2717](https://github.com/libp2p/js-libp2p/issues/2717)) ([7f7ec82](https://github.com/libp2p/js-libp2p/commit/7f7ec82ae4ee7761360bdfdd294de271feaf1841))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/peer-collections bumped from ^6.0.2 to ^6.0.3
+
 ## [2.0.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.1...interface-internal-v2.0.2) (2024-09-23)
 
 
