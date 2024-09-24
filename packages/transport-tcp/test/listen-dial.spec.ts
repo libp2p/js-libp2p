@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import { TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -343,12 +343,14 @@ describe('dial', () => {
     const maConnPromise = pDefer<MultiaddrConnection>()
 
     // @ts-expect-error missing return value
-    upgrader.upgradeOutbound = async (maConn) => {
+    upgrader.upgradeOutbound = async (maConn, opts) => {
       maConnPromise.resolve(maConn)
 
-      // take a long time to give us time to abort the dial
-      await new Promise<void>((resolve) => {
-        setTimeout(() => { resolve() }, 100)
+      // abort the upgrade if the signal aborts
+      await new Promise<void>((resolve, reject) => {
+        opts?.signal?.addEventListener('abort', () => {
+          reject(new AbortError())
+        })
       })
     }
 
@@ -360,7 +362,9 @@ describe('dial', () => {
     const abortController = new AbortController()
 
     // abort once the upgrade process has started
-    void maConnPromise.promise.then(() => { abortController.abort() })
+    void maConnPromise.promise.then(() => {
+      abortController.abort()
+    })
 
     await expect(transport.dial(ma, {
       upgrader,
