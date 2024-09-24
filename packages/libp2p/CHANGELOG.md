@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.0.3...libp2p-v2.1.0) (2024-09-24)
+
+
+### Features
+
+* add pending connections count to metrics ([#2713](https://github.com/libp2p/js-libp2p/issues/2713)) ([b3272cf](https://github.com/libp2p/js-libp2p/commit/b3272cfce13a56ea2302e5a6fe5dd0743c109cf7))
+
 ## [2.0.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.0.2...libp2p-v2.0.3) (2024-09-23)
 
 
