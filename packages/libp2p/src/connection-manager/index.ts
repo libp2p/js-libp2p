@@ -162,6 +162,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly deny: Multiaddr[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
+  private outboundPendingConnections: number
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
@@ -200,6 +201,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
     this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
 
+    this.outboundPendingConnections = 0
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
 
@@ -261,7 +263,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       calculate: () => {
         const metric = {
           inbound: 0,
-          outbound: 0
+          'inbound pending': this.incomingPendingConnections,
+          outbound: 0,
+          'outbound pending': this.outboundPendingConnections
         }
 
         for (const conns of this.connections.values()) {
@@ -462,48 +466,54 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     options.signal?.throwIfAborted()
 
-    const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+    try {
+      this.outboundPendingConnections++
 
-    if (peerId != null && options.force !== true) {
-      this.log('dial %p', peerId)
-      const existingConnection = this.getConnections(peerId)
-        .find(conn => conn.limits == null)
+      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-      if (existingConnection != null) {
-        this.log('had an existing non-limited connection to %p', peerId)
+      if (peerId != null && options.force !== true) {
+        this.log('dial %p', peerId)
+        const existingConnection = this.getConnections(peerId)
+          .find(conn => conn.limits == null)
 
-        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-        return existingConnection
+        if (existingConnection != null) {
+          this.log('had an existing non-limited connection to %p', peerId)
+
+          options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          return existingConnection
+        }
       }
-    }
 
-    const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
-      ...options,
-      priority: options.priority ?? DEFAULT_DIAL_PRIORITY
-    })
-    let peerConnections = this.connections.get(connection.remotePeer)
+      const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
+        ...options,
+        priority: options.priority ?? DEFAULT_DIAL_PRIORITY
+      })
+      let peerConnections = this.connections.get(connection.remotePeer)
 
-    if (peerConnections == null) {
-      peerConnections = []
-      this.connections.set(connection.remotePeer, peerConnections)
-    }
-
-    // we get notified of connections via the Upgrader emitting "connection"
-    // events, double check we aren't already tracking this connection before
-    // storing it
-    let trackedConnection = false
-
-    for (const conn of peerConnections) {
-      if (conn.id === connection.id) {
-        trackedConnection = true
+      if (peerConnections == null) {
+        peerConnections = []
+        this.connections.set(connection.remotePeer, peerConnections)
       }
-    }
 
-    if (!trackedConnection) {
-      peerConnections.push(connection)
-    }
+      // we get notified of connections via the Upgrader emitting "connection"
+      // events, double check we aren't already tracking this connection before
+      // storing it
+      let trackedConnection = false
 
-    return connection
+      for (const conn of peerConnections) {
+        if (conn.id === connection.id) {
+          trackedConnection = true
+        }
+      }
+
+      if (!trackedConnection) {
+        peerConnections.push(connection)
+      }
+
+      return connection
+    } finally {
+      this.outboundPendingConnections--
+    }
   }
 
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
