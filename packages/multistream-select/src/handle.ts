@@ -96,7 +96,7 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
       continue
     }
 
-    options.log('handle: respond with "na" for "%s"', protocol)
+    options.log.trace('handle: respond with "na" for "%s"', protocol)
     await multistream.write(lp, uint8ArrayFromString('na\n'), options)
     options.log('handle: responded with "na" for "%s"', protocol)
   }
