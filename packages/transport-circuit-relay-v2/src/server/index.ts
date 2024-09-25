@@ -18,7 +18,7 @@ import { createLimitedRelay } from '../utils.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
@@ -77,6 +77,7 @@ export interface CircuitRelayServerComponents {
   connectionManager: ConnectionManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export interface RelayServerEvents {
@@ -125,7 +126,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.maxInboundHopStreams = init.maxInboundHopStreams
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.reservationStore = new ReservationStore(init.reservations)
+    this.reservationStore = new ReservationStore(components, init.reservations)
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
