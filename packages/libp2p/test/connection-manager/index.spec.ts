@@ -529,10 +529,13 @@ describe('Connection Manager', () => {
     const existingConnection = stubInterface<Connection>({
       limits: {
         bytes: 100n
-      }
+      },
+      remotePeer: targetPeer,
+      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p-circuit/p2p/${targetPeer}`)
     })
     const newConnection = stubInterface<Connection>({
-      remotePeer: targetPeer
+      remotePeer: targetPeer,
+      remoteAddr: addr
     })
 
     sinon.stub(connectionManager.dialQueue, 'dial')

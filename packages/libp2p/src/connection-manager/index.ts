@@ -532,7 +532,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
 
       // make sure we don't already have a connection to this multiaddr
-      if (conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
+      if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
         connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
 
         // return the existing connection
