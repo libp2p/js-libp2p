@@ -490,7 +490,7 @@ describe('libp2p.dialer (direct, WebSockets)', () => {
 
     await expect(libp2p.dial(multiaddr(`/ip4/127.0.0.1/tcp/1234/ws/p2p/${libp2p.peerId.toString()}`)))
       .to.eventually.be.rejected()
-      .and.to.have.property('name', 'DialError')
+      .and.to.have.property('name', 'InvalidPeerIdError')
   })
 
   it('should limit the maximum dial queue size', async () => {
