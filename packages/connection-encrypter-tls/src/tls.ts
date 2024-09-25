@@ -81,9 +81,11 @@ export class TLS implements ConnectionEncrypter {
       })
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
       options?.signal?.addEventListener('abort', () => {
-        socket.destroy(new HandshakeTimeoutError())
+        const err = new HandshakeTimeoutError()
+        socket.destroy(err)
+        reject(err)
       })
 
       const verifyRemote = (): void => {
@@ -109,10 +111,14 @@ export class TLS implements ConnectionEncrypter {
       socket.on('error', (err: Error) => {
         reject(err)
       })
-      socket.once('secure', (evt) => {
+      socket.once('secure', () => {
         this.log('verifying remote certificate')
         verifyRemote()
       })
     })
+      .catch(err => {
+        socket.destroy(err)
+        throw err
+      })
   }
 }
