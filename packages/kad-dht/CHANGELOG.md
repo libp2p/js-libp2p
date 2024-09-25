@@ -106,6 +106,31 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [13.1.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.0.4...kad-dht-v13.1.0) (2024-09-25)
+
+
+### Features
+
+* add inbound rpc request metrics ([#2721](https://github.com/libp2p/js-libp2p/issues/2721)) ([fa83ee1](https://github.com/libp2p/js-libp2p/commit/fa83ee1c7b246cd264730368b39b45fe63b9999e))
+
+
+### Bug Fixes
+
+* reduce dht logging and update metrics ([#2725](https://github.com/libp2p/js-libp2p/issues/2725)) ([80fb47f](https://github.com/libp2p/js-libp2p/commit/80fb47f2c860628a210ca8d34d65971d6778f4d3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.4 to ^2.0.5
+    * @libp2p/peer-collections bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/utils bumped from ^6.0.4 to ^6.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.2 to ^6.1.3
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+    * @libp2p/peer-store bumped from ^11.0.4 to ^11.0.5
+
 ## [13.0.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.0.3...kad-dht-v13.0.4) (2024-09-24)
 
 

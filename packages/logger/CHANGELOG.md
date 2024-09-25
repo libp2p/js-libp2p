@@ -21,6 +21,13 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/logger-v5.0.4...logger-v5.1.0) (2024-09-25)
+
+
+### Features
+
+* add %e error formatter ([#2726](https://github.com/libp2p/js-libp2p/issues/2726)) ([c5988cc](https://github.com/libp2p/js-libp2p/commit/c5988cce8ca8c1435315639ef8113199ef470d5d))
+
 ## [5.0.4](https://github.com/libp2p/js-libp2p/compare/logger-v5.0.3...logger-v5.0.4) (2024-09-24)
 
 
