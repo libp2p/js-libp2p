@@ -19,6 +19,20 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [6.0.5](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.4...multistream-select-v6.0.5) (2024-09-25)
+
+
+### Bug Fixes
+
+* switch informational logging to trace logging ([#2727](https://github.com/libp2p/js-libp2p/issues/2727)) ([442a835](https://github.com/libp2p/js-libp2p/commit/442a835556116a440365da225ef4f1195f3a5b4d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.3...multistream-select-v6.0.4) (2024-09-24)
 
 

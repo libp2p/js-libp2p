@@ -6,6 +6,21 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.5](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.4...tls-v2.0.5) (2024-09-25)
+
+
+### Bug Fixes
+
+* close tls socket on encryption failure ([#2724](https://github.com/libp2p/js-libp2p/issues/2724)) ([9800384](https://github.com/libp2p/js-libp2p/commit/9800384773597621bb87f4bf0587a9451a152d6f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.2 to ^6.1.3
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+
 ## [2.0.4](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.3...tls-v2.0.4) (2024-09-24)
 
 

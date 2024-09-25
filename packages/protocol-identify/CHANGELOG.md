@@ -76,6 +76,25 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.5](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.4...identify-v3.0.5) (2024-09-25)
+
+
+### Bug Fixes
+
+* switch informational logging to trace logging ([#2727](https://github.com/libp2p/js-libp2p/issues/2727)) ([442a835](https://github.com/libp2p/js-libp2p/commit/442a835556116a440365da225ef4f1195f3a5b4d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.4 to ^2.0.5
+    * @libp2p/peer-record bumped from ^8.0.4 to ^8.0.5
+    * @libp2p/utils bumped from ^6.0.4 to ^6.0.5
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.2 to ^6.1.3
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.3...identify-v3.0.4) (2024-09-24)
 
 
