@@ -1,5 +1,5 @@
 /* eslint-disable max-depth */
-import { TimeoutError, DialError, setMaxListeners } from '@libp2p/interface'
+import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { PriorityQueue, type PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
@@ -103,7 +103,9 @@ export class DialQueue {
     })
     // a started job errored
     this.queue.addEventListener('error', (event) => {
-      this.log.error('error in dial queue', event.detail)
+      if (event.detail.name !== AbortError.name) {
+        this.log.error('error in dial queue - %e', event.detail)
+      }
     })
   }
 

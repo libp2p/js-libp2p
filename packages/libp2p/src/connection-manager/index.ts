@@ -1,4 +1,4 @@
-import { InvalidParametersError, NotStartedError, start, stop } from '@libp2p/interface'
+import { InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
@@ -191,6 +191,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly metrics?: Metrics
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly log: Logger
+  private readonly peerId: PeerId
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
@@ -205,6 +206,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.connections = new PeerMap()
 
     this.started = false
+    this.peerId = components.peerId
     this.peerStore = components.peerStore
     this.metrics = components.metrics
     this.events = components.events
@@ -484,6 +486,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
+    if (this.peerId.equals(peerId)) {
+      throw new InvalidPeerIdError('Can not dial self')
+    }
+
     if (peerId != null && options.force !== true) {
       this.log('dial %p', peerId)
       const existingConnection = this.getConnections(peerId)
@@ -501,6 +507,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       ...options,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY
     })
+
+    if (connection.remotePeer.equals(this.peerId)) {
+      const err = new InvalidPeerIdError('Can not dial self')
+      connection.abort(err)
+      throw err
+    }
+
     let peerConnections = this.connections.get(connection.remotePeer)
 
     if (peerConnections == null) {
@@ -516,6 +529,14 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     for (const conn of peerConnections) {
       if (conn.id === connection.id) {
         trackedConnection = true
+      }
+
+      // make sure we don't already have a connection to this multiaddr
+      if (conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
+        connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+
+        // return the existing connection
+        return conn
       }
     }
 
