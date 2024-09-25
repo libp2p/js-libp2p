@@ -145,6 +145,6 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       return
     }
 
-    this.log('handled push from %p', connection.remotePeer)
+    this.log.trace('handled push from %p', connection.remotePeer)
   }
 }

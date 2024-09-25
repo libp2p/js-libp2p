@@ -1,9 +1,10 @@
 /* eslint-disable complexity */
 
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
@@ -29,7 +30,15 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
-        this.identify(connection).catch(err => { this.log.error('error during identify trigged by connection:open', err) })
+        this.identify(connection)
+          .catch(err => {
+            if (err.name === UnsupportedProtocolError.name) {
+              // the remote did not support identify, ignore the error
+              return
+            }
+
+            this.log.error('error during identify trigged by connection:open', err)
+          })
       })
     }
   }
@@ -67,7 +76,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       return message
     } catch (err: any) {
-      this.log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
     }
@@ -100,12 +108,16 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     this.log('identify completed for peer %p and protocols %o', id, protocols)
-    this.log('our observed address is %a', cleanObservedAddr)
 
-    if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      this.log('storing our observed address %a', cleanObservedAddr)
-      this.addressManager.addObservedAddr(cleanObservedAddr)
+    if (cleanObservedAddr != null) {
+      this.log('our observed address was %a', cleanObservedAddr)
+
+      if (isPrivateIp(cleanObservedAddr?.nodeAddress().address) === true) {
+        this.log('our observed address was private')
+      } else if (this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
+        this.log('storing our observed address')
+        this.addressManager.addObservedAddr(cleanObservedAddr)
+      }
     }
 
     return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)

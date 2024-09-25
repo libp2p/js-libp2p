@@ -88,7 +88,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
   // if the peer record has been sent, prefer the addresses in the record as they are signed by the remote peer
   if (message.signedPeerRecord != null) {
-    log('received signedPeerRecord from %p', connection.remotePeer)
+    log.trace('received signedPeerRecord from %p', connection.remotePeer)
 
     let peerRecordEnvelope = message.signedPeerRecord
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
@@ -150,7 +150,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     log('%p did not send a signed peer record', connection.remotePeer)
   }
 
-  log('patching %p with', connection.remotePeer, peer)
+  log.trace('patching %p with', connection.remotePeer, peer)
   await peerStore.patch(connection.remotePeer, peer)
 
   if (message.agentVersion != null || message.protocolVersion != null) {
@@ -164,7 +164,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
       metadata.ProtocolVersion = uint8ArrayFromString(message.protocolVersion)
     }
 
-    log('merging %p metadata', connection.remotePeer, metadata)
+    log.trace('merging %p metadata', connection.remotePeer, metadata)
     await peerStore.merge(connection.remotePeer, {
       metadata
     })
