@@ -35,11 +35,17 @@ export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
   private readonly routingTable: RoutingTable
   private readonly log: Logger
-  private readonly metrics?: CounterGroup
+  private readonly metrics: {
+    operations?: CounterGroup
+    errors?: CounterGroup
+  }
 
   constructor (components: RPCComponents, init: RPCInit) {
     const { providers, peerRouting, validators, logPrefix, peerInfoMapper } = init
-    this.metrics = components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_requests`)
+    this.metrics = {
+      operations: components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_errors_total`)
+    }
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc`)
     this.routingTable = init.routingTable
@@ -72,16 +78,14 @@ export class RPC {
     }
 
     try {
-      const value = await handler.handle(peerId, msg)
-
-      this.metrics?.increment({
-        [`${msg.type}_SUCCESS`]: true
+      this.metrics.operations?.increment({
+        [msg.type]: true
       })
 
-      return value
+      return await handler.handle(peerId, msg)
     } catch {
-      this.metrics?.increment({
-        [`${msg.type}_ERROR`]: true
+      this.metrics.errors?.increment({
+        [msg.type]: true
       })
     }
   }

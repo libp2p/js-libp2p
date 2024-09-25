@@ -27,8 +27,6 @@ export class AddProviderHandler implements DHTMessageHandler {
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
-    this.log('start')
-
     if (msg.key == null || msg.key.length === 0) {
       throw new InvalidMessageError('Missing key')
     }
@@ -45,6 +43,8 @@ export class AddProviderHandler implements DHTMessageHandler {
       this.log.error('no providers found in message')
     }
 
+    this.log('%p asked us to store provider record for for %c', peerId, cid)
+
     await Promise.all(
       msg.providers.map(async (pi) => {
         // Ignore providers not from the originator
@@ -58,7 +58,7 @@ export class AddProviderHandler implements DHTMessageHandler {
           return
         }
 
-        this.log('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
+        this.log.trace('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
 
         const multihash = Digest.decode(pi.id)
 

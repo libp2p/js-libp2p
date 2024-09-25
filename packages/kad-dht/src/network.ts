@@ -122,7 +122,13 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       }, options)
     } catch (err: any) {
       stream?.abort(err)
-      this.log.error('could not send %s to %p', msg.type, to, err)
+
+      // only log if the incoming signal was not aborted - this means we were
+      // no longer interested in the query result
+      if (options.signal?.aborted !== true) {
+        this.log.error('could not send %s to %p - %e', msg.type, to, err)
+      }
+
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
       this.timeout.cleanUp(signal)

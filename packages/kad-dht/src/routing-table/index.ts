@@ -346,7 +346,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     this.kb.add({ kadId, peerId })
 
-    this.log('added %p with kad id %b', peerId, kadId)
+    this.log.trace('added %p with kad id %b', peerId, kadId)
 
     this.updateMetrics()
   }
