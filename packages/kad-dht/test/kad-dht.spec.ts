@@ -135,8 +135,8 @@ describe('KadDHT', () => {
       expect(registrarHandleSpy).to.have.property('callCount', 1)
 
       await dht.setMode('server')
-      // we were already in server mode
-      expect(registrarHandleSpy).to.have.property('callCount', 2)
+      // we were already in server mode, should have been a no-op
+      expect(registrarHandleSpy).to.have.property('callCount', 1)
 
       await dht.stop()
     })

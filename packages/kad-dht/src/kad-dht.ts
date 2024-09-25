@@ -366,16 +366,17 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async setMode (mode: 'client' | 'server'): Promise<void> {
-    if (mode === this.getMode()) {
+  async setMode (mode: 'client' | 'server', force = false): Promise<void> {
+    if (mode === this.getMode() && !force) {
       this.log('already in %s mode', mode)
       return
     }
 
+    await this.components.registrar.unhandle(this.protocol)
+
     if (mode === 'client') {
       this.log('enabling client mode')
       this.clientMode = true
-      await this.components.registrar.unhandle(this.protocol)
     } else {
       this.log('enabling server mode')
       this.clientMode = false
@@ -393,7 +394,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.running = true
 
     // Only respond to queries when not in client mode
-    await this.setMode(this.clientMode ? 'client' : 'server')
+    await this.setMode(this.clientMode ? 'client' : 'server', true)
 
     await start(
       this.querySelf,
