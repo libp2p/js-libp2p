@@ -391,7 +391,9 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }))
 
     // max out the connection limit
     await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
@@ -450,7 +452,9 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }))
 
     // max out the connection limit
     await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
@@ -477,7 +481,9 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    }))
 
     // start the upgrade
     const maConn1 = mockMultiaddrConnection({
@@ -523,9 +529,14 @@ describe('Connection Manager', () => {
     const existingConnection = stubInterface<Connection>({
       limits: {
         bytes: 100n
-      }
+      },
+      remotePeer: targetPeer,
+      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p-circuit/p2p/${targetPeer}`)
     })
-    const newConnection = stubInterface<Connection>()
+    const newConnection = stubInterface<Connection>({
+      remotePeer: targetPeer,
+      remoteAddr: addr
+    })
 
     sinon.stub(connectionManager.dialQueue, 'dial')
       .withArgs(addr)
