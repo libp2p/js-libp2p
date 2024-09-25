@@ -57,6 +57,7 @@
     "@libp2p/interface-internal": "^2.0.4",
     "@libp2p/peer-id": "^5.0.4",
     "@libp2p/peer-record": "^8.0.4",
+    "@libp2p/utils": "^6.0.4",
     "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-matcher": "^1.2.1",
     "it-drain": "^3.0.7",
