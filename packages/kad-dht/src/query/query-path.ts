@@ -135,7 +135,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
               if (peersSeen.has(closerPeer.id)) { // eslint-disable-line max-depth
-                log('already seen %p in query', closerPeer.id)
+                log.trace('already seen %p in query', closerPeer.id)
                 continue
               }
 
@@ -154,11 +154,11 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
               // only continue query if closer peer is actually closer
               if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
-                log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
+                log.trace('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
                 continue
               }
 
-              log('querying closer peer %p', closerPeer.id)
+              log.trace('querying closer peer %p', closerPeer.id)
               queryPeer(closerPeer.id, closerPeerKadId)
             }
           }

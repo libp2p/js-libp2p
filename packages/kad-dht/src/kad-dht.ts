@@ -333,12 +333,12 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log('peer %p connected', peerData.id)
+    this.log.trace('peer %p connected', peerData.id)
 
     peerData = this.peerInfoMapper(peerData)
 
     if (peerData.multiaddrs.length === 0) {
-      this.log('ignoring %p as there were no valid addresses in %s after filtering', peerData.id, peerData.multiaddrs.map(addr => addr.toString()))
+      this.log.trace('ignoring %p as there were no valid addresses in %s after filtering', peerData.id, peerData.multiaddrs.map(addr => addr.toString()))
       return
     }
 
@@ -366,7 +366,12 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async setMode (mode: 'client' | 'server'): Promise<void> {
+  async setMode (mode: 'client' | 'server', force = false): Promise<void> {
+    if (mode === this.getMode() && !force) {
+      this.log('already in %s mode', mode)
+      return
+    }
+
     await this.components.registrar.unhandle(this.protocol)
 
     if (mode === 'client') {
@@ -389,7 +394,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.running = true
 
     // Only respond to queries when not in client mode
-    await this.setMode(this.clientMode ? 'client' : 'server')
+    await this.setMode(this.clientMode ? 'client' : 'server', true)
 
     await start(
       this.querySelf,
