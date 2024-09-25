@@ -77,6 +77,11 @@ debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
+// Add a formatter for stringifying Errors
+debug.formatters.e = (v?: Error): string => {
+  return v == null ? 'undefined' : v.stack ?? v.message
+}
+
 export interface Logger {
   (formatter: any, ...args: any[]): void
   error(formatter: any, ...args: any[]): void
