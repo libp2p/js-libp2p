@@ -66,6 +66,8 @@
  * ```
  */
 
+import { statfs } from 'node:fs/promises'
+import { totalmem } from 'node:os'
 import { serviceCapabilities } from '@libp2p/interface'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
@@ -111,6 +113,14 @@ export interface PrometheusMetricsInit {
    * pass true here
    */
   preserveExistingMetrics?: boolean
+
+  /**
+   * The current filesystem usage is reported as the metric
+   * `nodejs_fs_usage_bytes` using the `statfs` function from `node:fs` - the
+   * default location to stat is the current working directory, configured this
+   * location here
+   */
+  statfsLocation?: string
 }
 
 export interface PrometheusCalculatedMetricOptions<T=number> extends CalculatedMetricOptions<T> {
@@ -175,6 +185,25 @@ class PrometheusMetrics implements Metrics {
       calculate: () => {
         return {
           ...process.memoryUsage()
+        }
+      }
+    })
+    const totalMemoryMetric = this.registerMetric('nodejs_memory_total_bytes')
+    totalMemoryMetric.update(totalmem())
+
+    this.log('Collecting filesystem metrics')
+    this.registerMetricGroup('nodejs_fs_usage_bytes', {
+      label: 'filesystem',
+      calculate: async () => {
+        const stats = await statfs(init?.statfsLocation ?? process.cwd())
+        const total = stats.bsize * stats.blocks
+        const available = stats.bsize * stats.bavail
+
+        return {
+          total,
+          free: stats.bsize * stats.bfree,
+          available,
+          used: (available / total) * 100
         }
       }
     })
