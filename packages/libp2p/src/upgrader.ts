@@ -1,4 +1,4 @@
-import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners } from '@libp2p/interface'
+import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { anySignal } from 'any-signal'
@@ -304,6 +304,14 @@ export class DefaultUpgrader implements Upgrader {
         remotePeer = remotePeerId
       }
 
+      // this can happen if we dial a multiaddr without a peer id, we only find
+      // out the identity of the remote after the connection is encrypted
+      if (remotePeer.equals(this.components.peerId)) {
+        const err = new InvalidPeerIdError('Can not dial self')
+        maConn.abort(err)
+        throw err
+      }
+
       upgradedConn = encryptedConn
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
@@ -326,6 +334,8 @@ export class DefaultUpgrader implements Upgrader {
     } catch (err: any) {
       maConn.log.error('failed to upgrade inbound connection %s %a - %e', direction === 'inbound' ? 'from' : 'to', maConn.remoteAddr, err)
       throw err
+    } finally {
+      signal.clear()
     }
 
     await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
@@ -538,7 +548,7 @@ export class DefaultUpgrader implements Upgrader {
     const _timeline = maConn.timeline
     maConn.timeline = new Proxy(_timeline, {
       set: (...args) => {
-        if (connection != null && args[1] === 'close' && args[2] != null && _timeline.close == null) {
+        if (args[1] === 'close' && args[2] != null && _timeline.close == null) {
           // Wait for close to finish before notifying of the closure
           (async () => {
             try {
@@ -546,14 +556,14 @@ export class DefaultUpgrader implements Upgrader {
                 await connection.close()
               }
             } catch (err: any) {
-              connection.log.error('error closing connection after timeline close', err)
+              connection.log.error('error closing connection after timeline close %e', err)
             } finally {
               this.events.safeDispatchEvent('connection:close', {
                 detail: connection
               })
             }
           })().catch(err => {
-            connection.log.error('error thrown while dispatching connection:close event', err)
+            connection.log.error('error thrown while dispatching connection:close event %e', err)
           })
         }
 
@@ -578,31 +588,30 @@ export class DefaultUpgrader implements Upgrader {
       limits,
       logger: this.components.logger,
       newStream: newStream ?? errConnectionNotMultiplexed,
-      getStreams: () => { if (muxer != null) { return muxer.streams } else { return [] } },
+      getStreams: () => {
+        return muxer?.streams ?? []
+      },
       close: async (options?: AbortOptions) => {
-        // Ensure remaining streams are closed gracefully
-        if (muxer != null) {
-          connection.log.trace('close muxer')
-          await muxer.close(options)
-        }
+        // ensure remaining streams are closed gracefully
+        await muxer?.close(options)
 
-        connection.log.trace('close maconn')
         // close the underlying transport
         await maConn.close(options)
-        connection.log.trace('closed maconn')
       },
       abort: (err) => {
         maConn.abort(err)
-        // Ensure remaining streams are aborted
-        if (muxer != null) {
-          muxer.abort(err)
-        }
+
+        // ensure remaining streams are aborted
+        muxer?.abort(err)
       }
     })
 
     this.events.safeDispatchEvent('connection:open', {
       detail: connection
     })
+
+    // @ts-expect-error nah
+    connection.__maConnTimeline = _timeline
 
     return connection
   }

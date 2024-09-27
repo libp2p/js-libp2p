@@ -40,21 +40,29 @@ export class ConnectionPruner {
     this.peerStore = components.peerStore
     this.events = components.events
     this.log = components.logger.forComponent('libp2p:connection-manager:connection-pruner')
+    this.maybePruneConnections = this.maybePruneConnections.bind(this)
+  }
 
-    // check the max connection limit whenever a peer connects
-    components.events.addEventListener('connection:open', () => {
-      this.maybePruneConnections()
-        .catch(err => {
-          this.log.error(err)
-        })
-    })
+  start (): void {
+    this.events.addEventListener('connection:open', this.maybePruneConnections)
+  }
+
+  stop (): void {
+    this.events.removeEventListener('connection:open', this.maybePruneConnections)
+  }
+
+  maybePruneConnections (): void {
+    this._maybePruneConnections()
+      .catch(err => {
+        this.log.error('error while pruning connections %e', err)
+      })
   }
 
   /**
    * If we have more connections than our maximum, select some excess connections
    * to prune based on peer value
    */
-  async maybePruneConnections (): Promise<void> {
+  private async _maybePruneConnections (): Promise<void> {
     const connections = this.connectionManager.getConnections()
     const numConnections = connections.length
 

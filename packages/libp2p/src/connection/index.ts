@@ -161,13 +161,6 @@ export class ConnectionImpl implements Connection {
     }
 
     try {
-      this.log.trace('closing all streams')
-
-      // close all streams gracefully - this can throw if we're not multiplexed
-      await Promise.all(
-        this.streams.map(async s => s.close(options))
-      )
-
       this.log.trace('closing underlying transport')
 
       // close raw connection
@@ -184,18 +177,19 @@ export class ConnectionImpl implements Connection {
   }
 
   abort (err: Error): void {
+    if (this.status === 'closed') {
+      return
+    }
+
     this.log.error('aborting connection to %a due to error', this.remoteAddr, err)
 
     this.status = 'closing'
-    this.streams.forEach(s => { s.abort(err) })
-
-    this.log.error('all streams aborted', this.streams.length)
 
     // Abort raw connection
     this._abort(err)
 
-    this.timeline.close = Date.now()
     this.status = 'closed'
+    this.timeline.close = Date.now()
   }
 }
 
