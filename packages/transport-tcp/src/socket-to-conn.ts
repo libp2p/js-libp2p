@@ -127,47 +127,48 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     timeline: { open: Date.now() },
 
     async close (options: AbortOptions = {}) {
-      if (socket.destroyed) {
-        log('The %s socket is destroyed', lOptsStr)
+      if (socket.closed) {
+        log('The %s socket is already closed', lOptsStr)
         return
       }
 
-      if (closePromise != null) {
-        log('The %s socket is closed or closing', lOptsStr)
-        return closePromise
-      }
-
-      if (options.signal == null) {
-        const signal = AbortSignal.timeout(closeTimeout)
-
-        options = {
-          ...options,
-          signal
-        }
+      if (socket.destroyed) {
+        log('The %s socket is already destroyed', lOptsStr)
+        return
       }
 
       const abortSignalListener = (): void => {
         socket.destroy(new AbortError('Destroying socket after timeout'))
       }
 
-      options.signal?.addEventListener('abort', abortSignalListener)
-
       try {
+        if (closePromise != null) {
+          log('The %s socket is already closing', lOptsStr)
+          await closePromise
+          return
+        }
+
+        if (options.signal == null) {
+          const signal = AbortSignal.timeout(closeTimeout)
+
+          options = {
+            ...options,
+            signal
+          }
+        }
+
+        options.signal?.addEventListener('abort', abortSignalListener)
+
         log('%s closing socket', lOptsStr)
         closePromise = new Promise<void>((resolve, reject) => {
           socket.once('close', () => {
             // socket completely closed
             log('%s socket closed', lOptsStr)
-
             resolve()
           })
           socket.once('error', (err: Error) => {
             log('%s socket error', lOptsStr, err)
 
-            // error closing socket
-            if (maConn.timeline.close == null) {
-              maConn.timeline.close = Date.now()
-            }
             if (!socket.destroyed) {
               reject(err)
             }
@@ -210,6 +211,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
         socket.destroy(err)
       }
 
+      // closing a socket is always asynchronous (must wait for "close" event)
+      // but the tests expect this to be a synchronous operation so we have to
+      // set the close time here. the tests should be refactored to reflect
+      // reality.
       if (maConn.timeline.close == null) {
         maConn.timeline.close = Date.now()
       }
