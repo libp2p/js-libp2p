@@ -1,5 +1,4 @@
 import { FaultTolerance, InvalidParametersError } from '@libp2p/interface'
-import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import mergeOptions from 'merge-options'
 import type { Libp2pInit } from './index.js'
@@ -16,8 +15,7 @@ const DefaultConfig: Libp2pInit = {
   connectionManager: {
     resolvers: {
       dnsaddr: dnsaddrResolver
-    },
-    addressSorter: defaultAddressSort
+    }
   },
   transportManager: {
     faultTolerance: FaultTolerance.FATAL_ALL

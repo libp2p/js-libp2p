@@ -2,7 +2,7 @@
 
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { publicAddressesFirst, certifiedAddressesFirst, circuitRelayAddressesLast, defaultAddressSort } from '../src/address-sort.js'
+import { defaultAddressSorter } from '../../src/connection-manager/address-sorter.js'
 
 describe('address-sort', () => {
   describe('public addresses first', () => {
@@ -21,7 +21,7 @@ describe('address-sort', () => {
         publicAddress
       ]
 
-      const sortedAddresses = addresses.sort(publicAddressesFirst)
+      const sortedAddresses = defaultAddressSorter(addresses)
       expect(sortedAddresses).to.deep.equal([
         publicAddress,
         privateAddress
@@ -55,11 +55,11 @@ describe('address-sort', () => {
         privateAddress
       ]
 
-      const sortedAddresses = addresses.sort(certifiedAddressesFirst)
+      const sortedAddresses = defaultAddressSorter(addresses)
       expect(sortedAddresses).to.deep.equal([
         certifiedPublicAddress,
-        certifiedPrivateAddress,
         publicAddress,
+        certifiedPrivateAddress,
         privateAddress
       ])
     })
@@ -81,7 +81,7 @@ describe('address-sort', () => {
         publicAddress
       ]
 
-      const sortedAddresses = addresses.sort(circuitRelayAddressesLast)
+      const sortedAddresses = defaultAddressSorter(addresses)
       expect(sortedAddresses).to.deep.equal([
         publicAddress,
         publicRelay
@@ -137,7 +137,8 @@ describe('address-sort', () => {
         return Math.random() > 0.5 ? -1 : 1
       })
 
-      const sortedAddresses = addresses.sort(defaultAddressSort)
+      const sortedAddresses = defaultAddressSorter(addresses)
+
       expect(sortedAddresses).to.deep.equal([
         certifiedPublicAddress,
         publicAddress,
@@ -167,11 +168,41 @@ describe('address-sort', () => {
         return Math.random() > 0.5 ? -1 : 1
       })
 
-      const sortedAddresses = addresses.sort(defaultAddressSort)
+      const sortedAddresses = defaultAddressSorter(addresses)
       expect(sortedAddresses).to.deep.equal([
         webRTCOverRelay,
         publicRelay
       ])
+    })
+
+    it('should sort reliable addresses first', () => {
+      const tcp = multiaddr('/ip4/123.123.123.123/tcp/123/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const ws = multiaddr('/ip4/123.123.123.123/tcp/123/ws/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const wss = multiaddr('/ip4/123.123.123.123/tcp/123/wss/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const webRTC = multiaddr('/ip4/123.123.123.123/tcp/123/wss/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/webrtc/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const webRTCDirect = multiaddr('/ip4/123.123.123.123/udp/123/webrtc-direct/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const circuitRelay = multiaddr('/ip4/123.123.123.123/tcp/123/wss/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const webTransport = multiaddr('/ip4/123.123.123.123/udp/123/quic-v1/webtransport/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+
+      const addresses = [tcp, ws, wss, webRTC, webRTCDirect, circuitRelay, webTransport]
+        .sort(() => Math.random() < 0.5 ? -1 : 1)
+        .map(multiaddr => ({
+          multiaddr,
+          isCertified: true
+        }))
+
+      const sortedAddresses = defaultAddressSorter(addresses)
+        .map(({ multiaddr }) => multiaddr.toString())
+
+      expect(sortedAddresses).to.deep.equal([
+        tcp,
+        wss,
+        ws,
+        webRTC,
+        webRTCDirect,
+        webTransport,
+        circuitRelay
+      ].map(ma => ma.toString()))
     })
   })
 })
