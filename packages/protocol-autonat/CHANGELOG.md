@@ -55,6 +55,16 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.6](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.5...autonat-v2.0.6) (2024-09-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/utils bumped from ^6.0.5 to ^6.0.6
+
 ## [2.0.5](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.4...autonat-v2.0.5) (2024-09-25)
 
 

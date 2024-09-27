@@ -81,6 +81,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.2.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.3...prometheus-metrics-v4.2.0) (2024-09-27)
+
+
+### Features
+
+* collect metrics on available storage ([#2730](https://github.com/libp2p/js-libp2p/issues/2730)) ([a74c75d](https://github.com/libp2p/js-libp2p/commit/a74c75d02404feae119f232424b430f904c9d8b5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.3 to ^6.1.4
+
 ## [4.1.3](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.2...prometheus-metrics-v4.1.3) (2024-09-25)
 
 
