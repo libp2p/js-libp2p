@@ -89,6 +89,22 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.6](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.5...tcp-v10.0.6) (2024-09-27)
+
+
+### Bug Fixes
+
+* make tcp closing error throwing consistent ([#2729](https://github.com/libp2p/js-libp2p/issues/2729)) ([9308bc1](https://github.com/libp2p/js-libp2p/commit/9308bc1f2d2abc6947531ef52ed3c1fc2da59119))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.0.5 to ^6.0.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.3 to ^6.1.4
+
 ## [10.0.5](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.4...tcp-v10.0.5) (2024-09-25)
 
 
