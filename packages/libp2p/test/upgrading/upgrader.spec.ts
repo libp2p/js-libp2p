@@ -549,6 +549,9 @@ describe('Upgrader', () => {
       remotePeer
     })
 
+    outbound.remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/0').encapsulate(`/p2p/${remotePeer.toString()}`)
+    inbound.remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/0').encapsulate(`/p2p/${localPeer.toString()}`)
+
     const connections = await Promise.all([
       localUpgrader.upgradeOutbound(outbound, {
         skipEncryption: true,

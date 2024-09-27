@@ -153,7 +153,7 @@ export class DialQueue {
       })
     })
 
-    if (existingConnection != null) {
+    if (existingConnection?.status === 'open') {
       this.log('already connected to %a', existingConnection.remoteAddr)
       options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
       return existingConnection

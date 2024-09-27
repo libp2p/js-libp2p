@@ -93,7 +93,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
-    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
 
     // wait for prune event
@@ -151,7 +151,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
-    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
     const spies = new Map<string, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
@@ -218,7 +218,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
-    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
     const spies = new Map<number, sinon.SinonSpy<[options?: AbortOptions], Promise<void>>>()
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
@@ -299,7 +299,7 @@ describe('Connection Manager', () => {
     await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
-    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+    const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
     const eventPromise = pEvent(libp2p, 'connection:prune')
 
     // Add 1 too many connections
@@ -392,7 +392,8 @@ describe('Connection Manager', () => {
     await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
-      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      status: 'open'
     }))
 
     // max out the connection limit
@@ -419,7 +420,9 @@ describe('Connection Manager', () => {
     })
     await connectionManager.start()
 
-    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>())
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
+      status: 'open'
+    }))
 
     // an inbound connection is opened
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
@@ -453,7 +456,8 @@ describe('Connection Manager', () => {
     await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
-      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      status: 'open'
     }))
 
     // max out the connection limit
@@ -482,7 +486,8 @@ describe('Connection Manager', () => {
     await connectionManager.start()
 
     sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
-      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      status: 'open'
     }))
 
     // start the upgrade
@@ -531,11 +536,13 @@ describe('Connection Manager', () => {
         bytes: 100n
       },
       remotePeer: targetPeer,
-      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p-circuit/p2p/${targetPeer}`)
+      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p-circuit/p2p/${targetPeer}`),
+      status: 'open'
     })
     const newConnection = stubInterface<Connection>({
       remotePeer: targetPeer,
-      remoteAddr: addr
+      remoteAddr: addr,
+      status: 'open'
     })
 
     sinon.stub(connectionManager.dialQueue, 'dial')

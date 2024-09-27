@@ -1,4 +1,4 @@
-import { InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
+import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
@@ -214,8 +214,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
-    this.events.addEventListener('connection:open', this.onConnect)
-    this.events.addEventListener('connection:close', this.onDisconnect)
 
     // allow/deny lists
     this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
@@ -268,10 +266,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   readonly [Symbol.toStringTag] = '@libp2p/connection-manager'
 
-  isStarted (): boolean {
-    return this.started
-  }
-
   /**
    * Starts the Connection Manager. If Metrics are not enabled on libp2p
    * only event loop and connection limits will be monitored.
@@ -288,11 +282,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
         for (const conns of this.connections.values()) {
           for (const conn of conns) {
-            if (conn.direction === 'inbound') {
-              metric.inbound++
-            } else {
-              metric.outbound++
-            }
+            metric[conn.direction]++
           }
         }
 
@@ -356,9 +346,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
+    this.events.addEventListener('connection:open', this.onConnect)
+    this.events.addEventListener('connection:close', this.onDisconnect)
+
     await start(
       this.dialQueue,
-      this.reconnectQueue
+      this.reconnectQueue,
+      this.connectionPruner
     )
 
     this.started = true
@@ -369,9 +363,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
    * Stops the Connection Manager
    */
   async stop (): Promise<void> {
+    this.events.removeEventListener('connection:open', this.onConnect)
+    this.events.removeEventListener('connection:close', this.onDisconnect)
+
     await stop(
       this.reconnectQueue,
-      this.dialQueue
+      this.dialQueue,
+      this.connectionPruner
     )
 
     // Close all connections we're tracking
@@ -413,16 +411,18 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return
     }
 
-    const peerId = connection.remotePeer
-    const storedConns = this.connections.get(peerId)
-    let isNewPeer = false
-
-    if (storedConns != null) {
-      storedConns.push(connection)
-    } else {
-      isNewPeer = true
-      this.connections.set(peerId, [connection])
+    if (connection.status !== 'open') {
+      // this can happen when the remote closes the connection immediately after
+      // opening
+      return
     }
+
+    const peerId = connection.remotePeer
+    const isNewPeer = !this.connections.has(peerId)
+    const storedConns = this.connections.get(peerId) ?? []
+    storedConns.push(connection)
+
+    this.connections.set(peerId, storedConns)
 
     // only need to store RSA public keys, all other types are embedded in the peer id
     if (peerId.publicKey != null && peerId.type === 'RSA') {
@@ -441,20 +441,21 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
    */
   onDisconnect (evt: CustomEvent<Connection>): void {
     const { detail: connection } = evt
-
-    if (!this.started) {
-      // This can happen when we are in the process of shutting down the node
-      return
-    }
-
     const peerId = connection.remotePeer
-    let storedConn = this.connections.get(peerId)
+    const peerConns = this.connections.get(peerId) ?? []
 
-    if (storedConn != null && storedConn.length > 1) {
-      storedConn = storedConn.filter((conn) => conn.id !== connection.id)
-      this.connections.set(peerId, storedConn)
-    } else if (storedConn != null) {
+    // remove closed connection
+    const filteredPeerConns = peerConns.filter(conn => conn.id !== connection.id)
+
+    // update peer connections
+    this.connections.set(peerId, filteredPeerConns)
+
+    if (filteredPeerConns.length === 0) {
+      // trigger disconnect event if no connections remain
+      this.log('onDisconnect remove all connections for peer %p', peerId)
       this.connections.delete(peerId)
+
+      // broadcast disconnect event
       this.events.safeDispatchEvent('peer:disconnect', { detail: connection.remotePeer })
     }
   }
@@ -478,7 +479,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   }
 
   async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
-    if (!this.isStarted()) {
+    if (!this.started) {
       throw new NotStartedError('Not started')
     }
 
@@ -508,10 +509,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY
     })
 
-    if (connection.remotePeer.equals(this.peerId)) {
-      const err = new InvalidPeerIdError('Can not dial self')
-      connection.abort(err)
-      throw err
+    if (connection.status !== 'open') {
+      throw new ConnectionClosedError('Remote closed connection during opening')
     }
 
     let peerConnections = this.connections.get(connection.remotePeer)
