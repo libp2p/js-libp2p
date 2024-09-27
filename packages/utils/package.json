@@ -56,10 +56,6 @@
       "types": "./dist/src/adaptive-timeout.d.ts",
       "import": "./dist/src/adaptive-timeout.js"
     },
-    "./address-sort": {
-      "types": "./dist/src/address-sort.d.ts",
-      "import": "./dist/src/address-sort.js"
-    },
     "./array-equals": {
       "types": "./dist/src/array-equals.d.ts",
       "import": "./dist/src/array-equals.js"

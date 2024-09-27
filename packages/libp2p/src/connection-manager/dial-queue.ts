@@ -1,7 +1,6 @@
 /* eslint-disable max-depth */
 import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { PriorityQueue, type PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
 import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
@@ -11,6 +10,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
+import { defaultAddressSorter } from './address-sorter.js'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
@@ -47,7 +47,6 @@ interface DialerInit {
 }
 
 const defaultOptions = {
-  addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
@@ -71,7 +70,7 @@ interface DialQueueComponents {
 export class DialQueue {
   public queue: PriorityQueue<Connection, DialQueueJobOptions>
   private readonly components: DialQueueComponents
-  private readonly addressSorter: AddressSorter
+  private readonly addressSorter?: AddressSorter
   private readonly maxPeerAddrsToDial: number
   private readonly maxDialQueueLength: number
   private readonly dialTimeout: number
@@ -80,7 +79,7 @@ export class DialQueue {
   private readonly log: Logger
 
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
-    this.addressSorter = init.addressSorter ?? defaultOptions.addressSorter
+    this.addressSorter = init.addressSorter
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
     this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions.maxDialQueueLength
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
@@ -467,7 +466,7 @@ export class DialQueue {
       gatedAdrs.push(addr)
     }
 
-    const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter)
+    const sortedGatedAddrs = this.addressSorter == null ? defaultAddressSorter(gatedAdrs) : gatedAdrs.sort(this.addressSorter)
 
     // make sure we actually have some addresses to dial
     if (sortedGatedAddrs.length === 0) {

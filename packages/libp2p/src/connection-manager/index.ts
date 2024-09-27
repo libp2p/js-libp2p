@@ -1,6 +1,5 @@
 import { InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { defaultAddressSort } from '@libp2p/utils/address-sort'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
@@ -242,7 +241,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
 
     this.dialQueue = new DialQueue(components, {
-      addressSorter: init.addressSorter ?? defaultAddressSort,
+      addressSorter: init.addressSorter,
       maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
       maxDialQueueLength: init.maxDialQueueLength ?? MAX_DIAL_QUEUE_LENGTH,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,

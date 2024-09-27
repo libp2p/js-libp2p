@@ -4,7 +4,6 @@
     "./src/abort-options.ts",
     "./src/abstract-stream.ts",
     "./src/adaptive-timeout.ts",
-    "./src/address-sort.ts",
     "./src/array-equals.ts",
     "./src/close.ts",
     "./src/close-source.ts",
