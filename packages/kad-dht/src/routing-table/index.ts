@@ -1,5 +1,6 @@
-import { InvalidMessageError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidMessageError, KEEP_ALIVE, TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
+import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { pbStream } from 'it-protobuf-stream'
 import { Message, MessageType } from '../message/dht.js'
@@ -7,13 +8,14 @@ import * as utils from '../utils.js'
 import { KBucket, isLeafBucket, type Bucket, type PingEventDetails } from './k-bucket.js'
 import type { ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
 export const PREFIX_LENGTH = 32
-export const PING_TIMEOUT = 10000
-export const PING_CONCURRENCY = 10
+export const PING_TIMEOUT = 2000
+export const PING_CONCURRENCY = 20
 
 export interface RoutingTableInit {
   logPrefix: string
@@ -21,7 +23,7 @@ export interface RoutingTableInit {
   prefixLength?: number
   splitThreshold?: number
   kBucketSize?: number
-  pingTimeout?: number
+  pingTimeout?: AdaptiveTimeoutInit
   pingConcurrency?: number
   tagName?: string
   tagValue?: number
@@ -53,7 +55,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   private readonly components: RoutingTableComponents
   private readonly prefixLength: number
   private readonly splitThreshold: number
-  private readonly pingTimeout: number
+  private readonly pingTimeout: AdaptiveTimeout
   private readonly pingConcurrency: number
   private running: boolean
   private readonly protocol: string
@@ -73,7 +75,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:routing-table`)
     this.kBucketSize = init.kBucketSize ?? KBUCKET_SIZE
-    this.pingTimeout = init.pingTimeout ?? PING_TIMEOUT
     this.pingConcurrency = init.pingConcurrency ?? PING_CONCURRENCY
     this.running = false
     this.protocol = init.protocol
@@ -89,6 +90,11 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     })
     this.pingQueue.addEventListener('error', evt => {
       this.log.error('error pinging peer', evt.detail)
+    })
+    this.pingTimeout = new AdaptiveTimeout({
+      ...(init.pingTimeout ?? {}),
+      metrics: this.components.metrics,
+      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_time_milliseconds`
     })
 
     if (this.components.metrics != null) {
@@ -177,6 +183,9 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
               tags: {
                 [this.tagName]: {
                   value: this.tagValue
+                },
+                [KEEP_ALIVE]: {
+                  value: 1
                 }
               }
             })
@@ -185,7 +194,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           for (const peer of removedPeers) {
             await this.components.peerStore.merge(peer, {
               tags: {
-                [this.tagName]: undefined
+                [this.tagName]: undefined,
+                [KEEP_ALIVE]: undefined
               }
             })
           }
@@ -242,10 +252,11 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
         return this.pingQueue.add(async () => {
           let stream: Stream | undefined
+          const signal = this.pingTimeout.getTimeoutSignal()
 
           try {
             const options = {
-              signal: AbortSignal.timeout(this.pingTimeout)
+              signal
             }
 
             this.log('pinging old contact %p', oldContact.peerId)
@@ -278,6 +289,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
             return false
           } finally {
+            this.pingTimeout.cleanUp(signal)
             this.updateMetrics()
           }
         }, {
