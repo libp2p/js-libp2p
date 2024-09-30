@@ -812,9 +812,12 @@ describe('queue', () => {
       return 'hello'
     }
 
-    void queue.add(job)
+    const p = queue.add(job)
 
     await expect(queue.add(job)).to.eventually.be.rejected
       .with.property('name', 'QueueFullError')
+
+    await expect(p).to.eventually.equal('hello')
+    await expect(queue.add(job)).to.eventually.equal('hello')
   })
 })
