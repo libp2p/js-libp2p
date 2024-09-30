@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, stop, start } from '@libp2p/interface'
+import { TypedEventEmitter, stop, start, KEEP_ALIVE } from '@libp2p/interface'
 import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -251,6 +251,9 @@ describe('Routing Table', () => {
     expect(tagPeerSpy.getCall(0).args[1].tags).to.deep.equal({
       [KAD_CLOSE_TAG_NAME]: {
         value: KAD_CLOSE_TAG_VALUE
+      },
+      [KEEP_ALIVE]: {
+        value: 1
       }
     })
   })
