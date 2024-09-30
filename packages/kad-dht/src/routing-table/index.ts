@@ -93,8 +93,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     })
     this.pingTimeout = new AdaptiveTimeout({
       ...(init.pingTimeout ?? {}),
-      metrics: components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_network_message_send_times_milliseconds`
+      metrics: this.components.metrics,
+      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_time_milliseconds`
     })
 
     if (this.components.metrics != null) {
