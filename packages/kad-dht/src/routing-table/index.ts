@@ -269,20 +269,21 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             }, Message, options)
             const response = await pb.read(Message, options)
 
-            await pb.unwrap().close()
+            await pb.unwrap().close(options)
 
             if (response.type !== MessageType.PING) {
               throw new InvalidMessageError(`Incorrect message type received, expected PING got ${response.type}`)
             }
 
+            this.log('old contact %p ping ok', oldContact.peerId)
             return true
           } catch (err: any) {
-            if (this.running && this.kb != null) {
+            if (this.running) {
               // only evict peers if we are still running, otherwise we evict
               // when dialing is cancelled due to shutdown in progress
-              this.log.error('could not ping peer %p', oldContact.peerId, err)
+              this.log.error('could not ping peer %p - %e', oldContact.peerId, err)
               this.log('evicting old contact after ping failed %p', oldContact.peerId)
-              this.kb.remove(oldContact.kadId)
+              this.kb?.remove(oldContact.kadId)
             }
 
             stream?.abort(err)
