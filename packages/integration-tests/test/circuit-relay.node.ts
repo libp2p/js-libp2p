@@ -602,8 +602,8 @@ describe('circuit-relay', () => {
       await deferred.promise
 
       // should have closed connections to remote and to relay
-      expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
-      expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+      expect(events[0].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+      expect(events[1].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
     })
 
     it('should remove the relay event listener when the relay stops', async () => {
