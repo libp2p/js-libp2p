@@ -162,7 +162,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       pingConcurrency,
       protocol: this.protocol,
       logPrefix: loggingPrefix,
-      prefixLength: init.prefixLength
+      prefixLength: init.prefixLength,
+      splitThreshold: init.kBucketSplitThreshold
     })
 
     this.providers = new Providers(components, providersInit ?? {})

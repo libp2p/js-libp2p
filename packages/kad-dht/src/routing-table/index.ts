@@ -1,4 +1,4 @@
-import { InvalidMessageError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidMessageError, KEEP_ALIVE, TypedEventEmitter } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { pbStream } from 'it-protobuf-stream'
@@ -177,6 +177,9 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
               tags: {
                 [this.tagName]: {
                   value: this.tagValue
+                },
+                [KEEP_ALIVE]: {
+                  value: 1
                 }
               }
             })
@@ -185,7 +188,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           for (const peer of removedPeers) {
             await this.components.peerStore.merge(peer, {
               tags: {
-                [this.tagName]: undefined
+                [this.tagName]: undefined,
+                [KEEP_ALIVE]: undefined
               }
             })
           }
