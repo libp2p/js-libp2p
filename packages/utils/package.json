@@ -171,6 +171,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
+    "@libp2p/peer-id": "^5.0.4",
     "@types/netmask": "^2.0.5",
     "aegir": "^44.0.1",
     "benchmark": "^2.1.4",
