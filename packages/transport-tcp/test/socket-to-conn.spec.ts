@@ -1,5 +1,4 @@
 import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
-import os from 'os'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
@@ -78,7 +77,8 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -121,11 +121,12 @@ describe('socket-to-conn', () => {
     const serverClosed = defer<boolean>()
 
     // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<Error>()
+    const serverErrored = defer<any>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -144,11 +145,11 @@ describe('socket-to-conn', () => {
     // close the client for reading and writing immediately
     clientSocket.destroy()
 
-    // client closed the connection - error code is platform specific
-    if (os.platform() === 'linux') {
-      await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
-    } else {
-      await expect(serverErrored.promise).to.eventually.have.property('code', 'ECONNRESET')
+    const error = await serverErrored.promise
+
+    // the error can be of either type
+    if (error.name !== 'TimeoutError' && error.code !== 'ECONNRESET') {
+      expect.fail('promise rejected with unknown error type')
     }
 
     // server socket was closed for reading and writing
@@ -168,15 +169,18 @@ describe('socket-to-conn', () => {
       }
     }))
 
+    clientSocket.setTimeout(100)
+
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<Error>()
+    // promise that is resolved when the incoming socket is closed
+    const clientClosed = defer<boolean>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -184,8 +188,12 @@ describe('socket-to-conn', () => {
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
     })
-    serverSocket.once('error', err => {
-      serverErrored.resolve(err)
+
+    clientSocket.once('close', () => {
+      clientClosed.resolve(true)
+    })
+    clientSocket.once('timeout', () => {
+      clientSocket.destroy()
     })
 
     // send some data between the client and server
@@ -195,11 +203,13 @@ describe('socket-to-conn', () => {
     // close the client for writing
     clientSocket.end()
 
-    // server socket was closed for reading and writing
-    await expect(serverClosed.promise).to.eventually.be.true()
+    await Promise.all([
+      // server socket was closed for reading and writing
+      expect(serverClosed.promise).to.eventually.be.true(),
 
-    // remote stopped sending us data
-    await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
+      // remote socket was closed by server
+      expect(clientClosed.promise).to.eventually.be.true()
+    ])
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')
@@ -214,21 +224,16 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<Error>()
-
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
-    })
-    serverSocket.once('error', err => {
-      serverErrored.resolve(err)
     })
 
     // send some data between the client and server
@@ -241,9 +246,6 @@ describe('socket-to-conn', () => {
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
-
-    // remote didn't send us any data
-    await expect(serverErrored.promise).to.eventually.have.property('name', 'TimeoutError')
 
     // the connection closing was recorded
     expect(inboundMaConn.timeline.close).to.be.a('number')
@@ -261,7 +263,8 @@ describe('socket-to-conn', () => {
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout: 10,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -300,8 +303,6 @@ describe('socket-to-conn', () => {
       }
     })
 
-    // spy on `.destroy()` invocations
-    const serverSocketDestroySpy = Sinon.spy(serverSocket, 'destroy')
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
     const socketCloseTimeout = 10
@@ -309,7 +310,8 @@ describe('socket-to-conn', () => {
     const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -344,11 +346,10 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
 
     // the server socket was only closed once
-    expect(serverSocketDestroySpy.callCount).to.equal(1)
     expect(addEventListenerSpy.callCount).to.equal(1)
   })
 
-  it('should destroy a socket by timeout when containing MultiaddrConnection is closed', async () => {
+  it('should destroy a socket when incoming MultiaddrConnection is closed', async () => {
     ({ server, clientSocket, serverSocket } = await setup({
       server: {
         allowHalfOpen: true
@@ -361,7 +362,8 @@ describe('socket-to-conn', () => {
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout: 10,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -388,7 +390,7 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
   })
 
-  it('should destroy a socket by timeout when containing MultiaddrConnection is closed but remote keeps sending data', async () => {
+  it('should destroy a socket when incoming MultiaddrConnection is closed but remote keeps sending data', async () => {
     ({ server, clientSocket, serverSocket } = await setup({
       server: {
         allowHalfOpen: true
@@ -401,7 +403,8 @@ describe('socket-to-conn', () => {
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 500,
       socketCloseTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -432,57 +435,57 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
   })
 
-  it('should destroy a socket by timeout when containing MultiaddrConnection is closed but closing remote times out', async () => {
+  it('should destroy a socket by inactivity timeout', async () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<Error>()
+    // promise that resolves when reading from the outgoing socket times out
+    const serverTimedOut = defer<boolean>()
+
+    const clientError = defer<any>()
 
     const inboundMaConn = toMultiaddrConnection(serverSocket, {
       socketInactivityTimeout: 100,
       socketCloseTimeout: 100,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
 
-    clientSocket.once('error', () => {})
+    clientSocket.once('error', (err) => {
+      clientError.resolve(err)
+    })
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
     })
-    serverSocket.once('error', err => {
-      serverErrored.resolve(err)
+    serverSocket.once('timeout', () => {
+      serverTimedOut.resolve(true)
     })
 
     // send some data between the client and server
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    // stop reading data
-    clientSocket.pause()
+    // ...send no more data
 
-    // have to write enough data quickly enough to overwhelm the client
-    while (serverSocket.writableLength < 1024) {
-      serverSocket.write('goodbyeeeeeeeeeeeeee')
-    }
+    // wait for server to time out socket
+    await Promise.all([
+      // server socket timed out reading from the client
+      expect(serverTimedOut.promise).to.eventually.be.true(),
 
-    await inboundMaConn.close()
+      // server socket was closed for reading and writing
+      expect(serverClosed.promise).to.eventually.be.true(),
+
+      // client connection was closed abruptly
+      expect(clientError.promise).to.eventually.have.property('code', 'ECONNRESET')
+    ])
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
-
-    // server socket was closed for reading and writing
-    await expect(serverClosed.promise).to.eventually.be.true()
-
-    // remote didn't read our data
-    await expect(serverErrored.promise).to.eventually.have.property('name', 'AbortError')
-
-    // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()

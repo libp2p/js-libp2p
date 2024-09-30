@@ -163,19 +163,18 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           this.safeDispatchEvent('close')
         }
       })
+      .on('drop', () => {
+        this.metrics?.events.increment({ [`${this.addr} drop`]: true })
+      })
   }
 
   private onSocket (socket: net.Socket): void {
+    this.metrics?.events.increment({ [`${this.addr} connection`]: true })
+
     if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
       socket.destroy()
       throw new NotStartedError('Server is not listening yet')
     }
-
-    // Avoid uncaught errors caused by unstable connections
-    socket.on('error', err => {
-      this.log('socket error', err)
-      this.metrics?.events.increment({ [`${this.addr} error`]: true })
-    })
 
     let maConn: MultiaddrConnection
     try {
@@ -185,11 +184,13 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
-        logger: this.context.logger
+        logger: this.context.logger,
+        direction: 'inbound'
       })
-    } catch (err) {
+    } catch (err: any) {
       this.log.error('inbound connection failed', err)
       this.metrics?.errors.increment({ [`${this.addr} inbound_to_connection`]: true })
+      socket.destroy()
       return
     }
 

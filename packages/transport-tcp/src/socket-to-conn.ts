@@ -1,11 +1,14 @@
-import { AbortError, InvalidParametersError, TimeoutError } from '@libp2p/interface'
+import { InvalidParametersError, TimeoutError } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import pDefer from 'p-defer'
+import { raceEvent } from 'race-event'
 import { duplex } from 'stream-to-it'
 import { CLOSE_TIMEOUT, SOCKET_TIMEOUT } from './constants.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { ComponentLogger, MultiaddrConnection, CounterGroup } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
+import type { DeferredPromise } from 'p-defer'
 
 interface ToConnectionOptions {
   listeningAddr?: Multiaddr
@@ -16,6 +19,7 @@ interface ToConnectionOptions {
   metrics?: CounterGroup
   metricPrefix?: string
   logger: ComponentLogger
+  direction: 'inbound' | 'outbound'
 }
 
 /**
@@ -23,12 +27,15 @@ interface ToConnectionOptions {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
-  let closePromise: Promise<void> | null = null
+  let closePromise: DeferredPromise<void>
   const log = options.logger.forComponent('libp2p:tcp:socket')
+  const direction = options.direction
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
   const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
+  let timedout = false
+  let errored = false
 
   // Check if we are connected on a unix path
   if (options.listeningAddr?.getPath() != null) {
@@ -38,6 +45,19 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   if (options.remoteAddr?.getPath() != null) {
     options.localAddr = options.remoteAddr
   }
+
+  // handle socket errors
+  socket.on('error', err => {
+    errored = true
+
+    if (!timedout) {
+      log.error('%s socket error - %e', direction, err)
+      metrics?.increment({ [`${metricPrefix}error`]: true })
+    }
+
+    socket.destroy()
+    maConn.timeline.close = Date.now()
+  })
 
   let remoteAddr: Multiaddr
 
@@ -59,37 +79,37 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   // by default there is no timeout
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
-  socket.setTimeout(inactivityTimeout, () => {
-    log('%s socket read timeout', lOptsStr)
-    metrics?.increment({ [`${metricPrefix}timeout`]: true })
+  socket.setTimeout(inactivityTimeout)
 
-    // only destroy with an error if the remote has not sent the FIN message
-    let err: Error | undefined
-    if (socket.readable) {
-      err = new TimeoutError('Socket read timeout')
-    }
+  socket.once('timeout', () => {
+    timedout = true
+    log('%s %s socket read timeout', direction, lOptsStr)
+    metrics?.increment({ [`${metricPrefix}timeout`]: true })
 
     // if the socket times out due to inactivity we must manually close the connection
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-timeout
-    socket.destroy(err)
+    socket.destroy(new TimeoutError())
+    maConn.timeline.close = Date.now()
   })
 
   socket.once('close', () => {
-    log('%s socket close', lOptsStr)
-    metrics?.increment({ [`${metricPrefix}close`]: true })
+    // record metric for clean exit
+    if (!timedout && !errored) {
+      log('%s %s socket close', direction, lOptsStr)
+      metrics?.increment({ [`${metricPrefix}close`]: true })
+    }
 
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline
-    if (maConn.timeline.close == null) {
-      maConn.timeline.close = Date.now()
-    }
+    socket.destroy()
+    maConn.timeline.close = Date.now()
   })
 
   socket.once('end', () => {
     // the remote sent a FIN packet which means no more data will be sent
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-    log('%s socket end', lOptsStr)
+    log('%s %s socket end', direction, lOptsStr)
     metrics?.increment({ [`${metricPrefix}end`]: true })
   })
 
@@ -111,7 +131,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           // If the source errored the socket will already have been destroyed by
           // duplex(). If the socket errored it will already be
           // destroyed. There's nothing to do here except log the error & return.
-          log.error('%s error in sink', lOptsStr, err)
+          log.error('%s %s error in sink - %e', direction, lOptsStr, err)
         }
       }
 
@@ -128,100 +148,84 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     async close (options: AbortOptions = {}) {
       if (socket.closed) {
-        log('The %s socket is already closed', lOptsStr)
+        log('the %s %s socket is already closed', direction, lOptsStr)
         return
       }
 
       if (socket.destroyed) {
-        log('The %s socket is already destroyed', lOptsStr)
+        log('the %s %s socket is already destroyed', direction, lOptsStr)
         return
       }
 
-      const abortSignalListener = (): void => {
-        socket.destroy(new AbortError('Destroying socket after timeout'))
+      if (closePromise != null) {
+        return closePromise.promise
       }
 
       try {
-        if (closePromise != null) {
-          log('The %s socket is already closing', lOptsStr)
-          await closePromise
-          return
+        closePromise = pDefer()
+
+        // close writable end of socket
+        socket.end()
+
+        // convert EventEmitter to EventTarget
+        const eventTarget = socketToEventTarget(socket)
+
+        // don't wait forever to close
+        const signal = options.signal ?? AbortSignal.timeout(closeTimeout)
+
+        // wait for any unsent data to be sent
+        if (socket.writableLength > 0) {
+          log('%s %s draining socket', direction, lOptsStr)
+          await raceEvent(eventTarget, 'drain', signal, {
+            errorEvent: 'error'
+          })
+          log('%s %s socket drained', direction, lOptsStr)
         }
 
-        if (options.signal == null) {
-          const signal = AbortSignal.timeout(closeTimeout)
+        await Promise.all([
+          raceEvent(eventTarget, 'close', signal, {
+            errorEvent: 'error'
+          }),
 
-          options = {
-            ...options,
-            signal
-          }
-        }
-
-        options.signal?.addEventListener('abort', abortSignalListener)
-
-        log('%s closing socket', lOptsStr)
-        closePromise = new Promise<void>((resolve, reject) => {
-          socket.once('close', () => {
-            // socket completely closed
-            log('%s socket closed', lOptsStr)
-            resolve()
-          })
-          socket.once('error', (err: Error) => {
-            log('%s socket error', lOptsStr, err)
-
-            if (!socket.destroyed) {
-              reject(err)
-            }
-            // if socket is destroyed, 'closed' event will be emitted later to resolve the promise
-          })
-
-          // shorten inactivity timeout
-          socket.setTimeout(closeTimeout)
-
-          // close writable end of the socket
-          socket.end()
-
-          if (socket.writableLength > 0) {
-            // there are outgoing bytes waiting to be sent
-            socket.once('drain', () => {
-              log('%s socket drained', lOptsStr)
-
-              // all bytes have been sent we can destroy the socket (maybe) before the timeout
-              socket.destroy()
-            })
-          } else {
-            // nothing to send, destroy immediately, no need for the timeout
-            socket.destroy()
-          }
-        })
-
-        await closePromise
+          // all bytes have been sent we can destroy the socket
+          socket.destroy()
+        ])
       } catch (err: any) {
         this.abort(err)
       } finally {
-        options.signal?.removeEventListener('abort', abortSignalListener)
+        closePromise.resolve()
       }
     },
 
     abort: (err: Error) => {
-      log('%s socket abort due to error', lOptsStr, err)
+      log('%s %s socket abort due to error - %e', direction, lOptsStr, err)
 
       // the abortSignalListener may already destroyed the socket with an error
-      if (!socket.destroyed) {
-        socket.destroy(err)
-      }
+      socket.destroy()
 
       // closing a socket is always asynchronous (must wait for "close" event)
       // but the tests expect this to be a synchronous operation so we have to
       // set the close time here. the tests should be refactored to reflect
       // reality.
-      if (maConn.timeline.close == null) {
-        maConn.timeline.close = Date.now()
-      }
+      maConn.timeline.close = Date.now()
     },
 
     log
   }
 
   return maConn
+}
+
+function socketToEventTarget (obj?: any): EventTarget {
+  const eventTarget = {
+    addEventListener: (type: any, cb: any) => {
+      obj.addListener(type, cb)
+    },
+    removeEventListener: (type: any, cb: any) => {
+      obj.removeListener(type, cb)
+    }
+  }
+
+  // @ts-expect-error partial implementation
+  return eventTarget
 }
