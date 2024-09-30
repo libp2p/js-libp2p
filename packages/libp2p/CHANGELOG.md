@@ -110,6 +110,20 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.1.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.4...libp2p-v2.1.5) (2024-09-30)
+
+
+### Bug Fixes
+
+* record outbound pending connections metric ([#2737](https://github.com/libp2p/js-libp2p/issues/2737)) ([d9c7e0f](https://github.com/libp2p/js-libp2p/commit/d9c7e0f7ec608bd5154f30ae7baa6f1d6020bdfc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/tcp bumped from ^10.0.6 to ^10.0.7
+
 ## [2.1.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.3...libp2p-v2.1.4) (2024-09-27)
 
 
