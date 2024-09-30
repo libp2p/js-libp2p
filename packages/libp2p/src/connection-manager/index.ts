@@ -180,6 +180,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly deny: Multiaddr[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
+  private outboundPendingConnections: number
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
@@ -220,6 +221,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
+    this.outboundPendingConnections = 0
 
     // controls individual peers trying to dial us too quickly
     this.inboundConnectionRateLimiter = new RateLimiter({
@@ -276,7 +278,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         const metric = {
           inbound: 0,
           'inbound pending': this.incomingPendingConnections,
-          outbound: 0
+          outbound: 0,
+          'outbound pending': this.outboundPendingConnections
         }
 
         for (const conns of this.connections.values()) {
@@ -482,67 +485,73 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       throw new NotStartedError('Not started')
     }
 
-    options.signal?.throwIfAborted()
+    this.outboundPendingConnections++
 
-    const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+    try {
+      options.signal?.throwIfAborted()
 
-    if (this.peerId.equals(peerId)) {
-      throw new InvalidPeerIdError('Can not dial self')
-    }
+      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null && options.force !== true) {
-      this.log('dial %p', peerId)
-      const existingConnection = this.getConnections(peerId)
-        .find(conn => conn.limits == null)
-
-      if (existingConnection != null) {
-        this.log('had an existing non-limited connection to %p', peerId)
-
-        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-        return existingConnection
-      }
-    }
-
-    const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
-      ...options,
-      priority: options.priority ?? DEFAULT_DIAL_PRIORITY
-    })
-
-    if (connection.status !== 'open') {
-      throw new ConnectionClosedError('Remote closed connection during opening')
-    }
-
-    let peerConnections = this.connections.get(connection.remotePeer)
-
-    if (peerConnections == null) {
-      peerConnections = []
-      this.connections.set(connection.remotePeer, peerConnections)
-    }
-
-    // we get notified of connections via the Upgrader emitting "connection"
-    // events, double check we aren't already tracking this connection before
-    // storing it
-    let trackedConnection = false
-
-    for (const conn of peerConnections) {
-      if (conn.id === connection.id) {
-        trackedConnection = true
+      if (this.peerId.equals(peerId)) {
+        throw new InvalidPeerIdError('Can not dial self')
       }
 
-      // make sure we don't already have a connection to this multiaddr
-      if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
-        connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+      if (peerId != null && options.force !== true) {
+        this.log('dial %p', peerId)
+        const existingConnection = this.getConnections(peerId)
+          .find(conn => conn.limits == null)
 
-        // return the existing connection
-        return conn
+        if (existingConnection != null) {
+          this.log('had an existing non-limited connection to %p', peerId)
+
+          options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          return existingConnection
+        }
       }
-    }
 
-    if (!trackedConnection) {
-      peerConnections.push(connection)
-    }
+      const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
+        ...options,
+        priority: options.priority ?? DEFAULT_DIAL_PRIORITY
+      })
 
-    return connection
+      if (connection.status !== 'open') {
+        throw new ConnectionClosedError('Remote closed connection during opening')
+      }
+
+      let peerConnections = this.connections.get(connection.remotePeer)
+
+      if (peerConnections == null) {
+        peerConnections = []
+        this.connections.set(connection.remotePeer, peerConnections)
+      }
+
+      // we get notified of connections via the Upgrader emitting "connection"
+      // events, double check we aren't already tracking this connection before
+      // storing it
+      let trackedConnection = false
+
+      for (const conn of peerConnections) {
+        if (conn.id === connection.id) {
+          trackedConnection = true
+        }
+
+        // make sure we don't already have a connection to this multiaddr
+        if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
+          connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+
+          // return the existing connection
+          return conn
+        }
+      }
+
+      if (!trackedConnection) {
+        peerConnections.push(connection)
+      }
+
+      return connection
+    } finally {
+      this.outboundPendingConnections--
+    }
   }
 
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
