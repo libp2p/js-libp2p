@@ -5,7 +5,7 @@ import { pbStream } from 'it-protobuf-stream'
 import { Message, MessageType } from '../message/dht.js'
 import * as utils from '../utils.js'
 import { KBucket, isLeafBucket, type Bucket, type PingEventDetails } from './k-bucket.js'
-import type { ComponentLogger, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
+import type { ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
@@ -64,6 +64,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     routingTableKadBucketTotal: Metric
     routingTableKadBucketAverageOccupancy: Metric
     routingTableKadBucketMaxDepth: Metric
+    kadBucketEvents: CounterGroup<'ping' | 'ping_error' | 'peer_added' | 'peer_removed'>
   }
 
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
@@ -95,7 +96,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
         routingTableSize: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_size`),
         routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_total`),
         routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_average_occupancy`),
-        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_depth`)
+        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_depth`),
+        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_kad_bucket_events_total`)
       }
     }
   }
@@ -121,7 +123,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     // test whether to evict peers
     kBuck.addEventListener('ping', (evt) => {
+      this.metrics?.kadBucketEvents.increment({ ping: true })
+
       this._onPing(evt).catch(err => {
+        this.metrics?.kadBucketEvents.increment({ ping_error: true })
         this.log.error('could not process k-bucket ping event', err)
       })
     })
@@ -195,11 +200,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     kBuck.addEventListener('added', (evt) => {
       updatePeerTags()
 
+      this.metrics?.kadBucketEvents.increment({ peer_added: true })
       this.safeDispatchEvent('peer:add', { detail: evt.detail.peerId })
     })
     kBuck.addEventListener('removed', (evt) => {
       updatePeerTags()
 
+      this.metrics?.kadBucketEvents.increment({ peer_removed: true })
       this.safeDispatchEvent('peer:remove', { detail: evt.detail.peerId })
     })
   }
@@ -271,7 +278,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
             return false
           } finally {
-            this.metrics?.routingTableSize.update(this.size)
+            this.updateMetrics()
           }
         }, {
           peerId: oldContact.peerId
