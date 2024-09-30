@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.7](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.6...tcp-v10.0.7) (2024-09-30)
+
+
+### Bug Fixes
+
+* refactor connection opening and closing ([#2735](https://github.com/libp2p/js-libp2p/issues/2735)) ([24fa1d5](https://github.com/libp2p/js-libp2p/commit/24fa1d5af3be19f60f31261e8e0242c1747da0b2))
+
 ## [10.0.6](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.5...tcp-v10.0.6) (2024-09-27)
 
 

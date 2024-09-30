@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [13.1.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.1.1...kad-dht-v13.1.2) (2024-09-30)
+
+
+### Bug Fixes
+
+* record query metrics properly ([#2736](https://github.com/libp2p/js-libp2p/issues/2736)) ([58784ab](https://github.com/libp2p/js-libp2p/commit/58784abf7c311308eb33a50b1e652d996592394a))
+
 ## [13.1.1](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.1.0...kad-dht-v13.1.1) (2024-09-27)
 
 
