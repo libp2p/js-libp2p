@@ -263,13 +263,15 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             const connection = await this.components.connectionManager.openConnection(oldContact.peerId, options)
             stream = await connection.newStream(this.protocol, options)
 
-            const pb = pbStream(stream)
+            const pb = pbStream(stream).pb(Message)
             await pb.write({
-              type: MessageType.PING
-            }, Message, options)
-            const response = await pb.read(Message, options)
+              type: MessageType.PING,
+              closer: [],
+              providers: []
+            }, options)
+            const response = await pb.read(options)
 
-            await pb.unwrap().close(options)
+            await pb.unwrap().unwrap().close(options)
 
             if (response.type !== MessageType.PING) {
               throw new InvalidMessageError(`Incorrect message type received, expected PING got ${response.type}`)
