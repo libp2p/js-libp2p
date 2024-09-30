@@ -397,12 +397,10 @@ export interface KadDHTInit {
   logPrefix?: string
 
   /**
-   * How long to wait in ms when pinging DHT peers to decide if they
-   * should be evicted from the routing table or not.
-   *
-   * @default 10000
+   * Settings for how long to wait in ms when pinging DHT peers to decide if
+   * they should be evicted from the routing table or not.
    */
-  pingTimeout?: number
+  pingTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
    * How many peers to ping in parallel when deciding if they should
