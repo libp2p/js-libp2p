@@ -11,7 +11,7 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
 
 export interface NetworkInit {
   protocol: string
@@ -32,6 +32,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   private running: boolean
   private readonly components: KadDHTComponents
   private readonly timeout: AdaptiveTimeout
+  private readonly metrics: {
+    operations?: CounterGroup
+    errors?: CounterGroup
+  }
 
   /**
    * Create a new network
@@ -49,6 +53,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       metrics: components.metrics,
       metricName: `${init.logPrefix.replaceAll(':', '_')}_network_message_send_times_milliseconds`
     })
+    this.metrics = {
+      operations: components.metrics?.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_outbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_outbound_rpc_errors_total`)
+    }
   }
 
   /**
@@ -103,6 +111,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     try {
+      this.metrics.operations?.increment({ [type]: true })
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
       const response = await this._writeReadMessage(stream, msg, options)
@@ -121,6 +131,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record)
       }, options)
     } catch (err: any) {
+      this.metrics.errors?.increment({ [type]: true })
+
       stream?.abort(err)
 
       // only log if the incoming signal was not aborted - this means we were
@@ -162,6 +174,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     try {
+      this.metrics.operations?.increment({ [type]: true })
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
 
@@ -175,6 +189,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       yield peerResponseEvent({ from: to, messageType: type }, options)
     } catch (err: any) {
+      this.metrics.errors?.increment({ [type]: true })
+
       stream?.abort(err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
