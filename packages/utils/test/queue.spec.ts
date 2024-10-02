@@ -800,4 +800,24 @@ describe('queue', () => {
     // job not in queue any more
     expect(queue.queue.find(job => !job.options.slow)).to.be.undefined()
   })
+
+  it('rejects job when the queue is full', async () => {
+    const queue = new Queue<string>({
+      concurrency: 1,
+      maxSize: 1
+    })
+
+    const job = async (): Promise<string> => {
+      await delay(100)
+      return 'hello'
+    }
+
+    const p = queue.add(job)
+
+    await expect(queue.add(job)).to.eventually.be.rejected
+      .with.property('name', 'QueueFullError')
+
+    await expect(p).to.eventually.equal('hello')
+    await expect(queue.add(job)).to.eventually.equal('hello')
+  })
 })
