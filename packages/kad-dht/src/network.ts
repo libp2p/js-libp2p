@@ -85,7 +85,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   }
 
   /**
-   * Send a request and record RTT for latency measurements
+   * Send a request and read a response
    */
   async * sendRequest (to: PeerId, msg: Partial<Message>, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
@@ -204,7 +204,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   async _writeMessage (stream: Stream, msg: Partial<Message>, options: AbortOptions): Promise<void> {
     const pb = pbStream(stream)
     await pb.write(msg, Message, options)
-    await pb.unwrap().close(options)
   }
 
   /**
@@ -218,8 +217,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     await pb.write(msg, Message, options)
 
     const message = await pb.read(Message, options)
-
-    await pb.unwrap().close(options)
 
     // tell any listeners about new peers we've seen
     message.closer.forEach(peerData => {

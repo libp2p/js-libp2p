@@ -63,12 +63,6 @@ export class RPC {
    * Process incoming DHT messages
    */
   async handleMessage (peerId: PeerId, msg: Message): Promise<Message | undefined> {
-    try {
-      await this.routingTable.add(peerId)
-    } catch (err: any) {
-      this.log.error('Failed to update the kbucket store', err)
-    }
-
     // get handler & execute it
     const handler = this.handlers[msg.type]
 
@@ -94,6 +88,8 @@ export class RPC {
    * Handle incoming streams on the dht protocol
    */
   onIncomingStream (data: IncomingStreamData): void {
+    let message = 'unknown'
+
     Promise.resolve().then(async () => {
       const { stream, connection } = data
       const peerId = connection.remotePeer
@@ -113,6 +109,7 @@ export class RPC {
           for await (const msg of source) {
             // handle the message
             const desMessage = Message.decode(msg)
+            message = desMessage.type
             self.log('incoming %s from %p', desMessage.type, peerId)
             const res = await self.handleMessage(peerId, desMessage)
 
@@ -127,7 +124,7 @@ export class RPC {
       )
     })
       .catch(err => {
-        this.log.error(err)
+        this.log.error('error handling %s RPC message from %p - %e', message, data.connection.remotePeer, err)
       })
   }
 }

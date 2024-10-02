@@ -1,3 +1,4 @@
+import { PeerMap } from '@libp2p/peer-collections'
 import map from 'it-map'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -143,6 +144,7 @@ export class KBucket {
   private readonly onAdd?: OnAddCallback
   private readonly onRemove?: OnRemoveCallback
   private readonly onMove?: OnMoveCallback
+  private readonly addingPeerMap: PeerMap<Promise<void>>
 
   constructor (options: KBucketOptions) {
     this.prefixLength = options.prefixLength ?? PREFIX_LENGTH
@@ -155,6 +157,7 @@ export class KBucket {
     this.onAdd = options.onAdd
     this.onRemove = options.onRemove
     this.onMove = options.onMove
+    this.addingPeerMap = new PeerMap()
 
     this.root = {
       prefix: '',
@@ -184,7 +187,19 @@ export class KBucket {
       lastPing: 0
     }
 
-    return this._add(peer, options)
+    const existingPromise = this.addingPeerMap.get(peerId)
+
+    if (existingPromise != null) {
+      return existingPromise
+    }
+
+    try {
+      const p = this._add(peer, options)
+      this.addingPeerMap.set(peerId, p)
+      await p
+    } finally {
+      this.addingPeerMap.delete(peerId)
+    }
   }
 
   private async _add (peer: Peer, options?: AbortOptions): Promise<void> {

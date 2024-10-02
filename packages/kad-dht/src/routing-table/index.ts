@@ -15,7 +15,7 @@ import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 32
+export const PREFIX_LENGTH = 7
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
@@ -122,9 +122,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       metrics: this.components.metrics,
       maxSize: init.pingOldContactMaxQueueSize ?? PING_OLD_CONTACT_MAX_QUEUE_SIZE
     })
-    this.pingOldContactQueue.addEventListener('error', evt => {
-      this.log.error('error pinging old contact', evt.detail)
-    })
     this.pingOldContactTimeout = new AdaptiveTimeout({
       ...(init.pingOldContactTimeout ?? {}),
       metrics: this.components.metrics,
@@ -136,9 +133,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       metricName: `${init.logPrefix.replaceAll(':', '_')}_ping_new_contact_queue`,
       metrics: this.components.metrics,
       maxSize: init.pingNewContactMaxQueueSize ?? PING_NEW_CONTACT_MAX_QUEUE_SIZE
-    })
-    this.pingNewContactQueue.addEventListener('error', evt => {
-      this.log.error('error pinging new contact', evt.detail)
     })
     this.pingNewContactTimeout = new AdaptiveTimeout({
       ...(init.pingNewContactTimeout ?? {}),
