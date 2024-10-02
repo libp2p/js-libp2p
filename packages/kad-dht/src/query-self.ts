@@ -106,19 +106,27 @@ export class QuerySelf implements Startable {
 
     if (this.started) {
       this.controller = new AbortController()
-      const timeoutSignal = AbortSignal.timeout(this.queryTimeout)
-      const signal = anySignal([this.controller.signal, timeoutSignal])
+      const signals = [this.controller.signal]
 
-      // this controller will get used for lots of dial attempts so make sure we don't cause warnings to be logged
-      setMaxListeners(Infinity, signal, this.controller.signal, timeoutSignal)
+      // add a shorter timeout if we've already run our initial self query
+      if (this.initialQuerySelfHasRun == null) {
+        const timeoutSignal = AbortSignal.timeout(this.queryTimeout)
+        setMaxListeners(Infinity, timeoutSignal)
+        signals.push(timeoutSignal)
+      }
+
+      const signal = anySignal(signals)
+      setMaxListeners(Infinity, signal, this.controller.signal)
 
       try {
         if (this.routingTable.size === 0) {
           this.log('routing table was empty, waiting for some peers before running query')
-          // wait to discover at least one DHT peer
+          // wait to discover at least one DHT peer that isn't us
           await pEvent(this.routingTable, 'peer:add', {
-            signal
+            signal,
+            filter: (event) => !this.peerId.equals(event.detail)
           })
+          this.log('routing table has peers, continuing with query')
         }
 
         this.log('run self-query, look for %d peers timing out after %dms', this.count, this.queryTimeout)

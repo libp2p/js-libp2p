@@ -37,3 +37,13 @@ export class MissingSelectorError extends Error {
     this.name = 'MissingSelectorError'
   }
 }
+
+/**
+ * A selector function was missing
+ */
+export class ContactOnlineError extends Error {
+  constructor (message = 'Contact was still online') {
+    super(message)
+    this.name = 'ContactOnlineError'
+  }
+}

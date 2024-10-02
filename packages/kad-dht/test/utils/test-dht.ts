@@ -86,6 +86,9 @@ export class TestDHT {
 
     const dht = new KadDHTClass(components, opts)
 
+    // skip peer validation
+    dht.routingTable.kb.verify = async () => true
+
     // simulate libp2p._onDiscoveryPeer
     dht.addEventListener('peer', (evt) => {
       const peerData = evt.detail

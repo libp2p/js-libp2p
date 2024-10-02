@@ -779,8 +779,8 @@ describe('KadDHT', () => {
       // The expected closest kValue peers to the key
       const exp = actualClosest.slice(0, c.K)
 
-      // Expect the kValue peers found to include the kValue closest connected peers
-      // to the key
+      // Expect the kValue peers found to include the kValue closest connected
+      // peers to the key
       expect(countDiffPeers(out, exp)).to.equal(0)
     })
 
@@ -838,7 +838,7 @@ describe('KadDHT', () => {
   })
 
   describe('errors', () => {
-    it('get should handle correctly an unexpected error', async function () {
+    it('get should correctly handle an unexpected error', async function () {
       this.timeout(240 * 1000)
 
       const error = new Error('fake error')

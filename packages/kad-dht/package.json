@@ -109,7 +109,6 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^6.2.0",
-    "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
     "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0",

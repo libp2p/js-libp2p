@@ -2,51 +2,43 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, stop, start, KEEP_ALIVE } from '@libp2p/interface'
-import { mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import all from 'it-all'
+import delay from 'delay'
 import drain from 'it-drain'
-import { pipe } from 'it-pipe'
 import random from 'lodash.random'
 import { pEvent } from 'p-event'
-import pWaitFor from 'p-wait-for'
-import sinon from 'sinon'
-import { stubInterface } from 'sinon-ts'
-import { Uint8ArrayList } from 'uint8arraylist'
+import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
-import { Message, MessageType } from '../src/message/dht.js'
-import { KAD_CLOSE_TAG_NAME, KAD_CLOSE_TAG_VALUE, KBUCKET_SIZE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
+import { MessageType } from '../src/message/dht.js'
+import { peerResponseEvent } from '../src/query/events.js'
+import { KAD_CLOSE_TAG_NAME, KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
+import { isLeafBucket } from '../src/routing-table/k-bucket.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
-import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { Libp2pEvents, PeerId, PeerStore, Stream, Peer } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Network } from '../src/network.js'
+import type { Bucket } from '../src/routing-table/k-bucket.js'
+import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
 
 describe('Routing Table', () => {
   let table: RoutingTable
   let components: RoutingTableComponents
+  let network: StubbedInstance<Network>
 
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
     const events = new TypedEventEmitter<Libp2pEvents>()
+    network = stubInterface()
 
     components = {
       peerId: await createPeerId(),
-      connectionManager: stubInterface<ConnectionManager>(),
       peerStore: stubInterface<PeerStore>(),
       logger: defaultLogger()
     }
-    components.connectionManager = mockConnectionManager({
-      ...components,
-      registrar: stubInterface<Registrar>(),
-      events
-    })
     components.peerStore = persistentPeerStore({
       ...components,
       datastore: new MemoryDatastore(),
@@ -55,16 +47,147 @@ describe('Routing Table', () => {
 
     table = new RoutingTable(components, {
       logPrefix: '',
-      protocol: PROTOCOL
+      protocol: PROTOCOL,
+      network
     })
     await start(table)
+
+    // simulate connection succeeding
+    network.sendRequest.callsFake(async function * (from: PeerId) {
+      yield peerResponseEvent({
+        from,
+        messageType: MessageType.PING
+      })
+    })
   })
 
   afterEach(async () => {
     await stop(table)
   })
 
-  it('add', async function () {
+  it('adds peers', async () => {
+    // make a very small routing table with a predictable structure
+    table = new RoutingTable({
+      ...components,
+      // self peer kad id prefix is 00010
+      peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
+    }, {
+      logPrefix: '',
+      protocol: PROTOCOL,
+      kBucketSize: 2,
+      prefixLength: 3,
+      network
+    })
+    await start(table)
+
+    const peerIds = [
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3'), // 00010
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi7'), // 00011
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA'), // 00111
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB'), // 01000
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiC'), // 11111
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiD'), // 11110
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiE'), // 10111
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZib') // 11001
+    ]
+
+    for (const peerId of peerIds) {
+      await table.add(peerId)
+    }
+
+    const trie = collect(table.kb.root)
+
+    expect(trie).to.deep.equal({
+      prefix: '',
+      depth: 0,
+      left: {
+        prefix: '0',
+        depth: 0,
+        left: {
+          prefix: '0',
+          depth: 1,
+          left: {
+            prefix: '0',
+            depth: 2,
+            peers: [
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3', // 00010
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi7' //  00011
+            ],
+            containsSelf: true
+          },
+          right: {
+            prefix: '1',
+            depth: 2,
+            peers: [
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA' // 00111
+            ],
+            containsSelf: false
+          }
+        },
+        right: {
+          prefix: '1',
+          depth: 1,
+          peers: [
+            'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB' // 01000
+          ],
+          containsSelf: false
+        }
+      },
+      right: {
+        prefix: '1',
+        depth: 0,
+        left: {
+          prefix: '0',
+          depth: 1,
+          peers: [
+            'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiE' // 10111
+          ],
+          containsSelf: false
+        },
+        right: {
+          prefix: '1',
+          depth: 1,
+          left: {
+            prefix: '0',
+            depth: 2,
+            peers: [
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZib' // 11001
+            ],
+            containsSelf: false
+          },
+          right: {
+            prefix: '1',
+            depth: 2,
+            peers: [
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiC', // 11111
+              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiD' //  11110
+            ],
+            containsSelf: false
+          }
+        }
+      }
+    })
+
+    function collect (bucket: Bucket, obj: any = {}): any {
+      if (isLeafBucket(bucket)) {
+        return {
+          prefix: bucket.prefix,
+          depth: bucket.depth,
+          peers: bucket.peers.map(p => p.peerId.toString()),
+          containsSelf: Boolean(bucket.containsSelf)
+        }
+      } else {
+        obj.prefix = bucket.prefix
+        obj.depth = bucket.depth
+        obj.left = collect(bucket.left, {})
+        obj.right = collect(bucket.right, {})
+      }
+
+      return obj
+    }
+  })
+
+  it('should add a lot of duplicated peers', async function () {
     this.timeout(20 * 1000)
 
     const ids = await createPeerIds(20)
@@ -84,6 +207,74 @@ describe('Routing Table', () => {
     )
   })
 
+  it('should tag peers on add', async function () {
+    const peerCount = 100
+    const ids = await createPeerIds(peerCount)
+
+    for (const id of ids) {
+      await table.add(id)
+    }
+
+    expect(table.size).to.equal(peerCount)
+
+    // assert peers are tagged
+    const walked = await assertPeerTags(table.kb.root)
+
+    expect(walked).to.equal(peerCount)
+
+    async function assertPeerTags (bucket: Bucket): Promise<number> {
+      let peers = 0
+
+      if (isLeafBucket(bucket)) {
+        for (const contact of bucket.peers) {
+          peers++
+
+          const peer = await components.peerStore.get(contact.peerId)
+          const tags = [...peer.tags.keys()]
+
+          expect(tags).to.contain(KAD_PEER_TAG_NAME)
+
+          if (bucket.containsSelf === true) {
+            expect(tags).to.contain(KAD_CLOSE_TAG_NAME)
+            expect(tags).to.contain(KEEP_ALIVE)
+          } else {
+            expect(tags).to.not.contain(KAD_CLOSE_TAG_NAME)
+            expect(tags).to.not.contain(KEEP_ALIVE)
+          }
+        }
+      } else {
+        if (bucket.left != null) {
+          peers += await assertPeerTags(bucket.left)
+        }
+
+        if (bucket.right != null) {
+          peers += await assertPeerTags(bucket.right)
+        }
+      }
+
+      return peers
+    }
+  })
+
+  it('should untag peers on remove', async function () {
+    const peerCount = 100
+    const ids = await createPeerIds(peerCount)
+
+    for (const id of ids) {
+      await table.add(id)
+    }
+
+    const removePeer = ids[0]
+    await table.remove(removePeer)
+
+    const peer = await components.peerStore.get(removePeer)
+    const tags = [...peer.tags.keys()]
+
+    expect(tags).to.not.contain(KAD_PEER_TAG_NAME)
+    expect(tags).to.not.contain(KAD_CLOSE_TAG_NAME)
+    expect(tags).to.not.contain(KEEP_ALIVE)
+  })
+
   it('emits peer:add event', async () => {
     const id = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const eventPromise = pEvent<'peer:add', CustomEvent<PeerId>>(table, 'peer:add')
@@ -96,7 +287,9 @@ describe('Routing Table', () => {
 
   it('remove', async function () {
     const peers = await createPeerIds(10)
-    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
+    await Promise.all(peers.map(async (peer) => {
+      await table.add(peer)
+    }))
 
     const key = await kadUtils.convertPeerId(peers[2])
     expect(table.closestPeers(key, 10)).to.have.length(10)
@@ -148,45 +341,22 @@ describe('Routing Table', () => {
 
     const oldPeer = {
       kadId: await kadUtils.convertPeerId(peerIds[0]),
-      peerId: peerIds[0]
+      peerId: peerIds[0],
+      lastPing: 0
     }
     const newPeer = {
       kadId: await kadUtils.convertPeerId(peerIds[1]),
-      peerId: peerIds[1]
-    }
-
-    if (table.kb == null) {
-      throw new Error('kbucket not defined')
+      peerId: peerIds[1],
+      lastPing: Date.now()
     }
 
     // add the old peer
-    table.kb.add(oldPeer)
+    await table.kb.add(oldPeer.peerId)
 
-    const stream = stubInterface<Stream>({
-      source: (async function * () {
-        yield new Uint8ArrayList(Uint8Array.from([2]), Message.encode({
-          type: MessageType.PING
-        }))
-      })(),
-      sink: async function (source) {
-        await drain(source)
-      }
-    })
+    await drain(table.pingOldContacts([oldPeer]))
 
-    // simulate connection succeeding
-    const newStreamStub = sinon.stub().withArgs(PROTOCOL).resolves(stream)
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peerId).resolves({
-      newStream: newStreamStub
-    })
-    components.connectionManager.openConnection = openConnectionStub
-
-    await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
-
-    expect(openConnectionStub.calledOnce).to.be.true()
-    expect(openConnectionStub.calledWith(oldPeer.peerId)).to.be.true()
-
-    expect(newStreamStub.callCount).to.equal(1)
-    expect(newStreamStub.calledWith(PROTOCOL)).to.be.true()
+    expect(network.sendRequest.calledTwice).to.be.true()
+    expect(network.sendRequest.calledWith(oldPeer.peerId)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.kadId)).to.be.undefined()
@@ -196,36 +366,62 @@ describe('Routing Table', () => {
   })
 
   it('evicts oldest peer that does not respond to ping', async () => {
+    // make a very small routing table with a predictable structure
+    table = new RoutingTable({
+      ...components,
+      peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
+    }, {
+      logPrefix: '',
+      protocol: PROTOCOL,
+      kBucketSize: 1,
+      prefixLength: 1,
+      network,
+      lastPingThreshold: 1
+    })
+    await start(table)
+
     const peerIds = [
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5'),
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi6')
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi1'),
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi2')
     ]
+
+    for (const peerId of peerIds) {
+      await table.add(peerId)
+    }
+
+    const newPeerId = peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5')
 
     const oldPeer = {
       kadId: await kadUtils.convertPeerId(peerIds[0]),
       peerId: peerIds[0]
     }
     const newPeer = {
-      kadId: await kadUtils.convertPeerId(peerIds[1]),
-      peerId: peerIds[1]
+      kadId: await kadUtils.convertPeerId(newPeerId),
+      peerId: newPeerId
     }
+
+    // ensure the lastPing threshold is passed
+    await delay(100)
+
+    // reset network stub so we can have specific behaviour
+    table.network = network = stubInterface()
 
     // libp2p fails to dial the old peer
-    const openConnectionStub = sinon.stub().withArgs(oldPeer.peerId).rejects(new Error('Could not dial peer'))
-    components.connectionManager.openConnection = openConnectionStub
+    network.sendRequest.withArgs(oldPeer.peerId).rejects(new Error('Could not dial peer'))
 
-    if (table.kb == null) {
-      throw new Error('kbucket not defined')
-    }
+    // the new peer answers the ping
+    network.sendRequest.withArgs(newPeer.peerId).callsFake(async function * (from: PeerId) {
+      yield peerResponseEvent({
+        from,
+        messageType: MessageType.PING
+      })
+    })
 
     // add the old peer
-    table.kb.add(oldPeer)
+    await table.kb.add(oldPeer.peerId)
 
-    await table._onPing(new CustomEvent('ping', { detail: { oldContacts: [oldPeer], newContact: newPeer } }))
-    await table.pingQueue.onIdle()
-
-    expect(openConnectionStub.callCount).to.equal(1)
-    expect(openConnectionStub.calledWith(oldPeer.peerId)).to.be.true()
+    // add the new peer
+    await table.kb.add(newPeer.peerId)
 
     // added the new peer
     expect(table.kb.get(newPeer.kadId)).to.not.be.undefined()
@@ -235,117 +431,72 @@ describe('Routing Table', () => {
   })
 
   it('tags newly found kad-close peers', async () => {
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
-
-    await table.add(remotePeer)
-
-    expect(tagPeerSpy.callCount).to.equal(0, 'did not debounce call to peerStore.tagPeer')
-
-    await pWaitFor(() => {
-      return tagPeerSpy.callCount === 1
+    // make a very small routing table with a predictable structure
+    table = new RoutingTable({
+      ...components,
+      // self peer kad id prefix is 00010
+      peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
+    }, {
+      logPrefix: '',
+      protocol: PROTOCOL,
+      kBucketSize: 2,
+      prefixLength: 2,
+      network
     })
+    await start(table)
 
-    expect(tagPeerSpy.callCount).to.equal(1, 'did not tag kad-close peer')
-    expect(tagPeerSpy.getCall(0).args[0].toString()).to.equal(remotePeer.toString())
-    expect(tagPeerSpy.getCall(0).args[1].tags).to.deep.equal({
-      [KAD_CLOSE_TAG_NAME]: {
-        value: KAD_CLOSE_TAG_VALUE
-      },
-      [KEEP_ALIVE]: {
-        value: 1
-      }
-    })
-  })
+    const peerIds = [
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3'), // 00010
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB') // 01000
+    ]
 
-  it('removes tags from kad-close peers when closer peers are found', async () => {
-    async function getTaggedPeers (): Promise<PeerSet> {
-      return new PeerSet(await pipe(
-        await components.peerStore.all(),
-        async function * (source) {
-          for await (const peer of source) {
-            const peerData = await components.peerStore.get(peer.id)
-
-            if (peerData.tags.has(KAD_CLOSE_TAG_NAME)) {
-              yield peer.id
-            }
-          }
-        },
-        async (source) => all(source)
-      ))
+    for (const peerId of peerIds) {
+      await table.add(peerId)
     }
 
-    const tagPeerSpy = sinon.spy(components.peerStore, 'merge')
-    const localNodeId = await kadUtils.convertPeerId(components.peerId)
-    const sortedPeerList = await sortClosestPeers(
-      await createPeerIds(KBUCKET_SIZE + 1),
-      localNodeId
-    )
+    // current close peer should be marked close
+    const closePeerData = await components.peerStore.get(peerIds[1])
+    expect(closePeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.true()
+    expect(closePeerData.tags.has(KEEP_ALIVE)).to.be.true()
+    expect(closePeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
 
-    // sort list furthest -> closest
-    sortedPeerList.reverse()
+    const newPeer = peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA') // 00111
 
-    // fill the table up to the first kbucket size
-    for (let i = 0; i < KBUCKET_SIZE; i++) {
-      await table.add(sortedPeerList[i])
-    }
+    await table.add(newPeer)
 
-    // should have all added contacts in the root kbucket
-    expect(table.kb?.count()).to.equal(KBUCKET_SIZE, 'did not fill kbuckets')
-    expect(table.kb?.root).to.have.property('peers').with.lengthOf(KBUCKET_SIZE, 'split root kbucket when we should not have')
-    expect(table.kb?.root).to.not.have.property('left', 'split root kbucket when we should not have')
-    expect(table.kb?.root).to.not.have.property('right', 'split root kbucket when we should not have')
+    // new peer should be marked close
+    const newPeerData = await components.peerStore.get(newPeer)
+    expect(newPeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.true()
+    expect(newPeerData.tags.has(KEEP_ALIVE)).to.be.true()
+    expect(newPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
 
-    await pWaitFor(() => {
-      return tagPeerSpy.callCount === KBUCKET_SIZE
-    })
-
-    // make sure we tagged all of the peers as kad-close
-    const taggedPeers = await getTaggedPeers()
-    expect(taggedPeers.difference(new PeerSet(sortedPeerList.slice(0, sortedPeerList.length - 1)))).to.have.property('size', 0)
-    tagPeerSpy.resetHistory()
-
-    // add a node that is closer than any added so far
-    await table.add(sortedPeerList[sortedPeerList.length - 1])
-
-    expect(table.kb?.count()).to.equal(KBUCKET_SIZE + 1, 'did not fill kbuckets')
-    expect(table.kb?.root).to.have.property('left').that.is.not.null('did not split root kbucket when we should have')
-    expect(table.kb?.root).to.have.property('right').that.is.not.null('did not split root kbucket when we should have')
-
-    // wait for tag new peer and untag old peer
-    await pWaitFor(() => {
-      return tagPeerSpy.callCount === 2
-    })
-
-    // should have updated list of tagged peers
-    const finalTaggedPeers = await getTaggedPeers()
-    expect(finalTaggedPeers.difference(new PeerSet(sortedPeerList.slice(1)))).to.have.property('size', 0)
+    // not close but not evicted from the table because it wasn't full yet
+    const movedPeerData = await components.peerStore.get(peerIds[1])
+    expect(movedPeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.false()
+    expect(movedPeerData.tags.has(KEEP_ALIVE)).to.be.false()
+    expect(movedPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
   })
 
   it('adds peerstore peers to the routing table on startup', async () => {
-    const peer1 = stubInterface<Peer>({
+    const peer = stubInterface<Peer>({
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       protocols: [
         PROTOCOL
-      ]
-    })
-    const peer2 = stubInterface<Peer>({
-      id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      protocols: [
-        '/ipfs/id/1.0.0'
-      ]
+      ],
+      tags: new Map([[KAD_PEER_TAG_NAME, { value: KAD_PEER_TAG_VALUE }]])
     })
 
-    await expect(table.find(peer1.id)).to.eventually.be.undefined()
-    await expect(table.find(peer2.id)).to.eventually.be.undefined()
+    await expect(table.find(peer.id)).to.eventually.be.undefined()
 
     await stop(table)
 
-    components.peerStore.all = async () => [peer1, peer2]
+    components.peerStore.all = async () => [peer]
 
     await start(table)
 
-    await expect(table.find(peer1.id)).to.eventually.be.ok()
-    await expect(table.find(peer2.id)).to.eventually.be.undefined()
+    // this is done asynchronously
+    await pEvent(table, 'peer:add')
+
+    await expect(table.find(peer.id)).to.eventually.be.ok()
   })
 })
