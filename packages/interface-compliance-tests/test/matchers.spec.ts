@@ -24,9 +24,7 @@ describe('peer id matcher', () => {
     const stub = Sinon.stub()
     stub(peerId)
 
-    // this does not match because peerId2 does not contain the private key so
-    // the values are not deeply equal
-    expect(stub.calledWith(peerId2)).to.be.false()
+    expect(stub.calledWith(peerId2)).to.be.true()
     expect(stub.calledWith(matchPeerId(peerId2))).to.be.true()
   })
 })
