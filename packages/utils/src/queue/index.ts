@@ -48,8 +48,8 @@ export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = Abor
 
 export type JobStatus = 'queued' | 'running' | 'errored' | 'complete'
 
-export interface RunFunction<Options = AbortOptions, ReturnType = void> {
-  (opts?: Options): Promise<ReturnType>
+export interface RunFunction<Options extends AbortOptions = AbortOptions, ReturnType = void> {
+  (options: Options): Promise<ReturnType>
 }
 
 export interface JobMatcher<JobOptions extends AbortOptions = AbortOptions> {
