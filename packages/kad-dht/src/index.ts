@@ -400,7 +400,7 @@ export interface KadDHTInit {
    * Settings for how long to wait in ms when pinging DHT peers to decide if
    * they should be evicted from the routing table or not.
    */
-  pingTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
+  pingOldContactTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
    * How many peers to ping in parallel when deciding if they should
@@ -408,7 +408,35 @@ export interface KadDHTInit {
    *
    * @default 10
    */
-  pingConcurrency?: number
+  pingOldContactConcurrency?: number
+
+  /**
+   * How long the queue to ping peers is allowed to grow
+   *
+   * @default 100
+   */
+  pingOldContactMaxQueueSize?: number
+
+  /**
+   * Settings for how long to wait in ms when pinging DHT peers to decide if
+   * they should be added to the routing table or not.
+   */
+  pingNewContactTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
+
+  /**
+   * How many peers to ping in parallel when deciding if they should be added to
+   * the routing table or not
+   *
+   * @default 10
+   */
+  pingNewContactConcurrency?: number
+
+  /**
+   * How long the queue to ping peers is allowed to grow
+   *
+   * @default 100
+   */
+  pingNewContactMaxQueueSize?: number
 
   /**
    * How many parallel incoming streams to allow on the DHT protocol per

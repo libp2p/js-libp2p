@@ -169,6 +169,10 @@ export class RoutingTableRefresh {
       throw new Error('Routing table not started')
     }
 
+    if (this.routingTable.kb.localPeer == null) {
+      throw new Error('Local peer not set')
+    }
+
     const randomData = randomBytes(2)
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
@@ -245,7 +249,7 @@ export class RoutingTableRefresh {
    * Yields the common prefix length of every peer in the table
    */
   * _prefixLengths (): Generator<number> {
-    if (this.routingTable.kb == null) {
+    if (this.routingTable.kb?.localPeer == null) {
       return
     }
 

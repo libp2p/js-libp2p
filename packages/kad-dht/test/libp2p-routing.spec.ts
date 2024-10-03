@@ -115,6 +115,9 @@ describe('content routing', () => {
       allowQueryWithZeroPeers: true
     })(components)
 
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
+
     await start(dht)
 
     // @ts-expect-error cannot use symbol to index KadDHT type
@@ -246,6 +249,9 @@ describe('peer routing', () => {
     })(components)
 
     await start(dht)
+
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
 
     // @ts-expect-error cannot use symbol to index KadDHT type
     peerRouting = dht[peerRoutingSymbol]

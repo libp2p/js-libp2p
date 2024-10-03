@@ -138,8 +138,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       querySelfInterval,
       protocol,
       logPrefix,
-      pingTimeout,
-      pingConcurrency,
       maxInboundStreams,
       maxOutboundStreams,
       providers: providersInit
@@ -156,15 +154,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.maxInboundStreams = maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper
-    this.routingTable = new RoutingTable(components, {
-      kBucketSize,
-      pingTimeout,
-      pingConcurrency,
-      protocol: this.protocol,
-      logPrefix: loggingPrefix,
-      prefixLength: init.prefixLength,
-      splitThreshold: init.kBucketSplitThreshold
-    })
 
     this.providers = new Providers(components, providersInit ?? {})
 
@@ -179,6 +168,21 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.network = new Network(components, {
       protocol: this.protocol,
       logPrefix: loggingPrefix
+    })
+
+    this.routingTable = new RoutingTable(components, {
+      kBucketSize,
+      pingOldContactTimeout: init.pingOldContactTimeout,
+      pingOldContactConcurrency: init.pingOldContactConcurrency,
+      pingOldContactMaxQueueSize: init.pingOldContactMaxQueueSize,
+      pingNewContactTimeout: init.pingNewContactTimeout,
+      pingNewContactConcurrency: init.pingNewContactConcurrency,
+      pingNewContactMaxQueueSize: init.pingNewContactMaxQueueSize,
+      protocol: this.protocol,
+      logPrefix: loggingPrefix,
+      prefixLength: init.prefixLength,
+      splitThreshold: init.kBucketSplitThreshold,
+      network: this.network
     })
 
     // all queries should wait for the initial query-self query to run so we have
@@ -376,11 +380,17 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     await this.components.registrar.unhandle(this.protocol)
 
+    // check again after async work
+    if (mode === this.getMode() && !force) {
+      this.log('already in %s mode', mode)
+      return
+    }
+
     if (mode === 'client') {
-      this.log('enabling client mode')
+      this.log('enabling client mode while in %s mode', this.getMode())
       this.clientMode = true
     } else {
-      this.log('enabling server mode')
+      this.log('enabling server mode while in %s mode', this.getMode())
       this.clientMode = false
       await this.components.registrar.handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc), {
         maxInboundStreams: this.maxInboundStreams,
@@ -399,13 +409,17 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     await this.setMode(this.clientMode ? 'client' : 'server', true)
 
     await start(
-      this.querySelf,
+      this.routingTable,
       this.providers,
       this.queryManager,
       this.network,
-      this.routingTable,
       this.topologyListener,
       this.routingTableRefresh
+    )
+
+    // Query self after other components are configured
+    await start(
+      this.querySelf
     )
   }
 
