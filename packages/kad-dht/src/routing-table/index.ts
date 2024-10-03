@@ -15,7 +15,8 @@ import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 export const KAD_CLOSE_TAG_NAME = 'kad-close'
 export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 7
+export const PREFIX_LENGTH = 8
+export const SELF_PREFIX_LENGTH = 32
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
@@ -33,6 +34,7 @@ export interface RoutingTableInit {
   logPrefix: string
   protocol: string
   prefixLength?: number
+  selfPrefixLength?: number
   splitThreshold?: number
   kBucketSize?: number
   pingNewContactTimeout?: AdaptiveTimeoutInit
@@ -143,6 +145,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.kb = new KBucket({
       kBucketSize: init.kBucketSize,
       prefixLength: init.prefixLength,
+      selfPrefixLength: init.selfPrefixLength,
       splitThreshold: init.splitThreshold,
       numberOfOldContactsToPing: init.numberOfOldContactsToPing,
       lastPingThreshold: init.lastPingThreshold,
