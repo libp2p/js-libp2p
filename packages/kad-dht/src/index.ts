@@ -78,6 +78,45 @@
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
+ *
+ * ## The routing table
+ *
+ * This module uses a binary trie for it's routing table. By default the trie
+ * will only grow in the direction of the KadID of the current peer:
+ *
+ * ```
+ * Peer KadID: 01101...
+ *
+ *             InternalBucket
+ *                 0 / \ 1
+ *     InternalBucket   LeafBucket
+ *         0 / \ 1
+ * LeafBucket   InternalBucket
+ *                  0 / \ 1
+ *          LeafBucket   InternalBucket
+ *                           0 / \ 1
+ *               InternalBucket   LeafBucket
+ *                   0 / \ 1
+ *           LeafBucket   InternalBucket
+ *                             ...etc
+ * ```
+ *
+ * This ensures that the closer we get to the node's KadID, the more peers the
+ * trie contains, so we know about more of the network.
+ *
+ * This attempts to balance knowledge of the network with maintenance overhead,
+ * since we will need to periodically contact peers in the routing table to
+ * ensure that they are still online.
+ *
+ * The `prefixLength` parameter controls how deep the trie will grow await from
+ * the KadID, and the `selfPrefixLength` parameter controls how deep it will
+ * grow towards the KadID.
+ *
+ * Larger values will result in a bigger trie which in turn causes more memory
+ * consumption and more network requests as the nodes are re-contacted.
+ *
+ * Setting these to the same value will create a balanced trie which will result
+ * in queries with fewer hops but at the cost of higher maintenance overhead.
  */
 
 import { KadDHT as KadDHTClass } from './kad-dht.js'

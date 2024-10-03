@@ -18,6 +18,7 @@ import { peerResponseEvent } from '../src/query/events.js'
 import { KAD_CLOSE_TAG_NAME, KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
 import { isLeafBucket } from '../src/routing-table/k-bucket.js'
 import * as kadUtils from '../src/utils.js'
+import { prefixPeerIds } from './fixtures/prefixed-peer-ids.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import type { Network } from '../src/network.js'
 import type { Bucket } from '../src/routing-table/k-bucket.js'
@@ -75,96 +76,77 @@ describe('Routing Table', () => {
       logPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 2,
-      prefixLength: 3,
+      prefixLength: 1,
+      selfPrefixLength: 4,
       network
     })
     await start(table)
 
-    const peerIds = [
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3'), // 00010
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi7'), // 00011
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA'), // 00111
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB'), // 01000
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiC'), // 11111
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiD'), // 11110
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiE'), // 10111
-      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZib') // 11001
-    ]
+    // all new and old contacts are online
+    table.kb.verify = async () => true
+    table.kb.ping = async function * () {}
 
-    for (const peerId of peerIds) {
-      await table.add(peerId)
-    }
+    await table.add(prefixPeerIds['10000'][0])
+    await table.add(prefixPeerIds['11100'][0])
+
+    await table.add(prefixPeerIds['00000'][0])
+    await table.add(prefixPeerIds['01000'][0])
+    await table.add(prefixPeerIds['00100'][0])
+    await table.add(prefixPeerIds['00010'][0])
+    await table.add(prefixPeerIds['00010'][1])
 
     const trie = collect(table.kb.root)
 
     expect(trie).to.deep.equal({
-      prefix: '',
-      depth: 0,
-      left: {
+      left: { // 0
         prefix: '0',
-        depth: 0,
-        left: {
+        depth: 1,
+        left: { // 00
           prefix: '0',
-          depth: 1,
-          left: {
+          depth: 2,
+          left: { // 000
             prefix: '0',
-            depth: 2,
-            peers: [
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3', // 00010
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi7' //  00011
-            ],
-            containsSelf: true
+            depth: 3,
+            left: { // 0000
+              prefix: '0',
+              depth: 4,
+              peers: [
+                prefixPeerIds['00000'][0].toString()
+              ]
+            },
+            right: { // 0001
+              prefix: '1',
+              depth: 4,
+              peers: [
+                prefixPeerIds['00010'][0].toString(),
+                prefixPeerIds['00010'][1].toString()
+              ],
+              containsSelf: true
+            }
           },
-          right: {
+          right: { // 001
             prefix: '1',
-            depth: 2,
+            depth: 3,
             peers: [
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA' // 00111
-            ],
-            containsSelf: false
+              prefixPeerIds['00100'][0].toString()
+            ]
           }
         },
-        right: {
+        right: { // 01
           prefix: '1',
-          depth: 1,
+          depth: 2,
           peers: [
-            'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB' // 01000
-          ],
-          containsSelf: false
+            prefixPeerIds['01000'][0].toString()
+          ]
         }
       },
-      right: {
+      right: { // 1
         prefix: '1',
-        depth: 0,
-        left: {
-          prefix: '0',
-          depth: 1,
-          peers: [
-            'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiE' // 10111
-          ],
-          containsSelf: false
-        },
-        right: {
-          prefix: '1',
-          depth: 1,
-          left: {
-            prefix: '0',
-            depth: 2,
-            peers: [
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZib' // 11001
-            ],
-            containsSelf: false
-          },
-          right: {
-            prefix: '1',
-            depth: 2,
-            peers: [
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiC', // 11111
-              'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiD' //  11110
-            ],
-            containsSelf: false
-          }
-        }
+        depth: 1,
+        peers: [
+          prefixPeerIds['10000'][0].toString(),
+          prefixPeerIds['11100'][0].toString()
+        ]
       }
     })
 
@@ -174,7 +156,7 @@ describe('Routing Table', () => {
           prefix: bucket.prefix,
           depth: bucket.depth,
           peers: bucket.peers.map(p => p.peerId.toString()),
-          containsSelf: Boolean(bucket.containsSelf)
+          containsSelf: bucket.containsSelf
         }
       } else {
         obj.prefix = bucket.prefix
@@ -183,7 +165,7 @@ describe('Routing Table', () => {
         obj.right = collect(bucket.right, {})
       }
 
-      return obj
+      return JSON.parse(JSON.stringify(obj))
     }
   })
 
