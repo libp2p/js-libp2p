@@ -1,4 +1,4 @@
-import { KEEP_ALIVE, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners, start, stop } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { anySignal } from 'any-signal'
@@ -6,16 +6,15 @@ import parallel from 'it-parallel'
 import { EventTypes } from '../index.js'
 import { MessageType } from '../message/dht.js'
 import * as utils from '../utils.js'
+import { ClosestPeers } from './closest-peers.js'
 import { KBucket, isLeafBucket } from './k-bucket.js'
 import type { Bucket, LeafBucket, Peer } from './k-bucket.js'
 import type { Network } from '../network.js'
-import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream, TagOptions } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
-export const KAD_CLOSE_TAG_NAME = 'kad-close'
-export const KAD_CLOSE_TAG_VALUE = 50
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 7
+export const PREFIX_LENGTH = 8
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
@@ -50,6 +49,8 @@ export interface RoutingTableInit {
   populateFromDatastoreOnStart?: boolean
   populateFromDatastoreLimit?: number
   lastPingThreshold?: number
+  closestPeerSetSize?: number
+  closestPeerSetRefreshInterval?: number
 }
 
 export interface RoutingTableComponents {
@@ -62,6 +63,7 @@ export interface RoutingTableComponents {
 export interface RoutingTableEvents {
   'peer:add': CustomEvent<PeerId>
   'peer:remove': CustomEvent<PeerId>
+  'peer:ping': CustomEvent<PeerId>
 }
 
 /**
@@ -71,6 +73,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   public kBucketSize: number
   public kb: KBucket
   public network: Network
+  private readonly closestPeerTagger: ClosestPeers
   private readonly log: Logger
   private readonly components: RoutingTableComponents
   private running: boolean
@@ -83,8 +86,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   private readonly protocol: string
   private readonly peerTagName: string
   private readonly peerTagValue: number
-  private readonly closeTagName: string
-  private readonly closeTagValue: number
   private readonly metrics?: {
     routingTableSize: Metric
     routingTableKadBucketTotal: Metric
@@ -106,13 +107,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.network = init.network
     this.peerTagName = init.peerTagName ?? KAD_PEER_TAG_NAME
     this.peerTagValue = init.peerTagValue ?? KAD_PEER_TAG_VALUE
-    this.closeTagName = init.closeTagName ?? KAD_CLOSE_TAG_NAME
-    this.closeTagValue = init.closeTagValue ?? KAD_CLOSE_TAG_VALUE
     this.pingOldContacts = this.pingOldContacts.bind(this)
     this.verifyNewContact = this.verifyNewContact.bind(this)
     this.peerAdded = this.peerAdded.bind(this)
     this.peerRemoved = this.peerRemoved.bind(this)
-    this.peerMoved = this.peerMoved.bind(this)
     this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
 
@@ -149,8 +147,16 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       ping: this.pingOldContacts,
       verify: this.verifyNewContact,
       onAdd: this.peerAdded,
-      onRemove: this.peerRemoved,
-      onMove: this.peerMoved
+      onRemove: this.peerRemoved
+    })
+
+    this.closestPeerTagger = new ClosestPeers(this.components, {
+      logPrefix: init.logPrefix,
+      routingTable: this,
+      peerSetSize: init.closestPeerSetSize,
+      refreshInterval: init.closestPeerSetRefreshInterval,
+      closeTagName: init.closeTagName,
+      closeTagValue: init.closeTagValue
     })
 
     if (this.components.metrics != null) {
@@ -173,6 +179,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   async start (): Promise<void> {
     this.running = true
 
+    await start(this.closestPeerTagger)
     await this.kb.addSelfPeer(this.components.peerId)
   }
 
@@ -205,9 +212,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           this.log('failed to add peer %p to routing table, removing kad-dht peer tags - %e')
           await this.components.peerStore.merge(peer.id, {
             tags: {
-              [this.closeTagName]: undefined,
-              [this.peerTagName]: undefined,
-              [KEEP_ALIVE]: undefined
+              [this.peerTagName]: undefined
             }
           })
         }
@@ -222,29 +227,19 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
   async stop (): Promise<void> {
     this.running = false
+    await stop(this.closestPeerTagger)
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
   }
 
   private async peerAdded (peer: Peer, bucket: LeafBucket): Promise<void> {
     if (!this.components.peerId.equals(peer.peerId)) {
-      const tags: Record<string, TagOptions | undefined> = {
-        [this.peerTagName]: {
-          value: this.peerTagValue
-        }
-      }
-
-      if (bucket.containsSelf === true) {
-        tags[this.closeTagName] = {
-          value: this.closeTagValue
-        }
-        tags[KEEP_ALIVE] = {
-          value: 1
-        }
-      }
-
       await this.components.peerStore.merge(peer.peerId, {
-        tags
+        tags: {
+          [this.peerTagName]: {
+            value: this.peerTagValue
+          }
+        }
       })
     }
 
@@ -257,9 +252,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     if (!this.components.peerId.equals(peer.peerId)) {
       await this.components.peerStore.merge(peer.peerId, {
         tags: {
-          [this.closeTagName]: undefined,
-          [this.peerTagName]: undefined,
-          [KEEP_ALIVE]: undefined
+          [this.peerTagName]: undefined
         }
       })
     }
@@ -267,30 +260,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.updateMetrics()
     this.metrics?.kadBucketEvents.increment({ peer_removed: true })
     this.safeDispatchEvent('peer:remove', { detail: peer.peerId })
-  }
-
-  private async peerMoved (peer: Peer, oldBucket: LeafBucket, newBucket: LeafBucket): Promise<void> {
-    if (this.components.peerId.equals(peer.peerId)) {
-      return
-    }
-
-    const tags: Record<string, TagOptions | undefined> = {
-      [this.closeTagName]: undefined,
-      [KEEP_ALIVE]: undefined
-    }
-
-    if (newBucket.containsSelf === true) {
-      tags[this.closeTagName] = {
-        value: this.closeTagValue
-      }
-      tags[KEEP_ALIVE] = {
-        value: 1
-      }
-    }
-
-    await this.components.peerStore.merge(peer.peerId, {
-      tags
-    })
   }
 
   /**
@@ -410,6 +379,11 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
         if (event.type === EventTypes.PEER_RESPONSE) {
           if (event.messageType === MessageType.PING) {
             this.log('contact %p ping ok', contact.peerId)
+
+            this.safeDispatchEvent('peer:ping', {
+              detail: contact.peerId
+            })
+
             return true
           }
 

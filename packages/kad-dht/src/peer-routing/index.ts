@@ -5,7 +5,7 @@ import { Libp2pRecord } from '@libp2p/record'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
-import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
+import { PeerDistanceList } from '../peer-distance-list.js'
 import {
   queryErrorEvent,
   finalPeerEvent,
