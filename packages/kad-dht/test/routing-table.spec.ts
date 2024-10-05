@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, stop, start, KEEP_ALIVE } from '@libp2p/interface'
+import { TypedEventEmitter, stop, start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
@@ -15,7 +15,7 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
 import { MessageType } from '../src/message/dht.js'
 import { peerResponseEvent } from '../src/query/events.js'
-import { KAD_CLOSE_TAG_NAME, KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
+import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
 import { isLeafBucket } from '../src/routing-table/k-bucket.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
@@ -98,71 +98,63 @@ describe('Routing Table', () => {
     const trie = collect(table.kb.root)
 
     expect(trie).to.deep.equal({
-      prefix: '',
-      depth: 0,
       left: {
         prefix: '0',
-        depth: 0,
+        depth: 1,
         left: {
           prefix: '0',
-          depth: 1,
+          depth: 2,
           left: {
             prefix: '0',
-            depth: 2,
+            depth: 3,
             peers: [
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi3', // 00010
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi7' //  00011
-            ],
-            containsSelf: true
+            ]
           },
           right: {
             prefix: '1',
-            depth: 2,
+            depth: 3,
             peers: [
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA' // 00111
-            ],
-            containsSelf: false
+            ]
           }
         },
         right: {
           prefix: '1',
-          depth: 1,
+          depth: 2,
           peers: [
             'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiB' // 01000
-          ],
-          containsSelf: false
+          ]
         }
       },
       right: {
         prefix: '1',
-        depth: 0,
+        depth: 1,
         left: {
           prefix: '0',
-          depth: 1,
+          depth: 2,
           peers: [
             'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiE' // 10111
-          ],
-          containsSelf: false
+          ]
         },
         right: {
           prefix: '1',
-          depth: 1,
+          depth: 2,
           left: {
             prefix: '0',
-            depth: 2,
+            depth: 3,
             peers: [
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZib' // 11001
-            ],
-            containsSelf: false
+            ]
           },
           right: {
             prefix: '1',
-            depth: 2,
+            depth: 3,
             peers: [
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiC', // 11111
               'QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiD' //  11110
-            ],
-            containsSelf: false
+            ]
           }
         }
       }
@@ -173,8 +165,7 @@ describe('Routing Table', () => {
         return {
           prefix: bucket.prefix,
           depth: bucket.depth,
-          peers: bucket.peers.map(p => p.peerId.toString()),
-          containsSelf: Boolean(bucket.containsSelf)
+          peers: bucket.peers.map(p => p.peerId.toString())
         }
       } else {
         obj.prefix = bucket.prefix
@@ -183,7 +174,7 @@ describe('Routing Table', () => {
         obj.right = collect(bucket.right, {})
       }
 
-      return obj
+      return JSON.parse(JSON.stringify(obj))
     }
   })
 
@@ -233,14 +224,6 @@ describe('Routing Table', () => {
           const tags = [...peer.tags.keys()]
 
           expect(tags).to.contain(KAD_PEER_TAG_NAME)
-
-          if (bucket.containsSelf === true) {
-            expect(tags).to.contain(KAD_CLOSE_TAG_NAME)
-            expect(tags).to.contain(KEEP_ALIVE)
-          } else {
-            expect(tags).to.not.contain(KAD_CLOSE_TAG_NAME)
-            expect(tags).to.not.contain(KEEP_ALIVE)
-          }
         }
       } else {
         if (bucket.left != null) {
@@ -271,8 +254,6 @@ describe('Routing Table', () => {
     const tags = [...peer.tags.keys()]
 
     expect(tags).to.not.contain(KAD_PEER_TAG_NAME)
-    expect(tags).to.not.contain(KAD_CLOSE_TAG_NAME)
-    expect(tags).to.not.contain(KEEP_ALIVE)
   })
 
   it('emits peer:add event', async () => {
@@ -456,8 +437,6 @@ describe('Routing Table', () => {
 
     // current close peer should be marked close
     const closePeerData = await components.peerStore.get(peerIds[1])
-    expect(closePeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.true()
-    expect(closePeerData.tags.has(KEEP_ALIVE)).to.be.true()
     expect(closePeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
 
     const newPeer = peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZiA') // 00111
@@ -466,14 +445,10 @@ describe('Routing Table', () => {
 
     // new peer should be marked close
     const newPeerData = await components.peerStore.get(newPeer)
-    expect(newPeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.true()
-    expect(newPeerData.tags.has(KEEP_ALIVE)).to.be.true()
     expect(newPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
 
     // not close but not evicted from the table because it wasn't full yet
     const movedPeerData = await components.peerStore.get(peerIds[1])
-    expect(movedPeerData.tags.has(KAD_CLOSE_TAG_NAME)).to.be.false()
-    expect(movedPeerData.tags.has(KEEP_ALIVE)).to.be.false()
     expect(movedPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
   })
 

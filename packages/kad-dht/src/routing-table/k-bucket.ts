@@ -3,7 +3,7 @@ import map from 'it-map'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
+import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
 import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.js'
 import type { PeerId } from '@libp2p/interface'
@@ -58,7 +58,7 @@ export interface KBucketOptions {
    * this value, the deeper the tree will grow and the slower the lookups will
    * be but the peers returned will be more specific to the key.
    *
-   * @default 32
+   * @default 8
    */
   prefixLength?: number
 
@@ -98,7 +98,6 @@ export interface KBucketOptions {
   verify: VerifyFunction
   onAdd?: OnAddCallback
   onRemove?: OnRemoveCallback
-  onMove?: OnMoveCallback
 }
 
 export interface Peer {
@@ -110,7 +109,6 @@ export interface Peer {
 export interface LeafBucket {
   prefix: string
   depth: number
-  containsSelf?: boolean
   peers: Peer[]
 }
 
@@ -156,7 +154,6 @@ export class KBucket {
     this.verify = options.verify
     this.onAdd = options.onAdd
     this.onRemove = options.onRemove
-    this.onMove = options.onMove
     this.addingPeerMap = new PeerMap()
 
     this.root = {
@@ -172,9 +169,6 @@ export class KBucket {
       kadId: await convertPeerId(peerId),
       lastPing: Date.now()
     }
-
-    const bucket = this._determineBucket(this.localPeer.kadId)
-    bucket.containsSelf = true
   }
 
   /**
@@ -411,14 +405,13 @@ export class KBucket {
    */
   private _determineBucket (kadId: Uint8Array): LeafBucket {
     const bitString = uint8ArrayToString(kadId, 'base2')
-    const prefix = bitString.substring(0, this.prefixLength)
 
     function findBucket (bucket: Bucket, bitIndex: number = 0): LeafBucket {
       if (isLeafBucket(bucket)) {
         return bucket
       }
 
-      const bit = prefix[bitIndex]
+      const bit = bitString[bitIndex]
 
       if (bit === '0') {
         return findBucket(bucket.left, bitIndex + 1)
@@ -448,36 +441,23 @@ export class KBucket {
    * @param {any} bucket - bucket for splitting
    */
   private async _split (bucket: LeafBucket): Promise<void> {
-    const depth = bucket.prefix === '' ? bucket.depth : bucket.depth + 1
-
     // create child buckets
     const left: LeafBucket = {
       prefix: '0',
-      depth,
+      depth: bucket.depth + 1,
       peers: []
     }
     const right: LeafBucket = {
       prefix: '1',
-      depth,
+      depth: bucket.depth + 1,
       peers: []
-    }
-
-    if (bucket.containsSelf === true && this.localPeer != null) {
-      delete bucket.containsSelf
-      const selfNodeBitString = uint8ArrayToString(this.localPeer.kadId, 'base2')
-
-      if (selfNodeBitString[depth] === '0') {
-        left.containsSelf = true
-      } else {
-        right.containsSelf = true
-      }
     }
 
     // redistribute peers
     for (const peer of bucket.peers) {
       const bitString = uint8ArrayToString(peer.kadId, 'base2')
 
-      if (bitString[depth] === '0') {
+      if (bitString[bucket.depth] === '0') {
         left.peers.push(peer)
         await this.onMove?.(peer, bucket, left)
       } else {
@@ -493,9 +473,13 @@ export class KBucket {
 
 function convertToInternalBucket (bucket: any, left: any, right: any): bucket is InternalBucket {
   delete bucket.peers
-  delete bucket.containsSelf
   bucket.left = left
   bucket.right = right
+
+  if (bucket.prefix === '') {
+    delete bucket.depth
+    delete bucket.prefix
+  }
 
   return true
 }

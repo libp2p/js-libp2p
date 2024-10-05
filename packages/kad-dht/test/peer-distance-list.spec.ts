@@ -2,7 +2,7 @@
 
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { PeerDistanceList } from '../src/peer-list/peer-distance-list.js'
+import { PeerDistanceList } from '../src/peer-distance-list.js'
 import * as kadUtils from '../src/utils.js'
 
 describe('PeerDistanceList', () => {
