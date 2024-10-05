@@ -106,6 +106,37 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [14.0.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.1.2...kad-dht-v14.0.0) (2024-10-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* the routing ping options have been split into "old contact" and "new contact" and renamed according
+
+### Features
+
+* ping peers before adding to routing table ([#2745](https://github.com/libp2p/js-libp2p/issues/2745)) ([661d658](https://github.com/libp2p/js-libp2p/commit/661d6586ace41973a61eb04a97692ef8cb74831a))
+
+
+### Bug Fixes
+
+* pass abort signal to stream close ([32c176f](https://github.com/libp2p/js-libp2p/commit/32c176fd53e9aa953885398ddc67387e46875b85))
+* tag kad-close peers with keepalive ([#2740](https://github.com/libp2p/js-libp2p/issues/2740)) ([12bcd86](https://github.com/libp2p/js-libp2p/commit/12bcd86bfad3b89b3676f7a15bc3aa08dca79b07))
+* track closest peers separately from main routing table ([#2748](https://github.com/libp2p/js-libp2p/issues/2748)) ([27b2fa6](https://github.com/libp2p/js-libp2p/commit/27b2fa6b61af646c9459120b3bf6f31c2bd89878))
+* write correct ping message ([35b4802](https://github.com/libp2p/js-libp2p/commit/35b48025cad5c96b4acba0bdbe1308f96a9d1f47))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/peer-collections bumped from ^6.0.6 to ^6.0.7
+    * @libp2p/utils bumped from ^6.0.6 to ^6.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.4 to ^6.1.5
+    * @libp2p/peer-store bumped from ^11.0.6 to ^11.0.7
+
 ## [13.1.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v13.1.1...kad-dht-v13.1.2) (2024-09-30)
 
 
