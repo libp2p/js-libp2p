@@ -1,4 +1,4 @@
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { KEEP_ALIVE, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createBloomFilter } from '@libp2p/utils/filters'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
@@ -247,6 +247,10 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         await this.peerStore.merge(peerId, {
           tags: {
             [RELAY_TAG]: {
+              value: 1,
+              ttl: expiration
+            },
+            [KEEP_ALIVE]: {
               value: 1,
               ttl: expiration
             }
