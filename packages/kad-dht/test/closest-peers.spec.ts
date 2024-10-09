@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { KEEP_ALIVE, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -7,12 +7,12 @@ import delay from 'delay'
 import { stubInterface } from 'sinon-ts'
 import { xor } from 'uint8arrays/xor'
 import { xorCompare } from 'uint8arrays/xor-compare'
+import { KEEP_ALIVE_TAG } from '../src/constants.js'
 import { ClosestPeers } from '../src/routing-table/closest-peers.js'
 import { convertPeerId } from '../src/utils.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
 import type { ComponentLogger, PeerId, PeerStore } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
-import { KEEP_ALIVE_TAG } from '../src/constants.js'
 
 interface ClosestPeersComponents {
   peerId: PeerId
