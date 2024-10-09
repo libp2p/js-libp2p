@@ -5,6 +5,8 @@
 // until the year 2020 (a great time in the future). For that record to stick around
 // it must be rebroadcasted more frequently than once every 'MaxRecordAge'
 
+import { KEEP_ALIVE } from '@libp2p/interface'
+
 export const second = 1000
 export const minute = 60 * second
 export const hour = 60 * minute
@@ -51,3 +53,6 @@ export const TABLE_REFRESH_QUERY_TIMEOUT = 30 * second
 
 // When a timeout is not specified, run a query for this long
 export const DEFAULT_QUERY_TIMEOUT = 180 * second
+
+// used to ensure connections to our closest peers remain open
+export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-kad-dht`

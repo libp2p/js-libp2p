@@ -115,4 +115,43 @@ describe('reconnect queue', () => {
 
     expect(components.connectionManager.openConnection.calledWith(nonKeepAlivePeer)).to.be.false()
   })
+
+  it('should remove KEEP_ALIVE tags when reconnecting fails', async () => {
+    queue = new ReconnectQueue(components, {
+      retries: 1,
+      retryInterval: 10,
+      backoffFactor: 1
+    })
+
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.peerStore.all.resolves([])
+    components.peerStore.get.withArgs(keepAlivePeer).resolves(
+      stubInterface<Peer>({
+        id: keepAlivePeer,
+        tags: new Map([[KEEP_ALIVE, {
+          value: 1
+        }]])
+      })
+    )
+
+    await start(queue)
+
+    components.connectionManager.openConnection.withArgs(keepAlivePeer).rejects(new Error('Dial failed'))
+
+    components.events.safeDispatchEvent('peer:disconnect', new CustomEvent('peer:disconnect', {
+      detail: keepAlivePeer
+    }))
+
+    await pRetry(() => {
+      expect(components.peerStore.merge.calledWith(keepAlivePeer, {
+        tags: {
+          [KEEP_ALIVE]: undefined
+        }
+      })).to.be.true()
+    }, {
+      retries: 5,
+      factor: 1
+    })
+  })
 })

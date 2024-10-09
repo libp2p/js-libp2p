@@ -1,5 +1,5 @@
-import { KEEP_ALIVE } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
+import { KEEP_ALIVE_TAG } from '../constants.js'
 import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
 import type { RoutingTable } from './index.js'
@@ -94,7 +94,7 @@ export class ClosestPeers implements Startable {
             [this.closeTagName]: {
               value: this.closeTagValue
             },
-            [KEEP_ALIVE]: {
+            [KEEP_ALIVE_TAG]: {
               value: 1
             }
           }
@@ -104,7 +104,7 @@ export class ClosestPeers implements Startable {
         await this.components.peerStore.merge(peerId, {
           tags: {
             [this.closeTagName]: undefined,
-            [KEEP_ALIVE]: undefined
+            [KEEP_ALIVE_TAG]: undefined
           }
         })
       })

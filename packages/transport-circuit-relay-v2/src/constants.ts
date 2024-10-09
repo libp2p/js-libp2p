@@ -1,3 +1,5 @@
+import { KEEP_ALIVE } from '@libp2p/interface'
+
 const second = 1000
 const minute = 60 * second
 
@@ -39,6 +41,8 @@ export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
 export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
 export const RELAY_TAG = 'circuit-relay-relay'
+
+export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-circuit-relay`
 
 // circuit v2 connection limits
 // https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go#L61-L66

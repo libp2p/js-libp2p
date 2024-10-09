@@ -12,6 +12,7 @@ import { convertPeerId } from '../src/utils.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
 import type { ComponentLogger, PeerId, PeerStore } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
+import { KEEP_ALIVE_TAG } from '../src/constants.js'
 
 interface ClosestPeersComponents {
   peerId: PeerId
@@ -112,7 +113,7 @@ function assertTagged (peerId: PeerId, peerStore: StubbedInstance<PeerStore>): v
       'kad-close': {
         value: 50
       },
-      [KEEP_ALIVE]: {
+      [KEEP_ALIVE_TAG]: {
         value: 1
       }
     }
@@ -123,7 +124,7 @@ function assertUnTagged (peerId: PeerId, peerStore: StubbedInstance<PeerStore>):
   expect(peerStore.merge.calledWith(peerId, {
     tags: {
       'kad-close': undefined,
-      [KEEP_ALIVE]: undefined
+      [KEEP_ALIVE_TAG]: undefined
     }
   })).to.be.true()
 }
