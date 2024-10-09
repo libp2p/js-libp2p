@@ -250,7 +250,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
               value: 1,
               ttl: expiration
             },
-            [KEEP_ALIVE]: {
+            [KEEP_ALIVE_TAG]: {
               value: 1,
               ttl: expiration
             }
