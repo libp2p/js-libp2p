@@ -478,11 +478,15 @@ describe('socket-to-conn', () => {
       expect(serverTimedOut.promise).to.eventually.be.true(),
 
       // server socket was closed for reading and writing
-      expect(serverClosed.promise).to.eventually.be.true(),
-
-      // client connection was closed abruptly
-      expect(clientError.promise).to.eventually.have.property('code', 'ECONNRESET')
+      expect(serverClosed.promise).to.eventually.be.true()
     ])
+
+    const err = await clientError.promise
+
+    // can be either error depending on platform and timing
+    if (err.code !== 'ECONNRESET' && err.code !== 'EPIPE') {
+      expect.fail('client connection did not close abruptly')
+    }
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
