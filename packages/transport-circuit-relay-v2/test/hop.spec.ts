@@ -12,7 +12,7 @@ import { expect } from 'aegir/chai'
 import { type MessageStream, pbStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../src/constants.js'
+import { DEFAULT_MAX_RESERVATION_STORE_SIZE, KEEP_ALIVE_SOURCE_TAG, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../src/constants.js'
 import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '../src/index.js'
 import { HopMessage, Status } from '../src/pb/index.js'
 import type { CircuitRelayServerInit } from '../src/server/index.js'
@@ -294,6 +294,10 @@ describe('circuit-relay hop protocol', function () {
       expect(relayNode.peerStore.merge.calledWith(matchPeerId(clientNode.peerId), {
         tags: {
           [RELAY_SOURCE_TAG]: {
+            value: 1,
+            ttl: Sinon.match.number as unknown as number
+          },
+          [KEEP_ALIVE_SOURCE_TAG]: {
             value: 1,
             ttl: Sinon.match.number as unknown as number
           }

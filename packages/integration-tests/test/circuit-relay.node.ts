@@ -624,15 +624,16 @@ describe('circuit-relay', () => {
         return circuitMultiaddrs.length > 0
       })
 
-      expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(2)
+      expect(circuitListener[0].reservationStore.listenerCount('relay:removed')).to.equal(2)
 
-      // remove one listener
-      await local.hangUp(relay1.peerId)
+      // stop the listener
+      await circuitListener[0].close()
 
+      // not using the relay any more
       await notUsingAsRelay(local, relay1)
 
       // expect 1 listener
-      expect(circuitListener[0].relayStore.listenerCount('relay:removed')).to.equal(1)
+      expect(circuitListener[0].reservationStore.listenerCount('relay:removed')).to.equal(1)
     })
 
     it('should mark an outgoing relayed connection as limited', async () => {

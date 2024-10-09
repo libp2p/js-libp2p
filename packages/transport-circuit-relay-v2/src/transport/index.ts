@@ -1,6 +1,6 @@
 import { CircuitRelayTransport } from './transport.js'
 import type { RelayDiscoveryComponents } from './discovery.js'
-import type { RelayStoreInit } from './reservation-store.js'
+import type { ReservationStoreInit } from './reservation-store.js'
 import type { Transport, Upgrader, Libp2pEvents, ConnectionGater, TypedEventTarget, PeerId, TopologyFilter } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
 
@@ -16,7 +16,7 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
 /**
  * RelayConfig configures the circuit v2 relay transport.
  */
-export interface CircuitRelayTransportInit extends RelayStoreInit {
+export interface CircuitRelayTransportInit extends ReservationStoreInit {
   /**
    * The number of peers running diable relays to search for and connect to
    *

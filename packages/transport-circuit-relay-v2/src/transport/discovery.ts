@@ -66,7 +66,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
       filter: this.filter,
       onConnect: (peerId) => {
-        this.log('discovered relay %p', peerId)
+        this.log.trace('discovered relay %p', peerId)
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }
     })

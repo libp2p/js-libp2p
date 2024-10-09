@@ -64,10 +64,10 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 
 export { circuitRelayServer } from './server/index.js'
 export type { CircuitRelayServerInit, CircuitRelayServerComponents } from './server/index.js'
-export type { ReservationStoreInit } from './server/reservation-store.js'
+export type { ReservationStoreInit as ServerReservationStoreInit } from './server/reservation-store.js'
 export { circuitRelayTransport } from './transport/index.js'
 export type { RelayDiscoveryComponents } from './transport/discovery.js'
-export type { RelayStoreInit } from './transport/reservation-store.js'
+export type { ReservationStoreInit as TransportReservationStoreInit } from './transport/reservation-store.js'
 export type { CircuitRelayTransportInit, CircuitRelayTransportComponents } from './transport/index.js'
 
 export {

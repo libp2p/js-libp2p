@@ -14,7 +14,7 @@ export interface CircuitRelayTransportListenerComponents {
 
 class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly connectionManager: ConnectionManager
-  private readonly relayStore: ReservationStore
+  private readonly reservationStore: ReservationStore
   private readonly listeningAddrs: PeerMap<Multiaddr[]>
   private readonly log: Logger
 
@@ -23,15 +23,26 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:listener')
     this.connectionManager = components.connectionManager
-    this.relayStore = components.relayStore
+    this.reservationStore = components.relayStore
     this.listeningAddrs = new PeerMap()
 
     // remove listening addrs when a relay is removed
-    this.relayStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
+    this.reservationStore.addEventListener('relay:removed', this._onRemoveRelayPeer)
   }
 
   _onRemoveRelayPeer = (evt: CustomEvent<PeerId>): void => {
-    this.#removeRelayPeer(evt.detail)
+    const had = this.listeningAddrs.has(evt.detail)
+
+    this.log('relay peer removed %p - had reservation', evt.detail, had)
+
+    if (!had) {
+      return
+    }
+
+    this.listeningAddrs.delete(evt.detail)
+
+    // announce listen addresses change
+    this.safeDispatchEvent('listening')
   }
 
   async listen (addr: Multiaddr): Promise<void> {
@@ -41,14 +52,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     const relayAddr = addr.decapsulate('/p2p-circuit')
     const relayConn = await this.connectionManager.openConnection(relayAddr)
 
-    if (!this.relayStore.hasReservation(relayConn.remotePeer)) {
+    if (!this.reservationStore.hasReservation(relayConn.remotePeer)) {
       this.log('making reservation on peer %p', relayConn.remotePeer)
       // addRelay calls transportManager.listen which calls this listen method
-      await this.relayStore.addRelay(relayConn.remotePeer, 'configured')
+      await this.reservationStore.addRelay(relayConn.remotePeer, 'configured')
       return
     }
 
-    const reservation = this.relayStore.getReservation(relayConn.remotePeer)
+    const reservation = this.reservationStore.getReservation(relayConn.remotePeer)
 
     if (reservation == null) {
       throw new ListenError('Did not have reservation after making reservation')
@@ -60,11 +71,11 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     }
 
     // add all addresses from the relay reservation
-    this.listeningAddrs.set(relayConn.remotePeer, reservation.addrs.map(buf => {
-      return multiaddr(buf).encapsulate('/p2p-circuit')
-    }))
+    this.listeningAddrs.set(relayConn.remotePeer, reservation.addrs
+      .map(buf => multiaddr(buf).encapsulate('/p2p-circuit'))
+    )
 
-    this.safeDispatchEvent('listening', {})
+    this.safeDispatchEvent('listening')
   }
 
   getAddrs (): Multiaddr[] {
@@ -72,22 +83,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   }
 
   async close (): Promise<void> {
+    await this.reservationStore.cancelReservations()
+    this.listeningAddrs.clear()
 
-  }
+    // remove listener
+    this.reservationStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
 
-  #removeRelayPeer (peerId: PeerId): void {
-    const had = this.listeningAddrs.has(peerId)
-
-    this.log('relay peer removed %p - had reservation', peerId, had)
-
-    this.listeningAddrs.delete(peerId)
-
-    if (had) {
-      this.log.trace('removing relay event listener for peer %p', peerId)
-      this.relayStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
-      // Announce listen addresses change
-      this.safeDispatchEvent('close', {})
-    }
+    // announce listen addresses change
+    this.safeDispatchEvent('close')
   }
 }
 

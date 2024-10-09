@@ -4,12 +4,11 @@ import { createBloomFilter } from '@libp2p/utils/filters'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, KEEP_ALIVE_TAG, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics } from '@libp2p/interface'
+import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics, Peer } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 
@@ -22,7 +21,7 @@ const REFRESH_TIMEOUT = (60 * 1000) * 5
 // minimum duration before which a reservation must not be refreshed
 const REFRESH_TIMEOUT_MIN = 30 * 1000
 
-export interface RelayStoreComponents {
+export interface ReservationStoreComponents {
   peerId: PeerId
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -32,7 +31,7 @@ export interface RelayStoreComponents {
   metrics?: Metrics
 }
 
-export interface RelayStoreInit {
+export interface ReservationStoreInit {
   /**
    * Multiple relays may be discovered simultaneously - to prevent listening
    * on too many relays, this value controls how many to attempt to reserve a
@@ -71,6 +70,11 @@ interface RelayEntry {
   timeout: ReturnType<typeof setTimeout>
   type: RelayType
   reservation: Reservation
+
+  /**
+   * Stores the id of the connection we have to the relay
+   */
+  connection: string
 }
 
 export interface ReservationStoreEvents {
@@ -94,7 +98,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly log: Logger
   private readonly relayFilter: Filter
 
-  constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
+  constructor (components: ReservationStoreComponents, init?: ReservationStoreInit) {
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:reservation-store')
@@ -117,11 +121,21 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       metrics: components.metrics
     })
 
-    // When a peer disconnects, if we had a reservation on that peer
-    // remove the reservation and multiaddr and maybe trigger search
-    // for new relays
-    this.events.addEventListener('peer:disconnect', (evt) => {
-      this.#removeRelay(evt.detail)
+    // reservations are only valid while we are still connected to the relay.
+    // if we had a reservation opened via that connection, remove it and maybe
+    // trigger a search for new relays
+    this.events.addEventListener('connection:close', (evt) => {
+      const reservation = [...this.reservations.values()]
+        .find(reservation => reservation.connection === evt.detail.id)
+
+      if (reservation == null) {
+        return
+      }
+
+      this.#removeReservation(evt.detail.remotePeer, reservation)
+        .catch(err => {
+          this.log('could not remove relay %p - %e', evt.detail, err)
+        })
     })
   }
 
@@ -134,10 +148,37 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   }
 
   afterStart (): void {
-    if (this.reservations.size < this.maxDiscoveredRelays) {
-      this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
-      this.safeDispatchEvent('relay:not-enough-relays', {})
-    }
+    // remove old relay tags
+    void Promise.resolve()
+      .then(async () => {
+        const relayPeers: Peer[] = await this.peerStore.all({
+          filters: [(peer) => {
+            return peer.tags.has(RELAY_TAG)
+          }]
+        })
+
+        this.log('removing tag from %d old relays', relayPeers.length)
+
+        // remove old relay tag and redial
+        await Promise.all(
+          relayPeers.map(async peer => {
+            await this.peerStore.merge(peer.id, {
+              tags: {
+                [RELAY_TAG]: undefined,
+                [KEEP_ALIVE_TAG]: undefined
+              }
+            })
+          })
+        )
+
+        if (this.reservations.size < this.maxDiscoveredRelays) {
+          this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
+          this.safeDispatchEvent('relay:not-enough-relays', {})
+        }
+      })
+      .catch(err => {
+        this.log.error(err)
+      })
   }
 
   stop (): void {
@@ -157,26 +198,26 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<void> {
     if (this.peerId.equals(peerId)) {
-      this.log('not trying to use self as relay')
+      this.log.trace('not trying to use self as relay')
       return
     }
 
     if (this.reserveQueue.size > this.maxReservationQueueLength) {
-      this.log('not adding potential relay peer %p as the queue is full', peerId)
+      this.log.trace('not adding potential relay peer %p as the queue is full', peerId)
       return
     }
 
     if (this.reserveQueue.has(peerId)) {
-      this.log('potential relay peer %p is already in the reservation queue', peerId)
+      this.log.trace('potential relay peer %p is already in the reservation queue', peerId)
       return
     }
 
     if (this.relayFilter.has(peerId.toMultihash().bytes)) {
-      this.log('potential relay peer %p has failed previously, not trying again', peerId)
+      this.log.trace('potential relay peer %p has failed previously, not trying again', peerId)
       return
     }
 
-    this.log('try to reserve relay slot with %p', peerId)
+    this.log.trace('try to reserve relay slot with %p', peerId)
 
     await this.reserveQueue.add(async () => {
       const start = Date.now()
@@ -186,13 +227,13 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const existingReservation = this.reservations.get(peerId)
 
         if (existingReservation != null) {
-          if (getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
-            this.log('already have reservation on relay peer %p and it expires in more than 10 minutes', peerId)
+          if (this.connectionManager.getConnections(peerId).map(conn => conn.id).includes(existingReservation.connection) && getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
+            this.log('already have relay reservation with %p but we are still connected and it does not expire soon', peerId)
             return
           }
 
-          clearTimeout(existingReservation.timeout)
-          this.reservations.delete(peerId)
+          this.log('already have relay reservation with %p but the original connection is no longer open', peerId)
+          await this.#removeReservation(peerId, existingReservation)
         }
 
         if (type === 'discovered' && [...this.reservations.values()].reduce((acc, curr) => {
@@ -202,7 +243,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
           return acc
         }, 0) >= this.maxDiscoveredRelays) {
-          this.log('already have enough discovered relays')
+          this.log.trace('already have enough discovered relays')
           return
         }
 
@@ -240,7 +281,8 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         this.reservations.set(peerId, {
           timeout,
           reservation,
-          type
+          type,
+          connection: connection.id
         })
 
         // ensure we don't close the connection to the relay
@@ -296,6 +338,14 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     return this.reservations.size
   }
 
+  async cancelReservations (): Promise<void> {
+    await Promise.all(
+      [...this.reservations.entries()].map(async ([peerId, reservation]) => {
+        await this.#removeReservation(peerId, reservation)
+      })
+    )
+  }
+
   async #createReservation (connection: Connection, options: AbortOptions): Promise<Reservation> {
     options.signal?.throwIfAborted()
 
@@ -318,23 +368,30 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       }
     }
 
-    if (response.status === Status.OK && (response.reservation != null)) {
+    if (response.status === Status.OK && response.reservation != null) {
       // check that the returned relay has the relay address - this can be
       // omitted when requesting a reservation from a go-libp2p relay we
       // already have a reservation on
-      let hasRelayAddress = false
-      const relayAddressBytes = connection.remoteAddr.bytes
+      const addresses = new Set<string>()
+      addresses.add(connection.remoteAddr.toString())
 
       for (const buf of response.reservation.addrs) {
-        if (uint8ArrayEquals(relayAddressBytes, buf)) {
-          hasRelayAddress = true
-          break
+        let ma = multiaddr(buf)
+
+        if (ma.getPeerId() == null) {
+          ma = ma.encapsulate(`/p2p/${connection.remotePeer}`)
         }
+
+        // TODO: workaround for https://github.com/libp2p/go-libp2p/issues/3003
+        ma = multiaddr(ma.toString().replace(
+          `/p2p/${connection.remotePeer}/p2p/${connection.remotePeer}`,
+          `/p2p/${connection.remotePeer}`
+        ))
+
+        addresses.add(ma.toString())
       }
 
-      if (!hasRelayAddress) {
-        response.reservation.addrs.push(relayAddressBytes)
-      }
+      response.reservation.addrs = [...addresses].map(str => multiaddr(str).bytes)
 
       return response.reservation
     }
@@ -348,17 +405,18 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   /**
    * Remove listen relay
    */
-  #removeRelay (peerId: PeerId): void {
-    const existingReservation = this.reservations.get(peerId)
-
-    if (existingReservation == null) {
-      return
-    }
-
-    this.log('connection to relay %p closed, removing reservation from local store', peerId)
-
-    clearTimeout(existingReservation.timeout)
+  async #removeReservation (peerId: PeerId, reservation: RelayEntry): Promise<void> {
+    this.log('removing relay reservation with %p from local store', peerId)
+    clearTimeout(reservation.timeout)
     this.reservations.delete(peerId)
+
+    // untag the relay
+    await this.peerStore.merge(peerId, {
+      tags: {
+        [RELAY_TAG]: undefined,
+        [KEEP_ALIVE_TAG]: undefined
+      }
+    })
 
     this.safeDispatchEvent('relay:removed', { detail: peerId })
 
