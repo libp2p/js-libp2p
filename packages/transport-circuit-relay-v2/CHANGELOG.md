@@ -101,6 +101,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.1.3](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v2.1.2...circuit-relay-v2-v2.1.3) (2024-10-09)
+
+
+### Bug Fixes
+
+* tag relay with keep_alive ([#2753](https://github.com/libp2p/js-libp2p/issues/2753)) ([8874660](https://github.com/libp2p/js-libp2p/commit/8874660c07609fef18802205c8486ac431ddbf9b))
+
 ## [2.1.2](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v2.1.1...circuit-relay-v2-v2.1.2) (2024-10-05)
 
 
