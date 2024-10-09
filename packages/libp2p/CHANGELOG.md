@@ -110,6 +110,15 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.1.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.6...libp2p-v2.1.7) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^2.1.2 to ^2.1.3
+
 ## [2.1.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.5...libp2p-v2.1.6) (2024-10-05)
 
 
