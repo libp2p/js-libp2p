@@ -9,7 +9,7 @@ import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TI
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics } from '@libp2p/interface'
+import type { TypedEventTarget, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, PeerId, PeerStore, Startable, Metrics, Peer } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 
@@ -22,7 +22,7 @@ const REFRESH_TIMEOUT = (60 * 1000) * 5
 // minimum duration before which a reservation must not be refreshed
 const REFRESH_TIMEOUT_MIN = 30 * 1000
 
-export interface RelayStoreComponents {
+export interface ReservationStoreComponents {
   peerId: PeerId
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -32,7 +32,7 @@ export interface RelayStoreComponents {
   metrics?: Metrics
 }
 
-export interface RelayStoreInit {
+export interface ReservationStoreInit {
   /**
    * Multiple relays may be discovered simultaneously - to prevent listening
    * on too many relays, this value controls how many to attempt to reserve a
@@ -94,7 +94,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly log: Logger
   private readonly relayFilter: Filter
 
-  constructor (components: RelayStoreComponents, init?: RelayStoreInit) {
+  constructor (components: ReservationStoreComponents, init?: ReservationStoreInit) {
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:reservation-store')
@@ -120,7 +120,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     // When a peer disconnects, if we had a reservation on that peer
     // remove the reservation and multiaddr and maybe trigger search
     // for new relays
-    this.events.addEventListener('peer:disconnect', (evt) => {
+    this.events.addEventListener('peer:reconnect-failure', (evt) => {
       this.#removeRelay(evt.detail)
     })
   }
@@ -134,10 +134,37 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   }
 
   afterStart (): void {
-    if (this.reservations.size < this.maxDiscoveredRelays) {
-      this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
-      this.safeDispatchEvent('relay:not-enough-relays', {})
-    }
+    // remove old relay tags
+    void Promise.resolve()
+      .then(async () => {
+        const relayPeers: Peer[] = await this.peerStore.all({
+          filters: [(peer) => {
+            return peer.tags.has(RELAY_TAG)
+          }]
+        })
+
+        this.log('removing tag from %d old relays', relayPeers.length)
+
+        // remove old relay tag and redial
+        await Promise.all(
+          relayPeers.map(async peer => {
+            await this.peerStore.merge(peer.id, {
+              tags: {
+                [RELAY_TAG]: undefined,
+                [KEEP_ALIVE_TAG]: undefined
+              }
+            })
+          })
+        )
+
+        if (this.reservations.size < this.maxDiscoveredRelays) {
+          this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
+          this.safeDispatchEvent('relay:not-enough-relays', {})
+        }
+      })
+      .catch(err => {
+        this.log.error(err)
+      })
   }
 
   stop (): void {
@@ -360,11 +387,23 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     clearTimeout(existingReservation.timeout)
     this.reservations.delete(peerId)
 
-    this.safeDispatchEvent('relay:removed', { detail: peerId })
+    // ensure we don't close the connection to the relay
+    this.peerStore.merge(peerId, {
+      tags: {
+        [RELAY_TAG]: undefined,
+        [KEEP_ALIVE_TAG]: undefined
+      }
+    })
+      .then(() => {
+        this.safeDispatchEvent('relay:removed', { detail: peerId })
 
-    if (this.reservations.size < this.maxDiscoveredRelays) {
-      this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
-      this.safeDispatchEvent('relay:not-enough-relays', {})
-    }
+        if (this.reservations.size < this.maxDiscoveredRelays) {
+          this.log('not enough relays %d/%d', this.reservations.size, this.maxDiscoveredRelays)
+          this.safeDispatchEvent('relay:not-enough-relays', {})
+        }
+      })
+      .catch(err => {
+        this.log('could not update tags for relay %p - %e', peerId, err)
+      })
   }
 }

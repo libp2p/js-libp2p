@@ -161,9 +161,10 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:connect': CustomEvent<PeerId>
 
   /**
-   * This event will be triggered any time we are disconnected from another peer, regardless of
-   * the circumstances of that disconnection. If we happen to have multiple connections to a
-   * peer, this event will **only** be triggered when the last connection is closed.
+   * This event will be triggered any time we are disconnected from another
+   * peer, regardless of the circumstances of that disconnection. If we happen
+   * to have multiple connections to a peer, this event will **only** be
+   * triggered when the last connection is closed.
    *
    * @example
    *
@@ -177,9 +178,26 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:disconnect': CustomEvent<PeerId>
 
   /**
-   * This event is dispatched after a remote peer has successfully responded to the identify
-   * protocol. Note that for this to be emitted, both peers must have an identify service
-   * configured.
+   * When a peer tagged with `keep-alive` disconnects, we will make multiple
+   * attempts to reconnect to it with a backoff factor (see the connection
+   * manager settings for details). If these all fail, the `keep-alive` tag will
+   * be removed and this event will be emitted.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.addEventListener('peer:reconnect-failure', (event) => {
+   *   const peerId = event.detail
+   *   // ...
+   * })
+   * ```
+   */
+  'peer:reconnect-failure': CustomEvent<PeerId>
+
+  /**
+   * This event is dispatched after a remote peer has successfully responded to
+   * the identify protocol. Note that for this to be emitted, both peers must
+   * have an identify service configured.
    *
    * @example
    *
