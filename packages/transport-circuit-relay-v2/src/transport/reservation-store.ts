@@ -1,11 +1,11 @@
-import { KEEP_ALIVE, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createBloomFilter } from '@libp2p/utils/filters'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
+import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, KEEP_ALIVE_TAG, RELAY_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
@@ -250,7 +250,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
               value: 1,
               ttl: expiration
             },
-            [KEEP_ALIVE]: {
+            [KEEP_ALIVE_TAG]: {
               value: 1,
               ttl: expiration
             }

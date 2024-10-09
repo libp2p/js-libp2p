@@ -63,7 +63,7 @@ export class ReconnectQueue implements Startable {
 
     const peer = await this.peerStore.get(peerId)
 
-    if (!peer.tags.has(KEEP_ALIVE)) {
+    if (!hasKeepAliveTag(peer)) {
       return
     }
 
@@ -94,8 +94,23 @@ export class ReconnectQueue implements Startable {
     }, {
       peerId
     })
-      .catch(err => {
-        this.log.error('failed to reconnect to %p', peerId, err)
+      .catch(async err => {
+        this.log.error('failed to reconnect to %p - %e', peerId, err)
+
+        const tags: Record<string, undefined> = {}
+
+        ;[...peer.tags.keys()].forEach(key => {
+          if (key.startsWith(KEEP_ALIVE)) {
+            tags[key] = undefined
+          }
+        })
+
+        await this.peerStore.merge(peerId, {
+          tags
+        })
+      })
+      .catch(async err => {
+        this.log.error('failed to remove keep-alive tag from %p - %e', peerId, err)
       })
   }
 
@@ -108,9 +123,9 @@ export class ReconnectQueue implements Startable {
     void Promise.resolve()
       .then(async () => {
         const keepAlivePeers: Peer[] = await this.peerStore.all({
-          filters: [(peer) => {
-            return peer.tags.has(KEEP_ALIVE)
-          }]
+          filters: [
+            (peer) => hasKeepAliveTag(peer)
+          ]
         })
 
         await Promise.all(
@@ -131,4 +146,14 @@ export class ReconnectQueue implements Startable {
     this.started = false
     this.queue.abort()
   }
+}
+
+function hasKeepAliveTag (peer: Peer): boolean {
+  for (const tag of peer.tags.keys()) {
+    if (tag.startsWith(KEEP_ALIVE)) {
+      return true
+    }
+  }
+
+  return false
 }
