@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.1.3](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.2...interface-v2.1.3) (2024-10-09)
+
+
+### Bug Fixes
+
+* emit 'listening' when relays change ([#2758](https://github.com/libp2p/js-libp2p/issues/2758)) ([0d326d1](https://github.com/libp2p/js-libp2p/commit/0d326d102e4f6bf06c6f3e961a3b6b5844486495))
+* use keep-alive as a tag prefix ([#2757](https://github.com/libp2p/js-libp2p/issues/2757)) ([29b47ad](https://github.com/libp2p/js-libp2p/commit/29b47adb47b48e9a2b01580bd0d50dc7c2be8fd6))
+
 ## [2.1.2](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.1...interface-v2.1.2) (2024-09-24)
 
 
