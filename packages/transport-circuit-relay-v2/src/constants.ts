@@ -16,11 +16,6 @@ export const DEFAULT_MAX_RESERVATION_STORE_SIZE = 15
 /**
  * How often to check for reservation expiry
  */
-export const DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL = 300 * second
-
-/**
- * How often to check for reservation expiry
- */
 export const DEFAULT_MAX_RESERVATION_TTL = 2 * 60 * minute
 
 /**

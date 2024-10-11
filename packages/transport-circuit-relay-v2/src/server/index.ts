@@ -1,3 +1,4 @@
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
@@ -156,8 +157,6 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       runOnLimitedConnection: true
     })
 
-    this.reservationStore.start()
-
     this.started = true
   }
 
@@ -165,7 +164,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
    * Stop Relay service
    */
   async stop (): Promise<void> {
-    this.reservationStore.stop()
+    this.reservationStore.clear()
     this.shutdownController.abort()
     await this.registrar.unhandle(RELAY_V2_HOP_CODEC)
 
@@ -290,16 +289,25 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       addrs.push(relayAddr.bytes)
     }
 
-    const voucher = await RecordEnvelope.seal(new ReservationVoucherRecord({
+    const envelope = await RecordEnvelope.seal(new ReservationVoucherRecord({
       peer: remotePeer,
       relay: this.peerId,
-      expiration: Number(expire)
+      expiration: expire
     }), this.privateKey)
 
     return {
       addrs,
       expire,
-      voucher: voucher.marshal()
+      voucher: {
+        publicKey: publicKeyToProtobuf(envelope.publicKey),
+        payloadType: envelope.payloadType,
+        payload: {
+          peer: remotePeer.toMultihash().bytes,
+          relay: this.peerId.toMultihash().bytes,
+          expiration: expire
+        },
+        signature: envelope.signature
+      }
     }
   }
 
@@ -330,7 +338,9 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    if (!this.reservationStore.hasReservation(dstPeer)) {
+    const reservation = this.reservationStore.get(dstPeer)
+
+    if (reservation == null) {
       this.log.error('hop connect denied for destination peer %p not having a reservation for %p with status %s', dstPeer, connection.remotePeer, Status.NO_RESERVATION)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION }, options)
       return
@@ -350,7 +360,6 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    const limit = this.reservationStore.get(dstPeer)?.limit
     const destinationConnection = connections[0]
 
     const destinationStream = await this.stopHop({
@@ -361,7 +370,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
           id: connection.remotePeer.toMultihash().bytes,
           addrs: []
         },
-        limit
+        limit: reservation?.limit
       }
     }, options)
 
@@ -374,13 +383,14 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     await hopstr.write({
       type: HopMessage.Type.STATUS,
       status: Status.OK,
-      limit
+      limit: reservation?.limit
     }, options)
     const sourceStream = stream.unwrap()
 
     this.log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
+
     // Short circuit the two streams to create the relayed connection
-    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit, {
+    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, reservation, {
       log: this.log
     })
   }

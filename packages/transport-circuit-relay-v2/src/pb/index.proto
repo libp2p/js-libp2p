@@ -40,7 +40,7 @@ message Peer {
 message Reservation {
   uint64 expire = 1; // Unix expiration time (UTC)
   repeated bytes addrs = 2;   // relay addrs for reserving peer
-  optional bytes voucher = 3; // reservation voucher
+  optional Envelope voucher = 3; // reservation voucher
 }
 
 message Limit {
@@ -64,4 +64,23 @@ message ReservationVoucher {
   bytes relay = 1;
   bytes peer = 2;
   uint64 expiration = 3;
+}
+
+// https://github.com/libp2p/specs/blob/master/RFC/0002-signed-envelopes.md
+message Envelope {
+  // public_key is the public key of the keypair the enclosed payload was
+  // signed with.
+  bytes public_key = 1;
+
+  // payload_type encodes the type of payload, so that it can be deserialized
+  // deterministically.
+  bytes payload_type = 2;
+
+  // payload is the actual payload carried inside this envelope.
+  ReservationVoucher payload = 3;
+
+  // signature is the signature produced by the private key corresponding to
+  // the enclosed public key, over the payload, prefixing a domain string for
+  // additional security.
+  bytes signature = 5;
 }

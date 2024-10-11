@@ -2,14 +2,14 @@ import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencie
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
-import * as mafmt from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
-import { LimitTracker } from '../utils.js'
+import { CircuitListen, LimitTracker } from '../utils.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
@@ -184,9 +184,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const destinationId = destinationAddr.getPeerId()
 
     if (relayId == null || destinationId == null) {
-      const errMsg = `Circuit relay dial to ${ma.toString()} failed as address did not have peer ids`
-      this.log.error(errMsg)
-      throw new DialError(errMsg)
+      const errMsg = `ircuit relay dial to ${ma.toString()} failed as address did not have both relay and destination PeerIDs`
+      this.log.error(`c${errMsg}`)
+      throw new DialError(`C${errMsg}`)
     }
 
     const relayPeer = peerIdFromString(relayId)
@@ -281,7 +281,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         onProgress
       })
     } catch (err: any) {
-      this.log.error(`Circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
+      this.log.error(`circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
       disconnectOnFailure && await connection.close()
       throw err
     }
@@ -305,7 +305,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
-      return mafmt.Circuit.matches(ma)
+      return CircuitListen.exactMatch(ma)
     })
   }
 
@@ -313,7 +313,11 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
    * Filter check for all Multiaddrs that this transport can dial
    */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return this.listenFilter(multiaddrs)
+    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
+
+    return multiaddrs.filter((ma) => {
+      return Circuit.exactMatch(ma)
+    })
   }
 
   /**
