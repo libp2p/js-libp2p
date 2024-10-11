@@ -69,6 +69,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   private readonly server: net.Server
   /** Keep track of open connections to destroy in case of timeout */
   private readonly connections = new Set<MultiaddrConnection>()
+  private readonly maConnections = new Set<MultiaddrConnection>()
   private status: Status = { code: TCPListenerStatusCode.INACTIVE }
   private metrics?: TCPListenerMetrics
   private addr: string
@@ -195,11 +196,13 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     }
 
     this.log('new inbound connection %s', maConn.remoteAddr)
+    this.maConnections.add(maConn)
 
     this.context.upgrader.upgradeInbound(maConn)
       .then((conn) => {
         this.log('inbound connection upgraded %s', maConn.remoteAddr)
         this.connections.add(maConn)
+        this.maConnections.delete(maConn)
 
         socket.once('close', () => {
           this.connections.delete(maConn)
@@ -304,6 +307,11 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     // synchronously close each connection
     this.connections.forEach(conn => {
+      conn.abort(err)
+    })
+
+    // cleanup connections that have not been upgraded
+    this.maConnections.forEach(conn => {
       conn.abort(err)
     })
 
