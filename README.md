@@ -125,7 +125,6 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-discovery-bootstrap`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
 - [`/packages/peer-discovery-mdns`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) Node.js libp2p mDNS discovery implementation for peer discovery
 - [`/packages/peer-id`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id) Implementation of @libp2p/interface-peer-id
-- [`/packages/peer-id-factory`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory) Create PeerId instances
 - [`/packages/peer-record`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record) Used to transfer signed peer data across the network
 - [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
 - [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol
