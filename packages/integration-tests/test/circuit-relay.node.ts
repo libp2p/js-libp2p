@@ -540,41 +540,9 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1).encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
 
       await expect(local.dial(ma)).to.eventually.be.rejected
-        .with.property('name', 'DialError')
+        .with.property('name', 'NoValidAddressesError')
     })
-    /*
-    it('should fail to open connection over relayed connection', async () => {
-      // relay1 dials relay2
-      await relay1.dial(relay2.getMultiaddrs()[0])
-      await usingAsRelay(relay1, relay2)
 
-      // remote dials relay2
-      await remote.dial(relay2.getMultiaddrs()[0])
-      await usingAsRelay(remote, relay2)
-
-      // local dials relay1 via relay2
-      const ma = getRelayAddress(relay1)
-
-      // open hop stream and try to connect to remote
-      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
-        runOnLimitedConnection: true
-      })
-
-      const hopStream = pbStream(stream).pb(HopMessage)
-
-      await hopStream.write({
-        type: HopMessage.Type.CONNECT,
-        peer: {
-          id: remote.peerId.toMultihash().bytes,
-          addrs: []
-        }
-      })
-
-      const response = await hopStream.read()
-      expect(response).to.have.property('type', HopMessage.Type.STATUS)
-      expect(response).to.have.property('status', Status.PERMISSION_DENIED)
-    })
-    */
     it('should emit connection:close when relay stops', async () => {
       // discover relay and make reservation
       await remote.dial(relay1.getMultiaddrs()[0])

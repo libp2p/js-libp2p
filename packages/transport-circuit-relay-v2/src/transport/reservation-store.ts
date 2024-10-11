@@ -227,12 +227,23 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const existingReservation = this.reservations.get(peerId)
 
         if (existingReservation != null) {
-          if (this.connectionManager.getConnections(peerId).map(conn => conn.id).includes(existingReservation.connection) && getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
+          const connections = this.connectionManager.getConnections(peerId)
+          let connected = false
+
+          if (connections.length === 0) {
+            this.log('already have relay reservation with %p but we are no longer connected', peerId)
+          }
+
+          if (connections.map(conn => conn.id).includes(existingReservation.connection)) {
+            this.log('already have relay reservation with %p and the original connection is still open', peerId)
+            connected = true
+          }
+
+          if (connected && getExpirationMilliseconds(existingReservation.reservation.expire) > REFRESH_WINDOW) {
             this.log('already have relay reservation with %p but we are still connected and it does not expire soon', peerId)
             return
           }
 
-          this.log('already have relay reservation with %p but the original connection is no longer open', peerId)
           await this.#removeReservation(peerId, existingReservation)
         }
 
@@ -263,18 +274,33 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
           signal
         })
 
-        this.log('created reservation on relay peer %p', peerId)
-
         const expiration = getExpirationMilliseconds(reservation.expire)
+
+        this.log('created reservation on relay peer %p, expiry date is %s', peerId, new Date(Date.now() + expiration).toString())
 
         // sets a lower bound on the timeout, and also don't let it go over
         // 2^31 - 1 (setTimeout will only accept signed 32 bit integers)
         const timeoutDuration = Math.min(Math.max(expiration - REFRESH_TIMEOUT, REFRESH_TIMEOUT_MIN), Math.pow(2, 31) - 1)
 
         const timeout = setTimeout(() => {
-          this.addRelay(peerId, type).catch(err => {
-            this.log.error('could not refresh reservation to relay %p', peerId, err)
-          })
+          this.log('refresh reservation to relay %p', peerId)
+
+          this.addRelay(peerId, type)
+            .catch(async err => {
+              this.log.error('could not refresh reservation to relay %p - %e', peerId, err)
+
+              const reservation = this.reservations.get(peerId)
+
+              if (reservation == null) {
+                this.log.error('did not have reservation after refreshing reservation failed %p', peerId)
+                return
+              }
+
+              await this.#removeReservation(peerId, reservation)
+            })
+            .catch(err => {
+              this.log.error('could not remove expired reservation to relay %p - %e', peerId, err)
+            })
         }, timeoutDuration)
 
         // we've managed to create a reservation successfully
@@ -300,7 +326,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         })
 
         // listen on multiaddr that only the circuit transport is listening for
-        await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit`)])
+        await this.transportManager.listen([multiaddr(`/p2p/${peerId.toString()}/p2p-circuit/p2p/${this.peerId.toString()}`)])
 
         this.safeDispatchEvent('relay:created-reservation', {
           detail: peerId
@@ -308,18 +334,19 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       } catch (err) {
         this.log.error('could not reserve slot on %p after %dms', peerId, Date.now() - start, err)
 
+        // don't try this peer again
+        this.relayFilter.add(peerId.toMultihash().bytes)
+
         // cancel the renewal timeout if it's been set
         const reservation = this.reservations.get(peerId)
 
-        if (reservation != null) {
-          clearTimeout(reservation.timeout)
-        }
-
         // if listening failed, remove the reservation
-        this.reservations.delete(peerId)
-
-        // don't try this peer again
-        this.relayFilter.add(peerId.toMultihash().bytes)
+        if (reservation != null) {
+          this.#removeReservation(peerId, reservation)
+            .catch(err => {
+              this.log.error('could not remove reservation on %p after reserving slot failed - %e', peerId, err)
+            })
+        }
       }
     }, {
       peerId
@@ -406,6 +433,11 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
    * Remove listen relay
    */
   async #removeReservation (peerId: PeerId, reservation: RelayEntry): Promise<void> {
+    if (!this.reservations.has(peerId)) {
+      this.log('not removing relay reservation with %p from local store as we do not have a reservation with this peer', peerId)
+      return
+    }
+
     this.log('removing relay reservation with %p from local store', peerId)
     clearTimeout(reservation.timeout)
     this.reservations.delete(peerId)

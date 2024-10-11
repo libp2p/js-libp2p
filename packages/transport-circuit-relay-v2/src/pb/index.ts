@@ -318,7 +318,7 @@ export namespace Peer {
 export interface Reservation {
   expire: bigint
   addrs: Uint8Array[]
-  voucher?: Uint8Array
+  voucher?: Envelope
 }
 
 export namespace Reservation {
@@ -345,7 +345,7 @@ export namespace Reservation {
 
         if (obj.voucher != null) {
           w.uint32(26)
-          w.bytes(obj.voucher)
+          Envelope.codec().encode(obj.voucher, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -376,7 +376,9 @@ export namespace Reservation {
               break
             }
             case 3: {
-              obj.voucher = reader.bytes()
+              obj.voucher = Envelope.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.voucher
+              })
               break
             }
             default: {
@@ -578,5 +580,99 @@ export namespace ReservationVoucher {
 
   export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ReservationVoucher>): ReservationVoucher => {
     return decodeMessage(buf, ReservationVoucher.codec(), opts)
+  }
+}
+
+export interface Envelope {
+  publicKey: Uint8Array
+  payloadType: Uint8Array
+  payload?: ReservationVoucher
+  signature: Uint8Array
+}
+
+export namespace Envelope {
+  let _codec: Codec<Envelope>
+
+  export const codec = (): Codec<Envelope> => {
+    if (_codec == null) {
+      _codec = message<Envelope>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if ((obj.publicKey != null && obj.publicKey.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.publicKey)
+        }
+
+        if ((obj.payloadType != null && obj.payloadType.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.payloadType)
+        }
+
+        if (obj.payload != null) {
+          w.uint32(26)
+          ReservationVoucher.codec().encode(obj.payload, w)
+        }
+
+        if ((obj.signature != null && obj.signature.byteLength > 0)) {
+          w.uint32(42)
+          w.bytes(obj.signature)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length, opts = {}) => {
+        const obj: any = {
+          publicKey: uint8ArrayAlloc(0),
+          payloadType: uint8ArrayAlloc(0),
+          signature: uint8ArrayAlloc(0)
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              obj.publicKey = reader.bytes()
+              break
+            }
+            case 2: {
+              obj.payloadType = reader.bytes()
+              break
+            }
+            case 3: {
+              obj.payload = ReservationVoucher.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.payload
+              })
+              break
+            }
+            case 5: {
+              obj.signature = reader.bytes()
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Partial<Envelope>): Uint8Array => {
+    return encodeMessage(obj, Envelope.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Envelope => {
+    return decodeMessage(buf, Envelope.codec(), opts)
   }
 }
