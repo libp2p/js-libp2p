@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webtransport",
-  "version": "5.0.12",
+  "version": "5.0.13",
   "description": "JavaScript implementation of the WebTransport module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport#readme",
@@ -74,7 +74,7 @@
     "go-libp2p": "^1.2.0",
     "it-map": "^3.1.0",
     "it-to-buffer": "^4.0.7",
-    "libp2p": "^2.1.8",
+    "libp2p": "^2.1.9",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2"
   },
