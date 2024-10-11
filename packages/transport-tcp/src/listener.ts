@@ -242,6 +242,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       .catch(async err => {
         this.log.error('inbound connection upgrade failed', err)
         this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
+        this.maConnections.delete(maConn)
         maConn.abort(err)
       })
   }
