@@ -315,6 +315,29 @@ describe('dial', () => {
     await listener.close()
   })
 
+  it('dial and close listener during upgrade', async () => {
+    const ma = multiaddr('/ip6/::/tcp/9090')
+
+    const listener = transport.createListener({
+      upgrader: {
+        ...upgrader,
+        async upgradeInbound () {
+          return new Promise(() => {})
+        }
+      }
+    })
+
+    await listener.listen(ma)
+    const addrs = listener.getAddrs()
+    await transport.dial(addrs[0], {
+      // can also be triggered with a upgradeOutbound that does not resolve
+      // if the listeners upgrader is waiting
+      upgrader
+    })
+
+    await listener.close()
+  })
+
   it('dials on IPv4 with IPFS Id', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = transport.createListener({
