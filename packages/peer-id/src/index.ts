@@ -7,7 +7,9 @@
  *
  * ```TypeScript
  * import { peerIdFromString } from '@libp2p/peer-id'
- * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
+ * import { base36 } from 'multiformats/bases/base36'
+ *
+ * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s', base36.decoder)
  *
  * console.log(peer.toCID()) // CID(bafzaa...)
  * console.log(peer.toString()) // "12D3K..."
@@ -17,7 +19,8 @@
 import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
-import { type CID, type MultibaseDecoder } from 'multiformats/cid'
+import { type MultibaseDecoder } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -37,15 +40,26 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
     // identity hash ed25519/secp256k1 key or sha2-256 hash of
     // rsa public key - base58btc encoded either way
     multihash = Digest.decode(base58btc.decode(`z${str}`))
-  } else {
-    if (decoder == null) {
-      throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"')
-    }
-
-    multihash = Digest.decode(decoder.decode(str))
+    return peerIdFromMultihash(multihash)
   }
 
-  return peerIdFromMultihash(multihash)
+  if (decoder == null) {
+    throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"')
+  }
+
+  let buf: Uint8Array
+  try {
+    buf = decoder.decode(str)
+  } catch (err) {
+    throw new InvalidParametersError('The passed PeerID string could not be decoded using the provided multibase decoder')
+  }
+
+  try {
+    multihash = Digest.decode(buf)
+    return peerIdFromMultihash(multihash)
+  } catch (err) {
+    return peerIdFromCID(CID.decode(buf))
+  }
 }
 
 export function peerIdFromPublicKey (publicKey: Ed25519PublicKey): Ed25519PeerId

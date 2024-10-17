@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
+import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
@@ -38,6 +39,14 @@ describe('PeerId', () => {
 
       it('should create a PeerId from a string', async () => {
         const id = peerIdFromString(peerId.toString())
+        expect(id.equals(peerId)).to.be.true()
+        expect(id.type).to.equal(type)
+        expect(id.toString()).to.equal(peerId.toString())
+        expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
+      })
+
+      it('should create a PeerId from a CID string', async () => {
+        const id = peerIdFromString(peerId.toCID().toString(base36), base36.decoder)
         expect(id.equals(peerId)).to.be.true()
         expect(id.type).to.equal(type)
         expect(id.toString()).to.equal(peerId.toString())
