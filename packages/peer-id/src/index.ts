@@ -7,7 +7,9 @@
  *
  * ```TypeScript
  * import { peerIdFromString } from '@libp2p/peer-id'
- * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
+ * import { base36 } from 'multiformats/bases/base36'
+ *
+ * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s', base36.decoder)
  *
  * console.log(peer.toCID()) // CID(bafzaa...)
  * console.log(peer.toString()) // "12D3K..."
