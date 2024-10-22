@@ -18,13 +18,6 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
  */
 export interface CircuitRelayTransportInit extends ReservationStoreInit {
   /**
-   * The number of peers running diable relays to search for and connect to
-   *
-   * @default 0
-   */
-  discoverRelays?: number
-
-  /**
    * An optional filter used to prevent duplicate attempts to reserve relay
    * slots on the same peer
    */

@@ -35,8 +35,6 @@ export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
 
 export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
-export const RELAY_TAG = 'circuit-relay-relay'
-
 export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-circuit-relay`
 export const KEEP_ALIVE_SOURCE_TAG = `${KEEP_ALIVE}-circuit-relay-source`
 

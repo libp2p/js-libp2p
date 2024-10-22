@@ -22,13 +22,16 @@ describe('circuit-relay discovery', () => {
 
   beforeEach(async () => {
     node = await createLibp2p({
+      addresses: {
+        listen: [
+          '/p2p-circuit'
+        ]
+      },
       transports: [
         webSockets({
           filter: filters.all
         }),
-        circuitRelayTransport({
-          discoverRelays: 1
-        }),
+        circuitRelayTransport(),
         webTransport()
       ],
       streamMuxers: [
