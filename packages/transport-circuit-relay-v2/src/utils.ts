@@ -1,7 +1,10 @@
+import { P2P } from '@multiformats/multiaddr-matcher'
+import { fmt, literal, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { DurationLimitError, TransferLimitError } from './errors.js'
+import type { RelayReservation } from './index.js'
 import type { Limit } from './pb/index.js'
 import type { ConnectionLimits, LoggerOptions, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
@@ -34,16 +37,18 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
   }
 }
 
-export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, limit: Limit | undefined, options: LoggerOptions): void {
+export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, reservation: RelayReservation, options: LoggerOptions): void {
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
   }
 
-  const signals = [abortSignal]
+  // combine shutdown signal and reservation expiry signal
+  const signals = [abortSignal, reservation.signal]
 
-  if (limit?.duration != null) {
-    signals.push(AbortSignal.timeout(limit.duration))
+  if (reservation.limit?.duration != null) {
+    options.log('limiting relayed connection duration to %dms', reservation.limit.duration)
+    signals.push(AbortSignal.timeout(reservation.limit.duration))
   }
 
   const signal = anySignal(signals)
@@ -53,15 +58,16 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   let dataLimit: { remaining: bigint } | undefined
 
-  if (limit?.data != null) {
+  if (reservation.limit?.data != null) {
     dataLimit = {
-      remaining: limit.data
+      remaining: reservation.limit.data
     }
   }
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      dst.abort(new DurationLimitError(`duration limit of ${limit?.duration} ms exceeded`))
+      options.log('relayed connection reached time limit')
+      dst.abort(new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
@@ -83,7 +89,8 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   queueMicrotask(() => {
     const onAbort = (): void => {
-      src.abort(new DurationLimitError(`duration limit of ${limit?.duration} ms exceeded`))
+      options.log('relayed connection reached time limit')
+      src.abort(new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`))
     }
 
     signal.addEventListener('abort', onAbort, { once: true })
@@ -185,3 +192,17 @@ export class LimitTracker {
     return output
   }
 }
+
+/**
+ * A custom matcher that tells us to listen on a particular relay
+ */
+export const CircuitListen = fmt(
+  and(P2P.matchers[0], literal('p2p-circuit'))
+)
+
+/**
+ * A custom matcher that tells us to discover available relays
+ */
+export const CircuitSearch = fmt(
+  literal('p2p-circuit')
+)

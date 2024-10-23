@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
+ * A logger for libp2p based on [weald](https://www.npmjs.com/package/weald), a TypeScript port of the venerable [debug](https://www.npmjs.com/package/debug) module.
  *
  * @example
  *
@@ -79,7 +79,7 @@ debug.formatters.a = (v?: Multiaddr): string => {
 
 // Add a formatter for stringifying Errors
 debug.formatters.e = (v?: Error): string => {
-  return v == null ? 'undefined' : v.stack ?? v.message
+  return v == null ? 'undefined' : notEmpty(v.stack) ?? notEmpty(v.message) ?? v.toString()
 }
 
 export interface Logger {
@@ -219,4 +219,18 @@ export function enable (namespaces: string): void {
 
 export function enabled (namespaces: string): boolean {
   return debug.enabled(namespaces)
+}
+
+function notEmpty (str?: string): string | undefined {
+  if (str == null) {
+    return
+  }
+
+  str = str.trim()
+
+  if (str.length === 0) {
+    return
+  }
+
+  return str
 }

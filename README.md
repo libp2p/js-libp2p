@@ -50,6 +50,7 @@ If you are looking for the documentation of the latest release, you can view the
 ## Table of contents <!-- omit in toc -->
 
 - [Background](#background)
+- [Roadmap](#roadmap)
 - [Install](#install)
 - [Usage](#usage)
   - [Configuration](#configuration)
@@ -82,6 +83,12 @@ We are in the process of writing better documentation, blog posts, tutorials and
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+
+## Roadmap
+
+The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/main/ROADMAP.md>
+
+It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
 
 ## Install
 
@@ -125,7 +132,6 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-discovery-bootstrap`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
 - [`/packages/peer-discovery-mdns`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) Node.js libp2p mDNS discovery implementation for peer discovery
 - [`/packages/peer-id`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id) Implementation of @libp2p/interface-peer-id
-- [`/packages/peer-id-factory`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory) Create PeerId instances
 - [`/packages/peer-record`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record) Used to transfer signed peer data across the network
 - [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
 - [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol

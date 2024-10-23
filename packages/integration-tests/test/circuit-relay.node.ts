@@ -20,7 +20,7 @@ import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay, usingAsRelayCount } from './fixtures/utils.js'
+import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './fixtures/utils.js'
 import type { Libp2p, Connection } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
@@ -29,7 +29,9 @@ const DEFAULT_DATA_LIMIT = BigInt(1 << 17)
 async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
   return createLibp2p({
     addresses: {
-      listen: ['/ip4/127.0.0.1/tcp/0']
+      listen: [
+        '/p2p-circuit'
+      ]
     },
     transports: [
       tcp(),
@@ -95,7 +97,7 @@ const echoService = (components: EchoServiceComponents): unknown => {
 }
 
 describe('circuit-relay', () => {
-  describe('flows with 1 listener', () => {
+  describe('flows with 1 client', () => {
     let local: Libp2p
     let relay1: Libp2p<{ relay: CircuitRelayService }>
     let relay2: Libp2p<{ relay: CircuitRelayService }>
@@ -104,38 +106,10 @@ describe('circuit-relay', () => {
     beforeEach(async () => {
       // create 1 node and 3 relays
       [local, relay1, relay2, relay3] = await Promise.all([
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        }),
-        createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        }),
-        createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        }),
-        createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        })
+        createClient(),
+        createRelay(),
+        createRelay(),
+        createRelay()
       ])
     })
 
@@ -263,33 +237,33 @@ describe('circuit-relay', () => {
       const deferred = defer()
 
       // discover one relay and connect
-      await relay1.dial(relay2.getMultiaddrs()[0])
+      await local.dial(relay1.getMultiaddrs()[0])
 
       // wait for peer to be used as a relay
-      await usingAsRelay(relay1, relay2)
+      await usingAsRelay(local, relay1)
 
       // discover an extra relay and connect to gather its Hop support
-      await relay1.dial(relay3.getMultiaddrs()[0])
+      await local.dial(relay2.getMultiaddrs()[0])
 
       // wait for identify for newly dialled peer
-      await discoveredRelayConfig(relay1, relay3)
+      await discoveredRelayConfig(local, relay2)
 
       // stub dial, make sure we can't reconnect
       // @ts-expect-error private field
-      sinon.stub(relay1.components.connectionManager, 'openConnection').callsFake(async () => {
+      sinon.stub(local.components.connectionManager, 'openConnection').callsFake(async () => {
         deferred.resolve()
         return Promise.reject(new Error('failed to dial'))
       })
 
       await Promise.all([
         // disconnect not used listen relay
-        relay1.hangUp(relay3.peerId),
+        local.hangUp(relay2.peerId),
 
         // disconnect from relay
-        relay1.hangUp(relay2.peerId)
+        local.hangUp(relay1.peerId)
       ])
 
-      expect(relay1.getConnections()).to.be.empty()
+      expect(local.getConnections()).to.be.empty()
 
       // wait for failed dial
       await deferred.promise
@@ -342,7 +316,7 @@ describe('circuit-relay', () => {
     })
   })
 
-  describe('flows with 2 listeners', () => {
+  describe('flows with 2 clients', () => {
     let local: Libp2p
     let remote: Libp2p
     let relay1: Libp2p<{ relay: CircuitRelayService }>
@@ -352,45 +326,32 @@ describe('circuit-relay', () => {
     beforeEach(async () => {
       [local, remote, relay1, relay2, relay3] = await Promise.all([
         createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 3
-            })
-          ]
+          addresses: {
+            listen: [
+              '/p2p-circuit',
+              '/p2p-circuit',
+              '/p2p-circuit'
+            ]
+          }
         }),
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
+        createClient(),
+        createRelay({
+          addresses: {
+            listen: [
+              '/ip4/127.0.0.1/tcp/0',
+              '/p2p-circuit'
+            ]
+          }
         }),
         createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
+          addresses: {
+            listen: [
+              '/ip4/127.0.0.1/tcp/0',
+              '/p2p-circuit'
+            ]
+          }
         }),
-        createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        }),
-        createRelay({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ]
-        })
+        createRelay()
       ])
     })
 
@@ -454,18 +415,6 @@ describe('circuit-relay', () => {
 
       // dial via peer id so we load the address from the address book
       await local.dial(remote.peerId)
-    })
-
-    it('should not stay connected to a relay when not already connected and HOP fails', async () => {
-      // dial the remote through the relay
-      const relayedMultiaddr = relay1.getMultiaddrs()[0].encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
-
-      await expect(local.dial(relayedMultiaddr))
-        .to.eventually.be.rejected()
-        .and.to.have.property('message').that.matches(/NO_RESERVATION/)
-
-      // we should not be connected to the relay, because we weren't before the dial
-      expect(local.getConnections(relay1.peerId)).to.be.empty()
     })
 
     it('dialer should stay connected to an already connected relay on hop failure', async () => {
@@ -540,41 +489,9 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(relay1).encapsulate(`/p2p-circuit/p2p/${remote.peerId.toString()}`)
 
       await expect(local.dial(ma)).to.eventually.be.rejected
-        .with.property('name', 'DialError')
+        .with.property('name', 'NoValidAddressesError')
     })
-    /*
-    it('should fail to open connection over relayed connection', async () => {
-      // relay1 dials relay2
-      await relay1.dial(relay2.getMultiaddrs()[0])
-      await usingAsRelay(relay1, relay2)
 
-      // remote dials relay2
-      await remote.dial(relay2.getMultiaddrs()[0])
-      await usingAsRelay(remote, relay2)
-
-      // local dials relay1 via relay2
-      const ma = getRelayAddress(relay1)
-
-      // open hop stream and try to connect to remote
-      const stream = await local.dialProtocol(ma, RELAY_V2_HOP_CODEC, {
-        runOnLimitedConnection: true
-      })
-
-      const hopStream = pbStream(stream).pb(HopMessage)
-
-      await hopStream.write({
-        type: HopMessage.Type.CONNECT,
-        peer: {
-          id: remote.peerId.toMultihash().bytes,
-          addrs: []
-        }
-      })
-
-      const response = await hopStream.read()
-      expect(response).to.have.property('type', HopMessage.Type.STATUS)
-      expect(response).to.have.property('status', Status.PERMISSION_DENIED)
-    })
-    */
     it('should emit connection:close when relay stops', async () => {
       // discover relay and make reservation
       await remote.dial(relay1.getMultiaddrs()[0])
@@ -604,36 +521,6 @@ describe('circuit-relay', () => {
       // should have closed connections to remote and to relay
       expect(events[0].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
       expect(events[1].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
-    })
-
-    it('should remove the relay event listener when the relay stops', async () => {
-      // discover relay and make reservation
-      await local.dial(relay1.getMultiaddrs()[0])
-      await local.dial(relay2.getMultiaddrs()[0])
-
-      await usingAsRelayCount(local, [relay1, relay2], 2)
-
-      // expect 2 listeners
-      // @ts-expect-error these are private fields
-      const listeners = local.components.transportManager.getListeners()
-
-      // @ts-expect-error as a result these will have any types
-      const circuitListener = listeners.filter(listener => {
-        // @ts-expect-error as a result these will have any types
-        const circuitMultiaddrs = listener.getAddrs().filter(ma => Circuit.matches(ma))
-        return circuitMultiaddrs.length > 0
-      })
-
-      expect(circuitListener[0].reservationStore.listenerCount('relay:removed')).to.equal(2)
-
-      // stop the listener
-      await circuitListener[0].close()
-
-      // not using the relay any more
-      await notUsingAsRelay(local, relay1)
-
-      // expect 1 listener
-      expect(circuitListener[0].reservationStore.listenerCount('relay:removed')).to.equal(1)
     })
 
     it('should mark an outgoing relayed connection as limited', async () => {
@@ -750,28 +637,8 @@ describe('circuit-relay', () => {
 
     beforeEach(async () => {
       [local, remote, relay] = await Promise.all([
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          services: {
-            identify: identify()
-          }
-        }),
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          services: {
-            identify: identify()
-          }
-        }),
+        createClient(),
+        createClient(),
         createRelay({
           services: {
             relay: circuitRelayServer({
@@ -844,28 +711,8 @@ describe('circuit-relay', () => {
 
     beforeEach(async () => {
       [local, remote, relay] = await Promise.all([
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          services: {
-            identify: identify()
-          }
-        }),
-        createClient({
-          transports: [
-            tcp(),
-            circuitRelayTransport({
-              discoverRelays: 1
-            })
-          ],
-          services: {
-            identify: identify()
-          }
-        }),
+        createClient(),
+        createClient(),
         createRelay({
           services: {
             relay: circuitRelayServer({
@@ -1000,6 +847,8 @@ describe('circuit-relay', () => {
     })
 
     it('should be able to dial remote on preconfigured relay address', async () => {
+      await usingAsRelay(remote, relay)
+
       const ma = getRelayAddress(remote)
 
       await expect(local.dial(ma)).to.eventually.be.ok()

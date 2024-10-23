@@ -101,6 +101,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.1.5](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v2.1.4...circuit-relay-v2-v2.1.5) (2024-10-11)
+
+
+### Bug Fixes
+
+* handle more circuit relay refresh failures ([#2764](https://github.com/libp2p/js-libp2p/issues/2764)) ([5d199f9](https://github.com/libp2p/js-libp2p/commit/5d199f9b6ebe1cfd6f83051457b0ea62b0e86d91))
+
 ## [2.1.4](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v2.1.3...circuit-relay-v2-v2.1.4) (2024-10-09)
 
 
