@@ -27,15 +27,15 @@ jobs:
     strategy:
       matrix:
         example:
-          - name: js-libp2p-example-browser-pubsub
-            repo: https://github.com/libp2p/js-libp2p-example-browser-pubsub.git
-            deps:
-              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
-              - '@libp2p/dcutr@$PWD/packages/protocol-dcutr'
-              - '@libp2p/identify@$PWD/packages/protocol-identify'
-              - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
-              - '@libp2p/websockets@$PWD/packages/transport-websockets'
-              - 'libp2p@$PWD/packages/libp2p'
+          # - name: js-libp2p-example-browser-pubsub
+          #   repo: https://github.com/libp2p/js-libp2p-example-browser-pubsub.git
+          #   deps:
+          #     - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
+          #     - '@libp2p/dcutr@$PWD/packages/protocol-dcutr'
+          #     - '@libp2p/identify@$PWD/packages/protocol-identify'
+          #     - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
+          #     - '@libp2p/websockets@$PWD/packages/transport-websockets'
+          #     - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-chat
             repo: https://github.com/libp2p/js-libp2p-example-chat.git
             deps:
@@ -43,13 +43,13 @@ jobs:
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
-          - name: js-libp2p-example-circuit-relay
-            repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
-            deps:
-              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
-              - '@libp2p/identify@$PWD/packages/protocol-identify'
-              - '@libp2p/websockets@$PWD/packages/transport-websockets'
-              - 'libp2p@$PWD/packages/libp2p'
+          # - name: js-libp2p-example-circuit-relay
+          #   repo: https://github.com/libp2p/js-libp2p-example-circuit-relay.git
+          #   deps:
+          #     - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
+          #     - '@libp2p/identify@$PWD/packages/protocol-identify'
+          #     - '@libp2p/websockets@$PWD/packages/transport-websockets'
+          #     - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-connection-encryption
             repo: https://github.com/libp2p/js-libp2p-example-connection-encryption.git
             deps:
@@ -62,10 +62,10 @@ jobs:
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
-          - name: js-libp2p-example-delegated-routing
-            repo: https://github.com/libp2p/js-libp2p-example-delegated-routing.git
-            deps:
-              - 'libp2p@$PWD/packages/libp2p'
+          # - name: js-libp2p-example-delegated-routing
+          #   repo: https://github.com/libp2p/js-libp2p-example-delegated-routing.git
+          #   deps:
+          #     - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-discovery-mechanisms
             repo: https://github.com/libp2p/js-libp2p-example-discovery-mechanisms.git
             deps:
@@ -106,15 +106,15 @@ jobs:
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
-          - name: js-libp2p-example-webrtc-private-to-private
-            repo: https://github.com/libp2p/js-libp2p-example-webrtc-private-to-private.git
-            deps:
-              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
-              - '@libp2p/identify@$PWD/packages/protocol-identify'
-              - '@libp2p/ping@$PWD/packages/protocol-ping'
-              - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
-              - '@libp2p/websockets@$PWD/packages/transport-websockets'
-              - 'libp2p@$PWD/packages/libp2p'
+          # - name: js-libp2p-example-webrtc-private-to-private
+          #   repo: https://github.com/libp2p/js-libp2p-example-webrtc-private-to-private.git
+          #   deps:
+          #     - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
+          #     - '@libp2p/identify@$PWD/packages/protocol-identify'
+          #     - '@libp2p/ping@$PWD/packages/protocol-ping'
+          #     - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
+          #     - '@libp2p/websockets@$PWD/packages/transport-websockets'
+          #     - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

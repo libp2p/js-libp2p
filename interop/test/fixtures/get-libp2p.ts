@@ -54,14 +54,13 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       }
       break
     case 'webrtc':
-      options.transports = [webRTC(),
+      options.transports = [
+        webRTC(),
         webSockets({ filter: filters.all }), // ws needed to connect to relay
-        circuitRelayTransport({
-          discoverRelays: 1
-        }) // needed to use the relay
+        circuitRelayTransport()
       ]
       options.addresses = {
-        listen: isDialer ? [] : ['/webrtc']
+        listen: isDialer ? [] : ['/p2p-circuit', '/webrtc']
       }
       break
     case 'ws':

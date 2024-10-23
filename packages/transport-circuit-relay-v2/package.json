@@ -65,9 +65,9 @@
     "it-protobuf-stream": "^1.1.3",
     "it-stream-types": "^2.0.1",
     "multiformats": "^13.1.0",
+    "nanoid": "^5.0.7",
     "progress-events": "^1.0.0",
     "protons-runtime": "^5.4.0",
-    "race-signal": "^1.0.2",
     "retimeable-signal": "^0.0.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -83,6 +83,7 @@
     "it-to-buffer": "^4.0.7",
     "p-wait-for": "^5.0.2",
     "protons": "^7.5.0",
+    "race-signal": "^1.0.2",
     "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0"
   },

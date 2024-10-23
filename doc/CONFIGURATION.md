@@ -445,12 +445,15 @@ import { identify } from '@libp2p/identify'
 
 
 const node = await createLibp2p({
+  addresses: {
+    listen: {
+      // discover a relay using the routing
+      '/p2p-circuit'
+    }
+  },
   transports: [
     tcp(),
-    circuitRelayTransport({ // allows the current node to make and accept relayed connections
-      discoverRelays: 0, // how many network relays to find
-      reservationConcurrency: 1 // how many relays to attempt to reserve slots on at once
-    })
+    circuitRelayTransport()
   ],
   streamMuxers: [
     yamux()
@@ -499,11 +502,14 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
+  addresses: {
+    listen: [
+      '/p2p-circuit'
+    ]
+  },
   transports: [
     tcp(),
-    circuitRelayTransport({
-      discoverRelays: 1
-    })
+    circuitRelayTransport()
   ],
   streamMuxers: [
     yamux()
