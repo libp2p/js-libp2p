@@ -30,7 +30,7 @@ An implementation of a peer id
 
 ```TypeScript
 import { peerIdFromString } from '@libp2p/peer-id'
-const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
+const peer = peerIdFromString('12D3KooWKnDdG3iXw9eTFijk3EWSunZcFi54Zka4wmtqtt6rPxc8')
 
 console.log(peer.toCID()) // CID(bafzaa...)
 console.log(peer.toString()) // "12D3K..."
