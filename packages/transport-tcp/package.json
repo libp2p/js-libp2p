@@ -66,6 +66,7 @@
     "@multiformats/multiaddr": "^12.2.3",
     "@types/sinon": "^17.0.3",
     "p-defer": "^4.0.1",
+    "p-event": "^6.0.1",
     "progress-events": "^1.0.0",
     "race-event": "^1.3.0",
     "stream-to-it": "^1.0.1"

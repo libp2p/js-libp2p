@@ -394,4 +394,86 @@ describe('dial', () => {
 
     await listener.close()
   })
+
+  it('should close before connection upgrade is completed', async () => {
+    // create a Promise that resolves when the upgrade starts
+    const upgradeStarted = pDefer()
+
+    // create a listener with the handler
+    const listener = transport.createListener({
+      upgrader: {
+        async upgradeInbound () {
+          upgradeStarted.resolve()
+
+          return new Promise(() => {})
+        },
+        async upgradeOutbound () {
+          return new Promise(() => {})
+        }
+      }
+    })
+
+    // listen on a multiaddr
+    await listener.listen(multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+    const localAddrs = listener.getAddrs()
+    expect(localAddrs.length).to.equal(1)
+
+    // dial the listener address
+    transport.dial(localAddrs[0], {
+      upgrader
+    }).catch(() => {})
+
+    // wait for the upgrade to start
+    await upgradeStarted.promise
+
+    // close the listener, process should exit normally
+    await listener.close()
+  })
+
+  it('should abort inbound upgrade on close', async () => {
+    // create a Promise that resolves when the upgrade starts
+    const upgradeStarted = pDefer()
+    const abortedUpgrade = pDefer()
+
+    // create a listener with the handler
+    const listener = transport.createListener({
+      upgrader: {
+        async upgradeInbound (maConn, opts) {
+          upgradeStarted.resolve()
+
+          opts?.signal?.addEventListener('abort', () => {
+            abortedUpgrade.resolve()
+          }, {
+            once: true
+          })
+
+          return new Promise(() => {})
+        },
+        async upgradeOutbound () {
+          return new Promise(() => {})
+        }
+      }
+    })
+
+    // listen on a multiaddr
+    await listener.listen(multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+    const localAddrs = listener.getAddrs()
+    expect(localAddrs.length).to.equal(1)
+
+    // dial the listener address
+    transport.dial(localAddrs[0], {
+      upgrader
+    }).catch(() => {})
+
+    // wait for the upgrade to start
+    await upgradeStarted.promise
+
+    // close the listener
+    await listener.close()
+
+    // should abort the upgrade
+    await abortedUpgrade.promise
+  })
 })
