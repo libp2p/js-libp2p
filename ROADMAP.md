@@ -42,7 +42,7 @@ JavaScript is a poor choice of language in which to perform computationally expe
 - Documentation refresh - ensure all guides are up to date and follow current best practices
 - Revamp getting started guides
   - Focus on use cases
-    - Browser vs node
+    - Browser vs Node.js
     - Public server vs behind NAT
 - Create additional self-directed learning in the style of [@libp2p/protocol-adventure](https://www.npmjs.com/package/@libp2p/protocol-adventure)
   - @libp2p/services-adventure
@@ -69,6 +69,8 @@ When a browser connects to a WebSocket listener they can only connect over TLS. 
 We should be able to use the noise handshake mechanism to ensure the remote has the private key corresponding to it's public key, then use the browser's TLS implementation to prevent eavesdropping.
 
 The specification is [in progress](https://github.com/libp2p/specs/pull/625) the milestone is to ship a POC.
+
+## Node.js connectivity
 
 ### QUIC in Node.js
 
