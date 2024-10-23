@@ -10,7 +10,6 @@ import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { tcp } from '../src/index.js'
-import { delay } from './utils.js'
 import type { MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
@@ -406,13 +405,10 @@ describe('dial', () => {
         async upgradeInbound () {
           upgradeStarted.resolve()
 
-          // make the upgrade stall - delay for longer than the test timeout
-          await delay(120000)
-
-          throw new Error('Upgrade failed')
+          return new Promise(() => {})
         },
         async upgradeOutbound () {
-          throw new Error('Not implemented')
+          return new Promise(() => {})
         }
       }
     })
@@ -452,13 +448,10 @@ describe('dial', () => {
             once: true
           })
 
-          // make the upgrade stall - delay for longer than the test timeout
-          await delay(120000)
-
-          throw new Error('Upgrade failed')
+          return new Promise(() => {})
         },
         async upgradeOutbound () {
-          throw new Error('Not implemented')
+          return new Promise(() => {})
         }
       }
     })
