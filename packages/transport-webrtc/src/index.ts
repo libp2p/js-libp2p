@@ -74,14 +74,15 @@
  * // WebRTC connections
  * const listener = await createLibp2p({
  *   addresses: {
- *   listen: ['/webrtc']
+ *     listen: [
+ *       '/p2p-circuit',
+ *       '/webrtc'
+ *     ]
  *   },
  *   transports: [
  *     webSockets({filter: filters.all}),
  *     webRTC(),
- *     circuitRelayTransport({
- *       discoverRelays: 1
- *     })
+ *     circuitRelayTransport()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
