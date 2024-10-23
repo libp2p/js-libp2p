@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
+A logger for libp2p based on [weald](https://www.npmjs.com/package/weald), a TypeScript port of the venerable [debug](https://www.npmjs.com/package/debug) module.
 
 ## Example
 
