@@ -21,6 +21,25 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.1.2](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.1...logger-v5.1.2) (2024-10-23)
+
+
+### Bug Fixes
+
+* error logging in firefox ([#2768](https://github.com/libp2p/js-libp2p/issues/2768)) ([e6b4158](https://github.com/libp2p/js-libp2p/commit/e6b4158c60d000fbb58aab5d93de1cbcc965ae79))
+
+
+### Documentation
+
+* update readme with link to weald ([#2779](https://github.com/libp2p/js-libp2p/issues/2779)) ([5a25d83](https://github.com/libp2p/js-libp2p/commit/5a25d831467a13cbde5a65f01cfa591e32a80f5d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+
 ## [5.1.1](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.0...logger-v5.1.1) (2024-10-09)
 
 

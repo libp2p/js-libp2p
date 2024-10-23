@@ -89,6 +89,23 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.10](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.9...tcp-v10.0.10) (2024-10-23)
+
+
+### Bug Fixes
+
+* **@libp2p/tcp:** race condition in onSocket ([#2763](https://github.com/libp2p/js-libp2p/issues/2763)) ([aa8de9f](https://github.com/libp2p/js-libp2p/commit/aa8de9fd3f6ca8773596fa3fae765787caa8e866))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
 ## [10.0.9](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.8...tcp-v10.0.9) (2024-10-09)
 
 
