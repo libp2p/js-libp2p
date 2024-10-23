@@ -111,6 +111,29 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.14](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.13...webrtc-v5.0.14) (2024-10-23)
+
+
+### Documentation
+
+* update webrtc example ([#2777](https://github.com/libp2p/js-libp2p/issues/2777)) ([4521cf1](https://github.com/libp2p/js-libp2p/commit/4521cf1f7b8c81728db6a454a7d36d38491afc41))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^2.1.5 to ^3.0.0
+    * @libp2p/identify bumped from ^3.0.8 to ^3.0.9
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/websockets bumped from ^9.0.8 to ^9.0.9
+    * libp2p bumped from ^2.1.9 to ^2.1.10
+
 ## [5.0.13](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.12...webrtc-v5.0.13) (2024-10-11)
 
 
