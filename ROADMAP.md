@@ -83,3 +83,9 @@ https://github.com/ChainSafe/js-libp2p-quic is in-progress to add QUIC support v
 A [long-lived PR](https://github.com/libp2p/js-libp2p/pull/2422) is open that adds WebTransport support via the [@fails-components/webtransport](https://www.npmjs.com/package/@fails-components/webtransport) module, however it's blocked on [spec incompatibilities](https://github.com/fails-components/webtransport/issues/213).
 
 We can either resolve these incompatibilities, implement WebTransport on top of https://github.com/ChainSafe/js-libp2p-quic, or perhaps Node.js will finally ship [HTTP3 support](https://github.com/nodejs/node/issues/38478) and WebTransport, whichever is most expedient.
+
+### WebRTC Direct in Node.js
+
+Another [long-lived PR](https://github.com/libp2p/js-libp2p/pull/2583) adds support for a [WebRTC Direct](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md) listener to Node.js.
+
+It's currently blocked on a number of PRs that require the input of upstream maintainers (see linked issues in [#2583](https://github.com/libp2p/js-libp2p/pull/2583)). We will continue to encourage the maintainers of these libraries to give feedback and ultimately merge those PRs but we may need to publish forks in the interim.
