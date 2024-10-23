@@ -35,7 +35,8 @@ export class DoubleRelayError extends Error {
 }
 
 /**
- * An attempt to open a relayed connection over a relayed connection was made
+ * An attempt to make a reservation on a relay was made while the reservation
+ * queue was full
  */
 export class RelayQueueFullError extends Error {
   static name: string = 'RelayQueueFullError'
