@@ -17,7 +17,7 @@
     - [Customizing Peer Discovery](#customizing-peer-discovery)
     - [Customizing Pubsub](#customizing-pubsub)
     - [Customizing DHT](#customizing-dht)
-    - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
+    - [Setup with Delegated Content and Peer Routing](#setup-with-delegated-content-and-peer-routing)
     - [Setup with Relay](#setup-with-relay)
     - [Setup with Automatic Reservations](#setup-with-automatic-reservations)
     - [Setup with Preconfigured Reservations](#setup-with-preconfigured-reservations)
