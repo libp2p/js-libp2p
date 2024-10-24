@@ -166,6 +166,10 @@ export class MockContentRouting implements ContentRouting {
     MockContentRouting.providers.set(cid.toString(), providers)
   }
 
+  async cancelReprovide (): Promise<void> {
+
+  }
+
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<PeerInfo, void, undefined> {
     yield * MockContentRouting.providers.get(cid.toString()) ?? []
   }

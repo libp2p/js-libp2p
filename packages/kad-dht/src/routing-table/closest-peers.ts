@@ -42,6 +42,7 @@ export class ClosestPeers implements Startable {
   private readonly closeTagName: string
   private readonly closeTagValue: number
   private readonly log: Logger
+  private running: boolean
 
   constructor (components: ClosestPeersComponents, init: ClosestPeersInit) {
     this.components = components
@@ -54,9 +55,16 @@ export class ClosestPeers implements Startable {
 
     this.closestPeers = new PeerSet()
     this.onPeerPing = this.onPeerPing.bind(this)
+    this.running = false
   }
 
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
+    this.running = true
+
     const targetKadId = await convertPeerId(this.components.peerId)
     this.newPeers = new PeerDistanceList(targetKadId, this.peerSetSize)
     this.routingTable.addEventListener('peer:ping', this.onPeerPing)
@@ -70,6 +78,7 @@ export class ClosestPeers implements Startable {
   }
 
   stop (): void {
+    this.running = false
     this.routingTable.removeEventListener('peer:ping', this.onPeerPing)
     clearTimeout(this.timeout)
   }

@@ -19,11 +19,12 @@ import * as c from '../src/constants.js'
 import { EventTypes, MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
-import { createPeerIds, type PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
+import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 import type { KadDHT } from '../src/kad-dht.js'
 import type { PeerId } from '@libp2p/interface'
@@ -65,7 +66,7 @@ describe('KadDHT', () => {
     this.timeout(10 * 1000)
 
     const res = await Promise.all([
-      createPeerIds(3),
+      createPeerIdsWithPrivateKey(3),
       createValues(20)
     ])
 
@@ -75,35 +76,6 @@ describe('KadDHT', () => {
 
   afterEach(() => {
     sinon.restore()
-  })
-
-  describe('create', () => {
-    it('simple', async () => {
-      const dht = await tdht.spawn({
-        kBucketSize: 5
-      })
-
-      expect(dht).to.have.property('put')
-      expect(dht).to.have.property('get')
-      expect(dht).to.have.property('provide')
-      expect(dht).to.have.property('findProviders')
-      expect(dht).to.have.property('findPeer')
-      expect(dht).to.have.property('getClosestPeers')
-      expect(dht).to.have.property('getMode')
-      expect(dht).to.have.property('setMode')
-    })
-
-    it('forward providers init options to providers component', async () => {
-      const dht = await tdht.spawn({
-        kBucketSize: 5,
-        providers: {
-          cleanupInterval: 60,
-          provideValidity: 60 * 10
-        }
-      })
-      expect(dht.providers).to.have.property('cleanupInterval', 60)
-      expect(dht.providers).to.have.property('provideValidity', 60 * 10)
-    })
   })
 
   describe('start and stop', () => {

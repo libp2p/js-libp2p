@@ -4,6 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import createMortice from 'mortice'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Message, MessageType } from '../../../src/message/dht.js'
 import { Providers } from '../../../src/providers.js'
@@ -33,6 +34,9 @@ describe('rpc - handlers - AddProvider', () => {
     providers = new Providers({
       datastore,
       logger: defaultLogger()
+    }, {
+      logPrefix: '',
+      lock: createMortice()
     })
 
     handler = new AddProviderHandler({

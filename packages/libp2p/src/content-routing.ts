@@ -92,6 +92,16 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     }))
   }
 
+  async cancelReprovide (key: CID, options: AbortOptions = {}): Promise<void> {
+    if (this.routers.length === 0) {
+      throw new NoContentRoutersError('No content routers available')
+    }
+
+    await Promise.all(this.routers.map(async (router) => {
+      await router.cancelReprovide(key, options)
+    }))
+  }
+
   /**
    * Store the given key/value pair in the available content routings
    */

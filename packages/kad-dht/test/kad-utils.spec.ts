@@ -24,7 +24,7 @@ describe('kad utils', () => {
     it('returns the base32 encoded key of the buffer with the record prefix', () => {
       const buf = uint8ArrayFromString('hello world')
 
-      const key = utils.bufferToRecordKey(buf)
+      const key = utils.bufferToRecordKey('/dht/record', buf)
 
       expect(key.toString())
         .to.equal('/dht/record/' + uint8ArrayToString(buf, 'base32'))

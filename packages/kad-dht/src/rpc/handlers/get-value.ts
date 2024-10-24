@@ -28,9 +28,11 @@ export class GetValueHandler implements DHTMessageHandler {
   private readonly datastore: Datastore
   private readonly peerRouting: PeerRouting
   private readonly log: Logger
+  private readonly datastorePrefix: string
 
   constructor (components: GetValueHandlerComponents, init: GetValueHandlerInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:get-value`)
+    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
     this.peerStore = components.peerStore
     this.datastore = components.datastore
     this.peerRouting = init.peerRouting
@@ -108,7 +110,7 @@ export class GetValueHandler implements DHTMessageHandler {
    */
   async _checkLocalDatastore (key: Uint8Array): Promise<Libp2pRecord | undefined> {
     this.log('checkLocalDatastore looking for %b', key)
-    const dsKey = bufferToRecordKey(key)
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
     // Fetch value from ds
     let rawRecord
