@@ -145,14 +145,15 @@ If you want to know more about libp2p peer discovery, you should read the follow
 Some available content routing modules are:
 
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
+- [@helia/delegated-routing-v1-http-api-client](https://github.com/ipfs/helia-delegated-routing-v1-http-api)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
-- [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
-If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/content-routing).
+> [!NOTE]
+> The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
+> For most purposes, `@helia/delegated-routing-v1-http-api-client` should be favoured over `@libp2p/delegated-content-routing` for delegated routing, as it is more broadly adopted by the ecosystem and doesn't rely on Kubo specific APIs.
 
-If you want to know more about libp2p content routing, you should read the following content:
+If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/content-routing/index.ts).
 
-- https://docs.libp2p.io/concepts/content-routing
 
 ### Peer Routing
 
@@ -161,13 +162,14 @@ If you want to know more about libp2p content routing, you should read the follo
 Some available peer routing modules are:
 
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
+- [@helia/delegated-routing-v1-http-api-client](https://github.com/ipfs/helia-delegated-routing-v1-http-api)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
+If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/peer-routing/index.ts).
 
-If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/peer-routing). **(WIP: This module is not yet implemented)**
+> [!NOTE]
+> The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
+> For most purposes, `@helia/delegated-routing-v1-http-api-client` should be favoured over `@libp2p/delegated-content-routing` for delegated routing, as it is more broadly adopted by the ecosystem and doesn't rely on Kubo specific APIs.
 
-If you want to know more about libp2p peer routing, you should read the following content:
-
-- https://docs.libp2p.io/concepts/peer-routing
 
 ### DHT
 
@@ -219,7 +221,7 @@ const modules = {
 Moreover, the majority of the modules can be customized via option parameters. This way, it is also possible to provide this options through a `config` object. This config object should have the property name of each building block to configure, the same way as the modules specification.
 
 Besides the `modules` and `config`, libp2p allows other internal options and configurations:
-- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/js-ipfs-interfaces/tree/master/packages/interface-datastore) modules.
+- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/js-stores/tree/main/packages/interface-datastore) modules.
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
 - `peerId`: the identity of the node, an instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
@@ -379,31 +381,17 @@ const node = await createLibp2p({
 })
 ```
 
-#### Setup with Content and Peer Routing
+#### Setup with Delegated Content and Peer Routing
 
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
-import { DelegatedContentRouting} from '@libp2p/delegated-content-routing'
+import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 
 // create a peerId
 const peerId = await PeerId.create()
-
-const delegatedPeerRouting = new DelegatedPeerRouting(ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
-
-const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
 
 const node = await createLibp2p({
   transports: [
@@ -415,12 +403,9 @@ const node = await createLibp2p({
   connectionEncrypters: [
     noise()
   ],
-  contentRouting: [
-    delegatedContentRouting
-  ],
-  peerRouting: [
-    delegatedPeerRouting
-  ],
+  services: {
+    delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
+  },
   peerId
 })
 ```
@@ -999,8 +984,8 @@ protocols: [
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.js) - libp2p configuration used by js-ipfs when running in Node.js
-- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
+- [libp2p-Helia-nodejs](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.ts) - libp2p configuration used by Helia when running in Node.js
+- [libp2p-Helia-browser](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.browser.ts) - libp2p configuration used by Helia when running in a Browser
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 
