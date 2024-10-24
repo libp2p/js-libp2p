@@ -316,7 +316,8 @@ Potential methods for discovering peers include:
 - [Distributed hash tables](#dht)
 - [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
 - [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
-- [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
+- [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/bootstrappers.ts)
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -388,10 +389,13 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 
 // create a peerId
-const peerId = await PeerId.create()
+const privateKey = await generateKeyPair('Ed25519')
+const peerId = peerIdFromPrivateKey(privateKey)
 
 const node = await createLibp2p({
   transports: [
