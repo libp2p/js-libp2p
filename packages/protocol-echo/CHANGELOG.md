@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/echo-v2.0.8...echo-v2.1.0) (2024-10-23)
+
+
+### Features
+
+* add .echo method to echo protocol ([#2766](https://github.com/libp2p/js-libp2p/issues/2766)) ([75301ac](https://github.com/libp2p/js-libp2p/commit/75301ac7df0175ea53c729bd56f74c20c66307cb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
 ## [2.0.8](https://github.com/libp2p/js-libp2p/compare/echo-v2.0.7...echo-v2.0.8) (2024-10-09)
 
 
