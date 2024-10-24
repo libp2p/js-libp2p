@@ -3,26 +3,15 @@ import { PeerSet } from '@libp2p/peer-collections'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { Queue } from '@libp2p/utils/queue'
 import drain from 'it-drain'
-import { base36 } from 'multiformats/bases/base36'
-import { CID } from 'multiformats/cid'
-import * as raw from 'multiformats/codecs/raw'
-import * as Digest from 'multiformats/hashes/digest'
-import { PROVIDERS_VALIDITY } from './constants.js'
+import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD } from './constants.js'
 import { parseProviderKey, readProviderTime } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
-import type { Key, Datastore } from 'interface-datastore'
+import type { Datastore } from 'interface-datastore'
 import type { Mortice } from 'mortice'
-
-const ONE_HOUR = 3_600_000
-
-const REPROVIDE_CONCURRENCY = 10
-const REPROVIDE_MAX_QUEUE_SIZE = 1000
-const REPROVIDE_THRESHOLD = ONE_HOUR * 2
-const DATASTORE_ENCODING = base36
-const DEFAULT_INTERVAL = ONE_HOUR
+import type { CID } from 'multiformats/cid'
 
 export interface ReproviderComponents {
   peerId: PeerId
@@ -92,7 +81,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD
     this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE
     this.validity = init.validity ?? PROVIDERS_VALIDITY
-    this.interval = init.interval ?? DEFAULT_INTERVAL
+    this.interval = init.interval ?? REPROVIDE_INTERVAL
     this.contentRouting = init.contentRouting
     this.lock = init.lock
     this.running = false
@@ -116,13 +105,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     this.reprovideQueue.clear()
     clearTimeout(this.timeout)
     this.shutdownController?.abort()
-  }
-
-  private cidFromDSKey (key: Key): CID {
-    const buf = DATASTORE_ENCODING.decode(key.toString().substring(this.datastorePrefix.length + 1))
-    const multihash = Digest.decode(buf)
-
-    return CID.createV1(raw.code, multihash)
   }
 
   /**

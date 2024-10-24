@@ -429,7 +429,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     await start(
       this.routingTable,
-      this.providers,
       this.queryManager,
       this.network,
       this.topologyListener,
@@ -452,7 +451,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     await stop(
       this.querySelf,
-      this.providers,
       this.queryManager,
       this.network,
       this.routingTable,

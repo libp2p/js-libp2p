@@ -22,6 +22,15 @@ export const PROVIDERS_CLEANUP_INTERVAL = hour
 // Re-run the provide operation when the expiry of our provider records is within this amount
 export const REPROVIDE_THRESHOLD = 2 * hour
 
+// How many reprovide operations to run at once
+export const REPROVIDE_CONCURRENCY = 10
+
+// How long to let the reprovide queue grow before we wait for capacity
+export const REPROVIDE_MAX_QUEUE_SIZE = 1000
+
+// How often to check if records need reproviding
+export const REPROVIDE_INTERVAL = hour
+
 export const READ_MESSAGE_TIMEOUT = 10 * second
 
 // The number of records that will be retrieved on a call to getMany()

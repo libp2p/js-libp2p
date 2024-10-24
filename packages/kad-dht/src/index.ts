@@ -334,14 +334,30 @@ export interface ReProvideInit {
   /**
    * How long to let the re-provide queue grow
    *
-   * @default 10
+   * @default 1000
    */
   maxQueueSize?: number
 
   /**
-   * How long before the record expiry to re-provide
+   * How long before the record expiry to re-provide in ms
+   *
+   * @default 7200000
    */
   threshold?: number
+
+  /**
+   * How often to check which records need reproviding in ms
+   *
+   * @default 3600000
+   */
+  interval?: number
+
+  /**
+   * How long provider records are valid for in ms
+   *
+   * @default 86_400_000
+   */
+  validity?: number
 }
 
 export interface KadDHTInit {
