@@ -15,15 +15,12 @@ export const MAX_RECORD_AGE = 36 * hour
 
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
-export const RECORD_KEY_PREFIX = '/dht/record'
-
-export const PROVIDER_KEY_PREFIX = '/dht/provider'
-
-export const PROVIDERS_LRU_CACHE_SIZE = 256
-
 export const PROVIDERS_VALIDITY = 24 * hour
 
 export const PROVIDERS_CLEANUP_INTERVAL = hour
+
+// Re-run the provide operation when the expiry of our provider records is within this amount
+export const REPROVIDE_THRESHOLD = 2 * hour
 
 export const READ_MESSAGE_TIMEOUT = 10 * second
 

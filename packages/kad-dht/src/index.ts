@@ -83,7 +83,6 @@
 import { KadDHT as KadDHTClass } from './kad-dht.js'
 import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
-import type { ProvidersInit } from './providers.js'
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
@@ -252,6 +251,12 @@ export interface KadDHT {
   provide(key: CID, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
+   * Provider records must be re-published every 24 hours - pass a previously
+   * provided CID here to not re-publish a record for it any more
+   */
+  cancelReprovide(key: CID): Promise<void>
+
+  /**
    * Store the passed value under the passed key on the DHT
    */
   put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
@@ -299,7 +304,45 @@ export type Selectors = Record<string, SelectFn>
  */
 export type Validators = Record<string, ValidateFn>
 
-export type { ProvidersInit }
+export interface ProvidersInit {
+  /**
+   * @default 256
+   */
+  cacheSize?: number
+  /**
+   * How often invalid records are cleaned. (in seconds)
+   *
+   * @default 5400
+   */
+  cleanupInterval?: number
+  /**
+   * How long is a provider valid for. (in seconds)
+   *
+   * @default 86400
+   */
+  provideValidity?: number
+}
+
+export interface ReProvideInit {
+  /**
+   * How many re-provide operations to run simultaneously
+   *
+   * @default 10
+   */
+  concurrency?: number
+
+  /**
+   * How long to let the re-provide queue grow
+   *
+   * @default 10
+   */
+  maxQueueSize?: number
+
+  /**
+   * How long before the record expiry to re-provide
+   */
+  threshold?: number
+}
 
 export interface KadDHTInit {
   /**
@@ -458,6 +501,11 @@ export interface KadDHTInit {
    * Initialization options for the Providers component
    */
   providers?: ProvidersInit
+
+  /**
+   * Initialization options for the Reprovider component
+   */
+  reprovide?: ReProvideInit
 
   /**
    * For every incoming and outgoing PeerInfo, override address configuration
