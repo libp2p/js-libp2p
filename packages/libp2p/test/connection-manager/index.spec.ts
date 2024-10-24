@@ -208,7 +208,7 @@ describe('Connection Manager', () => {
         connectionManager: {
           maxConnections: max,
           allow: [
-            '/ip4/83.13.55.32'
+            '/ip4/83.13.55.32/ipcidr/32'
           ]
         }
       }),
@@ -366,7 +366,7 @@ describe('Connection Manager', () => {
     connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
       ...defaultOptions,
       deny: [
-        '/ip4/83.13.55.32'
+        '/ip4/83.13.55.32/ipcidr/32'
       ]
     })
     await connectionManager.start()
@@ -450,7 +450,7 @@ describe('Connection Manager', () => {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
-        '/ip4/83.13.55.32'
+        '/ip4/83.13.55.32/ipcidr/32'
       ]
     })
     await connectionManager.start()
