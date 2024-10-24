@@ -1,7 +1,9 @@
+import { type IpNet } from '@chainsafe/netmask'
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
+import { convertToIpNet } from '@multiformats/multiaddr/convert'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
@@ -176,8 +178,8 @@ export interface DefaultConnectionManagerComponents {
 export class DefaultConnectionManager implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
-  private readonly allow: Multiaddr[]
-  private readonly deny: Multiaddr[]
+  private readonly allow: IpNet[]
+  private readonly deny: IpNet[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private outboundPendingConnections: number
@@ -216,8 +218,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
-    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+    this.allow = (init.allow ?? []).map(ma => convertToIpNet(multiaddr(ma)))
+    this.deny = (init.deny ?? []).map(ma => convertToIpNet(multiaddr(ma)))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -571,7 +573,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
     const denyConnection = this.deny.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return ma.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (denyConnection) {
@@ -581,7 +583,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // check allow list
     const allowConnection = this.allow.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return ma.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (allowConnection) {
