@@ -219,6 +219,39 @@ describe('connection-pruner', () => {
     expect(shortestLivedWithLowestTagSpy).to.have.property('callCount', 1)
   })
 
+  it('should correctly parse and store allow list as IpNet objects in ConnectionPruner', () => {
+    const mockInit = {
+      allow: [
+        multiaddr('/ip4/83.13.55.32/ipcidr/32'),
+        multiaddr('/ip4/83.13.55.32'),
+        multiaddr('/ip4/192.168.1.1/ipcidr/24')
+      ]
+    }
+
+    // Create a ConnectionPruner instance
+    const pruner = new ConnectionPruner(components, mockInit)
+
+    // Expected IpNet objects for comparison
+    const expectedAllowList = [
+      {
+        mask: new Uint8Array([255, 255, 255, 255]),
+        network: new Uint8Array([83, 13, 55, 32])
+      },
+      {
+        mask: new Uint8Array([255, 255, 255, 255]),
+        network: new Uint8Array([83, 13, 55, 32])
+      },
+      {
+        mask: new Uint8Array([255, 255, 255, 0]),
+        network: new Uint8Array([192, 168, 1, 0])
+      }
+    ]
+
+    // Verify that the allow list in the pruner matches the expected IpNet objects
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    expect(pruner['allow']).to.deep.equal(expectedAllowList)
+  })
+
   it('should not close connection that is on the allowlist when pruning', async () => {
     const max = 2
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
@@ -241,6 +274,7 @@ describe('connection-pruner', () => {
     for (let i = 0; i < max; i++) {
       const connection = stubInterface<Connection>({
         remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/12345'),
         streams: []
       })
       const spy = connection.close
@@ -269,7 +303,6 @@ describe('connection-pruner', () => {
     const value = 0
     const spy = connection.close
     spies.set(value, spy)
-
     // Tag that allowed peer with lowest value
     components.peerStore.get.withArgs(connection.remotePeer).resolves(stubInterface<Peer>({
       tags: new Map([['test-tag', { value }]])
