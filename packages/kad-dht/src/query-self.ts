@@ -39,7 +39,7 @@ export class QuerySelf implements Startable {
   private readonly interval: number
   private readonly initialInterval: number
   private readonly queryTimeout: number
-  private started: boolean
+  private running: boolean
   private timeoutId?: ReturnType<typeof setTimeout>
   private controller?: AbortController
   private initialQuerySelfHasRun?: DeferredPromise<void>
@@ -50,7 +50,7 @@ export class QuerySelf implements Startable {
 
     this.peerId = components.peerId
     this.log = components.logger.forComponent(`${logPrefix}:query-self`)
-    this.started = false
+    this.running = false
     this.peerRouting = peerRouting
     this.routingTable = routingTable
     this.count = count ?? K
@@ -61,15 +61,15 @@ export class QuerySelf implements Startable {
   }
 
   isStarted (): boolean {
-    return this.started
+    return this.running
   }
 
   start (): void {
-    if (this.started) {
+    if (this.running) {
       return
     }
 
-    this.started = true
+    this.running = true
     clearTimeout(this.timeoutId)
     this.timeoutId = setTimeout(() => {
       this.querySelf()
@@ -80,7 +80,7 @@ export class QuerySelf implements Startable {
   }
 
   stop (): void {
-    this.started = false
+    this.running = false
 
     if (this.timeoutId != null) {
       clearTimeout(this.timeoutId)
@@ -92,7 +92,7 @@ export class QuerySelf implements Startable {
   }
 
   async querySelf (): Promise<void> {
-    if (!this.started) {
+    if (!this.running) {
       this.log('skip self-query because we are not started')
       return
     }
@@ -104,7 +104,7 @@ export class QuerySelf implements Startable {
 
     this.querySelfPromise = pDefer()
 
-    if (this.started) {
+    if (this.running) {
       this.controller = new AbortController()
       const signals = [this.controller.signal]
 
@@ -157,7 +157,7 @@ export class QuerySelf implements Startable {
     this.querySelfPromise.resolve()
     this.querySelfPromise = undefined
 
-    if (!this.started) {
+    if (!this.running) {
       return
     }
 

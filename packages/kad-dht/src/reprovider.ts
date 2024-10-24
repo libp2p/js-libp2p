@@ -88,6 +88,10 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   }
 
   start (): void {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     this.shutdownController = new AbortController()

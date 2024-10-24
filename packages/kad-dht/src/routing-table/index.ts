@@ -177,6 +177,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     await start(this.closestPeerTagger)

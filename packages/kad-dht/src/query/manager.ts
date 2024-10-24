@@ -97,6 +97,10 @@ export class QueryManager implements Startable {
    * Starts the query manager
    */
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     // allow us to stop queries on shut down

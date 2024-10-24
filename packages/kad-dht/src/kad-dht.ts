@@ -422,6 +422,10 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
    * Start listening to incoming connections.
    */
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     // Only respond to queries when not in client mode
