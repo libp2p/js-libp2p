@@ -39,7 +39,7 @@ describe('providers', () => {
     expect(ids.has(peers[0].toString())).to.equal(true)
   })
 
-  it('should duplicate multiple adds of same provider', async () => {
+  it('should deduplicate multiple adds of same provider', async () => {
     providers = new Providers({
       datastore: new MemoryDatastore(),
       logger: defaultLogger()
@@ -104,6 +104,6 @@ describe('providers', () => {
     const cid = CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
     const peerId = peerIdFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
 
-    await providers.removeProvider(cid, peerId)
+    await expect(providers.removeProvider(cid, peerId)).to.not.be.rejected()
   })
 })
