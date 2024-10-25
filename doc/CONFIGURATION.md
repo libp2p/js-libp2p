@@ -389,14 +389,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
-
-// create a peerId
-const privateKey = await generateKeyPair('Ed25519')
-const peerId = peerIdFromPrivateKey(privateKey)
-
 const node = await createLibp2p({
   transports: [
     tcp()
@@ -409,8 +402,7 @@ const node = await createLibp2p({
   ],
   services: {
     delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
-  },
-  peerId
+  }
 })
 ```
 
