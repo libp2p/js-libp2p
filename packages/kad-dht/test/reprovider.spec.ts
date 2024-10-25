@@ -42,6 +42,7 @@ describe('reprovider', () => {
     }
 
     contentRouting = stubInterface()
+    contentRouting.provide.resolves([])
 
     const lock = createMortice()
     const logPrefix = 'libp2p'
@@ -74,9 +75,8 @@ describe('reprovider', () => {
 
     expect(contentRouting.provide).to.have.property('callCount', 0)
 
-    contentRouting.provide.resolves([])
-
     // wait for reprovide to occur
+    await pEvent(reprovider, 'reprovide:start')
     await pEvent(reprovider, 'reprovide:end')
 
     expect(contentRouting.provide).to.have.property('callCount', 1)
@@ -89,9 +89,8 @@ describe('reprovider', () => {
 
     expect(contentRouting.provide).to.have.property('callCount', 0)
 
-    contentRouting.provide.resolves([])
-
     // wait for reprovide to occur
+    await pEvent(reprovider, 'reprovide:start')
     await pEvent(reprovider, 'reprovide:end')
 
     expect(contentRouting.provide).to.have.property('callCount', 1)
@@ -99,6 +98,7 @@ describe('reprovider', () => {
     await providers.removeProvider(cid, components.peerId)
 
     // wait for another reprovide
+    await pEvent(reprovider, 'reprovide:start')
     await pEvent(reprovider, 'reprovide:end')
 
     // should not have provided again

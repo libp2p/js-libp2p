@@ -174,7 +174,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
         this.log('nothing to delete')
       }
 
-      this.log('Cleanup successful (%dms)', Date.now() - start)
+      this.log('cleanup successful (%dms)', Date.now() - start)
     } finally {
       release()
       this.safeDispatchEvent('reprovide:end')
