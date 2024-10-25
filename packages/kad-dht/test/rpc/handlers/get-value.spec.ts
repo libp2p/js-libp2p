@@ -52,7 +52,7 @@ describe('rpc - handlers - GetValue', () => {
 
     handler = new GetValueHandler(components, {
       peerRouting,
-      logPrefix: ''
+      logPrefix: 'dht'
     })
   })
 
@@ -79,7 +79,7 @@ describe('rpc - handlers - GetValue', () => {
     const value = uint8ArrayFromString('world')
     const record = new Libp2pRecord(key, value, new Date())
 
-    await datastore.put(utils.bufferToRecordKey('//record', key), record.serialize().subarray())
+    await datastore.put(utils.bufferToRecordKey('/dht/record', key), record.serialize().subarray())
 
     const msg: Message = {
       type: T,
