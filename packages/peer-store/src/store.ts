@@ -1,5 +1,4 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import mortice, { type Mortice } from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
@@ -20,26 +19,16 @@ export interface PeerUpdate extends PeerUpdateExternal {
   updated: boolean
 }
 
-function decodePeer (key: Key, value: Uint8Array, cache: PeerMap<Peer>): Peer {
+function decodePeer (key: Key, value: Uint8Array): Peer {
   // /peers/${peer-id-as-libp2p-key-cid-string-in-base-32}
   const base32Str = key.toString().split('/')[2]
   const buf = CID.parse(base32Str, base32)
   const peerId = peerIdFromCID(buf)
 
-  const cached = cache.get(peerId)
-
-  if (cached != null) {
-    return cached
-  }
-
-  const peer = bytesToPeer(peerId, value)
-
-  cache.set(peerId, peer)
-
-  return peer
+  return bytesToPeer(peerId, value)
 }
 
-function mapQuery (query: PeerQuery, cache: PeerMap<Peer>): Query {
+function mapQuery (query: PeerQuery): Query {
   if (query == null) {
     return {}
   }
@@ -47,10 +36,10 @@ function mapQuery (query: PeerQuery, cache: PeerMap<Peer>): Query {
   return {
     prefix: NAMESPACE_COMMON,
     filters: (query.filters ?? []).map(fn => ({ key, value }) => {
-      return fn(decodePeer(key, value, cache))
+      return fn(decodePeer(key, value))
     }),
     orders: (query.orders ?? []).map(fn => (a, b) => {
-      return fn(decodePeer(a.key, a.value, cache), decodePeer(b.key, b.value, cache))
+      return fn(decodePeer(a.key, a.value), decodePeer(b.key, b.value))
     })
   }
 }
@@ -131,10 +120,8 @@ export class PersistentStore {
   }
 
   async * all (query?: PeerQuery): AsyncGenerator<Peer, void, unknown> {
-    const peerCache = new PeerMap<Peer>()
-
-    for await (const { key, value } of this.datastore.query(mapQuery(query ?? {}, peerCache))) {
-      const peer = decodePeer(key, value, peerCache)
+    for await (const { key, value } of this.datastore.query(mapQuery(query ?? {}))) {
+      const peer = decodePeer(key, value)
 
       if (peer.id.equals(this.peerId)) {
         // Skip self peer if present
