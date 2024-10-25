@@ -334,7 +334,7 @@ export interface ReProvideInit {
   /**
    * How long to let the re-provide queue grow
    *
-   * @default 1000
+   * @default 16384
    */
   maxQueueSize?: number
 
@@ -355,7 +355,7 @@ export interface ReProvideInit {
   /**
    * How long provider records are valid for in ms
    *
-   * @default 86_400_000
+   * @default 86400000
    */
   validity?: number
 }

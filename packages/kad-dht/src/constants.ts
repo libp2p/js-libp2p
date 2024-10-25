@@ -26,7 +26,7 @@ export const REPROVIDE_THRESHOLD = 2 * hour
 export const REPROVIDE_CONCURRENCY = 10
 
 // How long to let the reprovide queue grow before we wait for capacity
-export const REPROVIDE_MAX_QUEUE_SIZE = 1000
+export const REPROVIDE_MAX_QUEUE_SIZE = 16_384
 
 // How often to check if records need reproviding
 export const REPROVIDE_INTERVAL = hour

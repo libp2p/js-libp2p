@@ -6,7 +6,7 @@ import drain from 'it-drain'
 import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD } from './constants.js'
 import { parseProviderKey, readProviderTime } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, Metric, Metrics, PeerId } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import type { Datastore } from 'interface-datastore'
@@ -73,7 +73,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     this.reprovideTimeout = new AdaptiveTimeout({
       ...(init.timeout ?? {}),
       metrics: components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_reprovide_times_milliseconds`
+      metricName: `${init.logPrefix.replaceAll(':', '_')}_reprovide_timeout_milliseconds`
     })
     this.datastore = components.datastore
     this.addressManager = components.addressManager
@@ -99,7 +99,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
     this.timeout = setTimeout(() => {
       this.cleanUp().catch(err => {
-        this.log.error('error running re-provide - %e', err)
+        this.log.error('error running reprovide/cleanup - %e', err)
       })
     }, this.interval)
   }
@@ -120,8 +120,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
     try {
       this.safeDispatchEvent('reprovide:start')
-
-      const start = Date.now()
 
       let count = 0
       let deleteCount = 0
@@ -166,7 +164,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
         }
       }
 
-      // Commit the deletes to the datastore
+      // commit the deletes to the datastore
       if (deleted.size > 0) {
         this.log('deleting %d / %d entries', deleteCount, count)
         await batch.commit()
@@ -174,11 +172,10 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
         this.log('nothing to delete')
       }
 
-      this.log('cleanup successful (%dms)', Date.now() - start)
+      this.log('reprovide/cleanup successful')
     } finally {
       release()
       this.safeDispatchEvent('reprovide:end')
-      this.log.trace('finished reprovide')
 
       if (this.running) {
         this.timeout = setTimeout(() => {
