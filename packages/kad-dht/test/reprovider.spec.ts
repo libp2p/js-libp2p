@@ -60,7 +60,7 @@ describe('reprovider', () => {
       lock,
       contentRouting,
       threshold: 100,
-      validity: 10,
+      validity: 200,
       interval: 100
     })
 
