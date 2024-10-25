@@ -137,54 +137,43 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
-    const {
-      kBucketSize,
-      clientMode,
-      validators,
-      selectors,
-      querySelfInterval,
-      protocol,
-      logPrefix,
-      maxInboundStreams,
-      maxOutboundStreams,
-      providers: providersInit
-    } = init
-
-    const loggingPrefix = logPrefix ?? 'libp2p:kad-dht'
+    const logPrefix = init.logPrefix ?? 'libp2p:kad-dht'
+    const datastorePrefix = init.datastorePrefix ?? '/dht'
 
     this.running = false
     this.components = components
-    this.log = components.logger.forComponent(loggingPrefix)
-    this.protocol = protocol ?? PROTOCOL
-    this.kBucketSize = kBucketSize ?? 20
-    this.clientMode = clientMode ?? true
-    this.maxInboundStreams = maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
+    this.log = components.logger.forComponent(logPrefix)
+    this.protocol = init.protocol ?? PROTOCOL
+    this.kBucketSize = init.kBucketSize ?? 20
+    this.clientMode = init.clientMode ?? true
+    this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper
 
     const providerLock = createMortice()
 
     this.providers = new Providers(components, {
-      ...(providersInit ?? {}),
-      logPrefix: loggingPrefix,
+      ...init.providers,
+      logPrefix,
+      datastorePrefix,
       lock: providerLock
     })
 
     this.validators = {
       ...recordValidators,
-      ...validators
+      ...init.validators
     }
     this.selectors = {
       ...recordSelectors,
-      ...selectors
+      ...init.selectors
     }
     this.network = new Network(components, {
       protocol: this.protocol,
-      logPrefix: loggingPrefix
+      logPrefix
     })
 
     this.routingTable = new RoutingTable(components, {
-      kBucketSize,
+      kBucketSize: init.kBucketSize,
       pingOldContactTimeout: init.pingOldContactTimeout,
       pingOldContactConcurrency: init.pingOldContactConcurrency,
       pingOldContactMaxQueueSize: init.pingOldContactMaxQueueSize,
@@ -192,7 +181,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       pingNewContactConcurrency: init.pingNewContactConcurrency,
       pingNewContactMaxQueueSize: init.pingNewContactMaxQueueSize,
       protocol: this.protocol,
-      logPrefix: loggingPrefix,
+      logPrefix,
       prefixLength: init.prefixLength,
       splitThreshold: init.kBucketSplitThreshold,
       network: this.network
@@ -211,7 +200,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.queryManager = new QueryManager(components, {
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(this.kBucketSize / 2),
-      logPrefix: loggingPrefix,
+      logPrefix,
       initialQuerySelfHasRun,
       routingTable: this.routingTable
     })
@@ -222,7 +211,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       network: this.network,
       validators: this.validators,
       queryManager: this.queryManager,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.contentFetching = new ContentFetching(components, {
       validators: this.validators,
@@ -230,7 +219,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
       network: this.network,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.contentRouting = new KADDHTContentRouting(components, {
       network: this.network,
@@ -238,36 +227,37 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       queryManager: this.queryManager,
       routingTable: this.routingTable,
       providers: this.providers,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.routingTableRefresh = new RoutingTableRefresh(components, {
       peerRouting: this.peerRouting,
       routingTable: this.routingTable,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.rpc = new RPC(components, {
       routingTable: this.routingTable,
       providers: this.providers,
       peerRouting: this.peerRouting,
       validators: this.validators,
-      logPrefix: loggingPrefix,
+      logPrefix,
       peerInfoMapper: this.peerInfoMapper
     })
     this.topologyListener = new TopologyListener(components, {
       protocol: this.protocol,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.querySelf = new QuerySelf(components, {
       peerRouting: this.peerRouting,
-      interval: querySelfInterval,
+      interval: init.querySelfInterval,
       initialInterval: init.initialQuerySelfInterval,
-      logPrefix: loggingPrefix,
+      logPrefix,
       initialQuerySelfHasRun,
       routingTable: this.routingTable
     })
     this.reprovider = new Reprovider(components, {
-      ...(init.reprovide ?? {}),
-      logPrefix: loggingPrefix,
+      ...init.reprovide,
+      logPrefix,
+      datastorePrefix,
       contentRouting: this.contentRouting,
       lock: providerLock
     })

@@ -36,6 +36,7 @@ describe('rpc - handlers - AddProvider', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
+      datastorePrefix: '/dht',
       lock: createMortice()
     })
 

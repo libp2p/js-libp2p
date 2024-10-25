@@ -24,6 +24,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
+      datastorePrefix: '/dht',
       lock: createMortice()
     })
 
@@ -45,6 +46,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
+      datastorePrefix: '/dht',
       lock: createMortice()
     })
 
@@ -70,6 +72,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
+      datastorePrefix: '/dht',
       lock: createMortice()
     })
 
@@ -98,6 +101,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
+      datastorePrefix: '/dht',
       lock: createMortice()
     })
 

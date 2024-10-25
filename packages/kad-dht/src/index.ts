@@ -78,6 +78,41 @@
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
+ *
+ * @example Connecting to both a LAN-only DHT and the IPFS Amino DHT
+ *
+ * When using multiple DHTs, you should specify distinct datastore and log
+ * prefixes to ensure that datastore records and logging is kept separate for
+ * each instance.
+ *
+ * ```TypeScript
+ * import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+ * import { createLibp2p } from 'libp2p'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     lanDHT: kadDHT({
+ *       protocol: '/ipfs/lan/kad/1.0.0',
+ *       peerInfoMapper: removePublicAddressesMapper,
+ *       clientMode: false,
+ *       logPrefix: 'libp2p:dht-lan',
+ *       datastorePrefix: '/dht-lan'
+ *     }),
+ *     aminoDHT: kadDHT({
+ *       protocol: '/ipfs/kad/1.0.0',
+ *       peerInfoMapper: removePrivateAddressesMapper,
+ *       logPrefix: 'libp2p:dht-amino',
+ *       datastorePrefix: '/dht-amino'
+ *     })
+ *   }
+ * })
+ *
+ * const peerId = peerIdFromString('QmFoo')
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
+ *
+ * console.info(peerInfo) // peer id, multiaddrs
+ * ```
  */
 
 import { KadDHT as KadDHTClass } from './kad-dht.js'
@@ -454,6 +489,13 @@ export interface KadDHTInit {
    * @default "libp2p:kad-dht"
    */
   logPrefix?: string
+
+  /**
+   * The datastore prefix to use
+   *
+   * @default "/dht"
+   */
+  datastorePrefix?: string
 
   /**
    * Settings for how long to wait in ms when pinging DHT peers to decide if

@@ -46,14 +46,17 @@ describe('reprovider', () => {
 
     const lock = createMortice()
     const logPrefix = 'libp2p'
+    const datastorePrefix = '/dht'
 
     providers = new Providers(components, {
       logPrefix,
+      datastorePrefix,
       lock
     })
 
     reprovider = new Reprovider(components, {
       logPrefix,
+      datastorePrefix,
       lock,
       contentRouting,
       threshold: 100,

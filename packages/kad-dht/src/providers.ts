@@ -8,6 +8,7 @@ import type { CID } from 'multiformats'
 
 export interface ProvidersInit {
   logPrefix: string
+  datastorePrefix: string
   lock: Mortice
 }
 
@@ -28,7 +29,7 @@ export class Providers {
 
   constructor (components: ProvidersComponents, init: ProvidersInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:providers`)
-    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/provider`
+    this.datastorePrefix = `/${init.datastorePrefix}/provider`
     this.datastore = components.datastore
     this.lock = init.lock
   }

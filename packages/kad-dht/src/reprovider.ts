@@ -6,7 +6,7 @@ import drain from 'it-drain'
 import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD } from './constants.js'
 import { parseProviderKey, readProviderTime } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'
-import type { AbortOptions, ComponentLogger, Logger, Metric, Metrics, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import type { Datastore } from 'interface-datastore'
@@ -23,6 +23,7 @@ export interface ReproviderComponents {
 
 export interface ReproviderInit {
   logPrefix: string
+  datastorePrefix: string
   contentRouting: ContentRouting
   lock: Mortice
   concurrency?: number
@@ -77,7 +78,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     })
     this.datastore = components.datastore
     this.addressManager = components.addressManager
-    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/provider`
+    this.datastorePrefix = `/${init.datastorePrefix}/provider`
     this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD
     this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE
     this.validity = init.validity ?? PROVIDERS_VALIDITY
