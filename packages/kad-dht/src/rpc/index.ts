@@ -24,6 +24,7 @@ export interface RPCInit {
   peerRouting: PeerRouting
   validators: Validators
   logPrefix: string
+  metricsPrefix: string
   peerInfoMapper: PeerInfoMapper
 }
 
@@ -41,21 +42,20 @@ export class RPC {
   }
 
   constructor (components: RPCComponents, init: RPCInit) {
-    const { providers, peerRouting, validators, logPrefix, peerInfoMapper } = init
     this.metrics = {
-      operations: components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_requests_total`),
-      errors: components.metrics?.registerCounterGroup(`${logPrefix.replaceAll(':', '_')}_inbound_rpc_errors_total`)
+      operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`)
     }
 
-    this.log = components.logger.forComponent(`${logPrefix}:rpc`)
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc`)
     this.routingTable = init.routingTable
     this.handlers = {
-      [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, { peerRouting, logPrefix }),
-      [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, { validators, logPrefix }),
-      [MessageType.FIND_NODE.toString()]: new FindNodeHandler(components, { peerRouting, logPrefix, peerInfoMapper }),
-      [MessageType.ADD_PROVIDER.toString()]: new AddProviderHandler(components, { providers, logPrefix }),
-      [MessageType.GET_PROVIDERS.toString()]: new GetProvidersHandler(components, { peerRouting, providers, logPrefix, peerInfoMapper }),
-      [MessageType.PING.toString()]: new PingHandler(components, { logPrefix })
+      [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, init),
+      [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, init),
+      [MessageType.FIND_NODE.toString()]: new FindNodeHandler(components, init),
+      [MessageType.ADD_PROVIDER.toString()]: new AddProviderHandler(components, init),
+      [MessageType.GET_PROVIDERS.toString()]: new GetProvidersHandler(components, init),
+      [MessageType.PING.toString()]: new PingHandler(components, init)
     }
   }
 

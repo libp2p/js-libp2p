@@ -44,7 +44,8 @@ describe('QueryManager', () => {
     const init: QueryManagerInit = {
       initialQuerySelfHasRun: pDefer<any>(),
       routingTable,
-      logPrefix: ''
+      logPrefix: '',
+      metricsPrefix: ''
     }
 
     init.initialQuerySelfHasRun.resolve()
@@ -803,7 +804,8 @@ describe('QueryManager', () => {
     }, {
       initialQuerySelfHasRun: pDefer<any>(),
       routingTable,
-      logPrefix: ''
+      logPrefix: '',
+      metricsPrefix: ''
     })
     await manager.start()
 
@@ -842,7 +844,8 @@ describe('QueryManager', () => {
       initialQuerySelfHasRun,
       alpha: 2,
       routingTable,
-      logPrefix: ''
+      logPrefix: '',
+      metricsPrefix: ''
     })
     await manager.start()
 

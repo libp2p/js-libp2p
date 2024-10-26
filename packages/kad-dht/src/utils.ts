@@ -10,6 +10,7 @@ import * as varint from 'uint8-varint'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import type { Operation, OperationMetrics } from './kad-dht.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -230,4 +231,53 @@ export function toProviderKey (prefix: string, cid: CID | string, peerId?: PeerI
 
 export function readProviderTime (buf: Uint8Array): Date {
   return new Date(varint.decode(buf))
+}
+
+/**
+ * Wraps the passed generator function with timing metrics
+ */
+export function timeOperationGenerator (fn: (...args: any[]) => AsyncGenerator<any>, operationMetrics: OperationMetrics, type: Operation): (...args: any[]) => AsyncGenerator<any> {
+  return async function * (...args: any[]): AsyncGenerator<any> {
+    const stopSuccessTimer = operationMetrics.queryTime?.timer(type)
+    const stopErrorTimer = operationMetrics.errorTime?.timer(type)
+    let errored = false
+
+    try {
+      yield * fn(...args)
+    } catch (err) {
+      errored = false
+      throw err
+    } finally {
+      if (errored) {
+        stopErrorTimer?.()
+        operationMetrics.errors?.increment({ [type]: true })
+      } else {
+        stopSuccessTimer?.()
+        operationMetrics.queries?.increment({ [type]: true })
+      }
+    }
+  }
+}
+
+export function timeOperationMethod (fn: (...args: any[]) => Promise<any>, operationMetrics: OperationMetrics, type: Operation): (...args: any[]) => Promise<any> {
+  return async function (...args: any[]): Promise<any> {
+    const stopSuccessTimer = operationMetrics?.queryTime?.timer(type)
+    const stopErrorTimer = operationMetrics?.errorTime?.timer(type)
+    let errored = false
+
+    try {
+      return await fn(...args)
+    } catch (err) {
+      errored = false
+      throw err
+    } finally {
+      if (errored) {
+        stopErrorTimer?.()
+        operationMetrics.errors?.increment({ [type]: true })
+      } else {
+        stopSuccessTimer?.()
+        operationMetrics.queries?.increment({ [type]: true })
+      }
+    }
+  }
 }

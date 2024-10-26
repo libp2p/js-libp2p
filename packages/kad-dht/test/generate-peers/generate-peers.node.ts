@@ -65,6 +65,7 @@ describe.skip('generate peers', function () {
     const table = new RoutingTable(components, {
       kBucketSize: 20,
       logPrefix: '',
+      metricsPrefix: '',
       protocol: '/ipfs/kad/1.0.0',
       network: stubInterface<Network>()
     })

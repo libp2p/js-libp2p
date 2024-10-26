@@ -81,9 +81,8 @@
  *
  * @example Connecting to both a LAN-only DHT and the IPFS Amino DHT
  *
- * When using multiple DHTs, you should specify distinct datastore and log
- * prefixes to ensure that datastore records and logging is kept separate for
- * each instance.
+ * When using multiple DHTs, you should specify distinct datastore, metrics and
+ * log prefixes to ensure that data is kept separate for each instance.
  *
  * ```TypeScript
  * import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
@@ -97,13 +96,15 @@
  *       peerInfoMapper: removePublicAddressesMapper,
  *       clientMode: false,
  *       logPrefix: 'libp2p:dht-lan',
- *       datastorePrefix: '/dht-lan'
+ *       datastorePrefix: '/dht-lan',
+ *       metricsPrefix: 'libp2p_dht_lan
  *     }),
  *     aminoDHT: kadDHT({
  *       protocol: '/ipfs/kad/1.0.0',
  *       peerInfoMapper: removePrivateAddressesMapper,
  *       logPrefix: 'libp2p:dht-amino',
- *       datastorePrefix: '/dht-amino'
+ *       datastorePrefix: '/dht-amino',
+ *       metricsPrefix: 'libp2p_dht_amino
  *     })
  *   }
  * })
@@ -496,6 +497,13 @@ export interface KadDHTInit {
    * @default "/dht"
    */
   datastorePrefix?: string
+
+  /**
+   * The metrics prefix to use
+   *
+   * @default "libp2p_kad_dht"
+   */
+  metricsPrefix?: string
 
   /**
    * Settings for how long to wait in ms when pinging DHT peers to decide if

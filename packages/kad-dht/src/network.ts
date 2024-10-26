@@ -16,6 +16,7 @@ import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, Routing
 export interface NetworkInit {
   protocol: string
   logPrefix: string
+  metricsPrefix: string
   timeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 }
 
@@ -43,19 +44,18 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   constructor (components: KadDHTComponents, init: NetworkInit) {
     super()
 
-    const { protocol } = init
     this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:network`)
     this.running = false
-    this.protocol = protocol
+    this.protocol = init.protocol
     this.timeout = new AdaptiveTimeout({
       ...(init.timeout ?? {}),
       metrics: components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_network_message_send_times_milliseconds`
+      metricName: `${init.metricsPrefix}_network_message_send_times_milliseconds`
     })
     this.metrics = {
-      operations: components.metrics?.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_outbound_rpc_requests_total`),
-      errors: components.metrics?.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_outbound_rpc_errors_total`)
+      operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_errors_total`)
     }
   }
 

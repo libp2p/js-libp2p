@@ -47,6 +47,7 @@ describe('Routing Table', () => {
 
     table = new RoutingTable(components, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       network
     })
@@ -75,6 +76,7 @@ describe('Routing Table', () => {
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 2,
       prefixLength: 3,
@@ -357,6 +359,7 @@ describe('Routing Table', () => {
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 1,
       prefixLength: 1,
@@ -425,6 +428,7 @@ describe('Routing Table', () => {
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 2,
       prefixLength: 2,

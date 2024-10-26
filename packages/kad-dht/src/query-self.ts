@@ -6,6 +6,8 @@ import take from 'it-take'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
+import { timeOperationMethod } from './utils.js'
+import type { OperationMetrics } from './kad-dht.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { RoutingTable } from './routing-table/index.js'
 import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
@@ -20,6 +22,7 @@ export interface QuerySelfInit {
   initialInterval?: number
   queryTimeout?: number
   initialQuerySelfHasRun: DeferredPromise<void>
+  operationMetrics: OperationMetrics
 }
 
 export interface QuerySelfComponents {
@@ -46,18 +49,18 @@ export class QuerySelf implements Startable {
   private querySelfPromise?: DeferredPromise<void>
 
   constructor (components: QuerySelfComponents, init: QuerySelfInit) {
-    const { peerRouting, logPrefix, count, interval, queryTimeout, routingTable } = init
-
     this.peerId = components.peerId
-    this.log = components.logger.forComponent(`${logPrefix}:query-self`)
+    this.log = components.logger.forComponent(`${init.logPrefix}:query-self`)
     this.running = false
-    this.peerRouting = peerRouting
-    this.routingTable = routingTable
-    this.count = count ?? K
-    this.interval = interval ?? QUERY_SELF_INTERVAL
+    this.peerRouting = init.peerRouting
+    this.routingTable = init.routingTable
+    this.count = init.count ?? K
+    this.interval = init.interval ?? QUERY_SELF_INTERVAL
     this.initialInterval = init.initialInterval ?? QUERY_SELF_INITIAL_INTERVAL
-    this.queryTimeout = queryTimeout ?? QUERY_SELF_TIMEOUT
+    this.queryTimeout = init.queryTimeout ?? QUERY_SELF_TIMEOUT
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
+
+    this.querySelf = timeOperationMethod(this.querySelf.bind(this), init.operationMetrics, 'SELF_QUERY')
   }
 
   isStarted (): boolean {

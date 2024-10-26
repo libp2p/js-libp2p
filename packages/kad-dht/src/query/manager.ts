@@ -12,7 +12,7 @@ import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { ComponentLogger, Counter, Metric, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
@@ -22,6 +22,7 @@ export interface CleanUpEvents {
 
 export interface QueryManagerInit {
   logPrefix: string
+  metricsPrefix: string
   disjointPaths?: number
   alpha?: number
   initialQuerySelfHasRun: DeferredPromise<void>
@@ -58,35 +59,23 @@ export class QueryManager implements Startable {
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
-  private readonly metrics: {
-    queries?: Counter
-    errors?: Counter
-    queryTime?: Metric
-  }
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
-    const { disjointPaths = K, alpha = ALPHA, logPrefix } = init
-
-    this.logPrefix = logPrefix
-    this.disjointPaths = disjointPaths ?? K
-    this.running = false
-    this.alpha = alpha ?? ALPHA
+    this.logPrefix = init.logPrefix
+    this.disjointPaths = init.disjointPaths ?? K
+    this.alpha = init.alpha ?? ALPHA
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
     this.routingTable = init.routingTable
     this.logger = components.logger
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
 
-    this.metrics = {
-      queries: components.metrics?.registerCounter(`${logPrefix.replaceAll(':', '_')}_queries_total`),
-      errors: components.metrics?.registerCounter(`${logPrefix.replaceAll(':', '_')}_query_errors_total`),
-      queryTime: components.metrics?.registerMetric(`${logPrefix.replaceAll(':', '_')}_query_time_seconds`)
-    }
-
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
     // make sure we don't make a lot of noise in the logs
     setMaxListeners(Infinity, this.shutDownController.signal)
+
+    this.running = false
   }
 
   isStarted (): boolean {
@@ -123,8 +112,6 @@ export class QueryManager implements Startable {
       throw new Error('QueryManager not started')
     }
 
-    const stopQueryTimer = this.metrics.queryTime?.timer()
-
     if (options.signal == null) {
       // don't let queries run forever
       const signal = AbortSignal.timeout(DEFAULT_QUERY_TIMEOUT)
@@ -156,7 +143,6 @@ export class QueryManager implements Startable {
     const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
-    const startTime = Date.now()
     let queryFinished = false
 
     try {
@@ -169,7 +155,6 @@ export class QueryManager implements Startable {
       }
 
       log('query:start')
-      this.metrics?.queries?.increment()
 
       const id = await convertBuffer(key)
       const peers = this.routingTable.closestPeers(id)
@@ -224,10 +209,6 @@ export class QueryManager implements Startable {
 
       queryFinished = true
     } catch (err: any) {
-      if (!queryFinished) {
-        this.metrics?.errors?.increment()
-      }
-
       if (!this.running && err.name === 'QueryAbortedError') {
         // ignore query aborted errors that were thrown during query manager shutdown
       } else {
@@ -241,8 +222,7 @@ export class QueryManager implements Startable {
 
       signal.clear()
 
-      stopQueryTimer?.()
-      log('query:done in %dms', Date.now() - startTime)
+      log('query:done')
     }
   }
 }

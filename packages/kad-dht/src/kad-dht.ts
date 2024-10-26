@@ -19,10 +19,11 @@ import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
 import {
   multiaddrIsPublic,
-  removePrivateAddressesMapper
+  removePrivateAddressesMapper,
+  timeOperationGenerator
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper } from './index.js'
-import type { ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ContentRouting, CounterGroup, Logger, MetricGroup, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -98,6 +99,15 @@ class DHTPeerRouting implements PeerRouting {
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 
+export type Operation = 'GET_VALUE' | 'FIND_PROVIDERS' | 'FIND_PEER' | 'GET_CLOSEST_PEERS' | 'PROVIDE' | 'PUT_VALUE' | 'SELF_QUERY'
+
+export interface OperationMetrics {
+  queries?: CounterGroup<Operation>
+  errors?: CounterGroup<Operation>
+  queryTime?: MetricGroup<Operation>
+  errorTime?: MetricGroup<Operation>
+}
+
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
@@ -139,6 +149,14 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     const logPrefix = init.logPrefix ?? 'libp2p:kad-dht'
     const datastorePrefix = init.datastorePrefix ?? '/dht'
+    const metricsPrefix = init.metricsPrefix ?? 'libp2p_kad_dht'
+
+    const operationMetrics: OperationMetrics = {
+      queries: components.metrics?.registerCounterGroup(`${metricsPrefix}_operations_total`),
+      errors: components.metrics?.registerCounterGroup(`${metricsPrefix}_operation_errors_total`),
+      queryTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_time_seconds`),
+      errorTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_error_time_seconds`)
+    }
 
     this.running = false
     this.components = components
@@ -169,7 +187,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     }
     this.network = new Network(components, {
       protocol: this.protocol,
-      logPrefix
+      logPrefix,
+      metricsPrefix
     })
 
     this.routingTable = new RoutingTable(components, {
@@ -182,6 +201,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       pingNewContactMaxQueueSize: init.pingNewContactMaxQueueSize,
       protocol: this.protocol,
       logPrefix,
+      metricsPrefix,
       prefixLength: init.prefixLength,
       splitThreshold: init.kBucketSplitThreshold,
       network: this.network
@@ -201,6 +221,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(this.kBucketSize / 2),
       logPrefix,
+      metricsPrefix,
       initialQuerySelfHasRun,
       routingTable: this.routingTable
     })
@@ -240,6 +261,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       peerRouting: this.peerRouting,
       validators: this.validators,
       logPrefix,
+      metricsPrefix,
       peerInfoMapper: this.peerInfoMapper
     })
     this.topologyListener = new TopologyListener(components, {
@@ -252,14 +274,17 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       initialInterval: init.initialQuerySelfInterval,
       logPrefix,
       initialQuerySelfHasRun,
-      routingTable: this.routingTable
+      routingTable: this.routingTable,
+      operationMetrics
     })
     this.reprovider = new Reprovider(components, {
       ...init.reprovide,
       logPrefix,
+      metricsPrefix,
       datastorePrefix,
       contentRouting: this.contentRouting,
-      lock: providerLock
+      lock: providerLock,
+      operationMetrics
     })
 
     // handle peers being discovered during processing of DHT messages
@@ -321,6 +346,13 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
           })
       })
     }
+
+    this.get = timeOperationGenerator(this.get.bind(this), operationMetrics, 'GET_VALUE')
+    this.findProviders = timeOperationGenerator(this.findProviders.bind(this), operationMetrics, 'FIND_PROVIDERS')
+    this.findPeer = timeOperationGenerator(this.findPeer.bind(this), operationMetrics, 'FIND_PEER')
+    this.getClosestPeers = timeOperationGenerator(this.getClosestPeers.bind(this), operationMetrics, 'GET_CLOSEST_PEERS')
+    this.provide = timeOperationGenerator(this.provide.bind(this), operationMetrics, 'PROVIDE')
+    this.put = timeOperationGenerator(this.put.bind(this), operationMetrics, 'PUT_VALUE')
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/kad-dht'
