@@ -104,7 +104,7 @@
  *       peerInfoMapper: removePrivateAddressesMapper,
  *       logPrefix: 'libp2p:dht-amino',
  *       datastorePrefix: '/dht-amino',
- *       metricsPrefix: 'libp2p_dht_amino
+ *       metricsPrefix: 'libp2p_dht_amino'
  *     })
  *   }
  * })
