@@ -243,17 +243,20 @@ export function timeOperationGenerator (fn: (...args: any[]) => AsyncGenerator<a
     let errored = false
 
     try {
+      operationMetrics.queries?.increment({ [type]: true })
+
       yield * fn(...args)
     } catch (err) {
       errored = false
       throw err
     } finally {
+      operationMetrics.queries?.decrement({ [type]: true })
+
       if (errored) {
         stopErrorTimer?.()
         operationMetrics.errors?.increment({ [type]: true })
       } else {
         stopSuccessTimer?.()
-        operationMetrics.queries?.increment({ [type]: true })
       }
     }
   }
@@ -266,17 +269,20 @@ export function timeOperationMethod (fn: (...args: any[]) => Promise<any>, opera
     let errored = false
 
     try {
+      operationMetrics.queries?.increment({ [type]: true })
+
       return await fn(...args)
     } catch (err) {
       errored = false
       throw err
     } finally {
+      operationMetrics.queries?.decrement({ [type]: true })
+
       if (errored) {
         stopErrorTimer?.()
         operationMetrics.errors?.increment({ [type]: true })
       } else {
         stopSuccessTimer?.()
-        operationMetrics.queries?.increment({ [type]: true })
       }
     }
   }

@@ -102,7 +102,7 @@ export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 export type Operation = 'GET_VALUE' | 'FIND_PROVIDERS' | 'FIND_PEER' | 'GET_CLOSEST_PEERS' | 'PROVIDE' | 'PUT_VALUE' | 'SELF_QUERY'
 
 export interface OperationMetrics {
-  queries?: CounterGroup<Operation>
+  queries?: MetricGroup<Operation>
   errors?: CounterGroup<Operation>
   queryTime?: MetricGroup<Operation>
   errorTime?: MetricGroup<Operation>
@@ -152,10 +152,10 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     const metricsPrefix = init.metricsPrefix ?? 'libp2p_kad_dht'
 
     const operationMetrics: OperationMetrics = {
-      queries: components.metrics?.registerCounterGroup(`${metricsPrefix}_operations_total`),
-      errors: components.metrics?.registerCounterGroup(`${metricsPrefix}_operation_errors_total`),
-      queryTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_time_seconds`),
-      errorTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_error_time_seconds`)
+      queries: components.metrics?.registerMetricGroup(`${metricsPrefix}_operations_total`, { label: 'operation' }),
+      errors: components.metrics?.registerCounterGroup(`${metricsPrefix}_operation_errors_total`, { label: 'operation' }),
+      queryTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_time_seconds`, { label: 'operation' }),
+      errorTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_error_time_seconds`, { label: 'operation' })
     }
 
     this.running = false
