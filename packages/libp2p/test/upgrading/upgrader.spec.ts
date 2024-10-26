@@ -29,7 +29,8 @@ import { type Components, defaultComponents } from '../../src/components.js'
 import { createLibp2p } from '../../src/index.js'
 import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
 import { DefaultUpgrader } from '../../src/upgrader.js'
-import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader, PrivateKey } from '@libp2p/interface'
+import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader, PrivateKey, MultiaddrConnection } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 const addrs = [
   multiaddr('/ip4/127.0.0.1/tcp/0'),
@@ -595,6 +596,22 @@ describe('Upgrader', () => {
 
     expect(localConnectionProtector.protect.callCount).to.equal(0, 'used local connection protector')
     expect(remoteConnectionProtector.protect.callCount).to.equal(0, 'used remote connection protector')
+  })
+
+  it('should not decrement inbound pending connection count if the connection is denied', async () => {
+    const connectionManager = stubInterface<ConnectionManager>()
+
+    // @ts-expect-error private field
+    localUpgrader.components.connectionManager = connectionManager
+
+    const maConn = stubInterface<MultiaddrConnection>()
+
+    connectionManager.acceptIncomingConnection.resolves(false)
+
+    await expect(localUpgrader.upgradeInbound(maConn)).to.eventually.be.rejected
+      .with.property('name', 'ConnectionDeniedError')
+
+    expect(connectionManager.afterUpgradeInbound.called).to.be.false()
   })
 })
 
