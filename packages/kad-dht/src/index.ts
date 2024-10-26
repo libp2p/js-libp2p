@@ -97,7 +97,7 @@
  *       clientMode: false,
  *       logPrefix: 'libp2p:dht-lan',
  *       datastorePrefix: '/dht-lan',
- *       metricsPrefix: 'libp2p_dht_lan
+ *       metricsPrefix: 'libp2p_dht_lan'
  *     }),
  *     aminoDHT: kadDHT({
  *       protocol: '/ipfs/kad/1.0.0',
