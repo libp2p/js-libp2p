@@ -24,14 +24,14 @@ export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
   const values: asn1js.Integer[] = result.valueBlock.value
 
   const key = {
-    n: uint8ArrayToString(bnToBuf(values[1].toBigInt()), 'base64url'),
-    e: uint8ArrayToString(bnToBuf(values[2].toBigInt()), 'base64url'),
-    d: uint8ArrayToString(bnToBuf(values[3].toBigInt()), 'base64url'),
-    p: uint8ArrayToString(bnToBuf(values[4].toBigInt()), 'base64url'),
-    q: uint8ArrayToString(bnToBuf(values[5].toBigInt()), 'base64url'),
-    dp: uint8ArrayToString(bnToBuf(values[6].toBigInt()), 'base64url'),
-    dq: uint8ArrayToString(bnToBuf(values[7].toBigInt()), 'base64url'),
-    qi: uint8ArrayToString(bnToBuf(values[8].toBigInt()), 'base64url'),
+    n: asn1jsIntegerToBase64(values[1]),
+    e: asn1jsIntegerToBase64(values[2]),
+    d: asn1jsIntegerToBase64(values[3]),
+    p: asn1jsIntegerToBase64(values[4]),
+    q: asn1jsIntegerToBase64(values[5]),
+    dp: asn1jsIntegerToBase64(values[6]),
+    dq: asn1jsIntegerToBase64(values[7]),
+    qi: asn1jsIntegerToBase64(values[8]),
     kty: 'RSA',
     alg: 'RS256'
   }
@@ -78,8 +78,8 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
 
   return {
     kty: 'RSA',
-    n: uint8ArrayToString(bnToBuf(values[0].toBigInt()), 'base64url'),
-    e: uint8ArrayToString(bnToBuf(values[1].toBigInt()), 'base64url')
+    n: asn1jsIntegerToBase64(values[0]),
+    e: asn1jsIntegerToBase64(values[1])
   }
 }
 
@@ -120,26 +120,11 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   return new Uint8Array(der, 0, der.byteLength)
 }
 
-function bnToBuf (bn: bigint): Uint8Array {
-  let hex = bn.toString(16)
+function asn1jsIntegerToBase64 (int: asn1js.Integer): string {
+  const buf = int.valueBlock.valueHexView
+  const str = uint8ArrayToString(buf, 'base64url')
 
-  if (hex.length % 2 > 0) {
-    hex = `0${hex}`
-  }
-
-  const len = hex.length / 2
-  const u8 = new Uint8Array(len)
-
-  let i = 0
-  let j = 0
-
-  while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j + 2), 16)
-    i += 1
-    j += 2
-  }
-
-  return u8
+  return str
 }
 
 function bufToBn (u8: Uint8Array): bigint {
