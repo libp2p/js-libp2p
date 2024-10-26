@@ -121,10 +121,14 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
 }
 
 function asn1jsIntegerToBase64 (int: asn1js.Integer): string {
-  const buf = int.valueBlock.valueHexView
-  const str = uint8ArrayToString(buf, 'base64url')
+  let buf = int.valueBlock.valueHexView
 
-  return str
+  // chrome rejects values with leading 0s
+  while (buf[0] === 0) {
+    buf = buf.subarray(1)
+  }
+
+  return uint8ArrayToString(buf, 'base64url')
 }
 
 function bufToBn (u8: Uint8Array): bigint {
