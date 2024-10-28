@@ -72,7 +72,7 @@ export class PrometheusMetricGroup implements MetricGroup, CalculatedMetric<Reco
 
   timer (key: string): StopTimer {
     return this.gauge.startTimer({
-      key: 0
+      [this.label]: key
     })
   }
 }
