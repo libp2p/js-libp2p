@@ -68,6 +68,25 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.0.10](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.9...peer-store-v11.0.10) (2024-10-28)
+
+
+### Bug Fixes
+
+* remove peer cache ([#2786](https://github.com/libp2p/js-libp2p/issues/2786)) ([7383821](https://github.com/libp2p/js-libp2p/commit/7383821e1a4bab17ee56a55c78d523e918db0bcc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/peer-record bumped from ^8.0.9 to ^8.0.10
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+
 ## [11.0.9](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.8...peer-store-v11.0.9) (2024-10-23)
 
 
