@@ -17,6 +17,20 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.6](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.5...crypto-v5.0.6) (2024-10-28)
+
+
+### Bug Fixes
+
+* use raw asn1js int value to improve performance ([#2788](https://github.com/libp2p/js-libp2p/issues/2788)) ([c4399dc](https://github.com/libp2p/js-libp2p/commit/c4399dcb93b24339a15e152d48009f448fc701d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+
 ## [5.0.5](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.4...crypto-v5.0.5) (2024-10-09)
 
 
