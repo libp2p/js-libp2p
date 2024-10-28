@@ -96,6 +96,15 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.16](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.15...webtransport-v5.0.16) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.2.0 to ^2.2.1
+
 ## [5.0.15](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.14...webtransport-v5.0.15) (2024-10-28)
 
 
