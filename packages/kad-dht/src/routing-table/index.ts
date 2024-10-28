@@ -30,6 +30,7 @@ export const POPULATE_FROM_DATASTORE_LIMIT = 1000
 
 export interface RoutingTableInit {
   logPrefix: string
+  metricsPrefix: string
   protocol: string
   prefixLength?: number
   splitThreshold?: number
@@ -116,26 +117,26 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     this.pingOldContactQueue = new PeerQueue({
       concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_ping_old_contact_queue`,
+      metricName: `${init.metricsPrefix}_ping_old_contact_queue`,
       metrics: this.components.metrics,
       maxSize: init.pingOldContactMaxQueueSize ?? PING_OLD_CONTACT_MAX_QUEUE_SIZE
     })
     this.pingOldContactTimeout = new AdaptiveTimeout({
       ...(init.pingOldContactTimeout ?? {}),
       metrics: this.components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_old_contact_time_milliseconds`
+      metricName: `${init.metricsPrefix}_routing_table_ping_old_contact_time_milliseconds`
     })
 
     this.pingNewContactQueue = new PeerQueue({
       concurrency: init.pingNewContactConcurrency ?? PING_NEW_CONTACT_CONCURRENCY,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_ping_new_contact_queue`,
+      metricName: `${init.metricsPrefix}_ping_new_contact_queue`,
       metrics: this.components.metrics,
       maxSize: init.pingNewContactMaxQueueSize ?? PING_NEW_CONTACT_MAX_QUEUE_SIZE
     })
     this.pingNewContactTimeout = new AdaptiveTimeout({
       ...(init.pingNewContactTimeout ?? {}),
       metrics: this.components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_new_contact_time_milliseconds`
+      metricName: `${init.metricsPrefix}_routing_table_ping_new_contact_time_milliseconds`
     })
 
     this.kb = new KBucket({
@@ -161,13 +162,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     if (this.components.metrics != null) {
       this.metrics = {
-        routingTableSize: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_size`),
-        routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_total`),
-        routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_average_occupancy`),
-        routingTableKadBucketMinOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_min_occupancy`),
-        routingTableKadBucketMaxOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_occupancy`),
-        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_depth`),
-        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_kad_bucket_events_total`)
+        routingTableSize: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_size`),
+        routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_total`),
+        routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_average_occupancy`),
+        routingTableKadBucketMinOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_min_occupancy`),
+        routingTableKadBucketMaxOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_occupancy`),
+        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_depth`),
+        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.metricsPrefix}_kad_bucket_events_total`)
       }
     }
   }
@@ -177,6 +178,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     await start(this.closestPeerTagger)

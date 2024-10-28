@@ -22,12 +22,14 @@ export class PutValueHandler implements DHTMessageHandler {
   private readonly components: PutValueHandlerComponents
   private readonly validators: Validators
   private readonly log: Logger
+  private readonly datastorePrefix: string
 
   constructor (components: PutValueHandlerComponents, init: PutValueHandlerInit) {
     const { validators } = init
 
     this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:put-value`)
+    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
     this.validators = validators
   }
 
@@ -48,7 +50,7 @@ export class PutValueHandler implements DHTMessageHandler {
       await verifyRecord(this.validators, deserializedRecord)
 
       deserializedRecord.timeReceived = new Date()
-      const recordKey = bufferToRecordKey(deserializedRecord.key)
+      const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key)
       await this.components.datastore.put(recordKey, deserializedRecord.serialize().subarray())
       this.log('put record for %b into datastore under key %k', key, recordKey)
     } catch (err: any) {

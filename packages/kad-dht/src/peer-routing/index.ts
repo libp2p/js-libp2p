@@ -12,7 +12,7 @@ import {
   valueEvent
 } from '../query/events.js'
 import { verifyRecord } from '../record/validators.js'
-import * as utils from '../utils.js'
+import { convertBuffer, keyForPublicKey } from '../utils.js'
 import type { KadDHTComponents, DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
@@ -39,15 +39,13 @@ export class PeerRouting {
   private readonly peerId: PeerId
 
   constructor (components: KadDHTComponents, init: PeerRoutingInit) {
-    const { routingTable, network, validators, queryManager, logPrefix } = init
-
-    this.routingTable = routingTable
-    this.network = network
-    this.validators = validators
-    this.queryManager = queryManager
+    this.routingTable = init.routingTable
+    this.network = init.network
+    this.validators = init.validators
+    this.queryManager = init.queryManager
     this.peerStore = components.peerStore
     this.peerId = components.peerId
-    this.log = components.logger.forComponent(`${logPrefix}:peer-routing`)
+    this.log = components.logger.forComponent(`${init.logPrefix}:peer-routing`)
   }
 
   /**
@@ -108,7 +106,7 @@ export class PeerRouting {
    * Get the public key directly from a node
    */
   async * getPublicKeyFromNode (peer: PeerId, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
-    const pkKey = utils.keyForPublicKey(peer)
+    const pkKey = keyForPublicKey(peer)
 
     for await (const event of this._getValueSingle(peer, pkKey, options)) {
       yield event
@@ -205,7 +203,7 @@ export class PeerRouting {
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
-    const kadId = await utils.convertBuffer(key)
+    const kadId = await convertBuffer(key)
     const tablePeers = this.routingTable.closestPeers(kadId)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
@@ -289,7 +287,7 @@ export class PeerRouting {
    * than self
    */
   async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId): Promise<PeerInfo[]> {
-    const id = await utils.convertBuffer(key)
+    const id = await convertBuffer(key)
     const ids = this.routingTable.closestPeers(id)
     const output: PeerInfo[] = []
 

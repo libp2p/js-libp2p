@@ -15,15 +15,21 @@ export const MAX_RECORD_AGE = 36 * hour
 
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
-export const RECORD_KEY_PREFIX = '/dht/record'
-
-export const PROVIDER_KEY_PREFIX = '/dht/provider'
-
-export const PROVIDERS_LRU_CACHE_SIZE = 256
-
 export const PROVIDERS_VALIDITY = 24 * hour
 
 export const PROVIDERS_CLEANUP_INTERVAL = hour
+
+// Re-run the provide operation when the expiry of our provider records is within this amount
+export const REPROVIDE_THRESHOLD = 2 * hour
+
+// How many reprovide operations to run at once
+export const REPROVIDE_CONCURRENCY = 10
+
+// How long to let the reprovide queue grow before we wait for capacity
+export const REPROVIDE_MAX_QUEUE_SIZE = 16_384
+
+// How often to check if records need reproviding
+export const REPROVIDE_INTERVAL = hour
 
 export const READ_MESSAGE_TIMEOUT = 10 * second
 

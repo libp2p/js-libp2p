@@ -35,7 +35,7 @@ describe('rpc - handlers - PutValue', () => {
 
     handler = new PutValueHandler(components, {
       validators,
-      logPrefix: ''
+      logPrefix: 'dht'
     })
   })
 
@@ -75,7 +75,7 @@ describe('rpc - handlers - PutValue', () => {
     const response = await handler.handle(sourcePeer, msg)
     expect(response).to.deep.equal(msg)
 
-    const key = utils.bufferToRecordKey(uint8ArrayFromString('hello'))
+    const key = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('hello'))
     const res = await datastore.get(key)
 
     const rec = Libp2pRecord.deserialize(res)

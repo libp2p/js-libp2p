@@ -47,6 +47,7 @@ describe('Routing Table', () => {
 
     table = new RoutingTable(components, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       network
     })
@@ -66,6 +67,8 @@ describe('Routing Table', () => {
   })
 
   it('adds peers', async () => {
+    await stop(table)
+
     // make a very small routing table with a predictable structure
     table = new RoutingTable({
       ...components,
@@ -73,6 +76,7 @@ describe('Routing Table', () => {
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 2,
       prefixLength: 3,
@@ -347,12 +351,15 @@ describe('Routing Table', () => {
   })
 
   it('evicts oldest peer that does not respond to ping', async () => {
+    await stop(table)
+
     // make a very small routing table with a predictable structure
     table = new RoutingTable({
       ...components,
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 1,
       prefixLength: 1,
@@ -412,6 +419,8 @@ describe('Routing Table', () => {
   })
 
   it('tags newly found kad-close peers', async () => {
+    await stop(table)
+
     // make a very small routing table with a predictable structure
     table = new RoutingTable({
       ...components,
@@ -419,6 +428,7 @@ describe('Routing Table', () => {
       peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
     }, {
       logPrefix: '',
+      metricsPrefix: '',
       protocol: PROTOCOL,
       kBucketSize: 2,
       prefixLength: 2,

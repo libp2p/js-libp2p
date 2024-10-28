@@ -66,6 +66,7 @@ describe('rpc', () => {
       peerRouting,
       validators,
       logPrefix: '',
+      metricsPrefix: '',
       peerInfoMapper: passthroughMapper
     })
   })

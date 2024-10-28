@@ -41,12 +41,14 @@ export class ContentFetching {
   private readonly peerRouting: PeerRouting
   private readonly queryManager: QueryManager
   private readonly network: Network
+  private readonly datastorePrefix: string
 
   constructor (components: KadDHTComponents, init: ContentFetchingInit) {
     const { validators, selectors, peerRouting, queryManager, network, logPrefix } = init
 
     this.components = components
     this.log = components.logger.forComponent(`${logPrefix}:content-fetching`)
+    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
@@ -61,7 +63,7 @@ export class ContentFetching {
   async getLocal (key: Uint8Array): Promise<Libp2pRecord> {
     this.log('getLocal %b', key)
 
-    const dsKey = bufferToRecordKey(key)
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
     this.log('fetching record for key %k', dsKey)
 
@@ -92,7 +94,7 @@ export class ContentFetching {
       // correct ourself
       if (this.components.peerId.equals(from)) {
         try {
-          const dsKey = bufferToRecordKey(key)
+          const dsKey = bufferToRecordKey(this.datastorePrefix, key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
           await this.components.datastore.put(dsKey, fixupRec.subarray())
         } catch (err: any) {
@@ -136,7 +138,7 @@ export class ContentFetching {
     const record = createPutRecord(key, value)
 
     // store the record locally
-    const dsKey = bufferToRecordKey(key)
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key)
     this.log(`storing record for key ${dsKey.toString()}`)
     await this.components.datastore.put(dsKey, record.subarray())
 
