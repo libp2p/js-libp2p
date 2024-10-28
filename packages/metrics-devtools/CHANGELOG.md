@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.8](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.7...devtools-metrics-v1.1.8) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/interface-internal bumped from ^2.0.9 to ^2.0.10
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/simple-metrics bumped from ^1.2.5 to ^1.2.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+
 ## [1.1.7](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.6...devtools-metrics-v1.1.7) (2024-10-23)
 
 
