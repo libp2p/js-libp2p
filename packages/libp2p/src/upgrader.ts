@@ -182,22 +182,22 @@ export class DefaultUpgrader implements Upgrader {
    * Upgrades an inbound connection
    */
   async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+    let accepted = false
+
     try {
       this.metrics.dials?.increment({
         inbound: true
       })
 
-      const accept = await this.components.connectionManager.acceptIncomingConnection(maConn)
+      accepted = await this.components.connectionManager.acceptIncomingConnection(maConn)
 
-      if (!accept) {
+      if (!accepted) {
         throw new ConnectionDeniedError('connection denied')
       }
 
       await this.shouldBlockConnection('denyInboundConnection', maConn)
 
-      const conn = await this._performUpgrade(maConn, 'inbound', opts)
-
-      return conn
+      return await this._performUpgrade(maConn, 'inbound', opts)
     } catch (err) {
       this.metrics.errors?.increment({
         inbound: true
@@ -205,7 +205,9 @@ export class DefaultUpgrader implements Upgrader {
 
       throw err
     } finally {
-      this.components.connectionManager.afterUpgradeInbound()
+      if (accepted) {
+        this.components.connectionManager.afterUpgradeInbound()
+      }
     }
   }
 
