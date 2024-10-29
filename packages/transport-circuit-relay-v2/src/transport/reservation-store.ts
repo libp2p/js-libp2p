@@ -440,7 +440,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     let response: HopMessage
 
     try {
-      this.log.trace('read response from %p', connection.remotePeer)
+      this.log.trace('reading response from %p', connection.remotePeer)
       response = await hopstr.read(options)
     } catch (err: any) {
       stream.abort(err)
@@ -451,7 +451,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       }
     }
 
-    this.log.trace('read response from %p', response)
+    this.log.trace('read response %o', response)
 
     if (response.status === Status.OK && response.reservation != null) {
       // check that the returned relay has the relay address - this can be
