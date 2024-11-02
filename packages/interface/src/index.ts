@@ -53,6 +53,28 @@ export interface SignedPeerRecord {
   seq: bigint
 }
 
+export interface TLSCertificate {
+  /**
+   * The private key that corresponds to the certificate
+   */
+  privateKey: Uint8Array
+
+  /**
+   * The common name the certificate is for
+   */
+  commonName: string
+
+  /**
+   * The date the certificate expires
+   */
+  expires: Date
+
+  /**
+   * The certificate chain in PEM format
+   */
+  certificate: string
+}
+
 /**
  * Data returned from a successful identify response
  */
@@ -266,6 +288,11 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * closed.
    */
   'connection:close': CustomEvent<Connection>
+
+  /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate': CustomEvent<TLSCertificate>
 
   /**
    * This event notifies listeners that the node has started
