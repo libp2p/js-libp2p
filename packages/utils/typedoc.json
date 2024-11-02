@@ -7,6 +7,7 @@
     "./src/array-equals.ts",
     "./src/close.ts",
     "./src/close-source.ts",
+    "./src/debounce.ts",
     "./src/filters/index.ts",
     "./src/ip-port-to-multiaddr.ts",
     "./src/is-promise.ts",
@@ -18,6 +19,7 @@
     "./src/private-ip.ts",
     "./src/queue/index.ts",
     "./src/rate-limiter.ts",
+    "./src/repeating-task.ts",
     "./src/stream-to-ma-conn.ts",
     "./src/tracked-list.ts",
     "./src/tracked-map.ts"

@@ -68,6 +68,10 @@
       "types": "./dist/src/close-source.d.ts",
       "import": "./dist/src/close-source.js"
     },
+    "./debounce": {
+      "types": "./dist/src/debounce.d.ts",
+      "import": "./dist/src/debounce.js"
+    },
     "./filters": {
       "types": "./dist/src/filters/index.d.ts",
       "import": "./dist/src/filters/index.js"
@@ -111,6 +115,10 @@
     "./rate-limiter": {
       "types": "./dist/src/rate-limiter.d.ts",
       "import": "./dist/src/rate-limiter.js"
+    },
+    "./repeating-task": {
+      "types": "./dist/src/repeating-task.d.ts",
+      "import": "./dist/src/repeating-task.js"
     },
     "./stream-to-ma-conn": {
       "types": "./dist/src/stream-to-ma-conn.d.ts",
