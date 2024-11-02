@@ -16,17 +16,9 @@ export interface ExternalAddressCheckerComponents {
 }
 
 export interface ExternalAddressCheckerInit {
-  /**
-   * How often to check if our external address has changed in ms
-   *
-   * @default 60000
-   */
   interval?: number
-
-  /**
-   * How long to try detecting our external address
-   */
   timeout?: number
+  autoConfirmAddress?: boolean
 }
 
 export interface ExternalAddress {
@@ -44,11 +36,13 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
   private lastPublicIp?: string
   private readonly lastPublicIpPromise: DeferredPromise<string>
   private readonly check: RepeatingTask
+  private readonly autoConfirmAddress: boolean
 
   constructor (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit = {}) {
     this.log = components.logger.forComponent('libp2p:upnp-nat:external-address-check')
     this.client = components.client
     this.addressManager = components.addressManager
+    this.autoConfirmAddress = init.autoConfirmAddress ?? false
     this.started = false
 
     this.checkExternalAddress = this.checkExternalAddress.bind(this)
@@ -56,7 +50,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
     this.lastPublicIpPromise = pDefer()
 
     this.check = repeatingTask(this.checkExternalAddress, init.interval ?? 30000, {
-      timeout: init.timeout,
+      timeout: init.timeout ?? 10000,
       runImmediately: true
     })
   }
@@ -112,6 +106,12 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
           // remove the old address and add the new one
           this.addressManager.removeObservedAddr(ma)
           this.addressManager.confirmObservedAddr(newAddress)
+
+          if (this.autoConfirmAddress) {
+            this.addressManager.confirmObservedAddr(newAddress)
+          } else {
+            this.addressManager.addObservedAddr(newAddress)
+          }
         }
       }
 

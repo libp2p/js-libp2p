@@ -36,7 +36,6 @@
  */
 
 import { UPnPNAT as UPnPNATClass, type NatAPI, type MapPortOptions } from './upnp-nat.js'
-import type { ExternalAddressCheckerInit } from './check-external-address.js'
 import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 
@@ -54,7 +53,23 @@ export interface UPnPNATInit {
    * Pass a string to hard code the external address, otherwise it will be
    * auto-detected
    */
-  externalAddress?: string | ExternalAddressCheckerInit
+  externalAddress?: string
+
+  /**
+   * Check if the external address has changed this often in ms. Ignored if an
+   * external address is specified.
+   *
+   * @default 30000
+   */
+  externalAddressCheckInterval?: number
+
+  /**
+   * Do not take longer than this to check if the external address has changed
+   * in ms.  Ignored if an external address is specified.
+   *
+   * @default 10000
+   */
+  externalAddressCheckTimeout?: number
 
   /**
    * Pass a value to use instead of auto-detection
@@ -105,6 +120,17 @@ export interface UPnPNATInit {
    * otherwise one will be created
    */
   client?: NatAPI
+
+  /**
+   * Any mapped addresses are added to the observed address list. These
+   * addresses require additional verification by the `@libp2p/autonat` protocol
+   * or similar before they are trusted.
+   *
+   * To skip this verification and trust them immediately pass `true` here
+   *
+   * @default false
+   */
+  autoConfirmAddress?: boolean
 }
 
 export interface UPnPNATComponents {

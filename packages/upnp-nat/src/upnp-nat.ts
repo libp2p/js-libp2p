@@ -37,6 +37,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   private readonly gatewayDetectionTimeout: number
   private readonly mappedPorts: Map<number, number>
   private readonly onSelfPeerUpdate: DebouncedFunction
+  private readonly autoConfirmAddress: boolean
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat')
@@ -49,6 +50,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     this.keepAlive = init.keepAlive ?? true
     this.gateway = init.gateway
     this.gatewayDetectionTimeout = init.gatewayDetectionTimeout ?? 10000
+    this.autoConfirmAddress = init.autoConfirmAddress ?? false
     this.mappedPorts = new Map()
 
     if (this.ttl < DEFAULT_TTL) {
@@ -71,7 +73,11 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
         client: this.client,
         addressManager: this.addressManager,
         logger: components.logger
-      }, init.externalAddress)
+      }, {
+        autoConfirmAddress: init.autoConfirmAddress,
+        interval: init.externalAddressCheckInterval,
+        timeout: init.externalAddressCheckTimeout
+      })
     }
   }
 
@@ -223,7 +229,11 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
 
       this.log(`created mapping of ${publicIp}:${mappedPort} to ${host}:${port} as %a`, ma)
 
-      this.addressManager.addObservedAddr(ma)
+      if (this.autoConfirmAddress) {
+        this.addressManager.confirmObservedAddr(ma)
+      } else {
+        this.addressManager.addObservedAddr(ma)
+      }
     }
   }
 
