@@ -29,12 +29,12 @@ describe('peer discovery', () => {
     })
 
     await libp2p.start()
-    expect(discovery.start.calledOnce).to.be.true()
-    expect(discovery.stop.called).to.be.false()
+    expect(discovery.start?.calledOnce).to.be.true()
+    expect(discovery.stop?.called).to.be.false()
 
     await libp2p.stop()
-    expect(discovery.start.calledOnce).to.be.true()
-    expect(discovery.stop.calledOnce).to.be.true()
+    expect(discovery.start?.calledOnce).to.be.true()
+    expect(discovery.stop?.calledOnce).to.be.true()
   })
 
   it('should ignore self on discovery', async () => {

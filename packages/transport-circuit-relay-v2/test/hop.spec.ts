@@ -1,7 +1,7 @@
 /* eslint-disable max-nested-callbacks */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, isStartable } from '@libp2p/interface'
+import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
@@ -94,9 +94,7 @@ describe('circuit-relay hop protocol', function () {
       logger: defaultLogger()
     })
 
-    if (isStartable(service)) {
-      await service.start()
-    }
+    await start(service)
 
     const transport = circuitRelayTransport({})({
       addressManager,
@@ -112,9 +110,7 @@ describe('circuit-relay hop protocol', function () {
       logger: defaultLogger()
     })
 
-    if (isStartable(transport)) {
-      await transport.start()
-    }
+    await start(transport)
 
     const node: Node = {
       peerId,
@@ -187,13 +183,7 @@ describe('circuit-relay hop protocol', function () {
 
   afterEach(async () => {
     for (const node of nodes) {
-      if (isStartable(node.circuitRelayService)) {
-        await node.circuitRelayService.stop()
-      }
-
-      if (isStartable(node.circuitRelayTransport)) {
-        await node.circuitRelayTransport.stop()
-      }
+      await stop(node.circuitRelayService, node.circuitRelayTransport)
     }
 
     mockNetwork.reset()

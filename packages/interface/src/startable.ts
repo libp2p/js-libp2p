@@ -45,21 +45,16 @@ export interface Startable {
   afterStop?(): void | Promise<void>
 }
 
+/**
+ * @deprecated Pass the object to `start`/`stop`, no need to use this any more
+ */
 export function isStartable (obj: any): obj is Startable {
-  return obj != null && typeof obj.start === 'function' && typeof obj.stop === 'function'
+  return obj != null
 }
 
 export async function start (...objs: any[]): Promise<void> {
-  const startables: Startable[] = []
-
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj)
-    }
-  }
-
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.beforeStart != null) {
         await s.beforeStart()
       }
@@ -67,7 +62,7 @@ export async function start (...objs: any[]): Promise<void> {
   )
 
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.start != null) {
         await s.start()
       }
@@ -75,7 +70,7 @@ export async function start (...objs: any[]): Promise<void> {
   )
 
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.afterStart != null) {
         await s.afterStart()
       }
@@ -84,16 +79,8 @@ export async function start (...objs: any[]): Promise<void> {
 }
 
 export async function stop (...objs: any[]): Promise<void> {
-  const startables: Startable[] = []
-
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj)
-    }
-  }
-
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.beforeStop != null) {
         await s.beforeStop()
       }
@@ -101,7 +88,7 @@ export async function stop (...objs: any[]): Promise<void> {
   )
 
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.stop != null) {
         await s.stop()
       }
@@ -109,7 +96,7 @@ export async function stop (...objs: any[]): Promise<void> {
   )
 
   await Promise.all(
-    startables.map(async s => {
+    objs.map(async s => {
       if (s.afterStop != null) {
         await s.afterStop()
       }

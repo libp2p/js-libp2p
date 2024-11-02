@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
+import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -221,9 +221,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.log('libp2p is starting')
 
     try {
-      await this.components.beforeStart?.()
-      await this.components.start()
-      await this.components.afterStart?.()
+      await start(this.components)
 
       this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
@@ -249,9 +247,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     this.status = 'stopping'
 
-    await this.components.beforeStop?.()
-    await this.components.stop()
-    await this.components.afterStop?.()
+    await stop(this.components)
 
     this.status = 'stopped'
     this.safeDispatchEvent('stop', { detail: this })

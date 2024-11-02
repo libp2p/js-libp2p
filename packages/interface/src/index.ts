@@ -23,7 +23,6 @@ import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } fro
 import type { PeerInfo } from './peer-info/index.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { Address, Peer, PeerStore } from './peer-store/index.js'
-import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index.js'
 import type { Topology } from './topology/index.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport/index.js'
@@ -379,7 +378,7 @@ export interface DialProtocolOptions extends NewStreamOptions {
 /**
  * Libp2p nodes implement this interface.
  */
-export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, TypedEventTarget<Libp2pEvents<T>> {
+export interface Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventTarget<Libp2pEvents<T>> {
   /**
    * The PeerId is a unique identifier for a node on the network.
    *
@@ -680,6 +679,16 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * This may involve resolving DNS addresses so you should pass an AbortSignal.
    */
   isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
+
+  /**
+   * Starts the libp2p node and all its subsystems
+   */
+  start(): Promise<void>
+
+  /**
+   * Stop the libp2p node by closing its listeners and open connections
+   */
+  stop(): Promise<void>
 
   /**
    * A set of user defined services
