@@ -167,7 +167,7 @@ export class AutoTLS implements AutoTLSInterface {
     const cert = new x509.X509Certificate(certString)
 
     this.certificate = {
-      privateKey: certificatePrivateKey,
+      privateKey: certificatePrivateKey.toString('base64'),
       certificate: certString,
       commonName: domain,
       expires: cert.notAfter

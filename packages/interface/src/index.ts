@@ -57,7 +57,7 @@ export interface TLSCertificate {
   /**
    * The private key that corresponds to the certificate
    */
-  privateKey: Uint8Array
+  privateKey: string
 
   /**
    * The common name the certificate is for
