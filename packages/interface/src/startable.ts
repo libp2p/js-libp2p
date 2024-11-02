@@ -14,7 +14,7 @@ export interface Startable {
    *
    * It should not assume that any other components have been started.
    */
-  start(): void | Promise<void>
+  start?(): void | Promise<void>
 
   /**
    * If implemented, this method will be invoked after the start method.
@@ -35,7 +35,7 @@ export interface Startable {
    *
    * It should not assume any other components are running when it is called.
    */
-  stop(): void | Promise<void>
+  stop?(): void | Promise<void>
 
   /**
    * If implemented, this method will be invoked after the stop method.
@@ -68,7 +68,9 @@ export async function start (...objs: any[]): Promise<void> {
 
   await Promise.all(
     startables.map(async s => {
-      await s.start()
+      if (s.start != null) {
+        await s.start()
+      }
     })
   )
 
@@ -100,7 +102,9 @@ export async function stop (...objs: any[]): Promise<void> {
 
   await Promise.all(
     startables.map(async s => {
-      await s.stop()
+      if (s.stop != null) {
+        await s.stop()
+      }
     })
   )
 
