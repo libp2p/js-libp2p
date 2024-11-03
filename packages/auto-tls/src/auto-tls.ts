@@ -187,11 +187,14 @@ export class AutoTLS implements AutoTLSInterface {
     })
 
     const cert = new x509.X509Certificate(certString)
+    const renewAt = new Date(cert.notAfter.getTime() - this.renewThreshold)
+
+    this.log('certificate expiry %s - renewing at %s', cert.notAfter, renewAt)
 
     // schedule renewing the certificate
     this.renewTimeout = setTimeout(() => {
       this.certificate = undefined
       this._fetchCertificates()
-    }, cert.notAfter.getTime() - this.renewThreshold)
+    }, renewAt.getTime() - Date.now())
   }
 }
