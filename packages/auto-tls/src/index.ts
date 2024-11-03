@@ -108,6 +108,13 @@ export interface AutoTLSInit {
    * @default 5000
    */
   delay?: number
+
+  /**
+   * How long before the expiry of the certificate to renew it in ms
+   *
+   * @default 60000
+   */
+  renewThreshold?: number
 }
 
 export interface AutoTLS {

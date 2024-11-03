@@ -17,6 +17,8 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
 
+type CertificateEvent = 'certificate:provision' | 'certificate:renew'
+
 export class AutoTLS implements AutoTLSInterface {
   private readonly log: Logger
   private readonly addressManager: AddressManager
@@ -28,11 +30,13 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly acmeDirectory: string
   private readonly clientAuth: ClientAuth
   private readonly timeout: number
+  private readonly renewThreshold: number
   private started: boolean
   private shutdownController?: AbortController
   public certificate?: TLSCertificate
   private fetching: boolean
   private readonly fetchCertificates: DebouncedFunction
+  private renewTimeout?: ReturnType<typeof setTimeout>
 
   constructor (components: AutoTLSComponents, init: AutoTLSInit = {}) {
     this.log = components.logger.forComponent('libp2p:certificate-manager')
@@ -44,6 +48,7 @@ export class AutoTLS implements AutoTLSInterface {
     this.forgeDomain = init.forgeDomain ?? 'libp2p.direct'
     this.acmeDirectory = init.acmeDirectory ?? 'https://acme-v02.api.letsencrypt.org/directory'
     this.timeout = init.timeout ?? 10000
+    this.renewThreshold = init.renewThreshold ?? 60000
     this.clientAuth = new ClientAuth(this.privateKey)
     this.started = false
     this.fetching = false
@@ -69,6 +74,7 @@ export class AutoTLS implements AutoTLSInterface {
   async stop (): Promise<void> {
     this.events.removeEventListener('self:peer:update', this.fetchCertificates)
     this.shutdownController?.abort()
+    clearTimeout(this.renewTimeout)
     await stop(this.fetchCertificates)
     this.started = false
   }
@@ -164,18 +170,28 @@ export class AutoTLS implements AutoTLSInterface {
 
     this.log('fetched certificate', certString)
 
-    const cert = new x509.X509Certificate(certString)
+    let event: CertificateEvent = 'certificate:provision'
+
+    if (this.certificate != null) {
+      event = 'certificate:renew'
+    }
 
     this.certificate = {
-      privateKey: certificatePrivateKey.toString('base64'),
-      certificate: certString,
-      commonName: domain,
-      expires: cert.notAfter
+      key: certificatePrivateKey.toString('base64'),
+      cert: certString
     }
 
     // emit an event
-    this.events.safeDispatchEvent('certificate', {
+    this.events.safeDispatchEvent(event, {
       detail: this.certificate
     })
+
+    const cert = new x509.X509Certificate(certString)
+
+    // schedule renewing the certificate
+    this.renewTimeout = setTimeout(() => {
+      this.certificate = undefined
+      this._fetchCertificates()
+    }, cert.notAfter.getTime() - this.renewThreshold)
   }
 }

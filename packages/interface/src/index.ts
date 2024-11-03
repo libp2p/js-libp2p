@@ -55,24 +55,14 @@ export interface SignedPeerRecord {
 
 export interface TLSCertificate {
   /**
-   * The private key that corresponds to the certificate
+   * The private key that corresponds to the certificate in PEM format
    */
-  privateKey: string
-
-  /**
-   * The common name the certificate is for
-   */
-  commonName: string
-
-  /**
-   * The date the certificate expires
-   */
-  expires: Date
+  key: string
 
   /**
    * The certificate chain in PEM format
    */
-  certificate: string
+  cert: string
 }
 
 /**
@@ -292,7 +282,12 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   /**
    * This event notifies listeners that a TLS certificate is available for use
    */
-  'certificate': CustomEvent<TLSCertificate>
+  'certificate:provision': CustomEvent<TLSCertificate>
+
+  /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate:renew': CustomEvent<TLSCertificate>
 
   /**
    * This event notifies listeners that the node has started
