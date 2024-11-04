@@ -8,7 +8,10 @@ export const MAX_RECORD_AGE = 36 * hour
 
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
-export const PROVIDERS_VALIDITY = 24 * hour
+/**
+ * @see https://github.com/libp2p/specs/blob/master/kad-dht/README.md#content-provider-advertisement-and-discovery
+ */
+export const PROVIDERS_VALIDITY = 48 * hour
 
 export const PROVIDERS_CLEANUP_INTERVAL = hour
 
