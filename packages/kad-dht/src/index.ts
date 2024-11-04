@@ -377,21 +377,21 @@ export interface ReProvideInit {
   /**
    * How long before the record expiry to re-provide in ms
    *
-   * @default 7200000
+   * @default 7200000 (2 hours)
    */
   threshold?: number
 
   /**
    * How often to check which records need reproviding in ms
    *
-   * @default 3600000
+   * @default 3600000 (1 hour)
    */
   interval?: number
 
   /**
    * How long provider records are valid for in ms
    *
-   * @default 86400000
+   * @default 172800000 (48 hours)
    */
   validity?: number
 }
