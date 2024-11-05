@@ -1,32 +1,20 @@
 /* eslint-env mocha */
 
-import { plaintext } from '@libp2p/plaintext'
-import { tcp } from '@libp2p/tcp'
+import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface'
-
-const listenAddr = '/ip4/0.0.0.0/tcp/0'
 
 describe('status', () => {
   let libp2p: Libp2p
 
   after(async () => {
-    await libp2p.stop()
+    await stop(libp2p)
   })
 
   it('should have status', async () => {
     libp2p = await createLibp2p({
-      start: false,
-      addresses: {
-        listen: [listenAddr]
-      },
-      transports: [
-        tcp()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ]
+      start: false
     })
 
     expect(libp2p).to.have.property('status', 'stopped')

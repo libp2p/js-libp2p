@@ -1,21 +1,24 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, KEEP_ALIVE } from '@libp2p/interface'
+import { TypedEventEmitter, KEEP_ALIVE, start, stop } from '@libp2p/interface'
 import { mockConnection, mockDuplex, mockMultiaddrConnection, mockMetrics } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { dns } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager, type DefaultConnectionManagerComponents } from '../../src/connection-manager/index.js'
-import { createBaseOptions } from '../fixtures/base-options.browser.js'
-import { createNode } from '../fixtures/creators/peer.js'
+import { createLibp2p } from '../../src/index.js'
+import { createPeers } from '../fixtures/create-peers.js'
 import { getComponent } from '../fixtures/get-component.js'
-import type { AbortOptions, Connection, ConnectionGater, Libp2p, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
+import type { Echo } from '@libp2p/echo'
+import type { ConnectionGater, PeerId, PeerStore, Libp2p, AbortOptions, Connection, PeerRouting } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const defaultOptions = {
@@ -23,7 +26,7 @@ const defaultOptions = {
   inboundUpgradeTimeout: 10000
 }
 
-function defaultComponents (peerId: PeerId): DefaultConnectionManagerComponents {
+function createDefaultComponents (peerId: PeerId): DefaultConnectionManagerComponents {
   return {
     peerId,
     peerStore: stubInterface<PeerStore>(),
@@ -40,21 +43,12 @@ describe('Connection Manager', () => {
   let connectionManager: DefaultConnectionManager
 
   afterEach(async () => {
-    sinon.restore()
-
-    if (connectionManager != null) {
-      await connectionManager.stop()
-    }
-
-    if (libp2p != null) {
-      await libp2p.stop()
-    }
+    await stop(connectionManager, libp2p)
   })
 
   it('should be able to create without metrics', async () => {
-    libp2p = await createNode({
-      config: createBaseOptions(),
-      started: false
+    libp2p = await createLibp2p({
+      start: false
     })
 
     const spy = sinon.spy(getComponent(libp2p, 'connectionManager'), 'start')
@@ -65,11 +59,9 @@ describe('Connection Manager', () => {
   })
 
   it('should be able to create with metrics', async () => {
-    libp2p = await createNode({
-      config: createBaseOptions({
-        metrics: mockMetrics()
-      }),
-      started: false
+    libp2p = await createLibp2p({
+      start: false,
+      metrics: mockMetrics()
     })
 
     const spy = sinon.spy(getComponent(libp2p, 'connectionManager'), 'start')
@@ -81,16 +73,11 @@ describe('Connection Manager', () => {
 
   it('should close connections with low tag values first', async () => {
     const max = 5
-    libp2p = await createNode({
-      config: createBaseOptions({
-        connectionManager: {
-          maxConnections: max
-        }
-      }),
-      started: false
+    libp2p = await createLibp2p({
+      connectionManager: {
+        maxConnections: max
+      }
     })
-
-    await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
@@ -139,16 +126,11 @@ describe('Connection Manager', () => {
 
   it('should close shortest-lived connection if the tag values are equal', async () => {
     const max = 5
-    libp2p = await createNode({
-      config: createBaseOptions({
-        connectionManager: {
-          maxConnections: max
-        }
-      }),
-      started: false
+    libp2p = await createLibp2p({
+      connectionManager: {
+        maxConnections: max
+      }
     })
-
-    await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
@@ -203,19 +185,14 @@ describe('Connection Manager', () => {
     const max = 2
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
 
-    libp2p = await createNode({
-      config: createBaseOptions({
-        connectionManager: {
-          maxConnections: max,
-          allow: [
-            '/ip4/83.13.55.32'
-          ]
-        }
-      }),
-      started: false
+    libp2p = await createLibp2p({
+      connectionManager: {
+        maxConnections: max,
+        allow: [
+          '/ip4/83.13.55.32'
+        ]
+      }
     })
-
-    await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
@@ -287,16 +264,11 @@ describe('Connection Manager', () => {
 
   it('should close connection when the maximum connections has been reached even without tags', async () => {
     const max = 5
-    libp2p = await createNode({
-      config: createBaseOptions({
-        connectionManager: {
-          maxConnections: max
-        }
-      }),
-      started: false
+    libp2p = await createLibp2p({
+      connectionManager: {
+        maxConnections: max
+      }
     })
-
-    await libp2p.start()
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
     const connectionManagerMaybePruneConnectionsSpy = sinon.spy(connectionManager.connectionPruner, '_maybePruneConnections')
@@ -319,22 +291,20 @@ describe('Connection Manager', () => {
   })
 
   it('should fail if the connection manager has mismatched connection limit options', async () => {
-    await expect(createNode({
-      config: createBaseOptions({
+    await expect(
+      createLibp2p({
         connectionManager: {
           maxConnections: -1
         }
-      }),
-      started: false
-    })).to.eventually.rejected('maxConnections must be greater')
+      })
+    ).to.eventually.rejected('maxConnections must be greater')
   })
 
   it('should reconnect to important peers on startup', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    libp2p = await createNode({
-      config: createBaseOptions(),
-      started: false
+    libp2p = await createLibp2p({
+      start: false
     })
 
     const connectionManager = getComponent(libp2p, 'connectionManager')
@@ -363,7 +333,7 @@ describe('Connection Manager', () => {
 
   it('should deny connections from denylist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       deny: [
         '/ip4/83.13.55.32'
@@ -385,7 +355,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxConnections: 1
     })
@@ -414,7 +384,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       inboundConnectionThreshold: 1
     })
@@ -446,7 +416,7 @@ describe('Connection Manager', () => {
 
   it('should allow connections from allowlist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
@@ -479,7 +449,7 @@ describe('Connection Manager', () => {
   })
 
   it('should limit the number of inbound pending connections', async () => {
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
@@ -522,7 +492,7 @@ describe('Connection Manager', () => {
   })
 
   it('should allow dialing peers when an existing limited connection exists', async () => {
-    connectionManager = new DefaultConnectionManager(defaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
@@ -558,5 +528,147 @@ describe('Connection Manager', () => {
     const conn = await connectionManager.openConnection(addr)
 
     expect(conn).to.equal(newConnection)
+  })
+})
+
+describe('Connection Manager', () => {
+  let peerIds: PeerId[]
+
+  before(async () => {
+    peerIds = await Promise.all([
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    ])
+  })
+
+  it('should filter connections on disconnect, removing the closed one', async () => {
+    const peerStore = stubInterface<PeerStore>()
+    const components = defaultComponents({
+      peerId: peerIds[0],
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new TypedEventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
+      maxConnections: 1000,
+      inboundUpgradeTimeout: 1000
+    })
+
+    await start(connectionManager)
+
+    const conn1 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+
+    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
+
+    // Add connection to the connectionManager
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
+
+    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
+
+    await conn2.close()
+    components.events.safeDispatchEvent('connection:close', { detail: conn2 })
+
+    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
+
+    expect(conn1).to.have.nested.property('status', 'open')
+
+    await connectionManager.stop()
+  })
+
+  it('should close connections on stop', async () => {
+    const peerStore = stubInterface<PeerStore>()
+    const components = defaultComponents({
+      peerId: peerIds[0],
+      peerStore,
+      transportManager: stubInterface<TransportManager>(),
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new TypedEventEmitter()
+    })
+    const connectionManager = new DefaultConnectionManager(components, {
+      maxConnections: 1000,
+      inboundUpgradeTimeout: 1000
+    })
+
+    await start(connectionManager)
+
+    const conn1 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+    const conn2 = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIds[1]))
+
+    // Add connection to the connectionManager
+    components.events.safeDispatchEvent('connection:open', { detail: conn1 })
+    components.events.safeDispatchEvent('connection:open', { detail: conn2 })
+
+    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
+
+    await connectionManager.stop()
+
+    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
+  })
+})
+
+describe('libp2p.connections', () => {
+  let dialer: Libp2p<{ echo: Echo }>
+  let listener: Libp2p<{ echo: Echo }>
+
+  afterEach(async () => {
+    await stop(dialer, listener)
+  })
+
+  it('libp2p.getConnections gets the connectionManager conns', async () => {
+    ({ dialer, listener } = await createPeers())
+
+    const conn = await dialer.dial(listener.getMultiaddrs())
+
+    expect(conn).to.be.ok()
+    expect(dialer.getConnections()).to.have.lengthOf(1)
+  })
+
+  it('should be closed status after stopping', async () => {
+    ({ dialer, listener } = await createPeers())
+
+    const conn = await dialer.dial(listener.getMultiaddrs())
+
+    await dialer.stop()
+    expect(conn.status).to.eql('closed')
+  })
+
+  it('should open multiple connections when forced', async () => {
+    ({ dialer, listener } = await createPeers())
+
+    // connect once, should have one connection
+    await dialer.dial(listener.getMultiaddrs())
+    expect(dialer.getConnections()).to.have.lengthOf(1)
+
+    // connect twice, should still only have one connection
+    await dialer.dial(listener.getMultiaddrs())
+    expect(dialer.getConnections()).to.have.lengthOf(1)
+
+    // force connection, should have two connections now
+    await dialer.dial(listener.getMultiaddrs(), {
+      force: true
+    })
+    expect(dialer.getConnections()).to.have.lengthOf(2)
+  })
+
+  it('should use custom DNS resolver', async () => {
+    const resolver = sinon.stub()
+
+    ;({ dialer, listener } = await createPeers({
+      dns: dns({
+        resolvers: {
+          '.': resolver
+        }
+      })
+    }))
+
+    const ma = multiaddr('/dnsaddr/example.com/tcp/12345')
+    const err = new Error('Could not resolve')
+
+    resolver.withArgs('_dnsaddr.example.com').rejects(err)
+
+    await expect(dialer.dial(ma)).to.eventually.be.rejectedWith(err)
   })
 })
