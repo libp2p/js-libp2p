@@ -2,7 +2,7 @@ import { InvalidParametersError } from '@libp2p/interface'
 import merge from 'merge-options'
 import * as errorsJs from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
-import type { ConnectionManager, StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
+import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
@@ -10,7 +10,6 @@ export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 
 export interface RegistrarComponents {
   peerId: PeerId
-  connectionManager: ConnectionManager
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger

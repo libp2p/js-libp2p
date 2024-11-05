@@ -115,7 +115,6 @@
   "devDependencies": {
     "@chainsafe/libp2p-yamux": "^7.0.0",
     "@libp2p/echo": "^2.1.1",
-    "@libp2p/interface-compliance-tests": "^6.1.8",
     "@libp2p/memory": "^0.0.0",
     "@libp2p/mplex": "^11.0.10",
     "@libp2p/plaintext": "^2.0.10",
