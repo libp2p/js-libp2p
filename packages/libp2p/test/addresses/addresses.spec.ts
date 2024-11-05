@@ -1,40 +1,35 @@
 /* eslint-env mocha */
 
-import { plaintext } from '@libp2p/plaintext'
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { webSockets } from '@libp2p/websockets'
-import { type Multiaddr, multiaddr, protocols } from '@multiformats/multiaddr'
+import { memory } from '@libp2p/memory'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import sinon from 'sinon'
-import { createNode } from '../fixtures/creators/peer.js'
+import { createLibp2p } from '../../src/index.js'
 import { getComponent } from '../fixtures/get-component.js'
-import { AddressesOptions } from './utils.js'
 import type { Libp2p, PeerUpdate } from '@libp2p/interface'
 import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
-const listenAddresses = ['/ip4/127.0.0.1/tcp/0', '/ip4/127.0.0.1/tcp/8000/ws']
+const listenAddresses = ['/memory/address-1', '/memory/address-2']
 const announceAddresses = ['/dns4/peer.io/tcp/433/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p']
 
 describe('libp2p.addressManager', () => {
   let libp2p: Libp2p
 
   afterEach(async () => {
-    if (libp2p != null) {
-      await libp2p.stop()
-    }
+    await libp2p?.stop()
   })
 
   it('should keep listen addresses after start, even if changed', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses
-        }
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
 
     const addressManager = getComponent<AddressManager>(libp2p, 'addressManager')
@@ -54,43 +49,36 @@ describe('libp2p.addressManager', () => {
   })
 
   it('should announce transport listen addresses if announce addresses are not provided', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses
-        }
-      }
+    libp2p = await createLibp2p({
+      addresses: {
+        listen: listenAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
-
-    await libp2p.start()
 
     const tmListen = getComponent<TransportManager>(libp2p, 'transportManager').getAddrs().map((ma) => ma.toString())
 
     // Announce 2 listen (transport)
     const advertiseMultiaddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses().map((ma) => ma.decapsulateCode(protocols('p2p').code).toString())
 
-    expect(advertiseMultiaddrs).to.have.lengthOf(2)
+    expect(advertiseMultiaddrs).to.have.lengthOf(listenAddresses.length)
     tmListen.forEach((m) => {
       expect(advertiseMultiaddrs).to.include(m)
     })
-    expect(advertiseMultiaddrs).to.not.include(listenAddresses[0]) // Random Port switch
   })
 
   it('should only announce the given announce addresses when provided', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses
-        }
-      }
+    libp2p = await createLibp2p({
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
-
-    await libp2p.start()
 
     const tmListen = getComponent<TransportManager>(libp2p, 'transportManager').getAddrs().map((ma) => ma.toString())
 
@@ -103,68 +91,58 @@ describe('libp2p.addressManager', () => {
     })
   })
 
-  it('can filter out loopback addresses by the announce filter', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses,
-          announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
-        }
-      }
-    })
-
-    await libp2p.start()
-
-    expect(getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()).to.have.lengthOf(0)
-
-    // Stub transportManager addresses to add a public address
-    const stubMa = multiaddr('/ip4/120.220.10.1/tcp/1000')
-    sinon.stub(getComponent<TransportManager>(libp2p, 'transportManager'), 'getAddrs').returns([
-      ...listenAddresses.map((a) => multiaddr(a)),
-      stubMa
-    ])
-
-    const multiaddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()
-    expect(multiaddrs.length).to.equal(1)
-    expect(multiaddrs[0].decapsulateCode(protocols('p2p').code).equals(stubMa)).to.eql(true)
-  })
-
-  it('can filter out loopback addresses to announced by the announce filter', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses,
-          announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.filter(m => !isLoopback(m))
-        }
-      }
+  it('should filter listen addresses filtered by the announce filter', async () => {
+    libp2p = await createLibp2p({
+      addresses: {
+        listen: listenAddresses,
+        announceFilter: (multiaddrs: Multiaddr[]) => multiaddrs.slice(1)
+      },
+      transports: [
+        memory()
+      ]
     })
 
     const listenAddrs = getComponent<AddressManager>(libp2p, 'addressManager').getListenAddrs().map((ma) => ma.toString())
     expect(listenAddrs).to.have.lengthOf(listenAddresses.length)
-    expect(listenAddrs).to.include(listenAddresses[0])
-    expect(listenAddrs).to.include(listenAddresses[1])
+    expect(listenAddrs).to.deep.equal(listenAddresses)
 
     await libp2p.start()
 
-    const loopbackAddrs = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses().filter(ma => isLoopback(ma))
-    expect(loopbackAddrs).to.be.empty()
+    const addresses = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()
+    expect(addresses).to.have.lengthOf(1)
+  })
+
+  it('should filter announce addresses filtered by the announce filter', async () => {
+    libp2p = await createLibp2p({
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses,
+        announceFilter: () => []
+      },
+      transports: [
+        memory()
+      ]
+    })
+
+    const listenAddrs = getComponent<AddressManager>(libp2p, 'addressManager').getListenAddrs().map((ma) => ma.toString())
+    expect(listenAddrs).to.have.lengthOf(listenAddresses.length)
+    expect(listenAddrs).to.deep.equal(listenAddresses)
+
+    const addresses = getComponent<AddressManager>(libp2p, 'addressManager').getAddresses()
+    expect(addresses).to.have.lengthOf(0)
   })
 
   it('should include observed addresses in returned multiaddrs', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        ...AddressesOptions,
-        addresses: {
-          listen: listenAddresses
-        }
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
+
     const ma = '/ip4/83.32.123.53/tcp/43928'
 
     await libp2p.start()
@@ -180,20 +158,15 @@ describe('libp2p.addressManager', () => {
   })
 
   it('should populate the AddressManager from the config', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses
-        },
-        transports: [
-          webSockets()
-        ],
-        connectionEncrypters: [
-          plaintext()
-        ]
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
 
     expect(libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code).toString())).to.have.members(announceAddresses)
@@ -201,20 +174,15 @@ describe('libp2p.addressManager', () => {
   })
 
   it('should update our peer record with announce addresses on startup', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses
-        },
-        transports: [
-          webSockets()
-        ],
-        connectionEncrypters: [
-          plaintext()
-        ]
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
 
     const eventPromise = pEvent<'self:peer:update', CustomEvent<PeerUpdate>>(libp2p, 'self:peer:update', {
@@ -233,20 +201,15 @@ describe('libp2p.addressManager', () => {
   })
 
   it('should only include confirmed observed addresses in peer record', async () => {
-    libp2p = await createNode({
-      started: false,
-      config: {
-        addresses: {
-          listen: listenAddresses,
-          announce: announceAddresses
-        },
-        transports: [
-          webSockets()
-        ],
-        connectionEncrypters: [
-          plaintext()
-        ]
-      }
+    libp2p = await createLibp2p({
+      start: false,
+      addresses: {
+        listen: listenAddresses,
+        announce: announceAddresses
+      },
+      transports: [
+        memory()
+      ]
     })
 
     await libp2p.start()

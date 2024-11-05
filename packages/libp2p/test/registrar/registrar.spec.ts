@@ -2,7 +2,6 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { mockDuplex, mockMultiaddrConnection, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
@@ -108,7 +107,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // Peer data is in the peer store
-    peerStore.get.withArgs(matchPeerId(remotePeerId)).resolves({
+    peerStore.get.withArgs(remotePeerId).resolves({
       id: remotePeerId,
       addresses: [],
       protocols: [protocol],
@@ -143,7 +142,7 @@ describe('registrar topologies', () => {
     const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
 
     // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
 
     const topology: Topology = {
       onConnect: () => {
@@ -167,7 +166,7 @@ describe('registrar topologies', () => {
     })
 
     // Can get details after identify
-    peerStore.get.withArgs(matchPeerId(conn.remotePeer)).resolves({
+    peerStore.get.withArgs(conn.remotePeer).resolves({
       id: conn.remotePeer,
       addresses: [],
       protocols: [protocol],
@@ -176,7 +175,7 @@ describe('registrar topologies', () => {
     })
 
     // we have a connection to this peer
-    connectionManager.getConnections.withArgs(matchPeerId(conn.remotePeer)).returns([conn])
+    connectionManager.getConnections.withArgs(conn.remotePeer).returns([conn])
 
     // identify completes
     events.safeDispatchEvent('peer:update', {
@@ -227,7 +226,7 @@ describe('registrar topologies', () => {
     }
 
     // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
 
     const topology: Topology = {
       onConnect: () => {
@@ -274,7 +273,7 @@ describe('registrar topologies', () => {
     }
 
     // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
 
     const topology: Topology = {
       notifyOnLimitedConnection: true,
@@ -329,7 +328,7 @@ describe('registrar topologies', () => {
     }
 
     // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([
+    connectionManager.getConnections.withArgs(remotePeerId).returns([
       limitedConnection,
       nonLimitedConnection
     ])

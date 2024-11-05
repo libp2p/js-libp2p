@@ -192,7 +192,7 @@ export class DefaultUpgrader implements Upgrader {
       accepted = await this.components.connectionManager.acceptIncomingConnection(maConn)
 
       if (!accepted) {
-        throw new ConnectionDeniedError('connection denied')
+        throw new ConnectionDeniedError('Connection denied')
       }
 
       await this.shouldBlockConnection('denyInboundConnection', maConn)

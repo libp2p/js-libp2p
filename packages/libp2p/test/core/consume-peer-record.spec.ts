@@ -1,7 +1,5 @@
 /* eslint-env mocha */
 
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from '../../src/index.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -10,14 +8,7 @@ describe('Consume peer record', () => {
   let libp2p: Libp2p
 
   beforeEach(async () => {
-    libp2p = await createLibp2p({
-      transports: [
-        webSockets()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ]
-    })
+    libp2p = await createLibp2p()
   })
 
   afterEach(async () => {

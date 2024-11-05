@@ -2,8 +2,6 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError } from '@libp2p/interface'
-import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { peerLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
@@ -50,7 +48,7 @@ describe('dial queue', () => {
   })
 
   it('should end when a single multiaddr dials succeeds', async () => {
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
+    const connection = stubInterface<Connection>()
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
@@ -87,7 +85,7 @@ describe('dial queue', () => {
 
   it('should load addresses from the peer routing when peer id is not in the peer store', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
+    const connection = stubInterface<Connection>()
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
     components.peerStore.get.withArgs(peerId).rejects(new NotFoundError('Not found'))
@@ -99,7 +97,7 @@ describe('dial queue', () => {
     })
 
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
-    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+    components.transportManager.dial.withArgs(ma.encapsulate(`/p2p/${peerId}`)).resolves(connection)
 
     dialer = new DialQueue(components)
 
@@ -108,7 +106,7 @@ describe('dial queue', () => {
 
   it('should load addresses from the peer routing when none are present in the peer store', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
+    const connection = stubInterface<Connection>()
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
     components.peerStore.get.withArgs(peerId).resolves({
@@ -126,7 +124,7 @@ describe('dial queue', () => {
     })
 
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
-    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+    components.transportManager.dial.withArgs(ma.encapsulate(`/p2p/${peerId}`)).resolves(connection)
 
     dialer = new DialQueue(components)
 
@@ -134,7 +132,7 @@ describe('dial queue', () => {
   })
 
   it('should end when a single multiaddr dials succeeds even when a final dial fails', async () => {
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), peerIdFromPrivateKey(await generateKeyPair('Ed25519'))))
+    const connection = stubInterface<Connection>()
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
@@ -270,7 +268,9 @@ describe('dial queue', () => {
     })
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
 
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     components.transportManager.dial.callsFake(async (ma, opts = {}) => {
       if (ma.toString() === maStr) {
@@ -311,7 +311,9 @@ describe('dial queue', () => {
       }]
     })
 
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     components.transportManager.dial.callsFake(async (ma, opts = {}) => {
       if (ma.toString() === maWithPeer) {

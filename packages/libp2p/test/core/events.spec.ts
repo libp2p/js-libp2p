@@ -1,7 +1,5 @@
 /* eslint-env mocha */
 
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { createLibp2p } from '../../src/index.js'
@@ -18,13 +16,7 @@ describe('events', () => {
 
   it('should emit a start event', async () => {
     node = await createLibp2p({
-      start: false,
-      transports: [
-        webSockets()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ]
+      start: false
     })
 
     const eventPromise = pEvent<'start', CustomEvent<Libp2p>>(node, 'start')
@@ -34,14 +26,7 @@ describe('events', () => {
   })
 
   it('should emit a stop event', async () => {
-    node = await createLibp2p({
-      transports: [
-        webSockets()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ]
-    })
+    node = await createLibp2p()
 
     const eventPromise = pEvent<'stop', CustomEvent<Libp2p>>(node, 'stop')
 
