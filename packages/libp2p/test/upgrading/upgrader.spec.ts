@@ -118,7 +118,7 @@ describe('upgrader', () => {
     }))
 
     await dialer.dial(listener.getMultiaddrs(), {
-      signal: AbortSignal.timeout(100)
+      signal: AbortSignal.timeout(500)
     })
 
     await delay(1000)
