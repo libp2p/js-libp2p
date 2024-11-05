@@ -2,7 +2,6 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
-import { mockDuplex, mockMultiaddrConnection, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -10,8 +9,8 @@ import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 const protocol = '/test/1.0.0'
@@ -24,19 +23,16 @@ describe('registrar topologies', () => {
     peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
-  let connectionManager: StubbedInstance<ConnectionManager>
   let peerStore: StubbedInstance<PeerStore>
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
     peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    connectionManager = stubInterface<ConnectionManager>()
     peerStore = stubInterface<PeerStore>()
     events = new TypedEventEmitter<Libp2pEvents>()
 
     registrar = new DefaultRegistrar({
       peerId,
-      connectionManager,
       peerStore,
       events,
       logger: defaultLogger()
@@ -84,15 +80,15 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     const topology: Topology = {
       onConnect: (peerId, connection) => {
         expect(peerId.equals(remotePeerId)).to.be.true()
-        expect(connection.id).to.eql(conn.id)
+        expect(connection).to.equal(conn)
 
         onConnectDefer.resolve()
       },
@@ -139,10 +135,10 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     const topology: Topology = {
       onConnect: () => {
@@ -173,9 +169,6 @@ describe('registrar topologies', () => {
       metadata: new Map(),
       tags: new Map()
     })
-
-    // we have a connection to this peer
-    connectionManager.getConnections.withArgs(conn.remotePeer).returns([conn])
 
     // identify completes
     events.safeDispatchEvent('peer:update', {
@@ -218,15 +211,13 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
     // connection is limited
-    conn.limits = {
-      bytes: 100n
-    }
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
 
     const topology: Topology = {
       onConnect: () => {
@@ -265,15 +256,13 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
     // connection is limited
-    conn.limits = {
-      bytes: 100n
-    }
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
 
     const topology: Topology = {
       notifyOnLimitedConnection: true,
@@ -317,21 +306,17 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const limitedConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    limitedConnection.limits = {
-      bytes: 100n
-    }
+    const limitedConnection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
 
-    const nonLimitedConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    nonLimitedConnection.limits = {
-      bytes: 100n
-    }
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([
-      limitedConnection,
-      nonLimitedConnection
-    ])
+    const nonLimitedConnection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     // remote peer connects over limited connection
     events.safeDispatchEvent('peer:identify', {
@@ -364,7 +349,10 @@ describe('registrar topologies', () => {
 
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+    const connection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     // remote peer runs identify a few times
     for (let i = 0; i < 5; i++) {
