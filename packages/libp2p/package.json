@@ -113,15 +113,11 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-yamux": "^7.0.0",
-    "@libp2p/echo": "^2.1.1",
-    "@libp2p/memory": "^0.0.0",
-    "@libp2p/mplex": "^11.0.10",
-    "@libp2p/plaintext": "^2.0.10",
     "aegir": "^44.0.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
+    "it-length-prefixed": "^9.1.0",
     "it-map": "^3.1.0",
     "it-pair": "^2.0.6",
     "it-stream-types": "^2.0.1",

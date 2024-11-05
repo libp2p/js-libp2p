@@ -1,160 +1,247 @@
 /* eslint-env mocha */
 
-import { stop } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
+import { logger } from '@libp2p/logger'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import sinon from 'sinon'
-import { createPeers } from '../fixtures/create-peers.js'
-import type { Echo } from '@libp2p/echo'
-import type { Libp2p } from '@libp2p/interface'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
+import { DefaultUpgrader } from '../../src/upgrader.js'
+import { createDefaultUpgraderComponents } from '../upgrading/utils.js'
+import { createDefaultConnectionManagerComponents } from './utils.js'
+import type { Transport, MultiaddrConnection, StreamMuxerFactory } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('connection-gater', () => {
-  let dialer: Libp2p<{ echo: Echo }>
-  let listener: Libp2p<{ echo: Echo }>
+  let connectionManager: DefaultConnectionManager
 
   afterEach(async () => {
-    await stop(dialer, listener)
+    await stop(connectionManager)
   })
 
   it('intercept peer dial', async () => {
-    const denyDialPeer = sinon.stub().returns(true)
+    const denyDialPeer = Sinon.stub().returns(true)
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const ma = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    ;({ dialer, listener } = await createPeers({
+    connectionManager = new DefaultConnectionManager(await createDefaultConnectionManagerComponents({
       connectionGater: {
         denyDialPeer
       }
     }))
+    await start(connectionManager)
 
-    await expect(dialer.dial(listener.getMultiaddrs()))
+    await expect(connectionManager.openConnection(ma))
       .to.eventually.be.rejected().with.property('name', 'DialDeniedError')
+
+    expect(denyDialPeer.called).to.be.true()
   })
 
   it('intercept addr dial', async () => {
-    const denyDialMultiaddr = sinon.stub().returns(false)
+    const denyDialMultiaddr = Sinon.stub().returns(true)
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
 
-    ;({ dialer, listener } = await createPeers({
+    connectionManager = new DefaultConnectionManager(await createDefaultConnectionManagerComponents({
       connectionGater: {
         denyDialMultiaddr
-      }
+      },
+      transportManager: stubInterface<TransportManager>({
+        dialTransportForMultiaddr: () => stubInterface<Transport>()
+      })
     }))
+    await start(connectionManager)
 
-    await dialer.dial(listener.getMultiaddrs())
+    await expect(connectionManager.openConnection(ma))
+      .to.eventually.be.rejected().with.property('name', 'DialDeniedError')
 
-    for (const multiaddr of listener.getMultiaddrs()) {
-      expect(denyDialMultiaddr.calledWith(multiaddr)).to.be.true()
-    }
-  })
-
-  it('intercept multiaddr store', async () => {
-    const filterMultiaddrForPeer = sinon.stub().returns(true)
-
-    ;({ dialer, listener } = await createPeers({
-      connectionGater: {
-        filterMultiaddrForPeer
-      }
-    }))
-
-    const fullMultiaddr = listener.getMultiaddrs()[0]
-
-    await dialer.peerStore.merge(listener.peerId, {
-      multiaddrs: [fullMultiaddr]
-    })
-
-    expect(filterMultiaddrForPeer.callCount).to.equal(1)
-
-    const args = filterMultiaddrForPeer.getCall(0).args
-    expect(args[0].toString()).to.equal(listener.peerId.toString())
-    expect(args[1].toString()).to.equal(fullMultiaddr.toString())
+    expect(denyDialMultiaddr.called).to.be.true()
   })
 
   it('intercept accept inbound connection', async () => {
-    const denyInboundConnection = sinon.stub().returns(false)
+    const denyInboundConnection = Sinon.stub().returns(true)
 
-    ;({ dialer, listener } = await createPeers({}, {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundConnection
       }
-    }))
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
 
-    await dialer.dial(listener.getMultiaddrs())
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(upgrader.upgradeInbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
+    }))
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
     expect(denyInboundConnection.called).to.be.true()
   })
 
   it('intercept accept outbound connection', async () => {
-    const denyOutboundConnection = sinon.stub().returns(false)
+    const denyOutboundConnection = Sinon.stub().returns(true)
 
-    ;({ dialer, listener } = await createPeers({
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundConnection
       }
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
     }))
-
-    await dialer.dial(listener.getMultiaddrs())
-
-    expect(denyOutboundConnection.called).to.be.true()
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
   })
 
   it('intercept inbound encrypted', async () => {
-    const denyInboundEncryptedConnection = sinon.stub().returns(false)
+    const denyInboundEncryptedConnection = Sinon.stub().returns(true)
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    ;({ dialer, listener } = await createPeers({}, {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundEncryptedConnection
       }
-    }))
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
+    upgrader._encryptInbound = async (maConn) => {
+      return {
+        conn: maConn,
+        remotePeer,
+        protocol: '/test-encrypter'
+      }
+    }
 
-    await dialer.dial(listener.getMultiaddrs())
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr,
+      log: logger('test')
+    })
+
+    await expect(upgrader.upgradeInbound(maConn, {
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
+    }))
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
     expect(denyInboundEncryptedConnection.called).to.be.true()
-    expect(denyInboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(dialer.peerId.toMultihash().bytes)
   })
 
   it('intercept outbound encrypted', async () => {
-    const denyOutboundEncryptedConnection = sinon.stub().returns(false)
+    const denyOutboundEncryptedConnection = Sinon.stub().returns(true)
 
-    ;({ dialer, listener } = await createPeers({
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
+
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundEncryptedConnection
       }
-    }))
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
+    upgrader._encryptOutbound = async (maConn) => {
+      return {
+        conn: maConn,
+        remotePeer,
+        protocol: '/test-encrypter'
+      }
+    }
 
-    await dialer.dial(listener.getMultiaddrs())
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr,
+      log: logger('test')
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn, {
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
+    }))
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
     expect(denyOutboundEncryptedConnection.called).to.be.true()
-    expect(denyOutboundEncryptedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(listener.peerId.toMultihash().bytes)
   })
 
   it('intercept inbound upgraded', async () => {
-    const denyInboundUpgradedConnection = sinon.stub().returns(false)
+    const denyInboundUpgradedConnection = Sinon.stub().returns(true)
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    ;({ dialer, listener } = await createPeers({}, {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundUpgradedConnection
       }
-    }))
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
 
-    const input = Uint8Array.from([0])
-    const output = await dialer.services.echo.echo(listener.getMultiaddrs(), input)
-    expect(output).to.equalBytes(input)
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr,
+      log: logger('test')
+    })
+
+    await expect(upgrader.upgradeInbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
+    }))
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
     expect(denyInboundUpgradedConnection.called).to.be.true()
-    expect(denyInboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(dialer.peerId.toMultihash().bytes)
   })
 
   it('intercept outbound upgraded', async () => {
-    const denyOutboundUpgradedConnection = sinon.stub().returns(false)
+    const denyOutboundUpgradedConnection = Sinon.stub().returns(true)
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    ;({ dialer, listener } = await createPeers({
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundUpgradedConnection
       }
-    }))
+    }), {
+      connectionEncrypters: [],
+      streamMuxers: []
+    })
 
-    const input = Uint8Array.from([0])
-    const output = await dialer.services.echo.echo(listener.getMultiaddrs(), input)
-    expect(output).to.equalBytes(input)
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr,
+      log: logger('test')
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>()
+    }))
+      .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
     expect(denyOutboundUpgradedConnection.called).to.be.true()
-    expect(denyOutboundUpgradedConnection.getCall(0).args[0].toMultihash().bytes).to.equalBytes(listener.peerId.toMultihash().bytes)
   })
 })

@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { memory } from '@libp2p/memory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
@@ -26,18 +25,6 @@ describe('core', () => {
     const ma = multiaddr('/dns4/example.com/sctp/1234')
 
     await expect(libp2p.isDialable(ma)).to.eventually.be.false()
-  })
-
-  it('should say an address is dialable if a transport is configured', async () => {
-    libp2p = await createLibp2p({
-      transports: [
-        memory()
-      ]
-    })
-
-    const ma = multiaddr('/memory/address-1')
-
-    await expect(libp2p.isDialable(ma)).to.eventually.be.true()
   })
 
   it('should test if a protocol can run over a limited connection', async () => {

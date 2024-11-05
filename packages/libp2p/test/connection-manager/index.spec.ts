@@ -1,49 +1,32 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, KEEP_ALIVE, start, stop } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
+import { KEEP_ALIVE, start, stop } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { dns } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { defaultComponents } from '../../src/components.js'
-import { DefaultConnectionManager, type DefaultConnectionManagerComponents } from '../../src/connection-manager/index.js'
+import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2p } from '../../src/index.js'
-import { createPeers } from '../fixtures/create-peers.js'
 import { getComponent } from '../fixtures/get-component.js'
-import type { Echo } from '@libp2p/echo'
-import type { ConnectionGater, PeerId, PeerStore, Libp2p, Connection, PeerRouting, MultiaddrConnection } from '@libp2p/interface'
-import type { TransportManager } from '@libp2p/interface-internal'
+import { createDefaultConnectionManagerComponents, type StubbedDefaultConnectionManagerComponents } from './utils.js'
+import type { Libp2p, Connection, MultiaddrConnection } from '@libp2p/interface'
 
 const defaultOptions = {
   maxConnections: 10,
   inboundUpgradeTimeout: 10000
 }
 
-function createDefaultComponents (peerId: PeerId): DefaultConnectionManagerComponents {
-  return {
-    peerId,
-    peerStore: stubInterface<PeerStore>({
-      all: async () => []
-    }),
-    peerRouting: stubInterface<PeerRouting>(),
-    transportManager: stubInterface<TransportManager>(),
-    connectionGater: stubInterface<ConnectionGater>(),
-    events: new TypedEventEmitter(),
-    logger: defaultLogger()
-  }
-}
-
 describe('Connection Manager', () => {
   let libp2p: Libp2p
   let connectionManager: DefaultConnectionManager
+  let components: StubbedDefaultConnectionManagerComponents
 
   beforeEach(async () => {
     libp2p = await createLibp2p()
+    components = await createDefaultConnectionManagerComponents()
   })
 
   afterEach(async () => {
@@ -91,7 +74,7 @@ describe('Connection Manager', () => {
 
   it('should deny connections from denylist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       deny: [
         '/ip4/83.13.55.32'
@@ -108,7 +91,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       maxConnections: 1
     })
@@ -133,7 +116,7 @@ describe('Connection Manager', () => {
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       inboundConnectionThreshold: 1
     })
@@ -160,7 +143,7 @@ describe('Connection Manager', () => {
 
   it('should allow connections from allowlist multiaddrs', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       maxConnections: 1,
       allow: [
@@ -188,7 +171,7 @@ describe('Connection Manager', () => {
   })
 
   it('should limit the number of inbound pending connections', async () => {
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
@@ -225,7 +208,7 @@ describe('Connection Manager', () => {
   })
 
   it('should allow dialing peers when an existing limited connection exists', async () => {
-    connectionManager = new DefaultConnectionManager(createDefaultComponents(libp2p.peerId), {
+    connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       maxIncomingPendingConnections: 1
     })
@@ -262,72 +245,45 @@ describe('Connection Manager', () => {
 
     expect(conn).to.equal(newConnection)
   })
-})
-
-describe('Connection Manager', () => {
-  let peerIds: PeerId[]
-
-  before(async () => {
-    peerIds = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
-  })
 
   it('should filter connections on disconnect, removing the closed one', async () => {
-    const peerStore = stubInterface<PeerStore>()
-    const components = defaultComponents({
-      peerId: peerIds[0],
-      peerStore,
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
-    })
-    const connectionManager = new DefaultConnectionManager(components, {
+    connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       inboundUpgradeTimeout: 1000
     })
 
     await start(connectionManager)
 
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
     const conn1 = stubInterface<Connection>({
       remoteAddr: multiaddr('/ip4/34.4.63.125/tcp/4001'),
-      remotePeer: peerIds[1],
+      remotePeer,
       status: 'open'
     })
     const conn2 = stubInterface<Connection>({
       remoteAddr: multiaddr('/ip4/34.4.63.126/tcp/4001'),
-      remotePeer: peerIds[1],
+      remotePeer,
       status: 'open'
     })
 
-    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
+    expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(0)
 
     // Add connection to the connectionManager
     components.events.safeDispatchEvent('connection:open', { detail: conn1 })
     components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
-    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
+    expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(2)
 
     conn2.status = 'closed'
     components.events.safeDispatchEvent('connection:close', { detail: conn2 })
 
-    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(1)
+    expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(1)
 
     expect(conn1.close.called).to.be.false()
-
-    await connectionManager.stop()
   })
 
   it('should close connections on stop', async () => {
-    const peerStore = stubInterface<PeerStore>()
-    const components = defaultComponents({
-      peerId: peerIds[0],
-      peerStore,
-      transportManager: stubInterface<TransportManager>(),
-      connectionGater: stubInterface<ConnectionGater>(),
-      events: new TypedEventEmitter()
-    })
     const connectionManager = new DefaultConnectionManager(components, {
       maxConnections: 1000,
       inboundUpgradeTimeout: 1000
@@ -335,14 +291,16 @@ describe('Connection Manager', () => {
 
     await start(connectionManager)
 
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
     const conn1 = stubInterface<Connection>({
       remoteAddr: multiaddr('/ip4/34.4.63.125/tcp/4001'),
-      remotePeer: peerIds[1],
+      remotePeer,
       status: 'open'
     })
     const conn2 = stubInterface<Connection>({
       remoteAddr: multiaddr('/ip4/34.4.63.126/tcp/4001'),
-      remotePeer: peerIds[1],
+      remotePeer,
       status: 'open'
     })
 
@@ -350,77 +308,13 @@ describe('Connection Manager', () => {
     components.events.safeDispatchEvent('connection:open', { detail: conn1 })
     components.events.safeDispatchEvent('connection:open', { detail: conn2 })
 
-    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(2)
+    expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(2)
 
     await connectionManager.stop()
 
     expect(conn1.close.called).to.be.true()
     expect(conn2.close.called).to.be.true()
 
-    expect(connectionManager.getConnections(peerIds[1])).to.have.lengthOf(0)
-  })
-})
-
-describe('libp2p.connections', () => {
-  let dialer: Libp2p<{ echo: Echo }>
-  let listener: Libp2p<{ echo: Echo }>
-
-  afterEach(async () => {
-    await stop(dialer, listener)
-  })
-
-  it('libp2p.getConnections gets the connectionManager conns', async () => {
-    ({ dialer, listener } = await createPeers())
-
-    const conn = await dialer.dial(listener.getMultiaddrs())
-
-    expect(conn).to.be.ok()
-    expect(dialer.getConnections()).to.have.lengthOf(1)
-  })
-
-  it('should be closed status after stopping', async () => {
-    ({ dialer, listener } = await createPeers())
-
-    const conn = await dialer.dial(listener.getMultiaddrs())
-
-    await dialer.stop()
-    expect(conn.status).to.eql('closed')
-  })
-
-  it('should open multiple connections when forced', async () => {
-    ({ dialer, listener } = await createPeers())
-
-    // connect once, should have one connection
-    await dialer.dial(listener.getMultiaddrs())
-    expect(dialer.getConnections()).to.have.lengthOf(1)
-
-    // connect twice, should still only have one connection
-    await dialer.dial(listener.getMultiaddrs())
-    expect(dialer.getConnections()).to.have.lengthOf(1)
-
-    // force connection, should have two connections now
-    await dialer.dial(listener.getMultiaddrs(), {
-      force: true
-    })
-    expect(dialer.getConnections()).to.have.lengthOf(2)
-  })
-
-  it('should use custom DNS resolver', async () => {
-    const resolver = sinon.stub()
-
-    ;({ dialer, listener } = await createPeers({
-      dns: dns({
-        resolvers: {
-          '.': resolver
-        }
-      })
-    }))
-
-    const ma = multiaddr('/dnsaddr/example.com/tcp/12345')
-    const err = new Error('Could not resolve')
-
-    resolver.withArgs('_dnsaddr.example.com').rejects(err)
-
-    await expect(dialer.dial(ma)).to.eventually.be.rejectedWith(err)
+    expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(0)
   })
 })
