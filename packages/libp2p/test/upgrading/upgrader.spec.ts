@@ -1,1056 +1,590 @@
 /* eslint-env mocha */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { identify } from '@libp2p/identify'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockConnectionGater, mockConnectionManager, mockMultiaddrConnPair, mockRegistrar, mockStream, mockMuxer } from '@libp2p/interface-compliance-tests/mocks'
-import { mplex } from '@libp2p/mplex'
-import { peerIdFromCID, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { persistentPeerStore } from '@libp2p/peer-store'
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
-import { multiaddr } from '@multiformats/multiaddr'
+import { logger } from '@libp2p/logger'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import all from 'it-all'
 import drain from 'it-drain'
-import { pipe } from 'it-pipe'
-import pDefer from 'p-defer'
-import { pEvent } from 'p-event'
-import sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { Uint8ArrayList } from 'uint8arraylist'
+import { encode } from 'it-length-prefixed'
+import map from 'it-map'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type Components, defaultComponents } from '../../src/components.js'
-import { createLibp2p } from '../../src/index.js'
-import { DEFAULT_MAX_OUTBOUND_STREAMS } from '../../src/registrar.js'
-import { DefaultUpgrader } from '../../src/upgrader.js'
-import type { Libp2p, Connection, ConnectionProtector, Stream, ConnectionEncrypter, SecuredConnection, PeerId, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, Upgrader, PrivateKey, MultiaddrConnection } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
+import { DefaultUpgrader, type UpgraderInit } from '../../src/upgrader.js'
+import { createDefaultUpgraderComponents } from './utils.js'
+import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit } from '@libp2p/interface'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
-const addrs = [
-  multiaddr('/ip4/127.0.0.1/tcp/0'),
-  multiaddr('/ip4/127.0.0.1/tcp/0')
-]
-
-describe('Upgrader', () => {
-  let localUpgrader: Upgrader
-  let localMuxerFactory: StreamMuxerFactory
-  let localYamuxerFactory: StreamMuxerFactory
-  let localConnectionEncrypter: ConnectionEncrypter
-  let localConnectionProtector: StubbedInstance<ConnectionProtector>
-  let remoteUpgrader: Upgrader
-  let remoteMuxerFactory: StreamMuxerFactory
-  let remoteYamuxerFactory: StreamMuxerFactory
-  let remoteConnectionEncrypter: ConnectionEncrypter
-  let remoteConnectionProtector: StubbedInstance<ConnectionProtector>
-  let localPeer: PeerId
+describe('upgrader', () => {
+  let init: UpgraderInit
+  const encrypterProtocol = '/test-encrypter'
+  const muxerProtocol = '/test-muxer'
   let remotePeer: PeerId
-  let localComponents: Components
-  let remoteComponents: Components
+  let remoteAddr: Multiaddr
+  let maConn: MultiaddrConnection
+
+  class BoomCrypto implements ConnectionEncrypter {
+    static protocol = encrypterProtocol
+    public protocol = encrypterProtocol
+    async secureInbound (): Promise<SecuredConnection> { throw new Error('Boom') }
+    async secureOutbound (): Promise<SecuredConnection> { throw new Error('Boom') }
+  }
 
   beforeEach(async () => {
-    const localKey = await generateKeyPair('Ed25519')
-    localPeer = peerIdFromPrivateKey(localKey)
+    remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const remoteKey = await generateKeyPair('Ed25519')
-    remotePeer = peerIdFromPrivateKey(remoteKey)
-
-    localConnectionProtector = stubInterface<ConnectionProtector>()
-    localConnectionProtector.protect.resolvesArg(0)
-
-    localComponents = defaultComponents({
-      peerId: localPeer,
-      privateKey: localKey,
-      connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar(),
-      datastore: new MemoryDatastore(),
-      connectionProtector: localConnectionProtector,
-      events: new TypedEventEmitter()
-    })
-    localComponents.peerStore = persistentPeerStore(localComponents)
-    localComponents.connectionManager = mockConnectionManager(localComponents)
-    localMuxerFactory = mplex()(localComponents)
-    localYamuxerFactory = yamux()(localComponents)
-    localConnectionEncrypter = plaintext()(localComponents)
-    localUpgrader = new DefaultUpgrader(localComponents, {
+    init = {
       connectionEncrypters: [
-        localConnectionEncrypter
+        stubInterface<ConnectionEncrypter>({
+          protocol: encrypterProtocol,
+          secureOutbound: async (connection) => ({
+            conn: connection,
+            remotePeer
+          }),
+          secureInbound: async (connection) => ({
+            conn: connection,
+            remotePeer
+          })
+        })
       ],
       streamMuxers: [
-        localMuxerFactory,
-        localYamuxerFactory
-      ],
-      inboundUpgradeTimeout: 1000
-    })
-
-    remoteConnectionProtector = stubInterface<ConnectionProtector>()
-    remoteConnectionProtector.protect.resolvesArg(0)
-
-    remoteComponents = defaultComponents({
-      peerId: remotePeer,
-      privateKey: remoteKey,
-      connectionGater: mockConnectionGater(),
-      registrar: mockRegistrar(),
-      datastore: new MemoryDatastore(),
-      connectionProtector: remoteConnectionProtector,
-      events: new TypedEventEmitter()
-    })
-    remoteComponents.peerStore = persistentPeerStore(remoteComponents)
-    remoteComponents.connectionManager = mockConnectionManager(remoteComponents)
-    remoteMuxerFactory = mplex()(remoteComponents)
-    remoteYamuxerFactory = yamux()(remoteComponents)
-    remoteConnectionEncrypter = plaintext()(remoteComponents)
-    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
-        remoteConnectionEncrypter
-      ],
-      streamMuxers: [
-        remoteMuxerFactory,
-        remoteYamuxerFactory
-      ],
-      inboundUpgradeTimeout: 1000
-    })
-
-    await localComponents.registrar.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
-    }, {
-      maxInboundStreams: 10,
-      maxOutboundStreams: 10
-    })
-    await remoteComponents.registrar.handle('/echo/1.0.0', ({ stream }) => {
-      void pipe(stream, stream)
-    }, {
-      maxInboundStreams: 10,
-      maxOutboundStreams: 10
-    })
-  })
-
-  afterEach(() => {
-    sinon.restore()
-  })
-
-  it('should upgrade with valid muxers and crypto', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-
-    const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.property('protocol', '/echo/1.0.0')
-
-    const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
-
-    expect(result).to.eql([hello])
-  })
-
-  it('should upgrade with only crypto', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    // No available muxers
-    localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
-        plaintext()(localComponents)
-      ],
-      streamMuxers: [],
-      inboundUpgradeTimeout: 1000
-    })
-    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
-        plaintext()(remoteComponents)
-      ],
-      streamMuxers: [],
-      inboundUpgradeTimeout: 1000
-    })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-
-    await expect(connections[0].newStream('/echo/1.0.0')).to.be.rejected()
-
-    // Verify the MultiaddrConnection close method is called
-    const inboundCloseSpy = sinon.spy(inbound, 'close')
-    const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => { await conn.close() }))
-    expect(inboundCloseSpy.callCount).to.equal(1)
-    expect(outboundCloseSpy.callCount).to.equal(1)
-  })
-
-  it('should use a private connection protector when provided', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const protector: ConnectionProtector = {
-      async protect (connection) {
-        return connection
-      }
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: () => stubInterface<StreamMuxer>({
+            protocol: muxerProtocol,
+            sink: async (source) => drain(source),
+            source: (async function * () {})()
+          })
+        })
+      ]
     }
 
-    const protectorProtectSpy = sinon.spy(protector, 'protect')
-
-    localComponents.connectionProtector = protector
-    remoteComponents.connectionProtector = protector
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-
-    const stream = await connections[0].newStream('/echo/1.0.0')
-    expect(stream).to.have.property('protocol', '/echo/1.0.0')
-
-    const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
-
-    expect(result).to.eql([hello])
-    expect(protectorProtectSpy.callCount).to.eql(2)
+    maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr,
+      log: logger('test'),
+      sink: async (source) => drain(source),
+      source: map((async function * () {
+        yield '/multistream/1.0.0\n'
+        yield `${encrypterProtocol}\n`
+        yield `${muxerProtocol}\n`
+      })(), str => encode.single(uint8ArrayFromString(str)))
+    })
   })
 
-  it('should fail if crypto fails', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+  it('should upgrade outbound with valid muxers and crypto', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), init)
+    const conn = await upgrader.upgradeOutbound(maConn)
+    expect(conn.encryption).to.equal(encrypterProtocol)
+    expect(conn.multiplexer).to.equal(muxerProtocol)
+  })
 
-    class BoomCrypto implements ConnectionEncrypter {
-      static protocol = '/insecure'
-      public protocol = '/insecure'
-      async secureInbound (): Promise<SecuredConnection> { throw new Error('Boom') }
-      async secureOutbound (): Promise<SecuredConnection> { throw new Error('Boom') }
-    }
+  it('should upgrade outbound with only crypto', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      streamMuxers: []
+    })
 
-    localUpgrader = new DefaultUpgrader(localComponents, {
+    const connection = await upgrader.upgradeOutbound(maConn)
+
+    await expect(connection.newStream('/echo/1.0.0')).to.eventually.be.rejected
+      .with.property('name', 'MuxerUnavailableError')
+  })
+
+  it('should use a private connection protector when provided for inbound connections', async () => {
+    const connectionProtector = stubInterface<ConnectionProtector>()
+    connectionProtector.protect.callsFake(async (conn) => conn)
+
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+      connectionProtector
+    }), init)
+
+    await upgrader.upgradeInbound(maConn)
+
+    expect(connectionProtector.protect.callCount).to.equal(1)
+  })
+
+  it('should use a private connection protector when provided for outbound connections', async () => {
+    const connectionProtector = stubInterface<ConnectionProtector>()
+    connectionProtector.protect.callsFake(async (conn) => conn)
+
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+      connectionProtector
+    }), init)
+
+    await upgrader.upgradeOutbound(maConn)
+
+    expect(connectionProtector.protect.callCount).to.equal(1)
+  })
+
+  it('should fail inbound if crypto fails', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
       connectionEncrypters: [
         new BoomCrypto()
-      ],
-      streamMuxers: [],
-      inboundUpgradeTimeout: 1000
+      ]
     })
-    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
+
+    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
+      .with.property('name', 'EncryptionFailedError')
+  })
+
+  it('should fail outbound if crypto fails', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
       connectionEncrypters: [
         new BoomCrypto()
-      ],
-      streamMuxers: [],
-      inboundUpgradeTimeout: 1000
+      ]
     })
 
-    // Wait for the results of each side of the connection
-    const results = await Promise.allSettled([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    // Ensure both sides fail
-    expect(results).to.have.length(2)
-    results.forEach(result => {
-      expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.name', 'EncryptionFailedError')
-    })
+    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+      .with.property('name', 'EncryptionFailedError')
   })
 
-  it('should clear timeout if upgrade is successful', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
+  it('should abort if inbound upgrade is slow', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 100
+    })
 
-    localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
-        plaintext()(localComponents)
-      ],
+    maConn.source = map(maConn.source, async (buf) => {
+      await delay(2000)
+      return buf
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+      .with.property('message').that.include('aborted')
+  })
+
+  it('should abort if outbound upgrade is slow', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      outboundUpgradeTimeout: 100
+    })
+
+    maConn.source = map(maConn.source, async (buf) => {
+      await delay(2000)
+      return buf
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+      .with.property('message').that.include('aborted')
+  })
+
+  it('should abort by signal if inbound upgrade is slow', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 10000
+    })
+
+    maConn.source = map(maConn.source, async (buf) => {
+      await delay(2000)
+      return buf
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(100)
+    })).to.eventually.be.rejected
+      .with.property('message').that.include('aborted')
+  })
+
+  it('should abort by signal if outbound upgrade is slow', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      outboundUpgradeTimeout: 10000
+    })
+
+    maConn.source = map(maConn.source, async (buf) => {
+      await delay(2000)
+      return buf
+    })
+
+    await expect(upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(100)
+    })).to.eventually.be.rejected
+      .with.property('message').that.include('aborted')
+  })
+
+  it('should not abort if inbound upgrade is successful', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 100
+    })
+    const conn = await upgrader.upgradeInbound(maConn)
+
+    await delay(1000)
+
+    // connections should still be open after timeout
+    expect(conn.status).to.equal('open')
+  })
+
+  it('should not abort if outbound upgrade is successful', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 100
+    })
+    const conn = await upgrader.upgradeOutbound(maConn)
+
+    await delay(1000)
+
+    // connections should still be open after timeout
+    expect(conn.status).to.equal('open')
+  })
+
+  it('should not abort by signal if inbound upgrade is successful', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 10000
+    })
+    const conn = await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(100)
+    })
+
+    await delay(1000)
+
+    // connections should still be open after timeout
+    expect(conn.status).to.equal('open')
+  })
+
+  it('should not abort by signal if outbound upgrade is successful', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
+      inboundUpgradeTimeout: 10000
+    })
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(100)
+    })
+
+    await delay(1000)
+
+    // connections should still be open after timeout
+    expect(conn.status).to.equal('open')
+  })
+
+  it('should abort protocol selection for slow outbound stream creation', async () => {
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
       streamMuxers: [
-        yamux()(localComponents)
-      ],
-      inboundUpgradeTimeout: 1000
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: () => stubInterface<StreamMuxer>({
+            protocol: muxerProtocol,
+            sink: async (source) => drain(source),
+            source: (async function * () {})(),
+            newStream: () => stubInterface<Stream>({
+              id: 'stream-id',
+              log: logger('test-stream'),
+              sink: async (source) => drain(source),
+              source: (async function * (): any {
+                await delay(2000)
+                yield Uint8Array.from([0, 1, 2, 3, 4])
+              })()
+            })
+          })
+        })
+      ]
     })
-    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
-        plaintext()(remoteComponents)
-      ],
+    const conn = await upgrader.upgradeOutbound(maConn)
+
+    await expect(conn.newStream('/echo/1.0.0', {
+      signal: AbortSignal.timeout(100)
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort stream when protocol negotiation fails on outbound stream', async () => {
+    let stream: Stream | undefined
+
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+      ...init,
       streamMuxers: [
-        yamux()(remoteComponents)
-      ],
-      inboundUpgradeTimeout: 1000
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: () => stubInterface<StreamMuxer>({
+            protocol: muxerProtocol,
+            sink: async (source) => drain(source),
+            source: (async function * () {
+              await delay(2000)
+              yield Uint8Array.from([0, 1, 2, 3, 4])
+            })(),
+            newStream: () => {
+              stream = stubInterface<Stream>({
+                id: 'stream-id',
+                log: logger('test-stream'),
+                sink: async (source) => drain(source),
+                source: map((async function * () {
+                  yield '/multistream/1.0.0\n'
+                  yield '/different/protocol\n'
+                })(), str => encode.single(uint8ArrayFromString(str)))
+              })
+
+              return stream
+            }
+          })
+        })
+      ]
     })
+    const conn = await upgrader.upgradeOutbound(maConn)
 
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    await delay(2000)
-
-    expect(connections).to.have.length(2)
-
-    connections.forEach(conn => {
-      conn.close().catch(() => {
-        throw new Error('Failed to close connection')
-      })
-    })
-  })
-
-  it('should fail if muxers do not match', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    class OtherMuxer implements StreamMuxer {
-      protocol = '/muxer-local'
-      streams = []
-      newStream (name?: string): Stream {
-        throw new Error('Not implemented')
-      }
-
-      source = (async function * () {
-        yield * []
-      })()
-
-      async sink (): Promise<void> {}
-      async close (): Promise<void> {}
-      abort (): void {}
-    }
-
-    class OtherMuxerFactory implements StreamMuxerFactory {
-      protocol = '/muxer-local'
-
-      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
-        return new OtherMuxer()
-      }
-    }
-
-    class OtherOtherMuxerFactory implements StreamMuxerFactory {
-      protocol = '/muxer-local-other'
-
-      createStreamMuxer (init?: StreamMuxerInit): StreamMuxer {
-        return new OtherMuxer()
-      }
-    }
-
-    localUpgrader = new DefaultUpgrader(localComponents, {
-      connectionEncrypters: [
-        plaintext()(localComponents)
-      ],
-      streamMuxers: [
-        new OtherMuxerFactory(),
-        new OtherOtherMuxerFactory()
-      ],
-      inboundUpgradeTimeout: 1000
-    })
-    remoteUpgrader = new DefaultUpgrader(remoteComponents, {
-      connectionEncrypters: [
-        plaintext()(remoteComponents)
-      ],
-      streamMuxers: [
-        yamux()(remoteComponents),
-        mplex()(remoteComponents)
-      ],
-      inboundUpgradeTimeout: 1000
-    })
-
-    // Wait for the results of each side of the connection
-    const results = await Promise.allSettled([
-      localUpgrader.upgradeOutbound(inbound),
-      remoteUpgrader.upgradeInbound(outbound)
-    ])
-
-    // Ensure both sides fail
-    expect(results).to.have.length(2)
-    results.forEach(result => {
-      expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.name', 'MuxerUnavailableError')
-    })
-  })
-
-  it('should map getStreams and close methods', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-
-    // Create a few streams, at least 1 in each direction
-    // use multiple protocols to trigger regular multistream select
-    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
-    await connections[1].newStream(['/echo/1.0.0', '/echo/1.0.1'])
-    await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
-    connections.forEach(conn => {
-      expect(conn.streams).to.have.length(3)
-    })
-
-    // Verify the MultiaddrConnection close method is called
-    const inboundCloseSpy = sinon.spy(inbound, 'close')
-    const outboundCloseSpy = sinon.spy(outbound, 'close')
-    await Promise.all(connections.map(async conn => { await conn.close() }))
-    expect(inboundCloseSpy.callCount).to.equal(1)
-    expect(outboundCloseSpy.callCount).to.equal(1)
-  })
-
-  it('should call connection handlers', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-    const localConnectionEventReceived = pDefer()
-    const localConnectionEndEventReceived = pDefer()
-    const remoteConnectionEventReceived = pDefer()
-    const remoteConnectionEndEventReceived = pDefer()
-
-    localComponents.events.addEventListener('connection:open', () => {
-      localConnectionEventReceived.resolve()
-    })
-    localComponents.events.addEventListener('connection:close', () => {
-      localConnectionEndEventReceived.resolve()
-    })
-    remoteComponents.events.addEventListener('connection:open', () => {
-      remoteConnectionEventReceived.resolve()
-    })
-    remoteComponents.events.addEventListener('connection:close', () => {
-      remoteConnectionEndEventReceived.resolve()
-    })
-
-    // Verify onConnection is called with the connection
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-    expect(connections).to.have.length(2)
-
-    await Promise.all([
-      localConnectionEventReceived.promise,
-      remoteConnectionEventReceived.promise
-    ])
-
-    // Verify onConnectionEnd is called with the connection
-    await Promise.all(connections.map(async conn => { await conn.close() }))
-
-    await Promise.all([
-      localConnectionEndEventReceived.promise,
-      remoteConnectionEndEventReceived.promise
-    ])
-  })
-
-  it('should fail to create a stream for an unsupported protocol', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections).to.have.length(2)
-
-    const results = await Promise.allSettled([
-      connections[0].newStream('/unsupported/1.0.0'),
-      connections[1].newStream('/unsupported/1.0.0')
-    ])
-    expect(results).to.have.length(2)
-    results.forEach(result => {
-      expect(result).to.have.property('status', 'rejected')
-      expect(result).to.have.nested.property('reason.name', 'UnsupportedProtocolError')
-    })
-  })
-
-  it('should abort protocol selection for slow streams', async () => {
-    const createStreamMuxerSpy = sinon.spy(localMuxerFactory, 'createStreamMuxer')
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    // 10 ms timeout
-    const signal = AbortSignal.timeout(10)
-
-    // should have created muxer for connection
-    expect(createStreamMuxerSpy).to.have.property('callCount', 1)
-
-    // create mock muxed stream that never sends data
-    const muxer = createStreamMuxerSpy.getCall(0).returnValue
-    muxer.newStream = () => {
-      return mockStream({
-        source: (async function * () {
-          // longer than the timeout
-          await delay(1000)
-          yield new Uint8ArrayList()
-        }()),
-        sink: drain
-      })
-    }
-
-    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'], {
-      signal
-    }))
-      .to.eventually.be.rejected.with.property('name', 'AbortError')
-  })
-
-  it('should close streams when protocol negotiation fails', async () => {
-    await remoteComponents.registrar.unhandle('/echo/1.0.0')
-
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer })
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound),
-      remoteUpgrader.upgradeInbound(inbound)
-    ])
-
-    expect(connections[0].streams).to.have.lengthOf(0)
-    expect(connections[1].streams).to.have.lengthOf(0)
-
-    await expect(connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1']))
+    await expect(conn.newStream('/foo/1.0.0'))
       .to.eventually.be.rejected.with.property('name', 'UnsupportedProtocolError')
 
     // wait for remote to close
     await delay(100)
 
-    expect(connections[0].streams).to.have.lengthOf(0)
-    expect(connections[1].streams).to.have.lengthOf(0)
+    expect(stream?.abort).to.have.property('called', true)
   })
 
-  it('should allow skipping encryption, protection and muxing', async () => {
-    const localStreamMuxerFactorySpy = sinon.spy(localMuxerFactory, 'createStreamMuxer')
-    const localMuxerFactoryOverride = mockMuxer()
-    const localStreamMuxerFactoryOverrideSpy = sinon.spy(localMuxerFactoryOverride, 'createStreamMuxer')
-    const localConnectionEncrypterSpy = sinon.spy(localConnectionEncrypter, 'secureOutbound')
-
-    const remoteStreamMuxerFactorySpy = sinon.spy(remoteMuxerFactory, 'createStreamMuxer')
-    const remoteMuxerFactoryOverride = mockMuxer()
-    const remoteStreamMuxerFactoryOverrideSpy = sinon.spy(remoteMuxerFactoryOverride, 'createStreamMuxer')
-    const remoteConnectionEncrypterSpy = sinon.spy(remoteConnectionEncrypter, 'secureInbound')
-
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/0').encapsulate(`/p2p/${remotePeer.toString()}`),
-        multiaddr('/ip4/127.0.0.1/tcp/0')
-      ],
-      remotePeer
+  it('should allow skipping outbound encryption and protection', async () => {
+    const connectionProtector = stubInterface<ConnectionProtector>()
+    const connectionEncrypter = stubInterface<ConnectionEncrypter>({
+      protocol: encrypterProtocol
     })
 
-    outbound.remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/0').encapsulate(`/p2p/${remotePeer.toString()}`)
-    inbound.remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/0').encapsulate(`/p2p/${localPeer.toString()}`)
-
-    const connections = await Promise.all([
-      localUpgrader.upgradeOutbound(outbound, {
-        skipEncryption: true,
-        skipProtection: true,
-        muxerFactory: localMuxerFactoryOverride
-      }),
-      remoteUpgrader.upgradeInbound(inbound, {
-        skipEncryption: true,
-        skipProtection: true,
-        muxerFactory: remoteMuxerFactoryOverride
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+      connectionProtector
+    }), {
+      ...init,
+      connectionEncrypters: [
+        connectionEncrypter
+      ]
+    })
+    await upgrader.upgradeOutbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>({
+        createStreamMuxer: () => stubInterface<StreamMuxer>({
+          protocol: muxerProtocol,
+          sink: async (source) => drain(source),
+          source: (async function * () {})()
+        })
       })
-    ])
+    })
+    expect(connectionProtector.protect).to.have.property('called', false)
+    expect(connectionEncrypter.secureOutbound).to.have.property('called', false)
+  })
 
-    expect(connections).to.have.length(2)
+  it('should allow skipping inbound encryption and protection', async () => {
+    const connectionProtector = stubInterface<ConnectionProtector>()
+    const connectionEncrypter = stubInterface<ConnectionEncrypter>({
+      protocol: encrypterProtocol
+    })
 
-    const stream = await connections[0].newStream(['/echo/1.0.0', '/echo/1.0.1'])
-    expect(stream).to.have.property('protocol', '/echo/1.0.0')
-
-    const hello = uint8ArrayFromString('hello there!')
-    const result = await pipe(
-      [hello],
-      stream,
-      function toBuffer (source) {
-        return (async function * () {
-          for await (const val of source) yield val.slice()
-        })()
-      },
-      async (source) => all(source)
-    )
-
-    expect(result).to.eql([hello])
-
-    expect(localStreamMuxerFactorySpy.callCount).to.equal(0, 'did not use passed stream muxer factory')
-    expect(localStreamMuxerFactoryOverrideSpy.callCount).to.equal(1, 'did not use passed stream muxer factory')
-
-    expect(remoteStreamMuxerFactorySpy.callCount).to.equal(0, 'did not use passed stream muxer factory')
-    expect(remoteStreamMuxerFactoryOverrideSpy.callCount).to.equal(1, 'did not use passed stream muxer factory')
-
-    expect(localConnectionEncrypterSpy.callCount).to.equal(0, 'used local connection encrypter')
-    expect(remoteConnectionEncrypterSpy.callCount).to.equal(0, 'used remote connection encrypter')
-
-    expect(localConnectionProtector.protect.callCount).to.equal(0, 'used local connection protector')
-    expect(remoteConnectionProtector.protect.callCount).to.equal(0, 'used remote connection protector')
+    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+      connectionProtector
+    }), {
+      ...init,
+      connectionEncrypters: [
+        connectionEncrypter
+      ]
+    })
+    await upgrader.upgradeInbound(maConn, {
+      skipEncryption: true,
+      skipProtection: true,
+      muxerFactory: stubInterface<StreamMuxerFactory>({
+        createStreamMuxer: () => stubInterface<StreamMuxer>({
+          protocol: muxerProtocol,
+          sink: async (source) => drain(source),
+          source: (async function * () {})()
+        })
+      })
+    })
+    expect(connectionProtector.protect).to.have.property('called', false)
+    expect(connectionEncrypter.secureOutbound).to.have.property('called', false)
   })
 
   it('should not decrement inbound pending connection count if the connection is denied', async () => {
-    const connectionManager = stubInterface<ConnectionManager>()
-
-    // @ts-expect-error private field
-    localUpgrader.components.connectionManager = connectionManager
-
-    const maConn = stubInterface<MultiaddrConnection>()
-
-    connectionManager.acceptIncomingConnection.resolves(false)
-
-    await expect(localUpgrader.upgradeInbound(maConn)).to.eventually.be.rejected
+    const components = await createDefaultUpgraderComponents({
+      connectionManager: stubInterface<ConnectionManager>({
+        acceptIncomingConnection: async () => false
+      })
+    })
+    const upgrader = new DefaultUpgrader(components, init)
+    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
       .with.property('name', 'ConnectionDeniedError')
 
-    expect(connectionManager.afterUpgradeInbound.called).to.be.false()
-  })
-})
-
-describe('libp2p.upgrader', () => {
-  let peers: PrivateKey[]
-  let libp2p: Libp2p
-  let remoteLibp2p: Libp2p
-
-  before(async () => {
-    peers = await Promise.all([
-      generateKeyPair('Ed25519'),
-      generateKeyPair('Ed25519')
-    ])
-  })
-
-  afterEach(async () => {
-    sinon.restore()
-
-    if (libp2p != null) {
-      await libp2p.stop()
-    }
-
-    if (remoteLibp2p != null) {
-      await remoteLibp2p.stop()
-    }
-  })
-
-  it('should create an Upgrader', async () => {
-    const deferred = pDefer<Components>()
-
-    const protector: ConnectionProtector = {
-      async protect (connection) {
-        return connection
-      }
-    }
-
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      connectionProtector: () => protector,
-      services: {
-        test: (components: any) => {
-          deferred.resolve(components)
-        }
-      }
-    })
-
-    const components = await deferred.promise
-
-    expect(components.upgrader).to.exist()
-    expect(components.connectionProtector).to.exist()
-  })
-
-  it('should return muxed streams', async () => {
-    const localDeferred = pDefer<Components>()
-    const remoteDeferred = pDefer<Components>()
-
-    const remotePeer = peers[1]
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          localDeferred.resolve(components)
-        }
-      }
-    })
-    const echoHandler = (): void => {}
-    await libp2p.handle(['/echo/1.0.0'], echoHandler)
-
-    remoteLibp2p = await createLibp2p({
-      privateKey: remotePeer,
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          remoteDeferred.resolve(components)
-        }
-      }
-    })
-    await remoteLibp2p.handle('/echo/1.0.0', echoHandler)
-
-    const localComponents = await localDeferred.promise
-    const remoteComponents = await remoteDeferred.promise
-
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromCID(remotePeer.publicKey.toCID()) })
-    const [localConnection] = await Promise.all([
-      localComponents.upgrader.upgradeOutbound(outbound),
-      remoteComponents.upgrader.upgradeInbound(inbound)
-    ])
-    const remoteLibp2pUpgraderOnStreamSpy = sinon.spy(remoteComponents.upgrader as DefaultUpgrader, '_onStream')
-
-    const stream = await localConnection.newStream(['/echo/1.0.0', '/echo/1.0.1'])
-    expect(stream).to.include.keys(['id', 'sink', 'source'])
-
-    const [arg0] = remoteLibp2pUpgraderOnStreamSpy.getCall(0).args
-    expect(arg0.stream).to.include.keys(['id', 'sink', 'source'])
-  })
-
-  it('should emit connect and disconnect events', async () => {
-    const remotePeer = peers[1]
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      addresses: {
-        listen: [
-          `${process.env.RELAY_MULTIADDR}/p2p-circuit`
-        ]
-      },
-      transports: [
-        webSockets({
-          filter: filters.all
-        }),
-        circuitRelayTransport()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      connectionGater: mockConnectionGater(),
-      services: {
-        identify: identify()
-      }
-    })
-    await libp2p.start()
-
-    remoteLibp2p = await createLibp2p({
-      privateKey: remotePeer,
-      transports: [
-        webSockets({
-          filter: filters.all
-        }),
-        circuitRelayTransport()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      connectionGater: mockConnectionGater(),
-      services: {
-        identify: identify()
-      }
-    })
-    await remoteLibp2p.start()
-
-    // Upgrade and check the connect event
-    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(libp2p, 'connection:open')
-
-    const connection = await remoteLibp2p.dial(libp2p.getMultiaddrs())
-
-    const connectEvent = await connectionPromise
-
-    if (connectEvent.type !== 'connection:open') {
-      throw new Error(`Incorrect event type, expected: 'connection:open' actual: ${connectEvent.type}`)
-    }
-
-    expect(remotePeer.publicKey.equals(connectEvent.detail.remotePeer.publicKey)).to.equal(true)
-
-    const disconnectionPromise = pEvent<'peer:disconnect', CustomEvent<PeerId>>(libp2p, 'peer:disconnect')
-
-    // Close and check the disconnect event
-    await connection.close()
-
-    const disconnectEvent = await disconnectionPromise
-
-    if (disconnectEvent.type !== 'peer:disconnect') {
-      throw new Error(`Incorrect event type, expected: 'peer:disconnect' actual: ${disconnectEvent.type}`)
-    }
-
-    expect(remotePeer.publicKey.equals(disconnectEvent.detail.publicKey)).to.equal(true)
+    expect(components.connectionManager.afterUpgradeInbound).to.have.property('called', false)
   })
 
   it('should limit the number of incoming streams that can be opened using a protocol', async () => {
-    const localDeferred = pDefer<Components>()
-    const remoteDeferred = pDefer<Components>()
-    const protocol = '/a-test-protocol/1.0.0'
-    const remotePeer = peers[1]
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      transports: [
-        webSockets()
-      ],
+    const protocol = '/test/protocol'
+    const maxInboundStreams = 2
+    let streamMuxerInit: StreamMuxerInit | undefined
+    let streamMuxer: StreamMuxer | undefined
+    const components = await createDefaultUpgraderComponents({
+      registrar: stubInterface<Registrar>({
+        getHandler: () => ({
+          options: {
+            maxInboundStreams
+          },
+          handler: Sinon.stub()
+        }),
+        getProtocols: () => [protocol]
+      })
+    })
+    const upgrader = new DefaultUpgrader(components, {
+      ...init,
       streamMuxers: [
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          localDeferred.resolve(components)
-        }
-      },
-      connectionGater: mockConnectionGater()
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: (init) => {
+            streamMuxerInit = init
+            streamMuxer = stubInterface<StreamMuxer>({
+              protocol: muxerProtocol,
+              sink: async (source) => drain(source),
+              source: (async function * () {})(),
+              streams: []
+            })
+            return streamMuxer
+          }
+        })
+      ]
     })
 
-    remoteLibp2p = await createLibp2p({
-      privateKey: remotePeer,
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          remoteDeferred.resolve(components)
-        }
-      },
-      connectionGater: mockConnectionGater()
-    })
+    const conn = await upgrader.upgradeInbound(maConn)
+    expect(conn.streams).to.have.lengthOf(0)
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
+    for (let i = 0; i < (maxInboundStreams + 1); i++) {
+      const incomingStream = stubInterface<Stream>({
+        id: `stream-id-${i}`,
+        log: logger('test-stream'),
+        direction: 'inbound',
+        sink: async (source) => drain(source),
+        source: map((async function * () {
+          yield '/multistream/1.0.0\n'
+          yield `${protocol}\n`
+        })(), str => encode.single(uint8ArrayFromString(str)))
+      })
 
-    const localComponents = await localDeferred.promise
-    const remoteComponents = await remoteDeferred.promise
+      streamMuxer?.streams.push(incomingStream)
+      streamMuxerInit?.onIncomingStream?.(incomingStream)
+    }
 
-    const [localToRemote] = await Promise.all([
-      localComponents.upgrader.upgradeOutbound(outbound),
-      remoteComponents.upgrader.upgradeInbound(inbound)
-    ])
+    await delay(100)
 
-    let streamCount = 0
-
-    await libp2p.handle(protocol, (data) => {}, {
-      maxInboundStreams: 10,
-      maxOutboundStreams: 10
-    })
-
-    await remoteLibp2p.handle(protocol, (data) => {
-      streamCount++
-    }, {
-      maxInboundStreams: 1,
-      maxOutboundStreams: 1
-    })
-
-    expect(streamCount).to.equal(0)
-
-    await localToRemote.newStream([protocol, '/other/1.0.0'])
-
-    expect(streamCount).to.equal(1)
-
-    const s = await localToRemote.newStream(protocol)
-
-    await expect(drain(s.source)).to.eventually.be.rejected()
-      .with.property('name', 'StreamResetError')
+    expect(streamMuxer?.streams).to.have.lengthOf(3)
+    expect(streamMuxer?.streams[0]).to.have.nested.property('abort.called', false)
+    expect(streamMuxer?.streams[1]).to.have.nested.property('abort.called', false)
+    expect(streamMuxer?.streams[2]).to.have.nested.property('abort.called', true)
   })
 
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
-    const localDeferred = pDefer<Components>()
-    const remoteDeferred = pDefer<Components>()
-    const protocol = '/a-test-protocol/1.0.0'
-    const remotePeer = peers[1]
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      transports: [
-        webSockets()
-      ],
+    const protocol = '/test/protocol'
+    const maxOutboundStreams = 2
+    let streamMuxer: StreamMuxer | undefined
+    const components = await createDefaultUpgraderComponents({
+      registrar: stubInterface<Registrar>({
+        getHandler: () => ({
+          options: {
+            maxOutboundStreams
+          },
+          handler: Sinon.stub()
+        }),
+        getProtocols: () => [protocol]
+      })
+    })
+    const upgrader = new DefaultUpgrader(components, {
+      ...init,
       streamMuxers: [
-        yamux()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          localDeferred.resolve(components)
-        }
-      },
-      connectionGater: mockConnectionGater()
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: () => {
+            streamMuxer = stubInterface<StreamMuxer>({
+              protocol: muxerProtocol,
+              sink: async (source) => drain(source),
+              source: (async function * () {})(),
+              streams: [],
+              newStream: () => {
+                const outgoingStream = stubInterface<Stream>({
+                  id: 'stream-id',
+                  log: logger('test-stream'),
+                  direction: 'outbound',
+                  sink: async (source) => drain(source),
+                  source: map((async function * () {
+                    yield '/multistream/1.0.0\n'
+                    yield `${protocol}\n`
+                  })(), str => encode.single(uint8ArrayFromString(str)))
+                })
+
+                streamMuxer?.streams.push(outgoingStream)
+                return outgoingStream
+              }
+            })
+            return streamMuxer
+          }
+        })
+      ]
     })
 
-    remoteLibp2p = await createLibp2p({
-      privateKey: remotePeer,
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          remoteDeferred.resolve(components)
-        }
-      }
-    })
+    const conn = await upgrader.upgradeInbound(maConn)
+    expect(conn.streams).to.have.lengthOf(0)
 
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
+    await conn.newStream(protocol)
+    await conn.newStream(protocol)
 
-    const localComponents = await localDeferred.promise
-    const remoteComponents = await remoteDeferred.promise
-
-    const [localToRemote] = await Promise.all([
-      localComponents.upgrader.upgradeOutbound(outbound),
-      remoteComponents.upgrader.upgradeInbound(inbound)
-    ])
-
-    let streamCount = 0
-
-    await libp2p.handle(protocol, (data) => {}, {
-      maxInboundStreams: 1,
-      maxOutboundStreams: 1
-    })
-
-    await remoteLibp2p.handle(protocol, (data) => {
-      streamCount++
-    }, {
-      maxInboundStreams: 10,
-      maxOutboundStreams: 10
-    })
-
-    expect(streamCount).to.equal(0)
-
-    await localToRemote.newStream([protocol, '/other/1.0.0'])
-
-    expect(streamCount).to.equal(1)
-
-    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
+    await expect(conn.newStream(protocol)).to.eventually.be.rejected
       .with.property('name', 'TooManyOutboundProtocolStreamsError')
   })
 
   it('should allow overriding the number of outgoing streams that can be opened using a protocol without a handler', async () => {
-    const localDeferred = pDefer<Components>()
-    const remoteDeferred = pDefer<Components>()
-    const protocol = '/a-test-protocol/1.0.0'
-    const remotePeer = peers[1]
-    libp2p = await createLibp2p({
-      privateKey: peers[0],
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          localDeferred.resolve(components)
-        }
-      },
-      connectionGater: mockConnectionGater()
-    })
-
-    remoteLibp2p = await createLibp2p({
-      privateKey: remotePeer,
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      services: {
-        test: (components: any) => {
-          remoteDeferred.resolve(components)
-        }
-      }
-    })
-
-    const { inbound, outbound } = mockMultiaddrConnPair({ addrs, remotePeer: peerIdFromPrivateKey(remotePeer) })
-
-    const localComponents = await localDeferred.promise
-    const remoteComponents = await remoteDeferred.promise
-
-    const [localToRemote] = await Promise.all([
-      localComponents.upgrader.upgradeOutbound(outbound),
-      remoteComponents.upgrader.upgradeInbound(inbound)
-    ])
-
-    let streamCount = 0
-
-    const limit = DEFAULT_MAX_OUTBOUND_STREAMS + 1
-
-    await remoteLibp2p.handle(protocol, (data) => {
-      streamCount++
-    }, {
-      maxInboundStreams: limit + 1,
-      maxOutboundStreams: 10
-    })
-
-    expect(streamCount).to.equal(0)
-
-    for (let i = 0; i < limit; i++) {
-      await localToRemote.newStream([protocol, '/other/1.0.0'], {
-        maxOutboundStreams: limit
+    const protocol = '/test/protocol'
+    let streamMuxer: StreamMuxer | undefined
+    const components = await createDefaultUpgraderComponents({
+      registrar: stubInterface<Registrar>({
+        getHandler: () => ({
+          options: {},
+          handler: Sinon.stub()
+        }),
+        getProtocols: () => [protocol]
       })
+    })
+    const upgrader = new DefaultUpgrader(components, {
+      ...init,
+      streamMuxers: [
+        stubInterface<StreamMuxerFactory>({
+          protocol: muxerProtocol,
+          createStreamMuxer: () => {
+            streamMuxer = stubInterface<StreamMuxer>({
+              protocol: muxerProtocol,
+              sink: async (source) => drain(source),
+              source: (async function * () {})(),
+              streams: [],
+              newStream: () => {
+                const outgoingStream = stubInterface<Stream>({
+                  id: 'stream-id',
+                  log: logger('test-stream'),
+                  direction: 'outbound',
+                  sink: async (source) => drain(source),
+                  source: map((async function * () {
+                    yield '/multistream/1.0.0\n'
+                    yield `${protocol}\n`
+                  })(), str => encode.single(uint8ArrayFromString(str)))
+                })
+
+                streamMuxer?.streams.push(outgoingStream)
+                return outgoingStream
+              }
+            })
+            return streamMuxer
+          }
+        })
+      ]
+    })
+
+    const conn = await upgrader.upgradeInbound(maConn)
+    expect(conn.streams).to.have.lengthOf(0)
+
+    const opts = {
+      maxOutboundStreams: 3
     }
 
-    expect(streamCount).to.equal(limit)
+    await conn.newStream(protocol, opts)
+    await conn.newStream(protocol, opts)
+    await conn.newStream(protocol, opts)
 
-    // should reject without overriding limit
-    await expect(localToRemote.newStream(protocol)).to.eventually.be.rejected()
-      .with.property('name', 'TooManyOutboundProtocolStreamsError')
-
-    // should reject even with overriding limit
-    await expect(localToRemote.newStream(protocol, {
-      maxOutboundStreams: limit
-    })).to.eventually.be.rejected()
+    await expect(conn.newStream(protocol, opts)).to.eventually.be.rejected
       .with.property('name', 'TooManyOutboundProtocolStreamsError')
   })
 })

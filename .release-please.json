@@ -43,6 +43,7 @@
     "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
     "packages/transport-circuit-relay-v2": {},
+    "packages/transport-memory": {},
     "packages/transport-tcp": {},
     "packages/transport-webrtc": {},
     "packages/transport-websockets": {},

@@ -1,9 +1,5 @@
 /* eslint-env mocha */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { createLibp2p } from '../../src/index.js'
@@ -21,16 +17,6 @@ describe('registrar protocols', () => {
     const deferred = pDefer<Components>()
 
     libp2p = await createLibp2p({
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        yamux(),
-        mplex()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
       services: {
         test: (components: any) => {
           deferred.resolve(components)
