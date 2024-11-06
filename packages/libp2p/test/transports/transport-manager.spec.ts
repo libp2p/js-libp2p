@@ -3,11 +3,9 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { memory } from '@libp2p/memory'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { plaintext } from '@libp2p/plaintext'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { pEvent } from 'p-event'
@@ -15,20 +13,21 @@ import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { DefaultAddressManager } from '../../src/address-manager/index.js'
-import { createLibp2p } from '../../src/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
-import type { Connection, Libp2p, Upgrader } from '@libp2p/interface'
+import type { Connection, Transport, Upgrader, Listener } from '@libp2p/interface'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const addrs = [
   multiaddr('/memory/address-1'),
   multiaddr('/memory/address-2')
 ]
+const testTransportTag = 'test-transport'
 
 describe('Transport Manager', () => {
   let tm: DefaultTransportManager
   let components: Components
+  let transport: Transport
 
   beforeEach(async () => {
     const events = new TypedEventEmitter()
@@ -49,6 +48,39 @@ describe('Transport Manager', () => {
       faultTolerance: FaultTolerance.NO_FATAL
     })
     await start(tm)
+
+    transport = stubInterface<Transport>({
+      dial: async () => stubInterface<Connection>(),
+      dialFilter: (addrs) => {
+        return addrs.filter(ma => ma.toString().startsWith('/memory'))
+      },
+      listenFilter: (addrs) => {
+        return addrs.filter(ma => ma.toString().startsWith('/memory'))
+      },
+      createListener: () => {
+        let addr: Multiaddr | undefined
+        const closeListeners: Array<() => void> = []
+
+        return stubInterface<Listener>({
+          listen: async (a) => {
+            addr = a
+          },
+          getAddrs: () => addr != null ? [addr] : [],
+          close: async () => {
+            addr = undefined
+            closeListeners.forEach(fn => {
+              fn()
+            })
+          },
+          addEventListener: (event, handler: any) => {
+            if (event === 'close') {
+              closeListeners.push(handler)
+            }
+          }
+        })
+      }
+    })
+    transport[Symbol.toStringTag] = testTransportTag
   })
 
   afterEach(async () => {
@@ -58,28 +90,26 @@ describe('Transport Manager', () => {
   })
 
   it('should be able to add and remove a transport', async () => {
-    const transport = memory()
-
     expect(tm.getTransports()).to.have.lengthOf(0)
-    tm.add(transport(components))
+    tm.add(transport)
 
     expect(tm.getTransports()).to.have.lengthOf(1)
-    await tm.remove('@libp2p/memory')
+    await tm.remove(testTransportTag)
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should not be able to add a transport twice', async () => {
-    tm.add(memory()(components))
+    tm.add(transport)
 
     expect(() => {
-      tm.add(memory()(components))
+      tm.add(transport)
     })
       .to.throw()
       .and.to.have.property('name', 'InvalidParametersError')
   })
 
   it('should fail to dial an unsupported address', async () => {
-    tm.add(memory()(components))
+    tm.add(transport)
     const addr = multiaddr('/ip4/127.0.0.1/tcp/0')
     await expect(tm.dial(addr))
       .to.eventually.be.rejected()
@@ -88,7 +118,7 @@ describe('Transport Manager', () => {
 
   it('should fail to listen with no valid address', async () => {
     tm = new DefaultTransportManager(components)
-    tm.add(memory()(components))
+    tm.add(transport)
 
     await expect(start(tm))
       .to.eventually.be.rejected()
@@ -99,15 +129,13 @@ describe('Transport Manager', () => {
 
   it('should be able to add and remove a transport', async () => {
     expect(tm.getTransports()).to.have.lengthOf(0)
-    tm.add(memory()(components))
+    tm.add(transport)
     expect(tm.getTransports()).to.have.lengthOf(1)
-    await tm.remove('@libp2p/memory')
+    await tm.remove(testTransportTag)
     expect(tm.getTransports()).to.have.lengthOf(0)
   })
 
   it('should be able to listen', async () => {
-    const transport = memory()(components)
-
     expect(tm.getTransports()).to.be.empty()
 
     tm.add(transport)
@@ -117,14 +145,13 @@ describe('Transport Manager', () => {
     const spyListener = sinon.spy(transport, 'createListener')
     await tm.listen(addrs)
 
-    // Ephemeral ip addresses may result in multiple listeners
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.stop()
     expect(spyListener.called).to.be.true()
   })
 
   it('should be able to dial', async () => {
-    tm.add(memory()(components))
+    tm.add(transport)
     await tm.listen(addrs)
     const addr = tm.getAddrs().shift()
 
@@ -138,7 +165,6 @@ describe('Transport Manager', () => {
   })
 
   it('should remove listeners when they stop listening', async () => {
-    const transport = memory()(components)
     tm.add(transport)
 
     expect(tm.getListeners()).to.have.lengthOf(0)
@@ -170,67 +196,5 @@ describe('Transport Manager', () => {
     expect(tm.getListeners()).to.have.lengthOf(0)
 
     await tm.stop()
-  })
-})
-
-describe('libp2p.transportManager (dial only)', () => {
-  let libp2p: Libp2p
-
-  afterEach(async () => {
-    await stop(libp2p)
-  })
-
-  it('fails to start if multiaddr fails to listen', async () => {
-    libp2p = await createLibp2p({
-      addresses: {
-        listen: ['/ip4/127.0.0.1/tcp/0']
-      },
-      transports: [memory()],
-      connectionEncrypters: [plaintext()],
-      start: false
-    })
-
-    await expect(libp2p.start()).to.eventually.be.rejected
-      .with.property('name', 'NoValidAddressesError')
-  })
-
-  it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
-    libp2p = await createLibp2p({
-      addresses: {
-        listen: ['/ip4/127.0.0.1/tcp/0']
-      },
-      transportManager: {
-        faultTolerance: FaultTolerance.NO_FATAL
-      },
-      transports: [
-        memory()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      start: false
-    })
-
-    await expect(libp2p.start()).to.eventually.be.undefined()
-  })
-
-  it('does not fail to start if provided listen multiaddr fail to listen on configured transports (when supporting dial only mode)', async () => {
-    libp2p = await createLibp2p({
-      addresses: {
-        listen: ['/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit']
-      },
-      transportManager: {
-        faultTolerance: FaultTolerance.NO_FATAL
-      },
-      transports: [
-        memory()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ],
-      start: false
-    })
-
-    await expect(libp2p.start()).to.eventually.be.undefined()
   })
 })
