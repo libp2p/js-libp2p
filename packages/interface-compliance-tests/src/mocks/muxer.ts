@@ -27,9 +27,15 @@ interface ResetMessage {
   direction: Direction
 }
 
-interface CloseMessage {
+interface CloseWriteMessage {
   id: string
-  type: 'close'
+  type: 'closeWrite'
+  direction: Direction
+}
+
+interface CloseReadMessage {
+  id: string
+  type: 'closeRead'
   direction: Direction
 }
 
@@ -39,7 +45,7 @@ interface CreateMessage {
   direction: 'outbound'
 }
 
-type StreamMessage = DataMessage | ResetMessage | CloseMessage | CreateMessage
+type StreamMessage = DataMessage | ResetMessage | CloseWriteMessage | CloseReadMessage | CreateMessage
 
 export interface MockMuxedStreamInit extends AbstractStreamInit {
   push: Pushable<StreamMessage>
@@ -84,16 +90,21 @@ class MuxedStream extends AbstractStream {
   }
 
   sendCloseWrite (): void {
-    const closeMsg: CloseMessage = {
+    const closeMsg: CloseWriteMessage = {
       id: this.id,
-      type: 'close',
+      type: 'closeWrite',
       direction: this.direction
     }
     this.push.push(closeMsg)
   }
 
   sendCloseRead (): void {
-    // does not support close read, only close write
+    const closeMsg: CloseReadMessage = {
+      id: this.id,
+      type: 'closeRead',
+      direction: this.direction
+    }
+    this.push.push(closeMsg)
   }
 }
 
@@ -153,10 +164,10 @@ class MockMuxer implements StreamMuxer {
         }
       )
 
-      this.log('muxed stream ended')
+      this.log('muxer ended')
       this.input.end()
     } catch (err: any) {
-      this.log('muxed stream errored', err)
+      this.log.error('muxer errored - %e', err)
       this.input.end(err)
     }
   }
@@ -192,9 +203,12 @@ class MockMuxer implements StreamMuxer {
     } else if (message.type === 'reset') {
       this.log('-> reset stream %s %s', muxedStream.direction, muxedStream.id)
       muxedStream.reset()
-    } else if (message.type === 'close') {
-      this.log('-> closing stream %s %s', muxedStream.direction, muxedStream.id)
+    } else if (message.type === 'closeWrite') {
+      this.log('-> closing writeable end of stream %s %s', muxedStream.direction, muxedStream.id)
       muxedStream.remoteCloseWrite()
+    } else if (message.type === 'closeRead') {
+      this.log('-> closing readable end of stream %s %s', muxedStream.direction, muxedStream.id)
+      muxedStream.remoteCloseRead()
     }
   }
 

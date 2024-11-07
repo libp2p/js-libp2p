@@ -66,10 +66,6 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
             .then((conn) => {
               this.log('inbound connection %s upgraded', maConn.remoteAddr)
 
-              if (init?.handler != null) {
-                init?.handler(conn)
-              }
-
               self.dispatchEvent(new CustomEvent<Connection>('connection', {
                 detail: conn
               }))

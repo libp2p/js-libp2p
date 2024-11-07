@@ -48,10 +48,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./connection": {
-      "types": "./dist/src/connection/index.d.ts",
-      "import": "./dist/src/connection/index.js"
-    },
     "./connection-encryption": {
       "types": "./dist/src/connection-encryption/index.d.ts",
       "import": "./dist/src/connection-encryption/index.js"

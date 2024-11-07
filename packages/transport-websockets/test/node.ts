@@ -14,7 +14,7 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { goodbye } from 'it-goodbye'
 import { pipe } from 'it-pipe'
-import defer from 'p-defer'
+import { pEvent } from 'p-event'
 import waitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
@@ -22,7 +22,6 @@ import { webSockets } from '../src/index.js'
 import type { Listener, Transport } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import './compliance.node.js'
 
 async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
   for await (const list of source) {
@@ -62,12 +61,12 @@ describe('listen', () => {
       logger: defaultLogger()
     })
     const listener = ws.createListener({
-      handler: (conn) => {
-        void conn.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
-        })
-      },
       upgrader
+    })
+    listener.addEventListener('connection', (event) => {
+      void event.detail.newStream([protocol]).then(async (stream) => {
+        await pipe(stream, stream)
+      })
     })
     await listener.listen(ma)
 
@@ -296,10 +295,10 @@ describe('dial', () => {
         logger: defaultLogger()
       })
 
-      // Create a Promise that resolves when a connection is handled
-      const deferred = defer()
+      const listener = ws.createListener({ upgrader })
 
-      const listener = ws.createListener({ handler: deferred.resolve, upgrader })
+      // Create a Promise that resolves when a connection is handled
+      const p = pEvent(listener, 'connection')
 
       // Listen on the multiaddr
       await listener.listen(ma)
@@ -311,7 +310,7 @@ describe('dial', () => {
       await ws.dial(localAddrs[0], { upgrader })
 
       // Wait for the incoming dial to be handled
-      await deferred.promise
+      await p
 
       // close the listener
       await listener.close()
@@ -328,12 +327,12 @@ describe('dial', () => {
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
+      })
+      listener.addEventListener('connection', (event) => {
+        void event.detail.newStream([protocol]).then(async (stream) => {
+          await pipe(stream, stream)
+        })
       })
       await listener.listen(ma)
     })
@@ -385,12 +384,12 @@ describe('dial', () => {
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
+      })
+      listener.addEventListener('connection', (event) => {
+        void event.detail.newStream([protocol]).then(async (stream) => {
+          await pipe(stream, stream)
+        })
       })
       await listener.listen(ma)
     })
@@ -434,12 +433,12 @@ describe('dial', () => {
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
+      })
+      listener.addEventListener('connection', (event) => {
+        void event.detail.newStream([protocol]).then(async (stream) => {
+          await pipe(stream, stream)
+        })
       })
       await listener.listen(ma)
     })

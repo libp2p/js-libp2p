@@ -120,7 +120,6 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
       signal
     })
       .then(connection => {
-        this.init.handler?.(connection)
         this.safeDispatchEvent('connection', {
           detail: connection
         })

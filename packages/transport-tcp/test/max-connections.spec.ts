@@ -1,14 +1,31 @@
 import net from 'node:net'
 import { promisify } from 'node:util'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
+import type { Connection, Upgrader } from '@libp2p/interface'
 
 describe('maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []
+  let upgrader: Upgrader
+
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      },
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
+    })
+  })
+
   afterEach(async () => {
     await Promise.all(afterEachCallbacks.map(fn => fn()))
     afterEachCallbacks.length = 0
@@ -24,12 +41,8 @@ describe('maxConnections', () => {
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
     const listener = transport.createListener({ upgrader })
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    afterEachCallbacks.push(async () => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
 
     listener.addEventListener('connection', (conn) => {
@@ -42,7 +55,6 @@ describe('maxConnections', () => {
       const socket = net.connect({ host: '127.0.0.1', port })
       sockets.push(socket)
 
-      // eslint-disable-next-line @typescript-eslint/promise-function-async
       afterEachCallbacks.unshift(async () => {
         if (!socket.destroyed) {
           socket.destroy()
