@@ -36,7 +36,6 @@ export interface ConnectionHandler { (connection: Connection): void }
 export interface MultiaddrFilter { (multiaddrs: Multiaddr[]): Multiaddr[] }
 
 export interface CreateListenerOptions {
-  handler?: ConnectionHandler
   upgrader: Upgrader
 }
 
