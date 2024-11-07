@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { isBrowser, isWebWorker } from 'wherearewe'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-describe('tcp transport interface-transport compliance IPv4', () => {
+describe('tcp transport interface compliance IPv4', () => {
   if (isBrowser || isWebWorker) {
     return
   }
@@ -23,7 +23,7 @@ describe('tcp transport interface-transport compliance IPv4', () => {
   })
 })
 
-describe('tcp transport interface-transport compliance IPv6', () => {
+describe('tcp transport interface compliance IPv6', () => {
   if (isBrowser || isWebWorker) {
     return
   }

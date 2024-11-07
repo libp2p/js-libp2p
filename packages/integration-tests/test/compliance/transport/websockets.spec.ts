@@ -7,7 +7,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { isElectronMain, isNode } from 'wherearewe'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-describe('websocket transport interface-transport compliance', () => {
+describe('websocket transport interface compliance', () => {
   tests({
     async setup () {
       const dialOnly = !isNode && !isElectronMain

@@ -3,7 +3,7 @@ import { memory } from '@libp2p/memory'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-describe('memory transport compliance tests', () => {
+describe('memory transport interface compliance tests', () => {
   tests({
     async setup () {
       const transport = memory()

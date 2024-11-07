@@ -97,6 +97,7 @@
     "it-goodbye": "^4.0.6",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.1",
+    "p-event": "^6.0.1",
     "p-wait-for": "^5.0.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
