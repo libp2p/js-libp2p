@@ -69,5 +69,8 @@
     "protons": "^7.5.0",
     "sinon": "^18.0.0"
   },
+  "browser": {
+    "./dist/src/tls.js": "./dist/src/tls.browser.js"
+  },
   "sideEffects": false
 }

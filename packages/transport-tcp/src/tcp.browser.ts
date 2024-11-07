@@ -1,32 +1,3 @@
-/**
- * @packageDocumentation
- *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on the TCP networking stack.
- *
- * @example
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { tcp } from '@libp2p/tcp'
- * import { multiaddr } from '@multiformats/multiaddr'
- *
- * const node = await createLibp2p({
- *   transports: [
- *     tcp()
- *   ]
- * })
- *
- * const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
- *
- * // dial a TCP connection, timing out after 10 seconds
- * const connection = await node.dial(ma, {
- *   signal: AbortSignal.timeout(10_000)
- * })
- *
- * // use connection...
- * ```
- */
-
 import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import type { TCPComponents, TCPDialEvents, TCPMetrics, TCPOptions } from './index.js'
 import type { Logger, Connection, Transport, Listener } from '@libp2p/interface'
