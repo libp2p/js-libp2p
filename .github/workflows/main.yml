@@ -7,6 +7,12 @@ on:
     branches:
       - '**'
 
+env:
+  CACHE_DIRS: |
+    ./interop/dist
+    ./interop/node_modules
+    ./doc/node_modules
+
 jobs:
 
   build:
@@ -18,10 +24,7 @@ jobs:
         node-version: lts/*
     - uses: ipfs/aegir/actions/cache-node-modules@master
       with:
-        directories: |
-          ./interop/dist
-          ./interop/node_modules
-          ./doc/node_modules
+        directories: ${{ env.CACHE_DIRS }}
 
   check:
     needs: build
@@ -33,10 +36,7 @@ jobs:
         node-version: lts/*
     - uses: ipfs/aegir/actions/cache-node-modules@master
       with:
-        directories: |
-          ./interop/dist
-          ./interop/node_modules
-          ./doc/node_modules
+        directories: ${{ env.CACHE_DIRS }}
     - run: npm run --if-present lint
     - run: npm run --if-present dep-check
     - run: npm run --if-present docs:no-publish
@@ -56,10 +56,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -77,10 +74,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -98,10 +92,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome-webworker
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -119,10 +110,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -140,10 +128,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox-webworker
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -161,10 +146,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       # https://github.com/actions/runner-images/issues/9733#issuecomment-2074590278
       - run: |
           sudo rm /etc/apt/sources.list.d/microsoft-prod.list
@@ -187,10 +169,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-main
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -208,10 +187,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
       - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
@@ -229,10 +205,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run test:interop -- --bail
 
   transport-interop:
@@ -245,10 +218,7 @@ jobs:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-         directories: |
-          ./interop/dist
-          ./interop/node_modules
-          ./doc/node_modules
+         directories: ${{ env.CACHE_DIRS }}
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
@@ -301,10 +271,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - uses: ipfs/aegir/actions/cache-node-modules@master
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
-            ./doc/node_modules
+          directories: ${{ env.CACHE_DIRS }}
       - uses: ipfs/aegir/actions/docker-login@master
         with:
           docker-token: ${{ secrets.DOCKER_TOKEN }}
