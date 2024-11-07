@@ -47,7 +47,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import map from 'it-map'
 import { pushable } from 'it-pushable'
-import type { MemoryTransportComponents } from './index.js'
+import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -57,7 +57,7 @@ interface MemoryConnectionHandler {
   (maConn: MultiaddrConnection): void
 }
 
-interface MemoryConnectionInit {
+interface MemoryConnectionInit extends MemoryTransportInit {
   onConnection: MemoryConnectionHandler
   address: string
 }
@@ -66,13 +66,13 @@ export class MemoryConnection {
   private readonly components: MemoryTransportComponents
   private readonly init: MemoryConnectionInit
   private readonly connections: Set<MultiaddrConnection>
-  private latency: number
+  private readonly latency: number
 
   constructor (components: MemoryTransportComponents, init: MemoryConnectionInit) {
     this.components = components
     this.init = init
     this.connections = new Set()
-    this.latency = 0
+    this.latency = init.latency ?? 0
   }
 
   async dial (dialingPeerId: PeerId): Promise<MultiaddrConnection> {
@@ -168,9 +168,5 @@ export class MemoryConnection {
     [...this.connections].forEach(maConn => {
       maConn.abort(new ConnectionFailedError('Memory Connection closed'))
     })
-  }
-
-  setLatency (ms: number): void {
-    this.latency = ms
   }
 }
