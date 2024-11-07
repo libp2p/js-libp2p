@@ -1,14 +1,12 @@
 import os from 'os'
 import path from 'path'
-import { AbortError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
-import type { Connection, MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
