@@ -1,6 +1,9 @@
+import { identify } from '@libp2p/identify'
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import pDefer from 'p-defer'
+import { pEvent } from 'p-event'
 import { createPeers } from './fixtures/create-peers.js'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p } from 'libp2p'
@@ -83,6 +86,57 @@ describe('events', () => {
       localPeerDisconnectEventReceived.promise,
       remoteConnectionEndEventReceived.promise,
       remotePeerDisconnectEventReceived.promise
+    ])
+  })
+
+  it('should run identify automatically after connecting', async () => {
+    ({ dialer, listener } = await createPeers({
+      services: {
+        identify: identify()
+      }
+    }, {
+      services: {
+        identify: identify()
+      }
+    }))
+
+    const listenerEvent = pEvent(listener, 'peer:identify')
+    const dialerEvent = pEvent(listener, 'peer:identify')
+
+    await dialer.dial(listener.getMultiaddrs())
+
+    await listenerEvent
+    await dialerEvent
+  })
+
+  it('should not run identify automatically after connecting when configured not to', async () => {
+    ({ dialer, listener } = await createPeers({
+      services: {
+        identify: identify({
+          runOnConnectionOpen: false
+        })
+      }
+    }, {
+      services: {
+        identify: identify({
+          runOnConnectionOpen: false
+        })
+      }
+    }))
+
+    const listenerEvent = pEvent(listener, 'peer:identify')
+    const dialerEvent = pEvent(listener, 'peer:identify')
+
+    await dialer.dial(listener.getMultiaddrs())
+
+    await Promise.any([
+      listenerEvent.then(() => {
+        throw new Error('Should not have run identify')
+      }),
+      dialerEvent.then(() => {
+        throw new Error('Should not have run identify')
+      }),
+      delay(1000)
     ])
   })
 })
