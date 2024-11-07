@@ -40,6 +40,24 @@
  *
  * // use connection...
  * ```
+ *
+ * @example Simulating slow connections
+ *
+ * A `latency` argument can be passed to the factory. Each byte array that
+ * passes through the transport will be delayed by this many ms.
+ *
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { memory } from '@libp2p/memory'
+ *
+ * const dialer = await createLibp2p({
+ *   transports: [
+ *     memory({
+ *       latency: 100
+ *     })
+ *   ]
+ * })
+ * ```
  */
 
 import { ListenError, TypedEventEmitter } from '@libp2p/interface'
@@ -77,6 +95,7 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     }
 
     this.connection = new MemoryConnection(this.components, {
+      ...this.init,
       onConnection: this.onConnection.bind(this),
       address
     })
