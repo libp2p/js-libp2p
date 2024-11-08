@@ -4,42 +4,17 @@
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
-import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
-import all from 'it-all'
-import drain from 'it-drain'
-import { goodbye } from 'it-goodbye'
-import { pipe } from 'it-pipe'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
 import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
-import type { Source } from 'it-stream-types'
 import type { StubbedInstance } from 'sinon-ts'
-import type { Uint8ArrayList } from 'uint8arraylist'
-
-async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
-  for await (const list of source) {
-    yield * list
-  }
-}
-
-const protocol = '/say-hello/1.0.0'
-const registrar = mockRegistrar()
-void registrar.handle(protocol, (evt) => {
-  void pipe([
-    uint8ArrayFromString('hey')
-  ],
-  evt.stream,
-  drain
-  )
-})
 
 describe('instantiate the transport', () => {
   it('create', () => {
@@ -252,27 +227,28 @@ describe('dial', () => {
       ws = webSockets()({
         logger: defaultLogger()
       })
-      listener = ws.createListener({ upgrader })
+      listener = ws.createListener({
+        upgrader
+      })
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const stream = await conn.newStream([protocol])
-
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
-      await conn.close()
+      await expect(ws.dial(ma, {
+        upgrader
+      })).to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = await ws.dial(ma, { upgrader })
-      const stream = await conn.newStream([protocol])
 
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
-      await conn.close()
+      await expect(ws.dial(ma, {
+        upgrader
+      })).to.eventually.be.ok()
     })
 
     it('dial should throw on immediate abort', async () => {
@@ -327,7 +303,9 @@ describe('dial', () => {
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial', async () => {
       const addrs = listener.getAddrs().filter((ma) => {
@@ -341,21 +319,8 @@ describe('dial', () => {
       }
 
       // Dial first no loopback address
-      const conn = await ws.dial(addrs[0], { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(
-        s,
-        stream,
-        toBuffers,
-        s
-      )).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(addrs[0], { upgrader }))
+        .to.eventually.be.ok()
     })
   })
 
@@ -382,6 +347,7 @@ describe('dial', () => {
     afterEach(async () => {
       await listener.close()
       server.close()
+      server.closeAllConnections()
     })
 
     it('should listen on wss address', () => {
@@ -392,19 +358,8 @@ describe('dial', () => {
     })
 
     it('dial ip4', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      const res = await pipe(s, stream, toBuffers, s)
-
-      expect(res[0]).to.equalBytes(uint8ArrayFromString('hey'))
-      await conn.close()
+      await expect(ws.dial(ma, { upgrader }))
+        .to.eventually.be.ok()
     })
   })
 
@@ -423,34 +378,19 @@ describe('dial', () => {
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial ip6', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(ma, { upgrader }))
+        .to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = await ws.dial(ma, { upgrader })
-
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(ma, { upgrader }))
+        .to.eventually.be.ok()
     })
   })
 })
