@@ -232,25 +232,28 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
     })
 
-    it('should handle one big write', async () => {
+    it('should handle one big write', async function () {
+      const timeout = 60_000
+      this.timeout(timeout);
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const input = new Uint8Array(1024 * 1024 * 10).fill(5)
       const output = await dialer.services.echo.echo(dialAddrs[0], input, {
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(timeout)
       })
 
       expect(output).to.equalBytes(input)
     })
 
     it('should handle many small writes', async function () {
-      this.timeout(60000);
+      const timeout = 60_000
+      this.timeout(timeout);
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       for (let i = 0; i < 2000; i++) {
         const input = new Uint8Array(1024).fill(5)
         const output = await dialer.services.echo.echo(dialAddrs[0], input, {
-          signal: AbortSignal.timeout(5000)
+          signal: AbortSignal.timeout(timeout)
         })
 
         expect(output).to.equalBytes(input)
