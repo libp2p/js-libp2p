@@ -4,6 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { Connection, Transport, Upgrader } from '@libp2p/interface'
@@ -20,11 +21,7 @@ describe('listen', () => {
       logger: defaultLogger()
     })
     upgrader = stubInterface<Upgrader>({
-      upgradeInbound: async (maConn) => {
-        return stubInterface<Connection>({
-          remoteAddr: maConn.remoteAddr
-        })
-      },
+      upgradeInbound: Sinon.stub().resolves(),
       upgradeOutbound: async (maConn) => {
         return stubInterface<Connection>({
           remoteAddr: maConn.remoteAddr
@@ -173,11 +170,7 @@ describe('dial', () => {
 
   beforeEach(async () => {
     upgrader = stubInterface<Upgrader>({
-      upgradeInbound: async (maConn) => {
-        return stubInterface<Connection>({
-          remoteAddr: maConn.remoteAddr
-        })
-      },
+      upgradeInbound: Sinon.stub().resolves(),
       upgradeOutbound: async (maConn) => {
         return stubInterface<Connection>({
           remoteAddr: maConn.remoteAddr

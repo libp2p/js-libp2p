@@ -60,7 +60,7 @@ describe('basics', () => {
   async function connectNodes (): Promise<Connection> {
     const remoteAddr = remoteNode.getMultiaddrs()
       .filter(ma => WebRTC.exactMatch(ma)).pop()
-
+console.info(remoteNode.getMultiaddrs())
     if (remoteAddr == null) {
       throw new Error('Remote peer could not listen on relay')
     }

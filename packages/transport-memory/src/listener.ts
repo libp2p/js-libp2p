@@ -119,11 +119,6 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
       ...this.init.upgraderOptions,
       signal
     })
-      .then(connection => {
-        this.safeDispatchEvent('connection', {
-          detail: connection
-        })
-      })
       .catch(err => {
         maConn.abort(err)
       })

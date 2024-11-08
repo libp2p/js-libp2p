@@ -1,35 +1,57 @@
 /* eslint-env mocha */
 
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
+import { all } from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebSockets } from '@multiformats/multiaddr-matcher'
 import { isElectronMain, isNode } from 'wherearewe'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('websocket transport interface compliance', () => {
   tests({
     async setup () {
-      const dialOnly = !isNode && !isElectronMain
+      const canListen = isNode || isElectronMain
 
-      const transport = webSockets({ filter: filters.all })
-      let dialAddrs: [Multiaddr, Multiaddr] = [
-        multiaddr('/ip4/127.0.0.1/tcp/9096/ws'),
-        multiaddr('/ip4/127.0.0.1/tcp/9097/ws')
-      ]
-
-      if (dialOnly) {
-        dialAddrs = [
-          multiaddr(process.env.RELAY_WS_MULTIADDR_0),
-          multiaddr(process.env.RELAY_WS_MULTIADDR_1)
-        ]
+      const dialer = {
+        transports: [
+          webSockets({
+            filter: all
+          })
+        ],
+        connectionEncrypters: [
+          noise()
+        ],
+        streamMuxers: [
+          yamux()
+        ],
+        connectionGater: {
+          denyDialMultiaddr: () => false
+        }
       }
 
       return {
-        transport,
-        listenAddrs: dialOnly ? undefined : dialAddrs,
-        dialAddrs,
-        dialOnly
+        dialer,
+        listener: canListen
+          ? {
+              addresses: {
+                listen: [
+                  '/ip4/127.0.0.1/tcp/0/ws',
+                  '/ip4/127.0.0.1/tcp/0/ws'
+                ]
+              },
+              ...dialer
+            }
+          : undefined,
+        dialAddrs: canListen
+          ? undefined
+          : [
+              multiaddr(process.env.RELAY_WS_MULTIADDR_0 ?? ''),
+              multiaddr(process.env.RELAY_WS_MULTIADDR_1 ?? '')
+            ],
+        dialMultiaddrMatcher: WebSockets,
+        listenMultiaddrMatcher: WebSockets
       }
     },
     async teardown () {}

@@ -1,7 +1,7 @@
-import { echo } from '@libp2p/echo'
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
@@ -9,40 +9,70 @@ import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
 import type { TestSetup } from '../index.js'
 import type { Echo } from '@libp2p/echo'
-import type { Connection, Libp2p, Stream, Transport } from '@libp2p/interface'
+import type { Connection, Libp2p, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
+import type { Libp2pInit } from 'libp2p'
+import type { DeferredPromise } from 'p-defer'
 
 export interface TransportTestFixtures {
   /**
-   * Addresses that will be used to dial listeners from `listenAddrs`
+   * Addresses that will be used to dial listeners - both addresses must resolve
+   * to the same node
    */
-  dialAddrs: [Multiaddr, Multiaddr]
+  dialAddrs?: [Multiaddr, Multiaddr]
 
   /**
-   * Addresses that will be used to create listeners to dial
+   * Filter out any addresses that cannot be dialed by the transport
    */
-  listenAddrs?: [Multiaddr, Multiaddr]
+  dialMultiaddrMatcher: MultiaddrMatcher
 
   /**
-   * Only run the dial portion of the tests, do not try to create listeners
+   * Filter out any addresses that cannot be listened on by the transport
    */
-  dialOnly?: boolean
+  listenMultiaddrMatcher: MultiaddrMatcher
 
-  transport(components: any): Transport
+  /**
+   * Config that creates a libp2p node that can dial a listener
+   */
+  dialer: Libp2pInit
+
+  /**
+   * Config that creates a libp2p node that can accept dials
+   */
+  listener?: Libp2pInit
+}
+
+async function getSetup (common: TestSetup<TransportTestFixtures>): Promise<{ dialer: Libp2p<{ echo: Echo }>, listener?: Libp2p<{ echo: Echo }>, dialAddrs: Multiaddr[], dialMultiaddrMatcher: MultiaddrMatcher, listenMultiaddrMatcher: MultiaddrMatcher }> {
+  const setup = await common.setup()
+  const dialer = await createPeer(setup.dialer)
+  let listener
+
+  if (setup.listener != null) {
+    listener = await createPeer(setup.listener)
+  }
+
+  const dialAddrs = listener?.getMultiaddrs() ?? setup.dialAddrs
+
+  if (dialAddrs == null) {
+    throw new Error('Listener config or dial addresses must be specified')
+  }
+
+  return {
+    dialer,
+    listener,
+    dialAddrs: dialAddrs.filter(ma => setup.dialMultiaddrMatcher.exactMatch(ma)),
+    dialMultiaddrMatcher: setup.dialMultiaddrMatcher,
+    listenMultiaddrMatcher: setup.listenMultiaddrMatcher
+  }
 }
 
 export default (common: TestSetup<TransportTestFixtures>): void => {
   describe('interface-transport', () => {
-    let dialAddrs: Multiaddr[]
-    let listenAddrs: Multiaddr[]
-    let transport: (components: any) => Transport
     let dialer: Libp2p<{ echo: Echo }>
     let listener: Libp2p<{ echo: Echo }> | undefined
-    let dialOnly: boolean
-
-    beforeEach(async () => {
-      ({ dialAddrs, listenAddrs = dialAddrs, transport, dialOnly = false } = await common.setup())
-    })
+    let dialAddrs: Multiaddr[]
+    let dialMultiaddrMatcher: MultiaddrMatcher
 
     afterEach(async () => {
       await stop(dialer, listener)
@@ -50,22 +80,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('simple', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const input = Uint8Array.from([0, 1, 2, 3, 4])
       const output = await dialer.services.echo.echo(dialAddrs[0], input, {
@@ -76,25 +91,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('should listen on multiple addresses', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [
-              listenAddrs[0].toString(),
-              listenAddrs[1].toString()
-            ]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const input = Uint8Array.from([0, 1, 2, 3, 4])
 
@@ -108,22 +105,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('can close connections', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const conn = await dialer.dial(dialAddrs[0], {
         signal: AbortSignal.timeout(5000)
@@ -134,22 +116,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('abort before dialing throws AbortError', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const controller = new AbortController()
       controller.abort()
@@ -161,22 +128,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('abort while dialing throws AbortError', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
       slowNetwork(dialer, 100)
 
       const controller = new AbortController()
@@ -189,35 +141,27 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('should close all streams when the connection closes', async () => {
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
 
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ],
-          services: {
-            echo: echo({
-              maxInboundStreams: 5
-            })
+      let incomingConnectionPromise: DeferredPromise<Connection> | undefined
+
+      if (listener != null) {
+        incomingConnectionPromise = pDefer<Connection>()
+
+        listener.addEventListener('connection:open', (event) => {
+          const conn = event.detail
+
+          if (conn.remotePeer.equals(dialer.peerId)) {
+            incomingConnectionPromise?.resolve(conn)
           }
         })
       }
 
-      const connection = await dialer.dial(listenAddrs[0])
+      const connection = await dialer.dial(dialAddrs[0])
       let remoteConn: Connection | undefined
 
-      if (listener != null) {
-        const remoteConnections = listener.getConnections(dialer.peerId)
-        expect(remoteConnections).to.have.lengthOf(1)
-        remoteConn = remoteConnections[0]
+      if (incomingConnectionPromise != null) {
+        remoteConn = await incomingConnectionPromise.promise
       }
 
       const streams: Stream[] = []
@@ -230,35 +174,25 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       // Close the connection and verify all streams have been closed
       await connection.close()
-      await pWaitFor(() => connection.streams.length === 0)
+
+      await pWaitFor(() => connection.streams.length === 0, {
+        timeout: 5000
+      })
 
       if (remoteConn != null) {
-        await pWaitFor(() => remoteConn.streams.length === 0)
+        await pWaitFor(() => remoteConn.streams.length === 0, {
+          timeout: 5000
+        })
       }
 
       expect(streams.find(stream => stream.status !== 'closed')).to.be.undefined()
     })
 
     it('should not handle connection if upgradeInbound rejects', async function () {
-      if (dialOnly) {
+      ({ dialer, listener, dialAddrs, dialMultiaddrMatcher } = await getSetup(common))
+
+      if (listener == null) {
         return this.skip()
-      }
-
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
       }
 
       const upgrader = getUpgrader(listener)
@@ -267,141 +201,89 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         throw new Error('Oh noes!')
       }
 
-      await expect(dialer.dial(listenAddrs[0])).to.eventually.be.rejected
+      await expect(dialer.dial(dialAddrs[0])).to.eventually.be.rejected
         .with.property('name', 'EncryptionFailedError')
 
-      expect(dialer.getConnections()).to.have.lengthOf(0)
+      expect(dialer.getConnections().filter(conn => {
+        return dialMultiaddrMatcher.exactMatch(conn.remoteAddr)
+      })).to.have.lengthOf(0)
 
       if (listener != null) {
-        expect(listener.getConnections()).to.have.lengthOf(0)
+        const remoteConnections = listener.getConnections(dialer.peerId)
+          .filter(conn => dialMultiaddrMatcher.exactMatch(conn.remoteAddr))
+        expect(remoteConnections).to.have.lengthOf(0)
+      }
+    })
+
+    it('should omit peerid in listening addresses', async function () {
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      const tm = getTransportManager(listener)
+      const transportListeners = tm.getListeners()
+
+      for (const transportListener of transportListeners) {
+        for (const ma of transportListener.getAddrs()) {
+          expect(ma.toString()).to.not.include(`/p2p/${listener.peerId}`)
+        }
       }
     })
   })
 
   describe('events', () => {
-    let listenAddrs: Multiaddr[]
-    let dialAddrs: Multiaddr[]
-    let transport: (components: any) => Transport
     let dialer: Libp2p<{ echo: Echo }>
     let listener: Libp2p<{ echo: Echo }> | undefined
-    let dialOnly: boolean
-
-    beforeEach(async () => {
-      ({ dialAddrs, listenAddrs = dialAddrs, transport, dialOnly = false } = await common.setup())
-    })
+    let listenMultiaddrMatcher: MultiaddrMatcher
 
     afterEach(async () => {
       await stop(dialer, listener)
       await common.teardown()
     })
 
-    it('emits connection', async function () {
-      if (dialOnly) {
-        return this.skip()
-      }
-
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
-
-      const transportManager = getTransportManager(listener)
-      const transportListener = transportManager.getListeners()[0]
-
-      const p = pEvent(transportListener, 'connection')
-
-      await expect(dialer.dial(dialAddrs[0])).to.eventually.be.ok()
-
-      await raceSignal(p, AbortSignal.timeout(1000), {
-        errorMessage: 'Did not emit connection event'
-      })
-    })
-
     it('emits listening', async function () {
-      if (dialOnly) {
+      ({ dialer, listener, listenMultiaddrMatcher } = await getSetup(common))
+
+      if (listener == null) {
         return this.skip()
       }
 
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
+      await listener.stop()
+
+      const transportListeningPromise = pDefer()
+
+      listener.addEventListener('transport:listening', (event) => {
+        const transportListener = event.detail
+
+        if (transportListener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma))) {
+          transportListeningPromise.resolve()
+        }
       })
 
-      if (!dialOnly) {
-        listener = await createPeer({
-          addresses: {
-            listen: [listenAddrs[0].toString()]
-          },
-          transports: [
-            transport
-          ]
-        })
-      }
+      await listener.start()
 
-      const transportManager = getTransportManager(listener)
-      const t = transportManager.dialTransportForMultiaddr(dialAddrs[0])
-
-      if (t == null) {
-        throw new Error(`No transport configured for dial address ${dialAddrs[0]}`)
-      }
-
-      let p: Promise<unknown> | undefined
-      const originalCreateListener = t.createListener.bind(t)
-
-      t.createListener = (opts) => {
-        const listener = originalCreateListener(opts)
-        p = pEvent(listener, 'listening')
-
-        return listener
-      }
-
-      await transportManager.listen([
-        listenAddrs[1]
-      ])
-
-      if (p == null) {
-        throw new Error('Listener was not created')
-      }
-
-      await raceSignal(p, AbortSignal.timeout(1000), {
-        errorMessage: 'Did not emit connection event'
+      await raceSignal(transportListeningPromise.promise, AbortSignal.timeout(1000), {
+        errorMessage: 'Did not emit listening event'
       })
     })
 
     it('emits close', async function () {
-      if (dialOnly) {
+      ({ dialer, listener } = await getSetup(common))
+
+      if (listener == null) {
         return this.skip()
       }
 
-      dialer = await createPeer({
-        transports: [
-          transport
-        ]
-      })
-      listener = await createPeer({
-        addresses: {
-          listen: [listenAddrs[0].toString()]
-        },
-        transports: [
-          transport
-        ]
-      })
-
       const transportManager = getTransportManager(listener)
-      const transportListener = transportManager.getListeners()[0]
+      const transportListener = transportManager.getListeners()
+        .filter(listener => listener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma)))
+        .pop()
+
+      if (transportListener == null) {
+        throw new Error('Could not find address listener')
+      }
 
       const p = pEvent(transportListener, 'close')
 

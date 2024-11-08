@@ -37,8 +37,8 @@ export default {
         ],
         streamMuxers: [
           yamux(),
-          mplex(),
-          () => mockMuxer()
+          () => mockMuxer(),
+          mplex()
         ],
         connectionEncrypters: [
           noise(),
@@ -48,7 +48,8 @@ export default {
           identify: identify(),
           relay: circuitRelayServer({
             reservations: {
-              maxReservations: Infinity
+              maxReservations: Infinity,
+              applyDefaultLimit: false
             }
           }),
           echo: echo({

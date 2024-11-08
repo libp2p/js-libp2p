@@ -4,8 +4,7 @@
 import fs from 'fs'
 import http from 'http'
 import https from 'https'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -14,13 +13,15 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { goodbye } from 'it-goodbye'
 import { pipe } from 'it-pipe'
-import { pEvent } from 'p-event'
-import waitFor from 'p-wait-for'
+import pWaitFor from 'p-wait-for'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
-import type { Listener, Transport } from '@libp2p/interface'
+import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
+import type { StubbedInstance } from 'sinon-ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
@@ -39,10 +40,6 @@ void registrar.handle(protocol, (evt) => {
   drain
   )
 })
-const upgrader = mockUpgrader({
-  registrar,
-  events: new TypedEventEmitter()
-})
 
 describe('instantiate the transport', () => {
   it('create', () => {
@@ -54,31 +51,17 @@ describe('instantiate the transport', () => {
 })
 
 describe('listen', () => {
-  it('should close connections when stopping the listener', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
+  let upgrader: StubbedInstance<Upgrader>
 
-    const ws = webSockets()({
-      logger: defaultLogger()
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
     })
-    const listener = ws.createListener({
-      upgrader
-    })
-    listener.addEventListener('connection', (event) => {
-      void event.detail.newStream([protocol]).then(async (stream) => {
-        await pipe(stream, stream)
-      })
-    })
-    await listener.listen(ma)
-
-    const conn = await ws.dial(ma, {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
-    void pipe(stream, stream)
-
-    await listener.close()
-
-    await waitFor(() => conn.timeline.close != null)
   })
 
   describe('ip4', () => {
@@ -247,6 +230,19 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
+  let upgrader: StubbedInstance<Upgrader>
+
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
+    })
+  })
+
   describe('ip4', () => {
     let ws: Transport
     let listener: Listener
@@ -297,9 +293,6 @@ describe('dial', () => {
 
       const listener = ws.createListener({ upgrader })
 
-      // Create a Promise that resolves when a connection is handled
-      const p = pEvent(listener, 'connection')
-
       // Listen on the multiaddr
       await listener.listen(ma)
 
@@ -310,7 +303,9 @@ describe('dial', () => {
       await ws.dial(localAddrs[0], { upgrader })
 
       // Wait for the incoming dial to be handled
-      await p
+      await pWaitFor(() => {
+        return upgrader.upgradeInbound.callCount === 1
+      })
 
       // close the listener
       await listener.close()
@@ -328,11 +323,6 @@ describe('dial', () => {
       })
       listener = ws.createListener({
         upgrader
-      })
-      listener.addEventListener('connection', (event) => {
-        void event.detail.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
-        })
       })
       await listener.listen(ma)
     })
@@ -386,11 +376,6 @@ describe('dial', () => {
       listener = ws.createListener({
         upgrader
       })
-      listener.addEventListener('connection', (event) => {
-        void event.detail.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
-        })
-      })
       await listener.listen(ma)
     })
 
@@ -434,11 +419,6 @@ describe('dial', () => {
       })
       listener = ws.createListener({
         upgrader
-      })
-      listener.addEventListener('connection', (event) => {
-        void event.detail.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
-        })
       })
       await listener.listen(ma)
     })

@@ -1,8 +1,9 @@
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { tcp } from '@libp2p/tcp'
-import { multiaddr } from '@multiformats/multiaddr'
+import { TCP } from '@multiformats/multiaddr-matcher'
 import { isBrowser, isWebWorker } from 'wherearewe'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('tcp transport interface compliance IPv4', () => {
   if (isBrowser || isWebWorker) {
@@ -11,13 +12,32 @@ describe('tcp transport interface compliance IPv4', () => {
 
   tests({
     async setup () {
-      const transport = tcp()
-      const dialAddrs: [Multiaddr, Multiaddr] = [
-        multiaddr('/ip4/127.0.0.1/tcp/9091'),
-        multiaddr('/ip4/127.0.0.1/tcp/9092')
-      ]
+      const dialer = {
+        transports: [
+          tcp()
+        ],
+        connectionEncrypters: [
+          noise()
+        ],
+        streamMuxers: [
+          yamux()
+        ]
+      }
 
-      return { transport, dialAddrs }
+      return {
+        dialer,
+        listener: {
+          addresses: {
+            listen: [
+              '/ip4/127.0.0.1/tcp/0',
+              '/ip4/127.0.0.1/tcp/0'
+            ]
+          },
+          ...dialer
+        },
+        dialMultiaddrMatcher: TCP,
+        listenMultiaddrMatcher: TCP
+      }
     },
     async teardown () {}
   })
@@ -30,13 +50,32 @@ describe('tcp transport interface compliance IPv6', () => {
 
   tests({
     async setup () {
-      const transport = tcp()
-      const dialAddrs: [Multiaddr, Multiaddr] = [
-        multiaddr('/ip6/::/tcp/9093'),
-        multiaddr('/ip6/::/tcp/9094')
-      ]
+      const dialer = {
+        transports: [
+          tcp()
+        ],
+        connectionEncrypters: [
+          noise()
+        ],
+        streamMuxers: [
+          yamux()
+        ]
+      }
 
-      return { transport, dialAddrs }
+      return {
+        dialer,
+        listener: {
+          addresses: {
+            listen: [
+              '/ip6/::/tcp/0',
+              '/ip6/::/tcp/0'
+            ]
+          },
+          ...dialer
+        },
+        dialMultiaddrMatcher: TCP,
+        listenMultiaddrMatcher: TCP
+      }
     },
     async teardown () {}
   })

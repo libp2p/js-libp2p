@@ -2,6 +2,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { memory } from '../src/index.js'
 import type { Upgrader, Connection } from '@libp2p/interface'
@@ -11,10 +12,8 @@ describe('memory', () => {
 
   beforeEach(async () => {
     upgrader = stubInterface<Upgrader>({
-      upgradeInbound: async (maConn) => {
-        return stubInterface<Connection>()
-      },
-      upgradeOutbound: async (maConn) => {
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
         return stubInterface<Connection>()
       }
     })

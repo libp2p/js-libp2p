@@ -3,6 +3,7 @@ import { promisify } from 'util'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
@@ -82,10 +83,8 @@ describe('closeAbove/listenBelow', () => {
     afterEachCallbacks = []
 
     upgrader = stubInterface<Upgrader>({
-      upgradeInbound: async (maConn) => {
-        return stubInterface<Connection>()
-      },
-      upgradeOutbound: async (maConn) => {
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
         return stubInterface<Connection>()
       }
     })
