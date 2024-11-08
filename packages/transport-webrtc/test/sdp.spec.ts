@@ -26,7 +26,7 @@ describe('SDP', () => {
     const ufrag = 'MyUserFragment'
     const sdp = underTest.fromMultiAddr(sampleMultiAddr, ufrag)
 
-    expect(sdp.answer.sdp).to.contain(sampleSdp)
+    expect(sdp.sdp).to.contain(sampleSdp)
   })
 
   it('extracts certhash from a multiaddr', () => {
