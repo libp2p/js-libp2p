@@ -9,7 +9,7 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, Connection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface CloseServerOnMaxConnectionsOpts {
@@ -30,7 +30,6 @@ export interface CloseServerOnMaxConnectionsOpts {
 }
 
 interface Context extends TCPCreateListenerOptions {
-  handler?(conn: Connection): void
   upgrader: Upgrader
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
@@ -205,7 +204,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     this.context.upgrader.upgradeInbound(maConn, {
       signal: this.shutdownController.signal
     })
-      .then((conn) => {
+      .then(() => {
         this.log('inbound connection upgraded %s', maConn.remoteAddr)
 
         socket.once('close', () => {
@@ -228,18 +227,12 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           }
         })
 
-        if (this.context.handler != null) {
-          this.context.handler(conn)
-        }
-
         if (
           this.context.closeServerOnMaxConnections != null &&
           this.sockets.size >= this.context.closeServerOnMaxConnections.closeAbove
         ) {
           this.pause()
         }
-
-        this.safeDispatchEvent('connection', { detail: conn })
       })
       .catch(async err => {
         this.log.error('inbound connection upgrade failed', err)

@@ -28,7 +28,7 @@ class MockUpgrader implements Upgrader {
     return connection
   }
 
-  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
     const connection = mockConnection(multiaddrConnection, {
       direction: 'inbound',
       registrar: this.registrar,
@@ -36,8 +36,6 @@ class MockUpgrader implements Upgrader {
     })
 
     this.events?.safeDispatchEvent('connection:open', { detail: connection })
-
-    return connection
   }
 }
 

@@ -74,6 +74,7 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.3",
     "aegir": "^44.0.1",
+    "p-wait-for": "^5.0.2",
     "sinon": "^18.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"

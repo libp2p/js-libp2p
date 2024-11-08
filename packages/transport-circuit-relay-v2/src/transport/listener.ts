@@ -111,7 +111,9 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
           .map(buf => multiaddr(buf).encapsulate('/p2p-circuit'))
 
         // if that succeeded announce listen addresses change
-        this.safeDispatchEvent('listening')
+        queueMicrotask(() => {
+          this.safeDispatchEvent('listening')
+        })
       }
     } else {
       throw new ListenError(`Could not listen on p2p-circuit address "${addr}"`)
@@ -130,7 +132,9 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     this.reservationStore.removeEventListener('relay:removed', this._onRemoveRelayPeer)
 
     // announce listen addresses change
-    this.safeDispatchEvent('close')
+    queueMicrotask(() => {
+      this.safeDispatchEvent('close')
+    })
   }
 }
 

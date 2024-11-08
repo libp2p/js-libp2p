@@ -1,25 +1,23 @@
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { Connection, Transport, Upgrader } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('valid localAddr and remoteAddr', () => {
   let transport: Transport
-  let upgrader: Upgrader
+  let upgrader: StubbedInstance<Upgrader>
 
   beforeEach(() => {
     transport = tcp()({
       logger: defaultLogger()
     })
     upgrader = stubInterface<Upgrader>({
-      upgradeInbound: async (maConn) => {
-        return stubInterface<Connection>({
-          remoteAddr: maConn.remoteAddr
-        })
-      },
+      upgradeInbound: Sinon.stub().resolves(),
       upgradeOutbound: async (maConn) => {
         return stubInterface<Connection>({
           remoteAddr: maConn.remoteAddr
@@ -42,15 +40,15 @@ describe('valid localAddr and remoteAddr', () => {
     const localAddrs = listener.getAddrs()
     expect(localAddrs.length).to.equal(1)
 
-    const p = pEvent(listener, 'connection')
-
     // Dial to that address
     await transport.dial(localAddrs[0], {
       upgrader
     })
 
     // Wait for the incoming dial to be handled
-    await p
+    await pWaitFor(() => {
+      return upgrader.upgradeInbound.callCount === 1
+    })
 
     // Close the listener
     await listener.close()
@@ -61,9 +59,6 @@ describe('valid localAddr and remoteAddr', () => {
     const listener = transport.createListener({
       upgrader
     })
-
-    // Create a Promise that resolves when a connection is handled
-    const p = pEvent(listener, 'connection')
 
     // Listen on the multi-address
     await listener.listen(ma)
@@ -77,7 +72,9 @@ describe('valid localAddr and remoteAddr', () => {
     })
 
     // Wait for the incoming dial to be handled
-    await p
+    await pWaitFor(() => {
+      return upgrader.upgradeInbound.callCount === 1
+    })
 
     // Close the dialer with two simultaneous calls to `close`
     await Promise.race([

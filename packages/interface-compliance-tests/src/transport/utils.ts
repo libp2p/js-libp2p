@@ -12,8 +12,8 @@ import type { Libp2p, Upgrader } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Libp2pOptions } from 'libp2p'
 
-export async function createPeer (config: Partial<Libp2pOptions<{ echo: Echo }>> = {}): Promise<Libp2p<{ echo: Echo }>> {
-  const node = await createLibp2p({
+export async function createPeer (config: Partial<Libp2pOptions> = {}): Promise<Libp2p<{ echo: Echo }>> {
+  return createLibp2p({
     transports: [
       memory()
     ],
@@ -28,12 +28,12 @@ export async function createPeer (config: Partial<Libp2pOptions<{ echo: Echo }>>
     },
     ...config,
     services: {
-      echo: echo(),
-      ...config.services
+      ...config.services,
+      echo: echo({
+        maxInboundStreams: 5
+      })
     }
   })
-
-  return node
 }
 
 /**
