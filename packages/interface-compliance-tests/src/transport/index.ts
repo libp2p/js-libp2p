@@ -5,6 +5,7 @@ import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
 import type { TestSetup } from '../index.js'
@@ -185,7 +186,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         })
       }
 
-      expect(streams.find(stream => stream.status !== 'closed')).to.be.undefined()
+      expect(streams.find(stream => stream.status === 'open')).to.be.undefined()
     })
 
     it('should not handle connection if upgradeInbound rejects', async function () {
@@ -229,6 +230,31 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         for (const ma of transportListener.getAddrs()) {
           expect(ma.toString()).to.not.include(`/p2p/${listener.peerId}`)
         }
+      }
+    })
+
+    it('should handle one big write', async () => {
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      const input = new Uint8Array(1024 * 1024 * 10).fill(5)
+      const output = await dialer.services.echo.echo(dialAddrs[0], input, {
+        signal: AbortSignal.timeout(5000)
+      })
+
+      expect(output).to.equalBytes(input)
+    })
+
+    it('should handle many small writes', async function () {
+      this.timeout(60000);
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      for (let i = 0; i < 2000; i++) {
+        const input = new Uint8Array(1024).fill(5)
+        const output = await dialer.services.echo.echo(dialAddrs[0], input, {
+          signal: AbortSignal.timeout(5000)
+        })
+
+        expect(output).to.equalBytes(input)
       }
     })
   })

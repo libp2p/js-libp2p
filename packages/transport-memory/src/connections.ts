@@ -83,7 +83,10 @@ export class MemoryConnection {
     const dialer: MultiaddrConnection = {
       source: (async function * () {
         yield * map(listenerPushable, async buf => {
-          await delay(self.latency)
+          if (self.latency > 0) {
+            await delay(self.latency)
+          }
+
           return buf
         })
       })(),
@@ -120,7 +123,10 @@ export class MemoryConnection {
     const listener: MultiaddrConnection = {
       source: (async function * () {
         yield * map(dialerPushable, async buf => {
-          await delay(self.latency)
+          if (self.latency > 0) {
+            await delay(self.latency)
+          }
+
           return buf
         })
       })(),
