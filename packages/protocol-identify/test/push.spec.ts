@@ -1,6 +1,5 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -70,7 +69,7 @@ describe('identify (push)', () => {
     components.registrar.getProtocols.returns(['/super/fun/protocol'])
 
     // local peer data
-    components.peerStore.get.withArgs(matchPeerId(components.peerId)).resolves({
+    components.peerStore.get.withArgs(components.peerId).resolves({
       id: components.peerId,
       addresses: [],
       protocols: [],
@@ -79,7 +78,7 @@ describe('identify (push)', () => {
     })
 
     // connected peer that supports identify push
-    components.peerStore.get.withArgs(matchPeerId(remotePeer)).resolves({
+    components.peerStore.get.withArgs(remotePeer).resolves({
       id: components.peerId,
       addresses: [],
       protocols: ['/ipfs/id/push/1.0.0'],
