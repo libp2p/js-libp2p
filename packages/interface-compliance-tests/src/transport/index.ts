@@ -9,11 +9,14 @@ import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
 import type { TestSetup } from '../index.js'
 import type { Echo } from '@libp2p/echo'
-import type { Connection, Libp2p, Stream } from '@libp2p/interface'
+import type { Connection, Libp2p, Stream, StreamHandler } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
 import type { Libp2pInit } from 'libp2p'
 import type { DeferredPromise } from 'p-defer'
+import { pushable } from 'it-pushable'
+import pRetry from 'p-retry'
+import drain from 'it-drain'
 
 export interface TransportTestFixtures {
   /**
@@ -259,6 +262,249 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         expect(output).to.equalBytes(input)
       }
     })
+
+    it('can close a stream for reading but send a large amount of data', async function () {
+      const timeout = 120_000
+      this.timeout(timeout);
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      const protocol = '/send-data/1.0.0'
+      const chunkSize = 1024
+      const bytes = chunkSize * 1024 * 10
+      const deferred = pDefer()
+
+      await listener.handle(protocol, ({ stream }) => {
+        Promise.resolve().then(async () => {
+          let read = 0
+
+          for await (const buf of stream.source) {
+            read += buf.byteLength
+
+            if (read === bytes) {
+              deferred.resolve()
+              break
+            }
+          }
+        })
+          .catch(err => {
+            deferred.reject(err)
+            stream.abort(err)
+          })
+      })
+
+      const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
+
+      await stream.closeRead()
+
+      await stream.sink((async function * () {
+        for (let i = 0; i < bytes; i += chunkSize) {
+          yield new Uint8Array(chunkSize)
+        }
+      })())
+
+      await stream.close()
+
+      await deferred.promise
+    })
+
+    it('can close a stream for writing but receive a large amount of data', async function () {
+      const timeout = 120_000
+      this.timeout(timeout);
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      const protocol = '/receive-data/1.0.0'
+      const chunkSize = 1024
+      const bytes = chunkSize * 1024 * 10
+      const deferred = pDefer()
+
+      await listener.handle(protocol, ({ stream }) => {
+        Promise.resolve().then(async () => {
+          await stream.sink((async function * () {
+            for (let i = 0; i < bytes; i += chunkSize) {
+              yield new Uint8Array(chunkSize)
+            }
+          })())
+
+          await stream.close()
+        })
+          .catch(err => {
+            deferred.reject(err)
+            stream.abort(err)
+          })
+      })
+
+      const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
+
+      await stream.closeWrite()
+
+      let read = 0
+
+      for await (const buf of stream.source) {
+        read += buf.byteLength
+      }
+
+      expect(read).to.equal(bytes)
+    })
+
+    it('can close local stream for writing and reading while a remote stream is writing', async function () {
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      /**
+       * NodeA             NodeB
+       * |   <--- STOP_SENDING |
+       * | FIN --->            |
+       * |            <--- FIN |
+       * | FIN_ACK --->        |
+       * |        <--- FIN_ACK |
+       */
+
+      const getRemoteStream = pDefer<Stream>()
+      const protocol = '/close-local-while-remote-writes/1.0.0'
+
+      const streamHandler: StreamHandler = ({ stream }) => {
+        void Promise.resolve().then(async () => {
+          getRemoteStream.resolve(stream)
+        })
+      }
+
+      await listener.handle(protocol, (info) => {
+        streamHandler(info)
+      }, {
+        runOnLimitedConnection: true
+      })
+
+      const connection = await dialer.dial(dialAddrs[0])
+
+      // open a stream on the echo protocol
+      const stream = await connection.newStream(protocol, {
+        runOnLimitedConnection: true
+      })
+
+      // close the write end immediately
+      const p = stream.closeWrite()
+
+      const remoteStream = await getRemoteStream.promise
+      // close the readable end of the remote stream
+      await remoteStream.closeRead()
+
+      // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+      const remoteInputStream = pushable<Uint8Array>()
+      void remoteStream.sink(remoteInputStream)
+
+      // wait for remote to receive local close-write
+      await pRetry(() => {
+        if (remoteStream.readStatus !== 'closed') {
+          throw new Error('Remote stream read status ' + remoteStream.readStatus)
+        }
+      }, {
+        minTimeout: 100
+      })
+
+      // remote closes write
+      remoteInputStream.end()
+
+      // wait to receive FIN_ACK
+      await p
+
+      // wait for remote to notice closure
+      await pRetry(() => {
+        if (remoteStream.status !== 'closed') {
+          throw new Error('Remote stream not closed')
+        }
+      })
+
+      assertStreamClosed(stream)
+      assertStreamClosed(remoteStream)
+    })
+
+    it('can close local stream for writing and reading while a remote stream is writing using source/sink', async function () {
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      /**
+       * NodeA             NodeB
+       * | FIN --->            |
+       * |            <--- FIN |
+       * | FIN_ACK --->        |
+       * |        <--- FIN_ACK |
+       */
+
+      const getRemoteStream = pDefer<Stream>()
+      const protocol = '/close-local-while-remote-reads/1.0.0'
+
+      const streamHandler: StreamHandler = ({ stream }) => {
+        void Promise.resolve().then(async () => {
+          getRemoteStream.resolve(stream)
+        })
+      }
+
+      await listener.handle(protocol, (info) => {
+        streamHandler(info)
+      }, {
+        runOnLimitedConnection: true
+      })
+
+      const connection = await dialer.dial(dialAddrs[0])
+
+      // open a stream on the echo protocol
+      const stream = await connection.newStream(protocol, {
+        runOnLimitedConnection: true
+      })
+
+      // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+      const p = stream.sink([])
+
+      const remoteStream = await getRemoteStream.promise
+      // close the readable end of the remote stream
+      await remoteStream.closeRead()
+      // readable end should finish
+      await drain(remoteStream.source)
+
+      // wait for remote to receive local close-write
+      await pRetry(() => {
+        if (remoteStream.readStatus !== 'closed') {
+          throw new Error('Remote stream read status ' + remoteStream.readStatus)
+        }
+      }, {
+        minTimeout: 100
+      })
+
+      // remote closes write
+      await remoteStream.sink([])
+
+      // wait to receive FIN_ACK
+      await p
+
+      // close read end of stream
+      await stream.closeRead()
+      // readable end should finish
+      await drain(stream.source)
+
+      // wait for remote to notice closure
+      await pRetry(() => {
+        if (remoteStream.status !== 'closed') {
+          throw new Error('Remote stream not closed')
+        }
+      })
+
+      assertStreamClosed(stream)
+      assertStreamClosed(remoteStream)
+    })
   })
 
   describe('events', () => {
@@ -322,4 +568,14 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
     })
   })
+}
+
+function assertStreamClosed (stream: Stream): void {
+  expect(stream.status).to.equal('closed')
+  expect(stream.readStatus).to.equal('closed')
+  expect(stream.writeStatus).to.equal('closed')
+
+  expect(stream.timeline.close).to.be.a('number')
+  expect(stream.timeline.closeRead).to.be.a('number')
+  expect(stream.timeline.closeWrite).to.be.a('number')
 }
