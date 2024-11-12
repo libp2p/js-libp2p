@@ -6,7 +6,6 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export interface ListenerEvents {
-  'connection': CustomEvent<Connection>
   'listening': CustomEvent
   'error': CustomEvent<Error>
   'close': CustomEvent
@@ -36,7 +35,6 @@ export interface ConnectionHandler { (connection: Connection): void }
 export interface MultiaddrFilter { (multiaddrs: Multiaddr[]): Multiaddr[] }
 
 export interface CreateListenerOptions {
-  handler?: ConnectionHandler
   upgrader: Upgrader
 }
 
@@ -117,12 +115,12 @@ ProgressEvent<'upgrader:multiplex-outbound-connection'>
 
 export interface Upgrader {
   /**
-   * Upgrades an outbound connection on `transport.dial`.
+   * Upgrades an outbound connection on `transport.dial`
    */
   upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<OutboundConnectionUpgradeEvents>): Promise<Connection>
 
   /**
-   * Upgrades an inbound connection on transport listener.
+   * Upgrades an inbound connection received by a transport listener
    */
-  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<Connection>
+  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<void>
 }

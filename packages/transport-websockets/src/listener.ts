@@ -4,7 +4,7 @@ import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multi
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { createServer } from 'it-ws/server'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Connection, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
@@ -61,34 +61,18 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
           self.connections.delete(stream)
         })
 
-        try {
-          void init.upgrader.upgradeInbound(maConn)
-            .then((conn) => {
-              this.log('inbound connection %s upgraded', maConn.remoteAddr)
+        init.upgrader.upgradeInbound(maConn)
+          .catch(async err => {
+            this.log.error('inbound connection failed to upgrade', err)
+            this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-              if (init?.handler != null) {
-                init?.handler(conn)
-              }
-
-              self.dispatchEvent(new CustomEvent<Connection>('connection', {
-                detail: conn
-              }))
-            })
-            .catch(async err => {
-              this.log.error('inbound connection failed to upgrade', err)
-              this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
-
-              await maConn.close().catch(err => {
-                this.log.error('inbound connection failed to close after upgrade failed', err)
-              })
-            })
-        } catch (err) {
-          this.log.error('inbound connection failed to upgrade', err)
-          maConn.close().catch(err => {
-            this.log.error('inbound connection failed to close after upgrade failed', err)
-            this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
+            try {
+              maConn.abort(err)
+            } catch (err) {
+              this.log.error('inbound connection failed to close after upgrade failed - %e', err)
+              this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
+            }
           })
-        }
       }
     })
 

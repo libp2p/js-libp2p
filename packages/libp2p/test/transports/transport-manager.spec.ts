@@ -10,9 +10,9 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
-import sinon from 'sinon'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { AddressManager } from '../../src/address-manager.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
 import type { Connection, Transport, Upgrader, Listener } from '@libp2p/interface'
@@ -35,13 +35,13 @@ describe('Transport Manager', () => {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       events,
       upgrader: stubInterface<Upgrader>({
-        upgradeInbound: async (ma) => stubInterface<Connection>(ma),
+        upgradeInbound: Sinon.stub().resolves(),
         upgradeOutbound: async (ma) => stubInterface<Connection>(ma)
       }),
       logger: defaultLogger(),
       datastore: new MemoryDatastore()
     } as any
-    components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
+    components.addressManager = new AddressManager(components, { listen: [listenAddr.toString()] })
     components.peerStore = persistentPeerStore(components)
 
     components.transportManager = tm = new DefaultTransportManager(components, {
@@ -142,7 +142,7 @@ describe('Transport Manager', () => {
 
     expect(tm.getTransports()).to.have.lengthOf(1)
 
-    const spyListener = sinon.spy(transport, 'createListener')
+    const spyListener = Sinon.spy(transport, 'createListener')
     await tm.listen(addrs)
 
     expect(tm.getAddrs().length).to.equal(addrs.length)
@@ -169,7 +169,7 @@ describe('Transport Manager', () => {
 
     expect(tm.getListeners()).to.have.lengthOf(0)
 
-    const spyListener = sinon.spy(transport, 'createListener')
+    const spyListener = Sinon.spy(transport, 'createListener')
 
     await tm.listen(addrs)
 

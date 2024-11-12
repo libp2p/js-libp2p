@@ -39,7 +39,7 @@ describe('webrtc private-to-private listener', () => {
     const addresses = listener.getAddrs()
 
     expect(addresses.map(ma => ma.toString())).to.deep.equal([
-      `${relayedAddress}/webrtc/p2p/${peerId}`
+      `${relayedAddress}/webrtc`
     ])
   })
 })

@@ -4,3 +4,8 @@ export class DoubleNATError extends Error {
     this.name = 'DoubleNATError'
   }
 }
+
+export class InvalidIPAddressError extends Error {
+  static name = 'InvalidIPAddressError'
+  name = 'InvalidIPAddressError'
+}

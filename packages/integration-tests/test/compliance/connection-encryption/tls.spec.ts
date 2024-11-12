@@ -3,12 +3,17 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import suite from '@libp2p/interface-compliance-tests/connection-encryption'
 import { defaultLogger } from '@libp2p/logger'
-import { plaintext } from '../src/index.js'
+import { tls } from '@libp2p/tls'
+import { isBrowser, isWebWorker } from 'wherearewe'
 
-describe('plaintext compliance', () => {
+describe('tls connection encrypter interface compliance', () => {
+  if (isBrowser || isWebWorker) {
+    return
+  }
+
   suite({
     async setup (opts) {
-      return plaintext()({
+      return tls()({
         privateKey: opts?.privateKey ?? await generateKeyPair('Ed25519'),
         logger: defaultLogger()
       })

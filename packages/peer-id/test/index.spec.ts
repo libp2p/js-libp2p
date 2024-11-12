@@ -4,6 +4,7 @@ import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
+import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.js'
 import type { KeyType, PeerId } from '@libp2p/interface'
@@ -98,6 +99,13 @@ describe('PeerId', () => {
         peerId1.toString()
 
         expect(peerId1).to.deep.equal(peerId2)
+      })
+
+      it('should be matched by sinon', () => {
+        const stub = Sinon.stub()
+        stub(peerId)
+
+        expect(stub.calledWith(peerId)).to.be.true()
       })
     })
   })

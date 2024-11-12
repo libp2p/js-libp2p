@@ -9,12 +9,13 @@ import delay from 'delay'
 import drain from 'it-drain'
 import { encode } from 'it-length-prefixed'
 import map from 'it-map'
+import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DefaultUpgrader, type UpgraderInit } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from './utils.js'
-import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit } from '@libp2p/interface'
+import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 describe('upgrader', () => {
@@ -208,16 +209,22 @@ describe('upgrader', () => {
   })
 
   it('should not abort if inbound upgrade is successful', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const components = await createDefaultUpgraderComponents()
+    const upgrader = new DefaultUpgrader(components, {
       ...init,
       inboundUpgradeTimeout: 100
     })
-    const conn = await upgrader.upgradeInbound(maConn)
+
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn)
+
+    const event = await connectionPromise
 
     await delay(1000)
 
     // connections should still be open after timeout
-    expect(conn.status).to.equal('open')
+    expect(event.detail.status).to.equal('open')
   })
 
   it('should not abort if outbound upgrade is successful', async () => {
@@ -234,18 +241,24 @@ describe('upgrader', () => {
   })
 
   it('should not abort by signal if inbound upgrade is successful', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const components = await createDefaultUpgraderComponents()
+    const upgrader = new DefaultUpgrader(components, {
       ...init,
       inboundUpgradeTimeout: 10000
     })
-    const conn = await upgrader.upgradeInbound(maConn, {
+
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn, {
       signal: AbortSignal.timeout(100)
     })
+
+    const event = await connectionPromise
 
     await delay(1000)
 
     // connections should still be open after timeout
-    expect(conn.status).to.equal('open')
+    expect(event.detail.status).to.equal('open')
   })
 
   it('should not abort by signal if outbound upgrade is successful', async () => {
@@ -443,8 +456,13 @@ describe('upgrader', () => {
       ]
     })
 
-    const conn = await upgrader.upgradeInbound(maConn)
-    expect(conn.streams).to.have.lengthOf(0)
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn)
+
+    const event = await connectionPromise
+
+    expect(event.detail.streams).to.have.lengthOf(0)
 
     for (let i = 0; i < (maxInboundStreams + 1); i++) {
       const incomingStream = stubInterface<Stream>({
@@ -518,7 +536,13 @@ describe('upgrader', () => {
       ]
     })
 
-    const conn = await upgrader.upgradeInbound(maConn)
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn)
+
+    const event = await connectionPromise
+    const conn = event.detail
+
     expect(conn.streams).to.have.lengthOf(0)
 
     await conn.newStream(protocol)
@@ -573,7 +597,13 @@ describe('upgrader', () => {
       ]
     })
 
-    const conn = await upgrader.upgradeInbound(maConn)
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn)
+
+    const event = await connectionPromise
+    const conn = event.detail
+
     expect(conn.streams).to.have.lengthOf(0)
 
     const opts = {

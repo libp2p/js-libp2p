@@ -63,13 +63,20 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
 
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+    const relayHosts = new Set<string>()
+
+    const relayAddrs = node.getMultiaddrs().filter(addr => {
+      const options = addr.toOptions()
+      relayHosts.add(options.host)
+
+      return addr.protoNames().includes('p2p-circuit')
+    })
 
     if (relayAddrs.length === 0) {
       return false
     }
 
-    if (relayAddrs.length !== 1) {
+    if (relayHosts.size !== 1) {
       throw new Error(`node listening on too many relays - ${relayAddrs.length}`)
     }
 
