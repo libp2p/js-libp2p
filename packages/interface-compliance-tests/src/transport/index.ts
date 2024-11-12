@@ -1,8 +1,11 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import drain from 'it-drain'
+import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
+import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
 import { isValidTick } from '../is-valid-tick.js'
@@ -14,9 +17,6 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
 import type { Libp2pInit } from 'libp2p'
 import type { DeferredPromise } from 'p-defer'
-import { pushable } from 'it-pushable'
-import pRetry from 'p-retry'
-import drain from 'it-drain'
 
 export interface TransportTestFixtures {
   /**
