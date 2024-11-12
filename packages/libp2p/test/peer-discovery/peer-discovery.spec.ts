@@ -15,8 +15,6 @@ describe('peer discovery', () => {
     if (libp2p != null) {
       await libp2p.stop()
     }
-
-    sinon.reset()
   })
 
   it('should start/stop startable discovery on libp2p start/stop', async () => {
