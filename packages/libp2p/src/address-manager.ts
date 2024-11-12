@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
+import { debounce } from '@libp2p/utils/debounce'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { debounce } from './utils.js'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -84,6 +84,8 @@ export class AddressManager implements AddressManagerInterface {
   private readonly announceFilter: AddressFilter
   private readonly ipDomainMappings: Map<string, string>
 
+  private readonly where: Error
+
   /**
    * Responsible for managing the peer addresses.
    * Peers can specify their listen and announce addresses.
@@ -113,6 +115,8 @@ export class AddressManager implements AddressManagerInterface {
     components.events.addEventListener('transport:close', () => {
       this._updatePeerStoreAddresses()
     })
+
+    this.where = new Error('where')
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/address-manager'
