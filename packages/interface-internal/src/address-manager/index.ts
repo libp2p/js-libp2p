@@ -40,4 +40,17 @@ export interface AddressManager {
    * Get the current node's addresses
    */
   getAddresses(): Multiaddr[]
+
+  /**
+   * Adds a mapping between one or more IP addresses and a domain name - when
+   * `getAddresses` is invoked, where the IP addresses are present in a
+   * multiaddr, an additional multiaddr will be added with `ip4` and `ip6`
+   * tuples replaced with `dns4` and `dns6 ones respectively.
+   */
+  addDNSMapping(domain: string, ipAddresses: string[]): void
+
+  /**
+   * Remove a mapping previously added with `addDNSMapping`.
+   */
+  removeDNSMapping(domain: string): void
 }

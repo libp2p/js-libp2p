@@ -1,8 +1,8 @@
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { debounce } from './utils.js'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
-import type { TransportManager } from '@libp2p/interface-internal'
+import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface AddressManagerInit {
@@ -28,7 +28,7 @@ export interface AddressManagerInit {
   noAnnounce?: string[]
 }
 
-export interface DefaultAddressManagerComponents {
+export interface AddressManagerComponents {
   peerId: PeerId
   transportManager: TransportManager
   peerStore: PeerStore
@@ -69,14 +69,20 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
   return ma
 }
 
-export class DefaultAddressManager {
+const CODEC_IP4 = 0x04
+const CODEC_IP6 = 0x29
+const CODEC_DNS4 = 0x36
+const CODEC_DNS6 = 0x37
+
+export class AddressManager implements AddressManagerInterface {
   private readonly log: Logger
-  private readonly components: DefaultAddressManagerComponents
+  private readonly components: AddressManagerComponents
   // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
   private readonly listen: string[]
   private readonly announce: Set<string>
   private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
+  private readonly ipDomainMappings: Map<string, string>
 
   /**
    * Responsible for managing the peer addresses.
@@ -84,7 +90,7 @@ export class DefaultAddressManager {
    * The listen addresses will be used by the libp2p transports to listen for new connections,
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
-  constructor (components: DefaultAddressManagerComponents, init: AddressManagerInit = {}) {
+  constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
     const { listen = [], announce = [] } = init
 
     this.components = components
@@ -92,6 +98,7 @@ export class DefaultAddressManager {
     this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.observed = new Map()
+    this.ipDomainMappings = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
 
     // this method gets called repeatedly on startup when transports start listening so
@@ -200,37 +207,109 @@ export class DefaultAddressManager {
   }
 
   getAddresses (): Multiaddr[] {
-    let addrs = this.getAnnounceAddrs().map(ma => ma.toString())
+    let multiaddrs = this.getAnnounceAddrs()
 
-    if (addrs.length === 0) {
+    if (multiaddrs.length === 0) {
       // no configured announce addrs, add configured listen addresses
-      addrs = this.components.transportManager.getAddrs().map(ma => ma.toString())
+      multiaddrs = this.components.transportManager.getAddrs()
     }
 
     // add observed addresses we are confident in
-    addrs = addrs.concat(
-      Array.from(this.observed)
-        .filter(([ma, metadata]) => metadata.confident)
-        .map(([ma]) => ma)
-    )
+    multiaddrs = multiaddrs
+      .concat(
+        Array.from(this.observed)
+          .filter(([ma, metadata]) => metadata.confident)
+          .map(([ma]) => multiaddr(ma))
+      )
+
+    const mappedMultiaddrs: Multiaddr[] = []
+
+    // add ip->domain mappings
+    for (const ma of multiaddrs) {
+      const tuples = [...ma.stringTuples()]
+      let mappedIp = false
+
+      for (const [ip, domain] of this.ipDomainMappings.entries()) {
+        for (let i = 0; i < tuples.length; i++) {
+          if (tuples[i][1] !== ip) {
+            continue
+          }
+
+          if (tuples[i][0] === CODEC_IP4) {
+            tuples[i][0] = CODEC_DNS4
+            tuples[i][1] = domain
+            mappedIp = true
+          }
+
+          if (tuples[i][0] === CODEC_IP6) {
+            tuples[i][0] = CODEC_DNS6
+            tuples[i][1] = domain
+            mappedIp = true
+          }
+        }
+      }
+
+      if (mappedIp) {
+        mappedMultiaddrs.push(
+          multiaddr(`/${
+            tuples.map(tuple => {
+              return [
+                protocols(tuple[0]).name,
+                tuple[1]
+              ].join('/')
+            }).join('/')
+          }`)
+        )
+      }
+    }
+
+    multiaddrs = multiaddrs.concat(mappedMultiaddrs)
 
     // dedupe multiaddrs
-    const addrSet = new Set(addrs)
+    const addrSet = new Set<string>()
+    multiaddrs = multiaddrs.filter(ma => {
+      const maStr = ma.toString()
+
+      if (addrSet.has(maStr)) {
+        return false
+      }
+
+      addrSet.add(maStr)
+
+      return true
+    })
 
     // Create advertising list
-    return this.announceFilter(Array.from(addrSet)
-      .map(str => multiaddr(str)))
-      .map(ma => {
-        // do not append our peer id to a path multiaddr as it will become invalid
-        if (ma.protos().pop()?.path === true) {
-          return ma
-        }
+    return this.announceFilter(
+      Array.from(addrSet)
+        .map(str => {
+          const ma = multiaddr(str)
 
-        if (ma.getPeerId() === this.components.peerId.toString()) {
-          return ma
-        }
+          // do not append our peer id to a path multiaddr as it will become invalid
+          if (ma.protos().pop()?.path === true) {
+            return ma
+          }
 
-        return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
-      })
+          if (ma.getPeerId() === this.components.peerId.toString()) {
+            return ma
+          }
+
+          return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
+        })
+    )
+  }
+
+  addDNSMapping (domain: string, addresses: string[]): void {
+    addresses.forEach(ip => {
+      this.ipDomainMappings.set(ip, domain)
+    })
+  }
+
+  removeDNSMapping (domain: string): void {
+    for (const [key, value] of this.ipDomainMappings.entries()) {
+      if (value === domain) {
+        this.ipDomainMappings.delete(key)
+      }
+    }
   }
 }

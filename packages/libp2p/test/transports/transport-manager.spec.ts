@@ -12,7 +12,7 @@ import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DefaultAddressManager } from '../../src/address-manager/index.js'
+import { AddressManager } from '../../src/address-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
 import type { Connection, Transport, Upgrader, Listener } from '@libp2p/interface'
@@ -41,7 +41,7 @@ describe('Transport Manager', () => {
       logger: defaultLogger(),
       datastore: new MemoryDatastore()
     } as any
-    components.addressManager = new DefaultAddressManager(components, { listen: [listenAddr.toString()] })
+    components.addressManager = new AddressManager(components, { listen: [listenAddr.toString()] })
     components.peerStore = persistentPeerStore(components)
 
     components.transportManager = tm = new DefaultTransportManager(components, {

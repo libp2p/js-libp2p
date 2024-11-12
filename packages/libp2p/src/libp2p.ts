@@ -8,7 +8,7 @@ import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DefaultAddressManager } from './address-manager/index.js'
+import { AddressManager } from './address-manager/index.js'
 import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
@@ -129,7 +129,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.configureComponent('registrar', new DefaultRegistrar(this.components))
 
     // Addresses {listen, announce, noAnnounce}
-    this.configureComponent('addressManager', new DefaultAddressManager(this.components, init.addresses))
+    this.configureComponent('addressManager', new AddressManager(this.components, init.addresses))
 
     // Peer routers
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)))
