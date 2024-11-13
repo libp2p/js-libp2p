@@ -17,7 +17,7 @@
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { TypedEventTarget } from './event-target.js'
-import type { Ed25519PublicKey, PrivateKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
+import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
 import type { Metrics } from './metrics/index.js'
 import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
