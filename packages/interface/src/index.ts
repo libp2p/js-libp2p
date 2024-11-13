@@ -17,7 +17,7 @@
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { TypedEventTarget } from './event-target.js'
-import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
+import type { Ed25519PublicKey, PrivateKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
 import type { Metrics } from './metrics/index.js'
 import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
@@ -285,7 +285,8 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'certificate:provision': CustomEvent<TLSCertificate>
 
   /**
-   * This event notifies listeners that a TLS certificate is available for use
+   * This event notifies listeners that a new TLS certificate is available for
+   * use. Any previous certificate may no longer be valid.
    */
   'certificate:renew': CustomEvent<TLSCertificate>
 

@@ -1,27 +1,38 @@
 import { ClientAuth } from '@libp2p/http-fetch/auth'
-import { serviceDependencies, stop } from '@libp2p/interface'
+import { serviceDependencies, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
-import { Crypto } from '@peculiar/webcrypto'
-import * as x509 from '@peculiar/x509'
-import * as acmeClient from 'acme-client'
+import { X509Certificate } from '@peculiar/x509'
+import * as acme from 'acme-client'
+import { Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
+import { DomainMapper } from './domain-mapper.js'
+import { importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
 import type { AutoTLSComponents, AutoTLSInit, AutoTLS as AutoTLSInterface } from './index.js'
-import type { PeerId, PrivateKey, Logger, TypedEventTarget, Libp2pEvents, AbortOptions, TLSCertificate } from '@libp2p/interface'
+import type { PeerId, PrivateKey, Logger, TypedEventTarget, Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
+import type { Keychain } from '@libp2p/keychain'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const crypto = new Crypto()
-x509.cryptoProvider.set(crypto)
+import type { Datastore } from 'interface-datastore'
+import type { Buffer } from 'node:buffer'
 
 type CertificateEvent = 'certificate:provision' | 'certificate:renew'
+
+interface Certificate {
+  key: string
+  cert: string
+  notAfter: Date
+}
 
 export class AutoTLS implements AutoTLSInterface {
   private readonly log: Logger
   private readonly addressManager: AddressManager
+  private readonly keychain: Keychain
+  private readonly datastore: Datastore
   private readonly privateKey: PrivateKey
   private readonly peerId: PeerId
   private readonly events: TypedEventTarget<Libp2pEvents>
@@ -29,14 +40,22 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly forgeDomain: string
   private readonly acmeDirectory: string
   private readonly clientAuth: ClientAuth
-  private readonly timeout: number
+  private readonly provisionTimeout: number
   private readonly renewThreshold: number
   private started: boolean
   private shutdownController?: AbortController
-  public certificate?: TLSCertificate
+  public certificate?: Certificate
   private fetching: boolean
   private readonly fetchCertificates: DebouncedFunction
   private renewTimeout?: ReturnType<typeof setTimeout>
+  private readonly accountPrivateKeyName: string
+  private readonly accountPrivateKeyBits: number
+  private readonly certificatePrivateKeyName: string
+  private readonly certificatePrivateKeyBits: number
+  private readonly certificateDatastoreKey: string
+  private readonly email
+  private readonly domain
+  private readonly domainMapper: DomainMapper
 
   constructor (components: AutoTLSComponents, init: AutoTLSInit = {}) {
     this.log = components.logger.forComponent('libp2p:certificate-manager')
@@ -44,20 +63,37 @@ export class AutoTLS implements AutoTLSInterface {
     this.privateKey = components.privateKey
     this.peerId = components.peerId
     this.events = components.events
-    this.forgeEndpoint = init.forgeEndpoint ?? 'registration.libp2p.direct'
-    this.forgeDomain = init.forgeDomain ?? 'libp2p.direct'
-    this.acmeDirectory = init.acmeDirectory ?? 'https://acme-v02.api.letsencrypt.org/directory'
-    this.timeout = init.timeout ?? 10000
-    this.renewThreshold = init.renewThreshold ?? 60000
+    this.keychain = components.keychain
+    this.datastore = components.datastore
+    this.forgeEndpoint = init.forgeEndpoint ?? DEFAULT_FORGE_ENDPOINT
+    this.forgeDomain = init.forgeDomain ?? DEFAULT_FORGE_DOMAIN
+    this.acmeDirectory = init.acmeDirectory ?? DEFAULT_ACME_DIRECTORY
+    this.provisionTimeout = init.provisionTimeout ?? DEFAULT_PROVISION_TIMEOUT
+    this.renewThreshold = init.renewThreshold ?? DEFAULT_RENEWAL_THRESHOLD
+    this.accountPrivateKeyName = init.accountPrivateKeyName ?? DEFAULT_ACCOUNT_PRIVATE_KEY_NAME
+    this.accountPrivateKeyBits = init.accountPrivateKeyBits ?? DEFAULT_ACCOUNT_PRIVATE_KEY_BITS
+    this.certificatePrivateKeyName = init.certificatePrivateKeyName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
+    this.certificatePrivateKeyBits = init.certificatePrivateKeyBits ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS
+    this.certificateDatastoreKey = init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY
     this.clientAuth = new ClientAuth(this.privateKey)
     this.started = false
     this.fetching = false
-    this.fetchCertificates = debounce(this._fetchCertificates.bind(this), init.delay ?? 5000)
+    this.fetchCertificates = debounce(this._fetchCertificates.bind(this), init.provisionDelay ?? DEFAULT_PROVISION_DELAY)
+
+    const base36EncodedPeer = base36.encode(this.peerId.toCID().bytes)
+    this.domain = `${base36EncodedPeer}.${this.forgeDomain}`
+    this.email = `${base36EncodedPeer}@${this.forgeDomain}`
+
+    this.domainMapper = new DomainMapper(components, {
+      ...init,
+      domain: this.domain
+    })
   }
 
   get [serviceDependencies] (): string[] {
     return [
-      '@libp2p/identify'
+      '@libp2p/identify',
+      '@libp2p/keychain'
     ]
   }
 
@@ -66,6 +102,7 @@ export class AutoTLS implements AutoTLSInterface {
       return
     }
 
+    await start(this.domainMapper)
     this.events.addEventListener('self:peer:update', this.fetchCertificates)
     this.shutdownController = new AbortController()
     this.started = true
@@ -75,100 +112,48 @@ export class AutoTLS implements AutoTLSInterface {
     this.events.removeEventListener('self:peer:update', this.fetchCertificates)
     this.shutdownController?.abort()
     clearTimeout(this.renewTimeout)
-    await stop(this.fetchCertificates)
+    await stop(this.fetchCertificates, this.domainMapper)
     this.started = false
   }
 
   private _fetchCertificates (): void {
-    if (this.fetching || this.certificate != null) {
-      this.log('already fetching or already have a certificate')
-      return
-    }
-
-    const addresses = this.addressManager
-      .getAddresses()
-      .filter(ma => !isPrivate(ma) && !isLoopback(ma) && (
-        TCP.exactMatch(ma) ||
-        WebSockets.exactMatch(ma) ||
-        WebSocketsSecure.exactMatch(ma) ||
-        QUICV1.exactMatch(ma) ||
-        WebTransport.exactMatch(ma)
-      ))
+    const addresses = this.addressManager.getAddresses().filter(supportedAddressesFilter)
 
     if (addresses.length === 0) {
       this.log('not fetching certificate as we have no public addresses')
       return
     }
 
+    if (!this.needsRenewal(this.certificate?.notAfter)) {
+      this.log('certificate does not need renewal')
+      return
+    }
+
+    if (this.fetching) {
+      this.log('already fetching')
+      return
+    }
+
     this.fetching = true
 
     this.fetchCertificate(addresses, {
-      signal: AbortSignal.timeout(this.timeout)
+      signal: AbortSignal.timeout(this.provisionTimeout)
     })
       .catch(err => {
-        this.log.error('error fetching certificates %e', err)
+        this.log.error('error fetching certificates - %e', err)
       })
       .finally(() => {
         this.fetching = false
       })
   }
 
-  private async fetchCertificate (mulitaddrs: Multiaddr[], options?: AbortOptions): Promise<void> {
+  private async fetchCertificate (multiaddrs: Multiaddr[], options?: AbortOptions): Promise<void> {
     this.log('fetching certificate')
 
     // TODO: handle rate limit errors like "too many new registrations (10) from this IP address in the last 3h0m0s, retry after 2024-11-01 09:22:38 UTC: see https://letsencrypt.org/docs/rate-limits/#new-registrations-per-ip-address"
 
-    const base36EncodedPeer = base36.encode(this.peerId.toCID().bytes)
-    const domain = `${base36EncodedPeer}.${this.forgeDomain}`
-
-    // Create CSR
-    const [certificatePrivateKey, csr] = await acmeClient.forge.createCsr({
-      commonName: domain,
-      altNames: []
-    })
-
-    const accountPrivateKey = await acmeClient.forge.createPrivateKey()
-
-    const client = new acmeClient.Client({
-      directoryUrl: this.acmeDirectory,
-      accountKey: accountPrivateKey
-    })
-    const certString = await client.auto({
-      csr,
-      email: `${base36EncodedPeer}@libp2p.direct`,
-      termsOfServiceAgreed: true,
-      challengeCreateFn: async (authz, challenge, keyAuthorization) => {
-        const addresses = mulitaddrs.map(ma => ma.toString())
-
-        this.log('asking https://%s/v1/_acme-challenge to respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
-        this.log('dialback public addresses: %s', addresses.join(', '))
-        const response = await this.clientAuth.authenticatedFetch(`https://${this.forgeEndpoint}/v1/_acme-challenge`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            value: keyAuthorization,
-            addresses
-          }),
-          ...options
-        })
-
-        if (!response.ok) {
-          this.log.error('invalid response from forge %o', response)
-          throw new Error('Invalid response status')
-        }
-
-        this.log('https://%s/v1/_acme-challenge will respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
-      },
-      challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
-        // no-op
-      },
-      challengePriority: ['dns-01'],
-      skipChallengeVerification: true
-    })
-
-    this.log('fetched certificate', certString)
+    const certificatePrivateKey = await loadOrCreateKey(this.keychain, this.certificatePrivateKeyName, this.certificatePrivateKeyBits)
+    const { pem, cert } = await this.loadOrCreateCertificate(certificatePrivateKey, multiaddrs, options)
 
     let event: CertificateEvent = 'certificate:provision'
 
@@ -177,24 +162,160 @@ export class AutoTLS implements AutoTLSInterface {
     }
 
     this.certificate = {
-      key: certificatePrivateKey.toString('base64'),
-      cert: certString
+      key: certificatePrivateKey,
+      cert: pem,
+      notAfter: cert.notAfter
     }
 
-    // emit an event
-    this.events.safeDispatchEvent(event, {
-      detail: this.certificate
-    })
-
-    const cert = new x509.X509Certificate(certString)
     const renewAt = new Date(cert.notAfter.getTime() - this.renewThreshold)
 
     this.log('certificate expiry %s - renewing at %s', cert.notAfter, renewAt)
 
     // schedule renewing the certificate
+    clearTimeout(this.renewTimeout)
     this.renewTimeout = setTimeout(() => {
-      this.certificate = undefined
-      this._fetchCertificates()
-    }, renewAt.getTime() - Date.now())
+      Promise.resolve()
+        .then(async () => {
+          this.certificate = undefined
+          this.fetchCertificates()
+        })
+        .catch(err => {
+          this.log.error('error renewing certificate - %e', err)
+        })
+    }, Math.min(renewAt.getTime() - Date.now(), Math.pow(2, 31) - 1))
+
+    // emit a certificate event
+    this.events.safeDispatchEvent(event, {
+      detail: this.certificate
+    })
+  }
+
+  private async loadOrCreateCertificate (certificatePrivateKey: string, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<{ pem: string, cert: X509Certificate }> {
+    const existingCertificate = await this.loadCertificateIfExists(certificatePrivateKey)
+
+    if (existingCertificate != null) {
+      return existingCertificate
+    }
+
+    this.log('creating new csr')
+
+    // create CSR
+    const csr = await this.loadOrCreateCSR(certificatePrivateKey)
+
+    this.log('fetching new certificate')
+
+    // create cert
+    const pem = await this.fetchAcmeCertificate(csr, multiaddrs, options)
+    const cert = new X509Certificate(pem)
+
+    // cache cert
+    await this.datastore.put(new Key(this.certificateDatastoreKey), uint8ArrayFromString(pem))
+
+    return {
+      pem,
+      cert
+    }
+  }
+
+  private async loadCertificateIfExists (certificatePrivateKey: string): Promise<{ pem: string, cert: X509Certificate } | undefined> {
+    const key = new Key(this.certificateDatastoreKey)
+
+    try {
+      this.log.trace('try to load existing certificate')
+      const buf = await this.datastore.get(key)
+      const pem = uint8ArrayToString(buf)
+      const cert = new X509Certificate(pem)
+
+      this.log.trace('loaded existing certificate')
+
+      if (this.needsRenewal(cert.notAfter)) {
+        this.log('existing certificate requires renewal')
+        return
+      }
+
+      try {
+        const key = importFromPem(certificatePrivateKey)
+        const certPublicKeyThumbprint = await cert.publicKey.getThumbprint()
+        const keyPublicKeyThumbprint = await crypto.subtle.digest('SHA-1', key.publicKey.raw)
+
+        if (!uint8ArrayEquals(
+          new Uint8Array(certPublicKeyThumbprint, 0, certPublicKeyThumbprint.byteLength),
+          new Uint8Array(keyPublicKeyThumbprint, 0, keyPublicKeyThumbprint.byteLength)
+        )) {
+          this.log('certificate public key did not match the expected public key')
+          return
+        }
+      } catch (err: any) {
+        this.log.trace('failed to verify existing certificate with stored private key - %e', err)
+        return
+      }
+
+      return { pem, cert }
+    } catch (err: any) {
+      this.log.trace('no existing valid certificate found - %e', err)
+    }
+  }
+
+  private async loadOrCreateCSR (certificatePrivateKey: string): Promise<Buffer> {
+    const [, csr] = await acme.crypto.createCsr({
+      commonName: `*.${this.domain}`,
+      altNames: []
+    }, certificatePrivateKey)
+
+    return csr
+  }
+
+  async fetchAcmeCertificate (csr: Buffer, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<string> {
+    const client = new acme.Client({
+      directoryUrl: this.acmeDirectory,
+      accountKey: await loadOrCreateKey(this.keychain, this.accountPrivateKeyName, this.accountPrivateKeyBits)
+    })
+
+    return client.auto({
+      csr,
+      email: this.email,
+      termsOfServiceAgreed: true,
+      challengeCreateFn: async (authz, challenge, keyAuthorization) => {
+        await this.configureAcmeChallengeResponse(multiaddrs, keyAuthorization, options)
+      },
+      challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
+        // no-op
+      },
+      challengePriority: ['dns-01'],
+      skipChallengeVerification: true
+    })
+  }
+
+  async configureAcmeChallengeResponse (multiaddrs: Multiaddr[], keyAuthorization: string, options?: AbortOptions): Promise<void> {
+    const addresses = multiaddrs.map(ma => ma.toString())
+
+    this.log('asking https://%s/v1/_acme-challenge to respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
+    this.log('dialback public addresses: %s', addresses.join(', '))
+    const response = await this.clientAuth.authenticatedFetch(`https://${this.forgeEndpoint}/v1/_acme-challenge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        value: keyAuthorization,
+        addresses
+      }),
+      ...options
+    })
+
+    if (!response.ok) {
+      this.log.error('invalid response from forge %o', response)
+      throw new Error('Invalid response status')
+    }
+
+    this.log('https://%s/v1/_acme-challenge will respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
+  }
+
+  private needsRenewal (notAfter?: Date): boolean {
+    if (notAfter == null) {
+      return true
+    }
+
+    return notAfter.getTime() - this.renewThreshold < Date.now()
   }
 }

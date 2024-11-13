@@ -20,6 +20,8 @@
  * import { noise } from '@chainsafe/libp2p-noise'
  * import { yamux } from '@chainsafe/libp2p-yamux'
  * import { autoTLS } from '@libp2p/auto-tls'
+ * import { identify } from '@libp2p/identify'
+ * import { keychain } from '@libp2p/keychain'
  * import { webSockets } from '@libp2p/websockets'
  * import { uPnPNAT } from '@libp2p/upnp-nat'
  * import { createLibp2p } from 'libp2p'
@@ -41,6 +43,8 @@
  *   ],
  *   services: {
  *     autoTLS: autoTLS(),
+ *     identify: identify(),
+ *     keychain: keychain(),
  *     upnp: uPnPNAT()
  *   }
  * })
@@ -56,6 +60,8 @@
 import { AutoTLS as AutoTLSClass } from './auto-tls.js'
 import type { PeerId, PrivateKey, ComponentLogger, Libp2pEvents, TypedEventTarget, TLSCertificate } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
+import type { Keychain } from '@libp2p/keychain'
+import type { Datastore } from 'interface-datastore'
 
 export interface AutoTLSComponents {
   privateKey: PrivateKey
@@ -63,13 +69,16 @@ export interface AutoTLSComponents {
   logger: ComponentLogger
   addressManager: AddressManager
   events: TypedEventTarget<Libp2pEvents>
+  keychain: Keychain
+  datastore: Datastore
 }
 
 export interface AutoTLSInit {
   /**
-   * Where to send requests to answer an ACME DNS challenge on our behalf
+   * Where to send requests to answer an ACME DNS challenge on our behalf - note
+   * that `/v1/_acme-challenge` will be added to the end of the URL
    *
-   * @default 'registration.libp2p.direct'
+   * @default 'https://registration.libp2p.direct'
    */
   forgeEndpoint?: string
 
@@ -97,17 +106,17 @@ export interface AutoTLSInit {
    *
    * @default 10000
    */
-  timeout?: number
+  provisionTimeout?: number
 
   /**
-   * Certificates are aquired when the `self:peer:update` event fires, which
+   * Certificates are acquired when the `self:peer:update` event fires, which
    * happens when the node's addresses change. To avoid starting to map ports
    * while multiple addresses are being added, the mapping function is debounced
    * by this number of ms
    *
    * @default 5000
    */
-  delay?: number
+  provisionDelay?: number
 
   /**
    * How long before the expiry of the certificate to renew it in ms
@@ -115,6 +124,41 @@ export interface AutoTLSInit {
    * @default 60000
    */
   renewThreshold?: number
+
+  /**
+   * The key the certificate is stored in the datastore under
+   *
+   * @default '/libp2p/auto-tls/certificate'
+   */
+  certificateDatastoreKey?: string
+
+  /**
+   * The name the ACME account RSA private key is stored in the keychain with
+   *
+   * @default 'auto-tls-acme-account-private-key'
+   */
+  accountPrivateKeyName?: string
+
+  /**
+   * How many bits the RSA private key for the account should be
+   *
+   * @default 2048
+   */
+  accountPrivateKeyBits?: number
+
+  /**
+   * The name the certificate RSA private key is stored in the keychain with
+   *
+   * @default 'auto-tls-certificate-private-key'
+   */
+  certificatePrivateKeyName?: string
+
+  /**
+   * How many bits the RSA private key for the certificate should be
+   *
+   * @default 2048
+   */
+  certificatePrivateKeyBits?: number
 }
 
 export interface AutoTLS {
