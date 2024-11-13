@@ -70,10 +70,25 @@ export class PingService implements Startable, PingServiceInterface {
 
         const buf = await bytes.read(PING_LENGTH, {
           signal
+        }).catch((err: Error) => {
+          if (stream.readStatus === 'ready') throw err
+          return null
         })
+
+        if (buf === null) break
+
         await bytes.write(buf, {
           signal
         })
+      }
+      // close the stream
+      if (stream.status === 'open') {
+        const signal = AbortSignal.timeout(this.timeout)
+        signal.addEventListener('abort', () => {
+          stream?.abort(new TimeoutError('close timeout'))
+        })
+
+        await stream.close({ signal })
       }
     })
       .catch(err => {
