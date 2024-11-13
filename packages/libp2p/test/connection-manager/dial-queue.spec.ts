@@ -43,8 +43,6 @@ describe('dial queue', () => {
     if (dialer != null) {
       dialer.stop()
     }
-
-    sinon.reset()
   })
 
   it('should end when a single multiaddr dials succeeds', async () => {
