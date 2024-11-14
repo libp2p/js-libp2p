@@ -7,7 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pRetry from 'p-retry'
-import sinon from 'sinon'
+import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { ReconnectQueue } from '../../src/connection-manager/reconnect-queue.js'
 import type { ComponentLogger, Libp2pEvents, PeerStore, TypedEventTarget, Peer } from '@libp2p/interface'
@@ -28,15 +28,15 @@ describe('reconnect queue', () => {
     components = {
       connectionManager: stubInterface(),
       events: new TypedEventEmitter<Libp2pEvents>(),
-      peerStore: stubInterface<PeerStore>(),
+      peerStore: stubInterface<PeerStore>({
+        all: Sinon.stub().resolves([])
+      }),
       logger: peerLogger(peerId)
     }
   })
 
   afterEach(async () => {
     await stop(queue)
-
-    sinon.reset()
   })
 
   it('should reconnect to KEEP_ALIVE peers on startup', async () => {

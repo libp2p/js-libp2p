@@ -33,7 +33,6 @@ export class TestDHT {
       privateKey,
       datastore: new MemoryDatastore(),
       registrar: mockRegistrar(),
-      // connectionGater: mockConnectionGater(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),

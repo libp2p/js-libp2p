@@ -1,8 +1,11 @@
 import { TypedEventEmitter } from '@libp2p/interface'
-import { Circuit } from '@multiformats/mafmt'
+import { P2P } from '@multiformats/multiaddr-matcher'
+import { fmt, literal } from '@multiformats/multiaddr-matcher/utils'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+
+const Circuit = fmt(P2P.matchers[0], literal('p2p-circuit'))
 
 export interface WebRTCPeerListenerComponents {
   peerId: PeerId
@@ -14,21 +17,20 @@ export interface WebRTCPeerListenerInit {
 }
 
 export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly peerId: PeerId
   private readonly transportManager: TransportManager
   private readonly shutdownController: AbortController
 
   constructor (components: WebRTCPeerListenerComponents, init: WebRTCPeerListenerInit) {
     super()
 
-    this.peerId = components.peerId
     this.transportManager = components.transportManager
-
     this.shutdownController = init.shutdownController
   }
 
   async listen (): Promise<void> {
-    this.safeDispatchEvent('listening', {})
+    queueMicrotask(() => {
+      this.safeDispatchEvent('listening')
+    })
   }
 
   getAddrs (): Multiaddr[] {
@@ -36,9 +38,9 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
       .getListeners()
       .filter(l => l !== this)
       .map(l => l.getAddrs()
-        .filter(ma => Circuit.matches(ma))
+        .filter(ma => Circuit.exactMatch(ma))
         .map(ma => {
-          return ma.encapsulate(`/webrtc/p2p/${this.peerId}`)
+          return ma.encapsulate('/webrtc')
         })
       )
       .flat()
@@ -46,6 +48,8 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
 
   async close (): Promise<void> {
     this.shutdownController.abort()
-    this.safeDispatchEvent('close', {})
+    queueMicrotask(() => {
+      this.safeDispatchEvent('close')
+    })
   }
 }

@@ -1,14 +1,5 @@
-import { expect } from 'aegir/chai'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { Message } from '../src/pb/message.js'
-
-export const expectError = (error: unknown, message: string): void => {
-  if (error instanceof Error) {
-    expect(error.message).to.equal(message)
-  } else {
-    expect('Did not throw error:').to.equal(message)
-  }
-}
 
 /**
  * simulates receiving a FIN_ACK on the passed datachannel

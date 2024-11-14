@@ -1,11 +1,13 @@
 import net from 'node:net'
 import { promisify } from 'util'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
+import type { Connection, Upgrader } from '@libp2p/interface'
 
 const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket(i: number): Promise<net.Socket>, assertRefusedSocket(i: number): Promise<net.Socket> } => {
   function createSocket (i: number): net.Socket {
@@ -75,9 +77,17 @@ async function assertServerConnections (listener: TCPListener, connections: numb
 
 describe('closeAbove/listenBelow', () => {
   let afterEachCallbacks: Array<() => Promise<any> | any> = []
+  let upgrader: Upgrader
 
   beforeEach(() => {
     afterEachCallbacks = []
+
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
   })
 
   afterEach(async () => {
@@ -93,7 +103,6 @@ describe('closeAbove/listenBelow', () => {
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader()
     const listener = transport.createListener({ upgrader }) as TCPListener
     afterEachCallbacks.push(async () => listener.close())
 
@@ -120,7 +129,6 @@ describe('closeAbove/listenBelow', () => {
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader()
     const listener = transport.createListener({ upgrader }) as TCPListener
     afterEachCallbacks.push(async () => listener.close())
 
@@ -155,7 +163,6 @@ describe('closeAbove/listenBelow', () => {
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader()
     const listener = transport.createListener({ upgrader }) as TCPListener
     afterEachCallbacks.push(async () => listener.close())
 
@@ -185,7 +192,6 @@ describe('closeAbove/listenBelow', () => {
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader()
     const listener = transport.createListener({ upgrader }) as TCPListener
     afterEachCallbacks.push(async () => listener.close())
 

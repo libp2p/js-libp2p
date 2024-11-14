@@ -2,8 +2,7 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, isStartable } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
-import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager, mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
+import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -81,7 +80,7 @@ describe('circuit-relay hop protocol', function () {
       events
     })
 
-    const connectionGater = mockConnectionGater()
+    const connectionGater = {}
 
     const service = circuitRelayServer(circuitRelayInit)({
       addressManager,
@@ -291,7 +290,7 @@ describe('circuit-relay hop protocol', function () {
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.OK)
 
-      expect(relayNode.peerStore.merge.calledWith(matchPeerId(clientNode.peerId), {
+      expect(relayNode.peerStore.merge.calledWith(clientNode.peerId, {
         tags: {
           [RELAY_SOURCE_TAG]: {
             value: 1,
