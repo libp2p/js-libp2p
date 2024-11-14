@@ -12,7 +12,7 @@ import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
 import type { TestSetup } from '../index.js'
 import type { Echo } from '@libp2p/echo'
-import type { Connection, Libp2p, Stream, StreamHandler } from '@libp2p/interface'
+import type { Connection, Libp2p, StreamHandler } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
 import type { Libp2pInit } from 'libp2p'
@@ -167,13 +167,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         remoteConn = await incomingConnectionPromise.promise
       }
 
-      const streams: Stream[] = []
-
       for (let i = 0; i < 5; i++) {
-        streams.push(await connection.newStream('/echo/1.0.0', {
+        await connection.newStream('/echo/1.0.0', {
           maxOutboundStreams: 5
-        }))
+        })
       }
+
+      const streams = connection.streams
 
       // Close the connection and verify all streams have been closed
       await connection.close()

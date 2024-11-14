@@ -16,7 +16,10 @@ describe('memory transport interface compliance tests', () => {
         ],
         streamMuxers: [
           yamux()
-        ]
+        ],
+        connectionMonitor: {
+          enabled: false
+        }
       }
 
       return {

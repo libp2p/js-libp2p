@@ -28,6 +28,9 @@ describe('websocket transport interface compliance', () => {
         ],
         connectionGater: {
           denyDialMultiaddr: () => false
+        },
+        connectionMonitor: {
+          enabled: false
         }
       }
 
