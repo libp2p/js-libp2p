@@ -155,12 +155,16 @@ export class DataChannelMuxer implements StreamMuxer {
         return
       }
 
+      // lib-datachannel throws if `.getId` is called on a closed channel so
+      // memoize it
+      const id = channel.id
+
       const stream = createStream({
         channel,
         direction: 'inbound',
         onEnd: () => {
-          this.log('incoming channel %s ended with state %s', channel.id, channel.readyState)
           this.#onStreamEnd(stream, channel)
+          this.log('incoming channel %s ended', id)
         },
         logger: this.logger,
         ...this.dataChannelOptions
@@ -241,15 +245,18 @@ export class DataChannelMuxer implements StreamMuxer {
   newStream (): Stream {
     // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
+    // lib-datachannel throws if `.getId` is called on a closed channel so
+    // memoize it
+    const id = channel.id
 
-    this.log.trace('opened outgoing datachannel with channel id %s', channel.id)
+    this.log.trace('opened outgoing datachannel with channel id %s', id)
 
     const stream = createStream({
       channel,
       direction: 'outbound',
       onEnd: () => {
-        this.log('outgoing channel %s ended with state %s', channel.id, channel.readyState)
         this.#onStreamEnd(stream, channel)
+        this.log('outgoing channel %s ended', id)
       },
       logger: this.logger,
       ...this.dataChannelOptions

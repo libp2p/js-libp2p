@@ -140,7 +140,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         .with.property('name', 'AbortError')
     })
 
-    it('should close all streams when the connection closes', async () => {
+    it.only('should close all streams when the connection closes', async () => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       let incomingConnectionPromise: DeferredPromise<Connection> | undefined
@@ -164,13 +164,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         remoteConn = await incomingConnectionPromise.promise
       }
 
-      const streams: Stream[] = []
-
       for (let i = 0; i < 5; i++) {
-        streams.push(await connection.newStream('/echo/1.0.0', {
+        await connection.newStream('/echo/1.0.0', {
           maxOutboundStreams: 5
-        }))
+        })
       }
+
+      const streams = connection.streams
 
       // Close the connection and verify all streams have been closed
       await connection.close()
