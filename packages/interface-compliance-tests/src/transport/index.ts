@@ -9,7 +9,7 @@ import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
 import type { TestSetup } from '../index.js'
 import type { Echo } from '@libp2p/echo'
-import type { Connection, Libp2p, Stream } from '@libp2p/interface'
+import type { Connection, Libp2p } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
 import type { Libp2pInit } from 'libp2p'
@@ -140,7 +140,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         .with.property('name', 'AbortError')
     })
 
-    it.only('should close all streams when the connection closes', async () => {
+    it('should close all streams when the connection closes', async () => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       let incomingConnectionPromise: DeferredPromise<Connection> | undefined
