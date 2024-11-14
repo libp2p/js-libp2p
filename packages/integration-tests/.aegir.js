@@ -20,6 +20,7 @@ export default {
       const { identify } = await import('@libp2p/identify')
       const { echo } = await import('@libp2p/echo')
       const { mockMuxer } = await import('@libp2p/interface-compliance-tests/mocks')
+      const { ping } = await import('@libp2p/ping')
 
       const libp2p = await createLibp2p({
         connectionManager: {
@@ -54,7 +55,8 @@ export default {
           }),
           echo: echo({
             maxInboundStreams: 5
-          })
+          }),
+          ping: ping()
         }
       })
 
