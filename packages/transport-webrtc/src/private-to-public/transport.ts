@@ -1,12 +1,12 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { transportSymbol, serviceCapabilities, InvalidParametersError } from '@libp2p/interface'
-import * as p from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { DataChannelError, InappropriateMultiaddrError, UnimplementedError } from '../error.js'
+import { DataChannelError, UnimplementedError } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { createStream } from '../stream.js'
@@ -121,11 +121,11 @@ export class WebRTCDirectTransport implements Transport {
     const controller = new AbortController()
     const signal = controller.signal
 
+    let remotePeer: PeerId | undefined
     const remotePeerString = ma.getPeerId()
-    if (remotePeerString === null) {
-      throw new InappropriateMultiaddrError("we need to have the remote's PeerId")
+    if (remotePeerString != null) {
+      remotePeer = peerIdFromString(remotePeerString)
     }
-    const theirPeerId = p.peerIdFromString(remotePeerString)
 
     const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
 
@@ -261,7 +261,7 @@ export class WebRTCDirectTransport implements Transport {
       // Therefore, we need to secure an inbound noise connection from the remote.
       await connectionEncrypter.secureInbound(wrappedDuplex, {
         signal,
-        remotePeer: theirPeerId
+        remotePeer
       })
 
       return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })

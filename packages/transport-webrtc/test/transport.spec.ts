@@ -9,7 +9,6 @@ import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { UnimplementedError } from '../src/error.js'
 import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
-import { expectError } from './util.js'
 import type { Upgrader } from '@libp2p/interface'
 
 describe('WebRTCDirect Transport', () => {
@@ -80,19 +79,5 @@ describe('WebRTCDirect Transport', () => {
       ...valid,
       ...invalid
     ])).to.deep.equal(valid)
-  })
-
-  it('throws WebRTC transport error when dialing a multiaddr without a PeerId', async () => {
-    const ma = multiaddr('/ip4/1.2.3.4/udp/1234/webrtc-direct/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ')
-    const transport = new WebRTCDirectTransport(components)
-
-    try {
-      await transport.dial(ma, {
-        upgrader: stubInterface<Upgrader>()
-      })
-    } catch (error: any) {
-      const expected = 'WebRTC transport error: There was a problem with the Multiaddr which was passed in: we need to have the remote\'s PeerId'
-      expectError(error, expected)
-    }
   })
 })
