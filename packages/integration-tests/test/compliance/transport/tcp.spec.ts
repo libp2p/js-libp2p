@@ -21,7 +21,10 @@ describe('tcp transport interface compliance IPv4', () => {
         ],
         streamMuxers: [
           yamux()
-        ]
+        ],
+        connectionMonitor: {
+          enabled: false
+        }
       }
 
       return {

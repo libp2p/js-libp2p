@@ -35,6 +35,9 @@ describe('Circuit relay transport interface compliance', () => {
         },
         connectionGater: {
           denyDialMultiaddr: () => false
+        },
+        connectionMonitor: {
+          enabled: false
         }
       }
 
