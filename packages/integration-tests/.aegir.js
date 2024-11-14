@@ -57,6 +57,9 @@ export default {
             maxInboundStreams: 5
           }),
           ping: ping()
+        },
+        connectionMonitor: {
+          enabled: false
         }
       })
 
