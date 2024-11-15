@@ -1,9 +1,9 @@
 export const DEFAULT_FORGE_ENDPOINT = 'https://registration.libp2p.direct'
 export const DEFAULT_FORGE_DOMAIN = 'libp2p.direct'
 export const DEFAULT_ACME_DIRECTORY = 'https://acme-v02.api.letsencrypt.org/directory'
-export const DEFAULT_PROVISION_TIMEOUT = 10000
-export const DEFAULT_PROVISION_DELAY = 5000
-export const DEFAULT_RENEWAL_THRESHOLD = 60000
+export const DEFAULT_PROVISION_TIMEOUT = 10_000
+export const DEFAULT_PROVISION_DELAY = 5_000
+export const DEFAULT_RENEWAL_THRESHOLD = 86_400_000
 export const DEFAULT_ACCOUNT_PRIVATE_KEY_NAME = 'auto-tls-acme-account-private-key'
 export const DEFAULT_ACCOUNT_PRIVATE_KEY_BITS = 2048
 export const DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME = 'auto-tls-certificate-private-key'

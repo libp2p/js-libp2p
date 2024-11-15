@@ -119,9 +119,10 @@ export interface AutoTLSInit {
   provisionDelay?: number
 
   /**
-   * How long before the expiry of the certificate to renew it in ms
+   * How long before the expiry of the certificate to renew it in ms, defaults
+   * to one day
    *
-   * @default 60000
+   * @default 86_400_000
    */
   renewThreshold?: number
 

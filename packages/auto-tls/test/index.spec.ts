@@ -61,6 +61,22 @@ describe('auto-tls', () => {
     await stop(autoTLS)
   })
 
+  it('should error with an invalid forge endpoint', () => {
+    expect(() => {
+      return new AutoTLS(components, {
+        forgeEndpoint: 'not a valid url'
+      })
+    }).to.throw('Invalid URL')
+  })
+
+  it('should error with an invalid acme directory', () => {
+    expect(() => {
+      return new AutoTLS(components, {
+        acmeDirectory: 'not a valid url'
+      })
+    }).to.throw('Invalid URL')
+  })
+
   it('should provision a TLS certificate', async () => {
     autoTLS = new AutoTLS(components, {
       provisionDelay: 10
@@ -134,7 +150,7 @@ describe('auto-tls', () => {
     expect(autoTLS.fetchAcmeCertificate).to.have.property('called', true)
   })
 
-  it.skip('should provision a new TLS certificate when the existing one has expired', async () => {
+  it('should provision a new TLS certificate when the existing one has expired', async () => {
     autoTLS = new AutoTLS(components, {
       provisionDelay: 10
     })

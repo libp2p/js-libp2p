@@ -36,9 +36,9 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly privateKey: PrivateKey
   private readonly peerId: PeerId
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly forgeEndpoint: string
+  private readonly forgeEndpoint: URL
   private readonly forgeDomain: string
-  private readonly acmeDirectory: string
+  private readonly acmeDirectory: URL
   private readonly clientAuth: ClientAuth
   private readonly provisionTimeout: number
   private readonly renewThreshold: number
@@ -46,7 +46,7 @@ export class AutoTLS implements AutoTLSInterface {
   private shutdownController?: AbortController
   public certificate?: Certificate
   private fetching: boolean
-  private readonly fetchCertificates: DebouncedFunction
+  private readonly onSelfPeerUpdate: DebouncedFunction
   private renewTimeout?: ReturnType<typeof setTimeout>
   private readonly accountPrivateKeyName: string
   private readonly accountPrivateKeyBits: number
@@ -65,9 +65,9 @@ export class AutoTLS implements AutoTLSInterface {
     this.events = components.events
     this.keychain = components.keychain
     this.datastore = components.datastore
-    this.forgeEndpoint = init.forgeEndpoint ?? DEFAULT_FORGE_ENDPOINT
+    this.forgeEndpoint = new URL(init.forgeEndpoint ?? DEFAULT_FORGE_ENDPOINT)
     this.forgeDomain = init.forgeDomain ?? DEFAULT_FORGE_DOMAIN
-    this.acmeDirectory = init.acmeDirectory ?? DEFAULT_ACME_DIRECTORY
+    this.acmeDirectory = new URL(init.acmeDirectory ?? DEFAULT_ACME_DIRECTORY)
     this.provisionTimeout = init.provisionTimeout ?? DEFAULT_PROVISION_TIMEOUT
     this.renewThreshold = init.renewThreshold ?? DEFAULT_RENEWAL_THRESHOLD
     this.accountPrivateKeyName = init.accountPrivateKeyName ?? DEFAULT_ACCOUNT_PRIVATE_KEY_NAME
@@ -78,7 +78,7 @@ export class AutoTLS implements AutoTLSInterface {
     this.clientAuth = new ClientAuth(this.privateKey)
     this.started = false
     this.fetching = false
-    this.fetchCertificates = debounce(this._fetchCertificates.bind(this), init.provisionDelay ?? DEFAULT_PROVISION_DELAY)
+    this.onSelfPeerUpdate = debounce(this._onSelfPeerUpdate.bind(this), init.provisionDelay ?? DEFAULT_PROVISION_DELAY)
 
     const base36EncodedPeer = base36.encode(this.peerId.toCID().bytes)
     this.domain = `${base36EncodedPeer}.${this.forgeDomain}`
@@ -103,20 +103,20 @@ export class AutoTLS implements AutoTLSInterface {
     }
 
     await start(this.domainMapper)
-    this.events.addEventListener('self:peer:update', this.fetchCertificates)
+    this.events.addEventListener('self:peer:update', this.onSelfPeerUpdate)
     this.shutdownController = new AbortController()
     this.started = true
   }
 
   async stop (): Promise<void> {
-    this.events.removeEventListener('self:peer:update', this.fetchCertificates)
+    this.events.removeEventListener('self:peer:update', this.onSelfPeerUpdate)
     this.shutdownController?.abort()
     clearTimeout(this.renewTimeout)
-    await stop(this.fetchCertificates, this.domainMapper)
+    await stop(this.onSelfPeerUpdate, this.domainMapper)
     this.started = false
   }
 
-  private _fetchCertificates (): void {
+  private _onSelfPeerUpdate (): void {
     const addresses = this.addressManager.getAddresses().filter(supportedAddressesFilter)
 
     if (addresses.length === 0) {
@@ -177,7 +177,7 @@ export class AutoTLS implements AutoTLSInterface {
       Promise.resolve()
         .then(async () => {
           this.certificate = undefined
-          this.fetchCertificates()
+          this.onSelfPeerUpdate()
         })
         .catch(err => {
           this.log.error('error renewing certificate - %e', err)
@@ -267,7 +267,7 @@ export class AutoTLS implements AutoTLSInterface {
 
   async fetchAcmeCertificate (csr: Buffer, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<string> {
     const client = new acme.Client({
-      directoryUrl: this.acmeDirectory,
+      directoryUrl: this.acmeDirectory.toString(),
       accountKey: await loadOrCreateKey(this.keychain, this.accountPrivateKeyName, this.accountPrivateKeyBits)
     })
 
