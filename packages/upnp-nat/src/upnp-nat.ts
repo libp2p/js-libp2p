@@ -1,6 +1,6 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { InvalidParametersError, serviceCapabilities, start, stop } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
@@ -86,6 +86,16 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/nat-traversal'
   ]
+
+  get [serviceDependencies] (): string[] {
+    if (!this.autoConfirmAddress) {
+      return [
+        '@libp2p/autonat'
+      ]
+    }
+
+    return []
+  }
 
   isStarted (): boolean {
     return this.started
