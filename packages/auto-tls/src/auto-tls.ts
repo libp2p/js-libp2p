@@ -1,5 +1,5 @@
 import { ClientAuth } from '@libp2p/http-fetch/auth'
-import { serviceDependencies, start, stop } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
 import { X509Certificate } from '@peculiar/x509'
 import * as acme from 'acme-client'
@@ -10,7 +10,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
 import { DomainMapper } from './domain-mapper.js'
-import { importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
+import { createCsr, importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
 import type { AutoTLSComponents, AutoTLSInit, AutoTLS as AutoTLSInterface } from './index.js'
 import type { PeerId, PrivateKey, Logger, TypedEventTarget, Libp2pEvents, AbortOptions } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
@@ -18,7 +18,6 @@ import type { Keychain } from '@libp2p/keychain'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
-import type { Buffer } from 'node:buffer'
 
 type CertificateEvent = 'certificate:provision' | 'certificate:renew'
 
@@ -89,6 +88,10 @@ export class AutoTLS implements AutoTLSInterface {
       domain: this.domain
     })
   }
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/auto-tls'
+  ]
 
   get [serviceDependencies] (): string[] {
     return [
@@ -185,6 +188,7 @@ export class AutoTLS implements AutoTLSInterface {
     }, Math.min(renewAt.getTime() - Date.now(), Math.pow(2, 31) - 1))
 
     // emit a certificate event
+    this.log('dispatching %s', event)
     this.events.safeDispatchEvent(event, {
       detail: this.certificate
     })
@@ -200,7 +204,7 @@ export class AutoTLS implements AutoTLSInterface {
     this.log('creating new csr')
 
     // create CSR
-    const csr = await this.loadOrCreateCSR(certificatePrivateKey)
+    const csr = await createCsr(`*.${this.domain}`, certificatePrivateKey)
 
     this.log('fetching new certificate')
 
@@ -256,16 +260,7 @@ export class AutoTLS implements AutoTLSInterface {
     }
   }
 
-  private async loadOrCreateCSR (certificatePrivateKey: string): Promise<Buffer> {
-    const [, csr] = await acme.crypto.createCsr({
-      commonName: `*.${this.domain}`,
-      altNames: []
-    }, certificatePrivateKey)
-
-    return csr
-  }
-
-  async fetchAcmeCertificate (csr: Buffer, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<string> {
+  async fetchAcmeCertificate (csr: string, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<string> {
     const client = new acme.Client({
       directoryUrl: this.acmeDirectory.toString(),
       accountKey: await loadOrCreateKey(this.keychain, this.accountPrivateKeyName, this.accountPrivateKeyBits)
@@ -289,9 +284,10 @@ export class AutoTLS implements AutoTLSInterface {
   async configureAcmeChallengeResponse (multiaddrs: Multiaddr[], keyAuthorization: string, options?: AbortOptions): Promise<void> {
     const addresses = multiaddrs.map(ma => ma.toString())
 
-    this.log('asking https://%s/v1/_acme-challenge to respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
+    const endpoint = `${this.forgeEndpoint}v1/_acme-challenge`
+    this.log('asking %sv1/_acme-challenge to respond to the acme DNS challenge on our behalf', endpoint)
     this.log('dialback public addresses: %s', addresses.join(', '))
-    const response = await this.clientAuth.authenticatedFetch(`https://${this.forgeEndpoint}/v1/_acme-challenge`, {
+    const response = await this.clientAuth.authenticatedFetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -308,7 +304,7 @@ export class AutoTLS implements AutoTLSInterface {
       throw new Error('Invalid response status')
     }
 
-    this.log('https://%s/v1/_acme-challenge will respond to the acme DNS challenge on our behalf', this.forgeEndpoint)
+    this.log('%s will respond to the acme DNS challenge on our behalf', endpoint)
   }
 
   private needsRenewal (notAfter?: Date): boolean {

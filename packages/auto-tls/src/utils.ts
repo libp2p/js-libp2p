@@ -1,10 +1,11 @@
 import { Buffer } from 'node:buffer'
-import { createPrivateKey } from 'node:crypto'
+import { createPrivateKey, createPublicKey } from 'node:crypto'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { generateKeyPair, privateKeyFromRaw } from '@libp2p/crypto/keys'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { IP, QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
+import { KeyUsageFlags, KeyUsagesExtension, PemConverter, Pkcs10CertificateRequestGenerator, SubjectAlternativeNameExtension, cryptoProvider } from '@peculiar/x509'
 import { IncorrectKeyType } from './errors.js'
 import type { RSAPrivateKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
@@ -98,4 +99,52 @@ export function getPublicIps (addrs: Multiaddr[]): Set<string> {
     })
 
   return output
+}
+
+export async function createCsr (domain: string, keyPem: string): Promise<string> {
+  const signingAlgorithm = {
+    name: 'RSASSA-PKCS1-v1_5',
+    hash: { name: 'SHA-256' }
+  }
+
+  // have to use the same crypto provider as Pkcs10CertificateRequestGenerator
+  const crypto = cryptoProvider.get()
+
+  const jwk = createPublicKey({
+    format: 'pem',
+    key: keyPem
+  }).export({
+    format: 'jwk'
+  })
+
+  /* Decode PEM and import into CryptoKeyPair */
+  const privateKeyDec = PemConverter.decodeFirst(keyPem.toString())
+  const privateKey = await crypto.subtle.importKey('pkcs8', privateKeyDec, signingAlgorithm, true, ['sign'])
+  const publicKey = await crypto.subtle.importKey('jwk', jwk, signingAlgorithm, true, ['verify'])
+
+  const extensions = [
+    /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3 */
+    new KeyUsagesExtension(KeyUsageFlags.digitalSignature | KeyUsageFlags.keyEncipherment), // eslint-disable-line no-bitwise
+
+    /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
+    new SubjectAlternativeNameExtension([{ type: 'dns', value: domain }])
+  ]
+
+  /* Create CSR */
+  const csr = await Pkcs10CertificateRequestGenerator.create({
+    keys: {
+      privateKey,
+      publicKey
+    },
+    extensions,
+    signingAlgorithm,
+    name: [{
+      // @ts-expect-error herp
+      CN: [{
+        utf8String: domain
+      }]
+    }]
+  }, crypto)
+
+  return csr.toString('pem')
 }
