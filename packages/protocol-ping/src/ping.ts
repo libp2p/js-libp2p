@@ -1,5 +1,5 @@
 import { randomBytes } from '@libp2p/crypto'
-import { ProtocolError, TimeoutError } from '@libp2p/interface'
+import { ProtocolError, TimeoutError, setMaxListeners } from '@libp2p/interface'
 import { byteStream } from 'it-byte-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
@@ -60,10 +60,12 @@ export class PingService implements Startable, PingServiceInterface {
     const { stream } = data
     const start = Date.now()
     const bytes = byteStream(stream)
+    let pinged = false
 
     Promise.resolve().then(async () => {
       while (true) {
         const signal = AbortSignal.timeout(this.timeout)
+        setMaxListeners(Infinity, signal)
         signal.addEventListener('abort', () => {
           stream?.abort(new TimeoutError('ping timeout'))
         })
@@ -74,15 +76,34 @@ export class PingService implements Startable, PingServiceInterface {
         await bytes.write(buf, {
           signal
         })
+
+        pinged = true
       }
     })
       .catch(err => {
-        this.log.error('incoming ping from %p failed with error', data.connection.remotePeer, err)
+        // ignore the error if we've processed at least one ping, the remote
+        // closed the stream and we handled or are handling the close cleanly
+        if (pinged && err.name === 'UnexpectedEOFError' && stream.readStatus !== 'ready') {
+          return
+        }
+
+        this.log.error('incoming ping from %p failed with error - %e', data.connection.remotePeer, err)
         stream?.abort(err)
       })
       .finally(() => {
         const ms = Date.now() - start
         this.log('incoming ping from %p complete in %dms', data.connection.remotePeer, ms)
+
+        const signal = AbortSignal.timeout(this.timeout)
+        setMaxListeners(Infinity, signal)
+
+        stream.close({
+          signal
+        })
+          .catch(err => {
+            this.log.error('error closing ping stream from %p - %e', data.connection.remotePeer, err)
+            stream?.abort(err)
+          })
       })
   }
 
