@@ -16,7 +16,7 @@ export const PROVIDERS_VALIDITY = 48 * hour
 export const PROVIDERS_CLEANUP_INTERVAL = hour
 
 // Re-run the provide operation when the expiry of our provider records is within this amount
-export const REPROVIDE_THRESHOLD = 2 * hour
+export const REPROVIDE_THRESHOLD = 24 * hour
 
 // How many reprovide operations to run at once
 export const REPROVIDE_CONCURRENCY = 10
