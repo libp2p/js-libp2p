@@ -284,6 +284,10 @@ export abstract class AbstractStream implements Stream {
 
   // Close for both Reading and Writing
   async close (options?: AbortOptions): Promise<void> {
+    if (this.status !== 'open') {
+      return
+    }
+
     this.log.trace('closing gracefully')
 
     this.status = 'closing'
