@@ -50,6 +50,20 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.10...ping-v2.0.11) (2024-11-16)
+
+
+### Bug Fixes
+
+* gracefully handle remote stream closure during ping ([#2822](https://github.com/libp2p/js-libp2p/issues/2822)) ([4db0645](https://github.com/libp2p/js-libp2p/commit/4db0645c8ef5fb366a60f47db42c0e45f412e36e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+
 ## [2.0.10](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.9...ping-v2.0.10) (2024-10-28)
 
 

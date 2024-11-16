@@ -32,6 +32,20 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.10...interface-internal-v2.1.0) (2024-11-16)
+
+
+### Features
+
+* add dns mappings to address manager ([#2818](https://github.com/libp2p/js-libp2p/issues/2818)) ([7dcabb8](https://github.com/libp2p/js-libp2p/commit/7dcabb884c37dfba69e3ce427544ab05209d137b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.10 to ^6.0.11
+
 ## [2.0.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.9...interface-internal-v2.0.10) (2024-10-28)
 
 

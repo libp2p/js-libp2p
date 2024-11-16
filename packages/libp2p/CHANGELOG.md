@@ -110,6 +110,23 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.2.1...libp2p-v2.3.0) (2024-11-16)
+
+
+### Features
+
+* add dns mappings to address manager ([#2818](https://github.com/libp2p/js-libp2p/issues/2818)) ([7dcabb8](https://github.com/libp2p/js-libp2p/commit/7dcabb884c37dfba69e3ce427544ab05209d137b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/peer-collections bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/peer-store bumped from ^11.0.10 to ^11.0.11
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
 ## [2.2.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.2.0...libp2p-v2.2.1) (2024-10-28)
 
 

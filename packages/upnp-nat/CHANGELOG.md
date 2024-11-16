@@ -64,6 +64,22 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.10...upnp-nat-v2.0.11) (2024-11-16)
+
+
+### Bug Fixes
+
+* require autonat when not automatically confirming addresses ([#2824](https://github.com/libp2p/js-libp2p/issues/2824)) ([eee97c7](https://github.com/libp2p/js-libp2p/commit/eee97c7d4ced5763f6620e535f3c9a5619abf046))
+* run UPnP nat on address change, update nat port mapper ([#2797](https://github.com/libp2p/js-libp2p/issues/2797)) ([7626b22](https://github.com/libp2p/js-libp2p/commit/7626b224d23c474d1c885c8a7922977ab7e4bea6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
 ## [2.0.10](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.9...upnp-nat-v2.0.10) (2024-10-28)
 
 
