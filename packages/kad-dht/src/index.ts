@@ -346,15 +346,15 @@ export interface ProvidersInit {
    */
   cacheSize?: number
   /**
-   * How often invalid records are cleaned. (in seconds)
+   * How often invalid records are cleaned in seconds
    *
-   * @default 5400
+   * @default 5_400
    */
   cleanupInterval?: number
   /**
-   * How long is a provider valid for. (in seconds)
+   * How long is a provider valid for in seconds
    *
-   * @default 86400
+   * @default 86_400
    */
   provideValidity?: number
 }
@@ -370,28 +370,28 @@ export interface ReProvideInit {
   /**
    * How long to let the re-provide queue grow
    *
-   * @default 16384
+   * @default 16_384
    */
   maxQueueSize?: number
 
   /**
    * How long before the record expiry to re-provide in ms
    *
-   * @default 7200000
+   * @default 86_400_000 (24 hours)
    */
   threshold?: number
 
   /**
-   * How often to check which records need reproviding in ms
+   * How often to check which records need re-providing in ms
    *
-   * @default 3600000
+   * @default 3_600_000 (1 hour)
    */
   interval?: number
 
   /**
    * How long provider records are valid for in ms
    *
-   * @default 86400000
+   * @default 172_800_000 (48 hours)
    */
   validity?: number
 }
