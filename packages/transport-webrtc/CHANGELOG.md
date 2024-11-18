@@ -111,6 +111,23 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.17](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.16...webrtc-v5.0.17) (2024-11-16)
+
+
+### Bug Fixes
+
+* do not require peer id for webrtc-direct ([#2820](https://github.com/libp2p/js-libp2p/issues/2820)) ([2feaedd](https://github.com/libp2p/js-libp2p/commit/2feaeddb40712a5d58aee158021a10b9b9bbf660))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.8 to ^6.1.9
+
 ## [5.0.16](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.15...webrtc-v5.0.16) (2024-10-28)
 
 

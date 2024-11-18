@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.2](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.1...echo-v2.1.2) (2024-11-16)
+
+
+### Bug Fixes
+
+* add abort options to echo ([#2808](https://github.com/libp2p/js-libp2p/issues/2808)) ([06c4381](https://github.com/libp2p/js-libp2p/commit/06c4381d2fd5b80deb42d72f65e6dcc6a9637109))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+
 ## [2.1.1](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.0...echo-v2.1.1) (2024-10-28)
 
 
