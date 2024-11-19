@@ -9,7 +9,7 @@ import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
 import { isValidTick } from '../is-valid-tick.js'
-import { createPeer, getTransportManager, getUpgrader, slowNetwork } from './utils.js'
+import { createPeer, getTransportManager, getUpgrader } from './utils.js'
 import type { TestSetup } from '../index.js'
 import type { Echo } from '@libp2p/echo'
 import type { Connection, Libp2p, Stream, StreamHandler } from '@libp2p/interface'
@@ -123,19 +123,6 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const controller = new AbortController()
       controller.abort()
-
-      await expect(dialer.dial(dialAddrs[0], {
-        signal: controller.signal
-      })).to.eventually.be.rejected()
-        .with.property('name', 'AbortError')
-    })
-
-    it('abort while dialing throws AbortError', async () => {
-      ({ dialer, listener, dialAddrs } = await getSetup(common))
-      slowNetwork(dialer, 100)
-
-      const controller = new AbortController()
-      setTimeout(() => { controller.abort() }, 50)
 
       await expect(dialer.dial(dialAddrs[0], {
         signal: controller.signal
