@@ -53,6 +53,18 @@ export interface SignedPeerRecord {
   seq: bigint
 }
 
+export interface TLSCertificate {
+  /**
+   * The private key that corresponds to the certificate in PEM format
+   */
+  key: string
+
+  /**
+   * The certificate chain in PEM format
+   */
+  cert: string
+}
+
 /**
  * Data returned from a successful identify response
  */
@@ -266,6 +278,17 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * closed.
    */
   'connection:close': CustomEvent<Connection>
+
+  /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate:provision': CustomEvent<TLSCertificate>
+
+  /**
+   * This event notifies listeners that a new TLS certificate is available for
+   * use. Any previous certificate may no longer be valid.
+   */
+  'certificate:renew': CustomEvent<TLSCertificate>
 
   /**
    * This event notifies listeners that the node has started
