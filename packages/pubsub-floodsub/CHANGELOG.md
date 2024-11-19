@@ -98,6 +98,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.11](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.10...floodsub-v10.1.11) (2024-11-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.10 to ^6.1.11
+
 ## [10.1.10](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.9...floodsub-v10.1.10) (2024-11-18)
 
 
