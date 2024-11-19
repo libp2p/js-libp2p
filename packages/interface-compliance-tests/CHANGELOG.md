@@ -75,6 +75,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.1.11](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.1.10...interface-compliance-tests-v6.1.11) (2024-11-19)
+
+
+### Bug Fixes
+
+* remove slow network test ([#2829](https://github.com/libp2p/js-libp2p/issues/2829)) ([f53f65d](https://github.com/libp2p/js-libp2p/commit/f53f65d1805f9cd41f1b55558cef06d03f7a796c))
+
 ## [6.1.10](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.1.9...interface-compliance-tests-v6.1.10) (2024-11-18)
 
 

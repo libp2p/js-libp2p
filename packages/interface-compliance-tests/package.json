@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-compliance-tests",
-  "version": "6.1.10",
+  "version": "6.1.11",
   "description": "Compliance tests for JS libp2p interfaces",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-compliance-tests#readme",

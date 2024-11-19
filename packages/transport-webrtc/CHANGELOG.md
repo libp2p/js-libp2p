@@ -111,6 +111,15 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.19](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.18...webrtc-v5.0.19) (2024-11-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.10 to ^6.1.11
+
 ## [5.0.18](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.0.17...webrtc-v5.0.18) (2024-11-18)
 
 

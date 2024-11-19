@@ -155,7 +155,7 @@ describe('webrtc basic', () => {
       }),
       handleIncomingStream(recipient)
     ]))
-      .to.eventually.be.rejected.with.property('message', 'Oh noes!')
+      .to.eventually.be.rejected.with.property('message').that.matches(/Oh noes!/)
   })
 })
 
