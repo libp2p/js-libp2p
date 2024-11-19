@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.13](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.12...pnet-v2.0.13) (2024-11-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.10 to ^6.1.11
+
 ## [2.0.12](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.11...pnet-v2.0.12) (2024-11-18)
 
 
