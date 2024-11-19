@@ -1,24 +1,27 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import fs from 'fs'
-import http from 'http'
-import https from 'https'
+import fs from 'node:fs'
+import http from 'node:http'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
+import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
-import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('instantiate the transport', () => {
   it('create', () => {
     const ws = webSockets()({
+      events: new TypedEventEmitter(),
       logger: defaultLogger()
     })
     expect(ws).to.exist()
@@ -46,6 +49,7 @@ describe('listen', () => {
 
     beforeEach(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -164,6 +168,7 @@ describe('listen', () => {
 
     beforeEach(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -225,6 +230,7 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
@@ -264,6 +270,7 @@ describe('dial', () => {
     it('should resolve port 0', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
       const ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
 
@@ -295,6 +302,7 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
@@ -328,14 +336,18 @@ describe('dial', () => {
     let ws: Transport
     let listener: Listener
     const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/wss')
-    let server: https.Server
 
     beforeEach(async () => {
-      server = https.createServer({
-        cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-        key: fs.readFileSync('./test/fixtures/key.pem')
-      })
-      ws = webSockets({ websocket: { rejectUnauthorized: false }, server })({
+      ws = webSockets({
+        websocket: {
+          rejectUnauthorized: false
+        },
+        https: {
+          cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+          key: fs.readFileSync('./test/fixtures/key.pem')
+        }
+      })({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
@@ -346,8 +358,6 @@ describe('dial', () => {
 
     afterEach(async () => {
       await listener.close()
-      server.close()
-      server.closeAllConnections()
     })
 
     it('should listen on wss address', () => {
@@ -370,6 +380,7 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
@@ -401,6 +412,7 @@ describe('filter addrs', () => {
   describe('default filter addrs with only dns', () => {
     before(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -471,6 +483,7 @@ describe('filter addrs', () => {
   describe('custom filter addrs', () => {
     before(() => {
       ws = webSockets({ filter: filters.all })({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -598,5 +611,73 @@ describe('filter addrs', () => {
       expect(valid.length).to.equal(1)
       expect(valid[0]).to.deep.equal(ma)
     })
+  })
+})
+
+describe('auto-tls', () => {
+  let ws: Transport
+  let listener: Listener
+  let events: TypedEventEmitter<Libp2pEvents>
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/ws')
+
+  beforeEach(async () => {
+    events = new TypedEventEmitter()
+
+    const upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
+
+    ws = webSockets({
+      websocket: {
+        rejectUnauthorized: false
+      },
+      autoTLS: true
+    })({
+      events,
+      logger: defaultLogger()
+    })
+    listener = ws.createListener({
+      upgrader
+    })
+    await listener.listen(ma)
+  })
+
+  afterEach(async () => {
+    await listener.close()
+  })
+
+  it('should listen on wss after a certificate is found', async () => {
+    const addrs = listener.getAddrs()
+    expect(addrs).to.have.lengthOf(1)
+    expect(WebSockets.exactMatch(addrs[0])).to.be.true()
+
+    const listeningPromise = pEvent(listener, 'listening')
+
+    events.safeDispatchEvent<TLSCertificate>('certificate:provision', {
+      detail: {
+        key: fs.readFileSync('./test/fixtures/key.pem', {
+          encoding: 'utf-8'
+        }),
+        cert: fs.readFileSync('./test/fixtures/certificate.pem', {
+          encoding: 'utf-8'
+        })
+      }
+    })
+
+    await listeningPromise
+
+    const addrs2 = listener.getAddrs()
+    expect(addrs2).to.have.lengthOf(2)
+    expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
+    expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
+
+    const wsOptions = addrs2[0].toOptions()
+    const wssOptions = addrs2[1].toOptions()
+
+    expect(wsOptions.host).to.equal(wssOptions.host)
+    expect(wsOptions.port).to.equal(wssOptions.port)
   })
 })

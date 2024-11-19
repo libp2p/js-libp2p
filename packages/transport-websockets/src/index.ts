@@ -57,7 +57,7 @@
  * ```
  */
 
-import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities, ConnectionFailedError, serviceDependencies } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
@@ -67,21 +67,39 @@ import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, TypedEventTarget, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type http from 'node:http'
+import type https from 'node:https'
 import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   filter?: MultiaddrFilter
   websocket?: ClientOptions
-  server?: Server
+  http?: http.ServerOptions
+  https?: https.ServerOptions
+
+  /**
+   * If a service like `@libp2p/auto-tls` creates a TLS certificate this
+   * transport can use, upgrade any listeners from `/ws` to `/wss`.
+   *
+   * @default false
+   */
+  autoTLS?: boolean
+
+  /**
+   * Inbound connections must complete their upgrade within this many ms
+   *
+   * @default 5000
+   */
+  inboundConnectionUpgradeTimeout?: number
 }
 
 export interface WebSocketsComponents {
   logger: ComponentLogger
+  events: TypedEventTarget<Libp2pEvents>
   metrics?: Metrics
 }
 
@@ -95,12 +113,12 @@ export type WebSocketsDialEvents =
 
 class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
-  private readonly init?: WebSocketsInit
+  private readonly init: WebSocketsInit
   private readonly logger: ComponentLogger
   private readonly metrics?: WebSocketsMetrics
   private readonly components: WebSocketsComponents
 
-  constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
+  constructor (components: WebSocketsComponents, init: WebSocketsInit = {}) {
     this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
     this.components = components
@@ -123,6 +141,16 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/transport'
   ]
+
+  get [serviceDependencies] (): string[] {
+    if (this.init.autoTLS === true) {
+      return [
+        '@libp2p/auto-tls'
+      ]
+    }
+
+    return []
+  }
 
   async dial (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)
@@ -180,13 +208,14 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   }
 
   /**
-   * Creates a Websockets listener. The provided `handler` function will be called
+   * Creates a WebSockets listener. The provided `handler` function will be called
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       logger: this.logger,
+      events: this.components.events,
       metrics: this.components.metrics
     }, {
       ...this.init,
@@ -195,7 +224,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid Websockets addresses.
+   * Takes a list of `Multiaddr`s and returns only valid WebSockets addresses.
    * By default, in a browser environment only DNS+WSS multiaddr is accepted,
    * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
    */

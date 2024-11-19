@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -11,7 +12,10 @@ describe('libp2p-websockets', () => {
   let ws: Transport
 
   beforeEach(async () => {
+    const events = new TypedEventEmitter()
+
     ws = webSockets()({
+      events,
       logger: defaultLogger()
     })
   })
@@ -34,6 +38,7 @@ describe('libp2p-websockets', () => {
 
   it('.createServer throws in browser', () => {
     expect(webSockets()({
+      events: new TypedEventEmitter(),
       logger: defaultLogger()
     }).createListener).to.throw()
   })
