@@ -85,6 +85,33 @@ describe('Address Manager', () => {
     expect(announceMultiaddrs[0].equals(multiaddr(announceAddreses[0]))).to.equal(true)
   })
 
+  it('should add appendAnnounce multiaddrs on get', () => {
+    const transportManager = stubInterface<TransportManager>()
+    const am = new AddressManager({
+      peerId,
+      transportManager,
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      announceFilter: (mas) => mas,
+      listen: listenAddresses,
+      appendAnnounce: announceAddreses
+    })
+
+    transportManager.getAddrs.returns(listenAddresses.map(ma => multiaddr(ma)))
+
+    expect(am.getListenAddrs()).to.have.lengthOf(listenAddresses.length)
+    expect(am.getAppendAnnounceAddrs()).to.have.lengthOf(announceAddreses.length)
+
+    const announceMultiaddrs = am.getAddresses()
+    expect(announceMultiaddrs.length).to.equal(3)
+    expect(announceMultiaddrs.map(ma => ma.toString())).to.deep.equal([
+      ...listenAddresses.map(ma => `${ma}/p2p/${peerId}`),
+      ...announceAddreses.map(ma => `${ma}/p2p/${peerId}`)
+    ])
+  })
+
   it('should add observed addresses', () => {
     const am = new AddressManager({
       peerId,
