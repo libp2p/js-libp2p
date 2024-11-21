@@ -95,17 +95,17 @@ describe('multiple nodes', function () {
 
     dhts = await sortDHTs(dhts, await convertBuffer(key))
 
-    await drain(dhts[0].put(key, uint8ArrayFromString('world0')))
-    await drain(dhts[1].put(key, uint8ArrayFromString('world1')))
-    await drain(dhts[2].put(key, uint8ArrayFromString('world2')))
-    await drain(dhts[3].put(key, uint8ArrayFromString('world3')))
-    await drain(dhts[4].put(key, uint8ArrayFromString('world4')))
+    await drain(dhts[3].put(key, uint8ArrayFromString('world0')))
+    await drain(dhts[4].put(key, uint8ArrayFromString('world1')))
+    await drain(dhts[5].put(key, uint8ArrayFromString('world2')))
+    await drain(dhts[6].put(key, uint8ArrayFromString('world3')))
+    await drain(dhts[7].put(key, uint8ArrayFromString('world4')))
 
     const res = await Promise.all([
-      last(dhts[4].get(key)),
-      last(dhts[5].get(key)),
-      last(dhts[6].get(key)),
-      last(dhts[7].get(key))
+      last(dhts[0].get(key)),
+      last(dhts[1].get(key)),
+      last(dhts[2].get(key)),
+      last(dhts[3].get(key))
     ])
 
     expect(res[0]).have.property('value').that.equalBytes(result)
