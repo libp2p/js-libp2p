@@ -53,4 +53,21 @@ export interface AddressManager {
    * Remove a mapping previously added with `addDNSMapping`.
    */
   removeDNSMapping(domain: string): void
+
+  /**
+   * Add a publicly routable address/port/protocol tuple that this node is
+   * reachable on. Where this node listens on a link-local (e.g. LAN) address
+   * with the same protocol for any transport, an additional listen address will
+   * be added with the IP and port replaced with this IP and port.
+   *
+   * It's possible to add a IPv6 address here and have it added to the address
+   * list, this is for the case when a router has an external IPv6 address with
+   * port forwarding configured, but it does IPv6 -> IPv4 NAT.
+   */
+  addPublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort?: number, protocol?: 'tcp' | 'udp'): void
+
+  /**
+   * Remove a publicly routable address that this node is no longer reachable on
+   */
+  removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort?: number, protocol?: 'tcp' | 'udp'): void
 }
