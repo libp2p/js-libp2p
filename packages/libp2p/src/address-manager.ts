@@ -13,19 +13,24 @@ export interface AddressManagerInit {
   announceFilter?: AddressFilter
 
   /**
-   * list of multiaddrs string representation to listen
+   * A list of string multiaddrs to listen on
    */
   listen?: string[]
 
   /**
-   * list of multiaddrs string representation to announce
+   * A list of string multiaddrs to use instead of those reported by transports
    */
   announce?: string[]
 
   /**
-   * list of multiaddrs string representation to never announce
+   * A list of string multiaddrs string to never announce
    */
   noAnnounce?: string[]
+
+  /**
+   * A list of string multiaddrs to add to the list of announced addresses
+   */
+  appendAnnounce?: string[]
 }
 
 export interface AddressManagerComponents {
@@ -80,11 +85,10 @@ export class AddressManager implements AddressManagerInterface {
   // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
   private readonly listen: string[]
   private readonly announce: Set<string>
+  private readonly appendAnnounce: Set<string>
   private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
   private readonly ipDomainMappings: Map<string, string>
-
-  private readonly where: Error
 
   /**
    * Responsible for managing the peer addresses.
@@ -93,12 +97,13 @@ export class AddressManager implements AddressManagerInterface {
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
-    const { listen = [], announce = [] } = init
+    const { listen = [], announce = [], appendAnnounce = [] } = init
 
     this.components = components
     this.log = components.logger.forComponent('libp2p:address-manager')
     this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
+    this.appendAnnounce = new Set(appendAnnounce.map(ma => ma.toString()))
     this.observed = new Map()
     this.ipDomainMappings = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
@@ -115,8 +120,6 @@ export class AddressManager implements AddressManagerInterface {
     components.events.addEventListener('transport:close', () => {
       this._updatePeerStoreAddresses()
     })
-
-    this.where = new Error('where')
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/address-manager'
@@ -157,6 +160,13 @@ export class AddressManager implements AddressManagerInterface {
    */
   getAnnounceAddrs (): Multiaddr[] {
     return Array.from(this.announce).map((a) => multiaddr(a))
+  }
+
+  /**
+   * Get peer announcing multiaddrs
+   */
+  getAppendAnnounceAddrs (): Multiaddr[] {
+    return Array.from(this.appendAnnounce).map((a) => multiaddr(a))
   }
 
   /**
@@ -218,9 +228,12 @@ export class AddressManager implements AddressManagerInterface {
       multiaddrs = this.components.transportManager.getAddrs()
     }
 
-    // add observed addresses we are confident in
     multiaddrs = multiaddrs
       .concat(
+        // add additional announce addresses
+        ...this.getAppendAnnounceAddrs(),
+
+        // add observed addresses we are confident in
         Array.from(this.observed)
           .filter(([ma, metadata]) => metadata.confident)
           .map(([ma]) => multiaddr(ma))
