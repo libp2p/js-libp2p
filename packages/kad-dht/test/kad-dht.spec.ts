@@ -22,7 +22,7 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { createValues } from './utils/create-values.js'
 import { countDiffPeers } from './utils/index.js'
-import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import { sortClosestPeers, sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
@@ -371,12 +371,12 @@ describe('KadDHT', () => {
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
 
-      const dhts = await Promise.all([
+      const dhts = await sortDHTs(await Promise.all([
         tdht.spawn(),
         tdht.spawn(),
         tdht.spawn(),
         tdht.spawn()
-      ])
+      ]), await kadUtils.convertBuffer(key))
 
       // Connect all
       await Promise.all([

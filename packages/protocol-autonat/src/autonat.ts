@@ -1,4 +1,4 @@
-import { AbortError, setMaxListeners } from '@libp2p/interface'
+import { AbortError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -49,6 +49,10 @@ export class AutoNATService implements Startable {
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/autonat'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/autonat'
+  ]
 
   isStarted (): boolean {
     return this.started

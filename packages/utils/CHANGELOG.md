@@ -36,6 +36,31 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.2.0...utils-v6.2.1) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+
+## [6.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.3...utils-v6.2.0) (2024-11-16)
+
+
+### Features
+
+* add debounce and repeating task to utils ([#2795](https://github.com/libp2p/js-libp2p/issues/2795)) ([0a3406a](https://github.com/libp2p/js-libp2p/commit/0a3406a0536f8e7390e67eec88ccc518bd90e9a6))
+
+
+### Bug Fixes
+
+* only close stream if it is open ([#2823](https://github.com/libp2p/js-libp2p/issues/2823)) ([3098232](https://github.com/libp2p/js-libp2p/commit/30982327b3924614d1fb552fd42b7b8f5a7419cd))
+
 ## [6.1.3](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.2...utils-v6.1.3) (2024-10-28)
 
 
