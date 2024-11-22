@@ -18,42 +18,8 @@
  * })
  * await node.start()
  *
- * const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+ * const ma = multiaddr('/dns4/example.com/tcp/9090/tls/ws')
  * await node.dial(ma)
- * ```
- *
- * ## Filters
- *
- * When run in a browser by default this module will only connect to secure web socket addresses.
- *
- * To change this you should pass a filter to the factory function.
- *
- * You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
- *
- * The available filters are:
- *
- * - `filters.all`
- *   - Returns all TCP and DNS based addresses, both with `ws` or `wss`.
- * - `filters.dnsWss`
- *   - Returns all DNS based addresses with `wss`.
- * - `filters.dnsWsOrWss`
- *   - Returns all DNS based addresses, both with `ws` or `wss`.
- *
- * @example Allow dialing insecure WebSockets
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { webSockets } from '@libp2p/websockets'
- * import * as filters from '@libp2p/websockets/filters'
- *
- * const node = await createLibp2p({
- *   transports: [
- *     webSockets({
- *       // connect to all sockets, even insecure ones
- *       filter: filters.all
- *     })
- *   ]
- * })
  * ```
  */
 
@@ -63,7 +29,6 @@ import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
-import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
@@ -75,6 +40,9 @@ import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
+  /**
+   * @deprecated Use a ConnectionGater instead
+   */
   filter?: MultiaddrFilter
   websocket?: ClientOptions
   server?: Server
@@ -204,11 +172,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     if (this.init?.filter != null) {
       return this.init?.filter(multiaddrs)
-    }
-
-    // Browser
-    if (isBrowser || isWebWorker) {
-      return filters.wss(multiaddrs)
     }
 
     return filters.all(multiaddrs)
