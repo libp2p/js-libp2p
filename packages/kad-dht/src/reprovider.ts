@@ -80,7 +80,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     })
     this.datastore = components.datastore
     this.addressManager = components.addressManager
-    this.datastorePrefix = `/${init.datastorePrefix}/provider`
+    this.datastorePrefix = `${init.datastorePrefix}/provider`
     this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD
     this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE
     this.validity = init.validity ?? PROVIDERS_VALIDITY
