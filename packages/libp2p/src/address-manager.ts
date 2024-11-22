@@ -78,6 +78,13 @@ const CODEC_IP4 = 0x04
 const CODEC_IP6 = 0x29
 const CODEC_DNS4 = 0x36
 const CODEC_DNS6 = 0x37
+const CODEC_TCP = 0x06
+const CODEC_UDP = 0x0111
+
+interface PublicAddressMapping {
+  externalIp: string
+  externalPort: number
+}
 
 export class AddressManager implements AddressManagerInterface {
   private readonly log: Logger
@@ -89,6 +96,7 @@ export class AddressManager implements AddressManagerInterface {
   private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
   private readonly ipDomainMappings: Map<string, string>
+  private readonly publicAddressMappings: Map<string, PublicAddressMapping[]>
 
   /**
    * Responsible for managing the peer addresses.
@@ -106,6 +114,7 @@ export class AddressManager implements AddressManagerInterface {
     this.appendAnnounce = new Set(appendAnnounce.map(ma => ma.toString()))
     this.observed = new Map()
     this.ipDomainMappings = new Map()
+    this.publicAddressMappings = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
 
     // this method gets called repeatedly on startup when transports start listening so
@@ -239,11 +248,51 @@ export class AddressManager implements AddressManagerInterface {
           .map(([ma]) => multiaddr(ma))
       )
 
-    const mappedMultiaddrs: Multiaddr[] = []
+    // add public addresses
+    const ipMappedMultiaddrs: Multiaddr[] = []
+    multiaddrs.forEach(ma => {
+      const tuples = ma.stringTuples()
+      let tuple: string | undefined
+
+      // see if the internal host/port/protocol tuple has been mapped externally
+      if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_TCP) {
+        tuple = `${tuples[0][1]}-${tuples[1][1]}-tcp`
+      } else if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_UDP) {
+        tuple = `${tuples[0][1]}-${tuples[1][1]}-udp`
+      }
+
+      if (tuple == null) {
+        return
+      }
+
+      const mappings = this.publicAddressMappings.get(tuple)
+
+      if (mappings == null) {
+        return
+      }
+
+      mappings.forEach(mapping => {
+        tuples[0][1] = mapping.externalIp
+        tuples[1][1] = `${mapping.externalPort}`
+
+        ipMappedMultiaddrs.push(
+          multiaddr(`/${
+            tuples.map(tuple => {
+              return [
+                protocols(tuple[0]).name,
+                tuple[1]
+              ].join('/')
+            }).join('/')
+          }`)
+        )
+      })
+    })
+    multiaddrs = multiaddrs.concat(ipMappedMultiaddrs)
 
     // add ip->domain mappings
+    const dnsMappedMultiaddrs: Multiaddr[] = []
     for (const ma of multiaddrs) {
-      const tuples = [...ma.stringTuples()]
+      const tuples = ma.stringTuples()
       let mappedIp = false
 
       for (const [ip, domain] of this.ipDomainMappings.entries()) {
@@ -267,7 +316,7 @@ export class AddressManager implements AddressManagerInterface {
       }
 
       if (mappedIp) {
-        mappedMultiaddrs.push(
+        dnsMappedMultiaddrs.push(
           multiaddr(`/${
             tuples.map(tuple => {
               return [
@@ -279,8 +328,7 @@ export class AddressManager implements AddressManagerInterface {
         )
       }
     }
-
-    multiaddrs = multiaddrs.concat(mappedMultiaddrs)
+    multiaddrs = multiaddrs.concat(dnsMappedMultiaddrs)
 
     // dedupe multiaddrs
     const addrSet = new Set<string>()
@@ -318,6 +366,7 @@ export class AddressManager implements AddressManagerInterface {
 
   addDNSMapping (domain: string, addresses: string[]): void {
     addresses.forEach(ip => {
+      this.log('add DNS mapping %s to %s', ip, domain)
       this.ipDomainMappings.set(ip, domain)
     })
   }
@@ -325,8 +374,33 @@ export class AddressManager implements AddressManagerInterface {
   removeDNSMapping (domain: string): void {
     for (const [key, value] of this.ipDomainMappings.entries()) {
       if (value === domain) {
+        this.log('remove DNS mapping for %s', domain)
         this.ipDomainMappings.delete(key)
       }
+    }
+  }
+
+  addPublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
+    const key = `${internalIp}-${internalPort}-${protocol}`
+    const mappings = this.publicAddressMappings.get(key) ?? []
+    mappings.push({
+      externalIp,
+      externalPort
+    })
+
+    this.publicAddressMappings.set(key, mappings)
+  }
+
+  removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
+    const key = `${internalIp}-${internalPort}-${protocol}`
+    const mappings = (this.publicAddressMappings.get(key) ?? []).filter(mapping => {
+      return mapping.externalIp !== externalIp && mapping.externalPort !== externalPort
+    })
+
+    if (mappings.length === 0) {
+      this.publicAddressMappings.delete(key)
+    } else {
+      this.publicAddressMappings.set(key, mappings)
     }
   }
 }
