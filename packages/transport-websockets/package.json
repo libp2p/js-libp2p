@@ -92,8 +92,7 @@
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",
-    "sinon-ts": "^2.0.0",
-    "wherearewe": "^2.0.1"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js"
