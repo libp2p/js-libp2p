@@ -76,14 +76,14 @@ export class GetProvidersHandler implements DHTMessageHandler {
       clusterLevel: msg.clusterLevel,
       closer: closerPeers
         .map(this.peerInfoMapper)
-        .filter(({ id, multiaddrs }) => !id.equals(peerId) && multiaddrs.length > 0)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
           id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: providerPeers
         .map(this.peerInfoMapper)
-        .filter(({ id, multiaddrs }) => !id.equals(peerId) && multiaddrs.length > 0)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
           id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
