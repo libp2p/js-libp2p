@@ -1,5 +1,5 @@
 import { peerIdFromString } from '@libp2p/peer-id'
-import { debounce } from '@libp2p/utils/debounce'
+import { debounce, type DebouncedFunction } from '@libp2p/utils/debounce'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
@@ -136,13 +136,8 @@ export class AddressManager implements AddressManagerInterface {
   _updatePeerStoreAddresses (): void {
     // if announce addresses have been configured, ensure they make it into our peer
     // record for things like identify
-    const addrs = this.getAnnounceAddrs()
-      .concat(this.components.transportManager.getAddrs())
-      .concat(
-        [...this.observed.entries()]
-          .filter(([_, metadata]) => metadata.confident)
-          .map(([str]) => multiaddr(str))
-      ).map(ma => {
+    const addrs = this.getAddresses()
+      .map(ma => {
         // strip our peer id if it is present
         if (ma.getPeerId() === this.components.peerId.toString()) {
           return ma.decapsulate(`/p2p/${this.components.peerId.toString()}`)
@@ -369,6 +364,7 @@ export class AddressManager implements AddressManagerInterface {
       this.log('add DNS mapping %s to %s', ip, domain)
       this.ipDomainMappings.set(ip, domain)
     })
+    this._updatePeerStoreAddresses()
   }
 
   removeDNSMapping (domain: string): void {
@@ -378,6 +374,7 @@ export class AddressManager implements AddressManagerInterface {
         this.ipDomainMappings.delete(key)
       }
     }
+    this._updatePeerStoreAddresses()
   }
 
   addPublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
@@ -389,6 +386,7 @@ export class AddressManager implements AddressManagerInterface {
     })
 
     this.publicAddressMappings.set(key, mappings)
+    this._updatePeerStoreAddresses()
   }
 
   removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
@@ -402,5 +400,7 @@ export class AddressManager implements AddressManagerInterface {
     } else {
       this.publicAddressMappings.set(key, mappings)
     }
+
+    this._updatePeerStoreAddresses()
   }
 }
