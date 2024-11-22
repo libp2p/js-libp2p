@@ -80,9 +80,6 @@ describe('content routing', () => {
       dhts[2].components.peerId.toString()
     ].sort(), 'did not send ADD_PROVIDER to network peers')
 
-    // let all messages be processed
-    await delay(1000)
-
     // Expect each DHT to find the provider of each value
     for (const d of dhts) {
       const events = await all(d.findProviders(cid))
@@ -102,12 +99,12 @@ describe('content routing', () => {
   })
 
   it('provides if in server mode', async function () {
-    const dhts = await Promise.all([
+    const dhts = await sortDHTs(await Promise.all([
       tdht.spawn(),
       tdht.spawn(),
       tdht.spawn(),
       tdht.spawn()
-    ])
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     // connect peers
     await Promise.all([
@@ -128,11 +125,11 @@ describe('content routing', () => {
   it('find providers', async function () {
     this.timeout(20 * 1000)
 
-    const dhts = await Promise.all([
+    const dhts = await sortDHTs(await Promise.all([
       tdht.spawn(),
       tdht.spawn(),
       tdht.spawn()
-    ])
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     // Connect
     await Promise.all([
@@ -160,11 +157,11 @@ describe('content routing', () => {
   it('find providers from client', async function () {
     this.timeout(20 * 1000)
 
-    const dhts = await Promise.all([
+    const dhts = await sortDHTs(await Promise.all([
       tdht.spawn(),
       tdht.spawn(),
       tdht.spawn()
-    ])
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
     const clientDHT = await tdht.spawn({ clientMode: true })
 
     // Connect
@@ -174,7 +171,10 @@ describe('content routing', () => {
       tdht.connect(dhts[1], dhts[2])
     ])
 
-    await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(cid)) }))
+    await drain(dhts[2].provide(cid))
+
+    // wait for messages to be handled
+    await delay(1000)
 
     const events = await all(clientDHT.findProviders(cid))
 
@@ -188,16 +188,16 @@ describe('content routing', () => {
 
       return acc
     }, {}))
-    expect(provs).to.have.length(3)
+    expect(provs).to.have.length(1)
   })
 
   it('find provider published by client', async function () {
     this.timeout(20 * 1000)
 
-    const dhts = await Promise.all([
+    const dhts = await sortDHTs(await Promise.all([
       tdht.spawn(),
       tdht.spawn()
-    ])
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
     const clientDHT = await tdht.spawn({ clientMode: true })
 
     // Connect

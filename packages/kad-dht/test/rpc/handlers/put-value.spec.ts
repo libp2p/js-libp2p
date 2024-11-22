@@ -35,7 +35,8 @@ describe('rpc - handlers - PutValue', () => {
 
     handler = new PutValueHandler(components, {
       validators,
-      logPrefix: 'dht'
+      logPrefix: 'dht',
+      datastorePrefix: '/dht'
     })
   })
 

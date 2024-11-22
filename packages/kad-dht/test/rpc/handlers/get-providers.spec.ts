@@ -49,6 +49,7 @@ describe('rpc - handlers - GetProviders', () => {
     })
 
     const components: GetProvidersHandlerComponents = {
+      peerId,
       peerStore,
       logger: defaultLogger()
     }
@@ -101,7 +102,7 @@ describe('rpc - handlers - GetProviders', () => {
     }]
 
     providers.getProviders.withArgs(v.cid).resolves([providerPeer])
-    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer).resolves(closer)
+    peerRouting.getCloserPeersOffline.withArgs(msg.key, peerId).resolves(closer)
 
     await peerStore.merge(providerPeer, {
       multiaddrs: provider[0].multiaddrs

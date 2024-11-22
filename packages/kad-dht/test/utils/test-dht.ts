@@ -64,6 +64,11 @@ export class TestDHT {
 
     components.addressManager = addressManager
 
+    // ensure the current node is in it's own peer store
+    await components.peerStore.merge(peerId, {
+      multiaddrs: addressManager.getAddresses()
+    })
+
     const opts: KadDHTInit = {
       validators: {
         async v () {

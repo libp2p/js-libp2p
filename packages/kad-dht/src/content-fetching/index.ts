@@ -31,6 +31,7 @@ export interface ContentFetchingInit {
   queryManager: QueryManager
   network: Network
   logPrefix: string
+  datastorePrefix: string
 }
 
 export class ContentFetching {
@@ -48,7 +49,7 @@ export class ContentFetching {
 
     this.components = components
     this.log = components.logger.forComponent(`${logPrefix}:content-fetching`)
-    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
+    this.datastorePrefix = `${init.datastorePrefix}/record`
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
