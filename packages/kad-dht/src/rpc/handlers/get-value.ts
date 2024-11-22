@@ -15,6 +15,7 @@ import type { Datastore } from 'interface-datastore'
 export interface GetValueHandlerInit {
   peerRouting: PeerRouting
   logPrefix: string
+  datastorePrefix: string
 }
 
 export interface GetValueHandlerComponents {
@@ -32,7 +33,7 @@ export class GetValueHandler implements DHTMessageHandler {
 
   constructor (components: GetValueHandlerComponents, init: GetValueHandlerInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:get-value`)
-    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
+    this.datastorePrefix = `${init.datastorePrefix}/record`
     this.peerStore = components.peerStore
     this.datastore = components.datastore
     this.peerRouting = init.peerRouting

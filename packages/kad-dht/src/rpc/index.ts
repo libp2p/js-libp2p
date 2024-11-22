@@ -25,6 +25,7 @@ export interface RPCInit {
   validators: Validators
   logPrefix: string
   metricsPrefix: string
+  datastorePrefix: string
   peerInfoMapper: PeerInfoMapper
 }
 
