@@ -1,5 +1,5 @@
 import { peerIdFromString } from '@libp2p/peer-id'
-import { debounce, type DebouncedFunction } from '@libp2p/utils/debounce'
+import { debounce } from '@libp2p/utils/debounce'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
