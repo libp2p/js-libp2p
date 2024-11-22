@@ -52,7 +52,8 @@ describe('rpc - handlers - GetValue', () => {
 
     handler = new GetValueHandler(components, {
       peerRouting,
-      logPrefix: 'dht'
+      logPrefix: 'dht',
+      datastorePrefix: '/dht'
     })
   })
 

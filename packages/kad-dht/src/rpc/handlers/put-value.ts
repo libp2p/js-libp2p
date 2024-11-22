@@ -11,6 +11,7 @@ import type { Datastore } from 'interface-datastore'
 export interface PutValueHandlerInit {
   validators: Validators
   logPrefix: string
+  datastorePrefix: string
 }
 
 export interface PutValueHandlerComponents {
@@ -29,7 +30,7 @@ export class PutValueHandler implements DHTMessageHandler {
 
     this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:put-value`)
-    this.datastorePrefix = `/${init.logPrefix.replaceAll(':', '/')}/record`
+    this.datastorePrefix = `${init.datastorePrefix}/record`
     this.validators = validators
   }
 

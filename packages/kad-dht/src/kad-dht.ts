@@ -240,7 +240,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
       network: this.network,
-      logPrefix
+      logPrefix,
+      datastorePrefix
     })
     this.contentRouting = new KADDHTContentRouting(components, {
       network: this.network,
@@ -262,6 +263,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       validators: this.validators,
       logPrefix,
       metricsPrefix,
+      datastorePrefix,
       peerInfoMapper: this.peerInfoMapper
     })
     this.topologyListener = new TopologyListener(components, {
@@ -315,7 +317,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
         await this.onPeerConnect(peerData)
       }).catch(err => {
-        this.log.error('could not add %p to routing table', peerId, err)
+        this.log.error('could not add %p to routing table - %e', peerId, err)
       })
     })
 

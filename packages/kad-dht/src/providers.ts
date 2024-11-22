@@ -29,7 +29,7 @@ export class Providers {
 
   constructor (components: ProvidersComponents, init: ProvidersInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:providers`)
-    this.datastorePrefix = `/${init.datastorePrefix}/provider`
+    this.datastorePrefix = `${init.datastorePrefix}/provider`
     this.datastore = components.datastore
     this.lock = init.lock
   }
@@ -70,8 +70,9 @@ export class Providers {
     const release = await this.lock.readLock()
 
     try {
-      this.log('get providers for %s', cid)
+      this.log('get providers for %c', cid)
       const provs = await this.loadProviders(cid)
+      this.log('got %d providers for %c', provs.size, cid)
 
       return [...provs.keys()]
     } finally {
@@ -94,8 +95,9 @@ export class Providers {
    */
   private async loadProviders (cid: CID): Promise<PeerMap<Date>> {
     const providers = new PeerMap<Date>()
+    const key = toProviderKey(this.datastorePrefix, cid)
 
-    for await (const entry of this.datastore.query({ prefix: toProviderKey(this.datastorePrefix, cid).toString() })) {
+    for await (const entry of this.datastore.query({ prefix: key.toString() })) {
       const { peerId } = parseProviderKey(entry.key)
       providers.set(peerId, readProviderTime(entry.value))
     }
