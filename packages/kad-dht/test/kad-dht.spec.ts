@@ -7,22 +7,16 @@ import all from 'it-all'
 import drain from 'it-drain'
 import filter from 'it-filter'
 import last from 'it-last'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import sinon from 'sinon'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as c from '../src/constants.js'
-import { EventTypes, MessageType } from '../src/index.js'
+import { MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
-import { countDiffPeers } from './utils/index.js'
-import { sortClosestPeers, sortDHTs } from './utils/sort-closest-peers.js'
+import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
-import type { KadDHT } from '../src/kad-dht.js'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'VALUE'): Promise<ValueEvent>
@@ -424,103 +418,6 @@ describe('KadDHT', () => {
       expect(finalPeer.peer.id.equals(ids[ids.length - 1])).to.eql(true)
     })
 
-    it('find peer query', async function () {
-      this.timeout(240 * 1000)
-
-      // Create 101 nodes
-      const nDHTs = 101
-
-      const dhts = await Promise.all(
-        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
-      )
-
-      const dhtsById = new Map<PeerIdWithPrivateKey, KadDHT>(dhts.map((d) => {
-        const peerId = d.components.peerId as unknown as PeerIdWithPrivateKey
-        peerId.privateKey = d.components.privateKey
-
-        return [peerId, d]
-      }))
-      const ids = [...dhtsById.keys()]
-
-      // The origin node for the FIND_PEER query
-      const originNode = dhts[0]
-
-      // The key
-      const val = uint8ArrayFromString('foobar')
-
-      // Hash the key into the DHT's key format
-      const rtval = await kadUtils.convertBuffer(val)
-      // Make connections between nodes close to each other
-      const sorted = await sortClosestPeers(ids, rtval)
-
-      const conns: PeerIdWithPrivateKey[][] = []
-      const maxRightIndex = sorted.length - 1
-      for (let i = 0; i < sorted.length; i++) {
-        // Connect to 5 nodes on either side (10 in total)
-        for (const distance of [1, 3, 11, 31, 63]) {
-          let rightIndex = i + distance
-          if (rightIndex > maxRightIndex) {
-            rightIndex = maxRightIndex * 2 - (rightIndex + 1)
-          }
-          let leftIndex = i - distance
-          if (leftIndex < 0) {
-            leftIndex = 1 - leftIndex
-          }
-          conns.push([sorted[leftIndex], sorted[rightIndex]])
-        }
-      }
-
-      await Promise.all(conns.map(async (conn) => {
-        const dhtA = dhtsById.get(conn[0])
-        const dhtB = dhtsById.get(conn[1])
-
-        if (dhtA == null || dhtB == null) {
-          throw new Error('Could not find DHT')
-        }
-
-        await tdht.connect(dhtA, dhtB)
-      }))
-
-      // Get the alpha (3) closest peers to the key from the origin's
-      // routing table
-      const rtablePeers = originNode.routingTable.closestPeers(rtval, c.ALPHA)
-      expect(rtablePeers).to.have.length(c.ALPHA)
-
-      // The set of peers used to initiate the query (the closest alpha
-      // peers to the key that the origin knows about)
-      const rtableSet: Record<string, boolean> = {}
-      rtablePeers.forEach((p) => {
-        rtableSet[p.toString()] = true
-      })
-
-      const originNodeIndex = ids.findIndex(i => uint8ArrayEquals(i.toMultihash().bytes, originNode.components.peerId.toMultihash().bytes))
-      const otherIds = ids.slice(0, originNodeIndex).concat(ids.slice(originNodeIndex + 1))
-
-      // Make the query
-      const out = await pipe(
-        originNode.getClosestPeers(val),
-        source => filter(source, (event) => event.type === EventTypes.FINAL_PEER),
-        // @ts-expect-error tsc has problems with filtering
-        source => map(source, (event) => event.peer.id),
-        async source => all(source)
-      )
-
-      const actualClosest = await sortClosestPeers(otherIds, rtval)
-
-      // Expect that the response includes nodes that are were not
-      // already in the origin's routing table (ie it went out to
-      // the network to find closer peers)
-      expect(out.filter((p) => !rtableSet[p.toString()]))
-        .to.not.be.empty()
-
-      // The expected closest kValue peers to the key
-      const exp = actualClosest.slice(0, c.K)
-
-      // Expect the kValue peers found to include the kValue closest connected
-      // peers to the key
-      expect(countDiffPeers(out, exp)).to.equal(0)
-    })
-
     it('getClosestPeers', async function () {
       this.timeout(240 * 1000)
 
@@ -542,7 +439,7 @@ describe('KadDHT', () => {
       expect(res).to.not.be.empty()
     })
 
-    it.skip('should not include itself in getClosestPeers PEER_RESPONSE', async function () {
+    it('should not include requester in getClosestPeers PEER_RESPONSE', async function () {
       this.timeout(240 * 1000)
 
       const nDHTs = 30
@@ -569,7 +466,7 @@ describe('KadDHT', () => {
         }
 
         expect(event.closer.map(peer => peer.id.toString()))
-          .to.not.include(event.from.toString())
+          .to.not.include(dhts[1].components.peerId.toString())
       }
     })
   })

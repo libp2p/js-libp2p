@@ -316,14 +316,10 @@ export class PeerRouting {
     const requesterXor = uint8ArrayXor(closerThanKadId, keyKadId)
 
     for (const peerId of ids) {
-      if (peerId.equals(closerThan)) {
-        continue
-      }
-
       const peerKadId = await convertPeerId(peerId)
       const peerXor = uint8ArrayXor(peerKadId, keyKadId)
 
-      // only include if peer isy closer than requester
+      // only include if peer is closer than requester
       if (uint8ArrayXorCompare(peerXor, requesterXor) !== -1) {
         continue
       }

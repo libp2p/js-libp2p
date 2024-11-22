@@ -46,7 +46,6 @@ describe('content routing', () => {
       tdht.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
-    const ids = dhts.map((d) => d.components.peerId)
     sinon.spy(dhts[3].network, 'sendMessage')
 
     // connect peers
@@ -56,29 +55,33 @@ describe('content routing', () => {
       tdht.connect(dhts[2], dhts[3])
     ])
 
-    // provide values
+    // run provide operation
     await drain(dhts[3].provide(cid))
 
-    // Expect an ADD_PROVIDER message to be sent to each peer for each value
-    const fn = dhts[3].network.sendMessage
+    // check network messages
     // @ts-expect-error fn is a spy
-    const calls = fn.getCalls().map(c => c.args)
+    const calls = dhts[3].network.sendMessage.getCalls().map(c => c.args)
 
     const peersSentMessage = new Set<string>()
 
     for (const [peerId, msg] of calls) {
       peersSentMessage.add(peerId.toString())
+
       expect(msg.type).equals(MessageType.ADD_PROVIDER)
       expect(msg.key).equalBytes(cid.multihash.bytes)
       expect(msg.providers.length).equals(1)
       expect(msg.providers[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
     }
 
+    // expect an ADD_PROVIDER message to be sent to each peer for each value
     expect([...peersSentMessage].sort()).to.deep.equal([
       dhts[0].components.peerId.toString(),
       dhts[1].components.peerId.toString(),
       dhts[2].components.peerId.toString()
     ].sort(), 'did not send ADD_PROVIDER to network peers')
+
+    // let all messages be processed
+    await delay(1000)
 
     // Expect each DHT to find the provider of each value
     for (const d of dhts) {
@@ -94,7 +97,7 @@ describe('content routing', () => {
       }, {}))
 
       expect(provs).to.have.length(1)
-      expect(provs[0].toString()).to.equal(ids[3].toString())
+      expect(provs[0].toString()).to.equal(dhts[3].components.peerId.toString())
     }
   })
 
@@ -173,7 +176,7 @@ describe('content routing', () => {
 
     await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(cid)) }))
 
-    const events = await all(dhts[0].findProviders(cid))
+    const events = await all(clientDHT.findProviders(cid))
 
     // find providers find all the 3 providers
     const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
@@ -188,7 +191,7 @@ describe('content routing', () => {
     expect(provs).to.have.length(3)
   })
 
-  it('find client provider', async function () {
+  it('find provider published by client', async function () {
     this.timeout(20 * 1000)
 
     const dhts = await Promise.all([
