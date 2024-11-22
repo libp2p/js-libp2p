@@ -81,16 +81,14 @@ describe('UPnP NAT (TCP)', () => {
     expect(client.map.getCall(0).args[1]).to.include({
       protocol: 'TCP'
     })
-    expect(components.addressManager.addObservedAddr.called).to.be.true()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
 
   it('should map TCP connections to external ports and trust them immediately', async () => {
     const {
       natManager,
       components
-    } = await createNatManager({
-      autoConfirmAddress: true
-    })
+    } = await createNatManager()
 
     client.externalIp.resolves('82.3.1.5')
 
@@ -107,7 +105,7 @@ describe('UPnP NAT (TCP)', () => {
     expect(client.map.getCall(0).args[1]).to.include({
       protocol: 'TCP'
     })
-    expect(components.addressManager.confirmObservedAddr.called).to.be.true()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
 
   it('should not map TCP connections when double-natted', async () => {
@@ -128,7 +126,7 @@ describe('UPnP NAT (TCP)', () => {
       .with.property('name', 'DoubleNATError')
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should not map non-ipv4 connections to external ports', async () => {
@@ -147,7 +145,7 @@ describe('UPnP NAT (TCP)', () => {
     await natManager.mapIpAddresses()
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should not map non-ipv6 loopback connections to external ports', async () => {
@@ -166,7 +164,7 @@ describe('UPnP NAT (TCP)', () => {
     await natManager.mapIpAddresses()
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should not map non-TCP connections to external ports', async () => {
@@ -185,7 +183,7 @@ describe('UPnP NAT (TCP)', () => {
     await natManager.mapIpAddresses()
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should not map loopback connections to external ports', async () => {
@@ -204,7 +202,7 @@ describe('UPnP NAT (TCP)', () => {
     await natManager.mapIpAddresses()
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should not map non-thin-waist connections to external ports', async () => {
@@ -223,7 +221,7 @@ describe('UPnP NAT (TCP)', () => {
     await natManager.mapIpAddresses()
 
     expect(client.map.called).to.be.false()
-    expect(components.addressManager.addObservedAddr.called).to.be.false()
+    expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
   it('should specify large enough TTL', async () => {

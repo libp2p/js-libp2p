@@ -1,13 +1,11 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { InvalidParametersError, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
-import { multiaddr } from '@multiformats/multiaddr'
 import { QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
-import { raceSignal } from 'race-signal'
 import { dynamicExternalAddress, staticExternalAddress } from './check-external-address.js'
 import { DoubleNATError, InvalidIPAddressError } from './errors.js'
 import type { ExternalAddress } from './check-external-address.js'
@@ -22,35 +20,35 @@ const DEFAULT_TTL = 7200
 
 export type { NatAPI, MapPortOptions }
 
+interface PortMapping {
+  externalHost: string
+  externalPort: number
+}
+
 export class UPnPNAT implements Startable, UPnPNATInterface {
   public client: NatAPI
   private readonly addressManager: AddressManager
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly externalAddress: ExternalAddress
-  private readonly localAddress?: string
   private readonly description: string
   private readonly ttl: number
   private readonly keepAlive: boolean
   private readonly gateway?: string
   private started: boolean
   private readonly log: Logger
-  private readonly gatewayDetectionTimeout: number
-  private readonly mappedPorts: Map<number, number>
+  private readonly mappedPorts: Map<string, PortMapping>
   private readonly onSelfPeerUpdate: DebouncedFunction
-  private readonly autoConfirmAddress: boolean
+  private shutdownController?: AbortController
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat')
     this.addressManager = components.addressManager
     this.events = components.events
     this.started = false
-    this.localAddress = init.localAddress
     this.description = init.description ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${components.peerId.toString()}`
     this.ttl = init.ttl ?? DEFAULT_TTL
     this.keepAlive = init.keepAlive ?? true
     this.gateway = init.gateway
-    this.gatewayDetectionTimeout = init.gatewayDetectionTimeout ?? 10000
-    this.autoConfirmAddress = init.autoConfirmAddress ?? false
     this.mappedPorts = new Map()
 
     if (this.ttl < DEFAULT_TTL) {
@@ -74,9 +72,9 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
         addressManager: this.addressManager,
         logger: components.logger
       }, {
-        autoConfirmAddress: init.autoConfirmAddress,
         interval: init.externalAddressCheckInterval,
-        timeout: init.externalAddressCheckTimeout
+        timeout: init.externalAddressCheckTimeout,
+        onExternalAddressChange: this.remapPorts.bind(this)
       })
     }
   }
@@ -86,16 +84,6 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/nat-traversal'
   ]
-
-  get [serviceDependencies] (): string[] {
-    if (!this.autoConfirmAddress) {
-      return [
-        '@libp2p/autonat'
-      ]
-    }
-
-    return []
-  }
 
   isStarted (): boolean {
     return this.started
@@ -107,6 +95,8 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     }
 
     this.started = true
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
     this.events.addEventListener('self:peer:update', this.onSelfPeerUpdate)
     await start(this.externalAddress, this.onSelfPeerUpdate)
   }
@@ -121,6 +111,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
       this.log.error(err)
     }
 
+    this.shutdownController?.abort()
     this.events.removeEventListener('self:peer:update', this.onSelfPeerUpdate)
     await stop(this.externalAddress, this.onSelfPeerUpdate)
     this.started = false
@@ -158,13 +149,13 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
         continue
       }
 
-      const { port, family } = ma.toOptions()
+      const { port, host, family, transport } = ma.toOptions()
 
       if (family !== ipType) {
         continue
       }
 
-      if (this.mappedPorts.has(port)) {
+      if (this.mappedPorts.has(`${host}-${port}-${transport}`)) {
         continue
       }
 
@@ -175,26 +166,18 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   }
 
   async mapIpAddresses (): Promise<void> {
-    if (this.externalAddress == null) {
-      this.log('discovering public address')
-    }
-
-    const publicIp = await this.externalAddress.getPublicIp({
-      signal: AbortSignal.timeout(this.gatewayDetectionTimeout)
-    })
-
-    this.externalAddress ?? await raceSignal(this.client.externalIp(), AbortSignal.timeout(this.gatewayDetectionTimeout), {
-      errorMessage: `Did not discover a "urn:schemas-upnp-org:device:InternetGatewayDevice:1" device on the local network after ${this.gatewayDetectionTimeout}ms - UPnP may not be configured on your router correctly`
+    const externalHost = await this.externalAddress.getPublicIp({
+      signal: this.shutdownController?.signal
     })
 
     let ipType: 4 | 6 = 4
 
-    if (isIPv4(publicIp)) {
+    if (isIPv4(externalHost)) {
       ipType = 4
-    } else if (isIPv6(publicIp)) {
+    } else if (isIPv6(externalHost)) {
       ipType = 6
     } else {
-      throw new InvalidIPAddressError(`Public address ${publicIp} was not an IPv4 address`)
+      throw new InvalidIPAddressError(`Public address ${externalHost} was not an IPv4 address`)
     }
 
     // filter addresses to get private, non-relay, IP based addresses that we
@@ -206,9 +189,9 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
       return
     }
 
-    this.log('%s public IP %s', this.externalAddress != null ? 'using configured' : 'discovered', publicIp)
+    this.log('%s public IP %s', this.externalAddress != null ? 'using configured' : 'discovered', externalHost)
 
-    this.assertNotBehindDoubleNAT(publicIp)
+    this.assertNotBehindDoubleNAT(externalHost)
 
     for (const addr of addresses) {
       // try to open uPnP ports for each thin waist address
@@ -219,30 +202,29 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
         continue
       }
 
-      if (this.mappedPorts.has(port)) {
+      if (this.mappedPorts.has(`${host}-${port}-${transport}`)) {
         // already mapped this port
         continue
       }
 
-      const protocol = transport.toUpperCase()
+      try {
+        this.log(`creating mapping of %s:%s key ${host}-${port}-${transport}`, host, port)
 
-      this.log(`creating mapping of ${host}:${port}`)
+        const externalPort = await this.client.map(port, {
+          localAddress: host,
+          protocol: transport === 'tcp' ? 'TCP' : 'UDP'
+        })
 
-      const mappedPort = await this.client.map(port, {
-        localAddress: host,
-        protocol: protocol === 'TCP' ? 'TCP' : 'UDP'
-      })
+        this.mappedPorts.set(`${host}-${port}-${transport}`, {
+          externalHost,
+          externalPort
+        })
 
-      this.mappedPorts.set(port, mappedPort)
+        this.log('created mapping of %s:%s to %s:%s', externalHost, externalPort, host, port)
 
-      const ma = multiaddr(addr.toString().replace(`/ip${family}/${host}/${transport}/${port}`, `/ip${family}/${publicIp}/${transport}/${mappedPort}`))
-
-      this.log(`created mapping of ${publicIp}:${mappedPort} to ${host}:${port} as %a`, ma)
-
-      if (this.autoConfirmAddress) {
-        this.addressManager.confirmObservedAddr(ma)
-      } else {
-        this.addressManager.addObservedAddr(ma)
+        this.addressManager.addPublicAddressMapping(host, port, externalHost, externalPort, transport === 'tcp' ? 'tcp' : 'udp')
+      } catch (err) {
+        this.log.error('failed to create mapping of %s:%s - %e', host, port, err)
       }
     }
   }
@@ -254,11 +236,28 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     const isPrivate = isPrivateIp(publicIp)
 
     if (isPrivate === true) {
-      throw new DoubleNATError(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
+      throw new DoubleNATError(`${publicIp} is private - please init uPnPNAT with 'externalAddress' set to an externally routable IP or ensure you are not behind a double NAT`)
     }
 
     if (isPrivate == null) {
       throw new InvalidParametersError(`${publicIp} is not an IP address`)
+    }
+  }
+
+  /**
+   * Update the local address mappings when the gateway's external interface
+   * address changes
+   */
+  private remapPorts (newExternalHost: string): void {
+    for (const [key, { externalHost, externalPort }] of this.mappedPorts.entries()) {
+      const [
+        host,
+        port,
+        transport
+      ] = key.split('-')
+
+      this.addressManager.removePublicAddressMapping(host, parseInt(port), externalHost, externalPort, transport === 'tcp' ? 'tcp' : 'udp')
+      this.addressManager.addPublicAddressMapping(host, parseInt(port), newExternalHost, externalPort, transport === 'tcp' ? 'tcp' : 'udp')
     }
   }
 }

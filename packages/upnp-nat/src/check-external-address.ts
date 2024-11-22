@@ -1,6 +1,5 @@
 import { NotStartedError, start, stop } from '@libp2p/interface'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
-import { multiaddr } from '@multiformats/multiaddr'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import type { NatAPI } from '@achingbrain/nat-port-mapper'
@@ -18,7 +17,7 @@ export interface ExternalAddressCheckerComponents {
 export interface ExternalAddressCheckerInit {
   interval?: number
   timeout?: number
-  autoConfirmAddress?: boolean
+  onExternalAddressChange?(newExternalAddress: string): void
 }
 
 export interface ExternalAddress {
@@ -36,13 +35,13 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
   private lastPublicIp?: string
   private readonly lastPublicIpPromise: DeferredPromise<string>
   private readonly check: RepeatingTask
-  private readonly autoConfirmAddress: boolean
+  private readonly onExternalAddressChange?: (newExternalAddress: string) => void
 
-  constructor (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit = {}) {
+  constructor (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat:external-address-check')
     this.client = components.client
     this.addressManager = components.addressManager
-    this.autoConfirmAddress = init.autoConfirmAddress ?? false
+    this.onExternalAddressChange = init.onExternalAddressChange
     this.started = false
 
     this.checkExternalAddress = this.checkExternalAddress.bind(this)
@@ -93,26 +92,8 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
       if (this.lastPublicIp != null && externalAddress !== this.lastPublicIp) {
         this.log('external address changed from %s to %s', this.lastPublicIp, externalAddress)
 
-        for (const ma of this.addressManager.getAddresses()) {
-          const addrString = ma.toString()
-
-          if (!addrString.includes(this.lastPublicIp)) {
-            continue
-          }
-
-          // create a new version of the multiaddr with the new public IP
-          const newAddress = multiaddr(addrString.replace(this.lastPublicIp, externalAddress))
-
-          // remove the old address and add the new one
-          this.addressManager.removeObservedAddr(ma)
-          this.addressManager.confirmObservedAddr(newAddress)
-
-          if (this.autoConfirmAddress) {
-            this.addressManager.confirmObservedAddr(newAddress)
-          } else {
-            this.addressManager.addObservedAddr(newAddress)
-          }
-        }
+        // notify listeners that the address has changed
+        this.onExternalAddressChange?.(externalAddress)
       }
 
       this.lastPublicIp = externalAddress
@@ -128,7 +109,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
   }
 }
 
-export function dynamicExternalAddress (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit = {}): ExternalAddress {
+export function dynamicExternalAddress (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit): ExternalAddress {
   return new ExternalAddressChecker(components, init)
 }
 
