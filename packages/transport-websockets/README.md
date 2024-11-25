@@ -41,42 +41,8 @@ const node = await createLibp2p({
 })
 await node.start()
 
-const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+const ma = multiaddr('/dns4/example.com/tcp/9090/tls/ws')
 await node.dial(ma)
-```
-
-## Filters
-
-When run in a browser by default this module will only connect to secure web socket addresses.
-
-To change this you should pass a filter to the factory function.
-
-You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
-
-The available filters are:
-
-- `filters.all`
-  - Returns all TCP and DNS based addresses, both with `ws` or `wss`.
-- `filters.dnsWss`
-  - Returns all DNS based addresses with `wss`.
-- `filters.dnsWsOrWss`
-  - Returns all DNS based addresses, both with `ws` or `wss`.
-
-## Example - Allow dialing insecure WebSockets
-
-```TypeScript
-import { createLibp2p } from 'libp2p'
-import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
-
-const node = await createLibp2p({
-  transports: [
-    webSockets({
-      // connect to all sockets, even insecure ones
-      filter: filters.all
-    })
-  ]
-})
 ```
 
 # Install
