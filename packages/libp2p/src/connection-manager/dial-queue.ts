@@ -1,11 +1,11 @@
 /* eslint-disable max-depth */
 import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { PriorityQueue, type PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
-import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
+import { PriorityQueue } from '@libp2p/utils/priority-queue'
+import { resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { Circuit } from '@multiformats/multiaddr-matcher'
-import { type ClearableSignal, anySignal } from 'any-signal'
+import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
@@ -23,7 +23,9 @@ import { resolveMultiaddrs } from './utils.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
+import type { PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
 import type { DNS } from '@multiformats/dns'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PendingDialTarget {
@@ -204,7 +206,12 @@ export class DialQueue {
       options?.onProgress?.(new CustomProgressEvent('dial-queue:start-dial'))
       // create abort conditions - need to do this before `calculateMultiaddrs` as
       // we may be about to resolve a dns addr which can time out
-      const signal = this.createDialAbortController(options?.signal)
+      const signal = anySignal([
+        this.shutDownController.signal,
+        options.signal
+      ])
+      setMaxListeners(Infinity, signal)
+
       let addrsToDial: Address[]
 
       try {
@@ -299,23 +306,9 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
-      signal: options.signal,
+      signal: options.signal ?? AbortSignal.timeout(this.dialTimeout),
       onProgress: options.onProgress
     })
-  }
-
-  private createDialAbortController (userSignal?: AbortSignal): ClearableSignal {
-    // let any signal abort the dial
-    const signal = anySignal([
-      AbortSignal.timeout(this.dialTimeout),
-      this.shutDownController.signal,
-      userSignal
-    ])
-
-    // This emitter gets listened to a lot
-    setMaxListeners(Infinity, signal)
-
-    return signal
   }
 
   // eslint-disable-next-line complexity
