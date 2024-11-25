@@ -9,6 +9,7 @@ import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
+import { raceSignal } from 'race-signal'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
@@ -324,5 +325,56 @@ describe('dial queue', () => {
 
     dialer = new DialQueue(components)
     await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
+  })
+
+  it('should respect user dial signal over default timeout if it is passed', async () => {
+    const dialTimeout = 10
+    const userTimeout = 500
+    const connection = stubInterface<Connection>()
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, options) => {
+      await raceSignal(delay(userTimeout / 2), options?.signal)
+
+      return connection
+    })
+
+    dialer = new DialQueue(components, {
+      dialTimeout
+    })
+
+    // dial slow peer with much longer timeout than the default
+    await expect(dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234'), {
+      signal: AbortSignal.timeout(userTimeout)
+    }))
+      .to.eventually.equal(connection)
+  })
+
+  it('should respect user dial signal during parallel dial of the same peer', async () => {
+    const dialTimeout = 10
+    const userTimeout = 500
+    const connection = stubInterface<Connection>()
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, options) => {
+      await raceSignal(delay(userTimeout / 2), options?.signal)
+
+      return connection
+    })
+
+    dialer = new DialQueue(components, {
+      dialTimeout
+    })
+
+    const all = await Promise.allSettled([
+      dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb')),
+      dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb'), {
+        signal: AbortSignal.timeout(userTimeout)
+      })
+    ])
+
+    expect(all[0].status).to.equal('rejected', 'did not respect default dial timeout')
+    expect(all[1].status).to.equal('fulfilled', 'did not respect user dial timeout')
+    expect(components.transportManager.dial.callCount).to.equal(1, 'should have coalesced multiple dials to same dial')
   })
 })
