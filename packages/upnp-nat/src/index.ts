@@ -97,15 +97,6 @@ export interface UPnPNATInit {
   gateway?: string
 
   /**
-   * How long in ms to wait before giving up trying to auto-detect a
-   * `urn:schemas-upnp-org:device:InternetGatewayDevice:1` device on the local
-   * network
-   *
-   * @default 10000
-   */
-  gatewayDetectionTimeout?: number
-
-  /**
    * Ports are mapped when the `self:peer:update` event fires, which happens
    * when the node's addresses change. To avoid starting to map ports while
    * multiple addresses are being added, the mapping function is debounced by
@@ -120,17 +111,6 @@ export interface UPnPNATInit {
    * otherwise one will be created
    */
   client?: NatAPI
-
-  /**
-   * Any mapped addresses are added to the observed address list. These
-   * addresses require additional verification by the `@libp2p/autonat` protocol
-   * or similar before they are trusted.
-   *
-   * To skip this verification and trust them immediately pass `true` here
-   *
-   * @default false
-   */
-  autoConfirmAddress?: boolean
 }
 
 export interface UPnPNATComponents {
