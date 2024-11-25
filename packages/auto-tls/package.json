@@ -57,6 +57,8 @@
     "@multiformats/multiaddr-matcher": "^1.4.0",
     "@peculiar/x509": "^1.12.3",
     "acme-client": "^5.4.0",
+    "any-signal": "^4.1.1",
+    "delay": "^6.0.0",
     "interface-datastore": "^8.3.1",
     "multiformats": "^13.3.1",
     "uint8arrays": "^5.1.0"
@@ -66,7 +68,6 @@
     "@libp2p/peer-id": "^5.0.7",
     "aegir": "^44.0.1",
     "datastore-core": "^10.0.2",
-    "delay": "^6.0.0",
     "p-event": "^6.0.1",
     "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0"

@@ -2,11 +2,8 @@
 
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isBrowser, isWebWorker } from 'wherearewe'
 import { webSockets } from '../src/index.js'
-import type { Transport } from '@libp2p/interface'
 
 describe('libp2p-websockets', () => {
   let ws: Transport

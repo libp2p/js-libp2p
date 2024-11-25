@@ -1,14 +1,16 @@
 import { ClientAuth } from '@libp2p/http-fetch/auth'
-import { serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
 import { X509Certificate } from '@peculiar/x509'
 import * as acme from 'acme-client'
+import { anySignal } from 'any-signal'
+import delay from 'delay'
 import { Key } from 'interface-datastore'
 import { base36 } from 'multiformats/bases/base36'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
+import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_REQUEST_TIMEOUT, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
 import { DomainMapper } from './domain-mapper.js'
 import { createCsr, importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
 import type { AutoTLSComponents, AutoTLSInit, AutoTLS as AutoTLSInterface } from './index.js'
@@ -18,6 +20,8 @@ import type { Keychain } from '@libp2p/keychain'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
+
+const RETRY_DELAY = 5_000
 
 type CertificateEvent = 'certificate:provision' | 'certificate:renew'
 
@@ -40,6 +44,7 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly acmeDirectory: URL
   private readonly clientAuth: ClientAuth
   private readonly provisionTimeout: number
+  private readonly provisionRequestTimeout: number
   private readonly renewThreshold: number
   private started: boolean
   private shutdownController?: AbortController
@@ -68,6 +73,7 @@ export class AutoTLS implements AutoTLSInterface {
     this.forgeDomain = init.forgeDomain ?? DEFAULT_FORGE_DOMAIN
     this.acmeDirectory = new URL(init.acmeDirectory ?? DEFAULT_ACME_DIRECTORY)
     this.provisionTimeout = init.provisionTimeout ?? DEFAULT_PROVISION_TIMEOUT
+    this.provisionRequestTimeout = init.provisionRequestTimeout ?? DEFAULT_PROVISION_REQUEST_TIMEOUT
     this.renewThreshold = init.renewThreshold ?? DEFAULT_RENEWAL_THRESHOLD
     this.accountPrivateKeyName = init.accountPrivateKeyName ?? DEFAULT_ACCOUNT_PRIVATE_KEY_NAME
     this.accountPrivateKeyBits = init.accountPrivateKeyBits ?? DEFAULT_ACCOUNT_PRIVATE_KEY_BITS
@@ -108,6 +114,7 @@ export class AutoTLS implements AutoTLSInterface {
     await start(this.domainMapper)
     this.events.addEventListener('self:peer:update', this.onSelfPeerUpdate)
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
     this.started = true
   }
 
@@ -120,7 +127,8 @@ export class AutoTLS implements AutoTLSInterface {
   }
 
   private _onSelfPeerUpdate (): void {
-    const addresses = this.addressManager.getAddresses().filter(supportedAddressesFilter)
+    const addresses = this.addressManager.getAddresses()
+      .filter(supportedAddressesFilter)
 
     if (addresses.length === 0) {
       this.log('not fetching certificate as we have no public addresses')
@@ -139,11 +147,29 @@ export class AutoTLS implements AutoTLSInterface {
 
     this.fetching = true
 
-    this.fetchCertificate(addresses, {
-      signal: AbortSignal.timeout(this.provisionTimeout)
+    Promise.resolve().then(async () => {
+      let attempt = 0
+
+      while (true) {
+        if (this.shutdownController?.signal.aborted === true) {
+          throw this.shutdownController.signal.reason
+        }
+
+        try {
+          await this.fetchCertificate(addresses, {
+            signal: AbortSignal.timeout(this.provisionTimeout)
+          })
+
+          return
+        } catch (err) {
+          this.log.error('provisioning certificate failed on attempt %d - %e', attempt++, err)
+        }
+
+        await delay(RETRY_DELAY)
+      }
     })
       .catch(err => {
-        this.log.error('error fetching certificates - %e', err)
+        this.log.error('giving up provisioning certificate - %e', err)
       })
       .finally(() => {
         this.fetching = false
@@ -190,7 +216,9 @@ export class AutoTLS implements AutoTLSInterface {
     // emit a certificate event
     this.log('dispatching %s', event)
     this.events.safeDispatchEvent(event, {
-      detail: this.certificate
+      detail: {
+        ...this.certificate
+      }
     })
   }
 
@@ -271,7 +299,33 @@ export class AutoTLS implements AutoTLSInterface {
       email: this.email,
       termsOfServiceAgreed: true,
       challengeCreateFn: async (authz, challenge, keyAuthorization) => {
-        await this.configureAcmeChallengeResponse(multiaddrs, keyAuthorization, options)
+        const signal = anySignal([this.shutdownController?.signal, options?.signal])
+        setMaxListeners(Infinity, signal)
+
+        let attempt = 0
+
+        while (true) {
+          if (signal.aborted) {
+            throw signal.reason
+          }
+
+          try {
+            const timeout = AbortSignal.timeout(this.provisionRequestTimeout)
+            const signal = anySignal([timeout, options?.signal])
+            setMaxListeners(Infinity, timeout, signal)
+
+            await this.configureAcmeChallengeResponse(multiaddrs, keyAuthorization, {
+              ...options,
+              signal
+            })
+
+            return
+          } catch (err: any) {
+            this.log.error('contacting %s failed on attempt %d - %e', this.forgeEndpoint, attempt++, err.cause ?? err)
+          }
+
+          await delay(RETRY_DELAY)
+        }
       },
       challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
         // no-op
@@ -285,8 +339,9 @@ export class AutoTLS implements AutoTLSInterface {
     const addresses = multiaddrs.map(ma => ma.toString())
 
     const endpoint = `${this.forgeEndpoint}v1/_acme-challenge`
-    this.log('asking %sv1/_acme-challenge to respond to the acme DNS challenge on our behalf', endpoint)
+    this.log('asking %s to respond to the acme DNS challenge on our behalf', endpoint)
     this.log('dialback public addresses: %s', addresses.join(', '))
+
     const response = await this.clientAuth.authenticatedFetch(endpoint, {
       method: 'POST',
       headers: {

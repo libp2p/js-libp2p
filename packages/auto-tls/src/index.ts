@@ -104,9 +104,17 @@ export interface AutoTLSInit {
   /**
    * How long to attempt to acquire a certificate before timing out in ms
    *
-   * @default 10000
+   * @default 120_000
    */
   provisionTimeout?: number
+
+  /**
+   * How long asking the forge endpoint to answer a DNS challenge can take
+   * before we retry
+   *
+   * @default 10_000
+   */
+  provisionRequestTimeout?: number
 
   /**
    * Certificates are acquired when the `self:peer:update` event fires, which
