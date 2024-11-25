@@ -25,7 +25,7 @@ repo and examine the changes made.
 -->
 
 When a publicly dialable address is detected, use the p2p-forge service at
-<https://registration.libp2p.direct> to acquire a valid Let's Encrypted-backed
+<https://registration.libp2p.direct> to acquire a valid Let's Encrypt-backed
 TLS certificate, which the node can then use with the relevant transports.
 
 The node must be configured with a listener for at least one of the following
@@ -82,27 +82,19 @@ console.info(node.getMultiaddrs())
 # Install
 
 ```console
-$ npm i @libp2p/plaintext
-```
-
-## Browser `<script>` tag
-
-Loading this module through a script tag will make it's exports available as `Libp2pPlaintext` in the global namespace.
-
-```html
-<script src="https://unpkg.com/@libp2p/plaintext/dist/index.min.js"></script>
+$ npm i @libp2p/auto-tls
 ```
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_plaintext.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_auto-tls.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-plaintext/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-plaintext/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/auto-tls/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/auto-tls/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 
