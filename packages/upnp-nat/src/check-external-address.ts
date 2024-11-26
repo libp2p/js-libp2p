@@ -2,14 +2,14 @@ import { NotStartedError, start, stop } from '@libp2p/interface'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
-import type { NatAPI } from '@achingbrain/nat-port-mapper'
+import type { Gateway } from '@achingbrain/nat-port-mapper'
 import type { AbortOptions, ComponentLogger, Logger, Startable } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { RepeatingTask } from '@libp2p/utils/repeating-task'
 import type { DeferredPromise } from 'p-defer'
 
 export interface ExternalAddressCheckerComponents {
-  client: NatAPI
+  gateway: Gateway
   addressManager: AddressManager
   logger: ComponentLogger
 }
@@ -29,7 +29,7 @@ export interface ExternalAddress {
  */
 class ExternalAddressChecker implements ExternalAddress, Startable {
   private readonly log: Logger
-  private readonly client: NatAPI
+  private readonly gateway: Gateway
   private readonly addressManager: AddressManager
   private started: boolean
   private lastPublicIp?: string
@@ -39,7 +39,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
 
   constructor (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat:external-address-check')
-    this.client = components.client
+    this.gateway = components.gateway
     this.addressManager = components.addressManager
     this.onExternalAddressChange = init.onExternalAddressChange
     this.started = false
@@ -60,14 +60,11 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
     }
 
     await start(this.check)
-
-    this.check.start()
     this.started = true
   }
 
   async stop (): Promise<void> {
     await stop(this.check)
-
     this.started = false
   }
 
@@ -86,7 +83,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
 
   private async checkExternalAddress (options?: AbortOptions): Promise<void> {
     try {
-      const externalAddress = await this.client.externalIp(options)
+      const externalAddress = await this.gateway.externalIp(options)
 
       // check if our public address has changed
       if (this.lastPublicIp != null && externalAddress !== this.lastPublicIp) {
@@ -99,6 +96,8 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
       this.lastPublicIp = externalAddress
       this.lastPublicIpPromise.resolve(externalAddress)
     } catch (err: any) {
+      this.log.error('could not resolve external address - %e', err)
+
       if (this.lastPublicIp != null) {
         // ignore the error if we've previously run successfully
         return

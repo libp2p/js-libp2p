@@ -9,7 +9,7 @@ import { expect } from 'aegir/chai'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { UPnPNAT } from '../src/upnp-nat.js'
 import type { UPnPNATInit } from '../src/index.js'
-import type { NatAPI } from '@achingbrain/nat-port-mapper'
+import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 
@@ -23,7 +23,8 @@ interface StubbedUPnPNATComponents {
 
 describe('UPnP NAT (TCP)', () => {
   const teardown: Array<() => Promise<void>> = []
-  let client: StubbedInstance<NatAPI>
+  let client: StubbedInstance<UPnPNATClient>
+  let gateway: StubbedInstance<Gateway>
 
   async function createNatManager (natManagerOptions: UPnPNATInit = {}): Promise<{ natManager: any, components: StubbedUPnPNATComponents }> {
     const components: StubbedUPnPNATComponents = {
@@ -34,11 +35,15 @@ describe('UPnP NAT (TCP)', () => {
       events: new TypedEventEmitter()
     }
 
-    client = stubInterface<NatAPI>()
+    gateway = stubInterface<Gateway>()
+    client = stubInterface<UPnPNATClient>({
+      findGateways: async function * (options) {
+        yield gateway
+      }
+    })
 
     const natManager = new UPnPNAT(components, {
-      keepAlive: true,
-      client,
+      portMappingClient: client,
       ...natManagerOptions
     })
 
@@ -66,7 +71,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4002'),
@@ -76,10 +81,10 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.true()
-    expect(client.map.getCall(0).args[0]).to.equal(4002)
-    expect(client.map.getCall(0).args[1]).to.include({
-      protocol: 'TCP'
+    expect(gateway.map.called).to.be.true()
+    expect(gateway.map.getCall(0).args[0]).to.equal(4002)
+    expect(gateway.map.getCall(0).args[1]).to.include({
+      protocol: 'tcp'
     })
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
@@ -90,7 +95,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4002'),
@@ -100,10 +105,10 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.true()
-    expect(client.map.getCall(0).args[0]).to.equal(4002)
-    expect(client.map.getCall(0).args[1]).to.include({
-      protocol: 'TCP'
+    expect(gateway.map.called).to.be.true()
+    expect(gateway.map.getCall(0).args[0]).to.equal(4002)
+    expect(gateway.map.getCall(0).args[1]).to.include({
+      protocol: 'tcp'
     })
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
@@ -114,7 +119,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('192.168.1.1')
+    gateway.externalIp.resolves('192.168.1.1')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4002'),
@@ -122,10 +127,9 @@ describe('UPnP NAT (TCP)', () => {
     ])
 
     await start(natManager)
-    await expect(natManager.mapIpAddresses()).to.eventually.be.rejected
-      .with.property('name', 'DoubleNATError')
+    await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
@@ -135,7 +139,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip6/fe80::9400:67ff:fe19:2a0f/tcp/0')
@@ -144,7 +148,7 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
@@ -154,7 +158,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip6/::1/tcp/0')
@@ -163,7 +167,7 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
@@ -173,7 +177,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/192.168.1.12/udp/4001')
@@ -182,7 +186,7 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
@@ -192,7 +196,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4001')
@@ -201,7 +205,7 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
   })
 
@@ -211,7 +215,7 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    client.externalIp.resolves('82.3.1.5')
+    gateway.externalIp.resolves('82.3.1.5')
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4001/sctp/0')
@@ -220,12 +224,7 @@ describe('UPnP NAT (TCP)', () => {
     await start(natManager)
     await natManager.mapIpAddresses()
 
-    expect(client.map.called).to.be.false()
+    expect(gateway.map.called).to.be.false()
     expect(components.addressManager.addPublicAddressMapping.called).to.be.false()
-  })
-
-  it('should specify large enough TTL', async () => {
-    await expect(createNatManager({ ttl: 5, keepAlive: true })).to.eventually.be.rejected
-      .with.property('name', 'InvalidParametersError')
   })
 })
