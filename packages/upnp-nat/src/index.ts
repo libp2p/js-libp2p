@@ -35,11 +35,12 @@
  * ```
  */
 
-import { UPnPNAT as UPnPNATClass, type NatAPI, type MapPortOptions } from './upnp-nat.js'
+import { UPnPNAT as UPnPNATClass } from './upnp-nat.js'
+import type { UPnPNAT as UPnPNATClient, MapPortOptions } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 
-export type { NatAPI, MapPortOptions }
+export type { UPnPNATClient, MapPortOptions }
 
 export interface PMPOptions {
   /**
@@ -49,12 +50,6 @@ export interface PMPOptions {
 }
 
 export interface UPnPNATInit {
-  /**
-   * Pass a string to hard code the external address, otherwise it will be
-   * auto-detected
-   */
-  externalAddress?: string
-
   /**
    * Check if the external address has changed this often in ms. Ignored if an
    * external address is specified.
@@ -72,45 +67,30 @@ export interface UPnPNATInit {
   externalAddressCheckTimeout?: number
 
   /**
-   * Pass a value to use instead of auto-detection
-   */
-  localAddress?: string
-
-  /**
    * A string value to use for the port mapping description on the gateway
    */
-  description?: string
+  portMappingDescription?: string
 
   /**
-   * How long UPnP port mappings should last for in seconds (minimum 1200)
-   */
-  ttl?: number
-
-  /**
-   * Whether to automatically refresh UPnP port mappings when their TTL is reached
-   */
-  keepAlive?: boolean
-
-  /**
-   * Pass a value to use instead of auto-detection
-   */
-  gateway?: string
-
-  /**
-   * Ports are mapped when the `self:peer:update` event fires, which happens
-   * when the node's addresses change. To avoid starting to map ports while
-   * multiple addresses are being added, the mapping function is debounced by
-   * this number of ms
+   * How long UPnP port mappings should last for in ms
    *
-   * @default 5000
+   * @default 720_000
    */
-  delay?: number
+  portMappingTTL?: number
+
+  /**
+   * Whether to automatically refresh UPnP port mappings when their TTL is
+   * reached
+   *
+   * @default true
+   */
+  portMappingAutoRefresh?: boolean
 
   /**
    * A preconfigured instance of a NatAPI client can be passed as an option,
    * otherwise one will be created
    */
-  client?: NatAPI
+  portMappingClient?: UPnPNATClient
 }
 
 export interface UPnPNATComponents {
@@ -122,7 +102,7 @@ export interface UPnPNATComponents {
 }
 
 export interface UPnPNAT {
-  client: NatAPI
+  portMappingClient: UPnPNATClient
 }
 
 export function uPnPNAT (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {

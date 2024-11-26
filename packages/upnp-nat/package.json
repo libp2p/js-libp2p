@@ -50,7 +50,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^2.0.1",
+    "@achingbrain/nat-port-mapper": "^3.0.1",
     "@chainsafe/is-ip": "^2.0.2",
     "@libp2p/interface": "^2.2.1",
     "@libp2p/interface-internal": "^2.1.1",
