@@ -9,6 +9,6 @@ const pkg = JSON.parse(
 await writeFile(
   new URL('../src/version.ts', import.meta.url),
   `export const version = '${pkg.version}'
-export const name = '${pkg.name}'
+export const name = 'js-${pkg.name}'
 `
 )
