@@ -179,8 +179,6 @@ export class AutoTLS implements AutoTLSInterface {
   private async fetchCertificate (multiaddrs: Multiaddr[], options?: AbortOptions): Promise<void> {
     this.log('fetching certificate')
 
-    // TODO: handle rate limit errors like "too many new registrations (10) from this IP address in the last 3h0m0s, retry after 2024-11-01 09:22:38 UTC: see https://letsencrypt.org/docs/rate-limits/#new-registrations-per-ip-address"
-
     const certificatePrivateKey = await loadOrCreateKey(this.keychain, this.certificatePrivateKeyName, this.certificatePrivateKeyBits)
     const { pem, cert } = await this.loadOrCreateCertificate(certificatePrivateKey, multiaddrs, options)
 
