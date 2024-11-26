@@ -4,7 +4,7 @@ import net from 'node:net'
 import os from 'node:os'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import duplex from 'it-ws/duplex'
 import { pEvent } from 'p-event'
@@ -138,7 +138,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     // store the socket so we can close it when the listener closes
-    // TODO: is this necessary if we can `this.https.closeAllConnections`?
     this.sockets.add(socket)
     socket.on('close', () => {
       this.sockets.delete(socket)
@@ -233,7 +232,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     const { host, port } = ma.toOptions()
     this.addr = `${host}:${port}`
 
-    this.server.listen(port)
+    this.server.listen(port, host)
 
     await new Promise<void>((resolve, reject) => {
       const onListening = (): void => {
@@ -313,7 +312,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   }
 
   getAddrs (): Multiaddr[] {
-    const multiaddrs: Multiaddr[] = []
     const address = this.server.address()
 
     if (address == null) {
@@ -328,16 +326,10 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       throw new Error('Listener is not ready yet')
     }
 
-    const protos = this.listeningMultiaddr.protos()
+    const options = this.listeningMultiaddr.toOptions()
+    const multiaddrs: Multiaddr[] = []
 
-    // because TCP will only return the IPv6 version, we need to capture from
-    // the passed multiaddr
-    if (protos.some(proto => proto.code === protocols('ip4').code)) {
-      const wsProto = protos.some(proto => proto.code === protocols('ws').code) ? '/ws' : '/wss'
-      let m = this.listeningMultiaddr.decapsulate('tcp')
-      m = m.encapsulate(`/tcp/${address.port}${wsProto}`)
-      const options = m.toOptions()
-
+    if (options.family === 4) {
       if (options.host === '0.0.0.0') {
         Object.values(os.networkInterfaces()).forEach(niInfos => {
           if (niInfos == null) {
@@ -346,24 +338,51 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
 
           niInfos.forEach(ni => {
             if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${options.port}/ws`))
-
-              if (this.https != null && WebSockets.exactMatch(m)) {
-                multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${options.port}/tls/ws`))
-              }
+              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
             }
           })
         })
       } else {
-        if (this.https != null && WebSockets.exactMatch(m)) {
-          multiaddrs.push(m.decapsulate('/ws').encapsulate('/tls/ws'))
-        } else {
-          multiaddrs.push(m)
-        }
+        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
+      }
+    } else if (options.family === 6) {
+      if (options.host === '::') {
+        Object.values(os.networkInterfaces()).forEach(niInfos => {
+          if (niInfos == null) {
+            return
+          }
+
+          niInfos.forEach(ni => {
+            if (ni.family === 'IPv6') {
+              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
+            }
+          })
+        })
+      } else {
+        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
       }
     }
 
-    return multiaddrs
+    const insecureMultiaddrs: Multiaddr[] = []
+
+    if (this.http != null) {
+      multiaddrs.forEach(ma => {
+        insecureMultiaddrs.push(ma.encapsulate('/ws'))
+      })
+    }
+
+    const secureMultiaddrs: Multiaddr[] = []
+
+    if (this.https != null) {
+      multiaddrs.forEach(ma => {
+        secureMultiaddrs.push(ma.encapsulate('/tls/ws'))
+      })
+    }
+
+    return [
+      ...insecureMultiaddrs,
+      ...secureMultiaddrs
+    ]
   }
 
   private httpRequestHandler (req: http.IncomingMessage, res: http.ServerResponse): void {

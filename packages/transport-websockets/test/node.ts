@@ -76,7 +76,8 @@ describe('listen', () => {
     it('should error on starting two listeners on same address', async () => {
       listener = ws.createListener({ upgrader })
       const dumbServer = http.createServer()
-      await new Promise<void>(resolve => dumbServer.listen(ma.toOptions().port, resolve))
+      const options = ma.toOptions()
+      await new Promise<void>(resolve => dumbServer.listen(options.port, options.host, resolve))
       await expect(listener.listen(ma)).to.eventually.rejectedWith('listen EADDRINUSE')
       await new Promise<void>(resolve => dumbServer.close(() => { resolve() }))
     })
@@ -152,7 +153,7 @@ describe('listen', () => {
     })
 
     it('getAddrs preserves p2p Id', async () => {
-      const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
       listener = ws.createListener({ upgrader })
 
       await listener.listen(ma)
@@ -335,7 +336,7 @@ describe('dial', () => {
   describe('ip4 with wss', () => {
     let ws: Transport
     let listener: Listener
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/wss')
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/tls/ws')
 
     beforeEach(async () => {
       ws = webSockets({
@@ -614,7 +615,7 @@ describe('filter addrs', () => {
   })
 })
 
-describe('auto-tls', () => {
+describe('auto-tls (IPv4)', () => {
   let ws: Transport
   let listener: Listener
   let events: TypedEventEmitter<Libp2pEvents>
@@ -652,7 +653,72 @@ describe('auto-tls', () => {
     const addrs = listener.getAddrs()
     expect(addrs).to.have.lengthOf(1)
     expect(WebSockets.exactMatch(addrs[0])).to.be.true()
+    const listeningPromise = pEvent(listener, 'listening')
 
+    events.safeDispatchEvent<TLSCertificate>('certificate:provision', {
+      detail: {
+        key: fs.readFileSync('./test/fixtures/key.pem', {
+          encoding: 'utf-8'
+        }),
+        cert: fs.readFileSync('./test/fixtures/certificate.pem', {
+          encoding: 'utf-8'
+        })
+      }
+    })
+
+    await listeningPromise
+
+    const addrs2 = listener.getAddrs()
+    expect(addrs2).to.have.lengthOf(2)
+    expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
+    expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
+
+    const wsOptions = addrs2[0].toOptions()
+    const wssOptions = addrs2[1].toOptions()
+
+    expect(wsOptions.host).to.equal(wssOptions.host)
+    expect(wsOptions.port).to.equal(wssOptions.port)
+  })
+})
+
+describe('auto-tls (IPv6)', () => {
+  let ws: Transport
+  let listener: Listener
+  let events: TypedEventEmitter<Libp2pEvents>
+  const ma = multiaddr('/ip6/::1/tcp/37284/ws')
+
+  beforeEach(async () => {
+    events = new TypedEventEmitter()
+
+    const upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
+
+    ws = webSockets({
+      websocket: {
+        rejectUnauthorized: false
+      }
+    })({
+      events,
+      logger: defaultLogger()
+    })
+    listener = ws.createListener({
+      upgrader
+    })
+    await listener.listen(ma)
+  })
+
+  afterEach(async () => {
+    await listener.close()
+  })
+
+  it('should listen on wss after a certificate is found', async () => {
+    const addrs = listener.getAddrs()
+    expect(addrs).to.have.lengthOf(1)
+    expect(WebSockets.exactMatch(addrs[0])).to.be.true()
     const listeningPromise = pEvent(listener, 'listening')
 
     events.safeDispatchEvent<TLSCertificate>('certificate:provision', {
