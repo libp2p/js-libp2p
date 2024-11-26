@@ -23,7 +23,7 @@
  * ```
  */
 
-import { transportSymbol, serviceCapabilities, ConnectionFailedError, serviceDependencies } from '@libp2p/interface'
+import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
@@ -45,17 +45,22 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
    * @deprecated Use a ConnectionGater instead
    */
   filter?: MultiaddrFilter
-  websocket?: ClientOptions
-  http?: http.ServerOptions
-  https?: https.ServerOptions
 
   /**
-   * If a service like `@libp2p/auto-tls` creates a TLS certificate this
-   * transport can use, upgrade any listeners from `/ws` to `/wss`.
-   *
-   * @default false
+   * Options used to create WebSockets
    */
-  autoTLS?: boolean
+  websocket?: ClientOptions
+
+  /**
+   * Options used to create the HTTP server
+   */
+  http?: http.ServerOptions
+
+  /**
+   * Options used to create the HTTPs server. `options.http` will be used if
+   * unspecified.
+   */
+  https?: https.ServerOptions
 
   /**
    * Inbound connections must complete their upgrade within this many ms
@@ -109,16 +114,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/transport'
   ]
-
-  get [serviceDependencies] (): string[] {
-    if (this.init.autoTLS === true) {
-      return [
-        '@libp2p/auto-tls'
-      ]
-    }
-
-    return []
-  }
 
   async dial (ma: Multiaddr, options: DialTransportOptions<WebSocketsDialEvents>): Promise<Connection> {
     this.log('dialing %s', ma)

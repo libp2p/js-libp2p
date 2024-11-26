@@ -633,8 +633,7 @@ describe('auto-tls', () => {
     ws = webSockets({
       websocket: {
         rejectUnauthorized: false
-      },
-      autoTLS: true
+      }
     })({
       events,
       logger: defaultLogger()

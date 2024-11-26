@@ -16,6 +16,7 @@ import type { DuplexWebSocket } from 'it-ws/duplex'
 import type { EventEmitter } from 'node:events'
 import type { Server } from 'node:http'
 import type { Duplex } from 'node:stream'
+import type tls from 'node:tls'
 
 export interface WebSocketListenerComponents {
   logger: ComponentLogger
@@ -26,7 +27,6 @@ export interface WebSocketListenerComponents {
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
   inboundConnectionUpgradeTimeout?: number
-  autoTLS?: boolean
   cert?: string
   key?: string
   http?: http.ServerOptions
@@ -62,7 +62,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.logger = components.logger
     this.upgrader = init.upgrader
     this.httpOptions = init.http
-    this.httpsOptions = init.https
+    this.httpsOptions = init.https ?? init.http
     this.inboundConnectionUpgradeTimeout = init.inboundConnectionUpgradeTimeout ?? 5000
     this.sockets = new Set()
 
@@ -100,70 +100,66 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       })
     }
 
-    this.server = net.createServer(socket => {
-      socket.once('data', buffer => {
-        console.info('---> incoming packet')
-try {
-        // Pause the socket
-        socket.pause()
-
-        // Determine if this is an HTTP(s) request
-        const byte = buffer[0]
-
-        let server: EventEmitter | undefined = this.http
-
-        if (byte === 22) {
-          console.info('---> incoming https packet')
-          server = this.https
-        } else {
-          console.info('---> incoming http packet')
-        }
-
-        if (server == null) {
-          this.log.error('no appropriate listener configured for byte %d', byte)
+    this.server = net.createServer({
+      pauseOnConnect: true
+    }, (socket) => {
+      this.onSocketConnection(socket)
+        .catch(err => {
+          this.log.error('error handling socket - %e', err)
           socket.destroy()
-          return
-        }
-
-        // store the socket so we can close it when the listener closes
-        this.sockets.add(socket)
-        socket.on('close', () => {
-          this.sockets.delete(socket)
         })
-
-        // push the buffer back onto the front of the data stream
-        socket.unshift(buffer)
-
-        // emit the socket to the relevant server
-        server.emit('connection', socket)
-
-        // TODO: verify this
-        // As of NodeJS 10.x the socket must be
-        // resumed asynchronously or the socket
-        // connection hangs, potentially crashing
-        // the process. Prior to NodeJS 10.x
-        // the socket may be resumed synchronously.
-        process.nextTick(() => socket.resume())
-      } catch (err) {
-        console.error('error handling socket data', err)
-      }
-      })
     })
 
-    if (init?.autoTLS === true) {
-      components.events.addEventListener('certificate:provision', this.onCertificateProvision.bind(this))
-      components.events.addEventListener('certificate:renew', this.onCertificateRenew.bind(this))
+    components.events.addEventListener('certificate:provision', this.onCertificateProvision.bind(this))
+    components.events.addEventListener('certificate:renew', this.onCertificateRenew.bind(this))
+  }
+
+  async onSocketConnection (socket: net.Socket): Promise<void> {
+    let buffer = socket.read(1)
+
+    if (buffer == null) {
+      await pEvent(socket, 'readable')
+      buffer = socket.read(1)
     }
+
+    // determine if this is an HTTP(s) request
+    const byte = buffer[0]
+    let server: EventEmitter | undefined = this.http
+
+    // https://github.com/mscdex/httpolyglot/blob/1c6c4af65f4cf95a32c918d0fdcc532e0c095740/lib/index.js#L92
+    if (byte < 32 || byte >= 127) {
+      server = this.https
+    }
+
+    if (server == null) {
+      this.log.error('no appropriate listener configured for byte %d', byte)
+      socket.destroy()
+      return
+    }
+
+    // store the socket so we can close it when the listener closes
+    // TODO: is this necessary if we can `this.https.closeAllConnections`?
+    this.sockets.add(socket)
+    socket.on('close', () => {
+      this.sockets.delete(socket)
+    })
+
+    socket.on('error', (err) => {
+      this.log.error('socket error - %e', err)
+      socket.destroy()
+    })
+
+    // re-queue first data chunk
+    socket.unshift(buffer)
+
+    // hand the socket off to the appropriate server
+    server.emit('connection', socket)
   }
 
   onWsServerConnection (socket: ws.WebSocket, req: http.IncomingMessage): void {
     let addr: string | ws.AddressInfo | null
 
     try {
-      if (req.socket.remoteAddress == null || req.socket.remotePort == null) {
-        throw new Error('Remote connection did not have address and/or port')
-      }
-
       addr = this.server.address()
 
       if (typeof addr === 'string') {
@@ -182,8 +178,8 @@ try {
 
     const stream: DuplexWebSocket = {
       ...duplex(socket, {
-        remoteAddress: req.socket.remoteAddress,
-        remotePort: req.socket.remotePort
+        remoteAddress: req.socket.remoteAddress ?? '0.0.0.0',
+        remotePort: req.socket.remotePort ?? 0
       }),
       localAddress: addr.address,
       localPort: addr.port
@@ -218,13 +214,19 @@ try {
     this.wsServer.handleUpgrade(req, socket, head, this.onWsServerConnection.bind(this))
   }
 
+  onTLSClientError (err: Error, socket: tls.TLSSocket): void {
+    this.log.error('TLS client error - %e', err)
+    socket.destroy()
+  }
+
   async listen (ma: Multiaddr): Promise<void> {
     if (WebSockets.exactMatch(ma)) {
-      this.http = http.createServer(this.httpOptions ?? {})
+      this.http = http.createServer(this.httpOptions ?? {}, this.httpRequestHandler.bind(this))
       this.http.addListener('upgrade', this.onUpgrade.bind(this))
     } else if (WebSocketsSecure.exactMatch(ma)) {
-      this.https = https.createServer(this.httpsOptions ?? {})
+      this.https = https.createServer(this.httpsOptions ?? {}, this.httpRequestHandler.bind(this))
       this.https.addListener('upgrade', this.onUpgrade.bind(this))
+      this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
     }
 
     this.listeningMultiaddr = ma
@@ -264,22 +266,24 @@ try {
     this.https = https.createServer({
       ...this.httpsOptions,
       ...event.detail
-    })
+    }, this.httpRequestHandler.bind(this))
     this.https.addListener('upgrade', this.onUpgrade.bind(this))
+    this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
+
     this.safeDispatchEvent('listening')
   }
 
   onCertificateRenew (event: CustomEvent<TLSCertificate>): void {
     // stop accepting new connections
     this.https?.close()
-    this.https?.removeListener('upgrade', this.onUpgrade.bind(this))
 
-    this.log('auto-tls certificate renews, restarting https server')
+    this.log('auto-tls certificate renewed, restarting https server')
     this.https = https.createServer({
       ...this.httpsOptions,
       ...event.detail
-    })
+    }, this.httpRequestHandler.bind(this))
     this.https.addListener('upgrade', this.onUpgrade.bind(this))
+    this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
   }
 
   async close (): Promise<void> {
@@ -288,6 +292,9 @@ try {
     this.https?.close()
     this.wsServer.close()
 
+    // close all connections, must be done after closing the server to prevent
+    // race conditions where a new connection is accepted while we are closing
+    // the existing ones
     this.http?.closeAllConnections()
     this.https?.closeAllConnections()
 
@@ -306,8 +313,6 @@ try {
   }
 
   getAddrs (): Multiaddr[] {
-    console.info('getting ws addresses: http:', Boolean(this.http), 'https:', Boolean(this.https))
-
     const multiaddrs: Multiaddr[] = []
     const address = this.server.address()
 
@@ -325,8 +330,8 @@ try {
 
     const protos = this.listeningMultiaddr.protos()
 
-    // Because TCP will only return the IPv6 version
-    // we need to capture from the passed multiaddr
+    // because TCP will only return the IPv6 version, we need to capture from
+    // the passed multiaddr
     if (protos.some(proto => proto.code === protocols('ip4').code)) {
       const wsProto = protos.some(proto => proto.code === protocols('ws').code) ? '/ws' : '/wss'
       let m = this.listeningMultiaddr.decapsulate('tcp')
@@ -350,19 +355,21 @@ try {
           })
         })
       } else {
-        multiaddrs.push(m)
-      }
-
-      if (this.https != null && WebSockets.exactMatch(m)) {
-        multiaddrs.push(
-          m.decapsulate('/ws').encapsulate('/tls/ws')
-        )
+        if (this.https != null && WebSockets.exactMatch(m)) {
+          multiaddrs.push(m.decapsulate('/ws').encapsulate('/tls/ws'))
+        } else {
+          multiaddrs.push(m)
+        }
       }
     }
 
-    console.info('ws addresses:\n', multiaddrs.map(ma => ma.toString()).join('\n'))
-
     return multiaddrs
+  }
+
+  private httpRequestHandler (req: http.IncomingMessage, res: http.ServerResponse): void {
+    res.writeHead(400)
+    res.write('Only WebSocket connections are supported')
+    res.end()
   }
 }
 
