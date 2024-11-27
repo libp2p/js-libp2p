@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isPrivate } from '../../src/multiaddr/is-private.js'
 
-describe.only('multiaddr isPrivate', () => {
+describe('multiaddr isPrivate', () => {
   it('identifies private ip4 multiaddrs', () => {
     [
       multiaddr('/ip4/127.0.0.1/tcp/1000'),
