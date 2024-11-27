@@ -78,10 +78,11 @@
     "@libp2p/utils": "^6.2.1",
     "@multiformats/multiaddr": "^12.2.3",
     "@multiformats/multiaddr-matcher": "^1.4.0",
-    "@multiformats/multiaddr-to-uri": "^10.0.1",
+    "@multiformats/multiaddr-to-uri": "^11.0.0",
     "@types/ws": "^8.5.10",
     "it-ws": "^6.1.1",
     "p-defer": "^4.0.1",
+    "p-event": "^6.0.1",
     "progress-events": "^1.0.0",
     "race-signal": "^1.0.2",
     "ws": "^8.17.0"

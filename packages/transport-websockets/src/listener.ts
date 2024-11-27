@@ -1,145 +1,345 @@
-import os from 'os'
-import { TypedEventEmitter } from '@libp2p/interface'
+import http from 'node:http'
+import https from 'node:https'
+import net from 'node:net'
+import os from 'node:os'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { createServer } from 'it-ws/server'
+import { multiaddr } from '@multiformats/multiaddr'
+import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
+import duplex from 'it-ws/duplex'
+import { pEvent } from 'p-event'
+import * as ws from 'ws'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, TypedEventTarget, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
-import type { WebSocketServer } from 'it-ws/server'
+import type { EventEmitter } from 'node:events'
+import type { Server } from 'node:http'
+import type { Duplex } from 'node:stream'
+import type tls from 'node:tls'
 
 export interface WebSocketListenerComponents {
   logger: ComponentLogger
+  events: TypedEventTarget<Libp2pEvents>
   metrics?: Metrics
 }
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
+  inboundConnectionUpgradeTimeout?: number
+  cert?: string
+  key?: string
+  http?: http.ServerOptions
+  https?: http.ServerOptions
 }
 
 export interface WebSocketListenerMetrics {
-  status: MetricGroup
-  errors: CounterGroup
-  events: CounterGroup
+  status?: MetricGroup
+  errors?: CounterGroup
+  events?: CounterGroup
 }
 
-class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly connections: Set<DuplexWebSocket>
-  private listeningMultiaddr?: Multiaddr
-  private readonly server: WebSocketServer
+export class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly log: Logger
-  private metrics?: WebSocketListenerMetrics
-  private addr: string
+  private readonly logger: ComponentLogger
+  private readonly server: net.Server
+  private readonly wsServer: ws.WebSocketServer
+  private readonly metrics: WebSocketListenerMetrics
+  private readonly sockets: Set<net.Socket>
+  private readonly upgrader: Upgrader
+  private readonly inboundConnectionUpgradeTimeout: number
+  private readonly httpOptions?: http.ServerOptions
+  private readonly httpsOptions?: https.ServerOptions
+  private http?: http.Server
+  private https?: https.Server
+  private addr?: string
+  private listeningMultiaddr?: Multiaddr
 
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
 
     this.log = components.logger.forComponent('libp2p:websockets:listener')
-    const metrics = components.metrics
-    // Keep track of open connections to destroy when the listener is closed
-    this.connections = new Set<DuplexWebSocket>()
+    this.logger = components.logger
+    this.upgrader = init.upgrader
+    this.httpOptions = init.http
+    this.httpsOptions = init.https ?? init.http
+    this.inboundConnectionUpgradeTimeout = init.inboundConnectionUpgradeTimeout ?? 5000
+    this.sockets = new Set()
 
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
-
-    this.addr = 'unknown'
-
-    this.server = createServer({
-      ...init,
-      onConnection: (stream: DuplexWebSocket) => {
-        const maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
-          logger: components.logger,
-          metrics: this.metrics?.events,
-          metricPrefix: `${this.addr} `
-        })
-        this.log('new inbound connection %s', maConn.remoteAddr)
-
-        this.connections.add(stream)
-
-        stream.socket.on('close', function () {
-          self.connections.delete(stream)
-        })
-
-        init.upgrader.upgradeInbound(maConn)
-          .catch(async err => {
-            this.log.error('inbound connection failed to upgrade', err)
-            this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
-
-            try {
-              maConn.abort(err)
-            } catch (err) {
-              this.log.error('inbound connection failed to close after upgrade failed - %e', err)
-              this.metrics?.errors.increment({ [`${this.addr} inbound_closing_failed`]: true })
-            }
-          })
-      }
+    this.wsServer = new ws.WebSocketServer({
+      noServer: true
     })
+    this.wsServer.addListener('connection', this.onWsServerConnection.bind(this))
 
-    this.server.on('listening', () => {
-      if (metrics != null) {
-        const { host, port } = this.listeningMultiaddr?.toOptions() ?? {}
-        this.addr = `${host}:${port}`
+    components.metrics?.registerMetricGroup('libp2p_websockets_inbound_connections_total', {
+      label: 'address',
+      help: 'Current active connections in WebSocket listener',
+      calculate: () => {
+        if (this.addr == null) {
+          return {}
+        }
 
-        metrics.registerMetricGroup('libp2p_websockets_inbound_connections_total', {
-          label: 'address',
-          help: 'Current active connections in WebSocket listener',
-          calculate: () => {
-            return {
-              [this.addr]: this.connections.size
-            }
-          }
-        })
-
-        this.metrics = {
-          status: metrics?.registerMetricGroup('libp2p_websockets_listener_status_info', {
-            label: 'address',
-            help: 'Current status of the WebSocket listener socket'
-          }),
-          errors: metrics?.registerMetricGroup('libp2p_websockets_listener_errors_total', {
-            label: 'address',
-            help: 'Total count of WebSocket listener errors by type'
-          }),
-          events: metrics?.registerMetricGroup('libp2p_websockets_listener_events_total', {
-            label: 'address',
-            help: 'Total count of WebSocket listener events by type'
-          })
+        return {
+          [this.addr]: this.sockets.size
         }
       }
-      this.dispatchEvent(new CustomEvent('listening'))
     })
-    this.server.on('error', (err: Error) => {
-      this.metrics?.errors.increment({ [`${this.addr} listen_error`]: true })
-      this.dispatchEvent(new CustomEvent('error', {
-        detail: err
-      }))
+
+    this.metrics = {
+      status: components.metrics?.registerMetricGroup('libp2p_websockets_listener_status_info', {
+        label: 'address',
+        help: 'Current status of the WebSocket listener socket'
+      }),
+      errors: components.metrics?.registerMetricGroup('libp2p_websockets_listener_errors_total', {
+        label: 'address',
+        help: 'Total count of WebSocket listener errors by type'
+      }),
+      events: components.metrics?.registerMetricGroup('libp2p_websockets_listener_events_total', {
+        label: 'address',
+        help: 'Total count of WebSocket listener events by type'
+      })
+    }
+
+    this.server = net.createServer({
+      pauseOnConnect: true
+    }, (socket) => {
+      this.onSocketConnection(socket)
+        .catch(err => {
+          this.log.error('error handling socket - %e', err)
+          socket.destroy()
+        })
     })
-    this.server.on('close', () => {
-      this.dispatchEvent(new CustomEvent('close'))
-    })
+
+    components.events.addEventListener('certificate:provision', this.onCertificateProvision.bind(this))
+    components.events.addEventListener('certificate:renew', this.onCertificateRenew.bind(this))
   }
 
-  async close (): Promise<void> {
-    await Promise.all(
-      Array.from(this.connections).map(async maConn => { await maConn.close() })
-    )
+  async onSocketConnection (socket: net.Socket): Promise<void> {
+    this.metrics.events?.increment({ [`${this.addr} connection`]: true })
 
-    if (this.server.address() == null) {
-      // not listening, close will throw an error
+    let buffer = socket.read(1)
+
+    if (buffer == null) {
+      await pEvent(socket, 'readable')
+      buffer = socket.read(1)
+    }
+
+    // determine if this is an HTTP(s) request
+    const byte = buffer[0]
+    let server: EventEmitter | undefined = this.http
+
+    // https://github.com/mscdex/httpolyglot/blob/1c6c4af65f4cf95a32c918d0fdcc532e0c095740/lib/index.js#L92
+    if (byte < 32 || byte >= 127) {
+      server = this.https
+    }
+
+    if (server == null) {
+      this.log.error('no appropriate listener configured for byte %d', byte)
+      socket.destroy()
       return
     }
 
-    await this.server.close()
+    // store the socket so we can close it when the listener closes
+    this.sockets.add(socket)
+
+    socket.on('close', () => {
+      this.metrics.events?.increment({ [`${this.addr} close`]: true })
+      this.sockets.delete(socket)
+    })
+
+    socket.on('error', (err) => {
+      this.log.error('socket error - %e', err)
+      this.metrics.events?.increment({ [`${this.addr} error`]: true })
+      socket.destroy()
+    })
+
+    socket.once('timeout', () => {
+      this.metrics.events?.increment({ [`${this.addr} timeout`]: true })
+    })
+
+    socket.once('end', () => {
+      this.metrics.events?.increment({ [`${this.addr} end`]: true })
+    })
+
+    // re-queue first data chunk
+    socket.unshift(buffer)
+
+    // hand the socket off to the appropriate server
+    server.emit('connection', socket)
+  }
+
+  onWsServerConnection (socket: ws.WebSocket, req: http.IncomingMessage): void {
+    let addr: string | ws.AddressInfo | null
+
+    try {
+      addr = this.server.address()
+
+      if (typeof addr === 'string') {
+        throw new Error('Cannot listen on unix sockets')
+      }
+
+      if (addr == null) {
+        throw new Error('Server was closing or not running')
+      }
+    } catch (err: any) {
+      this.log.error('error obtaining remote socket address - %e', err)
+      req.destroy(err)
+      socket.close()
+      return
+    }
+
+    const stream: DuplexWebSocket = {
+      ...duplex(socket, {
+        remoteAddress: req.socket.remoteAddress ?? '0.0.0.0',
+        remotePort: req.socket.remotePort ?? 0
+      }),
+      localAddress: addr.address,
+      localPort: addr.port
+    }
+
+    let maConn: MultiaddrConnection
+
+    try {
+      maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
+        logger: this.logger,
+        metrics: this.metrics?.events,
+        metricPrefix: `${this.addr} `
+      })
+    } catch (err: any) {
+      this.log.error('inbound connection failed', err)
+      this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
+      socket.close()
+      return
+    }
+
+    this.log('new inbound connection %s', maConn.remoteAddr)
+    const signal = AbortSignal.timeout(this.inboundConnectionUpgradeTimeout)
+    setMaxListeners(Infinity, signal)
+
+    this.upgrader.upgradeInbound(maConn, {
+      signal
+    })
+      .catch(async err => {
+        this.log.error('inbound connection failed to upgrade - %e', err)
+        this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
+
+        await maConn.close()
+          .catch(err => {
+            this.log.error('inbound connection failed to close after upgrade failed', err)
+            this.metrics.errors?.increment({ [`${this.addr} inbound_closing_failed`]: true })
+          })
+      })
+  }
+
+  onUpgrade (req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
+    this.wsServer.handleUpgrade(req, socket, head, this.onWsServerConnection.bind(this))
+  }
+
+  onTLSClientError (err: Error, socket: tls.TLSSocket): void {
+    this.log.error('TLS client error - %e', err)
+    socket.destroy()
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    this.listeningMultiaddr = ma
+    if (WebSockets.exactMatch(ma)) {
+      this.http = http.createServer(this.httpOptions ?? {}, this.httpRequestHandler.bind(this))
+      this.http.addListener('upgrade', this.onUpgrade.bind(this))
+    } else if (WebSocketsSecure.exactMatch(ma)) {
+      this.https = https.createServer(this.httpsOptions ?? {}, this.httpRequestHandler.bind(this))
+      this.https.addListener('upgrade', this.onUpgrade.bind(this))
+      this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
+    }
 
-    await this.server.listen(ma.toOptions())
+    this.listeningMultiaddr = ma
+    const { host, port } = ma.toOptions()
+    this.addr = `${host}:${port}`
+
+    this.server.listen(port, host)
+
+    await new Promise<void>((resolve, reject) => {
+      const onListening = (): void => {
+        removeListeners()
+        resolve()
+      }
+      const onError = (err: Error): void => {
+        this.metrics.errors?.increment({ [`${this.addr} listen_error`]: true })
+        removeListeners()
+        reject(err)
+      }
+      const onDrop = (): void => {
+        this.metrics.events?.increment({ [`${this.addr} drop`]: true })
+      }
+      const removeListeners = (): void => {
+        this.server.removeListener('listening', onListening)
+        this.server.removeListener('error', onError)
+        this.server.removeListener('drop', onDrop)
+      }
+
+      this.server.addListener('listening', onListening)
+      this.server.addListener('error', onError)
+      this.server.addListener('drop', onDrop)
+    })
+
+    this.safeDispatchEvent('listening')
+  }
+
+  onCertificateProvision (event: CustomEvent<TLSCertificate>): void {
+    if (this.https != null) {
+      this.log('auto-tls certificate found but already listening on https')
+      return
+    }
+
+    this.log('auto-tls certificate found, starting https server')
+    this.https = https.createServer({
+      ...this.httpsOptions,
+      ...event.detail
+    }, this.httpRequestHandler.bind(this))
+    this.https.addListener('upgrade', this.onUpgrade.bind(this))
+    this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
+
+    this.safeDispatchEvent('listening')
+  }
+
+  onCertificateRenew (event: CustomEvent<TLSCertificate>): void {
+    // stop accepting new connections
+    this.https?.close()
+
+    this.log('auto-tls certificate renewed, restarting https server')
+    this.https = https.createServer({
+      ...this.httpsOptions,
+      ...event.detail
+    }, this.httpRequestHandler.bind(this))
+    this.https.addListener('upgrade', this.onUpgrade.bind(this))
+    this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
+  }
+
+  async close (): Promise<void> {
+    this.server.close()
+    this.http?.close()
+    this.https?.close()
+    this.wsServer.close()
+
+    // close all connections, must be done after closing the server to prevent
+    // race conditions where a new connection is accepted while we are closing
+    // the existing ones
+    this.http?.closeAllConnections()
+    this.https?.closeAllConnections()
+
+    ;[...this.sockets].forEach(socket => {
+      socket.destroy()
+    })
+
+    await Promise.all([
+      pEvent(this.server, 'close'),
+      this.http == null ? null : pEvent(this.http, 'close'),
+      this.https == null ? null : pEvent(this.https, 'close'),
+      pEvent(this.wsServer, 'close')
+    ])
+
+    this.safeDispatchEvent('close')
   }
 
   getAddrs (): Multiaddr[] {
-    const multiaddrs = []
     const address = this.server.address()
 
     if (address == null) {
@@ -154,38 +354,69 @@ class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Lis
       throw new Error('Listener is not ready yet')
     }
 
-    const ipfsId = this.listeningMultiaddr.getPeerId()
-    const protos = this.listeningMultiaddr.protos()
+    const options = this.listeningMultiaddr.toOptions()
+    const multiaddrs: Multiaddr[] = []
 
-    // Because TCP will only return the IPv6 version
-    // we need to capture from the passed multiaddr
-    if (protos.some(proto => proto.code === protocols('ip4').code)) {
-      const wsProto = protos.some(proto => proto.code === protocols('ws').code) ? '/ws' : '/wss'
-      let m = this.listeningMultiaddr.decapsulate('tcp')
-      m = m.encapsulate(`/tcp/${address.port}${wsProto}`)
-      if (ipfsId != null) {
-        m = m.encapsulate(`/p2p/${ipfsId}`)
-      }
-
-      if (m.toString().includes('0.0.0.0')) {
-        const netInterfaces = os.networkInterfaces()
-        Object.values(netInterfaces).forEach(niInfos => {
+    if (options.family === 4) {
+      if (options.host === '0.0.0.0') {
+        Object.values(os.networkInterfaces()).forEach(niInfos => {
           if (niInfos == null) {
             return
           }
 
           niInfos.forEach(ni => {
             if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(m.toString().replace('0.0.0.0', ni.address)))
+              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
             }
           })
         })
       } else {
-        multiaddrs.push(m)
+        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
+      }
+    } else if (options.family === 6) {
+      if (options.host === '::') {
+        Object.values(os.networkInterfaces()).forEach(niInfos => {
+          if (niInfos == null) {
+            return
+          }
+
+          niInfos.forEach(ni => {
+            if (ni.family === 'IPv6') {
+              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
+            }
+          })
+        })
+      } else {
+        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
       }
     }
 
-    return multiaddrs
+    const insecureMultiaddrs: Multiaddr[] = []
+
+    if (this.http != null) {
+      multiaddrs.forEach(ma => {
+        insecureMultiaddrs.push(ma.encapsulate('/ws'))
+      })
+    }
+
+    const secureMultiaddrs: Multiaddr[] = []
+
+    if (this.https != null) {
+      multiaddrs.forEach(ma => {
+        secureMultiaddrs.push(ma.encapsulate('/tls/ws'))
+      })
+    }
+
+    return [
+      ...insecureMultiaddrs,
+      ...secureMultiaddrs
+    ]
+  }
+
+  private httpRequestHandler (req: http.IncomingMessage, res: http.ServerResponse): void {
+    res.writeHead(400)
+    res.write('Only WebSocket connections are supported')
+    res.end()
   }
 }
 
