@@ -56,11 +56,11 @@
   "dependencies": {
     "@libp2p/crypto": "^5.0.7",
     "@libp2p/interface": "^2.2.1",
-    "multiformats": "^13.1.0",
+    "multiformats": "^13.3.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.5",
     "sinon": "^19.0.2"
   },
   "sideEffects": false

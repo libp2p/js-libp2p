@@ -50,12 +50,12 @@
   "dependencies": {
     "@libp2p/interface": "^2.2.1",
     "@libp2p/peer-collections": "^6.0.12",
-    "@multiformats/multiaddr": "^12.2.3",
-    "progress-events": "^1.0.0",
+    "@multiformats/multiaddr": "^12.3.3",
+    "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^44.0.1"
+    "aegir": "^45.0.5"
   },
   "sideEffects": false
 }

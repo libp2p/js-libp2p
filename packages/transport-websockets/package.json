@@ -76,20 +76,20 @@
   "dependencies": {
     "@libp2p/interface": "^2.2.1",
     "@libp2p/utils": "^6.2.1",
-    "@multiformats/multiaddr": "^12.2.3",
-    "@multiformats/multiaddr-matcher": "^1.4.0",
+    "@multiformats/multiaddr": "^12.3.3",
+    "@multiformats/multiaddr-matcher": "^1.6.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
-    "@types/ws": "^8.5.10",
-    "it-ws": "^6.1.1",
+    "@types/ws": "^8.5.13",
+    "it-ws": "^6.1.5",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
-    "progress-events": "^1.0.0",
-    "race-signal": "^1.0.2",
-    "ws": "^8.17.0"
+    "progress-events": "^1.0.1",
+    "race-signal": "^1.1.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.4",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.5",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",

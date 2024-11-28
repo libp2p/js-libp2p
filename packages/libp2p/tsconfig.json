@@ -9,16 +9,10 @@
   ],
   "references": [
     {
-      "path": "../connection-encrypter-plaintext"
-    },
-    {
       "path": "../crypto"
     },
     {
       "path": "../interface"
-    },
-    {
-      "path": "../interface-compliance-tests"
     },
     {
       "path": "../interface-internal"
@@ -37,21 +31,6 @@
     },
     {
       "path": "../peer-store"
-    },
-    {
-      "path": "../protocol-identify"
-    },
-    {
-      "path": "../stream-multiplexer-mplex"
-    },
-    {
-      "path": "../transport-circuit-relay-v2"
-    },
-    {
-      "path": "../transport-tcp"
-    },
-    {
-      "path": "../transport-websockets"
     },
     {
       "path": "../utils"

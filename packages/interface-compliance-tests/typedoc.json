@@ -1,7 +1,6 @@
 {
   "entryPoints": [
     "./src/index.ts",
-    "./src/connection/index.ts",
     "./src/connection-encryption/index.ts",
     "./src/is-valid-tick.ts",
     "./src/matchers.ts",

@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface"
     },
     {
@@ -19,6 +22,9 @@
     },
     {
       "path": "../metrics-simple"
+    },
+    {
+      "path": "../peer-id"
     }
   ]
 }

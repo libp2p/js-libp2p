@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
 
   test-examples:
     name: Test example ${{ matrix.example.name }}
@@ -120,6 +120,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
       - run: npx playwright install-deps
       - run: npx xvfb-maybe aegir test-dependant ${{ matrix.example.repo }} --deps ${{ join(matrix.example.deps, ',') }}

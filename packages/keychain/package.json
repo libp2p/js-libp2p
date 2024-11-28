@@ -61,18 +61,18 @@
   "dependencies": {
     "@libp2p/crypto": "^5.0.7",
     "@libp2p/interface": "^2.2.1",
-    "@noble/hashes": "^1.5.0",
+    "@noble/hashes": "^1.6.1",
     "asn1js": "^3.0.5",
-    "interface-datastore": "^8.3.0",
+    "interface-datastore": "^8.3.1",
     "merge-options": "^3.0.4",
-    "multiformats": "^13.2.2",
+    "multiformats": "^13.3.1",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.4",
-    "aegir": "^44.0.1",
-    "datastore-core": "^10.0.0"
+    "aegir": "^45.0.5",
+    "datastore-core": "^10.0.2"
   },
   "sideEffects": false
 }
