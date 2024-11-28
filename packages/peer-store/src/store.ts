@@ -9,7 +9,7 @@ import { bytesToPeer } from './utils/bytes-to-peer.js'
 import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datastore-key.js'
 import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
-import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery } from '@libp2p/interface'
+import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery, Logger } from '@libp2p/interface'
 import type { Datastore, Key, Query } from 'interface-datastore'
 
 /**
@@ -49,8 +49,10 @@ export class PersistentStore {
   private readonly datastore: Datastore
   public readonly lock: Mortice
   private readonly addressFilter?: AddressFilter
+  private readonly log: Logger
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
+    this.log = components.logger.forComponent('libp2p:peer-store')
     this.peerId = components.peerId
     this.datastore = components.datastore
     this.addressFilter = init.addressFilter
@@ -141,10 +143,8 @@ export class PersistentStore {
         existingBuf,
         existingPeer
       }
-    } catch (err: any) {
-      if (err.name !== 'NotFoundError') {
-        throw err
-      }
+    } catch (err) {
+      this.log.error('invalid peer data found in peer store - %e', err)
     }
 
     return {}
