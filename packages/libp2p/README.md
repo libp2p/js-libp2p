@@ -5,10 +5,10 @@
 <h3 align="center">The JavaScript implementation of the libp2p Networking Stack</h3>
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
-[![npm](https://img.shields.io/npm/dm/libp2p.svg)](https://www.npmjs.com/package/libp2p)
+[![npm](https://img.shields.io/npm/dm/libp2p.svg?style=flat-square)](https://www.npmjs.com/package/libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![Matrix](https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
-[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-squaree)](https://discord.com/invite/Ae4TbahHaT)
+[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
