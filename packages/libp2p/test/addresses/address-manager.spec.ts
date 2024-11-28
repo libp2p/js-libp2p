@@ -427,4 +427,76 @@ describe('Address Manager', () => {
       multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
     ])
   })
+
+  it('should add a public IPv4 address mapping when only local IPv6 addresses are present', () => {
+    const transportManager = stubInterface<TransportManager>()
+    const am = new AddressManager({
+      peerId,
+      transportManager,
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    const internalIp = '2a00:23c6:14b1:7e00:28b8:30d:944e:27f3'
+    const internalPort = 4567
+    const externalIp = '81.12.12.1'
+    const externalPort = 8910
+    const protocol = 'tcp'
+
+    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+
+    // one loopback, one LAN address
+    transportManager.getAddrs.returns([
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}`)
+    ])
+
+    // should have mapped the LAN address to the external IP
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`),
+      multiaddr(`/ip4/${externalIp}/${protocol}/${externalPort}/p2p/${peerId.toString()}`)
+    ])
+
+    am.removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+  })
+
+  it('should add a public IPv6 address mapping when only local IPv4 addresses are present', () => {
+    const transportManager = stubInterface<TransportManager>()
+    const am = new AddressManager({
+      peerId,
+      transportManager,
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    const internalIp = '192.168.1.123'
+    const internalPort = 4567
+    const externalIp = '2a00:23c6:14b1:7e00:28b8:30d:944e:27f3'
+    const externalPort = 8910
+    const protocol = 'tcp'
+
+    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+
+    // one loopback, one LAN address
+    transportManager.getAddrs.returns([
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
+    ])
+
+    // should have mapped the LAN address to the external IP
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`),
+      multiaddr(`/ip6/${externalIp}/${protocol}/${externalPort}/p2p/${peerId.toString()}`)
+    ])
+
+    am.removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+  })
 })
