@@ -1,3 +1,4 @@
+import { isIPv4 } from '@chainsafe/is-ip'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { debounce } from '@libp2p/utils/debounce'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
@@ -149,7 +150,9 @@ export class AddressManager implements AddressManagerInterface {
     this.components.peerStore.patch(this.components.peerId, {
       multiaddrs: addrs
     })
-      .catch(err => { this.log.error('error updating addresses', err) })
+      .catch(err => {
+        this.log.error('error updating addresses', err)
+      })
   }
 
   /**
@@ -267,6 +270,7 @@ export class AddressManager implements AddressManagerInterface {
       }
 
       mappings.forEach(mapping => {
+        tuples[0][0] = isIPv4(mapping.externalIp) ? CODEC_IP4 : CODEC_IP6
         tuples[0][1] = mapping.externalIp
         tuples[1][1] = `${mapping.externalPort}`
 
