@@ -53,16 +53,16 @@
   "dependencies": {
     "@libp2p/interface": "^2.2.1",
     "@libp2p/interface-internal": "^2.1.1",
-    "@multiformats/multiaddr": "^12.3.1",
+    "@multiformats/multiaddr": "^12.3.3",
     "it-byte-stream": "^1.1.0",
     "it-pipe": "^3.0.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.4",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.5",
     "it-all": "^3.0.6",
     "it-pair": "^2.0.6",
-    "sinon": "^18.0.0",
+    "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },

@@ -66,7 +66,7 @@
     "@libp2p/utils": "^6.2.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "it-stream-types": "^2.0.1",
+    "it-stream-types": "^2.0.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -74,15 +74,15 @@
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^6.1.11",
     "@libp2p/logger": "^5.1.4",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.5",
     "benchmark": "^2.1.4",
-    "cborg": "^4.2.0",
+    "cborg": "^4.2.6",
     "delay": "^6.0.0",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
-    "it-foreach": "^2.1.0",
-    "it-map": "^3.1.0",
+    "it-foreach": "^2.1.1",
+    "it-map": "^3.1.1",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "random-int": "^3.0.0"

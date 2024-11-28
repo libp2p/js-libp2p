@@ -90,10 +90,10 @@
     "@libp2p/peer-collections": "^6.0.12",
     "@libp2p/peer-id": "^5.0.8",
     "@libp2p/utils": "^6.2.1",
-    "it-length-prefixed": "^9.0.4",
+    "it-length-prefixed": "^9.1.0",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "multiformats": "^13.1.0",
+    "multiformats": "^13.3.1",
     "p-queue": "^8.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -101,14 +101,14 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.4",
     "@types/sinon": "^17.0.3",
-    "aegir": "^44.0.1",
+    "aegir": "^45.0.5",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
-    "protons": "^7.5.0",
-    "protons-runtime": "^5.4.0",
-    "sinon": "^18.0.0"
+    "protons": "^7.6.0",
+    "protons-runtime": "^5.5.0",
+    "sinon": "^19.0.2"
   },
   "sideEffects": false
 }

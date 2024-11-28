@@ -87,7 +87,7 @@ $ npm i @libp2p/auto-tls
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_auto-tls.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_auto_tls.html>
 
 # License
 

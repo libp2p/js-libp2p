@@ -1,17 +1,37 @@
 version: 2
 updates:
 - package-ecosystem: npm
-  directory: "/"
+  directories:
+    - "/"
+    - "/benchmarks/*"
+    - "/docs/*"
+    - "/examples/*"
+    - "/interop/*"
+    - "/packages/*"
   schedule:
     interval: daily
     time: "10:00"
   open-pull-requests-limit: 20
   commit-message:
     prefix: "deps"
-    prefix-development: "deps(dev)"
+    prefix-development: "chore"
+  groups:
+    helia-deps: # group all deps that should be updated when Helia deps need updated
+      patterns:
+        - "*helia*"
+        - "*libp2p*"
+        - "*multiformats*"
+    store-deps: # group all blockstore and datastore updates (interface & impl)
+      patterns:
+        - "*blockstore*"
+        - "*datastore*"
+    kubo-deps: # group kubo, kubo-rpc-client, and ipfsd-ctl updates
+      patterns:
+        - "*kubo*"
+        - "ipfsd-ctl"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: "weekly"
   commit-message:
-    prefix: ci
+    prefix: chore

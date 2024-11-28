@@ -55,15 +55,15 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.2.1",
-    "@multiformats/multiaddr": "^12.2.3",
-    "interface-datastore": "^8.3.0",
-    "multiformats": "^13.1.0",
-    "weald": "^1.0.2"
+    "@multiformats/multiaddr": "^12.3.3",
+    "interface-datastore": "^8.3.1",
+    "multiformats": "^13.3.1",
+    "weald": "^1.0.4"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^5.0.8",
-    "aegir": "^44.0.1",
-    "sinon": "^18.0.0",
+    "aegir": "^45.0.5",
+    "sinon": "^19.0.2",
     "uint8arrays": "^5.1.0"
   },
   "browser": {
