@@ -88,6 +88,10 @@
       "types": "./dist/src/moving-average.d.ts",
       "import": "./dist/src/moving-average.js"
     },
+    "./multiaddr/is-link-local": {
+      "types": "./dist/src/multiaddr/is-link-local.d.ts",
+      "import": "./dist/src/multiaddr/is-link-local.js"
+    },
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
       "import": "./dist/src/multiaddr/is-loopback.js"
