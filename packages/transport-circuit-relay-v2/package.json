@@ -68,7 +68,7 @@
     "nanoid": "^5.0.9",
     "progress-events": "^1.0.1",
     "protons-runtime": "^5.5.0",
-    "retimeable-signal": "^0.0.0",
+    "retimeable-signal": "^1.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
