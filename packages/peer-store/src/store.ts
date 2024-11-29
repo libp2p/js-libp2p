@@ -143,8 +143,10 @@ export class PersistentStore {
         existingBuf,
         existingPeer
       }
-    } catch (err) {
-      this.log.error('invalid peer data found in peer store - %e', err)
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        this.log.error('invalid peer data found in peer store - %e', err)
+      }
     }
 
     return {}
