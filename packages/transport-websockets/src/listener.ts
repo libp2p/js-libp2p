@@ -4,6 +4,7 @@ import net from 'node:net'
 import os from 'node:os'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { isLinkLocalIp } from '@libp2p/utils/link-local-ip'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import duplex from 'it-ws/duplex'
@@ -380,11 +381,17 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
             return
           }
 
-          niInfos.forEach(ni => {
-            if (ni.family === 'IPv6') {
-              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
+          for (const ni of niInfos) {
+            if (ni.family !== 'IPv6') {
+              continue
             }
-          })
+
+            if (isLinkLocalIp(ni.address)) {
+              continue
+            }
+
+            multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
+          }
         })
       } else {
         multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
