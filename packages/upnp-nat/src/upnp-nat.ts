@@ -1,7 +1,6 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
 import { serviceCapabilities, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
-import { DEFAULT_PORT_MAPPING_TTL } from './constants.js'
 import { GatewayFinder } from './gateway-finder.js'
 import { UPnPPortMapper } from './upnp-port-mapper.js'
 import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
@@ -29,8 +28,9 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
 
     this.portMappingClient = init.portMappingClient ?? upnpNat({
       description: init.portMappingDescription ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${components.peerId.toString()}`,
-      ttl: init.portMappingTTL ?? DEFAULT_PORT_MAPPING_TTL,
-      autoRefresh: init.portMappingAutoRefresh ?? true
+      ttl: init.portMappingTTL,
+      autoRefresh: init.portMappingAutoRefresh,
+      refreshThreshold: init.portMappingRefreshThreshold
     })
 
     // trigger update when our addresses change

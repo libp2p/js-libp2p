@@ -34,8 +34,13 @@ export class GatewayFinder extends TypedEventEmitter<GatewayFinderEvents> {
 
     // every five minutes, search for network gateways for one minute
     this.findGateways = repeatingTask(async (options) => {
-      for await (const gateway of this.portMappingClient.findGateways(options)) {
-        if (this.gateways.some(g => g.id === gateway.id)) {
+      for await (const gateway of this.portMappingClient.findGateways({
+        ...options,
+        searchInterval: 10000
+      })) {
+        if (this.gateways.some(g => {
+          return g.id === gateway.id && g.family === gateway.family
+        })) {
           // already seen this gateway
           continue
         }

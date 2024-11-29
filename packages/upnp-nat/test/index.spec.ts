@@ -35,7 +35,9 @@ describe('UPnP NAT (TCP)', () => {
       events: new TypedEventEmitter()
     }
 
-    gateway = stubInterface<Gateway>()
+    gateway = stubInterface<Gateway>({
+      family: 'IPv4'
+    })
     client = stubInterface<UPnPNATClient>({
       findGateways: async function * (options) {
         yield gateway
@@ -71,20 +73,35 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    gateway.externalIp.resolves('82.3.1.5')
+    const internalHost = '192.168.1.12'
+    const internalPort = 4002
+
+    const externalHost = '82.3.1.5'
+    const externalPort = 4003
+
+    gateway.externalIp.resolves(externalHost)
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      multiaddr('/ip4/192.168.1.12/tcp/4002')
+      multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`)
     ])
+
+    gateway.map.withArgs(internalPort, internalHost).resolves({
+      internalHost,
+      internalPort,
+      externalHost,
+      externalPort,
+      protocol: 'TCP'
+    })
 
     await start(natManager)
     await natManager.mapIpAddresses()
 
     expect(gateway.map.called).to.be.true()
-    expect(gateway.map.getCall(0).args[0]).to.equal(4002)
-    expect(gateway.map.getCall(0).args[1]).to.include({
-      protocol: 'tcp'
+    expect(gateway.map.getCall(0).args[0]).to.equal(internalPort)
+    expect(gateway.map.getCall(0).args[1]).to.equal(internalHost)
+    expect(gateway.map.getCall(0).args[2]).to.include({
+      protocol: 'TCP'
     })
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
@@ -95,20 +112,35 @@ describe('UPnP NAT (TCP)', () => {
       components
     } = await createNatManager()
 
-    gateway.externalIp.resolves('82.3.1.5')
+    const internalHost = '192.168.1.12'
+    const internalPort = 4002
+
+    const externalHost = '82.3.1.5'
+    const externalPort = 4003
+
+    gateway.externalIp.resolves(externalHost)
 
     components.addressManager.getAddresses.returns([
       multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      multiaddr('/ip4/192.168.1.12/tcp/4002')
+      multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`)
     ])
+
+    gateway.map.withArgs(internalPort, internalHost).resolves({
+      internalHost,
+      internalPort,
+      externalHost,
+      externalPort,
+      protocol: 'TCP'
+    })
 
     await start(natManager)
     await natManager.mapIpAddresses()
 
     expect(gateway.map.called).to.be.true()
-    expect(gateway.map.getCall(0).args[0]).to.equal(4002)
-    expect(gateway.map.getCall(0).args[1]).to.include({
-      protocol: 'tcp'
+    expect(gateway.map.getCall(0).args[0]).to.equal(internalPort)
+    expect(gateway.map.getCall(0).args[1]).to.equal(internalHost)
+    expect(gateway.map.getCall(0).args[2]).to.include({
+      protocol: 'TCP'
     })
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })

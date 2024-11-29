@@ -87,6 +87,13 @@ export interface UPnPNATInit {
   portMappingAutoRefresh?: boolean
 
   /**
+   * How long before a port mapping expires to refresh it in ms
+   *
+   * @default 60_000
+   */
+  portMappingRefreshThreshold?: number
+
+  /**
    * A preconfigured instance of a NatAPI client can be passed as an option,
    * otherwise one will be created
    */
