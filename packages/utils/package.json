@@ -84,6 +84,10 @@
       "types": "./dist/src/is-promise.d.ts",
       "import": "./dist/src/is-promise.js"
     },
+    "./link-local-ip": {
+      "types": "./dist/src/link-local-ip.d.ts",
+      "import": "./dist/src/link-local-ip.js"
+    },
     "./moving-average": {
       "types": "./dist/src/moving-average.d.ts",
       "import": "./dist/src/moving-average.js"
