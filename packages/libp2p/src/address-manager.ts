@@ -87,6 +87,11 @@ interface PublicAddressMapping {
   externalPort: number
 }
 
+interface DNSMapping {
+  domain: string
+  confident: boolean
+}
+
 export class AddressManager implements AddressManagerInterface {
   private readonly log: Logger
   private readonly components: AddressManagerComponents
@@ -96,7 +101,7 @@ export class AddressManager implements AddressManagerInterface {
   private readonly appendAnnounce: Set<string>
   private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
-  private readonly ipDomainMappings: Map<string, string>
+  private readonly ipDomainMappings: Map<string, DNSMapping>
   private readonly publicAddressMappings: Map<string, PublicAddressMapping[]>
 
   /**
@@ -269,7 +274,7 @@ export class AddressManager implements AddressManagerInterface {
         return
       }
 
-      mappings.forEach(mapping => {
+      for (const mapping of mappings) {
         tuples[0][0] = isIPv4(mapping.externalIp) ? CODEC_IP4 : CODEC_IP6
         tuples[0][1] = mapping.externalIp
         tuples[1][1] = `${mapping.externalPort}`
@@ -284,7 +289,7 @@ export class AddressManager implements AddressManagerInterface {
             }).join('/')
           }`)
         )
-      })
+      }
     })
     multiaddrs = multiaddrs.concat(ipMappedMultiaddrs)
 
@@ -294,7 +299,11 @@ export class AddressManager implements AddressManagerInterface {
       const tuples = ma.stringTuples()
       let mappedIp = false
 
-      for (const [ip, domain] of this.ipDomainMappings.entries()) {
+      for (const [ip, mapping] of this.ipDomainMappings.entries()) {
+        if (!mapping.confident) {
+          continue
+        }
+
         for (let i = 0; i < tuples.length; i++) {
           if (tuples[i][1] !== ip) {
             continue
@@ -302,13 +311,13 @@ export class AddressManager implements AddressManagerInterface {
 
           if (tuples[i][0] === CODEC_IP4) {
             tuples[i][0] = CODEC_DNS4
-            tuples[i][1] = domain
+            tuples[i][1] = mapping.domain
             mappedIp = true
           }
 
           if (tuples[i][0] === CODEC_IP6) {
             tuples[i][0] = CODEC_DNS6
-            tuples[i][1] = domain
+            tuples[i][1] = mapping.domain
             mappedIp = true
           }
         }
@@ -366,14 +375,23 @@ export class AddressManager implements AddressManagerInterface {
   addDNSMapping (domain: string, addresses: string[]): void {
     addresses.forEach(ip => {
       this.log('add DNS mapping %s to %s', ip, domain)
-      this.ipDomainMappings.set(ip, domain)
+
+      // check ip/public ip mappings to see if we think we are contactable
+      const confident = [...this.publicAddressMappings.entries()].some(([key, mappings]) => {
+        return mappings.some(mapping => mapping.externalIp === ip)
+      })
+
+      this.ipDomainMappings.set(ip, {
+        domain,
+        confident
+      })
     })
     this._updatePeerStoreAddresses()
   }
 
   removeDNSMapping (domain: string): void {
-    for (const [key, value] of this.ipDomainMappings.entries()) {
-      if (value === domain) {
+    for (const [key, mapping] of this.ipDomainMappings.entries()) {
+      if (mapping.domain === domain) {
         this.log('remove DNS mapping for %s', domain)
         this.ipDomainMappings.delete(key)
       }
@@ -390,6 +408,17 @@ export class AddressManager implements AddressManagerInterface {
     })
 
     this.publicAddressMappings.set(key, mappings)
+
+    // update domain mappings to indicate we are now confident that any matching
+    // ip/domain combination can now be resolved externally
+    for (const [key, mapping] of this.ipDomainMappings.entries()) {
+      if (key === externalIp) {
+        mapping.confident = true
+
+        this.ipDomainMappings.set(key, mapping)
+      }
+    }
+
     this._updatePeerStoreAddresses()
   }
 
