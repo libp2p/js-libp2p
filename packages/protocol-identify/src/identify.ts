@@ -4,7 +4,7 @@ import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
@@ -112,7 +112,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     if (cleanObservedAddr != null) {
       this.log('our observed address was %a', cleanObservedAddr)
 
-      if (isPrivateIp(cleanObservedAddr?.nodeAddress().address) === true) {
+      if (isPrivate(cleanObservedAddr)) {
         this.log('our observed address was private')
       } else if (this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
         this.log('storing our observed address')
