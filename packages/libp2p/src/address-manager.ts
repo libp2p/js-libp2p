@@ -6,6 +6,10 @@ import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, P
 import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+export const defaultValues = {
+  maxObservedAddresses: 10
+}
+
 export interface AddressManagerInit {
   /**
    * Pass an function in this field to override the list of addresses
@@ -32,6 +36,11 @@ export interface AddressManagerInit {
    * A list of string multiaddrs to add to the list of announced addresses
    */
   appendAnnounce?: string[]
+
+  /**
+   * Limits the number of observed addresses we will store
+   */
+  maxObservedAddresses?: number
 }
 
 export interface AddressManagerComponents {
@@ -103,6 +112,7 @@ export class AddressManager implements AddressManagerInterface {
   private readonly announceFilter: AddressFilter
   private readonly ipDomainMappings: Map<string, DNSMapping>
   private readonly publicAddressMappings: Map<string, PublicAddressMapping[]>
+  private readonly maxObservedAddresses: number
 
   /**
    * Responsible for managing the peer addresses.
@@ -122,6 +132,7 @@ export class AddressManager implements AddressManagerInterface {
     this.ipDomainMappings = new Map()
     this.publicAddressMappings = new Map()
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
 
     // this method gets called repeatedly on startup when transports start listening so
     // debounce it so we don't cause multiple self:peer:update events to be emitted
@@ -192,6 +203,10 @@ export class AddressManager implements AddressManagerInterface {
    * Add peer observed addresses
    */
   addObservedAddr (addr: Multiaddr): void {
+    if (this.observed.size === this.maxObservedAddresses) {
+      return
+    }
+
     addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
 
