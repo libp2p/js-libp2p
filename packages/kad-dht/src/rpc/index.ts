@@ -95,12 +95,6 @@ export class RPC {
       const { stream, connection } = data
       const peerId = connection.remotePeer
 
-      try {
-        await this.routingTable.add(peerId)
-      } catch (err: any) {
-        this.log.error(err)
-      }
-
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
       await pipe(

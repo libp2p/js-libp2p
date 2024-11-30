@@ -130,6 +130,26 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs()).to.have.lengthOf(1)
   })
 
+  it('should limit observed addresses', () => {
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>(),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      announceFilter: stubInterface<AddressFilter>()
+    })
+
+    expect(am.getObservedAddrs()).to.be.empty()
+
+    for (let i = 0; i < 100; i++) {
+      am.addObservedAddr(multiaddr(`/ip4/123.123.123.123/tcp/392${i}`))
+    }
+
+    expect(am.getObservedAddrs()).to.have.lengthOf(10)
+  })
+
   it('should allow duplicate listen addresses', () => {
     const ma = multiaddr('/ip4/0.0.0.0/tcp/0')
     const am = new AddressManager({
