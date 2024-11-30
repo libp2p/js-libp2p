@@ -3,7 +3,7 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { debounce } from '@libp2p/utils/debounce'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
-import type { AddressManager as AddressManagerInterface, TransportManager } from '@libp2p/interface-internal'
+import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface AddressManagerInit {
@@ -85,6 +85,7 @@ const CODEC_UDP = 0x0111
 interface PublicAddressMapping {
   externalIp: string
   externalPort: number
+  confident: boolean
 }
 
 interface DNSMapping {
@@ -208,16 +209,63 @@ export class AddressManager implements AddressManagerInterface {
   confirmObservedAddr (addr: Multiaddr): void {
     addr = stripPeerId(addr, this.components.peerId)
     const addrString = addr.toString()
+    let startingConfidence = false
 
-    const metadata = this.observed.get(addrString) ?? {
-      confident: false
+    if (this.observed.has(addrString)) {
+      const metadata = this.observed.get(addrString) ?? {
+        confident: false
+      }
+
+      startingConfidence = metadata.confident
+
+      this.observed.set(addrString, {
+        confident: true
+      })
+    } else {
+      // not an observed address, check DNS/IP mappings
+      const tuples = addr.stringTuples()
+
+      const codec = tuples[0][0]
+      const value = tuples[0][1]
+
+      if (value == null) {
+        return
+      }
+
+      if (codec === CODEC_DNS4 || codec === CODEC_DNS6) {
+        for (const [ip, mapping] of this.ipDomainMappings.entries()) {
+          if (mapping.domain === value) {
+            startingConfidence = mapping.confident
+            mapping.confident = true
+
+            // if we are confident of the domain, we are confident of the public
+            // IP it is mapped to as well
+            // eslint-disable-next-line max-depth
+            for (const mappings of this.publicAddressMappings.values()) {
+              // eslint-disable-next-line max-depth
+              for (const mapping of mappings) {
+                // eslint-disable-next-line max-depth
+                if (mapping.externalIp === ip) {
+                  mapping.confident = true
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (codec === CODEC_IP4 || codec === CODEC_IP6) {
+        for (const mappings of this.publicAddressMappings.values()) {
+          for (const mapping of mappings) {
+            // eslint-disable-next-line max-depth
+            if (mapping.externalIp === value) {
+              startingConfidence = mapping.confident
+              mapping.confident = true
+            }
+          }
+        }
+      }
     }
-
-    const startingConfidence = metadata.confident
-
-    this.observed.set(addrString, {
-      confident: true
-    })
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
     if (!startingConfidence) {
@@ -233,27 +281,89 @@ export class AddressManager implements AddressManagerInterface {
   }
 
   getAddresses (): Multiaddr[] {
-    let multiaddrs = this.getAnnounceAddrs()
+    const addresses = new Set<string>()
 
-    if (multiaddrs.length === 0) {
-      // no configured announce addrs, add configured listen addresses
-      multiaddrs = this.components.transportManager.getAddrs()
+    const multiaddrs = this.getAddressesWithMetadata()
+      .filter(addr => {
+        if (!addr.confident) {
+          return false
+        }
+
+        const maStr = addr.multiaddr.toString()
+
+        if (addresses.has(maStr)) {
+          return false
+        }
+
+        addresses.add(maStr)
+
+        return true
+      })
+      .map(address => address.multiaddr)
+
+    // filter addressees before returning
+    return this.announceFilter(
+      multiaddrs.map(str => {
+        const ma = multiaddr(str)
+
+        // do not append our peer id to a path multiaddr as it will become invalid
+        if (ma.protos().pop()?.path === true) {
+          return ma
+        }
+
+        if (ma.getPeerId() === this.components.peerId.toString()) {
+          return ma
+        }
+
+        return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
+      })
+    )
+  }
+
+  getAddressesWithMetadata (): NodeAddress[] {
+    const announceMultiaddrs = this.getAnnounceAddrs()
+
+    if (announceMultiaddrs.length > 0) {
+      return announceMultiaddrs.map(multiaddr => ({
+        multiaddr,
+        confident: true,
+        type: 'announce'
+      }))
     }
 
-    multiaddrs = multiaddrs
-      .concat(
-        // add additional announce addresses
-        ...this.getAppendAnnounceAddrs(),
+    let addresses: NodeAddress[] = []
 
-        // add observed addresses we are confident in
-        Array.from(this.observed)
-          .filter(([ma, metadata]) => metadata.confident)
-          .map(([ma]) => multiaddr(ma))
-      )
+    // add transport addresses
+    addresses = addresses.concat(
+      this.components.transportManager.getAddrs().map(multiaddr => ({
+        multiaddr,
+        confident: true,
+        type: 'transport'
+      }))
+    )
 
-    // add public addresses
-    const ipMappedMultiaddrs: Multiaddr[] = []
-    multiaddrs.forEach(ma => {
+    // add append announce addresses
+    addresses = addresses.concat(
+      this.getAppendAnnounceAddrs().map(multiaddr => ({
+        multiaddr,
+        confident: true,
+        type: 'announce'
+      }))
+    )
+
+    // add observed addresses
+    addresses = addresses.concat(
+      Array.from(this.observed)
+        .map(([ma, metadata]) => ({
+          multiaddr: multiaddr(ma),
+          confident: metadata.confident,
+          type: 'observed'
+        }))
+    )
+
+    // add ip mapped addresses
+    const ipMappedAddresses: NodeAddress[] = []
+    for (const { multiaddr: ma } of addresses) {
       const tuples = ma.stringTuples()
       let tuple: string | undefined
 
@@ -265,13 +375,13 @@ export class AddressManager implements AddressManagerInterface {
       }
 
       if (tuple == null) {
-        return
+        continue
       }
 
       const mappings = this.publicAddressMappings.get(tuple)
 
       if (mappings == null) {
-        return
+        continue
       }
 
       for (const mapping of mappings) {
@@ -279,31 +389,30 @@ export class AddressManager implements AddressManagerInterface {
         tuples[0][1] = mapping.externalIp
         tuples[1][1] = `${mapping.externalPort}`
 
-        ipMappedMultiaddrs.push(
-          multiaddr(`/${
+        ipMappedAddresses.push({
+          multiaddr: multiaddr(`/${
             tuples.map(tuple => {
               return [
                 protocols(tuple[0]).name,
                 tuple[1]
               ].join('/')
             }).join('/')
-          }`)
-        )
+          }`),
+          confident: mapping.confident,
+          type: 'ip-mapping'
+        })
       }
-    })
-    multiaddrs = multiaddrs.concat(ipMappedMultiaddrs)
+    }
+    addresses = addresses.concat(ipMappedAddresses)
 
     // add ip->domain mappings
-    const dnsMappedMultiaddrs: Multiaddr[] = []
-    for (const ma of multiaddrs) {
-      const tuples = ma.stringTuples()
+    const dnsMappedAddresses: NodeAddress[] = []
+    for (const address of addresses) {
+      const tuples = address.multiaddr.stringTuples()
       let mappedIp = false
+      let confident = false
 
       for (const [ip, mapping] of this.ipDomainMappings.entries()) {
-        if (!mapping.confident) {
-          continue
-        }
-
         for (let i = 0; i < tuples.length; i++) {
           if (tuples[i][1] !== ip) {
             continue
@@ -313,80 +422,47 @@ export class AddressManager implements AddressManagerInterface {
             tuples[i][0] = CODEC_DNS4
             tuples[i][1] = mapping.domain
             mappedIp = true
+            confident = mapping.confident
           }
 
           if (tuples[i][0] === CODEC_IP6) {
             tuples[i][0] = CODEC_DNS6
             tuples[i][1] = mapping.domain
             mappedIp = true
+            confident = mapping.confident
           }
         }
       }
 
       if (mappedIp) {
-        dnsMappedMultiaddrs.push(
-          multiaddr(`/${
+        dnsMappedAddresses.push({
+          multiaddr: multiaddr(`/${
             tuples.map(tuple => {
               return [
                 protocols(tuple[0]).name,
                 tuple[1]
               ].join('/')
             }).join('/')
-          }`)
-        )
+          }`),
+          confident,
+          type: 'dns-mapping'
+        })
       }
     }
-    multiaddrs = multiaddrs.concat(dnsMappedMultiaddrs)
+    addresses = addresses.concat(dnsMappedAddresses)
 
-    // dedupe multiaddrs
-    const addrSet = new Set<string>()
-    multiaddrs = multiaddrs.filter(ma => {
-      const maStr = ma.toString()
-
-      if (addrSet.has(maStr)) {
-        return false
-      }
-
-      addrSet.add(maStr)
-
-      return true
-    })
-
-    // Create advertising list
-    return this.announceFilter(
-      Array.from(addrSet)
-        .map(str => {
-          const ma = multiaddr(str)
-
-          // do not append our peer id to a path multiaddr as it will become invalid
-          if (ma.protos().pop()?.path === true) {
-            return ma
-          }
-
-          if (ma.getPeerId() === this.components.peerId.toString()) {
-            return ma
-          }
-
-          return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`)
-        })
-    )
+    return addresses
   }
 
   addDNSMapping (domain: string, addresses: string[]): void {
     addresses.forEach(ip => {
       this.log('add DNS mapping %s to %s', ip, domain)
 
-      // check ip/public ip mappings to see if we think we are contactable
-      const confident = [...this.publicAddressMappings.entries()].some(([key, mappings]) => {
-        return mappings.some(mapping => mapping.externalIp === ip)
-      })
-
       this.ipDomainMappings.set(ip, {
         domain,
-        confident
+        confident: false
       })
     })
-    this._updatePeerStoreAddresses()
   }
 
   removeDNSMapping (domain: string): void {
@@ -404,22 +480,11 @@ export class AddressManager implements AddressManagerInterface {
     const mappings = this.publicAddressMappings.get(key) ?? []
     mappings.push({
       externalIp,
-      externalPort
+      externalPort,
+      confident: false
     })
 
     this.publicAddressMappings.set(key, mappings)
-
-    // update domain mappings to indicate we are now confident that any matching
-    // ip/domain combination can now be resolved externally
-    for (const [key, mapping] of this.ipDomainMappings.entries()) {
-      if (key === externalIp) {
-        mapping.confident = true
-
-        this.ipDomainMappings.set(key, mapping)
-      }
-    }
-
-    this._updatePeerStoreAddresses()
   }
 
   removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {

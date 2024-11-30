@@ -287,6 +287,7 @@ describe('Address Manager', () => {
     const externalPort = 4566
 
     am.addDNSMapping(domain, [externalIp])
+    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, 'tcp')
 
     // have not verified DNS mapping so it is not included
     expect(am.getAddresses()).to.deep.equal([
@@ -294,8 +295,8 @@ describe('Address Manager', () => {
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
     ])
 
-    // public address mapping confirms DNS mapping
-    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+    // confirm DNS mapping
+    am.confirmObservedAddr(multiaddr(`/dns4/${domain}/tcp/${externalPort}`))
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
@@ -336,6 +337,7 @@ describe('Address Manager', () => {
     const externalPort = 4566
 
     am.addDNSMapping(domain, [externalIp])
+    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, 'tcp')
 
     // have not verified DNS mapping so it is not included
     expect(am.getAddresses()).to.deep.equal([
@@ -343,8 +345,8 @@ describe('Address Manager', () => {
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
     ])
 
-    // public address mapping confirms DNS mapping
-    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+    // confirm DNS mapping
+    am.confirmObservedAddr(multiaddr(`/dns6/${domain}/tcp/${externalPort}`))
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
@@ -382,6 +384,9 @@ describe('Address Manager', () => {
     am.addDNSMapping(domain, [externalIp])
     am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
 
+    // confirm DNS mapping
+    am.confirmObservedAddr(multiaddr(`/dns4/${domain}/tcp/${externalPort}`))
+
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
@@ -389,7 +394,7 @@ describe('Address Manager', () => {
       multiaddr(`/dns4/${domain}/tcp/${externalPort}/p2p/${peerId}`)
     ])
 
-    // public address mapping confirms DNS mapping
+    // remove DNS mapping
     am.removeDNSMapping(domain)
 
     expect(am.getAddresses()).to.deep.equal([
@@ -422,6 +427,15 @@ describe('Address Manager', () => {
       multiaddr('/ip4/127.0.0.1/tcp/1234'),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
     ])
+
+    // not confirmed the mapping yet
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip4/127.0.0.1/tcp/1234/p2p/${peerId.toString()}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+
+    // confirm IP mapping
+    am.confirmObservedAddr(multiaddr(`/ip4/${externalIp}/${protocol}/${externalPort}`))
 
     // should have mapped the LAN address to the external IP
     expect(am.getAddresses()).to.deep.equal([
@@ -462,6 +476,15 @@ describe('Address Manager', () => {
       multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}`)
     ])
 
+    // not confirmed the mapping yet
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip6/::1/tcp/1234/p2p/${peerId.toString()}`),
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+
+    // confirm IP mapping
+    am.confirmObservedAddr(multiaddr(`/ip6/${externalIp}/${protocol}/${externalPort}`))
+
     // should have mapped the LAN address to the external IP
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip6/::1/tcp/1234/p2p/${peerId.toString()}`),
@@ -500,6 +523,9 @@ describe('Address Manager', () => {
       multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}`)
     ])
 
+    // confirm IP mapping
+    am.confirmObservedAddr(multiaddr(`/ip4/${externalIp}/${protocol}/${externalPort}`))
+
     // should have mapped the LAN address to the external IP
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`),
@@ -535,6 +561,9 @@ describe('Address Manager', () => {
     transportManager.getAddrs.returns([
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
     ])
+
+    // confirm IP mapping
+    am.confirmObservedAddr(multiaddr(`/ip6/${externalIp}/${protocol}/${externalPort}`))
 
     // should have mapped the LAN address to the external IP
     expect(am.getAddresses()).to.deep.equal([
