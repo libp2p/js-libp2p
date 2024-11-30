@@ -2,7 +2,6 @@
 
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Message, MessageType } from '../../../src/message/dht.js'
 import { PingHandler } from '../../../src/rpc/handlers/ping.js'
 import { createPeerId } from '../../utils/create-peer-id.js'
@@ -30,7 +29,6 @@ describe('rpc - handlers - Ping', () => {
   it('replies with the same message', async () => {
     const msg: Message = {
       type: T,
-      key: uint8ArrayFromString('hello'),
       closer: [],
       providers: []
     }
