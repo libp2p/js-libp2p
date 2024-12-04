@@ -1,13 +1,20 @@
+/* eslint-disable complexity */
 import { isIPv4 } from '@chainsafe/is-ip'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { debounce } from '@libp2p/utils/debounce'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { multiaddr } from '@multiformats/multiaddr'
+import { DNSMappings } from './dns-mappings.js'
+import { IPMappings } from './ip-mappings.js'
+import { ObservedAddresses } from './observed-addresses.js'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress } from '@libp2p/interface-internal'
+import type { Filter } from '@libp2p/utils/filters'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export const defaultValues = {
-  maxObservedAddresses: 10
+  maxObservedAddresses: 10,
+  observedAddressTTL: 60_000 * 10
 }
 
 export interface AddressManagerInit {
@@ -41,6 +48,11 @@ export interface AddressManagerInit {
    * Limits the number of observed addresses we will store
    */
   maxObservedAddresses?: number
+
+  /**
+   * How long before each observed address should be reverified
+   */
+  observedAddressTTL?: number
 }
 
 export interface AddressManagerComponents {
@@ -61,10 +73,6 @@ export interface AddressFilter {
 
 const defaultAddressFilter = (addrs: Multiaddr[]): Multiaddr[] => addrs
 
-interface ObservedAddressMetadata {
-  confident: boolean
-}
-
 /**
  * If the passed multiaddr contains the passed peer id, remove it
  */
@@ -84,24 +92,6 @@ function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
   return ma
 }
 
-const CODEC_IP4 = 0x04
-const CODEC_IP6 = 0x29
-const CODEC_DNS4 = 0x36
-const CODEC_DNS6 = 0x37
-const CODEC_TCP = 0x06
-const CODEC_UDP = 0x0111
-
-interface PublicAddressMapping {
-  externalIp: string
-  externalPort: number
-  confident: boolean
-}
-
-interface DNSMapping {
-  domain: string
-  confident: boolean
-}
-
 export class AddressManager implements AddressManagerInterface {
   private readonly log: Logger
   private readonly components: AddressManagerComponents
@@ -109,11 +99,12 @@ export class AddressManager implements AddressManagerInterface {
   private readonly listen: string[]
   private readonly announce: Set<string>
   private readonly appendAnnounce: Set<string>
-  private readonly observed: Map<string, ObservedAddressMetadata>
   private readonly announceFilter: AddressFilter
-  private readonly ipDomainMappings: Map<string, DNSMapping>
-  private readonly publicAddressMappings: Map<string, PublicAddressMapping[]>
-  private readonly maxObservedAddresses: number
+  private readonly observed: ObservedAddresses
+  private readonly dnsMappings: DNSMappings
+  private readonly ipMappings: IPMappings
+  private readonly observedAddressFilter: Filter
+  private readonly observedAddressTTL: number
 
   /**
    * Responsible for managing the peer addresses.
@@ -129,11 +120,12 @@ export class AddressManager implements AddressManagerInterface {
     this.listen = listen.map(ma => ma.toString())
     this.announce = new Set(announce.map(ma => ma.toString()))
     this.appendAnnounce = new Set(appendAnnounce.map(ma => ma.toString()))
-    this.observed = new Map()
-    this.ipDomainMappings = new Map()
-    this.publicAddressMappings = new Map()
+    this.observed = new ObservedAddresses(components, init)
+    this.dnsMappings = new DNSMappings(components, init)
+    this.ipMappings = new IPMappings(components, init)
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
+    this.observedAddressFilter = createScalableCuckooFilter(1024)
+    this.observedAddressTTL = init.observedAddressTTL ?? defaultValues.observedAddressTTL
 
     // this method gets called repeatedly on startup when transports start listening so
     // debounce it so we don't cause multiple self:peer:update events to be emitted
@@ -197,89 +189,52 @@ export class AddressManager implements AddressManagerInterface {
    * Get observed multiaddrs
    */
   getObservedAddrs (): Multiaddr[] {
-    return Array.from(this.observed).map(([a]) => multiaddr(a))
+    return this.observed.getAll().map(addr => addr.multiaddr)
   }
 
   /**
    * Add peer observed addresses
    */
   addObservedAddr (addr: Multiaddr): void {
-    if (this.observed.size === this.maxObservedAddresses) {
+    const tuples = addr.stringTuples()
+    const socketAddress = `${tuples[0][1]}:${tuples[1][1]}`
+
+    // ignore if this address if it's been observed before
+    if (this.observedAddressFilter.has(socketAddress)) {
       return
     }
+
+    this.observedAddressFilter.add(socketAddress)
 
     addr = stripPeerId(addr, this.components.peerId)
-    const addrString = addr.toString()
 
-    // do not trigger the change:addresses event if we already know about this address
-    if (this.observed.has(addrString)) {
+    // ignore observed address if it is an IP mapping
+    if (this.ipMappings.has(addr)) {
       return
     }
 
-    this.observed.set(addrString, {
-      confident: false
-    })
+    // ignore observed address if it is a DNS mapping
+    if (this.dnsMappings.has(addr)) {
+      return
+    }
+
+    this.observed.add(addr)
   }
 
   confirmObservedAddr (addr: Multiaddr): void {
     addr = stripPeerId(addr, this.components.peerId)
-    const addrString = addr.toString()
-    let startingConfidence = false
+    let startingConfidence = true
 
-    if (this.observed.has(addrString)) {
-      const metadata = this.observed.get(addrString) ?? {
-        confident: false
-      }
+    if (this.observed.has(addr)) {
+      startingConfidence = this.observed.confirm(addr, this.observedAddressTTL)
+    }
 
-      startingConfidence = metadata.confident
+    if (this.dnsMappings.has(addr)) {
+      startingConfidence = this.dnsMappings.confirm(addr, this.observedAddressTTL)
+    }
 
-      this.observed.set(addrString, {
-        confident: true
-      })
-    } else {
-      // not an observed address, check DNS/IP mappings
-      const tuples = addr.stringTuples()
-
-      const codec = tuples[0][0]
-      const value = tuples[0][1]
-
-      if (value == null) {
-        return
-      }
-
-      if (codec === CODEC_DNS4 || codec === CODEC_DNS6) {
-        for (const [ip, mapping] of this.ipDomainMappings.entries()) {
-          if (mapping.domain === value) {
-            startingConfidence = mapping.confident
-            mapping.confident = true
-
-            // if we are confident of the domain, we are confident of the public
-            // IP it is mapped to as well
-            // eslint-disable-next-line max-depth
-            for (const mappings of this.publicAddressMappings.values()) {
-              // eslint-disable-next-line max-depth
-              for (const mapping of mappings) {
-                // eslint-disable-next-line max-depth
-                if (mapping.externalIp === ip) {
-                  mapping.confident = true
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if (codec === CODEC_IP4 || codec === CODEC_IP6) {
-        for (const mappings of this.publicAddressMappings.values()) {
-          for (const mapping of mappings) {
-            // eslint-disable-next-line max-depth
-            if (mapping.externalIp === value) {
-              startingConfidence = mapping.confident
-              mapping.confident = true
-            }
-          }
-        }
-      }
+    if (this.ipMappings.has(addr)) {
+      startingConfidence = this.ipMappings.confirm(addr, this.observedAddressTTL)
     }
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
@@ -290,9 +245,10 @@ export class AddressManager implements AddressManagerInterface {
 
   removeObservedAddr (addr: Multiaddr): void {
     addr = stripPeerId(addr, this.components.peerId)
-    const addrString = addr.toString()
 
-    this.observed.delete(addrString)
+    this.observed.remove(addr)
+    this.dnsMappings.remove(addr)
+    this.ipMappings.remove(addr)
   }
 
   getAddresses (): Multiaddr[] {
@@ -300,7 +256,7 @@ export class AddressManager implements AddressManagerInterface {
 
     const multiaddrs = this.getAddressesWithMetadata()
       .filter(addr => {
-        if (!addr.confident) {
+        if (!addr.verified) {
           return false
         }
 
@@ -341,8 +297,9 @@ export class AddressManager implements AddressManagerInterface {
     if (announceMultiaddrs.length > 0) {
       return announceMultiaddrs.map(multiaddr => ({
         multiaddr,
-        confident: true,
-        type: 'announce'
+        verified: true,
+        type: 'announce',
+        expires: Date.now() + this.observedAddressTTL
       }))
     }
 
@@ -352,8 +309,9 @@ export class AddressManager implements AddressManagerInterface {
     addresses = addresses.concat(
       this.components.transportManager.getAddrs().map(multiaddr => ({
         multiaddr,
-        confident: true,
-        type: 'transport'
+        verified: true,
+        type: 'transport',
+        expires: Date.now() + this.observedAddressTTL
       }))
     )
 
@@ -361,159 +319,50 @@ export class AddressManager implements AddressManagerInterface {
     addresses = addresses.concat(
       this.getAppendAnnounceAddrs().map(multiaddr => ({
         multiaddr,
-        confident: true,
-        type: 'announce'
+        verified: true,
+        type: 'announce',
+        expires: Date.now() + this.observedAddressTTL
       }))
     )
 
     // add observed addresses
     addresses = addresses.concat(
-      Array.from(this.observed)
-        .map(([ma, metadata]) => ({
-          multiaddr: multiaddr(ma),
-          confident: metadata.confident,
-          type: 'observed'
-        }))
+      this.observed.getAll()
     )
 
     // add ip mapped addresses
-    const ipMappedAddresses: NodeAddress[] = []
-    for (const { multiaddr: ma } of addresses) {
-      const tuples = ma.stringTuples()
-      let tuple: string | undefined
+    addresses = addresses.concat(
+      this.ipMappings.getAll(addresses)
+    )
 
-      // see if the internal host/port/protocol tuple has been mapped externally
-      if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_TCP) {
-        tuple = `${tuples[0][1]}-${tuples[1][1]}-tcp`
-      } else if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_UDP) {
-        tuple = `${tuples[0][1]}-${tuples[1][1]}-udp`
-      }
-
-      if (tuple == null) {
-        continue
-      }
-
-      const mappings = this.publicAddressMappings.get(tuple)
-
-      if (mappings == null) {
-        continue
-      }
-
-      for (const mapping of mappings) {
-        tuples[0][0] = isIPv4(mapping.externalIp) ? CODEC_IP4 : CODEC_IP6
-        tuples[0][1] = mapping.externalIp
-        tuples[1][1] = `${mapping.externalPort}`
-
-        ipMappedAddresses.push({
-          multiaddr: multiaddr(`/${
-            tuples.map(tuple => {
-              return [
-                protocols(tuple[0]).name,
-                tuple[1]
-              ].join('/')
-            }).join('/')
-          }`),
-          confident: mapping.confident,
-          type: 'ip-mapping'
-        })
-      }
-    }
-    addresses = addresses.concat(ipMappedAddresses)
-
-    // add ip->domain mappings
-    const dnsMappedAddresses: NodeAddress[] = []
-    for (const address of addresses) {
-      const tuples = address.multiaddr.stringTuples()
-      let mappedIp = false
-      let confident = false
-
-      for (const [ip, mapping] of this.ipDomainMappings.entries()) {
-        for (let i = 0; i < tuples.length; i++) {
-          if (tuples[i][1] !== ip) {
-            continue
-          }
-
-          if (tuples[i][0] === CODEC_IP4) {
-            tuples[i][0] = CODEC_DNS4
-            tuples[i][1] = mapping.domain
-            mappedIp = true
-            confident = mapping.confident
-          }
-
-          if (tuples[i][0] === CODEC_IP6) {
-            tuples[i][0] = CODEC_DNS6
-            tuples[i][1] = mapping.domain
-            mappedIp = true
-            confident = mapping.confident
-          }
-        }
-      }
-
-      if (mappedIp) {
-        dnsMappedAddresses.push({
-          multiaddr: multiaddr(`/${
-            tuples.map(tuple => {
-              return [
-                protocols(tuple[0]).name,
-                tuple[1]
-              ].join('/')
-            }).join('/')
-          }`),
-          confident,
-          type: 'dns-mapping'
-        })
-      }
-    }
-    addresses = addresses.concat(dnsMappedAddresses)
+    // add ip->domain mappings, must be done after IP mappings
+    addresses = addresses.concat(
+      this.dnsMappings.getAll(addresses)
+    )
 
     return addresses
   }
 
   addDNSMapping (domain: string, addresses: string[]): void {
-    addresses.forEach(ip => {
-      this.log('add DNS mapping %s to %s', ip, domain)
-
-      this.ipDomainMappings.set(ip, {
-        domain,
-        confident: false
-      })
-    })
+    this.dnsMappings.add(domain, addresses)
   }
 
   removeDNSMapping (domain: string): void {
-    for (const [key, mapping] of this.ipDomainMappings.entries()) {
-      if (mapping.domain === domain) {
-        this.log('remove DNS mapping for %s', domain)
-        this.ipDomainMappings.delete(key)
-      }
+    if (this.dnsMappings.remove(multiaddr(`/dns/${domain}`))) {
+      this._updatePeerStoreAddresses()
     }
-    this._updatePeerStoreAddresses()
   }
 
   addPublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
-    const key = `${internalIp}-${internalPort}-${protocol}`
-    const mappings = this.publicAddressMappings.get(key) ?? []
-    mappings.push({
-      externalIp,
-      externalPort,
-      confident: false
-    })
+    this.ipMappings.add(internalIp, internalPort, externalIp, externalPort, protocol)
 
-    this.publicAddressMappings.set(key, mappings)
+    // remove duplicate observed addresses
+    this.observed.removePrefixed(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`)
   }
 
   removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort: number = internalPort, protocol: 'tcp' | 'udp' = 'tcp'): void {
-    const key = `${internalIp}-${internalPort}-${protocol}`
-    const mappings = (this.publicAddressMappings.get(key) ?? []).filter(mapping => {
-      return mapping.externalIp !== externalIp && mapping.externalPort !== externalPort
-    })
-
-    if (mappings.length === 0) {
-      this.publicAddressMappings.delete(key)
-    } else {
-      this.publicAddressMappings.set(key, mappings)
+    if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`))) {
+      this._updatePeerStoreAddresses()
     }
-
-    this._updatePeerStoreAddresses()
   }
 }

@@ -21,11 +21,18 @@ export interface NodeAddress {
   multiaddr: Multiaddr
 
   /**
-   * Whether we are confident that this address is externally routable.
+   * Dynamically configured addresses such as observed or IP/DNS mapped ones
+   * must be verified as valid by AutoNAT or some other means before the current
+   * node will add them to it's peer record and share them with peers.
    *
-   * Once confident this address will appear in the output of `getAddresses()`
+   * When this value is true, it's safe to share the address.
    */
-  confident: boolean
+  verified: boolean
+
+  /**
+   * A millisecond timestamp after which this address should be reverified
+   */
+  expires: number
 
   /**
    * The source of this address
@@ -75,7 +82,7 @@ export interface AddressManager {
   getAddresses(): Multiaddr[]
 
   /**
-   * Return all addresses we know about with metadata
+   * Return all known addresses with metadata
    */
   getAddressesWithMetadata(): NodeAddress[]
 

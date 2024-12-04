@@ -9,7 +9,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { type AddressFilter, AddressManager } from '../../src/address-manager.js'
+import { type AddressFilter, AddressManager } from '../../src/address-manager/index.js'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
@@ -196,6 +196,7 @@ describe('Address Manager', () => {
 
   it('should only set addresses once', async () => {
     const ma = '/ip4/123.123.123.123/tcp/39201'
+    const ma2 = `${ma.toString()}/p2p/${peerId.toString()}`
     const am = new AddressManager({
       peerId,
       transportManager: stubInterface<TransportManager>({
@@ -206,10 +207,13 @@ describe('Address Manager', () => {
       logger: defaultLogger()
     })
 
+    am.addObservedAddr(multiaddr(ma))
+    am.addObservedAddr(multiaddr(ma2))
+
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(ma))
-    am.confirmObservedAddr(multiaddr(`${ma.toString()}/p2p/${peerId.toString()}`))
+    am.confirmObservedAddr(multiaddr(ma2))
 
     // wait for address manager _updatePeerStoreAddresses debounce
     await delay(1500)
@@ -291,15 +295,17 @@ describe('Address Manager', () => {
     const internalPort = 1234
     const protocol = 'tcp'
 
-    // one loopback, one LAN address
+    // one loopback, one LAN, one TLS address
     transportManager.getAddrs.returns([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws`)
     ])
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`)
     ])
 
     const domain = 'example.com'
@@ -312,17 +318,20 @@ describe('Address Manager', () => {
     // have not verified DNS mapping so it is not included
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`)
     ])
 
-    // confirm DNS mapping
+    // confirm public IP and DNS mapping
+    am.confirmObservedAddr(multiaddr(`/ip4/${externalIp}/tcp/${externalPort}`))
     am.confirmObservedAddr(multiaddr(`/dns4/${domain}/tcp/${externalPort}`))
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`),
       multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/p2p/${peerId}`),
-      multiaddr(`/dns4/${domain}/tcp/${externalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/tls/sni/${domain}/ws/p2p/${peerId}`)
     ])
   })
 
@@ -341,15 +350,17 @@ describe('Address Manager', () => {
     const internalPort = 1234
     const protocol = 'tcp'
 
-    // one loopback, one LAN address
+    // one loopback, one LAN, one TLS address
     transportManager.getAddrs.returns([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws`)
     ])
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`)
     ])
 
     const domain = 'example.com'
@@ -362,17 +373,20 @@ describe('Address Manager', () => {
     // have not verified DNS mapping so it is not included
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`)
     ])
 
-    // confirm DNS mapping
+    // confirm public IP and DNS mapping
+    am.confirmObservedAddr(multiaddr(`/ip6/${externalIp}/tcp/${externalPort}`))
     am.confirmObservedAddr(multiaddr(`/dns6/${domain}/tcp/${externalPort}`))
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`),
       multiaddr(`/ip6/${externalIp}/tcp/${externalPort}/p2p/${peerId}`),
-      multiaddr(`/dns6/${domain}/tcp/${externalPort}/p2p/${peerId}`)
+      multiaddr(`/ip6/${externalIp}/tcp/${externalPort}/tls/sni/${domain}/ws/p2p/${peerId}`)
     ])
   })
 
@@ -391,10 +405,11 @@ describe('Address Manager', () => {
     const internalPort = 1234
     const protocol = 'tcp'
 
-    // one loopback, one LAN address
+    // one loopback, one LAN, one TLS address
     transportManager.getAddrs.returns([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}`),
-      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws`)
     ])
 
     const domain = 'example.com'
@@ -404,14 +419,16 @@ describe('Address Manager', () => {
     am.addDNSMapping(domain, [externalIp])
     am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
 
-    // confirm DNS mapping
+    // confirm public IP and DNS mapping
+    am.confirmObservedAddr(multiaddr(`/ip4/${externalIp}/tcp/${externalPort}`))
     am.confirmObservedAddr(multiaddr(`/dns4/${domain}/tcp/${externalPort}`))
 
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`),
       multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/p2p/${peerId}`),
-      multiaddr(`/dns4/${domain}/tcp/${externalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/tls/sni/${domain}/ws/p2p/${peerId}`)
     ])
 
     // remove DNS mapping
@@ -420,7 +437,9 @@ describe('Address Manager', () => {
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),
-      multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/p2p/${peerId}`)
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/tls/ws/p2p/${peerId}`),
+      multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/p2p/${peerId}`),
+      multiaddr(`/ip4/${externalIp}/tcp/${externalPort}/tls/ws/p2p/${peerId}`)
     ])
   })
 
@@ -593,6 +612,36 @@ describe('Address Manager', () => {
 
     am.removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
 
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+  })
+
+  it('should not confirm unknown observed addresses', () => {
+    const transportManager = stubInterface<TransportManager>()
+    const am = new AddressManager({
+      peerId,
+      transportManager,
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    const internalIp = '192.168.1.123'
+    const internalPort = 4567
+    const externalIp = '2a00:23c6:14b1:7e00:28b8:30d:944e:27f3'
+    const externalPort = 8910
+    const protocol = 'tcp'
+
+    // one loopback, one LAN address
+    transportManager.getAddrs.returns([
+      multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}`)
+    ])
+
+    // confirm address we have not observed
+    am.confirmObservedAddr(multiaddr(`/ip6/${externalIp}/${protocol}/${externalPort}`))
+
+    // should not have changed the address list
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
     ])
