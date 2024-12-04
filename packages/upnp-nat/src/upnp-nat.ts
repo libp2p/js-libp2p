@@ -1,5 +1,5 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
-import { serviceCapabilities, setMaxListeners, start, stop } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
 import { GatewayFinder } from './gateway-finder.js'
 import { UPnPPortMapper } from './upnp-port-mapper.js'
@@ -18,6 +18,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   private readonly mapIpAddressesDebounced: DebouncedFunction
   private readonly gatewayFinder: GatewayFinder
   private readonly portMappers: UPnPPortMapper[]
+  private readonly autoConfirmAddress: boolean
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat')
@@ -25,6 +26,7 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     this.init = init
     this.started = false
     this.portMappers = []
+    this.autoConfirmAddress = init.autoConfirmAddress ?? false
 
     this.portMappingClient = init.portMappingClient ?? upnpNat({
       description: init.portMappingDescription ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${components.peerId.toString()}`,
@@ -55,6 +57,16 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/nat-traversal'
   ]
+
+  get [serviceDependencies] (): string[] {
+    if (!this.autoConfirmAddress) {
+      return [
+        '@libp2p/autonat'
+      ]
+    }
+
+    return []
+  }
 
   isStarted (): boolean {
     return this.started
@@ -102,7 +114,9 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
   async mapIpAddresses (): Promise<void> {
     try {
       await Promise.all(
-        this.portMappers.map(async mapper => mapper.mapIpAddresses())
+        this.portMappers.map(async mapper => mapper.mapIpAddresses({
+          autoConfirmAddress: this.autoConfirmAddress
+        }))
       )
     } catch (err: any) {
       this.log.error('error mapping IP addresses - %e', err)

@@ -4,6 +4,7 @@ import { isLinkLocal } from '@libp2p/utils/multiaddr/is-link-local'
 import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { multiaddr } from '@multiformats/multiaddr'
 import { QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
 import { dynamicExternalAddress } from './check-external-address.js'
 import { DoubleNATError } from './errors.js'
@@ -27,6 +28,10 @@ export interface UPnPPortMapperComponents {
 interface PortMapping {
   externalHost: string
   externalPort: number
+}
+
+export interface MapPortsOptions {
+  autoConfirmAddress?: boolean
 }
 
 export class UPnPPortMapper {
@@ -149,7 +154,7 @@ export class UPnPPortMapper {
     return output
   }
 
-  async mapIpAddresses (): Promise<void> {
+  async mapIpAddresses (options?: MapPortsOptions): Promise<void> {
     try {
       const externalHost = await this.externalAddress.getPublicIp()
 
@@ -194,6 +199,12 @@ export class UPnPPortMapper {
           this.mappedPorts.set(key, mapping)
           this.addressManager.addPublicAddressMapping(mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, transport === 'tcp' ? 'tcp' : 'udp')
           this.log('created mapping of %s:%s to %s:%s for protocol %s', mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, transport)
+
+          if (options?.autoConfirmAddress === true) {
+            const ma = multiaddr(`/ip${family}/${host}/${transport}/${port}`)
+            this.log('auto-confirming IP address %a', ma)
+            this.addressManager.confirmObservedAddr(ma)
+          }
         } catch (err) {
           this.log.error('failed to create mapping for %s:%d for protocol - %e', host, port, transport, err)
         }

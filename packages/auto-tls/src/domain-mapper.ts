@@ -58,7 +58,10 @@ export class DomainMapper {
   }
 
   updateMappings (): void {
-    const publicIps = getPublicIps(this.addressManager.getAddresses())
+    const publicIps = getPublicIps(
+      this.addressManager.getAddressesWithMetadata()
+        .map(({ multiaddr }) => multiaddr)
+    )
 
     // did our public IPs change?
     const addedIp4 = []
