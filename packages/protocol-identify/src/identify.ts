@@ -107,7 +107,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       throw new InvalidMessageError('identified peer is our own peer id?')
     }
 
-    // Get the observedAddr if there is one
+    // if the observed address is publicly routable, add it to the address
+    // manager for verification via AutoNAT
     this.maybeAddObservedAddress(observedAddr)
 
     this.log('identify completed for peer %p and protocols %o', id, protocols)
@@ -116,7 +117,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
   }
 
   private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
-    // Get the observedAddr if there is one
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     if (cleanObservedAddr == null) {
