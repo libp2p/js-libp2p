@@ -20,7 +20,7 @@ import { AutoNATService } from '../src/autonat.js'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
 import { Message } from '../src/pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
-import type { Connection, Stream, PeerId, Transport, Libp2pEvents } from '@libp2p/interface'
+import type { Connection, Stream, PeerId, Transport, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
@@ -42,6 +42,7 @@ describe('autonat', () => {
   let addressManager: StubbedInstance<AddressManager>
   let connectionManager: StubbedInstance<ConnectionManager>
   let transportManager: StubbedInstance<TransportManager>
+  let peerStore: StubbedInstance<PeerStore>
 
   beforeEach(async () => {
     randomWalk = stubInterface<RandomWalk>()
@@ -49,8 +50,12 @@ describe('autonat', () => {
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
 
-    connectionManager = stubInterface<ConnectionManager>()
+    connectionManager = stubInterface<ConnectionManager>({
+      getConnections: () => [],
+      getMaxConnections: () => 100
+    })
     transportManager = stubInterface<TransportManager>()
+    peerStore = stubInterface<PeerStore>()
 
     components = {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
@@ -60,7 +65,8 @@ describe('autonat', () => {
       addressManager,
       connectionManager,
       transportManager,
-      events: new TypedEventEmitter<Libp2pEvents>()
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      peerStore
     }
 
     service = new AutoNATService(components, defaultInit)
@@ -79,11 +85,18 @@ describe('autonat', () => {
   describe('verify our observed addresses', () => {
     async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId): Promise<Connection> {
       // stub random peer lookup
-      const peer = {
+      const peer: Peer = {
         id: peerId ?? peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [],
-        protocols: []
+        addresses: [{
+          multiaddr: multiaddr(`/ip4/${host}/tcp/28319`),
+          isCertified: true
+        }],
+        protocols: [],
+        metadata: new Map(),
+        tags: new Map()
       }
+
+      peerStore.get.withArgs(peer.id).resolves(peer)
 
       // stub connection to remote peer
       const connection = stubInterface<Connection>()
@@ -120,7 +133,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       // The network says OK
@@ -194,7 +207,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       // The network says ERROR
@@ -209,6 +222,18 @@ describe('autonat', () => {
           status: Message.ResponseStatus.E_DIAL_ERROR
         }),
         await stubPeerResponse('127.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('128.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('129.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('130.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('131.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
@@ -231,7 +256,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       // Mix of responses, mostly OK
@@ -277,7 +302,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       // an attacker says OK, the rest of the network says ERROR
@@ -305,6 +330,18 @@ describe('autonat', () => {
         }),
         await stubPeerResponse('130.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('131.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('132.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('133.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('134.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
 
@@ -326,7 +363,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
@@ -356,6 +393,18 @@ describe('autonat', () => {
         }),
         await stubPeerResponse('131.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('132.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('133.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('134.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('135.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
 
@@ -377,7 +426,7 @@ describe('autonat', () => {
         multiaddr: observedAddress,
         verified: false,
         type: 'observed',
-        expires: Date.now() + 1000
+        expires: 0
       }])
 
       // The network says OK
