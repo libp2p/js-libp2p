@@ -7,14 +7,18 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
+import { TransportAddresses } from './transport-addresses.js'
 import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
-import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress } from '@libp2p/interface-internal'
+import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+const ONE_MINUTE = 60_000
+
 export const defaultValues = {
   maxObservedAddresses: 10,
-  observedAddressTTL: 60_000 * 10
+  addressVerificationTTL: ONE_MINUTE * 10,
+  addressVerificationRetry: ONE_MINUTE * 5
 }
 
 export interface AddressManagerInit {
@@ -50,9 +54,25 @@ export interface AddressManagerInit {
   maxObservedAddresses?: number
 
   /**
-   * How long before each observed address should be reverified
+   * How long before each public address should be reverified in ms.
+   *
+   * Requires `@libp2p/autonat` or some other verification method to be
+   * configured.
+   *
+   * @default 600_000
    */
-  observedAddressTTL?: number
+  addressVerificationTTL?: number
+
+  /**
+   * After a transport or mapped address has failed to verify, how long to wait
+   * before retrying it in ms
+   *
+   * Requires `@libp2p/autonat` or some other verification method to be
+   * configured.
+   *
+   * @default 300_000
+   */
+  addressVerificationRetry?: number
 }
 
 export interface AddressManagerComponents {
@@ -103,8 +123,10 @@ export class AddressManager implements AddressManagerInterface {
   private readonly observed: ObservedAddresses
   private readonly dnsMappings: DNSMappings
   private readonly ipMappings: IPMappings
+  private readonly transportAddresses: TransportAddresses
   private readonly observedAddressFilter: Filter
-  private readonly observedAddressTTL: number
+  private readonly addressVerificationTTL: number
+  private readonly addressVerificationRetry: number
 
   /**
    * Responsible for managing the peer addresses.
@@ -123,9 +145,11 @@ export class AddressManager implements AddressManagerInterface {
     this.observed = new ObservedAddresses(components, init)
     this.dnsMappings = new DNSMappings(components, init)
     this.ipMappings = new IPMappings(components, init)
+    this.transportAddresses = new TransportAddresses(components, init)
     this.announceFilter = init.announceFilter ?? defaultAddressFilter
     this.observedAddressFilter = createScalableCuckooFilter(1024)
-    this.observedAddressTTL = init.observedAddressTTL ?? defaultValues.observedAddressTTL
+    this.addressVerificationTTL = init.addressVerificationTTL ?? defaultValues.addressVerificationTTL
+    this.addressVerificationRetry = init.addressVerificationRetry ?? defaultValues.addressVerificationRetry
 
     // this method gets called repeatedly on startup when transports start listening so
     // debounce it so we don't cause multiple self:peer:update events to be emitted
@@ -221,20 +245,24 @@ export class AddressManager implements AddressManagerInterface {
     this.observed.add(addr)
   }
 
-  confirmObservedAddr (addr: Multiaddr): void {
+  confirmObservedAddr (addr: Multiaddr, options?: ConfirmAddressOptions): void {
     addr = stripPeerId(addr, this.components.peerId)
     let startingConfidence = true
 
     if (this.observed.has(addr)) {
-      startingConfidence = this.observed.confirm(addr, this.observedAddressTTL)
+      startingConfidence = this.observed.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+    }
+
+    if (this.transportAddresses.has(addr)) {
+      startingConfidence = this.transportAddresses.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
     if (this.dnsMappings.has(addr)) {
-      startingConfidence = this.dnsMappings.confirm(addr, this.observedAddressTTL)
+      startingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
     if (this.ipMappings.has(addr)) {
-      startingConfidence = this.ipMappings.confirm(addr, this.observedAddressTTL)
+      startingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
@@ -243,12 +271,31 @@ export class AddressManager implements AddressManagerInterface {
     }
   }
 
-  removeObservedAddr (addr: Multiaddr): void {
+  removeObservedAddr (addr: Multiaddr, options?: ConfirmAddressOptions): void {
     addr = stripPeerId(addr, this.components.peerId)
 
-    this.observed.remove(addr)
-    this.dnsMappings.remove(addr)
-    this.ipMappings.remove(addr)
+    let startingConfidence = false
+
+    if (this.observed.has(addr)) {
+      startingConfidence = this.observed.remove(addr)
+    }
+
+    if (this.transportAddresses.has(addr)) {
+      startingConfidence = this.transportAddresses.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+    }
+
+    if (this.dnsMappings.has(addr)) {
+      startingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+    }
+
+    if (this.ipMappings.has(addr)) {
+      startingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+    }
+
+    // only trigger the 'self:peer:update' event if our confidence in an address has changed
+    if (startingConfidence) {
+      this._updatePeerStoreAddresses()
+    }
   }
 
   getAddresses (): Multiaddr[] {
@@ -299,7 +346,8 @@ export class AddressManager implements AddressManagerInterface {
         multiaddr,
         verified: true,
         type: 'announce',
-        expires: Date.now() + this.observedAddressTTL
+        expires: Date.now() + this.addressVerificationTTL,
+        lastVerified: Date.now()
       }))
     }
 
@@ -307,12 +355,8 @@ export class AddressManager implements AddressManagerInterface {
 
     // add transport addresses
     addresses = addresses.concat(
-      this.components.transportManager.getAddrs().map(multiaddr => ({
-        multiaddr,
-        verified: true,
-        type: 'transport',
-        expires: Date.now() + this.observedAddressTTL
-      }))
+      this.components.transportManager.getAddrs()
+        .map(multiaddr => this.transportAddresses.get(multiaddr, this.addressVerificationTTL))
     )
 
     // add append announce addresses
@@ -321,7 +365,8 @@ export class AddressManager implements AddressManagerInterface {
         multiaddr,
         verified: true,
         type: 'announce',
-        expires: Date.now() + this.observedAddressTTL
+        expires: Date.now() + this.addressVerificationTTL,
+        lastVerified: Date.now()
       }))
     )
 
