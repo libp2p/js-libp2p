@@ -441,7 +441,6 @@ export class AutoNATService implements Startable {
         const expired = addr.expires < Date.now()
 
         if (!expired) {
-          this.log.trace('skip expired')
           // skip verified/non-verified addresses within their TTL
           return false
         }
