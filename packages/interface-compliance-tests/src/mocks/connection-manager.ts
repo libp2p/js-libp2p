@@ -97,6 +97,10 @@ class MockConnectionManager implements ConnectionManager, Startable {
     return map
   }
 
+  getMaxConnections (): number {
+    return 10_000
+  }
+
   async openConnection (peerId: PeerId | Multiaddr | Multiaddr[]): Promise<Connection> {
     if (isMultiaddr(peerId)) {
       throw new UnsupportedOperationError('Dialing multiaddrs not supported')
