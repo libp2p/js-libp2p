@@ -224,7 +224,8 @@ describe('connection-pruner', () => {
       allow: [
         multiaddr('/ip4/83.13.55.32/ipcidr/32'),
         multiaddr('/ip4/83.13.55.32'),
-        multiaddr('/ip4/192.168.1.1/ipcidr/24')
+        multiaddr('/ip4/192.168.1.1/ipcidr/24'),
+        multiaddr('/ip6/2001::0/ipcidr/64')
       ]
     }
 
@@ -244,6 +245,10 @@ describe('connection-pruner', () => {
       {
         mask: new Uint8Array([255, 255, 255, 0]),
         network: new Uint8Array([192, 168, 1, 0])
+      },
+      {
+        mask: new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0]),
+        network: new Uint8Array([32, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
       }
     ]
 
