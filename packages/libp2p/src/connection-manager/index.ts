@@ -267,30 +267,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     })
   }
 
-  /**
-   * Parses a list of IP addresses or CIDR notation strings into an array of IpNet objects.
-   *
-   * @param {string[]} list - The list of IP addresses or CIDR strings to parse.
-   * @returns {IpNet[]} An array of IpNet objects derived from the provided list.
-   * @throws {Error} Throws an error if any string in the list is not a valid multiaddr format.
-   */
-  private parseIpNetList (list: string[]): IpNet[] {
-    return list.map((a) => {
-      try {
-        // Attempt to parse `a` with the required /ipcidr/32 if missing
-        let ma
-        if (a.includes('/ipcidr')) {
-          ma = multiaddr(a) // Parse directly if it already includes /ipcidr
-        } else {
-          ma = multiaddr(a).encapsulate('/ipcidr/32') // Encapsulate with /ipcidr/32 if missing
-        }
-        return multiaddrToIpNet(ma)
-      } catch (error) {
-        throw new Error(`Invalid multiaddr format in list: ${a}`)
-      }
-    })
-  }
-
   readonly [Symbol.toStringTag] = '@libp2p/connection-manager'
 
   /**
