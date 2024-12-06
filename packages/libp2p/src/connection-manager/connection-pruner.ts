@@ -1,7 +1,7 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
-import { convertToIpNet } from '@multiformats/multiaddr/convert'
 import { MAX_CONNECTIONS } from './constants.js'
+import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
 import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
