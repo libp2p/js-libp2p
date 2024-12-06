@@ -30,6 +30,11 @@ export interface NodeAddress {
   verified: boolean
 
   /**
+   * The timestamp at which the address was last verified
+   */
+  lastVerified?: number
+
+  /**
    * A millisecond timestamp after which this address should be reverified
    */
   expires: number
@@ -38,6 +43,13 @@ export interface NodeAddress {
    * The source of this address
    */
   type: AddressType
+}
+
+export interface ConfirmAddressOptions {
+  /**
+   * Override the TTL of the observed address verification
+   */
+  ttl?: number
 }
 
 export interface AddressManager {
@@ -61,7 +73,7 @@ export interface AddressManager {
    * Signal that we have confidence an observed multiaddr is publicly dialable -
    * this will make it appear in the output of getAddresses()
    */
-  confirmObservedAddr(addr: Multiaddr): void
+  confirmObservedAddr(addr: Multiaddr, options?: ConfirmAddressOptions): void
 
   /**
    * Signal that we do not have confidence an observed multiaddr is publicly dialable -

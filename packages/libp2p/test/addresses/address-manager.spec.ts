@@ -549,7 +549,7 @@ describe('Address Manager', () => {
       logger: defaultLogger()
     })
 
-    const internalIp = '2a00:23c6:14b1:7e00:28b8:30d:944e:27f3'
+    const internalIp = 'fdad:23c6:14b1:7e00:28b8:30d:944e:27f3'
     const internalPort = 4567
     const externalIp = '81.12.12.1'
     const externalPort = 8910
@@ -573,6 +573,40 @@ describe('Address Manager', () => {
 
     am.removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
 
+    expect(am.getAddresses()).to.deep.equal([
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
+    ])
+  })
+
+  it('should require confirmation of global unicast IPv6 addresses', () => {
+    const transportManager = stubInterface<TransportManager>()
+    const am = new AddressManager({
+      peerId,
+      transportManager,
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    const internalIp = '2a01:23c6:14b1:7e00:28b8:30d:944e:27f3'
+    const internalPort = 4567
+    const externalIp = '81.12.12.1'
+    const externalPort = 8910
+    const protocol = 'tcp'
+
+    am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, protocol)
+
+    // one loopback, one LAN address
+    transportManager.getAddrs.returns([
+      multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}`)
+    ])
+
+    expect(am.getAddresses()).to.be.empty()
+
+    // confirm global IP
+    am.confirmObservedAddr(multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}`))
+
+    // should include IP now
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip6/${internalIp}/${protocol}/${internalPort}/p2p/${peerId.toString()}`)
     ])

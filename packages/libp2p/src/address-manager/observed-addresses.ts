@@ -13,6 +13,7 @@ export const defaultValues = {
 interface ObservedAddressMetadata {
   verified: boolean
   expires: number
+  lastVerified?: number
 }
 
 export class ObservedAddresses {
@@ -60,23 +61,30 @@ export class ObservedAddresses {
         multiaddr: multiaddr(ma),
         verified: metadata.verified,
         type: 'observed',
-        expires: metadata.expires
+        expires: metadata.expires,
+        lastVerified: metadata.lastVerified
       }))
   }
 
-  remove (ma: Multiaddr): void {
+  remove (ma: Multiaddr): boolean {
+    const startingConfidence = this.addresses.get(ma.toString())?.verified ?? false
+
     this.log('removing observed address %a', ma)
     this.addresses.delete(ma.toString())
+
+    return startingConfidence
   }
 
   confirm (ma: Multiaddr, ttl: number): boolean {
     const addrString = ma.toString()
     const metadata = this.addresses.get(addrString) ?? {
       verified: false,
-      expires: Date.now() + ttl
+      expires: Date.now() + ttl,
+      lastVerified: Date.now()
     }
     const startingConfidence = metadata.verified
     metadata.verified = true
+    metadata.lastVerified = Date.now()
 
     this.log('marking observed address %a as verified', addrString)
     this.addresses.set(addrString, metadata)
