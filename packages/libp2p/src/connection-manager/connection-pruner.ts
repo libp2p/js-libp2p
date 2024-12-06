@@ -37,16 +37,7 @@ export class ConnectionPruner {
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
-    this.allow = (init.allow ?? []).map((ma) => {
-      try {
-        if (!ma.protoNames().includes('ipcidr')) {
-          ma = ma.encapsulate('/ipcidr/32') // Encapsulate with /ipcidr/32 if missing
-        }
-        return convertToIpNet(ma)
-      } catch (error) {
-        throw new Error(`Invalid multiaddr format in allow list: ${ma}`)
-      }
-    })
+    this.allow = (init.allow ?? []).map(ma => multiaddrToIpNet(ma))
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
     this.events = components.events
