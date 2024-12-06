@@ -40,7 +40,7 @@ describe('isLinkLocalIp', () => {
 
   it('identifies non link-local ip6 multiaddrs', () => {
     [
-      '2001:8a0:7ac5:4201:3ac9:86ff:fe31',
+      '2001:8a0:7ac5:4201:3ac9:86ff:fe31:7095',
       '::'
     ].forEach(ma => {
       expect(isLinkLocalIp(ma)).to.be.false()

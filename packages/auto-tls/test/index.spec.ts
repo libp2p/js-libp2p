@@ -16,7 +16,7 @@ import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
 import { importFromPem } from '../src/utils.js'
 import { CERT, CERT_FOR_OTHER_KEY, EXPIRED_CERT, INVALID_CERT, PRIVATE_KEY_PEM } from './fixtures/cert.js'
 import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PrivateKey, RSAPrivateKey, TypedEventTarget } from '@libp2p/interface'
-import type { AddressManager } from '@libp2p/interface-internal'
+import type { AddressManager, NodeAddress } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -49,12 +49,26 @@ describe('auto-tls', () => {
       datastore: new MemoryDatastore()
     }
 
-    // mixture of LAN and public addresses
-    components.addressManager.getAddresses.returns([
-      multiaddr(`/ip4/127.0.0.1/tcp/1235/p2p/${components.peerId}`),
-      multiaddr(`/ip4/192.168.0.100/tcp/1235/p2p/${components.peerId}`),
-      multiaddr(`/ip4/82.32.57.46/tcp/2345/p2p/${components.peerId}`)
-    ])
+    // a mixture of LAN and public addresses
+    const addresses: NodeAddress[] = [{
+      multiaddr: multiaddr(`/ip4/127.0.0.1/tcp/1235/p2p/${components.peerId}`),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/192.168.0.100/tcp/1235/p2p/${components.peerId}`),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/82.32.57.46/tcp/2345/p2p/${components.peerId}`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }]
+
+    components.addressManager.getAddressesWithMetadata.returns(addresses)
+    components.addressManager.getAddresses.returns(addresses.map(({ multiaddr }) => multiaddr))
   })
 
   afterEach(async () => {

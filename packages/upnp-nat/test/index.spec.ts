@@ -81,10 +81,17 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves(externalHost)
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }, {
+      multiaddr: multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     gateway.map.withArgs(internalPort, internalHost).resolves({
       internalHost,
@@ -120,10 +127,17 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves(externalHost)
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }, {
+      multiaddr: multiaddr(`/ip4/${internalHost}/tcp/${internalPort}`),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     gateway.map.withArgs(internalPort, internalHost).resolves({
       internalHost,
@@ -153,10 +167,17 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves('192.168.1.1')
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      multiaddr('/ip4/192.168.1.12/tcp/4002')
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.12/tcp/4002'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     await start(natManager)
     await natManager.mapIpAddresses()
@@ -177,6 +198,13 @@ describe('UPnP NAT (TCP)', () => {
       multiaddr('/ip6/fe80::9400:67ff:fe19:2a0f/tcp/0')
     ])
 
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip6/fe80::9400:67ff:fe19:2a0f/tcp/0'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
+
     await start(natManager)
     await natManager.mapIpAddresses()
 
@@ -192,9 +220,12 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves('82.3.1.5')
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip6/::1/tcp/0')
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip6/::1/tcp/0'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     await start(natManager)
     await natManager.mapIpAddresses()
@@ -211,9 +242,12 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves('82.3.1.5')
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/192.168.1.12/udp/4001')
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/192.168.1.12/udp/4001'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     await start(natManager)
     await natManager.mapIpAddresses()
@@ -230,9 +264,12 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves('82.3.1.5')
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/4001')
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     await start(natManager)
     await natManager.mapIpAddresses()
@@ -249,9 +286,12 @@ describe('UPnP NAT (TCP)', () => {
 
     gateway.externalIp.resolves('82.3.1.5')
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/4001/sctp/0')
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001/sctp/0'),
+      verified: true,
+      type: 'transport',
+      expires: Date.now() + 10_000
+    }])
 
     await start(natManager)
     await natManager.mapIpAddresses()

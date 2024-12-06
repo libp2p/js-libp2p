@@ -47,6 +47,12 @@ export interface ConnectionManager {
   getConnectionsMap(): PeerMap<Connection[]>
 
   /**
+   * Returns the configured maximum number of connections this connection
+   * manager will accept
+   */
+  getMaxConnections(): number
+
+  /**
    * Open a connection to a remote peer
    *
    * @example

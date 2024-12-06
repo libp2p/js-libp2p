@@ -31,7 +31,7 @@
  */
 
 import { AutoNATService } from './autonat.js'
-import type { ComponentLogger, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, PeerId, PeerStore, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface AutoNATServiceInit {
@@ -64,6 +64,17 @@ export interface AutoNATServiceInit {
    * How many parallel outbound autoNAT streams we allow per-connection
    */
   maxOutboundStreams?: number
+
+  /**
+   * If the number of currently open connections is higher than this value as
+   * a percentage of the maximum number of allowed connections, automatically
+   * reverify previously verified addresses since auto nat peers may find it
+   * hard to dial and will report that the address is not dialable leading this
+   * node to delist it.
+   *
+   * @default 80
+   */
+  connectionThreshold?: number
 }
 
 export interface AutoNATComponents {
@@ -74,6 +85,8 @@ export interface AutoNATComponents {
   connectionManager: ConnectionManager
   logger: ComponentLogger
   randomWalk: RandomWalk
+  events: TypedEventTarget<Libp2pEvents>
+  peerStore: PeerStore
 }
 
 export function autoNAT (init: AutoNATServiceInit = {}): (components: AutoNATComponents) => unknown {

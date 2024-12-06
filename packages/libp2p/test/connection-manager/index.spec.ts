@@ -85,6 +85,17 @@ describe('Connection Manager', () => {
     ).to.eventually.rejected('maxConnections must be greater')
   })
 
+  it('should return the max allowed connections', async () => {
+    const maxConnections = 10
+
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections
+    })
+
+    expect(connectionManager.getMaxConnections()).to.equal(maxConnections)
+  })
+
   it('should reconnect to important peers on startup', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 

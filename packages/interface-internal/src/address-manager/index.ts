@@ -1,5 +1,57 @@
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+/**
+ * The type of address:
+ *
+ * - 'transport' a listen address supplied by a transport
+ * - 'announce' a pre-configured announce address
+ * - 'observed' a peer reported this as a public address
+ * - 'dns-mapping' a DNS address dynamically mapped to one or more public addresses
+ * - 'ip-mapping' an external IP address dynamically mapped to a LAN address
+ */
+export type AddressType = 'transport' | 'announce' | 'observed' | 'dns-mapping' | 'ip-mapping'
+
+/**
+ * An address that has been configured or detected
+ */
+export interface NodeAddress {
+  /**
+   * The multiaddr that represents the address
+   */
+  multiaddr: Multiaddr
+
+  /**
+   * Dynamically configured addresses such as observed or IP/DNS mapped ones
+   * must be verified as valid by AutoNAT or some other means before the current
+   * node will add them to it's peer record and share them with peers.
+   *
+   * When this value is true, it's safe to share the address.
+   */
+  verified: boolean
+
+  /**
+   * The timestamp at which the address was last verified
+   */
+  lastVerified?: number
+
+  /**
+   * A millisecond timestamp after which this address should be reverified
+   */
+  expires: number
+
+  /**
+   * The source of this address
+   */
+  type: AddressType
+}
+
+export interface ConfirmAddressOptions {
+  /**
+   * Override the TTL of the observed address verification
+   */
+  ttl?: number
+}
+
 export interface AddressManager {
   /**
    * Get peer listen multiaddrs
@@ -21,7 +73,7 @@ export interface AddressManager {
    * Signal that we have confidence an observed multiaddr is publicly dialable -
    * this will make it appear in the output of getAddresses()
    */
-  confirmObservedAddr(addr: Multiaddr): void
+  confirmObservedAddr(addr: Multiaddr, options?: ConfirmAddressOptions): void
 
   /**
    * Signal that we do not have confidence an observed multiaddr is publicly dialable -
@@ -40,6 +92,11 @@ export interface AddressManager {
    * Get the current node's addresses
    */
   getAddresses(): Multiaddr[]
+
+  /**
+   * Return all known addresses with metadata
+   */
+  getAddressesWithMetadata(): NodeAddress[]
 
   /**
    * Adds a mapping between one or more IP addresses and a domain name - when
