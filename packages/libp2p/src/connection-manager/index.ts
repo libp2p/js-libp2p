@@ -239,7 +239,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       logger: components.logger
     }, {
       maxConnections: this.maxConnections,
-      allow: init.allow != null ? init.allow.map(a => multiaddr(a)) : undefined
+      allow: init.allow?.map(a => multiaddr(a))
     })
 
     this.dialQueue = new DialQueue(components, {
