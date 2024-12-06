@@ -18,6 +18,7 @@ interface PublicAddressMapping {
   protocol: 'tcp' | 'udp'
   verified: boolean
   expires: number
+  lastVerified?: number
 }
 
 const CODEC_IP4 = 0x04
@@ -134,7 +135,8 @@ export class IPMappings {
           }`),
           verified: mapping.verified,
           type: 'ip-mapping',
-          expires: mapping.expires
+          expires: mapping.expires,
+          lastVerified: mapping.lastVerified
         })
       }
     }
@@ -155,10 +157,35 @@ export class IPMappings {
           startingConfidence = mapping.verified
           mapping.verified = true
           mapping.expires = Date.now() + ttl
+          mapping.lastVerified = Date.now()
         }
       }
     }
 
     return startingConfidence
+  }
+
+  unconfirm (ma: Multiaddr, ttl: number): boolean {
+    const tuples = ma.stringTuples()
+    const host = tuples[0][1] ?? ''
+    const protocol = tuples[1][0] === CODEC_TCP ? 'tcp' : 'udp'
+    const port = parseInt(tuples[1][1] ?? '0')
+    let wasConfident = false
+
+    for (const mappings of this.mappings.values()) {
+      for (let i = 0; i < mappings.length; i++) {
+        const mapping = mappings[i]
+
+        if (mapping.externalIp === host && mapping.externalPort === port && mapping.protocol === protocol) {
+          this.log('removing verification of %s:%s to %s:%s %s IP mapping', mapping.externalIp, mapping.externalPort, host, port, protocol)
+
+          wasConfident = wasConfident || mapping.verified
+          mapping.verified = false
+          mapping.expires = Date.now() + ttl
+        }
+      }
+    }
+
+    return wasConfident
   }
 }

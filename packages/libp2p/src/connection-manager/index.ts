@@ -395,6 +395,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.log('stopped')
   }
 
+  getMaxConnections (): number {
+    return this.maxConnections
+  }
+
   onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
       this.log.error(err)

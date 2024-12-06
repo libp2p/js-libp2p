@@ -5,6 +5,8 @@ import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
 import type { Multiaddr, StringTuple } from '@multiformats/multiaddr'
 
+const MAX_DATE = 8_640_000_000_000_000
+
 export const defaultValues = {
   maxObservedAddresses: 10
 }
@@ -13,6 +15,7 @@ interface DNSMapping {
   domain: string
   verified: boolean
   expires: number
+  lastVerified?: number
 }
 
 const CODEC_TLS = 0x01c0
@@ -46,13 +49,15 @@ export class DNSMappings {
   add (domain: string, addresses: string[]): void {
     addresses.forEach(ip => {
       this.log('add DNS mapping %s to %s', ip, domain)
+      // we are only confident if this is an local domain mapping, otherwise
+      // we will require external validation
+      const verified = isPrivateIp(ip) === true
 
       this.mappings.set(ip, {
         domain,
-        // we are only confident if this is an local domain mapping, otherwise
-        // we will require external validation
-        verified: isPrivateIp(ip) === true,
-        expires: 0
+        verified,
+        expires: verified ? MAX_DATE - Date.now() : 0,
+        lastVerified: verified ? MAX_DATE - Date.now() : undefined
       })
     })
   }
@@ -109,7 +114,8 @@ export class DNSMappings {
             }`),
             verified: mapping.verified,
             type: 'dns-mapping',
-            expires: mapping.expires
+            expires: mapping.expires,
+            lastVerified: mapping.lastVerified
           })
         }
       }
@@ -139,10 +145,27 @@ export class DNSMappings {
         startingConfidence = mapping.verified
         mapping.verified = true
         mapping.expires = Date.now() + ttl
+        mapping.lastVerified = Date.now()
       }
     }
 
     return startingConfidence
+  }
+
+  unconfirm (ma: Multiaddr, ttl: number): boolean {
+    const host = this.findHost(ma)
+    let wasConfident = false
+
+    for (const [ip, mapping] of this.mappings.entries()) {
+      if (mapping.domain === host) {
+        this.log('removing verification of %s to %s DNS mapping', ip, mapping.domain)
+        wasConfident = wasConfident || mapping.verified
+        mapping.verified = false
+        mapping.expires = Date.now() + ttl
+      }
+    }
+
+    return wasConfident
   }
 
   private findHost (ma: Multiaddr): string | undefined {
