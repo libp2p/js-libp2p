@@ -10,3 +10,4 @@ export const DEFAULT_ACCOUNT_PRIVATE_KEY_BITS = 2048
 export const DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME = 'auto-tls-certificate-private-key'
 export const DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS = 2048
 export const DEFAULT_CERTIFICATE_DATASTORE_KEY = '/libp2p/auto-tls/certificate'
+export const DEFAULT_AUTO_CONFIRM_ADDRESS = false
