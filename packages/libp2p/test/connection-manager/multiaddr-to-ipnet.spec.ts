@@ -39,16 +39,13 @@ describe('multiaddrToIpNet', () => {
     expect(ipNet.toString()).to.equal('2001:0db8:0000:0000:0000:0000:0000:0001/128')
   })
 
-  /*
-  // TODO: Re-enable when check is implemented
   it('should throw an error for invalid CIDR value in IPv4 and IPv6 multiaddr', () => {
     const invalidIPv6 = '/ip6/2001:db8::1/ipcidr/256'
     const invalidIPv4 = '/ip4/192.168.1.1/ipcidr/33'
 
-    expect(() => multiaddrToIpNet(invalidIPv6)).to.throw(Error, 'Invalid CIDR value')
-    expect(() => multiaddrToIpNet(invalidIPv4)).to.throw(Error, 'Invalid CIDR value')
+    expect(() => multiaddrToIpNet(invalidIPv6)).to.throw(Error, 'Invalid multiaddr format')
+    expect(() => multiaddrToIpNet(invalidIPv4)).to.throw(Error, 'Invalid multiaddr format')
   })
-  */
 
   it('should handle IPv6 address with different prefix lengths (e.g., /0, /48, /128)', () => {
     const testCases = [
