@@ -22,9 +22,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@main
-        with:
-         directories: ${{ env.CACHE_DIRS }}
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
