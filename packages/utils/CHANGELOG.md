@@ -36,6 +36,31 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.2.1...utils-v6.3.0) (2024-12-09)
+
+
+### Features
+
+* add isGlobalUnicast function ([#2872](https://github.com/libp2p/js-libp2p/issues/2872)) ([b5a2d3e](https://github.com/libp2p/js-libp2p/commit/b5a2d3e29a82dd075d68928120d4bb1403caf50f))
+* add isLinkLocal function ([#2856](https://github.com/libp2p/js-libp2p/issues/2856)) ([5ac8c8b](https://github.com/libp2p/js-libp2p/commit/5ac8c8b5e06be915080f0798a1c0a3abad939a08))
+* add isLinkLocalIp function ([#2863](https://github.com/libp2p/js-libp2p/issues/2863)) ([97978b9](https://github.com/libp2p/js-libp2p/commit/97978b93e5f014d26d127136d7025aa4e76bec3c))
+
+
+### Bug Fixes
+
+* isPrivate should handle more types of addresses ([#2846](https://github.com/libp2p/js-libp2p/issues/2846)) ([671bc47](https://github.com/libp2p/js-libp2p/commit/671bc47656199d90410719824f1af5cdf989fdf1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
 ## [6.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.2.0...utils-v6.2.1) (2024-11-18)
 
 

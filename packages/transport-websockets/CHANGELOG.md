@@ -70,6 +70,29 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.1.0](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.13...websockets-v9.1.0) (2024-12-09)
+
+
+### Features
+
+* auto-tls for websockets ([#2800](https://github.com/libp2p/js-libp2p/issues/2800)) ([8a9258a](https://github.com/libp2p/js-libp2p/commit/8a9258a24168d13172eb139d32bc6889e71f81dc))
+
+
+### Bug Fixes
+
+* ignore IPv6 link-local addresses ([#2865](https://github.com/libp2p/js-libp2p/issues/2865)) ([f8da60e](https://github.com/libp2p/js-libp2p/commit/f8da60e73fede669986b8d48218f66c4e55fd776))
+* remove browser dial filter ([#2838](https://github.com/libp2p/js-libp2p/issues/2838)) ([d6cd25d](https://github.com/libp2p/js-libp2p/commit/d6cd25d0deca292420093d894edbfbc47b347e5d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
 ## [9.0.13](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.12...websockets-v9.0.13) (2024-11-18)
 
 

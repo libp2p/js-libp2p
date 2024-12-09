@@ -68,6 +68,26 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.0.13](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.12...peer-store-v11.0.13) (2024-12-09)
+
+
+### Bug Fixes
+
+* ignore corrupt peerstore data ([#2859](https://github.com/libp2p/js-libp2p/issues/2859)) ([f2f9008](https://github.com/libp2p/js-libp2p/commit/f2f9008b8e7c634a3855fea746af0762af920beb))
+* only log when data is invalid ([#2862](https://github.com/libp2p/js-libp2p/issues/2862)) ([a0c8ceb](https://github.com/libp2p/js-libp2p/commit/a0c8ceb9917518e82587dab1be71f02aa7a6a52c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/peer-record bumped from ^8.0.12 to ^8.0.13
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
 ## [11.0.12](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.11...peer-store-v11.0.12) (2024-11-18)
 
 

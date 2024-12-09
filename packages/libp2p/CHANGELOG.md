@@ -110,6 +110,43 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.4.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.3.1...libp2p-v2.4.0) (2024-12-09)
+
+
+### Features
+
+* add append announce addresses ([#2834](https://github.com/libp2p/js-libp2p/issues/2834)) ([b248eef](https://github.com/libp2p/js-libp2p/commit/b248eefc01e6034c211b0d458d0ce7a74e99c24f))
+* allow adding external ip/port mapping ([#2836](https://github.com/libp2p/js-libp2p/issues/2836)) ([6ddc1b8](https://github.com/libp2p/js-libp2p/commit/6ddc1b80ebe396afee58082865ae6cae2bb39fb1))
+* Use CIDR format for connection-manager allow/deny lists ([#2783](https://github.com/libp2p/js-libp2p/issues/2783)) ([48e9cfa](https://github.com/libp2p/js-libp2p/commit/48e9cfa56fdf9d2dcdc0efc758cf7f055106cbb5))
+
+
+### Bug Fixes
+
+* confirm dns mappings with ip mappings ([#2861](https://github.com/libp2p/js-libp2p/issues/2861)) ([0f87479](https://github.com/libp2p/js-libp2p/commit/0f8747950c26a47828c826b7f0a257bf95276b0f))
+* ensure user dial signals are respected ([#2842](https://github.com/libp2p/js-libp2p/issues/2842)) ([bc90b4f](https://github.com/libp2p/js-libp2p/commit/bc90b4fd58aee1ccd94d4fd61cc48d336e77d772))
+* handle router mappings of mixed IP version ([#2858](https://github.com/libp2p/js-libp2p/issues/2858)) ([f28c31d](https://github.com/libp2p/js-libp2p/commit/f28c31d803f13872ec151f8b5fe073aedc5dbcbf))
+* limit observed addresses in address manager ([#2869](https://github.com/libp2p/js-libp2p/issues/2869)) ([06f79b6](https://github.com/libp2p/js-libp2p/commit/06f79b6466fa8f6656676a71a5b90e6071825303))
+* remove browser dial filter ([#2838](https://github.com/libp2p/js-libp2p/issues/2838)) ([d6cd25d](https://github.com/libp2p/js-libp2p/commit/d6cd25d0deca292420093d894edbfbc47b347e5d))
+* require confirmation of global unicast addresses ([#2876](https://github.com/libp2p/js-libp2p/issues/2876)) ([92cc740](https://github.com/libp2p/js-libp2p/commit/92cc740828963a4786ea83befe606dac4ba25e45))
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+* trigger self:peer:update when ip/dns mappings change ([#2839](https://github.com/libp2p/js-libp2p/issues/2839)) ([4a85eb0](https://github.com/libp2p/js-libp2p/commit/4a85eb033f7ea8461a10bc8b38bbc76d1383d1cc))
+* update agent version ([#2845](https://github.com/libp2p/js-libp2p/issues/2845)) ([4761dd7](https://github.com/libp2p/js-libp2p/commit/4761dd701aec6620ee504cb9908fa2319971b79b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/multistream-select bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/peer-store bumped from ^11.0.12 to ^11.0.13
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+
 ## [2.3.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.3.0...libp2p-v2.3.1) (2024-11-18)
 
 
