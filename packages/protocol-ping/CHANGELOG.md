@@ -50,6 +50,20 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.13](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.12...ping-v2.0.13) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
 ## [2.0.12](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.11...ping-v2.0.12) (2024-11-18)
 
 
