@@ -86,6 +86,7 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
+    "@chainsafe/netmask": "^2.0.0",
     "@libp2p/crypto": "^5.0.7",
     "@libp2p/interface": "^2.2.1",
     "@libp2p/interface-internal": "^2.1.1",
