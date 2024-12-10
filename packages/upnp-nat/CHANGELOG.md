@@ -64,6 +64,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.0...upnp-nat-v3.0.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* unhandled promise rejection when finding gateway ([#2884](https://github.com/libp2p/js-libp2p/issues/2884)) ([127abe2](https://github.com/libp2p/js-libp2p/commit/127abe24b567e462b5fb8809960201635bee2202))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.12...upnp-nat-v3.0.0) (2024-12-09)
 
 
