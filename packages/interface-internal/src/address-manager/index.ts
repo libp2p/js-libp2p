@@ -50,6 +50,11 @@ export interface ConfirmAddressOptions {
    * Override the TTL of the observed address verification
    */
   ttl?: number
+
+  /**
+   * Allows hinting which type of address this is
+   */
+  type?: AddressType
 }
 
 export interface AddressManager {
