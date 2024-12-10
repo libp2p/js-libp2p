@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.1](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.0...auto-tls-v1.0.1) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
 ## 1.0.0 (2024-12-09)
 
 

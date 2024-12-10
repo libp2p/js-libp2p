@@ -32,6 +32,13 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.0...interface-internal-v2.2.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* auto-confirm relay addresses ([#2886](https://github.com/libp2p/js-libp2p/issues/2886)) ([5c4a79e](https://github.com/libp2p/js-libp2p/commit/5c4a79e5a6e8d0db1ef6464075841a0b9de507ef)), closes [#2883](https://github.com/libp2p/js-libp2p/issues/2883)
+
 ## [2.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.1.1...interface-internal-v2.2.0) (2024-12-09)
 
 
