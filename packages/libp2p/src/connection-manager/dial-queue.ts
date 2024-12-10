@@ -349,7 +349,7 @@ export class DialQueue {
         this.log('looking up multiaddrs for %p in the peer routing', peerId)
 
         try {
-          const peerInfo = await this.components.peerRouting.findPeer(peerId)
+          const peerInfo = await this.components.peerRouting.findPeer(peerId, options)
 
           this.log('found multiaddrs for %p in the peer routing', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
 
