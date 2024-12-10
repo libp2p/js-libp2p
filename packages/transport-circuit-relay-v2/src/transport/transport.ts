@@ -246,8 +246,10 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
+      peerId: this.peerId,
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore,
+      addressManager: this.addressManager,
+      reservationStore: this.reservationStore,
       logger: this.logger
     })
   }

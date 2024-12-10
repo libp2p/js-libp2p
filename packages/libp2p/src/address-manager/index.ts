@@ -249,19 +249,19 @@ export class AddressManager implements AddressManagerInterface {
     addr = stripPeerId(addr, this.components.peerId)
     let startingConfidence = true
 
-    if (this.observed.has(addr)) {
+    if (options?.type === 'observed' || this.observed.has(addr)) {
       startingConfidence = this.observed.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
-    if (this.transportAddresses.has(addr)) {
+    if (options?.type === 'transport' || this.transportAddresses.has(addr)) {
       startingConfidence = this.transportAddresses.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
-    if (this.dnsMappings.has(addr)) {
+    if (options?.type === 'dns-mapping' || this.dnsMappings.has(addr)) {
       startingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
-    if (this.ipMappings.has(addr)) {
+    if (options?.type === 'ip-mapping' || this.ipMappings.has(addr)) {
       startingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
     }
 
