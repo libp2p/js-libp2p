@@ -33,7 +33,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
   private readonly addressManager: AddressManager
   private started: boolean
   private lastPublicIp?: string
-  private readonly lastPublicIpPromise: DeferredPromise<string>
+  private lastPublicIpPromise?: DeferredPromise<string>
   private readonly check: RepeatingTask
   private readonly onExternalAddressChange?: (newExternalAddress: string) => void
 
@@ -45,8 +45,6 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
     this.started = false
 
     this.checkExternalAddress = this.checkExternalAddress.bind(this)
-
-    this.lastPublicIpPromise = pDefer()
 
     this.check = repeatingTask(this.checkExternalAddress, init.interval ?? 30000, {
       timeout: init.timeout ?? 10000,
@@ -76,7 +74,13 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
       throw new NotStartedError('Not started yet')
     }
 
-    return this.lastPublicIp ?? raceSignal(this.lastPublicIpPromise.promise, options?.signal, {
+    if (this.lastPublicIp != null) {
+      return this.lastPublicIp
+    }
+
+    this.lastPublicIpPromise = pDefer()
+
+    return raceSignal(this.lastPublicIpPromise.promise, options?.signal, {
       errorMessage: 'Requesting the public IP from the network gateway timed out - UPnP may not be enabled'
     })
   }
@@ -94,7 +98,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
       }
 
       this.lastPublicIp = externalAddress
-      this.lastPublicIpPromise.resolve(externalAddress)
+      this.lastPublicIpPromise?.resolve(externalAddress)
     } catch (err: any) {
       this.log.error('could not resolve external address - %e', err)
 
@@ -103,7 +107,7 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
         return
       }
 
-      this.lastPublicIpPromise.reject(err)
+      this.lastPublicIpPromise?.reject(err)
     }
   }
 }
