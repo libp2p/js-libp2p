@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "5.0.20",
+  "version": "5.0.21",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc#readme",
@@ -52,7 +52,7 @@
   "dependencies": {
     "@chainsafe/libp2p-noise": "^16.0.0",
     "@libp2p/interface": "^2.3.0",
-    "@libp2p/interface-internal": "^2.2.0",
+    "@libp2p/interface-internal": "^2.2.1",
     "@libp2p/peer-id": "^5.0.9",
     "@libp2p/utils": "^6.3.0",
     "@multiformats/multiaddr": "^12.3.3",
@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.0.8",
-    "@libp2p/interface-compliance-tests": "^6.2.0",
+    "@libp2p/interface-compliance-tests": "^6.2.1",
     "@libp2p/logger": "^5.1.5",
     "@types/sinon": "^17.0.3",
     "aegir": "^45.0.5",

@@ -83,6 +83,17 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.15](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.14...bootstrap-v11.0.15) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.0 to ^6.2.1
+
 ## [11.0.14](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.13...bootstrap-v11.0.14) (2024-12-09)
 
 

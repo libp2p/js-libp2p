@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.12](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.11...devtools-metrics-v1.1.12) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
 ## [1.1.11](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.10...devtools-metrics-v1.1.11) (2024-12-09)
 
 
