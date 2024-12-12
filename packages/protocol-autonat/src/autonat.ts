@@ -10,10 +10,7 @@ import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
 import { pbStream } from 'it-protobuf-stream'
 import * as Digest from 'multiformats/hashes/digest'
-import {
-  DEFAULT_CONNECTION_THRESHOLD,
-  MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT
-} from './constants.js'
+import { DEFAULT_CONNECTION_THRESHOLD, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
 import type { Logger, Connection, PeerId, Startable, AbortOptions } from '@libp2p/interface'
@@ -89,6 +86,7 @@ export class AutoNATService implements Startable {
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
+  private readonly maxMessageSize: number
   private started: boolean
   private readonly log: Logger
   private topologyId?: string
@@ -106,6 +104,7 @@ export class AutoNATService implements Startable {
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.connectionThreshold = init.connectionThreshold ?? DEFAULT_CONNECTION_THRESHOLD
+    this.maxMessageSize = init.maxMessageSize ?? MAX_MESSAGE_SIZE
     this.dialResults = new Map()
     this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
     this.addressFilter = createScalableCuckooFilter(1024)
@@ -229,7 +228,9 @@ export class AutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const messages = pbStream(data.stream).pb(Message)
+    const messages = pbStream(data.stream, {
+      maxDataLength: this.maxMessageSize
+    }).pb(Message)
 
     try {
       const request = await messages.read({
