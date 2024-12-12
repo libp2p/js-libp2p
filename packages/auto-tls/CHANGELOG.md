@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.1...auto-tls-v1.0.2) (2024-12-12)
+
+
+### Bug Fixes
+
+* update case of arguments sent to registration.libp2p.direct ([#2889](https://github.com/libp2p/js-libp2p/issues/2889)) ([023ea57](https://github.com/libp2p/js-libp2p/commit/023ea575cf70211012990116ccfc6c19bb5f37af))
+
 ## [1.0.1](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.0...auto-tls-v1.0.1) (2024-12-10)
 
 
