@@ -55,6 +55,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.15](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.14...autonat-v2.0.15) (2024-12-12)
+
+
+### Bug Fixes
+
+* increase max autonat streams and limit incoming message size ([#2890](https://github.com/libp2p/js-libp2p/issues/2890)) ([d3e5a33](https://github.com/libp2p/js-libp2p/commit/d3e5a3382ffd9b666b68e537ad8533ff38737102))
+
 ## [2.0.14](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.13...autonat-v2.0.14) (2024-12-10)
 
 

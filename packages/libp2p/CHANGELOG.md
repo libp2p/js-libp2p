@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.4.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.1...libp2p-v2.4.2) (2024-12-12)
+
+
+### Bug Fixes
+
+* pass abort signal to peer routing query ([#2888](https://github.com/libp2p/js-libp2p/issues/2888)) ([3c63482](https://github.com/libp2p/js-libp2p/commit/3c63482e5587e0edabb5c215cb6e565ed4f1185e))
+
 ## [2.4.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.0...libp2p-v2.4.1) (2024-12-10)
 
 

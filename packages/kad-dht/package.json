@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "14.1.5",
+  "version": "14.1.6",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
@@ -89,7 +89,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^6.2.1",
+    "@libp2p/interface-compliance-tests": "^6.2.2",
     "@libp2p/logger": "^5.1.5",
     "@libp2p/peer-store": "^11.0.13",
     "@types/lodash.random": "^3.2.9",
