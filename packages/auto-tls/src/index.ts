@@ -112,7 +112,7 @@ export interface AutoTLSInit {
    * How long asking the forge endpoint to answer a DNS challenge can take
    * before we retry
    *
-   * @default 10_000
+   * @default 60_000
    */
   provisionRequestTimeout?: number
 
@@ -168,6 +168,17 @@ export interface AutoTLSInit {
    * @default 2048
    */
   certificatePrivateKeyBits?: number
+
+  /**
+   * Any mapped addresses are added to the observed address list. These
+   * addresses require additional verification by the `@libp2p/autonat` protocol
+   * or similar before they are trusted.
+   *
+   * To skip this verification and trust them immediately pass `true` here
+   *
+   * @default false
+   */
+  autoConfirmAddress?: boolean
 }
 
 export interface AutoTLS {

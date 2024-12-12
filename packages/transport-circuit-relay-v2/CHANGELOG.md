@@ -101,6 +101,41 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.1.4...circuit-relay-v2-v3.1.5) (2024-12-10)
+
+
+### Bug Fixes
+
+* auto-confirm relay addresses ([#2886](https://github.com/libp2p/js-libp2p/issues/2886)) ([5c4a79e](https://github.com/libp2p/js-libp2p/commit/5c4a79e5a6e8d0db1ef6464075841a0b9de507ef)), closes [#2883](https://github.com/libp2p/js-libp2p/issues/2883)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.0 to ^6.2.1
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.1.3...circuit-relay-v2-v3.1.4) (2024-12-09)
+
+
+### Dependencies
+
+* bump retimeable-signal in /packages/transport-circuit-relay-v2 ([#2853](https://github.com/libp2p/js-libp2p/issues/2853)) ([ce2f45e](https://github.com/libp2p/js-libp2p/commit/ce2f45ee91c37a056be67f3b47d14c0511231141))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/peer-record bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.11 to ^6.2.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.1.2...circuit-relay-v2-v3.1.3) (2024-11-19)
 
 

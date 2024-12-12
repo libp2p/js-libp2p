@@ -4,9 +4,10 @@ import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { protocols } from '@multiformats/multiaddr'
-import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
+import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
 import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
@@ -17,6 +18,8 @@ import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultia
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
+
+const CODEC_IP6 = 0x29
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -104,23 +107,46 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       throw new InvalidMessageError('identified peer is our own peer id?')
     }
 
-    // Get the observedAddr if there is one
-    const cleanObservedAddr = getCleanMultiaddr(observedAddr)
+    // if the observed address is publicly routable, add it to the address
+    // manager for verification via AutoNAT
+    this.maybeAddObservedAddress(observedAddr)
 
     this.log('identify completed for peer %p and protocols %o', id, protocols)
 
-    if (cleanObservedAddr != null) {
-      this.log('our observed address was %a', cleanObservedAddr)
+    return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+  }
 
-      if (isPrivate(cleanObservedAddr)) {
-        this.log('our observed address was private')
-      } else if (this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-        this.log('storing our observed address')
-        this.addressManager.addObservedAddr(cleanObservedAddr)
-      }
+  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
+    const cleanObservedAddr = getCleanMultiaddr(observedAddr)
+
+    if (cleanObservedAddr == null) {
+      return
     }
 
-    return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+    this.log.trace('our observed address was %a', cleanObservedAddr)
+
+    if (isPrivate(cleanObservedAddr)) {
+      this.log.trace('our observed address was private')
+      return
+    }
+
+    const tuples = cleanObservedAddr.stringTuples()
+
+    if (tuples[0][0] === CODEC_IP6 && !isGlobalUnicast(cleanObservedAddr)) {
+      this.log.trace('our observed address was IPv6 but not a global unicast address')
+      return
+    }
+
+    if (TCP.exactMatch(cleanObservedAddr)) {
+      // TODO: because socket dials can't use the same local port as the TCP
+      // listener, many unique observed addresses are reported so ignore all
+      // TCP addresses until https://github.com/libp2p/js-libp2p/issues/2620
+      // is resolved
+      return
+    }
+
+    this.log.trace('storing the observed address')
+    this.addressManager.addObservedAddr(cleanObservedAddr)
   }
 
   /**

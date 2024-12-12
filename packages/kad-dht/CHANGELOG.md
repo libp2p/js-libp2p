@@ -106,6 +106,41 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [14.1.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.1.4...kad-dht-v14.1.5) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.0 to ^6.2.1
+
+## [14.1.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.1.3...kad-dht-v14.1.4) (2024-12-09)
+
+
+### Bug Fixes
+
+* do not add peers to routing table during RPC handling ([#2866](https://github.com/libp2p/js-libp2p/issues/2866)) ([99f5f27](https://github.com/libp2p/js-libp2p/commit/99f5f270b9e7b69e4ef543c1ff1c019815af58cb))
+* include DHT client in FIND_NODE response if exact match ([#2835](https://github.com/libp2p/js-libp2p/issues/2835)) ([98f3c77](https://github.com/libp2p/js-libp2p/commit/98f3c773dce0deea7abf15c77fad5d2bb83b507e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.11 to ^6.2.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-store bumped from ^11.0.12 to ^11.0.13
+
 ## [14.1.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.1.2...kad-dht-v14.1.3) (2024-11-19)
 
 

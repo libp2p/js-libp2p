@@ -9,6 +9,8 @@ import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
+import { multiaddrToIpNet } from './utils.js'
+import type { IpNet } from '@chainsafe/netmask'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
@@ -176,8 +178,8 @@ export interface DefaultConnectionManagerComponents {
 export class DefaultConnectionManager implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
-  private readonly allow: Multiaddr[]
-  private readonly deny: Multiaddr[]
+  private readonly allow: IpNet[]
+  private readonly deny: IpNet[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private outboundPendingConnections: number
@@ -216,8 +218,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
-    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(str))
+    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(str))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -237,7 +239,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       logger: components.logger
     }, {
       maxConnections: this.maxConnections,
-      allow: this.allow
+      allow: init.allow?.map(a => multiaddr(a))
     })
 
     this.dialQueue = new DialQueue(components, {
@@ -393,6 +395,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.connections.clear()
 
     this.log('stopped')
+  }
+
+  getMaxConnections (): number {
+    return this.maxConnections
   }
 
   onConnect (evt: CustomEvent<Connection>): void {
@@ -571,7 +577,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
     const denyConnection = this.deny.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return ma.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (denyConnection) {
@@ -580,8 +586,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }
 
     // check allow list
-    const allowConnection = this.allow.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    const allowConnection = this.allow.some(ipNet => {
+      return ipNet.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (allowConnection) {

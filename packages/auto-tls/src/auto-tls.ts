@@ -10,7 +10,7 @@ import { base36 } from 'multiformats/bases/base36'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_REQUEST_TIMEOUT, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
+import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEFAULT_ACME_DIRECTORY, DEFAULT_AUTO_CONFIRM_ADDRESS, DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_FORGE_DOMAIN, DEFAULT_FORGE_ENDPOINT, DEFAULT_PROVISION_DELAY, DEFAULT_PROVISION_REQUEST_TIMEOUT, DEFAULT_PROVISION_TIMEOUT, DEFAULT_RENEWAL_THRESHOLD } from './constants.js'
 import { DomainMapper } from './domain-mapper.js'
 import { createCsr, importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
 import type { AutoTLSComponents, AutoTLSInit, AutoTLS as AutoTLSInterface } from './index.js'
@@ -60,9 +60,10 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly email
   private readonly domain
   private readonly domainMapper: DomainMapper
+  private readonly autoConfirmAddress: boolean
 
   constructor (components: AutoTLSComponents, init: AutoTLSInit = {}) {
-    this.log = components.logger.forComponent('libp2p:certificate-manager')
+    this.log = components.logger.forComponent('libp2p:auto-tls')
     this.addressManager = components.addressManager
     this.privateKey = components.privateKey
     this.peerId = components.peerId
@@ -80,6 +81,7 @@ export class AutoTLS implements AutoTLSInterface {
     this.certificatePrivateKeyName = init.certificatePrivateKeyName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
     this.certificatePrivateKeyBits = init.certificatePrivateKeyBits ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS
     this.certificateDatastoreKey = init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY
+    this.autoConfirmAddress = init.autoConfirmAddress ?? DEFAULT_AUTO_CONFIRM_ADDRESS
     this.clientAuth = new ClientAuth(this.privateKey)
     this.started = false
     this.fetching = false
@@ -100,10 +102,16 @@ export class AutoTLS implements AutoTLSInterface {
   ]
 
   get [serviceDependencies] (): string[] {
-    return [
+    const dependencies = [
       '@libp2p/identify',
       '@libp2p/keychain'
     ]
+
+    if (!this.autoConfirmAddress) {
+      dependencies.push('@libp2p/autonat')
+    }
+
+    return dependencies
   }
 
   async start (): Promise<void> {
@@ -346,8 +354,8 @@ export class AutoTLS implements AutoTLSInterface {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        value: keyAuthorization,
-        addresses
+        Value: keyAuthorization,
+        Addresses: addresses
       }),
       ...options
     })

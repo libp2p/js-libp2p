@@ -373,4 +373,28 @@ describe('identify', () => {
 
     expect(result.observedAddr).to.be.undefined()
   })
+
+  it('should ignore observed non global unicast IPv6 addresses', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    const message: IdentifyMessage = {
+      protocolVersion: 'protocol version',
+      agentVersion: 'agent version',
+      listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
+      protocols: ['protocols'],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      observedAddr: multiaddr('/ip6/fe80::2892:aef3:af04:735a%en').bytes
+    }
+
+    const connection = identifyConnection(remotePeer, message)
+
+    // run identify
+    await identify.identify(connection)
+
+    expect(components.addressManager.addObservedAddr.called).to.be.false()
+  })
 })

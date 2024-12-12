@@ -33,6 +33,48 @@ describe('Connection Manager', () => {
     await stop(connectionManager, libp2p)
   })
 
+  it('should correctly parse and store allow and deny lists as IpNet objects in ConnectionManager', () => {
+    // Define common IPs and CIDRs for reuse
+    const ipAllowDeny = [
+      '/ip4/83.13.55.32', // Single IP address
+      '/ip4/83.13.55.32/ipcidr/32', // CIDR notation for a single IP
+      '/ip4/192.168.1.1/ipcidr/24' // CIDR notation for a network
+    ]
+
+    // Initialize mock input for the allow and deny lists
+    const mockInit = {
+      allow: [...ipAllowDeny],
+      deny: [...ipAllowDeny]
+    }
+
+    // Create an instance of the DefaultConnectionManager with the mock initialization
+    const connectionManager = new DefaultConnectionManager(components, mockInit)
+
+    // Define the expected IpNet objects that should result from parsing the allow and deny lists
+    const expectedIpNets = [
+      {
+        mask: new Uint8Array([255, 255, 255, 255]), // Netmask for a single IP address
+        network: new Uint8Array([83, 13, 55, 32]) // Network address for '83.13.55.32'
+      },
+      {
+        mask: new Uint8Array([255, 255, 255, 255]), // Netmask for a single IP address
+        network: new Uint8Array([83, 13, 55, 32]) // Network address for '83.13.55.32'
+      },
+      {
+        mask: new Uint8Array([255, 255, 255, 0]), // Netmask for a /24 CIDR block
+        network: new Uint8Array([192, 168, 1, 0]) // Network address for '192.168.1.0'
+      }
+    ]
+
+    // Test that the 'allow' list is correctly parsed and stored as IpNet objects
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    expect(connectionManager['allow']).to.deep.equal(expectedIpNets)
+
+    // Test that the 'deny' list is correctly parsed and stored as IpNet objects
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    expect(connectionManager['deny']).to.deep.equal(expectedIpNets)
+  })
+
   it('should fail if the connection manager has mismatched connection limit options', async () => {
     await expect(
       createLibp2p({
@@ -41,6 +83,17 @@ describe('Connection Manager', () => {
         }
       })
     ).to.eventually.rejected('maxConnections must be greater')
+  })
+
+  it('should return the max allowed connections', async () => {
+    const maxConnections = 10
+
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections
+    })
+
+    expect(connectionManager.getMaxConnections()).to.equal(maxConnections)
   })
 
   it('should reconnect to important peers on startup', async () => {
@@ -72,12 +125,59 @@ describe('Connection Manager', () => {
     expect(connectionManagerOpenConnectionSpy.getCall(0).args[0].toString()).to.equal(peerId.toString(), 'Attempted to connect to the wrong peer')
   })
 
-  it('should deny connections from denylist multiaddrs', async () => {
+  it('should deny connections from denylist multiaddrs (IPv4)', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
       deny: [
         '/ip4/83.13.55.32'
+      ]
+    })
+    await connectionManager.start()
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.false()
+  })
+
+  it('should allow connections from allowlist multiaddrs (IPv6)', async () => {
+    const remoteAddr = multiaddr('/ip6/2001:db8::1/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 1,
+      allow: [
+        '/ip6/2001:db8::1'
+      ]
+    })
+    await connectionManager.start()
+
+    sinon.stub(connectionManager.dialQueue, 'dial').resolves(stubInterface<Connection>({
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      status: 'open'
+    }))
+
+    // max out the connection limit
+    await connectionManager.openConnection(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
+    expect(connectionManager.getConnections()).to.have.lengthOf(1)
+
+    // an inbound connection is opened from an address in the allow list
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.true()
+  })
+
+  it('should deny connections from denylist multiaddrs (IPv6)', async () => {
+    const remoteAddr = multiaddr('/ip6/2001:db8::1/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      deny: [
+        '/ip6/2001:db8::1'
       ]
     })
     await connectionManager.start()
@@ -141,7 +241,7 @@ describe('Connection Manager', () => {
       .to.eventually.be.false()
   })
 
-  it('should allow connections from allowlist multiaddrs', async () => {
+  it('should allow connections from allowlist multiaddrs (IPv4)', async () => {
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
     connectionManager = new DefaultConnectionManager(components, {
       ...defaultOptions,
@@ -168,6 +268,80 @@ describe('Connection Manager', () => {
 
     await expect(connectionManager.acceptIncomingConnection(maConn))
       .to.eventually.be.true()
+  })
+
+  it('should allow connections from allowlist subnet (IPv4)', async () => {
+    const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 1,
+      allow: [
+        '/ip4/83.13.55.0/ipcidr/24' // Allow IPv4 subnet /24
+      ]
+    })
+    await connectionManager.start()
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.true()
+  })
+
+  it('should deny connections from denylist subnet (IPv4)', async () => {
+    const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      deny: [
+        '/ip4/83.13.55.0/ipcidr/24' // Deny IPv4 subnet /24
+      ]
+    })
+    await connectionManager.start()
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.false()
+  })
+
+  it('should allow connections from allowlist subnet (IPv6)', async () => {
+    const remoteAddr = multiaddr('/ip6/2001:db8::1/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 1,
+      allow: [
+        '/ip6/2001:db8::/ipcidr/64' // Allow an IPv6 subnet
+      ]
+    })
+    await connectionManager.start()
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.true()
+  })
+
+  it('should deny connections from denylist subnet (IPv6)', async () => {
+    const remoteAddr = multiaddr('/ip6/2001:db8::1/tcp/59283')
+    const connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      deny: [
+        '/ip6/2001:db8::/ipcidr/64' // Deny an IPv6 subnet
+      ]
+    })
+    await connectionManager.start()
+
+    const maConn = stubInterface<MultiaddrConnection>({
+      remoteAddr
+    })
+
+    await expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.eventually.be.false()
   })
 
   it('should limit the number of inbound pending connections', async () => {

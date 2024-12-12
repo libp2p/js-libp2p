@@ -42,13 +42,32 @@ describe('domain-mapper', () => {
     const ip4 = '81.12.12.9'
     const ip6 = '2001:4860:4860::8889'
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr(`/ip4/${ip4}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
-      multiaddr(`/ip6/${ip6}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/${ip4}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }, {
+      multiaddr: multiaddr(`/ip6/${ip6}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }])
 
     components.events.safeDispatchEvent('certificate:provision', {
       detail: {
@@ -65,17 +84,77 @@ describe('domain-mapper', () => {
     ])).to.be.true()
   })
 
+  it('should auto-confirm DNS mapping', async () => {
+    await stop(mapper)
+    mapper = new DomainMapper(components, {
+      domain: 'example.com',
+      autoConfirmAddress: true
+    })
+    await start(mapper)
+
+    const ip4 = '81.12.12.9'
+    const domain = '81-12-12-9.example.com'
+
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/${ip4}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }])
+
+    components.events.safeDispatchEvent('certificate:provision', {
+      detail: {
+        key: importFromPem(PRIVATE_KEY_PEM),
+        cert: CERT
+      }
+    })
+
+    expect(components.addressManager.addDNSMapping.calledWith(domain, [
+      ip4
+    ])).to.be.true()
+    expect(components.addressManager.confirmObservedAddr.calledWith(multiaddr(`/dns4/${domain}`))).to.be.true()
+  })
+
   it('should update domain mapping on self peer update', () => {
     const ip4v1 = '81.12.12.9'
     const ip6v1 = '2001:4860:4860::8889'
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr(`/ip4/${ip4v1}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
-      multiaddr(`/ip6/${ip6v1}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/${ip4v1}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }, {
+      multiaddr: multiaddr(`/ip6/${ip6v1}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }])
 
     components.events.safeDispatchEvent('certificate:provision', {
       detail: {
@@ -94,13 +173,32 @@ describe('domain-mapper', () => {
     const ip4v2 = '81.12.12.10'
     const ip6v2 = '2001:4860:4860::8890'
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr(`/ip4/${ip4v2}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
-      multiaddr(`/ip6/${ip6v2}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/${ip4v2}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }, {
+      multiaddr: multiaddr(`/ip6/${ip6v2}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }])
 
     components.events.safeDispatchEvent('self:peer:update', {
       detail: stubInterface<Peer>()
@@ -121,13 +219,32 @@ describe('domain-mapper', () => {
     const ip4 = '81.12.12.9'
     const ip6 = '2001:4860:4860::8889'
 
-    components.addressManager.getAddresses.returns([
-      multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
-      multiaddr(`/ip4/${ip4}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
-      multiaddr(`/ip6/${ip6}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`)
-    ])
+    components.addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/ip4/192.168.1.234/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr('/dns4/example.com/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
+      verified: true,
+      expires: Infinity,
+      type: 'transport'
+    }, {
+      multiaddr: multiaddr(`/ip4/${ip4}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }, {
+      multiaddr: multiaddr(`/ip6/${ip6}/tcp/1234/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN`),
+      verified: true,
+      expires: Infinity,
+      type: 'ip-mapping'
+    }])
 
     components.events.safeDispatchEvent('self:peer:update', {
       detail: stubInterface<Peer>()
