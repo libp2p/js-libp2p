@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.1...interface-v2.3.0) (2024-12-09)
+
+
+### Features
+
+* add auto-tls service ([#2798](https://github.com/libp2p/js-libp2p/issues/2798)) ([d866eb5](https://github.com/libp2p/js-libp2p/commit/d866eb5bb8269485364c233119331ca073ff1343))
+
 ## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.0...interface-v2.2.1) (2024-11-18)
 
 

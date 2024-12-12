@@ -64,6 +64,50 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.1...upnp-nat-v3.0.2) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.0...upnp-nat-v3.0.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* unhandled promise rejection when finding gateway ([#2884](https://github.com/libp2p/js-libp2p/issues/2884)) ([127abe2](https://github.com/libp2p/js-libp2p/commit/127abe24b567e462b5fb8809960201635bee2202))
+
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.12...upnp-nat-v3.0.0) (2024-12-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840))
+
+### Bug Fixes
+
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+* support IPv6 with IPv4 ([#2864](https://github.com/libp2p/js-libp2p/issues/2864)) ([406b391](https://github.com/libp2p/js-libp2p/commit/406b3916cac688cd98c02b61ee2e52a9cd041704))
+* use addresses with metadata to map ports ([#2878](https://github.com/libp2p/js-libp2p/issues/2878)) ([d51c21f](https://github.com/libp2p/js-libp2p/commit/d51c21f0b0e87d54841876a652fd9985dfafd030))
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840)) ([a82b07d](https://github.com/libp2p/js-libp2p/commit/a82b07d8c69640b6c72824a584b55bb7c30ca06e))
+
+
+### Dependencies
+
+* update nat-port-mapper to v3 ([#2843](https://github.com/libp2p/js-libp2p/issues/2843)) ([b02ea9b](https://github.com/libp2p/js-libp2p/commit/b02ea9b6edf1a6ef2e059ea8570ba57cc9052229))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
 ## [2.0.12](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.11...upnp-nat-v2.0.12) (2024-11-18)
 
 

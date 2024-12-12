@@ -17,6 +17,16 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.8](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.7...crypto-v5.0.8) (2024-12-09)
+
+
+### Dependencies
+
+* bump @stablelib/ed25519 in /packages/crypto/benchmark/ed25519 ([#2855](https://github.com/libp2p/js-libp2p/issues/2855)) ([86a646b](https://github.com/libp2p/js-libp2p/commit/86a646b7fb0efb1c09fdbd068dc9a78653553fcf))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+
 ## [5.0.7](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.6...crypto-v5.0.7) (2024-11-18)
 
 

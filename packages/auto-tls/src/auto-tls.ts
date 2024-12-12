@@ -354,8 +354,8 @@ export class AutoTLS implements AutoTLSInterface {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        value: keyAuthorization,
-        addresses
+        Value: keyAuthorization,
+        Addresses: addresses
       }),
       ...options
     })

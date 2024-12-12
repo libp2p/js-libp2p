@@ -75,6 +75,14 @@ export interface AutoNATServiceInit {
    * @default 80
    */
   connectionThreshold?: number
+
+  /**
+   * How large incoming autonat messages are allowed to be in bytes. If messages
+   * larger than this are received the stream will be reset.
+   *
+   * @default 8192
+   */
+  maxMessageSize?: number
 }
 
 export interface AutoNATComponents {
