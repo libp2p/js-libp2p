@@ -112,7 +112,7 @@ export interface AutoTLSInit {
    * How long asking the forge endpoint to answer a DNS challenge can take
    * before we retry
    *
-   * @default 10_000
+   * @default 60_000
    */
   provisionRequestTimeout?: number
 
