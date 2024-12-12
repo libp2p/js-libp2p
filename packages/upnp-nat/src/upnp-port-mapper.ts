@@ -202,7 +202,7 @@ export class UPnPPortMapper {
           this.log('created mapping of %s:%s to %s:%s for protocol %s', mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, transport)
 
           if (options?.autoConfirmAddress === true) {
-            const ma = multiaddr(`/ip${family}/${host}/${transport}/${port}`)
+            const ma = multiaddr(`/ip${isIPv4(mapping.externalHost) ? 4 : 6}/${mapping.externalHost}/${transport}/${mapping.externalPort}`)
             this.log('auto-confirming IP address %a', ma)
             this.addressManager.confirmObservedAddr(ma, {
               ttl: MAX_DATE - Date.now()
