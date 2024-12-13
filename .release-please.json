@@ -10,6 +10,7 @@
   ],
   "packages": {
     "packages/auto-tls": {},
+    "packages/config": {},
     "packages/connection-encrypter-plaintext": {},
     "packages/connection-encrypter-tls": {},
     "packages/crypto": {},
