@@ -64,6 +64,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.3](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.2...upnp-nat-v3.0.3) (2024-12-13)
+
+
+### Bug Fixes
+
+* confirm external ip ([#2895](https://github.com/libp2p/js-libp2p/issues/2895)) ([52f0f2f](https://github.com/libp2p/js-libp2p/commit/52f0f2f1324bb7316157c3bcdbbdb5f1b151e3ad))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.1...upnp-nat-v3.0.2) (2024-12-10)
 
 
