@@ -2,8 +2,9 @@ import { NotFoundError } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import merge from 'it-merge'
 import parallel from 'it-parallel'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { NoPeerRoutersError, QueriedForSelfError } from './errors.js'
-import type { Logger, PeerId, PeerInfo, PeerRouting, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { Logger, Metrics, PeerId, PeerInfo, PeerRouting, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export interface PeerRoutingInit {
@@ -14,6 +15,7 @@ export interface DefaultPeerRoutingComponents {
   peerId: PeerId
   peerStore: PeerStore
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export class DefaultPeerRouting implements PeerRouting {
@@ -27,6 +29,31 @@ export class DefaultPeerRouting implements PeerRouting {
     this.peerId = components.peerId
     this.peerStore = components.peerStore
     this.routers = init.routers ?? []
+
+    this.findPeer = components.metrics?.traceFunction('libp2p.peerRouting.findPeer', this.findPeer.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromArgs: ([peer], attrs) => {
+        return {
+          ...attrs,
+          peer: peer.toString()
+        }
+      }
+    }) ?? this.findPeer
+    this.getClosestPeers = components.metrics?.traceFunction('libp2p.peerRouting.getClosestPeers', this.getClosestPeers.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromArgs: ([key], attrs) => {
+        return {
+          ...attrs,
+          key: uint8ArrayToString(key, 'base36')
+        }
+      },
+      getAttributesFromYieldedValue: (value, attrs: { peers?: string[] }) => {
+        return {
+          ...attrs,
+          peers: [...(Array.isArray(attrs.peers) ? attrs.peers : []), value.id.toString()]
+        }
+      }
+    }) ?? this.getClosestPeers
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/peer-routing'
@@ -75,7 +102,7 @@ export class DefaultPeerRouting implements PeerRouting {
   /**
    * Attempt to find the closest peers on the network to the given key
    */
-  async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
+  async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<PeerInfo> {
     if (this.routers.length === 0) {
       throw new NoPeerRoutersError('No peer routers available')
     }

@@ -10,9 +10,8 @@ import { timeOperationMethod } from './utils.js'
 import type { OperationMetrics } from './kad-dht.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { RoutingTable } from './routing-table/index.js'
-import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
-
 export interface QuerySelfInit {
   logPrefix: string
   peerRouting: PeerRouting
@@ -28,6 +27,7 @@ export interface QuerySelfInit {
 export interface QuerySelfComponents {
   peerId: PeerId
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**

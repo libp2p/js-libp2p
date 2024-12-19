@@ -22,12 +22,13 @@ import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { ComponentLogger, Logger, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 
 export interface PeerRoutingComponents {
   peerId: PeerId
   peerStore: PeerStore
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export interface PeerRoutingInit {
@@ -55,6 +56,13 @@ export class PeerRouting {
     this.peerStore = components.peerStore
     this.peerId = components.peerId
     this.log = components.logger.forComponent(`${init.logPrefix}:peer-routing`)
+
+    this.findPeer = components.metrics?.traceFunction('libp2p.kadDHT.findPeer', this.findPeer.bind(this), {
+      optionsIndex: 1
+    }) ?? this.findPeer
+    this.getClosestPeers = components.metrics?.traceFunction('libp2p.kadDHT.getClosestPeers', this.getClosestPeers.bind(this), {
+      optionsIndex: 1
+    }) ?? this.getClosestPeers
   }
 
   /**

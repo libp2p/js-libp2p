@@ -754,12 +754,21 @@ export interface LoggerOptions {
 }
 
 /**
+ * An object that includes a context object that is passed onwards.
+ *
+ * This is used by metrics method tracing to link function calls together.
+ */
+export interface ContextOptions {
+  context?: any
+}
+
+/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,
  * these options allow tuning that behaviour.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, ContextOptions {
   /**
    * Pass `false` to not use the network
    *

@@ -121,6 +121,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
       try {
         for await (const event of query({
+          ...options,
           key,
           peer,
           signal: compoundSignal,

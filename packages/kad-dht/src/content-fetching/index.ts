@@ -55,6 +55,13 @@ export class ContentFetching {
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.network = network
+
+    this.get = components.metrics?.traceFunction('libp2p.kadDHT.get', this.get.bind(this), {
+      optionsIndex: 1
+    }) ?? this.get
+    this.put = components.metrics?.traceFunction('libp2p.kadDHT.put', this.put.bind(this), {
+      optionsIndex: 2
+    }) ?? this.put
   }
 
   /**
@@ -145,7 +152,10 @@ export class ContentFetching {
 
     // put record to the closest peers
     yield * pipe(
-      this.peerRouting.getClosestPeers(key, { signal: options.signal }),
+      this.peerRouting.getClosestPeers(key, {
+        ...options,
+        signal: options.signal
+      }),
       (source) => map(source, (event) => {
         return async () => {
           if (event.name !== 'FINAL_PEER') {
@@ -252,7 +262,10 @@ export class ContentFetching {
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal }) {
-      for await (const event of self.peerRouting.getValueOrPeers(peer, key, { signal })) {
+      for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
+        ...options,
+        signal
+      })) {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {

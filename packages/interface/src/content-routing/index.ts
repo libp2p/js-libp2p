@@ -1,4 +1,4 @@
-import type { AbortOptions, RoutingOptions } from '../index.js'
+import type { RoutingOptions } from '../index.js'
 import type { PeerInfo } from '../peer-info/index.js'
 import type { CID } from 'multiformats/cid'
 
@@ -50,7 +50,7 @@ export interface ContentRouting {
    * provide content corresponding to the passed CID, call this function to no
    * longer remind them.
    */
-  cancelReprovide (key: CID, options?: AbortOptions): Promise<void>
+  cancelReprovide (key: CID, options?: RoutingOptions): Promise<void>
 
   /**
    * Find the providers of the passed CID.
