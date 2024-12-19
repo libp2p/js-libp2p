@@ -488,4 +488,61 @@ export interface Metrics {
    * method on the returned summary group object
    */
   registerSummaryGroup: ((name: string, options?: SummaryOptions) => SummaryGroup) & ((name: string, options: CalculatedSummaryOptions<Record<string, number>>) => void)
+
+  /**
+   * Wrap a function for tracing purposes.
+   *
+   * All functions wrapped like this should accept a final optional options arg.
+   *
+   * In order to pass an execution context along to create a multi-layered
+   * trace, the index of the options arg must be specified.
+   */
+  traceFunction <F extends (...args: any[]) => AsyncIterator<any>> (name: string, fn: F, options?: TraceGeneratorFunctionOptions<Parameters<F>, ReturnType<F>, YieldType<ReturnType<F>>>): F
+  traceFunction <F extends (...args: any[]) => Iterator<any>> (name: string, fn: F, options?: TraceGeneratorFunctionOptions<Parameters<F>, ReturnType<F>, YieldType<ReturnType<F>>>): F
+  traceFunction <F extends (...args: any[]) => any = (...args: any[]) => any> (name: string, fn: F, options?: TraceFunctionOptions<Parameters<F>, ReturnType<F>>): F
+
+  /**
+   * Creates a tracing context that can be used to trace a method call
+   */
+  createTraceContext(): any
+}
+
+/**
+ * Infer the yielded type of an (async)iterable
+ */
+type YieldType<T extends AsyncIterator<any> | Iterator<any>> = T extends AsyncIterator<infer Y> ? Y : T extends Iterator<infer Y, any, any> ? Y : never
+
+export type TraceAttributes = Record<string, number | string | boolean | number[] | string[] | boolean[]>
+
+export interface TraceFunctionOptions<A, B> {
+  /**
+   * To construct a trace that spans multiple method invocations, it's necessary
+   * to pass the trace context onwards as part of the options object.
+   *
+   * Specify the index of the options object in the args array here.
+   *
+   * @default 0
+   */
+  optionsIndex?: number
+
+  /**
+   * Set attributes on the trace by modifying the passed attributes object.
+   */
+  getAttributesFromArgs?(args: A, attributes: TraceAttributes): TraceAttributes
+
+  /**
+   * Set attributes on the trace by modifying the passed attributes object. The
+   * object will have previously been passed to `appendAttributesFromArgs`
+   * and/or `appendAttributesFromYieldedValue` (if defined)
+   */
+  getAttributesFromReturnValue?(value: B, attributes: TraceAttributes): TraceAttributes
+}
+
+export interface TraceGeneratorFunctionOptions<A, B, C = any> extends TraceFunctionOptions<A, B> {
+  /**
+   * Set attributes on the trace by modifying the passed attributes object. The
+   * object will have previously been passed to `appendAttributesFromArgs` (if
+   * defined)
+   */
+  getAttributesFromYieldedValue? (value: C, attributes: TraceAttributes, index: number): TraceAttributes
 }

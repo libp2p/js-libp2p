@@ -490,6 +490,15 @@ class PrometheusMetrics implements Metrics {
       return metricGroup
     }
   }
+
+  createTraceContext (): any {
+    // no-op
+  }
+
+  traceFunction <T extends (...args: any[]) => any> (name: string, fn: T): T {
+    // no-op
+    return fn
+  }
 }
 
 export function prometheusMetrics (init?: Partial<PrometheusMetricsInit>): (components: PrometheusMetricsComponents) => Metrics {

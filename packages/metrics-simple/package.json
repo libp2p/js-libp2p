@@ -59,5 +59,6 @@
     "@types/tdigest": "^0.1.4",
     "aegir": "^45.0.5",
     "p-defer": "^4.0.1"
-  }
+  },
+  "sideEffects": false
 }

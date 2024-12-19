@@ -57,6 +57,61 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_requests_total`),
       errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_errors_total`)
     }
+
+    this.sendRequest = components.metrics?.traceFunction('libp2p.kadDHT.sendRequest', this.sendRequest.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs ([to, message], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          'message type': `${message.type}`
+        }
+      },
+      getAttributesFromYieldedValue: (event, attrs) => {
+        if (event.name === 'PEER_RESPONSE') {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value, index) => {
+              attrs[`providers-${index}`] = value.id.toString()
+            })
+          }
+
+          if (event.closer.length > 0) {
+            event.closer.forEach((value, index) => {
+              attrs[`closer-${index}`] = value.id.toString()
+            })
+          }
+        }
+
+        return attrs
+      }
+    }) ?? this.sendRequest
+    this.sendMessage = components.metrics?.traceFunction('libp2p.kadDHT.sendMessage', this.sendMessage.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs ([to, message], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          'message type': `${message.type}`
+        }
+      },
+      getAttributesFromYieldedValue: (event, attrs) => {
+        if (event.name === 'PEER_RESPONSE') {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value, index) => {
+              attrs[`providers-${index}`] = value.id.toString()
+            })
+          }
+
+          if (event.closer.length > 0) {
+            event.closer.forEach((value, index) => {
+              attrs[`closer-${index}`] = value.id.toString()
+            })
+          }
+        }
+
+        return attrs
+      }
+    }) ?? this.sendMessage
   }
 
   /**

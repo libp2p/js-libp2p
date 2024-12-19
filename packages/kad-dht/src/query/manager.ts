@@ -171,6 +171,7 @@ export class QueryManager implements Startable {
       // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
         return queryPath({
+          ...options,
           key,
           startingPeer: peer,
           ourPeerId: this.peerId,
