@@ -13,7 +13,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > [!NOTE]
-> Are you tring to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
+> Are you trying to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
 
 ### Project status
 
@@ -24,7 +24,7 @@ The documentation in the main branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [npm](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
 > [!TIP]
-> Just tring to figure out what this is all about? Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
+> Just trying to figure out what this is all about? Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
 
 ## Background
 
@@ -85,7 +85,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/keychain`](https://github.com/libp2p/js-libp2p/tree/main/packages/keychain) Key management and cryptographically protected messages
 - [`/packages/libp2p`](https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p) JavaScript implementation of libp2p, a modular peer to peer network stack
 - [`/packages/logger`](https://github.com/libp2p/js-libp2p/tree/main/packages/logger) A logging component for use in js-libp2p modules
-- [`/packages/metrics-prometheus`](https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-prometheus) Collect libp2p metrics for scraping by Prometheus or Graphana
+- [`/packages/metrics-prometheus`](https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-prometheus) Collect libp2p metrics for scraping by Prometheus or Grafana
 - [`/packages/multistream-select`](https://github.com/libp2p/js-libp2p/tree/main/packages/multistream-select) JavaScript implementation of multistream-select
 - [`/packages/peer-collections`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections) Stores values against a peer id
 - [`/packages/peer-discovery-bootstrap`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
@@ -121,7 +121,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 #### Run unit tests
 
 ```sh
-# run all the unit tsts
+# run all the unit tests
 > npm test
 
 # run just Node.js tests
