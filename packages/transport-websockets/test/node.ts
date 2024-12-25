@@ -9,13 +9,15 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
+import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
-import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
+import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate, PeerDiscoveryEvents, PeerDiscovery, Startable } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('instantiate the transport', () => {
@@ -744,5 +746,47 @@ describe('auto-tls (IPv6)', () => {
 
     expect(wsOptions.host).to.equal(wssOptions.host)
     expect(wsOptions.port).to.equal(wssOptions.port)
+  })
+})
+
+class TestPeerDiscovery extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDiscovery, Startable {
+  private readonly addressManager: AddressManager
+
+  constructor (components: {
+    addressManager: AddressManager
+  }) {
+    super()
+    this.addressManager = components.addressManager
+  }
+
+  async start (): Promise<void> {
+  }
+
+  async stop (): Promise<void> { }
+
+  afterStart (): void {
+    this.addressManager.getAddresses()
+  }
+
+  readonly [Symbol.toStringTag] = '@libp2p/test-peer-discovery'
+}
+
+describe('discovery-websockets', () => {
+  it('should discover peers over websockets', async () => {
+    const libp2p = await createLibp2p({
+      addresses: {
+        listen: [
+          '/ip4/0.0.0.0/tcp/0/ws'
+        ]
+      },
+      peerDiscovery: [(component: {
+        addressManager: AddressManager
+      }) => new TestPeerDiscovery(component)],
+      transports: [
+        webSockets()
+      ]
+    })
+
+    await libp2p.start()
   })
 })
