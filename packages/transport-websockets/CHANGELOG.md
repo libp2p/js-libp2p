@@ -70,6 +70,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.1.1](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.0...websockets-v9.1.1) (2025-01-06)
+
+
+### Bug Fixes
+
+* return empty address list during listen operation ([#2904](https://github.com/libp2p/js-libp2p/issues/2904)) ([ae75570](https://github.com/libp2p/js-libp2p/commit/ae75570c852fa9bfe00910dca1c219fa585dcb83)), closes [#2902](https://github.com/libp2p/js-libp2p/issues/2902)
+
 ## [9.1.0](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.13...websockets-v9.1.0) (2024-12-09)
 
 

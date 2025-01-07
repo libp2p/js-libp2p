@@ -341,18 +341,18 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   }
 
   getAddrs (): Multiaddr[] {
+    if (this.listeningMultiaddr == null) {
+      throw new Error('Listener is not ready yet')
+    }
+
     const address = this.server.address()
 
     if (address == null) {
-      throw new Error('Listener is not ready yet')
+      return []
     }
 
     if (typeof address === 'string') {
       throw new Error('Wrong address type received - expected AddressInfo, got string - are you trying to listen on a unix socket?')
-    }
-
-    if (this.listeningMultiaddr == null) {
-      throw new Error('Listener is not ready yet')
     }
 
     const options = this.listeningMultiaddr.toOptions()
