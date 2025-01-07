@@ -1,0 +1,18 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+, "../../otel-test.js"  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../logger"
+    }
+  ]
+}
