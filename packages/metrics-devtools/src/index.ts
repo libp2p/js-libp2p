@@ -239,6 +239,14 @@ class DevToolsMetrics implements Metrics, Startable {
     return this.simpleMetrics.registerSummaryGroup(name, options)
   }
 
+  createTrace (): any {
+    return this.simpleMetrics.createTrace()
+  }
+
+  traceFunction <T extends (...args: any[]) => any> (name: string, fn: T, options?: any): T {
+    return this.simpleMetrics.traceFunction(name, fn, options)
+  }
+
   async start (): Promise<void> {
     // send peer updates
     this.components.events.addEventListener('peer:connect', this.onPeersUpdate)
