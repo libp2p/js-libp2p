@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.3.0...interface-v2.4.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
 ## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.1...interface-v2.3.0) (2024-12-09)
 
 

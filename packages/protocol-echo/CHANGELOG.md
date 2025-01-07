@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.6](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.5...echo-v2.1.6) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+
 ## [2.1.5](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.4...echo-v2.1.5) (2024-12-10)
 
 

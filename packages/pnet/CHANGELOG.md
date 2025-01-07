@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.16...pnet-v2.0.17) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.2 to ^6.2.3
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
 ## [2.0.16](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.15...pnet-v2.0.16) (2024-12-12)
 
 
