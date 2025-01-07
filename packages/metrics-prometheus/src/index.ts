@@ -491,7 +491,7 @@ class PrometheusMetrics implements Metrics {
     }
   }
 
-  createTraceContext (): any {
+  createTrace (): any {
     // no-op
   }
 

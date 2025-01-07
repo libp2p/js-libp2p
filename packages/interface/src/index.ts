@@ -754,12 +754,12 @@ export interface LoggerOptions {
 }
 
 /**
- * An object that includes a context object that is passed onwards.
+ * An object that includes a trace object that is passed onwards.
  *
  * This is used by metrics method tracing to link function calls together.
  */
-export interface ContextOptions {
-  context?: any
+export interface TraceOptions {
+  trace?: any
 }
 
 /**
@@ -768,7 +768,7 @@ export interface ContextOptions {
  * local caches but may not use the network if a valid local value is found,
  * these options allow tuning that behaviour.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions, ContextOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**
    * Pass `false` to not use the network
    *

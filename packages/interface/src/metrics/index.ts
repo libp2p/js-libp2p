@@ -504,7 +504,7 @@ export interface Metrics {
   /**
    * Creates a tracing context that can be used to trace a method call
    */
-  createTraceContext(): any
+  createTrace(): any
 }
 
 /**

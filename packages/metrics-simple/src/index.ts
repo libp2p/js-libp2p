@@ -552,7 +552,7 @@ class SimpleMetrics implements Metrics, Startable {
     return metric
   }
 
-  createTraceContext (): any {
+  createTrace (): any {
     // no-op
   }
 

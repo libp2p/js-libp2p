@@ -239,8 +239,8 @@ class DevToolsMetrics implements Metrics, Startable {
     return this.simpleMetrics.registerSummaryGroup(name, options)
   }
 
-  createTraceContext (): any {
-    return this.simpleMetrics.createTraceContext()
+  createTrace (): any {
+    return this.simpleMetrics.createTrace()
   }
 
   traceFunction <T extends (...args: any[]) => any> (name: string, fn: T, options?: any): T {
