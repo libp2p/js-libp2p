@@ -41,11 +41,12 @@ const libp2p = await createLibp2p({
   }
 })
 
-// Given a key (as a string) returns a value (as a Uint8Array), or undefined
-// if the key isn't found.
+// Given a key (as a Uint8Array) returns a value (as a Uint8Array), or
+// undefined if the key isn't found.
+//
 // All keys must be prefixed by the same prefix, which will be used to find
 // the appropriate key lookup function.
-async function my_subsystem_key_lookup (key: string): Promise<Uint8Array | undefined> {
+async function my_subsystem_key_lookup (key: Uint8Array): Promise<Uint8Array | undefined> {
   // app specific callback to lookup key-value pairs.
   return Uint8Array.from([0, 1, 2, 3, 4])
 }

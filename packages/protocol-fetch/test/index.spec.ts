@@ -9,6 +9,8 @@ import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { Fetch } from '../src/fetch.js'
 import { FetchRequest, FetchResponse } from '../src/pb/proto.js'
 import type { ComponentLogger, Connection, Stream, PeerId } from '@libp2p/interface'
@@ -89,7 +91,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.OK,
@@ -112,7 +114,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.NOT_FOUND
@@ -134,7 +136,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.ERROR
@@ -177,7 +179,7 @@ describe('fetch', () => {
       } = createStreams(components)
 
       fetch.registerLookupFunction('/test', async (k) => {
-        expect(k).to.equal(key)
+        expect(k).to.equalBytes(uint8arrayFromString(key))
         return value
       })
 
@@ -189,7 +191,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -218,7 +220,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -242,7 +244,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
