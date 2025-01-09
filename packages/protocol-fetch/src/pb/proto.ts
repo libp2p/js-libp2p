@@ -9,7 +9,7 @@ import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface FetchRequest {
-  identifier: string
+  identifier: Uint8Array
 }
 
 export namespace FetchRequest {
@@ -22,9 +22,9 @@ export namespace FetchRequest {
           w.fork()
         }
 
-        if ((obj.identifier != null && obj.identifier !== '')) {
+        if ((obj.identifier != null && obj.identifier.byteLength > 0)) {
           w.uint32(10)
-          w.string(obj.identifier)
+          w.bytes(obj.identifier)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -32,7 +32,7 @@ export namespace FetchRequest {
         }
       }, (reader, length, opts = {}) => {
         const obj: any = {
-          identifier: ''
+          identifier: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -42,7 +42,7 @@ export namespace FetchRequest {
 
           switch (tag >>> 3) {
             case 1: {
-              obj.identifier = reader.string()
+              obj.identifier = reader.bytes()
               break
             }
             default: {
