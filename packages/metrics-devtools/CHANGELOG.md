@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.12...devtools-metrics-v1.2.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/simple-metrics bumped from ^1.2.8 to ^1.3.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+
 ## [1.1.12](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.1.11...devtools-metrics-v1.1.12) (2024-12-10)
 
 

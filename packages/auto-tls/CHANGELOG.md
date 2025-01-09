@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.3](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.2...auto-tls-v1.0.3) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/keychain bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
 ## [1.0.2](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.1...auto-tls-v1.0.2) (2024-12-12)
 
 

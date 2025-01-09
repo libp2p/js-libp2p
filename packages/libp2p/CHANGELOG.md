@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.5.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.2...libp2p-v2.5.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/multistream-select bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/peer-collections bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/peer-store bumped from ^11.0.13 to ^11.0.14
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+
 ## [2.4.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.1...libp2p-v2.4.2) (2024-12-12)
 
 
