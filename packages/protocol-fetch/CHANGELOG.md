@@ -48,6 +48,17 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.15...fetch-v3.0.0) (2025-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* registered lookup functions now receive a Uint8Array identifier instead of a string
+
+### Bug Fixes
+
+* accept Uint8Arrays as keys ([#2909](https://github.com/libp2p/js-libp2p/issues/2909)) ([b56d918](https://github.com/libp2p/js-libp2p/commit/b56d918848b22febde02171e90d2d04eb07203a4))
+
 ## [2.0.15](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.14...fetch-v2.0.15) (2025-01-07)
 
 
