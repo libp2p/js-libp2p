@@ -2,7 +2,7 @@
  * @packageDocumentation
  *
  * When a publicly dialable address is detected, use the p2p-forge service at
- * https://registration.libp2p.direct to acquire a valid Let's Encrypted-backed
+ * https://registration.libp2p.direct to acquire a valid Let's Encrypt-backed
  * TLS certificate, which the node can then use with the relevant transports.
  *
  * The node must be configured with a listener for at least one of the following
