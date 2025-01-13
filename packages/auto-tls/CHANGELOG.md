@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.3...auto-tls-v1.0.4) (2025-01-13)
+
+
+### Bug Fixes
+
+* access components via property ([#2912](https://github.com/libp2p/js-libp2p/issues/2912)) ([c90984e](https://github.com/libp2p/js-libp2p/commit/c90984ec77b7184efa66b8b37d7e0913f1c207ce))
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.2...auto-tls-v1.0.3) (2025-01-07)
 
 
