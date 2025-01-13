@@ -98,6 +98,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.16](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.15...floodsub-v10.1.16) (2025-01-13)
+
+
+### Bug Fixes
+
+* add missing service capabilities ([#2911](https://github.com/libp2p/js-libp2p/issues/2911)) ([fe8af37](https://github.com/libp2p/js-libp2p/commit/fe8af37a16c2657d6d150b2d791d638118711011))
+
 ## [10.1.15](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.14...floodsub-v10.1.15) (2025-01-07)
 
 
