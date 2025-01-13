@@ -84,6 +84,8 @@ export class AutoTLS implements AutoTLSInterface {
     })
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/auto-tls'
+
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/auto-tls'
   ]
