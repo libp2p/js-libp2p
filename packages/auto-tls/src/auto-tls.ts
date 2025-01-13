@@ -14,12 +14,9 @@ import { DEFAULT_ACCOUNT_PRIVATE_KEY_BITS, DEFAULT_ACCOUNT_PRIVATE_KEY_NAME, DEF
 import { DomainMapper } from './domain-mapper.js'
 import { createCsr, importFromPem, loadOrCreateKey, supportedAddressesFilter } from './utils.js'
 import type { AutoTLSComponents, AutoTLSInit, AutoTLS as AutoTLSInterface } from './index.js'
-import type { PeerId, PrivateKey, Logger, TypedEventTarget, Libp2pEvents, AbortOptions } from '@libp2p/interface'
-import type { AddressManager } from '@libp2p/interface-internal'
-import type { Keychain } from '@libp2p/keychain'
+import type { Logger, AbortOptions } from '@libp2p/interface'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Datastore } from 'interface-datastore'
 
 const RETRY_DELAY = 5_000
 
@@ -33,12 +30,7 @@ interface Certificate {
 
 export class AutoTLS implements AutoTLSInterface {
   private readonly log: Logger
-  private readonly addressManager: AddressManager
-  private readonly keychain: Keychain
-  private readonly datastore: Datastore
-  private readonly privateKey: PrivateKey
-  private readonly peerId: PeerId
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly components: AutoTLSComponents
   private readonly forgeEndpoint: URL
   private readonly forgeDomain: string
   private readonly acmeDirectory: URL
@@ -64,12 +56,7 @@ export class AutoTLS implements AutoTLSInterface {
 
   constructor (components: AutoTLSComponents, init: AutoTLSInit = {}) {
     this.log = components.logger.forComponent('libp2p:auto-tls')
-    this.addressManager = components.addressManager
-    this.privateKey = components.privateKey
-    this.peerId = components.peerId
-    this.events = components.events
-    this.keychain = components.keychain
-    this.datastore = components.datastore
+    this.components = components
     this.forgeEndpoint = new URL(init.forgeEndpoint ?? DEFAULT_FORGE_ENDPOINT)
     this.forgeDomain = init.forgeDomain ?? DEFAULT_FORGE_DOMAIN
     this.acmeDirectory = new URL(init.acmeDirectory ?? DEFAULT_ACME_DIRECTORY)
@@ -82,12 +69,12 @@ export class AutoTLS implements AutoTLSInterface {
     this.certificatePrivateKeyBits = init.certificatePrivateKeyBits ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_BITS
     this.certificateDatastoreKey = init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY
     this.autoConfirmAddress = init.autoConfirmAddress ?? DEFAULT_AUTO_CONFIRM_ADDRESS
-    this.clientAuth = new ClientAuth(this.privateKey)
+    this.clientAuth = new ClientAuth(this.components.privateKey)
     this.started = false
     this.fetching = false
     this.onSelfPeerUpdate = debounce(this._onSelfPeerUpdate.bind(this), init.provisionDelay ?? DEFAULT_PROVISION_DELAY)
 
-    const base36EncodedPeer = base36.encode(this.peerId.toCID().bytes)
+    const base36EncodedPeer = base36.encode(this.components.peerId.toCID().bytes)
     this.domain = `${base36EncodedPeer}.${this.forgeDomain}`
     this.email = `${base36EncodedPeer}@${this.forgeDomain}`
 
@@ -120,14 +107,14 @@ export class AutoTLS implements AutoTLSInterface {
     }
 
     await start(this.domainMapper)
-    this.events.addEventListener('self:peer:update', this.onSelfPeerUpdate)
+    this.components.events.addEventListener('self:peer:update', this.onSelfPeerUpdate)
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
     this.started = true
   }
 
   async stop (): Promise<void> {
-    this.events.removeEventListener('self:peer:update', this.onSelfPeerUpdate)
+    this.components.events.removeEventListener('self:peer:update', this.onSelfPeerUpdate)
     this.shutdownController?.abort()
     clearTimeout(this.renewTimeout)
     await stop(this.onSelfPeerUpdate, this.domainMapper)
@@ -135,7 +122,7 @@ export class AutoTLS implements AutoTLSInterface {
   }
 
   private _onSelfPeerUpdate (): void {
-    const addresses = this.addressManager.getAddresses()
+    const addresses = this.components.addressManager.getAddresses()
       .filter(supportedAddressesFilter)
 
     if (addresses.length === 0) {
@@ -187,7 +174,7 @@ export class AutoTLS implements AutoTLSInterface {
   private async fetchCertificate (multiaddrs: Multiaddr[], options?: AbortOptions): Promise<void> {
     this.log('fetching certificate')
 
-    const certificatePrivateKey = await loadOrCreateKey(this.keychain, this.certificatePrivateKeyName, this.certificatePrivateKeyBits)
+    const certificatePrivateKey = await loadOrCreateKey(this.components.keychain, this.certificatePrivateKeyName, this.certificatePrivateKeyBits)
     const { pem, cert } = await this.loadOrCreateCertificate(certificatePrivateKey, multiaddrs, options)
 
     let event: CertificateEvent = 'certificate:provision'
@@ -221,7 +208,7 @@ export class AutoTLS implements AutoTLSInterface {
 
     // emit a certificate event
     this.log('dispatching %s', event)
-    this.events.safeDispatchEvent(event, {
+    this.components.events.safeDispatchEvent(event, {
       detail: {
         ...this.certificate
       }
@@ -247,7 +234,7 @@ export class AutoTLS implements AutoTLSInterface {
     const cert = new X509Certificate(pem)
 
     // cache cert
-    await this.datastore.put(new Key(this.certificateDatastoreKey), uint8ArrayFromString(pem))
+    await this.components.datastore.put(new Key(this.certificateDatastoreKey), uint8ArrayFromString(pem))
 
     return {
       pem,
@@ -260,7 +247,7 @@ export class AutoTLS implements AutoTLSInterface {
 
     try {
       this.log.trace('try to load existing certificate')
-      const buf = await this.datastore.get(key)
+      const buf = await this.components.datastore.get(key)
       const pem = uint8ArrayToString(buf)
       const cert = new X509Certificate(pem)
 
@@ -297,7 +284,7 @@ export class AutoTLS implements AutoTLSInterface {
   async fetchAcmeCertificate (csr: string, multiaddrs: Multiaddr[], options?: AbortOptions): Promise<string> {
     const client = new acme.Client({
       directoryUrl: this.acmeDirectory.toString(),
-      accountKey: await loadOrCreateKey(this.keychain, this.accountPrivateKeyName, this.accountPrivateKeyBits)
+      accountKey: await loadOrCreateKey(this.components.keychain, this.accountPrivateKeyName, this.accountPrivateKeyBits)
     })
 
     return client.auto({
