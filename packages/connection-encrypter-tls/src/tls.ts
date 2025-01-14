@@ -11,7 +11,7 @@
  *
  * const node = await createLibp2p({
  *   // ...other options
- *   connectionEncryption: [
+ *   connectionEncrypters: [
  *     tls()
  *   ]
  * })
@@ -19,22 +19,23 @@
  */
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
-import { CodeError, serviceCapabilities } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
+import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
-import type { TLSComponents, TLSInit } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PeerId, Logger } from '@libp2p/interface'
+import type { TLSComponents } from './index.js'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, PrivateKey } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
   private readonly log: Logger
-  private readonly timeout: number
+  private readonly privateKey: PrivateKey
 
-  constructor (components: TLSComponents, init: TLSInit = {}) {
+  constructor (components: TLSComponents) {
     this.log = components.logger.forComponent('libp2p:tls')
-    this.timeout = init.timeout ?? 1000
+    this.privateKey = components.privateKey
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/tls'
@@ -43,20 +44,20 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, true, remoteId)
+  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(conn, true, options)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(localId, conn, false, remoteId)
+  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    return this._encrypt(conn, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (localId: PeerId, conn: Stream, isServer: boolean, remoteId?: PeerId): Promise<SecuredConnection<Stream>> {
+  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     const opts: TLSSocketOptions = {
-      ...await generateCertificate(localId),
+      ...await generateCertificate(this.privateKey),
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',
@@ -80,15 +81,17 @@ export class TLS implements ConnectionEncrypter {
       })
     }
 
-    return new Promise((resolve, reject) => {
-      const abortTimeout = setTimeout(() => {
-        socket.destroy(new CodeError('Handshake timeout', 'ERR_HANDSHAKE_TIMEOUT'))
-      }, this.timeout)
+    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
+      options?.signal?.addEventListener('abort', () => {
+        const err = new HandshakeTimeoutError()
+        socket.destroy(err)
+        reject(err)
+      })
 
       const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
-        verifyPeerCertificate(remote.raw, remoteId, this.log)
+        verifyPeerCertificate(remote.raw, options?.remotePeer, this.log)
           .then(remotePeer => {
             this.log('remote certificate ok, remote peer %p', remotePeer)
 
@@ -100,22 +103,22 @@ export class TLS implements ConnectionEncrypter {
               }
             })
           })
-          .catch(err => {
+          .catch((err: Error) => {
             reject(err)
-          })
-          .finally(() => {
-            clearTimeout(abortTimeout)
           })
       }
 
-      socket.on('error', err => {
+      socket.on('error', (err: Error) => {
         reject(err)
-        clearTimeout(abortTimeout)
       })
-      socket.once('secure', (evt) => {
+      socket.once('secure', () => {
         this.log('verifying remote certificate')
         verifyRemote()
       })
     })
+      .catch(err => {
+        socket.destroy(err)
+        throw err
+      })
   }
 }

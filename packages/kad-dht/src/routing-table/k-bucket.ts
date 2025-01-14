@@ -1,45 +1,49 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { PeerMap } from '@libp2p/peer-collections'
 import map from 'it-map'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
-import { KBUCKET_SIZE } from './index.js'
+import { PeerDistanceList } from '../peer-distance-list.js'
+import { convertPeerId } from '../utils.js'
+import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.js'
 import type { PeerId } from '@libp2p/interface'
+import type { AbortOptions } from 'it-protobuf-stream'
 
-function arrayEquals (array1: Uint8Array, array2: Uint8Array): boolean {
-  if (array1 === array2) {
-    return true
-  }
-  if (array1.length !== array2.length) {
-    return false
-  }
-  for (let i = 0, length = array1.length; i < length; ++i) {
-    if (array1[i] !== array2[i]) {
-      return false
-    }
-  }
-  return true
+export interface PingFunction {
+  /**
+   * Return either none or at least one contact that does not respond to a ping
+   * message
+   */
+  (oldContacts: Peer[], options?: AbortOptions): AsyncGenerator<Peer>
 }
 
-function ensureInt8 (name: string, val?: Uint8Array): void {
-  if (!(val instanceof Uint8Array)) {
-    throw new TypeError(name + ' is not a Uint8Array')
-  }
-
-  if (val.byteLength !== 32) {
-    throw new TypeError(name + ' had incorrect length')
-  }
+/**
+ * Before a peer can be added to the table, verify that it is online and working
+ * correctly
+ */
+export interface VerifyFunction {
+  (contact: Peer, options?: AbortOptions): Promise<boolean>
 }
 
-export interface PingEventDetails {
-  oldContacts: Peer[]
-  newContact: Peer
+export interface OnAddCallback {
+  /**
+   * Invoked when a new peer is added to the routing tables
+   */
+  (peer: Peer, bucket: LeafBucket): Promise<void>
 }
 
-export interface KBucketEvents {
-  'ping': CustomEvent<PingEventDetails>
-  'added': CustomEvent<Peer>
-  'removed': CustomEvent<Peer>
+export interface OnRemoveCallback {
+  /**
+   * Invoked when a peer is evicted from the routing tables
+   */
+  (peer: Peer, bucket: LeafBucket): Promise<void>
+}
+
+export interface OnMoveCallback {
+  /**
+   * Invoked when a peer is moved between buckets in the routing tables
+   */
+  (peer: Peer, oldBucket: LeafBucket, newBucket: LeafBucket): Promise<void>
 }
 
 export interface KBucketOptions {
@@ -47,14 +51,16 @@ export interface KBucketOptions {
    * The current peer. All subsequently added peers must have a KadID that is
    * the same length as this peer.
    */
-  localPeer: Peer
+  // localPeer: Peer
 
   /**
    * How many bits of the key to use when forming the bucket trie. The larger
    * this value, the deeper the tree will grow and the slower the lookups will
    * be but the peers returned will be more specific to the key.
+   *
+   * @default 8
    */
-  prefixLength: number
+  prefixLength?: number
 
   /**
    * The number of nodes that a max-depth k-bucket can contain before being
@@ -74,15 +80,30 @@ export interface KBucketOptions {
 
   /**
    * The number of nodes to ping when a bucket that should not be split becomes
-   * full. KBucket will emit a `ping` event that contains `numberOfNodesToPing`
-   * nodes that have not been contacted the longest.
+   * full. KBucket will emit a `ping` event that contains
+   * `numberOfOldContactsToPing` nodes that have not been contacted the longest.
+   *
+   * @default 3
    */
-  numberOfNodesToPing?: number
+  numberOfOldContactsToPing?: number
+
+  /**
+   * Do not re-ping a peer during this time window in ms
+   *
+   * @default 600000
+   */
+  lastPingThreshold?: number
+
+  ping: PingFunction
+  verify: VerifyFunction
+  onAdd?: OnAddCallback
+  onRemove?: OnRemoveCallback
 }
 
 export interface Peer {
   kadId: Uint8Array
   peerId: PeerId
+  lastPing: number
 }
 
 export interface LeafBucket {
@@ -108,24 +129,32 @@ export function isLeafBucket (obj: any): obj is LeafBucket {
  * Implementation of a Kademlia DHT routing table as a prefix binary trie with
  * configurable prefix length, bucket split threshold and size.
  */
-export class KBucket extends TypedEventEmitter<KBucketEvents> {
+export class KBucket {
   public root: Bucket
-  public localPeer: Peer
+  public localPeer?: Peer
   private readonly prefixLength: number
   private readonly splitThreshold: number
   private readonly kBucketSize: number
   private readonly numberOfNodesToPing: number
+  private readonly lastPingThreshold: number
+  public ping: PingFunction
+  public verify: VerifyFunction
+  private readonly onAdd?: OnAddCallback
+  private readonly onRemove?: OnRemoveCallback
+  private readonly onMove?: OnMoveCallback
+  private readonly addingPeerMap: PeerMap<Promise<void>>
 
   constructor (options: KBucketOptions) {
-    super()
-
-    this.localPeer = options.localPeer
-    this.prefixLength = options.prefixLength
+    this.prefixLength = options.prefixLength ?? PREFIX_LENGTH
     this.kBucketSize = options.kBucketSize ?? KBUCKET_SIZE
     this.splitThreshold = options.splitThreshold ?? this.kBucketSize
-    this.numberOfNodesToPing = options.numberOfNodesToPing ?? 3
-
-    ensureInt8('options.localPeer.kadId', options.localPeer.kadId)
+    this.numberOfNodesToPing = options.numberOfOldContactsToPing ?? PING_OLD_CONTACT_COUNT
+    this.lastPingThreshold = options.lastPingThreshold ?? LAST_PING_THRESHOLD
+    this.ping = options.ping
+    this.verify = options.verify
+    this.onAdd = options.onAdd
+    this.onRemove = options.onRemove
+    this.addingPeerMap = new PeerMap()
 
     this.root = {
       prefix: '',
@@ -134,14 +163,40 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
     }
   }
 
-  /**
-   * Adds a contact to the k-bucket.
-   *
-   * @param {Peer} peer - the contact object to add
-   */
-  add (peer: Peer): void {
-    ensureInt8('peer.kadId', peer?.kadId)
+  async addSelfPeer (peerId: PeerId): Promise<void> {
+    this.localPeer = {
+      peerId,
+      kadId: await convertPeerId(peerId),
+      lastPing: Date.now()
+    }
+  }
 
+  /**
+   * Adds a contact to the trie
+   */
+  async add (peerId: PeerId, options?: AbortOptions): Promise<void> {
+    const peer = {
+      peerId,
+      kadId: await convertPeerId(peerId),
+      lastPing: 0
+    }
+
+    const existingPromise = this.addingPeerMap.get(peerId)
+
+    if (existingPromise != null) {
+      return existingPromise
+    }
+
+    try {
+      const p = this._add(peer, options)
+      this.addingPeerMap.set(peerId, p)
+      await p
+    } finally {
+      this.addingPeerMap.delete(peerId)
+    }
+  }
+
+  private async _add (peer: Peer, options?: AbortOptions): Promise<void> {
     const bucket = this._determineBucket(peer.kadId)
 
     // check if the contact already exists
@@ -152,18 +207,32 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
     // are there too many peers in the bucket and can we make the trie deeper?
     if (bucket.peers.length === this.splitThreshold && bucket.depth < this.prefixLength) {
       // split the bucket
-      this._split(bucket)
+      await this._split(bucket)
 
       // try again
-      this.add(peer)
+      await this._add(peer, options)
 
       return
     }
 
     // is there space in the bucket?
     if (bucket.peers.length < this.kBucketSize) {
-      bucket.peers.push(peer)
-      this.safeDispatchEvent('added', { detail: peer })
+      // we've ping this peer previously, just add them to the bucket
+      if (!needsPing(peer, this.lastPingThreshold)) {
+        bucket.peers.push(peer)
+        await this.onAdd?.(peer, bucket)
+        return
+      }
+
+      const result = await this.verify(peer, options)
+
+      // only add if peer is online and functioning correctly
+      if (result) {
+        peer.lastPing = Date.now()
+
+        // try again - buckets may have changed during ping
+        await this._add(peer, options)
+      }
 
       return
     }
@@ -171,17 +240,51 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
     // we are at the bottom of the trie and the bucket is full so we can't add
     // any more peers.
     //
-    // instead ping the first this.numberOfNodesToPing in order to determine
+    // instead ping the first `this.numberOfNodesToPing` in order to determine
     // if they are still online.
     //
     // only add the new peer if one of the pinged nodes does not respond, this
     // prevents DoS flooding with new invalid contacts.
-    this.safeDispatchEvent('ping', {
-      detail: {
-        oldContacts: bucket.peers.slice(0, this.numberOfNodesToPing),
-        newContact: peer
-      }
-    })
+    const toPing = bucket.peers
+      .filter(peer => {
+        if (peer.peerId.equals(this.localPeer?.peerId)) {
+          return false
+        }
+
+        if (peer.lastPing > (Date.now() - this.lastPingThreshold)) {
+          return false
+        }
+
+        return true
+      })
+      .sort((a, b) => {
+        // sort oldest ping -> newest
+        if (a.lastPing < b.lastPing) {
+          return -1
+        }
+
+        if (a.lastPing > b.lastPing) {
+          return 1
+        }
+
+        return 0
+      })
+      .slice(0, this.numberOfNodesToPing)
+
+    let evicted = false
+
+    for await (const toEvict of this.ping(toPing, options)) {
+      evicted = true
+      await this.remove(toEvict.kadId)
+    }
+
+    // did not evict any peers, cannot add new contact
+    if (!evicted) {
+      return
+    }
+
+    // try again - buckets may have changed during ping
+    await this._add(peer, options)
   }
 
   /**
@@ -235,7 +338,7 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
    * which branch of the tree to traverse and repeat.
    *
    * @param {Uint8Array} kadId - The ID of the contact to fetch.
-   * @returns {object | undefined} The contact if available, otherwise null
+   * @returns {Peer | undefined} The contact if available, otherwise null
    */
   get (kadId: Uint8Array): Peer | undefined {
     const bucket = this._determineBucket(kadId)
@@ -249,15 +352,14 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
    *
    * @param {Uint8Array} kadId - The ID of the contact to remove
    */
-  remove (kadId: Uint8Array): void {
+  async remove (kadId: Uint8Array): Promise<void> {
     const bucket = this._determineBucket(kadId)
     const index = this._indexOf(bucket, kadId)
 
     if (index > -1) {
       const peer = bucket.peers.splice(index, 1)[0]
-      this.safeDispatchEvent('removed', {
-        detail: peer
-      })
+
+      await this.onRemove?.(peer, bucket)
     }
   }
 
@@ -303,14 +405,13 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
    */
   private _determineBucket (kadId: Uint8Array): LeafBucket {
     const bitString = uint8ArrayToString(kadId, 'base2')
-    const prefix = bitString.substring(0, this.prefixLength)
 
     function findBucket (bucket: Bucket, bitIndex: number = 0): LeafBucket {
       if (isLeafBucket(bucket)) {
         return bucket
       }
 
-      const bit = prefix[bitIndex]
+      const bit = bitString[bitIndex]
 
       if (bit === '0') {
         return findBucket(bucket.left, bitIndex + 1)
@@ -331,7 +432,7 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
    * @returns {number} Integer Index of contact with provided id if it exists, -1 otherwise.
    */
   private _indexOf (bucket: LeafBucket, kadId: Uint8Array): number {
-    return bucket.peers.findIndex(peer => arrayEquals(peer.kadId, kadId))
+    return bucket.peers.findIndex(peer => uint8ArrayEquals(peer.kadId, kadId))
   }
 
   /**
@@ -339,18 +440,16 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
    *
    * @param {any} bucket - bucket for splitting
    */
-  private _split (bucket: LeafBucket): void {
-    const depth = bucket.depth + 1
-
+  private async _split (bucket: LeafBucket): Promise<void> {
     // create child buckets
     const left: LeafBucket = {
       prefix: '0',
-      depth,
+      depth: bucket.depth + 1,
       peers: []
     }
     const right: LeafBucket = {
       prefix: '1',
-      depth,
+      depth: bucket.depth + 1,
       peers: []
     }
 
@@ -358,19 +457,33 @@ export class KBucket extends TypedEventEmitter<KBucketEvents> {
     for (const peer of bucket.peers) {
       const bitString = uint8ArrayToString(peer.kadId, 'base2')
 
-      if (bitString[depth] === '0') {
+      if (bitString[bucket.depth] === '0') {
         left.peers.push(peer)
+        await this.onMove?.(peer, bucket, left)
       } else {
         right.peers.push(peer)
+        await this.onMove?.(peer, bucket, right)
       }
     }
 
-    // convert leaf bucket to internal bucket
-    // @ts-expect-error peers is not a property of LeafBucket
-    delete bucket.peers
-    // @ts-expect-error left is not a property of LeafBucket
-    bucket.left = left
-    // @ts-expect-error right is not a property of LeafBucket
-    bucket.right = right
+    // convert old leaf bucket to internal bucket
+    convertToInternalBucket(bucket, left, right)
   }
+}
+
+function convertToInternalBucket (bucket: any, left: any, right: any): bucket is InternalBucket {
+  delete bucket.peers
+  bucket.left = left
+  bucket.right = right
+
+  if (bucket.prefix === '') {
+    delete bucket.depth
+    delete bucket.prefix
+  }
+
+  return true
+}
+
+function needsPing (peer: Peer, threshold: number): boolean {
+  return peer.lastPing < (Date.now() - threshold)
 }

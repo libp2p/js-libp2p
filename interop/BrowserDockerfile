@@ -1,14 +1,16 @@
-# syntax=docker/dockerfile:1
-
-# Copied since we won't have the repo to use if expanding from cache.
-
-# Workaround: https://github.com/docker/cli/issues/996
-ARG BASE_IMAGE=node-js-libp2p-head
-FROM ${BASE_IMAGE} as js-libp2p-base
-
 FROM mcr.microsoft.com/playwright
 
-COPY --from=js-libp2p-base /app/ /app/
+WORKDIR /app
+
+COPY package.json ./
+COPY ./packages ./packages
+COPY ./interop ./interop
+
+# disable colored output and CLI animation from test runners
+ENV CI=true
+
+RUN npm i
+RUN npm run build
 
 # We install browsers here instead of the cached version so that we use the latest browsers at run time.
 # Ideally this would also be pinned, but playwright controls this, so there isn't much we can do about it.

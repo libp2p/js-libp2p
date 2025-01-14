@@ -9,19 +9,16 @@
   ],
   "references": [
     {
-      "path": "../interface"
+      "path": "../crypto"
     },
     {
-      "path": "../interface-compliance-tests"
+      "path": "../interface"
     },
     {
       "path": "../logger"
     },
     {
       "path": "../peer-id"
-    },
-    {
-      "path": "../peer-id-factory"
     }
   ]
 }

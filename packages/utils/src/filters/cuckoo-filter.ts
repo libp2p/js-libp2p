@@ -150,7 +150,7 @@ export class CuckooFilter implements Filter {
   }
 
   get reliable (): boolean {
-    return Math.floor(100 * (this.count / this.filterSize)) <= 95
+    return Math.floor(100 * (this.count / this.filterSize)) <= 90
   }
 }
 
@@ -182,7 +182,7 @@ export function optimize (maxItems: number, errorRate: number = 0.001): CuckooFi
 
   // https://stackoverflow.com/questions/57555236/how-to-size-a-cuckoo-filter/57617208#57617208
   const filterSize = Math.round(maxItems / load)
-  const fingerprintSize = Math.min(Math.ceil(Math.log(filterSize / bucketSize)) + 2, MAX_FINGERPRINT_SIZE)
+  const fingerprintSize = Math.min(Math.ceil(Math.log2(1 / errorRate) + Math.log2(2 * bucketSize)), MAX_FINGERPRINT_SIZE)
 
   return {
     filterSize,

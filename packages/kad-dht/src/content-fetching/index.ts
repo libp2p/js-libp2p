@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import map from 'it-map'
 import parallel from 'it-parallel'
@@ -7,6 +7,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import {
   ALPHA
 } from '../constants.js'
+import { QueryError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
 import {
   valueEvent,
@@ -30,6 +31,7 @@ export interface ContentFetchingInit {
   queryManager: QueryManager
   network: Network
   logPrefix: string
+  datastorePrefix: string
 }
 
 export class ContentFetching {
@@ -40,17 +42,26 @@ export class ContentFetching {
   private readonly peerRouting: PeerRouting
   private readonly queryManager: QueryManager
   private readonly network: Network
+  private readonly datastorePrefix: string
 
   constructor (components: KadDHTComponents, init: ContentFetchingInit) {
     const { validators, selectors, peerRouting, queryManager, network, logPrefix } = init
 
     this.components = components
     this.log = components.logger.forComponent(`${logPrefix}:content-fetching`)
+    this.datastorePrefix = `${init.datastorePrefix}/record`
     this.validators = validators
     this.selectors = selectors
     this.peerRouting = peerRouting
     this.queryManager = queryManager
     this.network = network
+
+    this.get = components.metrics?.traceFunction('libp2p.kadDHT.get', this.get.bind(this), {
+      optionsIndex: 1
+    }) ?? this.get
+    this.put = components.metrics?.traceFunction('libp2p.kadDHT.put', this.put.bind(this), {
+      optionsIndex: 2
+    }) ?? this.put
   }
 
   /**
@@ -60,7 +71,7 @@ export class ContentFetching {
   async getLocal (key: Uint8Array): Promise<Libp2pRecord> {
     this.log('getLocal %b', key)
 
-    const dsKey = bufferToRecordKey(key)
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
     this.log('fetching record for key %k', dsKey)
 
@@ -91,7 +102,7 @@ export class ContentFetching {
       // correct ourself
       if (this.components.peerId.equals(from)) {
         try {
-          const dsKey = bufferToRecordKey(key)
+          const dsKey = bufferToRecordKey(this.datastorePrefix, key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
           await this.components.datastore.put(dsKey, fixupRec.subarray())
         } catch (err: any) {
@@ -118,7 +129,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options)
+        yield queryErrorEvent({ from, error: new QueryError('Value not put correctly') }, options)
       }
 
       this.log.error('Failed error correcting entry')
@@ -135,13 +146,16 @@ export class ContentFetching {
     const record = createPutRecord(key, value)
 
     // store the record locally
-    const dsKey = bufferToRecordKey(key)
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key)
     this.log(`storing record for key ${dsKey.toString()}`)
     await this.components.datastore.put(dsKey, record.subarray())
 
     // put record to the closest peers
     yield * pipe(
-      this.peerRouting.getClosestPeers(key, { signal: options.signal }),
+      this.peerRouting.getClosestPeers(key, {
+        ...options,
+        signal: options.signal
+      }),
       (source) => map(source, (event) => {
         return async () => {
           if (event.name !== 'FINAL_PEER') {
@@ -165,7 +179,7 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new CodeError('value not put correctly', 'ERR_PUT_VALUE_INVALID') }, options))
+              events.push(queryErrorEvent({ from: event.peer.id, error: new QueryError('Value not put correctly') }, options))
             }
           }
 
@@ -211,7 +225,7 @@ export class ContentFetching {
       i = bestRecord(this.selectors, key, records)
     } catch (err: any) {
       // Assume the first record if no selector available
-      if (err.code !== 'ERR_NO_SELECTOR_FUNCTION_FOR_RECORD_KEY') {
+      if (err.name !== 'InvalidParametersError') {
         throw err
       }
     }
@@ -220,7 +234,7 @@ export class ContentFetching {
     this.log('GetValue %b %b', key, best)
 
     if (best == null) {
-      throw new CodeError('best value was not found', 'ERR_NOT_FOUND')
+      throw new NotFoundError('Best value was not found')
     }
 
     yield * this.sendCorrectionRecord(key, vals, best, options)
@@ -248,7 +262,10 @@ export class ContentFetching {
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal }) {
-      for await (const event of self.peerRouting.getValueOrPeers(peer, key, { signal })) {
+      for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
+        ...options,
+        signal
+      })) {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {

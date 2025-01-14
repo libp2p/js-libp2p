@@ -12,36 +12,36 @@ export default {
       const { webSockets } = await import('@libp2p/websockets')
       const { mplex } = await import('@libp2p/mplex')
       const { noise } = await import('@chainsafe/libp2p-noise')
-      const { createEd25519PeerId } = await import('@libp2p/peer-id-factory')
       const { yamux } = await import('@chainsafe/libp2p-yamux')
-      const { WebSockets } = await import('@multiformats/mafmt')
+      const { WebSockets } = await import('@multiformats/multiaddr-matcher')
       const { createLibp2p } = await import('libp2p')
       const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
       const { echo } = await import('@libp2p/echo')
+      const { mockMuxer } = await import('@libp2p/interface-compliance-tests/mocks')
+      const { ping } = await import('@libp2p/ping')
 
-      const peerId = await createEd25519PeerId()
       const libp2p = await createLibp2p({
         connectionManager: {
-          inboundConnectionThreshold: Infinity,
-          minConnections: 0
+          inboundConnectionThreshold: Infinity
         },
         addresses: {
           listen: [
+            '/ip4/127.0.0.1/tcp/0/ws',
             '/ip4/127.0.0.1/tcp/0/ws'
           ]
         },
-        peerId,
         transports: [
           circuitRelayTransport(),
           webSockets()
         ],
         streamMuxers: [
           yamux(),
+          () => mockMuxer(),
           mplex()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           noise(),
           plaintext()
         ],
@@ -49,20 +49,30 @@ export default {
           identify: identify(),
           relay: circuitRelayServer({
             reservations: {
-              maxReservations: Infinity
+              maxReservations: Infinity,
+              applyDefaultLimit: false
             }
           }),
-          echo: echo()
+          echo: echo({
+            maxInboundStreams: 5
+          }),
+          ping: ping()
+        },
+        connectionMonitor: {
+          enabled: false
         }
       })
 
       const goLibp2pRelay = await createGoLibp2pRelay()
+      const wsAddresses = libp2p.getMultiaddrs().filter(ma => WebSockets.exactMatch(ma))
 
       return {
         libp2p,
         goLibp2pRelay,
         env: {
-          RELAY_MULTIADDR: libp2p.getMultiaddrs().filter(ma => WebSockets.matches(ma)).pop(),
+          RELAY_MULTIADDR: wsAddresses[0],
+          RELAY_WS_MULTIADDR_0: wsAddresses[0],
+          RELAY_WS_MULTIADDR_1: wsAddresses[1],
           GO_RELAY_PEER: goLibp2pRelay.peerId,
           GO_RELAY_MULTIADDRS: goLibp2pRelay.multiaddrs,
           GO_RELAY_APIADDR: goLibp2pRelay.apiAddr

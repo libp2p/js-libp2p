@@ -1,5 +1,5 @@
-import { CodeError } from '@libp2p/interface'
 import delay from 'delay'
+import { RateLimitError } from './errors.js'
 
 export interface RateLimiterInit {
   /**
@@ -92,7 +92,7 @@ export class RateLimiter {
         res = this.memoryStorage.set(rlKey, res.consumedPoints, this.blockDuration)
       }
 
-      throw new CodeError('Rate limit exceeded', 'ERR_RATE_LIMIT_EXCEEDED', res)
+      throw new RateLimitError('Rate limit exceeded', res)
     } else if (this.execEvenly && res.msBeforeNext > 0 && !res.isFirstInDuration) {
       // Execute evenly
       let delayMs = Math.ceil(res.msBeforeNext / (res.remainingPoints + 2))
@@ -188,7 +188,7 @@ export class RateLimiter {
   }
 }
 
-class MemoryStorage {
+export class MemoryStorage {
   public readonly storage: Map<string, RateRecord>
 
   constructor () {

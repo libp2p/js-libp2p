@@ -31,15 +31,20 @@
  * ```
  */
 
+import { serviceCapabilities } from '@libp2p/interface'
 import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
+
+export type { MplexComponents }
 
 export interface MplexInit {
   /**
    * The maximum size of message that can be sent in one go in bytes.
    * Messages larger than this will be split into multiple smaller
    * messages. If we receive a message larger than this an error will
-   * be thrown and the connection closed. (default: 1MB)
+   * be thrown and the connection closed.
+   *
+   * @default 1048576
    */
   maxMsgSize?: number
 
@@ -48,7 +53,8 @@ export interface MplexInit {
    * Before messages are deserialized, the raw bytes are buffered to ensure
    * we have the complete message to deserialized. If the queue gets longer
    * than this value an error will be thrown and the connection closed.
-   * (default: 4MB)
+   *
+   * @default 4194304
    */
   maxUnprocessedMessageQueueSize?: number
 
@@ -56,27 +62,35 @@ export interface MplexInit {
    * The maximum number of multiplexed streams that can be open at any
    * one time. A request to open more than this will have a stream
    * reset message sent immediately as a response for the newly opened
-   * stream id (default: 1024)
+   * stream id
+   *
+   * @default 1024
    */
   maxInboundStreams?: number
 
   /**
    * The maximum number of multiplexed streams that can be open at any
-   * one time. An attempt to open more than this will throw (default: 1024)
+   * one time. An attempt to open more than this will throw
+   *
+   * @default 1024
    */
   maxOutboundStreams?: number
 
   /**
    * Incoming stream messages are buffered until processed by the stream
    * handler. If the buffer reaches this size in bytes the stream will
-   * be reset (default: 4MB)
+   * be reset
+   *
+   * @default 4194304
    */
   maxStreamBufferSize?: number
 
   /**
    * When `maxInboundStreams` is hit, if the remote continues try to open
    * more than this many new multiplexed streams per second the connection
-   * will be closed (default: 5)
+   * will be closed
+   *
+   * @default 5
    */
   disconnectThreshold?: number
 }
@@ -91,6 +105,12 @@ class Mplex implements StreamMuxerFactory {
     this._init = init
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/mplex'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/stream-multiplexing'
+  ]
+
   createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
     return new MplexStreamMuxer(this.components, {
       ...init,
@@ -99,6 +119,9 @@ class Mplex implements StreamMuxerFactory {
   }
 }
 
+/**
+ * @deprecated mplex is deprecated as it has no flow control. Please use yamux instead.
+ */
 export function mplex (init: MplexInit = {}): (components: MplexComponents) => StreamMuxerFactory {
   return (components) => new Mplex(components, init)
 }

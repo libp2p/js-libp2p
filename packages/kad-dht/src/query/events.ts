@@ -1,4 +1,3 @@
-import { CustomEvent } from '@libp2p/interface'
 import type { MessageType, SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Libp2pRecord } from '@libp2p/record'
@@ -37,8 +36,8 @@ export function peerResponseEvent (fields: PeerResponseEventFields, options: Pro
     name: 'PEER_RESPONSE',
     type: 1,
     messageName: fields.messageType,
-    closer: (fields.closer != null) ? fields.closer : [],
-    providers: (fields.providers != null) ? fields.providers : []
+    closer: fields.closer ?? [],
+    providers: fields.providers ?? []
   }
 
   options.onProgress?.(new CustomEvent('kad-dht:query:peer-response', { detail: event }))

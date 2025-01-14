@@ -1,6 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import * as underTest from '../src/private-to-public/utils/sdp.js'
+import { MAX_MESSAGE_SIZE } from '../src/stream.js'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
 const sampleCerthash = 'uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ'
@@ -17,14 +18,14 @@ a=ice-ufrag:MyUserFragment
 a=ice-pwd:MyUserFragment
 a=fingerprint:sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1
 a=sctp-port:5000
-a=max-message-size:16384
+a=max-message-size:${MAX_MESSAGE_SIZE}
 a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host
 a=end-of-candidates`
 
 describe('SDP', () => {
   it('converts multiaddr with certhash to an answer SDP', async () => {
     const ufrag = 'MyUserFragment'
-    const sdp = underTest.serverOfferFromMultiAddr(sampleMultiAddr, ufrag, ufrag)
+    const sdp = underTest.serverOfferFromMultiAddr(sampleMultiAddr, ufrag)
 
     expect(sdp.sdp).to.contain(sampleSdp)
   })
@@ -40,9 +41,8 @@ describe('SDP', () => {
 
     // sha2-256 multihash 0x12 permanent
     // https://github.com/multiformats/multicodec/blob/master/table.csv
-    expect(decoded.name).to.equal('sha2-256')
     expect(decoded.code).to.equal(0x12)
-    expect(decoded.length).to.equal(32)
+    expect(decoded.size).to.equal(32)
     expect(decoded.digest.toString()).to.equal('114,104,71,205,72,176,94,197,96,77,21,156,191,64,29,111,0,161,35,236,144,23,14,44,209,179,143,210,157,55,229,177')
   })
 
@@ -74,7 +74,7 @@ a=ice-ufrag:someotheruserfragmentstring
 a=ice-pwd:someotheruserfragmentstring
 a=fingerprint:sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1
 a=sctp-port:5000
-a=max-message-size:16384
+a=max-message-size:${MAX_MESSAGE_SIZE}
 a=candidate:1467250027 1 UDP 1467250027 0.0.0.0 56093 typ host
 a=end-of-candidates`
 

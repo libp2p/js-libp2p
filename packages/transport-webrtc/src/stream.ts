@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { StreamStateError, TimeoutError } from '@libp2p/interface'
 import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 import { anySignal } from 'any-signal'
 import * as lengthPrefixed from 'it-length-prefixed'
@@ -7,6 +7,7 @@ import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
+import { encodingLength } from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
@@ -28,7 +29,7 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
 /**
  * How much can be buffered to the DataChannel at once
  */
-export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
+export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
 
 /**
  * How long time we wait for the 'bufferedamountlow' event to be emitted
@@ -36,19 +37,40 @@ export const MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
 export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 /**
- * protobuf field definition overhead
- */
-export const PROTOBUF_OVERHEAD = 5
-
-/**
- * Length of varint, in bytes
- */
-export const VARINT_LENGTH = 2
-
-/**
- * Max message size that can be sent to the DataChannel
+ * Max message size that can be sent to the DataChannel. In browsers this is
+ * 256KiB but go-libp2p and rust-libp2p only support 16KiB at the time of
+ * writing.
+ *
+ * @see https://blog.mozilla.org/webrtc/large-data-channel-messages/
+ * @see https://issues.webrtc.org/issues/40644524
  */
 export const MAX_MESSAGE_SIZE = 16 * 1024
+
+/**
+ * max protobuf overhead:
+ *
+ * ```
+ * [message-length][flag-field-id+type][flag-field-length][flag-field][message-field-id+type][message-field-length][message-field]
+ * ```
+ */
+function calculateProtobufOverhead (maxMessageSize = MAX_MESSAGE_SIZE): number {
+  // these have a fixed size
+  const messageLength = encodingLength(maxMessageSize - encodingLength(maxMessageSize))
+  const flagField = 1 + encodingLength(Object.keys(Message.Flag).length - 1) // id+type/value
+  const messageFieldIdType = 1 // id+type
+  const available = maxMessageSize - messageLength - flagField - messageFieldIdType
+
+  // let message-length/message-data fill the rest of the message
+  const messageFieldLengthLength = encodingLength(available)
+
+  return messageLength + flagField + messageFieldIdType + messageFieldLengthLength
+}
+
+/**
+ * The protobuf message overhead includes the maximum amount of all bytes in the
+ * protobuf that aren't message field bytes
+ */
+export const PROTOBUF_OVERHEAD = calculateProtobufOverhead()
 
 /**
  * When closing streams we send a FIN then wait for the remote to
@@ -131,7 +153,7 @@ export class WebRTCStream extends AbstractStream {
     this.incomingData = pushable<Uint8Array>()
     this.bufferedAmountLowEventTimeout = init.bufferedAmountLowEventTimeout ?? BUFFERED_AMOUNT_LOW_TIMEOUT
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD - VARINT_LENGTH
+    this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
     this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
@@ -155,7 +177,7 @@ export class WebRTCStream extends AbstractStream {
 
       default:
         this.log.error('unknown datachannel state %s', this.channel.readyState)
-        throw new CodeError('Unknown datachannel state', 'ERR_INVALID_STATE')
+        throw new StreamStateError('Unknown datachannel state')
     }
 
     // handle RTCDataChannel events
@@ -222,7 +244,7 @@ export class WebRTCStream extends AbstractStream {
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
     if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
-      throw new CodeError(`Invalid datachannel state - ${this.channel.readyState}`, 'ERR_INVALID_STATE')
+      throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
     if (this.channel.readyState !== 'open') {
@@ -254,7 +276,7 @@ export class WebRTCStream extends AbstractStream {
         await raceEvent(this.channel, 'bufferedamountlow', signal)
       } catch (err: any) {
         if (timeout.aborted) {
-          throw new CodeError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`, 'ERR_BUFFER_CLEAR_TIMEOUT')
+          throw new TimeoutError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`)
         }
 
         throw err
@@ -294,7 +316,11 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendReset (): Promise<void> {
-    await this._sendFlag(Message.Flag.RESET)
+    try {
+      await this._sendFlag(Message.Flag.RESET)
+    } catch (err) {
+      this.log.error('failed to send reset - %e', err)
+    }
   }
 
   async sendCloseWrite (options: AbortOptions): Promise<void> {
@@ -310,7 +336,7 @@ export class WebRTCStream extends AbstractStream {
       try {
         await raceSignal(this.receiveFinAck.promise, options?.signal, {
           errorMessage: 'sending close-write was aborted before FIN_ACK was received',
-          errorCode: 'ERR_FIN_ACK_NOT_RECEIVED'
+          errorName: 'FinAckNotReceivedError'
         })
       } catch (err) {
         this.log.error('failed to await FIN_ACK', err)
@@ -391,7 +417,7 @@ export class WebRTCStream extends AbstractStream {
 
       return true
     } catch (err: any) {
-      this.log.error('could not send flag %s', flag.toString(), err)
+      this.log.error('could not send flag %s - %e', flag.toString(), err)
     }
 
     return false

@@ -1,20 +1,18 @@
-
 import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { IP4 } from '@multiformats/multiaddr-matcher'
 import getPort from 'get-port'
-import { sha256 } from 'multiformats/hashes/sha2'
 import pWaitFor from 'p-wait-for'
 import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
+import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
-import type { DataChannelOptions, TransportCertificate } from '../index.js'
-import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, ConnectionHandler } from '@libp2p/interface'
+import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -24,12 +22,12 @@ const HANDSHAKE_TIMEOUT_MS = 10_000
 
 export interface WebRTCDirectListenerComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   logger: ComponentLogger
   metrics?: Metrics
 }
 
 export interface WebRTCDirectListenerInit {
-  handler?: ConnectionHandler
   upgrader: Upgrader
   certificates?: TransportCertificate[]
   maxInboundStreams?: number
@@ -102,8 +100,8 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       port = await getPort()
     }
 
-    this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, pwd, remoteHost, remotePort) => {
-      this.incomingConnection(ufrag, pwd, remoteHost, remotePort)
+    this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, remoteHost, remotePort) => {
+      this.incomingConnection(ufrag, remoteHost, remotePort)
         .catch(err => {
           this.log.error('error processing incoming STUN request', err)
         })
@@ -133,7 +131,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.safeDispatchEvent('listening')
   }
 
-  private async incomingConnection (ufrag: string, pwd: string, remoteHost: string, remotePort: number): Promise<void> {
+  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number): Promise<void> {
     const key = `${remoteHost}:${remotePort}:${ufrag}`
     let peerConnection = this.connections.get(key)
 
@@ -162,7 +160,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     })
 
     try {
-      const conn = await connect(peerConnection, ufrag, pwd, {
+      await connect(peerConnection, ufrag, {
         role: 'initiator',
         log: this.log,
         logger: this.components.logger,
@@ -170,14 +168,11 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         events: this.metrics?.listenerEvents,
         signal: AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
-        hashCode: sha256.code,
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
         peerId: this.components.peerId,
-        handler: this.init.handler
+        privateKey: this.components.privateKey
       })
-
-      this.safeDispatchEvent('connection', { detail: conn })
     } catch (err) {
       peerConnection.close()
       throw err

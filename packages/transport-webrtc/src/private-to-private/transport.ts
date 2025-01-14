@@ -1,17 +1,18 @@
-import { CodeError, serviceCapabilities, serviceDependencies, setMaxListeners } from '@libp2p/interface'
-import { type CreateListenerOptions, type DialOptions, transportSymbol, type Transport, type Listener, type Upgrader, type ComponentLogger, type Logger, type Connection, type PeerId, type CounterGroup, type Metrics, type Startable } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, serviceDependencies, setMaxListeners, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
-import { codes } from '../error.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
+import { getRtcConfiguration } from '../util.js'
 import { RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
+import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { IncomingStreamData, Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { ProgressEvent } from 'progress-events'
 
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
@@ -24,7 +25,8 @@ export interface WebRTCTransportInit {
 
   /**
    * Inbound connections must complete the upgrade within this many ms
-   * (default: 30s)
+   *
+   * @default 30000
    */
   inboundConnectionTimeout?: number
 }
@@ -44,7 +46,20 @@ export interface WebRTCTransportMetrics {
   listenerEvents: CounterGroup
 }
 
-export class WebRTCTransport implements Transport, Startable {
+export type WebRTCDialEvents =
+  OutboundConnectionUpgradeEvents |
+  OpenConnectionProgressEvents |
+  ProgressEvent<'webrtc:dial-relay'> |
+  ProgressEvent<'webrtc:reuse-relay-connection'> |
+  ProgressEvent<'webrtc:open-signaling-stream'> |
+  ProgressEvent<'webrtc:send-sdp-offer'> |
+  ProgressEvent<'webrtc:read-sdp-answer'> |
+  ProgressEvent<'webrtc:read-ice-candidates'> |
+  ProgressEvent<'webrtc:add-ice-candidate', string> |
+  ProgressEvent<'webrtc:end-of-ice-candidates'> |
+  ProgressEvent<'webrtc:close-signaling-stream'>
+
+export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   private readonly log: Logger
   private _started = false
   private readonly metrics?: WebRTCTransportMetrics
@@ -93,7 +108,7 @@ export class WebRTCTransport implements Transport, Startable {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
       this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
     }, {
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
     this._started = true
   }
@@ -130,11 +145,11 @@ export class WebRTCTransport implements Transport, Startable {
    * For a circuit relay, this will be of the form
    * <relay address>/p2p/<relay-peer>/p2p-circuit/webrtc/p2p/<destination-peer>
   */
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
     this.log.trace('dialing address: %a', ma)
 
     const { remoteAddress, peerConnection, muxerFactory } = await initiateConnection({
-      rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration,
+      rtcConfiguration: await getRtcConfiguration(this.init.rtcConfiguration),
       dataChannel: this.init.dataChannel,
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
@@ -142,7 +157,8 @@ export class WebRTCTransport implements Transport, Startable {
       connectionManager: this.components.connectionManager,
       transportManager: this.components.transportManager,
       log: this.log,
-      logger: this.components.logger
+      logger: this.components.logger,
+      onProgress: options.onProgress
     })
 
     const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
@@ -155,7 +171,8 @@ export class WebRTCTransport implements Transport, Startable {
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
       skipProtection: true,
       skipEncryption: true,
-      muxerFactory
+      muxerFactory,
+      onProgress: options.onProgress
     })
 
     // close the connection on shut down
@@ -166,7 +183,7 @@ export class WebRTCTransport implements Transport, Startable {
 
   async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
-    const peerConnection = new RTCPeerConnection(typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration)
+    const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
       dataChannelOptions: this.init.dataChannel
@@ -202,7 +219,7 @@ export class WebRTCTransport implements Transport, Startable {
       // close the connection on shut down
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
-      this.log.error('incoming signalling error', err)
+      this.log.error('incoming signaling error', err)
 
       peerConnection.close()
       stream.abort(err)
@@ -230,11 +247,11 @@ export class WebRTCTransport implements Transport, Startable {
 export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
   const addrs = ma.toString().split(WEBRTC_TRANSPORT + '/')
   if (addrs.length !== 2) {
-    throw new CodeError('webrtc protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('webrtc protocol was not present in multiaddr')
   }
 
   if (!addrs[0].includes(CIRCUIT_RELAY_TRANSPORT)) {
-    throw new CodeError('p2p-circuit protocol was not present in multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('p2p-circuit protocol was not present in multiaddr')
   }
 
   // look for remote peerId
@@ -243,12 +260,12 @@ export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId
 
   const destinationIdString = destination.getPeerId()
   if (destinationIdString == null) {
-    throw new CodeError('destination peer id was missing', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('destination peer id was missing')
   }
 
   const lastProtoInRemote = remoteAddr.protos().pop()
   if (lastProtoInRemote === undefined) {
-    throw new CodeError('invalid multiaddr', codes.ERR_INVALID_MULTIADDR)
+    throw new InvalidParametersError('invalid multiaddr')
   }
   if (lastProtoInRemote.name !== 'p2p') {
     remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)

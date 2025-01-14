@@ -1,5 +1,6 @@
-import { CodeError, CustomEvent, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { NotFoundError, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
+import createMortice from 'mortice'
 import pDefer from 'p-defer'
 import { PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -11,16 +12,18 @@ import { QueryManager } from './query/manager.js'
 import { QuerySelf } from './query-self.js'
 import { selectors as recordSelectors } from './record/selectors.js'
 import { validators as recordValidators } from './record/validators.js'
+import { Reprovider } from './reprovider.js'
 import { RoutingTable } from './routing-table/index.js'
 import { RoutingTableRefresh } from './routing-table/refresh.js'
 import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
 import {
   multiaddrIsPublic,
-  removePrivateAddressesMapper
+  removePrivateAddressesMapper,
+  timeOperationGenerator
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper } from './index.js'
-import type { ContentRouting, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ContentRouting, CounterGroup, Logger, MetricGroup, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 /**
@@ -35,6 +38,10 @@ class DHTContentRouting implements ContentRouting {
 
   async provide (cid: CID, options: RoutingOptions = {}): Promise<void> {
     await drain(this.dht.provide(cid, options))
+  }
+
+  async cancelReprovide (key: CID): Promise<void> {
+    await this.dht.cancelReprovide(key)
   }
 
   async * findProviders (cid: CID, options: RoutingOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
@@ -56,7 +63,7 @@ class DHTContentRouting implements ContentRouting {
       }
     }
 
-    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Could not find value for key')
   }
 }
 
@@ -77,7 +84,7 @@ class DHTPeerRouting implements PeerRouting {
       }
     }
 
-    throw new CodeError('Not found', 'ERR_NOT_FOUND')
+    throw new NotFoundError('Peer not found')
   }
 
   async * getClosestPeers (key: Uint8Array, options: RoutingOptions = {}): AsyncIterable<PeerInfo> {
@@ -91,6 +98,15 @@ class DHTPeerRouting implements PeerRouting {
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
+
+export type Operation = 'GET_VALUE' | 'FIND_PROVIDERS' | 'FIND_PEER' | 'GET_CLOSEST_PEERS' | 'PROVIDE' | 'PUT_VALUE' | 'SELF_QUERY'
+
+export interface OperationMetrics {
+  queries?: MetricGroup<Operation>
+  errors?: CounterGroup<Operation>
+  queryTime?: MetricGroup<Operation>
+  errorTime?: MetricGroup<Operation>
+}
 
 /**
  * A DHT implementation modelled after Kademlia with S/Kademlia modifications.
@@ -123,60 +139,72 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   private readonly dhtContentRouting: DHTContentRouting
   private readonly dhtPeerRouting: DHTPeerRouting
   private readonly peerInfoMapper: PeerInfoMapper
+  private readonly reprovider: Reprovider
 
   /**
    * Create a new KadDHT
    */
-  constructor (components: KadDHTComponents, init: KadDHTInit) {
+  constructor (components: KadDHTComponents, init: KadDHTInit = {}) {
     super()
 
-    const {
-      kBucketSize,
-      clientMode,
-      validators,
-      selectors,
-      querySelfInterval,
-      protocol,
-      logPrefix,
-      pingTimeout,
-      pingConcurrency,
-      maxInboundStreams,
-      maxOutboundStreams,
-      providers: providersInit
-    } = init
+    const logPrefix = init.logPrefix ?? 'libp2p:kad-dht'
+    const datastorePrefix = init.datastorePrefix ?? '/dht'
+    const metricsPrefix = init.metricsPrefix ?? 'libp2p_kad_dht'
 
-    const loggingPrefix = logPrefix ?? 'libp2p:kad-dht'
+    const operationMetrics: OperationMetrics = {
+      queries: components.metrics?.registerMetricGroup(`${metricsPrefix}_operations_total`, { label: 'operation' }),
+      errors: components.metrics?.registerCounterGroup(`${metricsPrefix}_operation_errors_total`, { label: 'operation' }),
+      queryTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_time_seconds`, { label: 'operation' }),
+      errorTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_error_time_seconds`, { label: 'operation' })
+    }
 
     this.running = false
     this.components = components
-    this.log = components.logger.forComponent(loggingPrefix)
-    this.protocol = protocol ?? PROTOCOL
-    this.kBucketSize = kBucketSize ?? 20
-    this.clientMode = clientMode ?? true
-    this.maxInboundStreams = maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
-    this.maxOutboundStreams = maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
+    this.log = components.logger.forComponent(logPrefix)
+    this.protocol = init.protocol ?? PROTOCOL
+    this.kBucketSize = init.kBucketSize ?? 20
+    this.clientMode = init.clientMode ?? true
+    this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
+    this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
     this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper
-    this.routingTable = new RoutingTable(components, {
-      kBucketSize,
-      pingTimeout,
-      pingConcurrency,
-      protocol: this.protocol,
-      logPrefix: loggingPrefix
-    })
 
-    this.providers = new Providers(components, providersInit ?? {})
+    const providerLock = createMortice()
+
+    this.providers = new Providers(components, {
+      ...init.providers,
+      logPrefix,
+      datastorePrefix,
+      lock: providerLock
+    })
 
     this.validators = {
       ...recordValidators,
-      ...validators
+      ...init.validators
     }
     this.selectors = {
       ...recordSelectors,
-      ...selectors
+      ...init.selectors
     }
     this.network = new Network(components, {
       protocol: this.protocol,
-      logPrefix: loggingPrefix
+      logPrefix,
+      metricsPrefix
+    })
+
+    this.routingTable = new RoutingTable(components, {
+      kBucketSize: init.kBucketSize,
+      pingOldContactTimeout: init.pingOldContactTimeout,
+      pingOldContactConcurrency: init.pingOldContactConcurrency,
+      pingOldContactMaxQueueSize: init.pingOldContactMaxQueueSize,
+      pingNewContactTimeout: init.pingNewContactTimeout,
+      pingNewContactConcurrency: init.pingNewContactConcurrency,
+      pingNewContactMaxQueueSize: init.pingNewContactMaxQueueSize,
+      protocol: this.protocol,
+      logPrefix,
+      metricsPrefix,
+      prefixLength: init.prefixLength,
+      splitThreshold: init.kBucketSplitThreshold,
+      network: this.network
     })
 
     // all queries should wait for the initial query-self query to run so we have
@@ -192,7 +220,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.queryManager = new QueryManager(components, {
       // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
       disjointPaths: Math.ceil(this.kBucketSize / 2),
-      logPrefix: loggingPrefix,
+      logPrefix,
+      metricsPrefix,
       initialQuerySelfHasRun,
       routingTable: this.routingTable
     })
@@ -203,7 +232,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       network: this.network,
       validators: this.validators,
       queryManager: this.queryManager,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.contentFetching = new ContentFetching(components, {
       validators: this.validators,
@@ -211,7 +240,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       peerRouting: this.peerRouting,
       queryManager: this.queryManager,
       network: this.network,
-      logPrefix: loggingPrefix
+      logPrefix,
+      datastorePrefix
     })
     this.contentRouting = new KADDHTContentRouting(components, {
       network: this.network,
@@ -219,32 +249,44 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       queryManager: this.queryManager,
       routingTable: this.routingTable,
       providers: this.providers,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.routingTableRefresh = new RoutingTableRefresh(components, {
       peerRouting: this.peerRouting,
       routingTable: this.routingTable,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.rpc = new RPC(components, {
       routingTable: this.routingTable,
       providers: this.providers,
       peerRouting: this.peerRouting,
       validators: this.validators,
-      logPrefix: loggingPrefix,
+      logPrefix,
+      metricsPrefix,
+      datastorePrefix,
       peerInfoMapper: this.peerInfoMapper
     })
     this.topologyListener = new TopologyListener(components, {
       protocol: this.protocol,
-      logPrefix: loggingPrefix
+      logPrefix
     })
     this.querySelf = new QuerySelf(components, {
       peerRouting: this.peerRouting,
-      interval: querySelfInterval,
+      interval: init.querySelfInterval,
       initialInterval: init.initialQuerySelfInterval,
-      logPrefix: loggingPrefix,
+      logPrefix,
       initialQuerySelfHasRun,
-      routingTable: this.routingTable
+      routingTable: this.routingTable,
+      operationMetrics
+    })
+    this.reprovider = new Reprovider(components, {
+      ...init.reprovide,
+      logPrefix,
+      metricsPrefix,
+      datastorePrefix,
+      contentRouting: this.contentRouting,
+      lock: providerLock,
+      operationMetrics
     })
 
     // handle peers being discovered during processing of DHT messages
@@ -275,7 +317,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
         await this.onPeerConnect(peerData)
       }).catch(err => {
-        this.log.error('could not add %p to routing table', peerId, err)
+        this.log.error('could not add %p to routing table - %e', peerId, err)
       })
     })
 
@@ -306,6 +348,13 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
           })
       })
     }
+
+    this.get = timeOperationGenerator(this.get.bind(this), operationMetrics, 'GET_VALUE')
+    this.findProviders = timeOperationGenerator(this.findProviders.bind(this), operationMetrics, 'FIND_PROVIDERS')
+    this.findPeer = timeOperationGenerator(this.findPeer.bind(this), operationMetrics, 'FIND_PEER')
+    this.getClosestPeers = timeOperationGenerator(this.getClosestPeers.bind(this), operationMetrics, 'GET_CLOSEST_PEERS')
+    this.provide = timeOperationGenerator(this.provide.bind(this), operationMetrics, 'PROVIDE')
+    this.put = timeOperationGenerator(this.put.bind(this), operationMetrics, 'PUT_VALUE')
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/kad-dht'
@@ -333,12 +382,12 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log('peer %p connected', peerData.id)
+    this.log.trace('peer %p connected', peerData.id)
 
     peerData = this.peerInfoMapper(peerData)
 
     if (peerData.multiaddrs.length === 0) {
-      this.log('ignoring %p as there were no valid addresses in %s after filtering', peerData.id, peerData.multiaddrs.map(addr => addr.toString()))
+      this.log.trace('ignoring %p as there were no valid addresses in %s after filtering', peerData.id, peerData.multiaddrs.map(addr => addr.toString()))
       return
     }
 
@@ -366,14 +415,25 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   /**
    * If 'server' this node will respond to DHT queries, if 'client' this node will not
    */
-  async setMode (mode: 'client' | 'server'): Promise<void> {
+  async setMode (mode: 'client' | 'server', force = false): Promise<void> {
+    if (mode === this.getMode() && !force) {
+      this.log('already in %s mode', mode)
+      return
+    }
+
     await this.components.registrar.unhandle(this.protocol)
 
+    // check again after async work
+    if (mode === this.getMode() && !force) {
+      this.log('already in %s mode', mode)
+      return
+    }
+
     if (mode === 'client') {
-      this.log('enabling client mode')
+      this.log('enabling client mode while in %s mode', this.getMode())
       this.clientMode = true
     } else {
-      this.log('enabling server mode')
+      this.log('enabling server mode while in %s mode', this.getMode())
       this.clientMode = false
       await this.components.registrar.handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc), {
         maxInboundStreams: this.maxInboundStreams,
@@ -386,19 +446,27 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
    * Start listening to incoming connections.
    */
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     // Only respond to queries when not in client mode
-    await this.setMode(this.clientMode ? 'client' : 'server')
+    await this.setMode(this.clientMode ? 'client' : 'server', true)
 
     await start(
-      this.querySelf,
-      this.providers,
+      this.routingTable,
       this.queryManager,
       this.network,
-      this.routingTable,
       this.topologyListener,
-      this.routingTableRefresh
+      this.routingTableRefresh,
+      this.reprovider
+    )
+
+    // Query self after other components are configured
+    await start(
+      this.querySelf
     )
   }
 
@@ -411,12 +479,12 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     await stop(
       this.querySelf,
-      this.providers,
       this.queryManager,
       this.network,
       this.routingTable,
       this.routingTableRefresh,
-      this.topologyListener
+      this.topologyListener,
+      this.reprovider
     )
   }
 
@@ -441,6 +509,14 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
    */
   async * provide (key: CID, options: RoutingOptions = {}): AsyncGenerator<QueryEvent, void, undefined> {
     yield * this.contentRouting.provide(key, this.components.addressManager.getAddresses(), options)
+  }
+
+  /**
+   * Provider records must be re-published every 24 hours - pass a previously
+   * provided CID here to not re-publish a record for it any more
+   */
+  async cancelReprovide (key: CID): Promise<void> {
+    await this.providers.removeProvider(key, this.components.peerId)
   }
 
   /**

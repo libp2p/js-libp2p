@@ -38,7 +38,7 @@ async function createGoLibp2p () {
     '-noise=true',
     '-dhtServer',
     '-relay',
-    '-muxer=mplex',
+    '-muxer=yamux',
     '-echo'
   ], {
     reject: false,

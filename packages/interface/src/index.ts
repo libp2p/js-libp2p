@@ -17,17 +17,18 @@
 import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { TypedEventTarget } from './event-target.js'
+import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
 import type { Metrics } from './metrics/index.js'
-import type { PeerId } from './peer-id/index.js'
+import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id/index.js'
 import type { PeerInfo } from './peer-info/index.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { Address, Peer, PeerStore } from './peer-store/index.js'
 import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index.js'
 import type { Topology } from './topology/index.js'
-import type { Listener } from './transport/index.js'
+import type { Listener, OutboundConnectionUpgradeEvents } from './transport/index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProgressOptions } from 'progress-events'
+import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling
@@ -50,6 +51,18 @@ export interface PeerUpdate {
 export interface SignedPeerRecord {
   addresses: Multiaddr[]
   seq: bigint
+}
+
+export interface TLSCertificate {
+  /**
+   * The private key that corresponds to the certificate in PEM format
+   */
+  key: string
+
+  /**
+   * The certificate chain in PEM format
+   */
+  cert: string
 }
 
 /**
@@ -160,9 +173,10 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:connect': CustomEvent<PeerId>
 
   /**
-   * This event will be triggered any time we are disconnected from another peer, regardless of
-   * the circumstances of that disconnection. If we happen to have multiple connections to a
-   * peer, this event will **only** be triggered when the last connection is closed.
+   * This event will be triggered any time we are disconnected from another
+   * peer, regardless of the circumstances of that disconnection. If we happen
+   * to have multiple connections to a peer, this event will **only** be
+   * triggered when the last connection is closed.
    *
    * @example
    *
@@ -176,9 +190,26 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:disconnect': CustomEvent<PeerId>
 
   /**
-   * This event is dispatched after a remote peer has successfully responded to the identify
-   * protocol. Note that for this to be emitted, both peers must have an identify service
-   * configured.
+   * When a peer tagged with `keep-alive` disconnects, we will make multiple
+   * attempts to reconnect to it with a backoff factor (see the connection
+   * manager settings for details). If these all fail, the `keep-alive` tag will
+   * be removed and this event will be emitted.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.addEventListener('peer:reconnect-failure', (event) => {
+   *   const peerId = event.detail
+   *   // ...
+   * })
+   * ```
+   */
+  'peer:reconnect-failure': CustomEvent<PeerId>
+
+  /**
+   * This event is dispatched after a remote peer has successfully responded to
+   * the identify protocol. Note that for this to be emitted, both peers must
+   * have an identify service configured.
    *
    * @example
    *
@@ -247,6 +278,17 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * closed.
    */
   'connection:close': CustomEvent<Connection>
+
+  /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate:provision': CustomEvent<TLSCertificate>
+
+  /**
+   * This event notifies listeners that a new TLS certificate is available for
+   * use. Any previous certificate may no longer be valid.
+   */
+  'certificate:renew': CustomEvent<TLSCertificate>
 
   /**
    * This event notifies listeners that the node has started
@@ -331,7 +373,30 @@ export interface IsDialableOptions extends AbortOptions {
    * because that protocol would not be allowed to run over a data/time limited
    * connection.
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
+}
+
+export type TransportManagerDialProgressEvents =
+  ProgressEvent<'transport-manager:selected-transport', string>
+
+export type OpenConnectionProgressEvents =
+  TransportManagerDialProgressEvents |
+  ProgressEvent<'dial-queue:already-connected'> |
+  ProgressEvent<'dial-queue:already-in-dial-queue'> |
+  ProgressEvent<'dial-queue:add-to-dial-queue'> |
+  ProgressEvent<'dial-queue:start-dial'> |
+  ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
+  OutboundConnectionUpgradeEvents
+
+export interface DialOptions extends AbortOptions, ProgressOptions {
+  /**
+   * If true, open a new connection to the remote even if one already exists
+   */
+  force?: boolean
+}
+
+export interface DialProtocolOptions extends NewStreamOptions {
+
 }
 
 /**
@@ -507,7 +572,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * const conn = await libp2p.dial(remotePeerId)
    *
    * // create a new stream within the connection
-   * const { stream, protocol } = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
+   * const stream = await conn.newStream(['/echo/1.1.0', '/echo/1.0.0'])
    *
    * // protocol negotiated: 'echo/1.0.0' means that the other party only supports the older version
    *
@@ -515,7 +580,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * await conn.close()
    * ```
    */
-  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection>
+  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: DialOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -533,7 +598,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
+  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
@@ -622,7 +687,11 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * type this may mean searching the routing if the peer's key is not present
    * in the peer store.
    */
-  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<Uint8Array>
+  getPublicKey(peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
+  getPublicKey(peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
+  getPublicKey(peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
+  getPublicKey(peer: URLPeerId, options?: AbortOptions): Promise<never>
+  getPublicKey(peer: PeerId, options?: AbortOptions): Promise<PublicKey>
 
   /**
    * Given the current node configuration, returns a promise of `true` or
@@ -685,12 +754,21 @@ export interface LoggerOptions {
 }
 
 /**
+ * An object that includes a trace object that is passed onwards.
+ *
+ * This is used by metrics method tracing to link function calls together.
+ */
+export interface TraceOptions {
+  trace?: any
+}
+
+/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,
  * these options allow tuning that behaviour.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**
    * Pass `false` to not use the network
    *

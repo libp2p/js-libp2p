@@ -1,17 +1,16 @@
 import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import * as p from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
-import { inappropriateMultiaddr } from '../error.js'
 import { UFRAG_PREFIX } from './constants.js'
 import { WebRTCDirectListener } from './listener.js'
 import { connect } from './utils/connect.js'
 import { genUfrag } from './utils/generate-ufrag.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
-import * as sdp from './utils/sdp.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
-import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialOptions } from '@libp2p/interface'
+import type { WebRTCDialEvents } from '../private-to-private/transport.js'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -39,6 +38,7 @@ export const CERTHASH_CODE: number = protocols('certhash').code
  */
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   metrics?: Metrics
   logger: ComponentLogger
   transportManager: TransportManager
@@ -87,7 +87,7 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Dial a given multiaddr
    */
-  async dial (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
     options?.signal?.throwIfAborted()
     const rawConn = await this._connect(ma, options)
     this.log('dialing address: %a', ma)
@@ -121,20 +121,20 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Connect to a peer using a multiaddr
    */
-  async _connect (ma: Multiaddr, options: DialOptions): Promise<Connection> {
+  async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
+    let theirPeerId: PeerId | undefined
     const remotePeerString = ma.getPeerId()
-    if (remotePeerString === null) {
-      throw inappropriateMultiaddr("we need to have the remote's PeerId")
+    if (remotePeerString != null) {
+      theirPeerId = peerIdFromString(remotePeerString)
     }
-    const theirPeerId = p.peerIdFromString(remotePeerString)
-    const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
+
     const ufrag = UFRAG_PREFIX + genUfrag(32)
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
     const peerConnection = await createDialerRTCPeerConnection('NodeA', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
 
     try {
-      return await raceSignal(connect(peerConnection, ufrag, ufrag, {
+      return await raceSignal(connect(peerConnection, ufrag, {
         role: 'responder',
         log: this.log,
         logger: this.components.logger,
@@ -142,11 +142,11 @@ export class WebRTCDirectTransport implements Transport {
         events: this.metrics?.dialerEvents,
         signal: options.signal ?? AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
         remoteAddr: ma,
-        hashCode: remoteCerthash.code,
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
         peerId: this.components.peerId,
-        remotePeerId: theirPeerId
+        remotePeerId: theirPeerId,
+        privateKey: this.components.privateKey
       }), options.signal)
     } catch (err) {
       peerConnection.close()

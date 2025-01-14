@@ -43,7 +43,7 @@ const node = await createLibp2p({
   transports: [
     webTransport()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
@@ -57,7 +57,7 @@ $ npm i @libp2p/webtransport
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pWebtransport` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pWebtransport` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/webtransport/dist/index.min.js"></script>

@@ -35,11 +35,12 @@
  * ```
  */
 
-import { UPnPNAT as UPnPNATClass, type NatAPI, type MapPortOptions } from './upnp-nat.js'
-import type { ComponentLogger, NodeInfo, PeerId } from '@libp2p/interface'
-import type { AddressManager, TransportManager } from '@libp2p/interface-internal'
+import { UPnPNAT as UPnPNATClass } from './upnp-nat.js'
+import type { UPnPNAT as UPnPNATClient, MapPortOptions } from '@achingbrain/nat-port-mapper'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
+import type { AddressManager } from '@libp2p/interface-internal'
 
-export type { NatAPI, MapPortOptions }
+export type { UPnPNATClient, MapPortOptions }
 
 export interface PMPOptions {
   /**
@@ -50,46 +51,76 @@ export interface PMPOptions {
 
 export interface UPnPNATInit {
   /**
-   * Pass a value to use instead of auto-detection
+   * Check if the external address has changed this often in ms. Ignored if an
+   * external address is specified.
+   *
+   * @default 30000
    */
-  externalAddress?: string
+  externalAddressCheckInterval?: number
 
   /**
-   * Pass a value to use instead of auto-detection
+   * Do not take longer than this to check if the external address has changed
+   * in ms.  Ignored if an external address is specified.
+   *
+   * @default 10000
    */
-  localAddress?: string
+  externalAddressCheckTimeout?: number
 
   /**
    * A string value to use for the port mapping description on the gateway
    */
-  description?: string
+  portMappingDescription?: string
 
   /**
-   * How long UPnP port mappings should last for in seconds (minimum 1200)
+   * How long UPnP port mappings should last for in ms
+   *
+   * @default 720_000
    */
-  ttl?: number
+  portMappingTTL?: number
 
   /**
-   * Whether to automatically refresh UPnP port mappings when their TTL is reached
+   * Whether to automatically refresh UPnP port mappings when their TTL is
+   * reached
+   *
+   * @default true
    */
-  keepAlive?: boolean
+  portMappingAutoRefresh?: boolean
 
   /**
-   * Pass a value to use instead of auto-detection
+   * How long before a port mapping expires to refresh it in ms
+   *
+   * @default 60_000
    */
-  gateway?: string
+  portMappingRefreshThreshold?: number
+
+  /**
+   * A preconfigured instance of a NatAPI client can be passed as an option,
+   * otherwise one will be created
+   */
+  portMappingClient?: UPnPNATClient
+
+  /**
+   * Any mapped addresses are added to the observed address list. These
+   * addresses require additional verification by the `@libp2p/autonat` protocol
+   * or similar before they are trusted.
+   *
+   * To skip this verification and trust them immediately pass `true` here
+   *
+   * @default false
+   */
+  autoConfirmAddress?: boolean
 }
 
 export interface UPnPNATComponents {
   peerId: PeerId
   nodeInfo: NodeInfo
   logger: ComponentLogger
-  transportManager: TransportManager
   addressManager: AddressManager
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 export interface UPnPNAT {
-  client: NatAPI
+  portMappingClient: UPnPNATClient
 }
 
 export function uPnPNAT (init: UPnPNATInit = {}): (components: UPnPNATComponents) => UPnPNAT {

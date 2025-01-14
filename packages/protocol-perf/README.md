@@ -24,14 +24,13 @@ repo and examine the changes made.
 
 -->
 
-The PerfService implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
+The Perf service implements the [perf protocol](https://github.com/libp2p/specs/blob/master/perf/perf.md), which can be used to measure transfer performance within and across libp2p implementations.
 
 ## Example
 
 ```typescript
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
 import { tcp } from '@libp2p/tcp'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { plaintext } from '@libp2p/plaintext'
@@ -51,11 +50,11 @@ async function createNode (): Promise<Libp2p<{ perf: Perf }>> {
     transports: [
       tcp()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       noise(), plaintext()
     ],
     streamMuxers: [
-      yamux(), mplex()
+      yamux()
     ],
     services: {
       perf: perf()
@@ -82,7 +81,7 @@ $ npm i @libp2p/perf
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pPerf` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pPerf` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/perf/dist/index.min.js"></script>

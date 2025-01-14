@@ -1,17 +1,16 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
-import { mockDuplex, mockMultiaddrConnection, mockConnection } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { DefaultRegistrar } from '../../src/registrar.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 const protocol = '/test/1.0.0'
@@ -21,22 +20,19 @@ describe('registrar topologies', () => {
   let peerId: PeerId
 
   before(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
-  let connectionManager: StubbedInstance<ConnectionManager>
   let peerStore: StubbedInstance<PeerStore>
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-    connectionManager = stubInterface<ConnectionManager>()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     peerStore = stubInterface<PeerStore>()
     events = new TypedEventEmitter<Libp2pEvents>()
 
     registrar = new DefaultRegistrar({
       peerId,
-      connectionManager,
       peerStore,
       events,
       logger: defaultLogger()
@@ -83,16 +79,16 @@ describe('registrar topologies', () => {
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(remotePeerId).returns([conn])
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     const topology: Topology = {
       onConnect: (peerId, connection) => {
         expect(peerId.equals(remotePeerId)).to.be.true()
-        expect(connection.id).to.eql(conn.id)
+        expect(connection).to.equal(conn)
 
         onConnectDefer.resolve()
       },
@@ -107,7 +103,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // Peer data is in the peer store
-    peerStore.get.withArgs(matchPeerId(remotePeerId)).resolves({
+    peerStore.get.withArgs(remotePeerId).resolves({
       id: remotePeerId,
       addresses: [],
       protocols: [protocol],
@@ -138,11 +134,11 @@ describe('registrar topologies', () => {
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     const topology: Topology = {
       onConnect: () => {
@@ -166,16 +162,13 @@ describe('registrar topologies', () => {
     })
 
     // Can get details after identify
-    peerStore.get.withArgs(matchPeerId(conn.remotePeer)).resolves({
+    peerStore.get.withArgs(conn.remotePeer).resolves({
       id: conn.remotePeer,
       addresses: [],
       protocols: [protocol],
       metadata: new Map(),
       tags: new Map()
     })
-
-    // we have a connection to this peer
-    connectionManager.getConnections.withArgs(matchPeerId(conn.remotePeer)).returns([conn])
 
     // identify completes
     events.safeDispatchEvent('peer:update', {
@@ -212,26 +205,26 @@ describe('registrar topologies', () => {
     await onDisconnectDefer.promise
   })
 
-  it('should not call topology handlers for transient connection', async () => {
+  it('should not call topology handlers for limited connection', async () => {
     const onConnectDefer = pDefer()
     const onDisconnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // connection is transient
-    conn.transient = true
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    // connection is limited
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
 
     const topology: Topology = {
       onConnect: () => {
-        onConnectDefer.reject(new Error('Topolgy onConnect called for transient connection'))
+        onConnectDefer.reject(new Error('Topolgy onConnect called for limited connection'))
       },
       onDisconnect: () => {
-        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for transient connection'))
+        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for limited connection'))
       }
     }
 
@@ -258,21 +251,21 @@ describe('registrar topologies', () => {
     ])).to.eventually.not.be.rejected()
   })
 
-  it('should call topology onConnect handler for transient connection when explicitly requested', async () => {
+  it('should call topology onConnect handler for limited connection when explicitly requested', async () => {
     const onConnectDefer = pDefer()
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const conn = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-
-    // connection is transient
-    conn.transient = true
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([conn])
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    // connection is limited
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
 
     const topology: Topology = {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: () => {
         onConnectDefer.resolve()
       }
@@ -293,12 +286,12 @@ describe('registrar topologies', () => {
     await expect(onConnectDefer.promise).to.eventually.be.undefined()
   })
 
-  it('should call topology handlers for non-transient connection opened after transient connection', async () => {
+  it('should call topology handlers for non-limited connection opened after limited connection', async () => {
     const onConnectDefer = pDefer()
     let callCount = 0
 
     const topology: Topology = {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: () => {
         callCount++
 
@@ -312,34 +305,34 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const transientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    transientConnection.transient = true
-
-    const nonTransientConnection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
-    nonTransientConnection.transient = false
-
-    // return connection from connection manager
-    connectionManager.getConnections.withArgs(matchPeerId(remotePeerId)).returns([
-      transientConnection,
-      nonTransientConnection
-    ])
-
-    // remote peer connects over transient connection
-    events.safeDispatchEvent('peer:identify', {
-      detail: {
-        peerId: remotePeerId,
-        protocols: [protocol],
-        connection: transientConnection
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const limitedConnection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
       }
     })
 
-    // remote peer opens non-transient connection
+    const nonLimitedConnection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
+
+    // remote peer connects over limited connection
     events.safeDispatchEvent('peer:identify', {
       detail: {
         peerId: remotePeerId,
         protocols: [protocol],
-        connection: nonTransientConnection
+        connection: limitedConnection
+      }
+    })
+
+    // remote peer opens non-limited connection
+    events.safeDispatchEvent('peer:identify', {
+      detail: {
+        peerId: remotePeerId,
+        protocols: [protocol],
+        connection: nonLimitedConnection
       }
     })
 
@@ -355,8 +348,11 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeerId))
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: undefined
+    })
 
     // remote peer runs identify a few times
     for (let i = 0; i < 5; i++) {
@@ -397,7 +393,7 @@ describe('registrar topologies', () => {
     await registrar.register(protocol, topology)
 
     // setup connections before registrar
-    const remotePeerId = await createEd25519PeerId()
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     // peer exists in peer store with the regsitered protocol
     peerStore.get.withArgs(remotePeerId).resolves(stubInterface<Peer>({

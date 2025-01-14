@@ -4,12 +4,12 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { encodeMessage, decodeMessage, message, enumeration } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface FetchRequest {
-  identifier: string
+  identifier: Uint8Array
 }
 
 export namespace FetchRequest {
@@ -22,17 +22,17 @@ export namespace FetchRequest {
           w.fork()
         }
 
-        if ((obj.identifier != null && obj.identifier !== '')) {
+        if ((obj.identifier != null && obj.identifier.byteLength > 0)) {
           w.uint32(10)
-          w.string(obj.identifier)
+          w.bytes(obj.identifier)
         }
 
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          identifier: ''
+          identifier: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -41,12 +41,14 @@ export namespace FetchRequest {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
-              obj.identifier = reader.string()
+            case 1: {
+              obj.identifier = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -61,8 +63,8 @@ export namespace FetchRequest {
     return encodeMessage(obj, FetchRequest.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): FetchRequest => {
-    return decodeMessage(buf, FetchRequest.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchRequest>): FetchRequest => {
+    return decodeMessage(buf, FetchRequest.codec(), opts)
   }
 }
 
@@ -112,10 +114,10 @@ export namespace FetchResponse {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           status: StatusCode.OK,
-          data: new Uint8Array(0)
+          data: uint8ArrayAlloc(0)
         }
 
         const end = length == null ? reader.len : reader.pos + length
@@ -124,15 +126,18 @@ export namespace FetchResponse {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.status = FetchResponse.StatusCode.codec().decode(reader)
               break
-            case 2:
+            }
+            case 2: {
               obj.data = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -147,7 +152,7 @@ export namespace FetchResponse {
     return encodeMessage(obj, FetchResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): FetchResponse => {
-    return decodeMessage(buf, FetchResponse.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchResponse>): FetchResponse => {
+    return decodeMessage(buf, FetchResponse.codec(), opts)
   }
 }

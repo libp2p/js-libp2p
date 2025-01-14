@@ -36,7 +36,7 @@ import { plaintext } from '@libp2p/plaintext'
 
 const node = await createLibp2p({
   // ...other options
-  connectionEncryption: [
+  connectionEncrypters: [
     plaintext()
   ]
 })
@@ -50,7 +50,7 @@ $ npm i @libp2p/plaintext
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pPlaintext` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pPlaintext` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/plaintext/dist/index.min.js"></script>

@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
-import { ERR_TIMEOUT, start } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { byteStream } from 'it-byte-stream'
 import { pair } from 'it-pair'
@@ -33,6 +34,7 @@ function echoStream (): StubbedInstance<Stream> {
 
 describe('ping', () => {
   let components: StubbedPingServiceComponents
+  let ping: PingService
 
   beforeEach(async () => {
     components = {
@@ -40,14 +42,16 @@ describe('ping', () => {
       connectionManager: stubInterface<ConnectionManager>(),
       logger: defaultLogger()
     }
+
+    ping = new PingService(components, {
+      timeout: 50
+    })
+
+    await start(ping)
   })
 
   it('should be able to ping another peer', async () => {
-    const ping = new PingService(components)
-
-    await start(ping)
-
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
@@ -61,11 +65,7 @@ describe('ping', () => {
 
   it('should time out pinging another peer when waiting for a pong', async () => {
     const timeout = 10
-    const ping = new PingService(components)
-
-    await start(ping)
-
-    const remotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const connection = stubInterface<Connection>()
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
@@ -87,26 +87,14 @@ describe('ping', () => {
     // Run ping, should time out
     await expect(ping.ping(remotePeer, {
       signal
-    }))
-      .to.eventually.be.rejected.with.property('code', ERR_TIMEOUT)
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
 
     // should have aborted stream
     expect(stream.abort).to.have.property('called', true)
   })
 
   it('should handle incoming ping', async () => {
-    const ping = new PingService(components)
-
-    await start(ping)
-
-    const remotePeer = await createEd25519PeerId()
-
-    const connection = stubInterface<Connection>()
-    components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
-
-    const stream = echoStream()
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
-
     const duplex = duplexPair<any>()
     const incomingStream = stubInterface<Stream>(duplex[0])
     const outgoingStream = stubInterface<Stream>(duplex[1])
@@ -119,13 +107,49 @@ describe('ping', () => {
       connection: stubInterface<Connection>()
     })
 
-    const input = Uint8Array.from([0, 1, 2, 3, 4])
+    const b = byteStream(outgoingStream)
+
+    const input = new Uint8Array(32).fill(1)
+    void b.write(input)
+    const output = await b.read()
+    expect(output).to.equalBytes(input)
+
+    const input2 = new Uint8Array(32).fill(2)
+    void b.write(input2)
+    const output2 = await b.read()
+    expect(output2).to.equalBytes(input2)
+  })
+
+  it('should abort stream if sending stalls', async () => {
+    const deferred = pDefer<Error>()
+
+    const duplex = duplexPair<any>()
+    const incomingStream = stubInterface<Stream>({
+      ...duplex[0],
+      abort: (err) => {
+        deferred.resolve(err)
+      }
+    })
+    const outgoingStream = stubInterface<Stream>(duplex[1])
+
+    const handler = components.registrar.handle.getCall(0).args[1]
+
+    // handle incoming ping stream
+    handler({
+      stream: incomingStream,
+      connection: stubInterface<Connection>()
+    })
 
     const b = byteStream(outgoingStream)
-    void b.write(input)
 
-    const output = await b.read()
+    // send a ping message plus a few extra bytes
+    void b.write(new Uint8Array(35))
 
-    expect(output).to.equalBytes(input)
+    const pong = await b.read()
+    expect(pong).to.have.lengthOf(32)
+
+    // never send the remaining 29 bytes (e.g. 64 - 35)
+    const err = await deferred.promise
+    expect(err).to.have.property('name', 'TimeoutError')
   })
 })

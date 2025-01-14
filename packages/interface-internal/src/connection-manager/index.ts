@@ -1,18 +1,23 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressOptions } from 'progress-events'
 
-export interface OpenConnectionOptions extends AbortOptions {
+export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * Connection requests with a higher priority will be executed before those
-   * with a lower priority. (default: 50)
+   * with a lower priority.
+   *
+   * @default 50
    */
   priority?: number
 
   /**
    * When opening a connection to a remote peer, if a connection already exists
    * it will be returned instead of creating a new connection. Pass true here
-   * to override that and dial a new connection anyway. (default: false)
+   * to override that and dial a new connection anyway.
+   *
+   * @default false
    */
   force?: boolean
 }
@@ -42,6 +47,12 @@ export interface ConnectionManager {
   getConnectionsMap(): PeerMap<Connection[]>
 
   /**
+   * Returns the configured maximum number of connections this connection
+   * manager will accept
+   */
+  getMaxConnections(): number
+
+  /**
    * Open a connection to a remote peer
    *
    * @example
@@ -66,7 +77,7 @@ export interface ConnectionManager {
   acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
 
   /**
-   * Invoked after upgrading a multiaddr connection has finished
+   * Invoked after upgrading an inbound multiaddr connection has finished
    */
   afterUpgradeInbound(): void
 

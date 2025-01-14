@@ -1,5 +1,5 @@
 import { TypedEventEmitter } from '@libp2p/interface'
-import { unimplemented } from '../error.js'
+import { UnimplementedError } from '../error.js'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -15,7 +15,7 @@ export interface WebRTCDirectListenerInit {
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   async listen (): Promise<void> {
-    throw unimplemented('WebRTCTransport.createListener')
+    throw new UnimplementedError('WebRTCTransport.createListener')
   }
 
   getAddrs (): Multiaddr[] {

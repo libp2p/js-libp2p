@@ -56,7 +56,7 @@ $ npm i @libp2p/record
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pRecord` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pRecord` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/record/dist/index.min.js"></script>

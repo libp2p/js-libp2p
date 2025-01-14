@@ -1,7 +1,9 @@
 {
   "entryPoints": [
     "./src/index.ts",
+    "./src/ciphers/index.ts",
     "./src/hmac/index.ts",
-    "./src/keys/index.ts"
+    "./src/keys/index.ts",
+    "./src/webcrypto/index.ts"
   ]
 }

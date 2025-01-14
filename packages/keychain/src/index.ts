@@ -51,10 +51,9 @@
  * A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
  */
 
-import { DefaultKeychain } from './keychain.js'
-import type { ComponentLogger, KeyType, PeerId } from '@libp2p/interface'
+import { Keychain as KeychainClass } from './keychain.js'
+import type { ComponentLogger, PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
-import type { Multibase } from 'multiformats/bases/interface.js'
 
 export interface DEKConfig {
   hash: string
@@ -87,62 +86,88 @@ export interface KeyInfo {
 
 export interface Keychain {
   /**
-   * Export an existing key as a PEM encrypted PKCS #8 string.
+   * Find a key by name
    *
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
+   * import { generateKeyPair } from '@libp2p/crypto/keys'
+   *
+   * const key = await generateKeyPair('Ed25519')
+   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
+   * const keyInfo2 = await libp2p.keychain.findKeyByName(keyInfo.name)
    * ```
    */
-  exportKey(name: string, password: string): Promise<Multibase<'m'>>
+  findKeyByName(name: string): Promise<KeyInfo>
 
   /**
-   * Import a new key from a PEM encoded PKCS #8 string.
+   * Find a key by id
    *
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const pemKey = await libp2p.keychain.exportKey('keyTest', 'password123')
-   * const keyInfo = await libp2p.keychain.importKey('keyTestImport', pemKey, 'password123')
+   * import { generateKeyPair } from '@libp2p/crypto/keys'
+   *
+   * const key = await generateKeyPair('Ed25519')
+   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
+   * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
    * ```
    */
-  importKey(name: string, pem: string, password: string): Promise<KeyInfo>
+  findKeyById (id: string): Promise<KeyInfo>
 
   /**
-   * Import a new key from a PeerId with a private key component
+   * Import a new private key.
    *
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.importPeer('keyTestImport', peerIdFromString('12D3Foo...'))
+   * import { generateKeyPair } from '@libp2p/crypto/keys'
+   *
+   * const key = await generateKeyPair('Ed25519')
+   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
    * ```
    */
-  importPeer(name: string, peerId: PeerId): Promise<KeyInfo>
+  importKey(name: string, key: PrivateKey): Promise<KeyInfo>
 
   /**
-   * Export an existing key as a PeerId
+   * Export an existing private key.
    *
    * @example
    *
    * ```TypeScript
-   * const peerId = await libp2p.keychain.exportPeerId('key-name')
+   * import { generateKeyPair } from '@libp2p/crypto/keys'
+   *
+   * const key = await generateKeyPair('Ed25519')
+   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
+   * const key = await libp2p.keychain.exportKey(keyInfo.id)
    * ```
    */
-  exportPeerId(name: string): Promise<PeerId>
+  exportKey(name: string): Promise<PrivateKey>
 
   /**
-   * Create a key in the keychain.
+   * Removes a key from the keychain.
    *
    * @example
    *
    * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.removeKey('keyTest')
    * ```
    */
-  createKey(name: string, type: KeyType, size?: number): Promise<KeyInfo>
+  removeKey(name: string): Promise<KeyInfo>
+
+  /**
+   * Rename a key in the keychain. This is done in a batch commit with rollback
+   * so errors thrown during the operation will not cause key loss.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
+   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewNtest')
+   * ```
+   */
+  renameKey(oldName: string, newName: string): Promise<KeyInfo>
 
   /**
    * List all the keys.
@@ -156,60 +181,12 @@ export interface Keychain {
   listKeys(): Promise<KeyInfo[]>
 
   /**
-   * Removes a key from the keychain.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.removeKey('keyTest')
-   * ```
-   */
-  removeKey(name: string): Promise<KeyInfo>
-
-  /**
-   * Rename a key in the keychain.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.keychain.renameKey('keyTest', 'keyNewNtest')
-   * ```
-   */
-  renameKey(oldName: string, newName: string): Promise<KeyInfo>
-
-  /**
-   * Find a key by it's id.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
-   * ```
-   */
-  findKeyById(id: string): Promise<KeyInfo>
-
-  /**
-   * Find a key by it's name.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const keyInfo = await libp2p.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo2 = await libp2p.keychain.findKeyByName('keyTest')
-   * ```
-   */
-  findKeyByName(name: string): Promise<KeyInfo>
-
-  /**
    * Rotate keychain password and re-encrypt all associated keys
    *
    * @example
    *
    * ```TypeScript
-   * await libp2p.keychain.rotateKeychainPass('oldPassword', 'newPassword')
+   * await libp2p.services.keychain.rotateKeychainPass('oldPassword', 'newPassword')
    * ```
    */
   rotateKeychainPass(oldPass: string, newPass: string): Promise<void>
@@ -217,6 +194,6 @@ export interface Keychain {
 
 export function keychain (init: KeychainInit = {}): (components: KeychainComponents) => Keychain {
   return (components: KeychainComponents) => {
-    return new DefaultKeychain(components, init)
+    return new KeychainClass(components, init)
   }
 }

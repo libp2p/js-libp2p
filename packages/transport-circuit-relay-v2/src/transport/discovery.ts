@@ -1,11 +1,11 @@
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { anySignal } from 'any-signal'
-import { raceSignal } from 'race-signal'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
-import type { ComponentLogger, Logger, PeerId, PeerStore, Startable, TopologyFilter } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Peer, PeerId, PeerStore, Startable, TopologyFilter } from '@libp2p/interface'
 import type { ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 export interface RelayDiscoveryEvents {
@@ -40,6 +40,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
   private readonly log: Logger
   private discoveryController: AbortController
   private readonly filter?: TopologyFilter
+  private queue?: PeerQueue
 
   constructor (components: RelayDiscoveryComponents, init: RelayDiscoveryInit = {}) {
     super()
@@ -66,7 +67,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     this.topologyId = await this.registrar.register(RELAY_V2_HOP_CODEC, {
       filter: this.filter,
       onConnect: (peerId) => {
-        this.log('discovered relay %p', peerId)
+        this.log.trace('discovered relay %p queue (length: %d, active %d)', peerId, this.queue?.size, this.queue?.running)
         this.safeDispatchEvent('relay:discover', { detail: peerId })
       }
     })
@@ -113,7 +114,23 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             }
           ],
           orders: [
-            () => Math.random() < 0.5 ? 1 : -1
+            // randomise
+            () => Math.random() < 0.5 ? 1 : -1,
+            // prefer peers we've connected to in the past
+            (a, b) => {
+              const lastDialA = getLastDial(a)
+              const lastDialB = getLastDial(b)
+
+              if (lastDialA > lastDialB) {
+                return -1
+              }
+
+              if (lastDialB > lastDialA) {
+                return 1
+              }
+
+              return 0
+            }
           ]
         }))
 
@@ -126,11 +143,12 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
 
         // perform random walk and dial peers - after identify has run, the network
         // topology will be notified of new relays
-        const queue = new PeerQueue({
+        const queue = this.queue = new PeerQueue({
           concurrency: 5
         })
 
         this.log('start random walk')
+
         for await (const peer of this.randomWalk.walk({ signal: this.discoveryController.signal })) {
           this.log.trace('found random peer %p', peer.id)
 
@@ -155,12 +173,16 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             continue
           }
 
-          this.log.trace('wait for space in queue for %p', peer.id)
+          if (queue.queued > 10) {
+            this.log.trace('wait for space in queue for %p', peer.id)
 
-          // pause the random walk until there is space in the queue
-          await raceSignal(queue.onSizeLessThan(10), this.discoveryController.signal)
+            // pause the random walk until there is space in the queue
+            await queue.onSizeLessThan(10, {
+              signal: this.discoveryController.signal
+            })
+          }
 
-          this.log('adding random peer %p to dial queue (length: %d)', peer.id, queue.size)
+          this.log('adding random peer %p to dial queue (length: %d, active %d)', peer.id, queue.size, queue.running)
 
           // dial the peer - this will cause identify to run and our topology to
           // be notified and we'll attempt to create reservations
@@ -182,6 +204,8 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             })
         }
 
+        this.log('stop random walk')
+
         await queue.onIdle()
       })
       .catch(err => {
@@ -196,4 +220,18 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
     this.running = false
     this.discoveryController?.abort()
   }
+}
+
+/**
+ * Returns the timestamp of the last time we connected to this peer, if we've
+ * not connected to them before return 0
+ */
+function getLastDial (peer: Peer): number {
+  const lastDial = peer.metadata.get('last-dial-success')
+
+  if (lastDial == null) {
+    return 0
+  }
+
+  return new Date(uint8ArrayToString(lastDial)).getTime()
 }

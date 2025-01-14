@@ -123,7 +123,7 @@ describe('Dialer', () => {
       await expect(mss.select(outgoingStream, protocol, {
         log: logger('mss:test-outgoing')
       })).to.eventually.be.rejected
-        .with.property('code', 'ERR_UNSUPPORTED_PROTOCOL')
+        .with.property('name', 'UnsupportedProtocolError')
     })
   })
 

@@ -25,9 +25,6 @@ const IP = process.env.ip ?? '0.0.0.0'
 export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   const options: Libp2pOptions<{ ping: PingService, identify: Identify }> = {
     start: true,
-    connectionManager: {
-      minConnections: 0
-    },
     connectionGater: {
       denyDialMultiaddr: async () => false
     },
@@ -57,14 +54,13 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       }
       break
     case 'webrtc':
-      options.transports = [webRTC(),
+      options.transports = [
+        webRTC(),
         webSockets({ filter: filters.all }), // ws needed to connect to relay
-        circuitRelayTransport({
-          discoverRelays: 1
-        }) // needed to use the relay
+        circuitRelayTransport()
       ]
       options.addresses = {
-        listen: isDialer ? [] : ['/webrtc']
+        listen: isDialer ? [] : ['/p2p-circuit', '/webrtc']
       }
       break
     case 'ws':
@@ -97,7 +93,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       skipMuxer = true
       // Setup yamux and noise to connect to the relay node
       options.streamMuxers = [yamux()]
-      options.connectionEncryption = [noise()]
+      options.connectionEncrypters = [noise()]
       break
     default:
       // Do nothing
@@ -106,7 +102,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   if (!skipSecureChannel) {
     switch (SECURE_CHANNEL) {
       case 'noise':
-        options.connectionEncryption = [noise()]
+        options.connectionEncrypters = [noise()]
         break
       default:
         throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)

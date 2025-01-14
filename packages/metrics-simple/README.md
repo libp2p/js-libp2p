@@ -53,7 +53,7 @@ $ npm i @libp2p/simple-metrics
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pSimpleMetrics` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pSimpleMetrics` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/simple-metrics/dist/index.min.js"></script>

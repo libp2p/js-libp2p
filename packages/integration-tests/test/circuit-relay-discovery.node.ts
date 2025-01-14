@@ -33,7 +33,7 @@ describe('circuit-relay discovery', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -61,7 +61,7 @@ describe('circuit-relay discovery', () => {
       streamMuxers: [
         yamux()
       ],
-      connectionEncryption: [
+      connectionEncrypters: [
         plaintext()
       ],
       services: {
@@ -92,18 +92,18 @@ describe('circuit-relay discovery', () => {
     ;[local, remote] = await Promise.all([
       createLibp2p({
         addresses: {
-          listen: ['/ip4/127.0.0.1/tcp/0']
+          listen: [
+            '/p2p-circuit'
+          ]
         },
         transports: [
           tcp(),
-          circuitRelayTransport({
-            discoverRelays: 1
-          })
+          circuitRelayTransport()
         ],
         streamMuxers: [
           yamux()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {
@@ -117,18 +117,18 @@ describe('circuit-relay discovery', () => {
       }),
       createLibp2p({
         addresses: {
-          listen: ['/ip4/127.0.0.1/tcp/0']
+          listen: [
+            '/p2p-circuit'
+          ]
         },
         transports: [
           tcp(),
-          circuitRelayTransport({
-            discoverRelays: 1
-          })
+          circuitRelayTransport()
         ],
         streamMuxers: [
           yamux()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         services: {

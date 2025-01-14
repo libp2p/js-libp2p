@@ -14,7 +14,7 @@ export interface StunServer {
 }
 
 export interface Callback {
-  (ufrag: string, pwd: string, remoteHost: string, remotePort: number, remoteFamily: number): void
+  (ufrag: string, remoteHost: string, remotePort: number): void
 }
 
 async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log: Logger, cb: Callback): Promise<StunServer> {
@@ -40,14 +40,14 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
       const usernameAttribute = stunMessage.getAttribute(stun.constants.STUN_ATTR_USERNAME)
       const username: string | undefined = usernameAttribute?.value?.toString()
 
-      if (username == null || !username.startsWith(UFRAG_PREFIX)) {
+      if (username?.startsWith(UFRAG_PREFIX) !== true) {
         log.trace('ufrag missing from incoming STUN message from %s:%s', rinfo.address, rinfo.port)
         return
       }
 
-      const [ufrag, pwd] = username.split(':')
+      const [ufrag] = username.split(':')
 
-      cb(ufrag, pwd, rinfo.address, rinfo.port, rinfo.family === 'IPv4' ? 4 : 6)
+      cb(ufrag, rinfo.address, rinfo.port)
     } catch (err) {
       log.error('could not process incoming STUN data from %o', rinfo, err)
     }
@@ -67,17 +67,17 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
 
 let listening = false
 
-async function libjuiceListener (host: string, port: number, ipVersion: 4 | 6, log: Logger, cb: Callback): Promise<StunServer> {
+async function libjuiceListener (host: string, port: number, cb: Callback): Promise<StunServer> {
   if (listening) {
     throw new Error('There can only be one WebRTC-Direct listener per-process due to the limitations of libjuice. Please pass `useLibjuice=false` to override this, but this may break NAT traversal.')
   }
 
   onUnhandledStunRequest(host, port, (request) => {
-    if (request.ufrag == null || request.pwd == null) {
+    if (request.remoteUfrag == null) {
       return
     }
 
-    cb(request.ufrag, request.pwd, request.address, request.port, request.family)
+    cb(request.remoteUfrag, request.address, request.port)
   })
 
   return {
@@ -104,5 +104,5 @@ export async function stunListener (host: string, port: number, ipVersion: 4 | 6
     return dgramListener(host, port, ipVersion, log, cb)
   }
 
-  return libjuiceListener(host, port, ipVersion, log, cb)
+  return libjuiceListener(host, port, cb)
 }

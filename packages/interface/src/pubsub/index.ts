@@ -1,5 +1,6 @@
 import type { Stream } from '../connection/index.js'
 import type { TypedEventTarget } from '../event-target.js'
+import type { PublicKey } from '../keys/index.js'
 import type { PeerId } from '../peer-id/index.js'
 import type { Pushable } from 'it-pushable'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -35,7 +36,7 @@ export interface SignedMessage {
   data: Uint8Array
   sequenceNumber: bigint
   signature: Uint8Array
-  key: Uint8Array
+  key: PublicKey
 }
 
 export interface UnsignedMessage {
@@ -114,7 +115,7 @@ export interface PubSubInit {
   maxOutboundStreams?: number
 }
 
-interface Subscription {
+export interface Subscription {
   topic: string
   subscribe: boolean
 }
@@ -266,4 +267,17 @@ export interface PeerStreamEvents {
   'stream:inbound': CustomEvent<never>
   'stream:outbound': CustomEvent<never>
   'close': CustomEvent<never>
+}
+
+/**
+ * All Pubsub implementations must use this symbol as the name of a property
+ * with a boolean `true` value
+ */
+export const pubSubSymbol = Symbol.for('@libp2p/pubsub')
+
+/**
+ * Returns true if the passed argument is a PubSub implementation
+ */
+export function isPubSub (obj?: any): obj is PubSub {
+  return Boolean(obj?.[pubSubSymbol])
 }

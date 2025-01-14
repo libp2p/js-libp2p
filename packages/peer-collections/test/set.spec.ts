@@ -1,5 +1,5 @@
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { PeerSet } from '../src/index.js'
 import type { PeerId } from '@libp2p/interface'
@@ -7,18 +7,18 @@ import type { PeerId } from '@libp2p/interface'
 describe('peer-set', () => {
   it('should return a set', async () => {
     const set = new PeerSet()
-    const peer = await createEd25519PeerId()
+    const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     set.add(peer)
 
-    const peer2 = peerIdFromBytes(peer.toBytes())
+    const peer2 = peerIdFromMultihash(peer.toMultihash())
 
     expect(set.has(peer2)).to.be.true()
   })
 
   it('should create a set with PeerSet contents', async () => {
     const set1 = new PeerSet()
-    const peer = await createEd25519PeerId()
+    const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     set1.add(peer)
 
@@ -28,14 +28,14 @@ describe('peer-set', () => {
   })
 
   it('should create a set with Array contents', async () => {
-    const peer = await createEd25519PeerId()
+    const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const set = new PeerSet([peer])
 
     expect(set.has(peer)).to.be.true()
   })
 
   it('should create a set with Set contents', async () => {
-    const peer = await createEd25519PeerId()
+    const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const s = new Set<PeerId>()
     s.add(peer)
     const set = new PeerSet(s)
@@ -44,8 +44,8 @@ describe('peer-set', () => {
   })
 
   it('should return intersection', async () => {
-    const peer1 = await createEd25519PeerId()
-    const peer2 = await createEd25519PeerId()
+    const peer1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const s1 = new PeerSet([peer1])
     const s2 = new PeerSet([peer1, peer2])
@@ -68,8 +68,8 @@ describe('peer-set', () => {
   })
 
   it('should return difference', async () => {
-    const peer1 = await createEd25519PeerId()
-    const peer2 = await createEd25519PeerId()
+    const peer1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const s1 = new PeerSet([peer1])
     const s2 = new PeerSet([peer1, peer2])
@@ -85,8 +85,8 @@ describe('peer-set', () => {
   })
 
   it('should return union', async () => {
-    const peer1 = await createEd25519PeerId()
-    const peer2 = await createEd25519PeerId()
+    const peer1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const s1 = new PeerSet([peer1])
     const s2 = new PeerSet([peer1, peer2])

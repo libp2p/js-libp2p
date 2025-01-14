@@ -1,12 +1,14 @@
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { InvalidParametersError } from '@libp2p/interface'
+import { multiaddr } from '@multiformats/multiaddr'
 import { base64url } from 'multiformats/bases/base64'
-import { bases } from 'multiformats/basics'
+import { bases, digest } from 'multiformats/basics'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
-import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../../error.js'
+import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../../error.js'
+import { MAX_MESSAGE_SIZE } from '../../stream.js'
 import { CERTHASH_CODE } from '../transport.js'
-import type { HashCode, HashName } from 'multihashes'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 /**
  * Get base2 | identity decoders
@@ -23,6 +25,7 @@ export function getFingerprintFromSdp (sdp: string | undefined): string | undefi
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
 }
+
 /**
  * Get base2 | identity decoders
  */
@@ -42,7 +45,7 @@ export function certhash (ma: Multiaddr): string {
   const certhash = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0]
 
   if (certhash === undefined || certhash === '') {
-    throw inappropriateMultiaddr(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
+    throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
   }
 
   return certhash
@@ -51,15 +54,14 @@ export function certhash (ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
-  const mbdecoded = mbdecoder.decode(certhash)
-  return multihashes.decode(mbdecoded)
+export function decodeCerthash (certhash: string): MultihashDigest {
+  return digest.decode(mbdecoder.decode(certhash))
 }
 
 export function certhashToFingerprint (certhash: string): string {
   const mbdecoded = decodeCerthash(certhash)
 
-  return new Array(mbdecoded.length)
+  return new Array(mbdecoded.bytes.length)
     .fill(0)
     .map((val, index) => {
       return mbdecoded.digest[index].toString(16).padStart(2, '0').toUpperCase()
@@ -72,12 +74,12 @@ export function certhashToFingerprint (certhash: string): string {
  */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
   const mhdecoded = decodeCerthash(certhash(ma))
-  const prefix = toSupportedHashFunction(mhdecoded.name)
+  const prefix = toSupportedHashFunction(mhdecoded.code)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
   const sdp = fingerprint.match(/.{1,2}/g)
 
   if (sdp == null) {
-    throw invalidFingerprint(fingerprint, ma.toString())
+    throw new InvalidFingerprintError(fingerprint, ma.toString())
   }
 
   return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
@@ -94,23 +96,23 @@ export function fingerprint2Ma (fingerprint: string): Multiaddr {
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (name: multihashes.HashName): string {
-  switch (name) {
-    case 'sha1':
-      return 'sha-1'
-    case 'sha2-256':
-      return 'sha-256'
-    case 'sha2-512':
-      return 'sha-512'
+export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'SHA-512' {
+  switch (code) {
+    case 0x11:
+      return 'SHA-1'
+    case 0x12:
+      return 'SHA-256'
+    case 0x13:
+      return 'SHA-512'
     default:
-      throw unsupportedHashAlgorithm(name)
+      throw new UnsupportedHashAlgorithmError(code)
   }
 }
 
 /**
  * Create an offer SDP message from a multiaddr
  */
-export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string, pwd: string): RTCSessionDescriptionInit {
+export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
 
@@ -130,7 +132,7 @@ a=sctp-port:5000
 a=max-message-size:16384
 a=setup:active
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${pwd}
+a=ice-pwd:${ufrag}
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host
 a=end-of-candidates
 `
@@ -144,7 +146,7 @@ a=end-of-candidates
 /**
  * Create an answer SDP message from a multiaddr
  */
-export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string, pwd: string): RTCSessionDescriptionInit {
+export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
   const [CERTFP] = ma2Fingerprint(ma)
@@ -158,10 +160,10 @@ m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${pwd}
+a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
-a=max-message-size:16384
+a=max-message-size:${MAX_MESSAGE_SIZE}
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host
 a=end-of-candidates
 `
@@ -177,7 +179,7 @@ a=end-of-candidates
  */
 export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp === undefined) {
-    throw invalidArgument("Can't munge a missing SDP")
+    throw new InvalidParametersError("Can't munge a missing SDP")
   }
 
   const lineBreak = desc.sdp.includes('\r\n') ? '\r\n' : '\n'

@@ -1,8 +1,9 @@
 /* eslint-env mocha */
 
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -36,7 +37,7 @@ describe('rpc - handlers - GetValue', () => {
     targetPeer = await createPeerId()
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
-    peerStore = new PersistentPeerStore({
+    peerStore = persistentPeerStore({
       peerId,
       datastore,
       events: new TypedEventEmitter<Libp2pEvents>(),
@@ -51,7 +52,8 @@ describe('rpc - handlers - GetValue', () => {
 
     handler = new GetValueHandler(components, {
       peerRouting,
-      logPrefix: ''
+      logPrefix: 'dht',
+      datastorePrefix: '/dht'
     })
   })
 
@@ -66,7 +68,7 @@ describe('rpc - handlers - GetValue', () => {
     try {
       await handler.handle(sourcePeer, msg)
     } catch (err: any) {
-      expect(err.code).to.eql('ERR_INVALID_KEY')
+      expect(err.name).to.equal('InvalidMessageError')
       return
     }
 
@@ -78,7 +80,7 @@ describe('rpc - handlers - GetValue', () => {
     const value = uint8ArrayFromString('world')
     const record = new Libp2pRecord(key, value, new Date())
 
-    await datastore.put(utils.bufferToRecordKey(key), record.serialize().subarray())
+    await datastore.put(utils.bufferToRecordKey('/dht/record', key), record.serialize().subarray())
 
     const msg: Message = {
       type: T,
@@ -125,7 +127,7 @@ describe('rpc - handlers - GetValue', () => {
       throw new Error('No response received from handler')
     }
 
-    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.toBytes())
+    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.toMultihash().bytes)
   })
 
   describe('public key', () => {
@@ -158,7 +160,7 @@ describe('rpc - handlers - GetValue', () => {
 
       const responseRecord = Libp2pRecord.deserialize(response.record)
 
-      expect(responseRecord).to.have.property('value').that.equalBytes(targetPeer.publicKey)
+      expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.publicKey))
     })
 
     it('peer not in peerstore', async () => {

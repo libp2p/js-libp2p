@@ -32,7 +32,7 @@ describe('circuit-relay', () => {
           yamux(),
           mplex()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         connectionGater: {
@@ -58,7 +58,7 @@ describe('circuit-relay', () => {
           yamux(),
           mplex()
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
           plaintext()
         ],
         connectionGater: {

@@ -1,3 +1,5 @@
+import { KEEP_ALIVE } from '@libp2p/interface'
+
 const second = 1000
 const minute = 60 * second
 
@@ -14,11 +16,6 @@ export const DEFAULT_MAX_RESERVATION_STORE_SIZE = 15
 /**
  * How often to check for reservation expiry
  */
-export const DEFAULT_MAX_RESERVATION_CLEAR_INTERVAL = 300 * second
-
-/**
- * How often to check for reservation expiry
- */
 export const DEFAULT_MAX_RESERVATION_TTL = 2 * 60 * minute
 
 /**
@@ -27,9 +24,9 @@ export const DEFAULT_MAX_RESERVATION_TTL = 2 * 60 * minute
 export const DEFAULT_RESERVATION_CONCURRENCY = 1
 
 /**
- * How long to wait for a reservation attempt to finsih
+ * How long to wait for a reservation attempt to finish
  */
-export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 1000
+export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 2000
 
 /**
  * How long to let the reservation attempt queue to grow
@@ -38,7 +35,8 @@ export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
 
 export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
-export const RELAY_TAG = 'circuit-relay-relay'
+export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-circuit-relay`
+export const KEEP_ALIVE_SOURCE_TAG = `${KEEP_ALIVE}-circuit-relay-source`
 
 // circuit v2 connection limits
 // https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go#L61-L66
@@ -70,11 +68,6 @@ export const DEFAULT_HOP_TIMEOUT = 30 * second
 export const DEFAULT_ADVERT_BOOT_DELAY = 30 * second
 
 export const MAX_CONNECTIONS = 300
-
-export const ERR_NO_ROUTERS_AVAILABLE = 'ERR_NO_ROUTERS_AVAILABLE'
-export const ERR_RELAYED_DIAL = 'ERR_RELAYED_DIAL'
-export const ERR_HOP_REQUEST_FAILED = 'ERR_HOP_REQUEST_FAILED'
-export const ERR_TRANSFER_LIMIT_EXCEEDED = 'ERR_TRANSFER_LIMIT_EXCEEDED'
 
 export const DEFAULT_DISCOVERY_FILTER_SIZE = 4096
 export const DEFAULT_DISCOVERY_FILTER_ERROR_RATE = 0.001

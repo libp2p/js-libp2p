@@ -1,14 +1,16 @@
-import { peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import debug from 'debug'
 import { Key } from 'interface-datastore'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
+import { CID } from 'multiformats/cid'
+import * as Digest from 'multiformats/hashes/digest'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import debug from 'weald'
 import { logger, peerLogger } from '../src/index.js'
 
 describe('logger', () => {
@@ -16,7 +18,7 @@ describe('logger', () => {
     const log = logger('hello')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.not.true()
+    expect(log).to.have.property('enabled').that.is.not.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -24,12 +26,14 @@ describe('logger', () => {
   })
 
   it('creates a peer logger', () => {
-    const peerId = peerIdFromString('12D3KooWLkHeUp6r5unBZKbYwV54CgKVxHuJDroFoigr8mF11CKW')
+    const buf = uint8ArrayFromString('12D3KooWLkHeUp6r5unBZKbYwV54CgKVxHuJDroFoigr8mF11CKW', 'base58btc')
+    const multihash = Digest.decode(buf)
+    const peerId = peerIdFromMultihash(multihash)
     const logger = peerLogger(peerId)
     const log = logger.forComponent('hello')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.not.true()
+    expect(log).to.have.property('enabled').that.is.not.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -42,7 +46,7 @@ describe('logger', () => {
     const log = logger('enabled-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.not.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -55,7 +59,7 @@ describe('logger', () => {
     const log = logger('enabled-with-error-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -68,7 +72,7 @@ describe('logger', () => {
     const log = logger('enabled-with-trace-logger')
 
     expect(log).to.be.a('function')
-    expect(log).to.a.property('enabled').that.is.true()
+    expect(log).to.have.property('enabled').that.is.true()
     expect(log).to.have.property('error').that.is.a('function')
     expect(log).to.have.nested.property('error.enabled').that.is.true()
     expect(log).to.have.property('trace').that.is.a('function')
@@ -107,20 +111,21 @@ describe('logger', () => {
   })
 
   it('test peerId formatter', () => {
-    const peerId = peerIdFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
+    const buf = uint8ArrayFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb', 'base58btc')
+    const multihash = Digest.decode(buf)
+    const peerId = peerIdFromMultihash(multihash)
 
     expect(debug.formatters.p(peerId)).to.equal(peerId.toString())
   })
 
   it('test cid formatter', () => {
-    const peerId = peerIdFromString('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
-    const cid = peerId.toCID()
+    const cid = CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
 
     expect(debug.formatters.c(cid)).to.equal(cid.toString())
   })
 
   it('test base58 formatter', () => {
-    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base58btc')
+    const buf = uint8ArrayFromString('12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ', 'base58btc')
 
     expect(debug.formatters.b(buf)).to.equal(base58btc.baseEncode(buf))
   })
@@ -132,7 +137,7 @@ describe('logger', () => {
   })
 
   it('test base64 formatter', () => {
-    const buf = uint8ArrayFromString('12D3KooWbtp1AcgweFSArD7dbKWYpAr8MZR1tofwNwLFLjeNGLWa', 'base64')
+    const buf = uint8ArrayFromString('12D3KooWEtDzsSCKKhvHz2k2nTgDUY9eUne9as6XB7Az2ftekLZJ', 'base64')
 
     expect(debug.formatters.m(buf)).to.equal(base64.baseEncode(buf))
   })

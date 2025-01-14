@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
-import { CodeError } from '@libp2p/interface'
-import { matchMultiaddr } from '@libp2p/interface-compliance-tests/matchers'
-import { mockConnection, mockDuplex, mockMultiaddrConnection } from '@libp2p/interface-compliance-tests/mocks'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { NotFoundError } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
+import { raceSignal } from 'race-signal'
 import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
@@ -28,7 +28,7 @@ describe('dial queue', () => {
   let dialer: DialQueue
 
   beforeEach(async () => {
-    const peerId = await createEd25519PeerId()
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     components = {
       peerId,
@@ -44,12 +44,10 @@ describe('dial queue', () => {
     if (dialer != null) {
       dialer.stop()
     }
-
-    sinon.reset()
   })
 
   it('should end when a single multiaddr dials succeeds', async () => {
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const connection = stubInterface<Connection>()
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
@@ -85,11 +83,11 @@ describe('dial queue', () => {
   })
 
   it('should load addresses from the peer routing when peer id is not in the peer store', async () => {
-    const peerId = await createEd25519PeerId()
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
-    components.peerStore.get.withArgs(peerId).rejects(new CodeError('Not found', 'ERR_NOT_FOUND'))
+    components.peerStore.get.withArgs(peerId).rejects(new NotFoundError('Not found'))
     components.peerRouting.findPeer.withArgs(peerId).resolves({
       id: peerId,
       multiaddrs: [
@@ -98,7 +96,7 @@ describe('dial queue', () => {
     })
 
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
-    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+    components.transportManager.dial.withArgs(ma.encapsulate(`/p2p/${peerId}`)).resolves(connection)
 
     dialer = new DialQueue(components)
 
@@ -106,8 +104,8 @@ describe('dial queue', () => {
   })
 
   it('should load addresses from the peer routing when none are present in the peer store', async () => {
-    const peerId = await createEd25519PeerId()
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
     const ma = multiaddr('/ip4/127.0.0.1/tcp/4001')
 
     components.peerStore.get.withArgs(peerId).resolves({
@@ -125,7 +123,7 @@ describe('dial queue', () => {
     })
 
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
-    components.transportManager.dial.withArgs(matchMultiaddr(ma.encapsulate(`/p2p/${peerId}`))).resolves(connection)
+    components.transportManager.dial.withArgs(ma.encapsulate(`/p2p/${peerId}`)).resolves(connection)
 
     dialer = new DialQueue(components)
 
@@ -133,7 +131,7 @@ describe('dial queue', () => {
   })
 
   it('should end when a single multiaddr dials succeeds even when a final dial fails', async () => {
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), await createEd25519PeerId()))
+    const connection = stubInterface<Connection>()
     const deferredConn = pDefer<Connection>()
     const actions: Record<string, () => Promise<Connection>> = {
       '/ip4/127.0.0.1/tcp/1231': async () => Promise.reject(new Error('dial failure')),
@@ -198,7 +196,7 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateCodeError')
+      expect(err).to.have.property('name', 'AggregateError')
     }
 
     expect(actions['/ip4/127.0.0.1/tcp/1231']).to.have.property('callCount', 1)
@@ -234,15 +232,15 @@ describe('dial queue', () => {
       await dialer.dial(Object.keys(actions).map(str => multiaddr(str)))
       expect.fail('Should have thrown')
     } catch (err: any) {
-      expect(err).to.have.property('name', 'AggregateCodeError')
+      expect(err).to.have.property('name', 'AggregateError')
     }
 
     expect(reject).to.have.property('callCount', addrs.length)
   })
 
   it('should ignore DNS addresses for other peers', async () => {
-    const remotePeer = await createEd25519PeerId()
-    const otherRemotePeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const otherRemotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const ma = multiaddr(`/dnsaddr/example.com/p2p/${remotePeer}`)
     const maStr = `/ip4/123.123.123.123/tcp/2348/p2p/${remotePeer}`
     const resolvedAddresses = [
@@ -269,7 +267,9 @@ describe('dial queue', () => {
     })
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
 
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     components.transportManager.dial.callsFake(async (ma, opts = {}) => {
       if (ma.toString() === maStr) {
@@ -289,8 +289,8 @@ describe('dial queue', () => {
   })
 
   it('should dial WebRTC address with peer id appended', async () => {
-    const remotePeer = await createEd25519PeerId()
-    const relayPeer = await createEd25519PeerId()
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const ma = multiaddr(`/ip4/123.123.123.123/tcp/123/ws/p2p/${relayPeer}/p2p-circuit/webrtc`)
     const maWithPeer = `${ma}/p2p/${remotePeer}`
 
@@ -310,7 +310,9 @@ describe('dial queue', () => {
       }]
     })
 
-    const connection = mockConnection(mockMultiaddrConnection(mockDuplex(), remotePeer))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     components.transportManager.dial.callsFake(async (ma, opts = {}) => {
       if (ma.toString() === maWithPeer) {
@@ -323,5 +325,56 @@ describe('dial queue', () => {
 
     dialer = new DialQueue(components)
     await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
+  })
+
+  it('should respect user dial signal over default timeout if it is passed', async () => {
+    const dialTimeout = 10
+    const userTimeout = 500
+    const connection = stubInterface<Connection>()
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, options) => {
+      await raceSignal(delay(userTimeout / 2), options?.signal)
+
+      return connection
+    })
+
+    dialer = new DialQueue(components, {
+      dialTimeout
+    })
+
+    // dial slow peer with much longer timeout than the default
+    await expect(dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234'), {
+      signal: AbortSignal.timeout(userTimeout)
+    }))
+      .to.eventually.equal(connection)
+  })
+
+  it('should respect user dial signal during parallel dial of the same peer', async () => {
+    const dialTimeout = 10
+    const userTimeout = 500
+    const connection = stubInterface<Connection>()
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, options) => {
+      await raceSignal(delay(userTimeout / 2), options?.signal)
+
+      return connection
+    })
+
+    dialer = new DialQueue(components, {
+      dialTimeout
+    })
+
+    const all = await Promise.allSettled([
+      dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb')),
+      dialer.dial(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb'), {
+        signal: AbortSignal.timeout(userTimeout)
+      })
+    ])
+
+    expect(all[0].status).to.equal('rejected', 'did not respect default dial timeout')
+    expect(all[1].status).to.equal('fulfilled', 'did not respect user dial timeout')
+    expect(components.transportManager.dial.callCount).to.equal(1, 'should have coalesced multiple dials to same dial')
   })
 })

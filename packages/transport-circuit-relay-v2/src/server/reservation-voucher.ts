@@ -4,7 +4,7 @@ import type { PeerId, Record } from '@libp2p/interface'
 export interface ReservationVoucherOptions {
   relay: PeerId
   peer: PeerId
-  expiration: number
+  expiration: bigint
 }
 
 export class ReservationVoucherRecord implements Record {
@@ -13,7 +13,7 @@ export class ReservationVoucherRecord implements Record {
 
   private readonly relay: PeerId
   private readonly peer: PeerId
-  private readonly expiration: number
+  private readonly expiration: bigint
 
   constructor ({ relay, peer, expiration }: ReservationVoucherOptions) {
     this.relay = relay
@@ -23,8 +23,8 @@ export class ReservationVoucherRecord implements Record {
 
   marshal (): Uint8Array {
     return ReservationVoucher.encode({
-      relay: this.relay.toBytes(),
-      peer: this.peer.toBytes(),
+      relay: this.relay.toMultihash().bytes,
+      peer: this.peer.toMultihash().bytes,
       expiration: BigInt(this.expiration)
     })
   }

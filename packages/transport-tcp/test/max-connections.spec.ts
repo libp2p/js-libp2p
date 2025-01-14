@@ -1,14 +1,29 @@
 import net from 'node:net'
 import { promisify } from 'node:util'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
+import type { Connection, Upgrader } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('maxConnections', () => {
   const afterEachCallbacks: Array<() => Promise<any> | any> = []
+  let upgrader: StubbedInstance<Upgrader>
+
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
+    })
+  })
+
   afterEach(async () => {
     await Promise.all(afterEachCallbacks.map(fn => fn()))
     afterEachCallbacks.length = 0
@@ -19,22 +34,13 @@ describe('maxConnections', () => {
     const socketCount = 4
     const port = 9900
 
-    const seenRemoteConnections = new Set<string>()
     const transport = tcp({ maxConnections })({
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
     const listener = transport.createListener({ upgrader })
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    afterEachCallbacks.push(async () => listener.close())
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
-
-    listener.addEventListener('connection', (conn) => {
-      seenRemoteConnections.add(conn.detail.remoteAddr.toString())
-    })
 
     const sockets: net.Socket[] = []
 
@@ -42,7 +48,6 @@ describe('maxConnections', () => {
       const socket = net.connect({ host: '127.0.0.1', port })
       sockets.push(socket)
 
-      // eslint-disable-next-line @typescript-eslint/promise-function-async
       afterEachCallbacks.unshift(async () => {
         if (!socket.destroyed) {
           socket.destroy()
@@ -68,7 +73,7 @@ describe('maxConnections', () => {
     // Wait for some time for server to drop all sockets above limit
     await promisify(setTimeout)(250)
 
-    expect(seenRemoteConnections.size).equals(maxConnections, 'wrong serverConnections')
+    expect(upgrader.upgradeInbound.callCount).equals(maxConnections, 'wrong serverConnections')
 
     for (let i = 0; i < socketCount; i++) {
       const socket = sockets[i]

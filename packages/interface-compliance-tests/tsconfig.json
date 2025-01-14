@@ -9,10 +9,19 @@
   ],
   "references": [
     {
+      "path": "../connection-encrypter-plaintext"
+    },
+    {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface"
     },
     {
       "path": "../interface-internal"
+    },
+    {
+      "path": "../libp2p"
     },
     {
       "path": "../logger"
@@ -27,7 +36,10 @@
       "path": "../peer-id"
     },
     {
-      "path": "../peer-id-factory"
+      "path": "../protocol-echo"
+    },
+    {
+      "path": "../transport-memory"
     },
     {
       "path": "../utils"

@@ -1,239 +1,205 @@
 /* eslint-env mocha */
+import { isPrivateKey, isPublicKey } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as crypto from '../../src/index.js'
-import { Ed25519PrivateKey } from '../../src/keys/ed25519-class.js'
+import { randomBytes } from '../../src/index.js'
+import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
+import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
-
-const ed25519 = crypto.keys.supportedKeys.ed25519
-
-/** @typedef {import("libp2p-crypto").PrivateKey} PrivateKey */
+import type { Ed25519PrivateKey } from '@libp2p/interface'
 
 describe('ed25519', function () {
   this.timeout(20 * 1000)
   let key: Ed25519PrivateKey
-  before(async () => {
-    const generated = await crypto.keys.generateKeyPair('Ed25519', 512)
 
-    if (!(generated instanceof Ed25519PrivateKey)) {
+  before(async () => {
+    key = await generateKeyPair('Ed25519')
+
+    if (key.type !== 'Ed25519') {
       throw new Error('Key was incorrect type')
     }
-
-    key = generated
   })
 
   it('generates a valid key', async () => {
-    expect(key).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
-    const digest = await key.hash()
-    expect(digest).to.have.length(34)
+    expect(key).to.have.property('type', 'Ed25519')
+    expect(key.equals(key)).to.be.true()
+    expect(key.raw).to.have.length(64)
+    expect(key.publicKey.raw).to.have.length(32)
   })
 
   it('generates a valid key from seed', async () => {
-    const seed = crypto.randomBytes(32)
-    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
-    expect(seededkey).to.be.an.instanceof(ed25519.Ed25519PrivateKey)
-    const digest = await seededkey.hash()
-    expect(digest).to.have.length(34)
+    const seed = randomBytes(32)
+    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededkey).to.have.property('type', 'Ed25519')
+    expect(key.raw).to.have.length(64)
+    expect(key.publicKey.raw).to.have.length(32)
   })
 
   it('generates the same key from the same seed', async () => {
-    const seed = crypto.randomBytes(32)
-    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
-    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed, 512)
-    expect(seededkey1.equals(seededkey2)).to.eql(true)
-    expect(seededkey1.public.equals(seededkey2.public)).to.eql(true)
+    const seed = randomBytes(32)
+    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed)
+    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededkey1.equals(seededkey2)).to.be.true()
+    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.true()
   })
 
   it('generates different keys for different seeds', async () => {
-    const seed1 = crypto.randomBytes(32)
-    const seededkey1 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed1, 512)
-    const seed2 = crypto.randomBytes(32)
-    const seededkey2 = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed2, 512)
-    expect(seededkey1.equals(seededkey2)).to.eql(false)
-    expect(seededkey1.public.equals(seededkey2.public)).to.eql(false)
+    const seed1 = randomBytes(32)
+    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed1)
+    const seed2 = randomBytes(32)
+    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed2)
+    expect(seededkey1.equals(seededkey2)).to.be.false()
+    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.false()
   })
 
   it('signs', async () => {
-    const text = crypto.randomBytes(512)
-    const sig = key.sign(text)
-    const res = key.public.verify(text, sig)
-    expect(res).to.be.eql(true)
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+    const res = key.publicKey.verify(text, sig)
+    expect(res).to.be.be.true()
   })
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      crypto.randomBytes(512),
-      crypto.randomBytes(512)
+      randomBytes(512),
+      randomBytes(512)
     )
-    const sig = key.sign(text)
+    const sig = await key.sign(text)
 
     expect(key.sign(text.subarray()))
       .to.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    expect(key.public.verify(text, sig))
+    expect(key.publicKey.verify(text, sig))
       .to.be.true('did not verify message as list')
-    expect(key.public.verify(text.subarray(), sig))
+    expect(key.publicKey.verify(text.subarray(), sig))
       .to.be.true('did not verify message as single buffer')
   })
 
   it('encoding', () => {
-    const keyMarshal = key.marshal()
-    const key2 = ed25519.unmarshalEd25519PrivateKey(keyMarshal)
-    const keyMarshal2 = key2.marshal()
+    const keyMarshal = key.raw
+    const key2 = unmarshalEd25519PrivateKey(keyMarshal)
+    const keyMarshal2 = key2.raw
 
-    expect(keyMarshal).to.eql(keyMarshal2)
+    expect(keyMarshal).to.equalBytes(keyMarshal2)
 
-    const pk = key.public
-    const pkMarshal = pk.marshal()
-    const pk2 = ed25519.unmarshalEd25519PublicKey(pkMarshal)
-    const pkMarshal2 = pk2.marshal()
+    const pk = key.publicKey
+    const pkMarshal = pk.raw
+    const pk2 = unmarshalEd25519PublicKey(pkMarshal)
+    const pkMarshal2 = pk2.raw
 
-    expect(pkMarshal).to.eql(pkMarshal2)
+    expect(pkMarshal).to.equalBytes(pkMarshal2)
   })
 
-  it('key id', async () => {
-    const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
-    const id = await key.id()
-    expect(id).to.eql('12D3KooWLqLxEfJ9nDdEe8Kh8PFvNPQRYDQBwyL7CMM7HhVd5LsX')
-  })
-
-  it('should export a password encrypted libp2p-key', async () => {
-    const key = await crypto.keys.generateKeyPair('Ed25519')
-
-    if (!(key instanceof Ed25519PrivateKey)) {
-      throw new Error('Key was incorrect type')
-    }
-
-    const encryptedKey = await key.export('my secret')
-    // Import the key
-    const importedKey = await crypto.keys.importKey(encryptedKey, 'my secret')
-
-    if (!(importedKey instanceof Ed25519PrivateKey)) {
-      throw new Error('Key was incorrect type')
-    }
-
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should export a libp2p-key with no password to encrypt', async () => {
-    const key = await crypto.keys.generateKeyPair('Ed25519')
-
-    if (!(key instanceof Ed25519PrivateKey)) {
-      throw new Error('Key was incorrect type')
-    }
-
-    const encryptedKey = await key.export('')
-    // Import the key
-    const importedKey = await crypto.keys.importKey(encryptedKey, '')
-
-    if (!(importedKey instanceof Ed25519PrivateKey)) {
-      throw new Error('Key was incorrect type')
-    }
-
-    expect(key.equals(importedKey)).to.equal(true)
-  })
-
-  it('should fail to import libp2p-key with wrong password', async () => {
-    const key = await crypto.keys.generateKeyPair('Ed25519')
-    const encryptedKey = await key.export('my secret', 'libp2p-key')
-    try {
-      await crypto.keys.importKey(encryptedKey, 'not my secret')
-    } catch (err) {
-      expect(err).to.exist()
-      return
-    }
-    expect.fail('should have thrown')
+  it('publicKey toString', async () => {
+    const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
+    expect(key.publicKey.toString()).to.eql('12D3KooWLqLxEfJ9nDdEe8Kh8PFvNPQRYDQBwyL7CMM7HhVd5LsX')
   })
 
   describe('key equals', () => {
     it('equals itself', () => {
-      expect(
-        key.equals(key)
-      ).to.eql(
-        true
-      )
+      expect(key.equals(key)).to.be.true()
 
-      expect(
-        key.public.equals(key.public)
-      ).to.eql(
-        true
-      )
+      expect(key.publicKey.equals(key.publicKey)).to.be.true()
     })
 
     it('not equals other key', async () => {
-      const key2 = await crypto.keys.generateKeyPair('Ed25519', 512)
+      const key2 = await generateKeyPair('Ed25519')
 
-      if (!(key2 instanceof Ed25519PrivateKey)) {
-        throw new Error('Key was incorrect type')
-      }
-
-      expect(key.equals(key2)).to.eql(false)
-      expect(key2.equals(key)).to.eql(false)
-      expect(key.public.equals(key2.public)).to.eql(false)
-      expect(key2.public.equals(key.public)).to.eql(false)
+      expect(key.equals(key2)).to.be.false()
+      expect(key2.equals(key)).to.be.false()
+      expect(key.publicKey.equals(key2.publicKey)).to.be.false()
+      expect(key2.publicKey.equals(key.publicKey)).to.be.false()
     })
   })
 
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = key.sign(data)
-    const valid = key.public.verify(data, sig)
-    expect(valid).to.eql(true)
+    const sig = await key.sign(data)
+    const valid = key.publicKey.verify(data, sig)
+    expect(valid).to.be.true()
   })
 
   it('sign and verify from seed', async () => {
     const seed = new Uint8Array(32).fill(1)
-    const seededkey = await crypto.keys.generateKeyPairFromSeed('Ed25519', seed)
+    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
     const data = uint8ArrayFromString('hello world')
     const sig = await seededkey.sign(data)
-    const valid = await seededkey.public.verify(data, sig)
-    expect(valid).to.eql(true)
+    const valid = await seededkey.publicKey.verify(data, sig)
+    expect(valid).to.be.true()
   })
 
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
-    const sig = key.sign(data)
-    const valid = key.public.verify(uint8ArrayFromString('hello'), sig)
-    expect(valid).to.be.eql(false)
+    const sig = await key.sign(data)
+    const valid = key.publicKey.verify(uint8ArrayFromString('hello'), sig)
+    expect(valid).to.be.be.false()
   })
 
-  describe('throws error instead of crashing', () => {
-    const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
+  it('throws error instead of crashing', () => {
+    const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
     testGarbage('key.verify', key.verify.bind(key), 2)
-    testGarbage('crypto.keys.unmarshalPrivateKey', crypto.keys.unmarshalPrivateKey.bind(crypto.keys))
+    testGarbage('unmarshalPrivateKey', privateKeyFromProtobuf)
+  })
+
+  it('imports private key from raw', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const imported = privateKeyFromRaw(key.raw)
+
+    expect(key.equals(imported)).to.be.true()
+  })
+
+  it('imports public key from raw', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const imported = publicKeyFromRaw(key.publicKey.raw)
+
+    expect(key.publicKey.equals(imported)).to.be.true()
+  })
+
+  it('is PrivateKey', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    expect(isPrivateKey(key)).to.be.true()
+    expect(isPublicKey(key)).to.be.false()
+  })
+
+  it('is PublicKey', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    expect(isPrivateKey(key.publicKey)).to.be.false()
+    expect(isPublicKey(key.publicKey)).to.be.true()
   })
 
   describe('go interop', () => {
     // @ts-check
     it('verifies with data from go', async () => {
-      const key = crypto.keys.unmarshalPublicKey(fixtures.verify.publicKey)
+      const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
       const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
-      expect(ok).to.eql(true)
+      expect(ok).to.be.true()
     })
 
     it('does not include the redundant public key when marshalling privatekey', async () => {
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.redundantPubKey.privateKey)
-      const bytes = key.marshal()
+      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
+      const bytes = key.raw
       expect(bytes.length).to.equal(64)
-      expect(bytes.subarray(32)).to.eql(key.public.marshal())
+      expect(bytes.subarray(32)).to.eql(key.publicKey.raw)
     })
 
     it('verifies with data from go with redundant public key', async () => {
-      const key = crypto.keys.unmarshalPublicKey(fixtures.redundantPubKey.publicKey)
+      const key = publicKeyFromProtobuf(fixtures.redundantPubKey.publicKey)
       const ok = await key.verify(fixtures.redundantPubKey.data, fixtures.redundantPubKey.signature)
-      expect(ok).to.eql(true)
+      expect(ok).to.be.true()
     })
 
     it('generates the same signature as go', async () => {
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.verify.privateKey)
+      const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
       const sig = await key.sign(fixtures.verify.data)
       expect(sig).to.eql(fixtures.verify.signature)
     })
 
     it('generates the same signature as go with redundant public key', async () => {
-      const key = await crypto.keys.unmarshalPrivateKey(fixtures.redundantPubKey.privateKey)
+      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
       const sig = await key.sign(fixtures.redundantPubKey.data)
       expect(sig).to.eql(fixtures.redundantPubKey.signature)
     })

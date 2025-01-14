@@ -9,9 +9,8 @@ import { generateNoisePrologue } from './generate-noise-prologue.js'
 import * as sdp from './sdp.js'
 import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.js'
 import type { DataChannelOptions } from '../../index.js'
-import type { ComponentLogger, Connection, ConnectionHandler, CounterGroup, Logger, Metrics, PeerId, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Connection, CounterGroup, Logger, Metrics, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { HashCode } from 'multihashes'
 
 export interface ConnectOptions {
   log: Logger
@@ -20,18 +19,27 @@ export interface ConnectOptions {
   events?: CounterGroup
   remoteAddr: Multiaddr
   role: 'initiator' | 'responder'
-  hashCode: HashCode
   dataChannel?: DataChannelOptions
   upgrader: Upgrader
   peerId: PeerId
   remotePeerId?: PeerId
-  handler?: ConnectionHandler
   signal: AbortSignal
+  privateKey: PrivateKey
+}
+
+export interface InitiatorOptions extends ConnectOptions {
+  role: 'initiator'
+}
+
+export interface ResponderOptions extends ConnectOptions {
+  role: 'responder'
 }
 
 const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, pwd: string, options: ConnectOptions): Promise<Connection> {
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: InitiatorOptions): Promise<void>
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ResponderOptions): Promise<Connection>
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<any> {
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the remote will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -57,10 +65,10 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   let answerSdp: RTCSessionDescriptionInit
 
   if (options.role === 'initiator') {
-    answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag, pwd)
+    answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag)
     options.log.trace('server derived client offer', answerSdp.sdp)
   } else {
-    answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag, pwd)
+    answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag)
     options.log.trace('client derived server offer', answerSdp.sdp)
   }
 
@@ -85,11 +93,11 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   const localFingerprint = sdp.getFingerprintFromSdp(peerConnection.localDescription?.sdp)
 
   if (localFingerprint == null) {
-    throw new WebRTCTransportError('Could not get fingerprint from local description sdp', 'ERR_MISSING_FINGERPRINT')
+    throw new WebRTCTransportError('Could not get fingerprint from local description sdp')
   }
 
   options.log.trace('performing noise handshake')
-  const noisePrologue = generateNoisePrologue(localFingerprint, options.hashCode, options.remoteAddr, options.role)
+  const noisePrologue = await generateNoisePrologue(localFingerprint, options.remoteAddr, options.role)
 
   // Since we use the default crypto interface and do not use a static key
   // or early data, we pass in undefined for these parameters.
@@ -151,7 +159,9 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // For outbound connections, the remote is expected to start the noise handshake.
     // Therefore, we need to secure an inbound noise connection from the remote.
     options.log.trace('secure inbound')
-    await connectionEncrypter.secureInbound(options.peerId, wrappedDuplex, options.remotePeerId)
+    await connectionEncrypter.secureInbound(wrappedDuplex, {
+      remotePeer: options.remotePeerId
+    })
 
     options.log.trace('upgrade outbound')
     return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
@@ -160,14 +170,12 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   // For inbound connections, we are expected to start the noise handshake.
   // Therefore, we need to secure an outbound noise connection from the remote.
   options.log.trace('secure outbound')
-  const result = await connectionEncrypter.secureOutbound(options.peerId, wrappedDuplex)
+  const result = await connectionEncrypter.secureOutbound(wrappedDuplex, {
+    remotePeer: options.remotePeerId
+  })
   maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
   options.log.trace('upgrade inbound')
-  const connection = await options.upgrader.upgradeInbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
 
-  // pass to handler
-  options.handler?.(connection)
-
-  return connection
+  await options.upgrader.upgradeInbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
 }

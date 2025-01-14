@@ -1,9 +1,9 @@
-import { CodeError } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { SDPHandshakeFailedError } from '../error.js'
 import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { readCandidatesUntilConnected } from './util.js'
+import { getConnectionState, readCandidatesUntilConnected } from './util.js'
 import type { Logger } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
 
@@ -40,16 +40,18 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
         })
     }
 
+    log.trace('recipient read SDP offer')
+
     // read an SDP offer
     const pbOffer = await messageStream.read({
       signal
     })
 
     if (pbOffer.type !== Message.Type.SDP_OFFER) {
-      throw new CodeError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `, 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
     }
 
-    log.trace('recipient receive SDP offer %s', pbOffer.data)
+    log.trace('recipient received SDP offer %s', pbOffer.data)
 
     const offer = new RTCSessionDescription({
       type: 'offer',
@@ -58,13 +60,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     await peerConnection.setRemoteDescription(offer).catch(err => {
       log.error('could not execute setRemoteDescription', err)
-      throw new CodeError('Failed to set remoteDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
       log.error('could not execute createAnswer', err)
-      throw new CodeError('Failed to create answer', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to create answer')
     })
 
     log.trace('recipient send SDP answer %s', answer.sdp)
@@ -76,7 +78,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     await peerConnection.setLocalDescription(answer).catch(err => {
       log.error('could not execute setLocalDescription', err)
-      throw new CodeError('Failed to set localDescription', 'ERR_SDP_HANDSHAKE_FAILED')
+      throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
     log.trace('recipient read candidates until connected')
@@ -88,7 +90,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       log
     })
   } catch (err: any) {
-    if (peerConnection.connectionState !== 'connected') {
+    if (getConnectionState(peerConnection) !== 'connected') {
       log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
 
       peerConnection.close()

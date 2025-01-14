@@ -1,9 +1,10 @@
 /* eslint-env mocha */
 
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, isStartable } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -41,10 +42,12 @@ describe('circuit-relay stop protocol', function () {
   let remoteStream: Stream
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+
     components = {
       addressManager: stubInterface<AddressManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(privateKey),
       peerStore: stubInterface<PeerStore>(),
       randomWalk: stubInterface<RandomWalk>(),
       registrar: stubInterface<Registrar>(),
@@ -63,7 +66,8 @@ describe('circuit-relay stop protocol', function () {
       await transport.start()
     }
 
-    sourcePeer = await createEd25519PeerId()
+    const sourcePrivateKey = await generateKeyPair('Ed25519')
+    sourcePeer = peerIdFromPrivateKey(sourcePrivateKey)
 
     handler = components.registrar.handle.getCall(0).args[1]
 
@@ -90,7 +94,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -110,7 +114,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.STATUS,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -132,7 +136,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: [
           new Uint8Array(32)
         ]
@@ -149,7 +153,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -162,7 +166,8 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('should try to listen on the address of a relay we are dialed via if no reservation exists', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
     const remoteAddr = multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
     transport.reservationStore.hasReservation = Sinon.stub().returns(false)
     const connection = stubInterface<Connection>({
@@ -180,7 +185,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })

@@ -1,12 +1,14 @@
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
-import pDefer from 'p-defer'
+import * as Digest from 'multiformats/hashes/digest'
 import {
   CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
+  KEEP_ALIVE_SOURCE_TAG,
   MAX_CONNECTIONS,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
@@ -17,7 +19,7 @@ import { createLimitedRelay } from '../utils.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
@@ -26,7 +28,9 @@ const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT
 export interface CircuitRelayServerInit {
   /**
    * Incoming hop requests must complete within this time in ms otherwise
-   * the stream will be reset (default: 30s)
+   * the stream will be reset
+   *
+   * @default 30000
    */
   hopTimeout?: number
 
@@ -47,7 +51,9 @@ export interface CircuitRelayServerInit {
 
   /**
    * The maximum number of simultaneous STOP outbound streams that can be open at
-   * once. (default: 300)
+   * once.
+   *
+   * @default 300
    */
   maxOutboundStopStreams?: number
 }
@@ -68,9 +74,11 @@ export interface CircuitRelayServerComponents {
   peerStore: PeerStore
   addressManager: AddressManager
   peerId: PeerId
+  privateKey: PrivateKey
   connectionManager: ConnectionManager
   connectionGater: ConnectionGater
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 export interface RelayServerEvents {
@@ -88,6 +96,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   private readonly peerStore: PeerStore
   private readonly addressManager: AddressManager
   private readonly peerId: PeerId
+  private readonly privateKey: PrivateKey
   private readonly connectionManager: ConnectionManager
   private readonly connectionGater: ConnectionGater
   private readonly reservationStore: ReservationStore
@@ -110,6 +119,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.peerStore = components.peerStore
     this.addressManager = components.addressManager
     this.peerId = components.peerId
+    this.privateKey = components.privateKey
     this.connectionManager = components.connectionManager
     this.connectionGater = components.connectionGater
     this.started = false
@@ -117,7 +127,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.maxInboundHopStreams = init.maxInboundHopStreams
     this.maxOutboundHopStreams = init.maxOutboundHopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.reservationStore = new ReservationStore(init.reservations)
+    this.reservationStore = new ReservationStore(components, init.reservations)
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
@@ -144,10 +154,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     }, {
       maxInboundStreams: this.maxInboundHopStreams,
       maxOutboundStreams: this.maxOutboundHopStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
-
-    this.reservationStore.start()
 
     this.started = true
   }
@@ -156,7 +164,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
    * Stop Relay service
    */
   async stop (): Promise<void> {
-    this.reservationStore.stop()
+    this.reservationStore.clear()
     this.shutdownController.abort()
     await this.registrar.unhandle(RELAY_V2_HOP_CODEC)
 
@@ -166,17 +174,13 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
     this.log('received circuit v2 hop protocol stream from %p', connection.remotePeer)
 
-    const hopTimeoutPromise = pDefer<HopMessage>()
-    const timeout = setTimeout(() => {
-      hopTimeoutPromise.reject('timed out')
-    }, this.hopTimeout)
+    const options = {
+      signal: AbortSignal.timeout(this.hopTimeout)
+    }
     const pbstr = pbStream(stream)
 
     try {
-      const request: HopMessage = await Promise.race([
-        pbstr.pb(HopMessage).read(),
-        hopTimeoutPromise.promise
-      ])
+      const request: HopMessage = await pbstr.pb(HopMessage).read(options)
 
       if (request?.type == null) {
         throw new Error('request was invalid, could not read from stream')
@@ -184,31 +188,26 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
       this.log('received', request.type)
 
-      await Promise.race([
-        this.handleHopProtocol({
-          connection,
-          stream: pbstr,
-          request
-        }),
-        hopTimeoutPromise.promise
-      ])
+      await this.handleHopProtocol({
+        connection,
+        stream: pbstr,
+        request
+      }, options)
     } catch (err: any) {
       this.log.error('error while handling hop', err)
       await pbstr.pb(HopMessage).write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
-      })
+      }, options)
       stream.abort(err)
-    } finally {
-      clearTimeout(timeout)
     }
   }
 
-  async handleHopProtocol ({ stream, request, connection }: HopProtocolOptions): Promise<void> {
+  async handleHopProtocol ({ stream, request, connection }: HopProtocolOptions, options: AbortOptions): Promise<void> {
     this.log('received hop message')
     switch (request.type) {
-      case HopMessage.Type.RESERVE: await this.handleReserve({ stream, request, connection }); break
-      case HopMessage.Type.CONNECT: await this.handleConnect({ stream, request, connection }); break
+      case HopMessage.Type.RESERVE: await this.handleReserve({ stream, request, connection }, options); break
+      case HopMessage.Type.CONNECT: await this.handleConnect({ stream, request, connection }, options); break
       default: {
         this.log.error('invalid hop request type %s via peer %p', request.type, connection.remotePeer)
         await stream.pb(HopMessage).write({ type: HopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE })
@@ -216,37 +215,38 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     }
   }
 
-  async handleReserve ({ stream, request, connection }: HopProtocolOptions): Promise<void> {
+  async handleReserve ({ stream, connection }: HopProtocolOptions, options: AbortOptions): Promise<void> {
     const hopstr = stream.pb(HopMessage)
     this.log('hop reserve request from %p', connection.remotePeer)
 
     if (isRelayAddr(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
     if ((await this.connectionGater.denyInboundRelayReservation?.(connection.remotePeer)) === true) {
       this.log.error('reservation for %p denied by connection gater', connection.remotePeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
     const result = this.reservationStore.reserve(connection.remotePeer, connection.remoteAddr)
 
-    if (result.status !== Status.OK) {
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: result.status })
-      return
-    }
-
     try {
+      if (result.status !== Status.OK) {
+        await hopstr.write({ type: HopMessage.Type.STATUS, status: result.status }, options)
+        return
+      }
+
       // tag relay target peer
       // result.expire is non-null if `ReservationStore.reserve` returns with status == OK
       if (result.expire != null) {
         const ttl = (result.expire * 1000) - Date.now()
         await this.peerStore.merge(connection.remotePeer, {
           tags: {
-            [RELAY_SOURCE_TAG]: { value: 1, ttl }
+            [RELAY_SOURCE_TAG]: { value: 1, ttl },
+            [KEEP_ALIVE_SOURCE_TAG]: { value: 1, ttl }
           }
         })
       }
@@ -256,11 +256,22 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
         status: Status.OK,
         reservation: await this.makeReservation(connection.remotePeer, BigInt(result.expire ?? 0)),
         limit: this.reservationStore.get(connection.remotePeer)?.limit
-      })
+      }, options)
       this.log('sent confirmation response to %s', connection.remotePeer)
     } catch (err) {
-      this.log.error('failed to send confirmation response to %p', connection.remotePeer, err)
+      this.log.error('failed to send confirmation response to %p - %e', connection.remotePeer, err)
       this.reservationStore.removeReservation(connection.remotePeer)
+
+      try {
+        await this.peerStore.merge(connection.remotePeer, {
+          tags: {
+            [RELAY_SOURCE_TAG]: undefined,
+            [KEEP_ALIVE_SOURCE_TAG]: undefined
+          }
+        })
+      } catch (err) {
+        this.log.error('failed to untag relay source peer %p - %e', connection.remotePeer, err)
+      }
     }
   }
 
@@ -278,25 +289,34 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       addrs.push(relayAddr.bytes)
     }
 
-    const voucher = await RecordEnvelope.seal(new ReservationVoucherRecord({
+    const envelope = await RecordEnvelope.seal(new ReservationVoucherRecord({
       peer: remotePeer,
       relay: this.peerId,
-      expiration: Number(expire)
-    }), this.peerId)
+      expiration: expire
+    }), this.privateKey)
 
     return {
       addrs,
       expire,
-      voucher: voucher.marshal()
+      voucher: {
+        publicKey: publicKeyToProtobuf(envelope.publicKey),
+        payloadType: envelope.payloadType,
+        payload: {
+          peer: remotePeer.toMultihash().bytes,
+          relay: this.peerId.toMultihash().bytes,
+          expiration: expire
+        },
+        signature: envelope.signature
+      }
     }
   }
 
-  async handleConnect ({ stream, request, connection }: HopProtocolOptions): Promise<void> {
+  async handleConnect ({ stream, request, connection }: HopProtocolOptions, options: AbortOptions): Promise<void> {
     const hopstr = stream.pb(HopMessage)
 
     if (isRelayAddr(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
@@ -311,22 +331,24 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       }
 
       request.peer.addrs.forEach(multiaddr)
-      dstPeer = peerIdFromBytes(request.peer.id)
+      dstPeer = peerIdFromMultihash(Digest.decode(request.peer.id))
     } catch (err) {
       this.log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, options)
       return
     }
 
-    if (!this.reservationStore.hasReservation(dstPeer)) {
+    const reservation = this.reservationStore.get(dstPeer)
+
+    if (reservation == null) {
       this.log.error('hop connect denied for destination peer %p not having a reservation for %p with status %s', dstPeer, connection.remotePeer, Status.NO_RESERVATION)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION }, options)
       return
     }
 
     if ((await this.connectionGater.denyOutboundRelayedConnection?.(connection.remotePeer, dstPeer)) === true) {
       this.log.error('hop connect for %p to %p denied by connection gater', connection.remotePeer, dstPeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
@@ -334,11 +356,10 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
     if (connections.length === 0) {
       this.log('hop connect denied for destination peer %p not having a connection for %p as there is no destination connection', dstPeer, connection.remotePeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.NO_RESERVATION }, options)
       return
     }
 
-    const limit = this.reservationStore.get(dstPeer)?.limit
     const destinationConnection = connections[0]
 
     const destinationStream = await this.stopHop({
@@ -346,29 +367,30 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       request: {
         type: StopMessage.Type.CONNECT,
         peer: {
-          id: connection.remotePeer.toBytes(),
+          id: connection.remotePeer.toMultihash().bytes,
           addrs: []
         },
-        limit
+        limit: reservation?.limit
       }
-    })
+    }, options)
 
     if (destinationStream == null) {
       this.log.error('failed to open stream to destination peer %p', destinationConnection?.remotePeer)
-      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED })
+      await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.CONNECTION_FAILED }, options)
       return
     }
 
     await hopstr.write({
       type: HopMessage.Type.STATUS,
       status: Status.OK,
-      limit
-    })
+      limit: reservation?.limit
+    }, options)
     const sourceStream = stream.unwrap()
 
     this.log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
+
     // Short circuit the two streams to create the relayed connection
-    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, limit, {
+    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, reservation, {
       log: this.log
     })
   }
@@ -376,29 +398,27 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   /**
    * Send a STOP request to the target peer that the dialing peer wants to contact
    */
-  async stopHop ({
-    connection,
-    request
-  }: StopOptions): Promise<Stream | undefined> {
+  async stopHop ({ connection, request }: StopOptions, options: AbortOptions): Promise<Stream | undefined> {
     this.log('starting circuit relay v2 stop request to %s', connection.remotePeer)
     const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
       maxOutboundStreams: this.maxOutboundStopStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true,
+      ...options
     })
     const pbstr = pbStream(stream)
     const stopstr = pbstr.pb(StopMessage)
-    await stopstr.write(request)
+    await stopstr.write(request, options)
     let response
 
     try {
-      response = await stopstr.read()
+      response = await stopstr.read(options)
     } catch (err) {
       this.log.error('error parsing stop message response from %p', connection.remotePeer)
     }
 
     if (response == null) {
       this.log.error('could not read response from %p', connection.remotePeer)
-      await stream.close()
+      await stream.close(options)
       return
     }
 
@@ -408,7 +428,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     }
 
     this.log('stop request failed with code %d', response.status)
-    await stream.close()
+    await stream.close(options)
   }
 
   get reservations (): PeerMap<RelayReservation> {

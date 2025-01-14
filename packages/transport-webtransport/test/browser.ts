@@ -17,12 +17,9 @@ describe('libp2p-webtransport', () => {
   beforeEach(async () => {
     node = await createLibp2p({
       transports: [webTransport()],
-      connectionEncryption: [noise()],
+      connectionEncrypters: [noise()],
       connectionGater: {
         denyDialMultiaddr: async () => false
-      },
-      connectionManager: {
-        minConnections: 0
       },
       services: {
         ping: ping()
@@ -66,7 +63,7 @@ describe('libp2p-webtransport', () => {
     const ma = multiaddr(maStrNoCerthash + '/p2p/' + maStrP2p)
 
     await expect(node.dial(ma)).to.eventually.be.rejected()
-      .with.property('code', 'ERR_NO_VALID_ADDRESSES')
+      .with.property('name', 'NoValidAddressesError')
   })
 
   it('fails to connect due to an aborted signal', async () => {

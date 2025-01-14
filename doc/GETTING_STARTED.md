@@ -107,7 +107,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()]
+  connectionEncrypters: [noise()]
 })
 ```
 
@@ -138,7 +138,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()]
 })
 ```
@@ -148,7 +148,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 - https://docs.libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
-- https://github.com/libp2p/specs/tree/master/mplex
+- https://github.com/libp2p/specs/tree/master/yamux
 </details>
 
 #### Running Libp2p
@@ -168,7 +168,7 @@ const node = await createLibp2p({
     listen: ['/ip4/127.0.0.1/tcp/8000/ws']
   },
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()]
 })
 
@@ -224,7 +224,7 @@ const bootstrapMultiaddrs = [
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   peerDiscovery: [
     bootstrap({

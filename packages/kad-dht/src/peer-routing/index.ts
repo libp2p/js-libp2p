@@ -1,24 +1,35 @@
-import { keys } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
+import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
+import * as Digest from 'multiformats/hashes/digest'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { xor as uint8ArrayXor } from 'uint8arrays/xor'
+import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
-import { PeerDistanceList } from '../peer-list/peer-distance-list.js'
+import { PeerDistanceList } from '../peer-distance-list.js'
 import {
   queryErrorEvent,
   finalPeerEvent,
   valueEvent
 } from '../query/events.js'
 import { verifyRecord } from '../record/validators.js'
-import * as utils from '../utils.js'
-import type { KadDHTComponents, DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
+import { convertBuffer, convertPeerId, keyForPublicKey } from '../utils.js'
+import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { Logger, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+
+export interface PeerRoutingComponents {
+  peerId: PeerId
+  peerStore: PeerStore
+  logger: ComponentLogger
+  metrics?: Metrics
+}
 
 export interface PeerRoutingInit {
   routingTable: RoutingTable
@@ -37,16 +48,21 @@ export class PeerRouting {
   private readonly peerStore: PeerStore
   private readonly peerId: PeerId
 
-  constructor (components: KadDHTComponents, init: PeerRoutingInit) {
-    const { routingTable, network, validators, queryManager, logPrefix } = init
-
-    this.routingTable = routingTable
-    this.network = network
-    this.validators = validators
-    this.queryManager = queryManager
+  constructor (components: PeerRoutingComponents, init: PeerRoutingInit) {
+    this.routingTable = init.routingTable
+    this.network = init.network
+    this.validators = init.validators
+    this.queryManager = init.queryManager
     this.peerStore = components.peerStore
     this.peerId = components.peerId
-    this.log = components.logger.forComponent(`${logPrefix}:peer-routing`)
+    this.log = components.logger.forComponent(`${init.logPrefix}:peer-routing`)
+
+    this.findPeer = components.metrics?.traceFunction('libp2p.kadDHT.findPeer', this.findPeer.bind(this), {
+      optionsIndex: 1
+    }) ?? this.findPeer
+    this.getClosestPeers = components.metrics?.traceFunction('libp2p.kadDHT.getClosestPeers', this.getClosestPeers.bind(this), {
+      optionsIndex: 1
+    }) ?? this.getClosestPeers
   }
 
   /**
@@ -63,7 +79,7 @@ export class PeerRouting {
       try {
         peerData = await this.peerStore.get(p)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }
@@ -73,7 +89,7 @@ export class PeerRouting {
       try {
         peerData = await this.peerStore.get(peer)
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }
@@ -107,28 +123,32 @@ export class PeerRouting {
    * Get the public key directly from a node
    */
   async * getPublicKeyFromNode (peer: PeerId, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
-    const pkKey = utils.keyForPublicKey(peer)
+    const pkKey = keyForPublicKey(peer)
 
     for await (const event of this._getValueSingle(peer, pkKey, options)) {
       yield event
 
       if (event.name === 'PEER_RESPONSE' && event.record != null) {
-        const recPeer = await peerIdFromKeys(keys.marshalPublicKey({ bytes: event.record.value }))
+        const publicKey = publicKeyFromProtobuf(event.record.value)
+        const recPeer = peerIdFromPublicKey(publicKey)
 
         // compare hashes of the pub key
         if (!recPeer.equals(peer)) {
-          throw new CodeError('public key does not match id', 'ERR_PUBLIC_KEY_DOES_NOT_MATCH_ID')
+          throw new InvalidPublicKeyError('public key does not match id')
         }
 
         if (recPeer.publicKey == null) {
-          throw new CodeError('public key missing', 'ERR_PUBLIC_KEY_MISSING')
+          throw new InvalidPublicKeyError('public key missing')
         }
 
-        yield valueEvent({ from: peer, value: recPeer.publicKey }, options)
+        yield valueEvent({
+          from: peer,
+          value: event.record.value
+        }, options)
       }
     }
 
-    throw new CodeError(`Node not responding with its public key: ${peer.toString()}`, 'ERR_INVALID_RECORD')
+    throw new QueryError(`Node not responding with its public key: ${peer.toString()}`)
   }
 
   /**
@@ -160,7 +180,7 @@ export class PeerRouting {
       const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
         const request: Partial<Message> = {
           type: MessageType.FIND_NODE,
-          key: id.toBytes()
+          key: id.toMultihash().bytes
         }
 
         for await (const event of self.network.sendRequest(peer, request, {
@@ -180,7 +200,7 @@ export class PeerRouting {
         }
       }
 
-      for await (const event of this.queryManager.run(id.toBytes(), findPeerQuery, options)) {
+      for await (const event of this.queryManager.run(id.toMultihash().bytes, findPeerQuery, options)) {
         if (event.name === 'FINAL_PEER') {
           foundPeer = true
         }
@@ -190,7 +210,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.peerId, error: new CodeError('Not found', 'ERR_NOT_FOUND') }, options)
+      yield queryErrorEvent({ from: this.peerId, error: new NotFoundError('Not found') }, options)
     }
   }
 
@@ -200,7 +220,7 @@ export class PeerRouting {
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
-    const kadId = await utils.convertBuffer(key)
+    const kadId = await convertBuffer(key)
     const tablePeers = this.routingTable.closestPeers(kadId)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
@@ -257,7 +277,7 @@ export class PeerRouting {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
 
-            yield queryErrorEvent({ from: event.from, error: new CodeError(errMsg, 'ERR_INVALID_RECORD') }, options)
+            yield queryErrorEvent({ from: event.from, error: new QueryError(errMsg) }, options)
             continue
           }
         }
@@ -273,23 +293,42 @@ export class PeerRouting {
    */
   async _verifyRecordOnline (record: DHTRecord): Promise<void> {
     if (record.timeReceived == null) {
-      throw new CodeError('invalid record received', 'ERR_INVALID_RECORD')
+      throw new InvalidRecordError('invalid record received')
     }
 
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived))
   }
 
   /**
-   * Get the nearest peers to the given query, but if closer
-   * than self
+   * Get the nearest peers to the given query, but if closer than self
    */
   async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId): Promise<PeerInfo[]> {
-    const id = await utils.convertBuffer(key)
-    const ids = this.routingTable.closestPeers(id)
     const output: PeerInfo[] = []
 
+    // try getting the peer directly
+    try {
+      const multihash = Digest.decode(key)
+      const targetPeerId = peerIdFromMultihash(multihash)
+
+      const peer = await this.peerStore.get(targetPeerId)
+
+      output.push({
+        id: peer.id,
+        multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
+      })
+    } catch {}
+
+    const keyKadId = await convertBuffer(key)
+    const ids = this.routingTable.closestPeers(keyKadId)
+    const closerThanKadId = await convertPeerId(closerThan)
+    const requesterXor = uint8ArrayXor(closerThanKadId, keyKadId)
+
     for (const peerId of ids) {
-      if (peerId.equals(closerThan)) {
+      const peerKadId = await convertPeerId(peerId)
+      const peerXor = uint8ArrayXor(peerKadId, keyKadId)
+
+      // only include if peer is closer than requester
+      if (uint8ArrayXorCompare(peerXor, requesterXor) !== -1) {
         continue
       }
 
@@ -301,7 +340,7 @@ export class PeerRouting {
           multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
         })
       } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
+        if (err.name !== 'NotFoundError') {
           throw err
         }
       }

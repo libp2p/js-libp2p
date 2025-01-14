@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -12,8 +13,10 @@ describe('peer queue', () => {
   it('should have jobs', async () => {
     const deferred = pDefer()
 
-    const peerIdA = await createEd25519PeerId()
-    const peerIdB = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
+    const privateKeyB = await generateKeyPair('Ed25519')
+    const peerIdB = peerIdFromPrivateKey(privateKeyB)
     const queue = new PeerQueue({
       concurrency: 1
     })
@@ -45,7 +48,8 @@ describe('peer queue', () => {
     const value = 'hello world'
     const deferred = pDefer<string>()
 
-    const peerIdA = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
     const queue = new PeerQueue<string>({
       concurrency: 1
     })
@@ -74,7 +78,8 @@ describe('peer queue', () => {
     const error = new Error('nope!')
     const deferred = pDefer<string>()
 
-    const peerIdA = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
     const queue = new PeerQueue<string>({
       concurrency: 1
     })
@@ -99,7 +104,8 @@ describe('peer queue', () => {
     const value = 'hello world'
     const deferred = pDefer<string>()
 
-    const peerIdA = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
     const queue = new PeerQueue<string>({
       concurrency: 1
     })
@@ -123,7 +129,8 @@ describe('peer queue', () => {
   it('emits success event', async () => {
     const value = 'hello world'
 
-    const peerIdA = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
     const queue = new PeerQueue<string>({
       concurrency: 1
     })
@@ -144,7 +151,8 @@ describe('peer queue', () => {
   it('emits failure event', async () => {
     const err = new Error('Oh no!')
 
-    const peerIdA = await createEd25519PeerId()
+    const privateKeyA = await generateKeyPair('Ed25519')
+    const peerIdA = peerIdFromPrivateKey(privateKeyA)
     const queue = new PeerQueue<string>({
       concurrency: 1
     })

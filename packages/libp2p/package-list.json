@@ -22,7 +22,6 @@
     ["libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext", "@libp2p/plaintext", "main", "main.yml"],
 
     "stream multiplexers",
-    ["libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex", "@libp2p/mplex", "main", "main.yml"],
     ["ChainSafe/js-libp2p-yamux", "@chainsafe/libp2p-yamux", "master", "js-test-and-release.yml"],
 
     "peer discovery",

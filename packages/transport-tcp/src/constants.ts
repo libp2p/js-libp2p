@@ -7,4 +7,4 @@ export const CODE_UNIX = 400
 export const CLOSE_TIMEOUT = 500
 
 // Close the socket if there is no activity after this long in ms
-export const SOCKET_TIMEOUT = 5 * 60000 // 5 mins
+export const SOCKET_TIMEOUT = 2 * 60000 // 2 mins

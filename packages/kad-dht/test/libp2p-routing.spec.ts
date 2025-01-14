@@ -14,14 +14,16 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { kadDHT, passthroughMapper, type KadDHT } from '../src/index.js'
 import { Message, MessageType } from '../src/message/dht.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting } from '@libp2p/interface'
+import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 
 interface StubbedKadDHTComponents {
   peerId: PeerId
+  privateKey: PrivateKey
   registrar: StubbedInstance<Registrar>
   addressManager: StubbedInstance<AddressManager>
   peerStore: StubbedInstance<PeerStore>
@@ -80,19 +82,20 @@ describe('content routing', () => {
   let contentRouting: ContentRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerId[]
+  let peers: PeerIdWithPrivateKey[]
   let key: CID
 
   beforeEach(async () => {
     key = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
 
-    const unsortedPeers = await createPeerIds(5)
+    const unsortedPeers = await createPeerIdsWithPrivateKey(5)
 
     // sort remaining peers by XOR distance to the key, closest -> furthest
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
 
     components = {
       peerId: peers[peers.length - 1],
+      privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>({
@@ -112,6 +115,9 @@ describe('content routing', () => {
       clientMode: false,
       allowQueryWithZeroPeers: true
     })(components)
+
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
 
     await start(dht)
 
@@ -150,7 +156,7 @@ describe('content routing', () => {
     await pb.write({
       type: MessageType.FIND_NODE,
       closer: [{
-        id: remotePeer.id.toBytes(),
+        id: remotePeer.id.toMultihash().bytes,
         multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
       }]
     }, Message)
@@ -188,7 +194,7 @@ describe('content routing', () => {
       await pb.write({
         type: MessageType.GET_PROVIDERS,
         providers: [{
-          id: providerPeer.id.toBytes(),
+          id: providerPeer.id.toMultihash().bytes,
           multiaddrs: providerPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
         }]
       }, Message)
@@ -209,19 +215,20 @@ describe('peer routing', () => {
   let peerRouting: PeerRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerId[]
+  let peers: PeerIdWithPrivateKey[]
   let key: CID
 
   beforeEach(async () => {
     key = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
 
-    const unsortedPeers = await createPeerIds(5)
+    const unsortedPeers = await createPeerIdsWithPrivateKey(5)
 
     // sort remaining peers by XOR distance to the key, closest -> furthest
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
 
     components = {
       peerId: peers[peers.length - 1],
+      privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>({
@@ -243,6 +250,9 @@ describe('peer routing', () => {
     })(components)
 
     await start(dht)
+
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
 
     // @ts-expect-error cannot use symbol to index KadDHT type
     peerRouting = dht[peerRoutingSymbol]
@@ -274,13 +284,13 @@ describe('peer routing', () => {
     const pb = pbStream(incomingStream)
     const findNodeRequest = await pb.read(Message)
     expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
-    expect(findNodeRequest.key).to.equalBytes(peers[0].toBytes())
+    expect(findNodeRequest.key).to.equalBytes(peers[0].toMultihash().bytes)
 
     // reply with this node
     await pb.write({
       type: MessageType.FIND_NODE,
       closer: [{
-        id: targetPeer.id.toBytes(),
+        id: targetPeer.id.toMultihash().bytes,
         multiaddrs: targetPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
       }]
     }, Message)
@@ -332,7 +342,7 @@ describe('peer routing', () => {
       await pb.write({
         type: MessageType.FIND_NODE,
         closer: [{
-          id: closestPeer.id.toBytes(),
+          id: closestPeer.id.toMultihash().bytes,
           multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
         }]
       }, Message)

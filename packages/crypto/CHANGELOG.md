@@ -17,6 +17,188 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.9](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.8...crypto-v5.0.9) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+
+## [5.0.8](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.7...crypto-v5.0.8) (2024-12-09)
+
+
+### Dependencies
+
+* bump @stablelib/ed25519 in /packages/crypto/benchmark/ed25519 ([#2855](https://github.com/libp2p/js-libp2p/issues/2855)) ([86a646b](https://github.com/libp2p/js-libp2p/commit/86a646b7fb0efb1c09fdbd068dc9a78653553fcf))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+
+## [5.0.7](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.6...crypto-v5.0.7) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+
+## [5.0.6](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.5...crypto-v5.0.6) (2024-10-28)
+
+
+### Bug Fixes
+
+* use raw asn1js int value to improve performance ([#2788](https://github.com/libp2p/js-libp2p/issues/2788)) ([c4399dc](https://github.com/libp2p/js-libp2p/commit/c4399dcb93b24339a15e152d48009f448fc701d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+
+## [5.0.5](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.4...crypto-v5.0.5) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+
+## [5.0.4](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.3...crypto-v5.0.4) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+
+## [5.0.3](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.2...crypto-v5.0.3) (2024-09-24)
+
+
+### Bug Fixes
+
+* export transiently referenced types ([#2717](https://github.com/libp2p/js-libp2p/issues/2717)) ([7f7ec82](https://github.com/libp2p/js-libp2p/commit/7f7ec82ae4ee7761360bdfdd294de271feaf1841))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.0 to ^2.1.1
+
+## [5.0.2](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.1...crypto-v5.0.2) (2024-09-23)
+
+
+### Bug Fixes
+
+* update P-521 bit length in Web Crypto ([#2710](https://github.com/libp2p/js-libp2p/issues/2710)) ([67587a2](https://github.com/libp2p/js-libp2p/commit/67587a273d7a65a14b513821ec7b129bf17504cc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+
+## [5.0.1](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.0...crypto-v5.0.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* add public/private key type disambiguators ([#2698](https://github.com/libp2p/js-libp2p/issues/2698)) ([18dd3cb](https://github.com/libp2p/js-libp2p/commit/18dd3cb2649412126b995c90e976ed06220c8590))
+* correct secp256k1 key length detection in publicKeyFromRaw ([#2697](https://github.com/libp2p/js-libp2p/issues/2697)) ([1210884](https://github.com/libp2p/js-libp2p/commit/1210884edfe724389bb99aaf67042626093ee60b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.0 to ^2.0.1
+
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.9...crypto-v5.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+
+## [4.1.9](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.8...crypto-v4.1.9) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+
+## [4.1.8](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.7...crypto-v4.1.8) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+
+## [4.1.7](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.6...crypto-v4.1.7) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+
+## [4.1.6](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.5...crypto-v4.1.6) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+
+## [4.1.5](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.4...crypto-v4.1.5) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+
+## [4.1.4](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.3...crypto-v4.1.4) (2024-06-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+
 ## [4.1.3](https://github.com/libp2p/js-libp2p/compare/crypto-v4.1.2...crypto-v4.1.3) (2024-06-07)
 
 

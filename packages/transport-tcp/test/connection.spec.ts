@@ -1,36 +1,36 @@
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import pWaitFor from 'p-wait-for'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { Connection, Transport, Upgrader } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('valid localAddr and remoteAddr', () => {
   let transport: Transport
-  let upgrader: Upgrader
+  let upgrader: StubbedInstance<Upgrader>
 
   beforeEach(() => {
     transport = tcp()({
       logger: defaultLogger()
     })
-    upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
     })
   })
 
   const ma = multiaddr('/ip4/127.0.0.1/tcp/0')
 
   it('should resolve port 0', async () => {
-    // Create a Promise that resolves when a connection is handled
-    let handled: (conn: Connection) => void
-    const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
-
-    const handler = (conn: Connection): void => { handled(conn) }
-
-    // Create a listener with the handler
+    // Create a listener
     const listener = transport.createListener({
-      handler,
       upgrader
     })
 
@@ -46,22 +46,17 @@ describe('valid localAddr and remoteAddr', () => {
     })
 
     // Wait for the incoming dial to be handled
-    await handlerPromise
+    await pWaitFor(() => {
+      return upgrader.upgradeInbound.callCount === 1
+    })
 
     // Close the listener
     await listener.close()
   })
 
   it('should handle multiple simultaneous closes', async () => {
-    // Create a Promise that resolves when a connection is handled
-    let handled: (conn: Connection) => void
-    const handlerPromise = new Promise<Connection>(resolve => { handled = resolve })
-
-    const handler = (conn: Connection): void => { handled(conn) }
-
-    // Create a listener with the handler
+    // Create a listener
     const listener = transport.createListener({
-      handler,
       upgrader
     })
 
@@ -77,7 +72,9 @@ describe('valid localAddr and remoteAddr', () => {
     })
 
     // Wait for the incoming dial to be handled
-    await handlerPromise
+    await pWaitFor(() => {
+      return upgrader.upgradeInbound.callCount === 1
+    })
 
     // Close the dialer with two simultaneous calls to `close`
     await Promise.race([

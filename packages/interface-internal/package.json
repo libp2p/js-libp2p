@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-internal",
-  "version": "1.2.3",
+  "version": "2.2.2",
   "description": "Interfaces implemented by internal libp2p components",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal#readme",
@@ -48,13 +48,14 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@libp2p/interface": "^1.4.1",
-    "@libp2p/peer-collections": "^5.2.3",
-    "@multiformats/multiaddr": "^12.2.3",
+    "@libp2p/interface": "^2.4.0",
+    "@libp2p/peer-collections": "^6.0.14",
+    "@multiformats/multiaddr": "^12.3.3",
+    "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^43.0.1"
+    "aegir": "^45.0.5"
   },
   "sideEffects": false
 }

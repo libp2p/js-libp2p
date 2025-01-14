@@ -17,7 +17,7 @@ export async function createRelay (): Promise<Libp2p> {
         filter: filters.all
       })
     ],
-    connectionEncryption: [noise()],
+    connectionEncrypters: [noise()],
     streamMuxers: [yamux()],
     services: {
       identify: identify(),

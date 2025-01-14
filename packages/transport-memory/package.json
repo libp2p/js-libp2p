@@ -1,0 +1,75 @@
+{
+  "name": "@libp2p/memory",
+  "version": "1.0.3",
+  "description": "A memory transport for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-memory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "build": "aegir build",
+    "test": "aegir test -t node -t electron-main",
+    "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
+    "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
+    "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^2.4.0",
+    "@multiformats/multiaddr": "^12.3.3",
+    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@types/sinon": "^17.0.3",
+    "delay": "^6.0.0",
+    "it-map": "^3.1.1",
+    "it-pushable": "^3.2.3",
+    "nanoid": "^5.0.9",
+    "uint8arraylist": "^2.4.8"
+  },
+  "devDependencies": {
+    "@libp2p/logger": "^5.1.6",
+    "@libp2p/peer-id": "^5.0.10",
+    "aegir": "^45.0.5",
+    "sinon": "^19.0.2",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "./dist/src/tcp.js": "./dist/src/tcp.browser.js"
+  },
+  "sideEffects": false
+}

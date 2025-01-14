@@ -1,7 +1,6 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
-import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { webRTC } from '@libp2p/webrtc'
@@ -29,10 +28,12 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       yamux(),
       mplex()
     ],
-    connectionEncryption: [
+    connectionEncrypters: [
       plaintext()
     ],
-    connectionGater: mockConnectionGater(),
+    connectionGater: {
+      denyDialMultiaddr: async () => false
+    },
     services: {
       identify: identify()
     }

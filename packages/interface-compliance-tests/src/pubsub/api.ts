@@ -1,4 +1,4 @@
-import { isStartable, start, stop } from '@libp2p/interface'
+import { isPubSub, isStartable, start, stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -37,6 +37,10 @@ export default (common: TestSetup<PubSub, PubSubArgs>): void => {
       await stop(...Object.values(components))
       await common.teardown()
       mockNetwork.reset()
+    })
+
+    it('is a PubSub implementation', () => {
+      expect(isPubSub(pubsub)).to.be.true()
     })
 
     it('can start correctly', async () => {

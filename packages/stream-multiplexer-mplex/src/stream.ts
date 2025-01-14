@@ -83,7 +83,7 @@ export function createStream (options: Options): MplexStream {
   return new MplexStream({
     id: type === 'initiator' ? (`i${id}`) : `r${id}`,
     streamId: id,
-    name: `${name == null ? id : name}`,
+    name: `${name ?? id}`,
     direction: type === 'initiator' ? 'outbound' : 'inbound',
     maxDataSize: maxMsgSize,
     onEnd,

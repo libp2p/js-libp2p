@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface"
     },
     {
@@ -22,9 +25,6 @@
     },
     {
       "path": "../peer-id"
-    },
-    {
-      "path": "../peer-id-factory"
     },
     {
       "path": "../utils"

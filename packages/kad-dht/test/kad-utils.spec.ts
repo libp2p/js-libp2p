@@ -24,7 +24,7 @@ describe('kad utils', () => {
     it('returns the base32 encoded key of the buffer with the record prefix', () => {
       const buf = uint8ArrayFromString('hello world')
 
-      const key = utils.bufferToRecordKey(buf)
+      const key = utils.bufferToRecordKey('/dht/record', buf)
 
       expect(key.toString())
         .to.equal('/dht/record/' + uint8ArrayToString(buf, 'base32'))
@@ -45,7 +45,7 @@ describe('kad utils', () => {
     it('works', async () => {
       const peer = await createPeerId()
       expect(utils.keyForPublicKey(peer))
-        .to.eql(uint8ArrayConcat([uint8ArrayFromString('/pk/'), peer.multihash.bytes]))
+        .to.eql(uint8ArrayConcat([uint8ArrayFromString('/pk/'), peer.toMultihash().bytes]))
     })
   })
 
@@ -56,8 +56,8 @@ describe('kad utils', () => {
       const peers = await createPeerIds(50)
       peers.forEach((id, i) => {
         expect(utils.isPublicKeyKey(utils.keyForPublicKey(id))).to.eql(true)
-        expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).multihash.bytes)
-          .to.eql(id.multihash.bytes)
+        expect(utils.fromPublicKeyKey(utils.keyForPublicKey(id)).toMultihash().bytes)
+          .to.eql(id.toMultihash().bytes)
       })
     })
   })

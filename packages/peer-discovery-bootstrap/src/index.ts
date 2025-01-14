@@ -37,10 +37,10 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 const DEFAULT_BOOTSTRAP_TAG_NAME = 'bootstrap'
 const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
-const DEFAULT_BOOTSTRAP_TAG_TTL = 120000
 const DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT = 1000
 
 export interface BootstrapInit {
@@ -55,17 +55,21 @@ export interface BootstrapInit {
   timeout?: number
 
   /**
-   * Tag a bootstrap peer with this name before "discovering" it (default: 'bootstrap')
+   * Tag a bootstrap peer with this name before "discovering" it
+   *
+   * @default 'bootstrap'
    */
   tagName?: string
 
   /**
-   * The bootstrap peer tag will have this value (default: 50)
+   * The bootstrap peer tag will have this value
+   *
+   * @default 50
    */
   tagValue?: number
 
   /**
-   * Cause the bootstrap peer tag to be removed after this number of ms (default: 2 minutes)
+   * Cause the bootstrap peer tag to be removed after this number of ms
    */
   tagTTL?: number
 }
@@ -73,6 +77,7 @@ export interface BootstrapInit {
 export interface BootstrapComponents {
   peerStore: PeerStore
   logger: ComponentLogger
+  connectionManager: ConnectionManager
 }
 
 /**
@@ -166,9 +171,10 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
         tags: {
           [this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME]: {
             value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
-            ttl: this._init.tagTTL ?? DEFAULT_BOOTSTRAP_TAG_TTL
+            ttl: this._init.tagTTL
           }
-        }
+        },
+        multiaddrs: peerData.multiaddrs
       })
 
       // check we are still running
@@ -177,6 +183,10 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       }
 
       this.safeDispatchEvent('peer', { detail: peerData })
+      this.components.connectionManager.openConnection(peerData.id)
+        .catch(err => {
+          this.log.error('could not dial bootstrap peer %p', peerData.id, err)
+        })
     }
   }
 

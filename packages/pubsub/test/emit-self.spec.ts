@@ -1,9 +1,10 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import {
-  createPeerId,
   MockRegistrar,
   PubsubImplementation
 } from './utils/index.js'
@@ -18,10 +19,12 @@ describe('emitSelf', () => {
 
   describe('enabled', () => {
     before(async () => {
-      const peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = peerIdFromPrivateKey(privateKey)
 
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {
@@ -74,10 +77,12 @@ describe('emitSelf', () => {
 
   describe('disabled', () => {
     before(async () => {
-      const peerId = await createPeerId()
+      const privateKey = await generateKeyPair('Ed25519')
+      const peerId = peerIdFromPrivateKey(privateKey)
 
       pubsub = new PubsubImplementation({
         peerId,
+        privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
       }, {

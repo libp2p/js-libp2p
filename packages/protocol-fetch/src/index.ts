@@ -18,11 +18,12 @@
  *   }
  * })
  *
- * // Given a key (as a string) returns a value (as a Uint8Array), or undefined
- * // if the key isn't found.
- * // All keys must be prefixed my the same prefix, which will be used to find
+ * // Given a key (as a Uint8Array) returns a value (as a Uint8Array), or
+ * // undefined if the key isn't found.
+ * //
+ * // All keys must be prefixed by the same prefix, which will be used to find
  * // the appropriate key lookup function.
- * async function my_subsystem_key_lookup (key: string): Promise<Uint8Array | undefined> {
+ * async function my_subsystem_key_lookup (key: Uint8Array): Promise<Uint8Array | undefined> {
  *   // app specific callback to lookup key-value pairs.
  *   return Uint8Array.from([0, 1, 2, 3, 4])
  * }
@@ -56,8 +57,15 @@ export interface FetchInit {
   timeout?: number
 }
 
+/**
+ * A lookup function is registered against a specific identifier prefix and is
+ * invoked when a remote peer requests a value with that prefix
+ */
 export interface LookupFunction {
-  (key: string): Promise<Uint8Array | undefined>
+  /**
+   * The key is the identifier requested by the remote peer
+   */
+  (key: Uint8Array): Promise<Uint8Array | undefined>
 }
 
 export interface FetchComponents {
@@ -70,7 +78,7 @@ export interface Fetch {
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  fetch(peer: PeerId, key: string, options?: AbortOptions): Promise<Uint8Array | undefined>
+  fetch(peer: PeerId, key: string | Uint8Array, options?: AbortOptions): Promise<Uint8Array | undefined>
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that

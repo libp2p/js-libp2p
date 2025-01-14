@@ -1,149 +1,91 @@
-# js-libp2p roadmap Q4’22/Q1’23  <!-- omit in toc -->
+# 🛣️ Roadmap 2024-H2/2025-H1
 
-```
-Date: 2022-10-20
-Status: Accepted
-Notes: Internal js-libp2p stakeholders have aligned on this roadmap. Please add any feedback or questions in:
-https://github.com/libp2p/js-libp2p/issues/1438
-```
+This roadmap document contains the themes upon which maintainer effort will be concentrated on in 2024/25.
 
-## Table of Contents <!-- omit in toc -->
+## 👔 Productionization
 
-- [About the Roadmap](#about-the-roadmap)
-	- [Vision](#vision)
-	- [Sections](#sections)
-	- [Done criteria](#done-criteria)
-	- [Benchmarking and Testing](#benchmarking-and-testing)
-- [🛣️ Milestones](#️-milestones)
-	- [2022](#2022)
-		- [Early Q4 (October)](#early-q4-october)
-		- [Mid Q4 (November)](#mid-q4-november)
-		- [End of Q4 (December)](#end-of-q4-december)
-	- [2023](#2023)
-		- [Early Q1 (January)](#early-q1-january)
-		- [Mid Q1 (February)](#mid-q1-february)
-		- [End of Q1 (March)](#end-of-q1-march)
-		- [Early Q2 (April)](#early-q2-april)
-	- [Up Next](#up-next)
-- [📖 Appendix](#-appendix)
-	- [A. 📺 Universal Browser Connectivity](#a--universal-browser-connectivity)
-		- [1. WebTransport](#1-webtransport)
-		- [2. WebRTC: Browser to Server](#2-webrtc-browser-to-server)
-		- [3. WebRTC: Browser to Browser](#3-webrtc-browser-to-browser)
-	- [B. 🥊 Decentralized Hole Punching](#b--decentralized-hole-punching)
-		- [1. AutoNat](#1-autonat)
-		- [2. Circuit Relay v2](#2-circuit-relay-v2)
-		- [3. Add QUIC Transport](#3-add-quic-transport)
-		- [4. Hole Punching](#4-hole-punching)
-	- [C. 🔮 Ergonomic Observability](#c--ergonomic-observability)
-		- [1. Ergonomic metrics API](#1-ergonomic-metrics-api)
+js-libp2p is deployed in many production environments so to take adoption to the next level we want to really double down on helping these users get the best out of their deployments.
 
-## About the Roadmap
+### js-libp2p amino DHT bootstrapper
 
-### Vision
-We, the maintainers, are committed to upholding libp2p's shared core tenets and ensuring js-libp2p is: [**Secure, Stable, Specified, and Performant.**](https://github.com/libp2p/specs/blob/master/ROADMAP.md#core-tenets)
+Deploying a public bootstrapper is a great test of the capacity of js-libp2p since it will need to maintain several thousand simultaneous connections and service many DHT RPC requests.  Comprehensive metrics and logging will also give us insight into real world usage patterns that can further direct performance optimisations.
 
-Roadmap items in this document were sourced in part from the [overarching libp2p project roadmap.](https://github.com/libp2p/specs/blob/master/ROADMAP.md)
+  - Deploy a bootstrap server that acts as an entry point to the network for DHT clients
+  - Ship it in the default config of majority libp2p/IPFS implementations
+  - Publish a dashboard showing usage statistics
 
-### Sections
-This document consists of two sections: [Milestones](#️-milestones) and the [Appendix](#-appendix)
+### Metrics
 
-[Milestones](#️-milestones) is our best educated guess (not a hard commitment) around when we plan to ship the key features.
-Where possible projects are broken down into discrete sub-projects e.g. project "A" may contain two sub-projects: A.1 and A.2
+Having a view on the internal workings of a js-libp2p node is essential to debugging implementation problems as well as user misconfigurations.
 
-A project is signified as "complete" once all of it's sub-projects are shipped.
+  - Add the missing metrics types, e.g. Histograms, Summaries, etc
+  - Implement metrics consistently across transports
 
-The [Appendix](#-appendix) section describes a project's high-level motivation, goals, and lists sub-projects.
+### DevTools
 
-Each Appendix header is linked to a GitHub Epic. Latest information on progress can be found in the Epics and child issues.
+The [js-libp2p-devtools](https://github.com/libp2p/js-libp2p-devtools) plugin is an invaluable resource for debugging a running libp2p node running [@libp2p/devtools-metrics](https://npmjs.com/package/@libp2p/devtools-metrics).
 
-### Done criteria
-The "Definition of Done" for projects/sub-projects that involve writing new protocols/ modify existing ones usually consist of the following:
-- If a specification change is required:
-    - [ ] Spec is merged and classified as "Candidate Recommendation"
-    - [ ] (by virtue of the above) At least one major reference implementation exists
-- [ ] A well established testing criteria is met (defined at the outset of the project including but not limited to testing via Testground, compatibility tests with other implementations in the Release process, etc.)
-- [ ] Public documentation (on docs.libp2p.io) exists
+  - Finish UX improvements
+  - Publish to browser extension stores
+  - Add DHT capability detection
+  - Publish as standalone electron app to connect to Node.js/electron/react-native processes using `@libp2p/devtools-metrics`
 
-Supporting projects (such as testing or benchmarking) may have different criteria.
+### Tuning and reduction of resource usage
 
-### Benchmarking and Testing
-As mentioned in our [vision](#vision), performance and stability are core libp2p tenets. Rigorous benchmarking and testing help us uphold them. Related projects are listed in the [libp2p/test-plans roadmap](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md) and the [testground/testground roadmap](https://github.com/testground/testground/blob/master/ROADMAP.md). Our major priorities in Q4’22 and Q1’23 are:
-- [interoperability testing](https://github.com/libp2p/test-plans/issues/53) (across implementations & versions and between transports, muxers, & security protocols)
-- [add a browser environment test harness to support testing browser features](https://github.com/testground/testground/issues/1386)
-- [performance benchmark js-libp2p using Testground](https://github.com/testground/testground/pull/1425) (create a benchmark suite to run in CI)
-- [test DHT Server Mode at scale (testbed of at least >20 nodes; ideally 100/1000+) in Testground](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-dht-server-mode-scale-test)
+JavaScript is a poor choice of language in which to perform computationally expensive operations. Conveniently the ones we need to do (hashing, signing, verification) are largely implemented in native modules or as part of web browser APIs.
 
+  - Profile and benchmark CPU usage
+  - Use this to drive further optimizations in resource usage
 
-These projects are parallel workstreams, weighed equally with roadmap items in this document. Some efforts like interoperability testing have a higher priority than implementation projects. The js-libp2p maintainers co-own these efforts with the go-libp2p, rust-libp2p, and Testground maintainers.
+## 📚 Documentation & developer onboarding
 
-## 🛣️ Milestones
-### 2022
+- Documentation refresh - ensure all guides are up to date and follow current best practices
+- Revamp getting started guides
+  - Focus on use cases
+    - Browser vs Node.js
+    - Public server vs behind NAT
+- Create additional self-directed learning in the style of [@libp2p/protocol-adventure](https://www.npmjs.com/package/@libp2p/protocol-adventure)
+  - @libp2p/services-adventure
+  - @libp2p/dht-adventure
+  - @libp2p/pubsub-adventure
+  - @libp2p/peer-discovery-adventure
+- Link the adventure modules into a syllabus
+- Publish browser based versions using protoschool or https://tutorialkit.dev/
 
-#### Early Q4 (October)
-- [A.1 📺 WebTransport](#1-webtransport)
+## 🌐 Browser connectivity
 
-#### Mid Q4 (November)
-- [***➡️ test-plans/Interop tests for all existing/developing transports***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-interop-test-plans-for-all-existingdeveloping-transports)
-- [***➡️ test-plans/Benchmarking using nix-builders***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#1-benchmarking-using-nix-builders)
+Browsers remain the single most challenging environment in which to deploy truly decentralized applications and most of the issues are related to the poor connectivity options presented to browsers by the rest of the network.
 
-#### End of Q4 (December)
-- [A.2 📺 WebRTC: Browser to Server](#2-webrtc-browser-to-server)
-- [B.1 🥊 AutoNat](#1-autonat)
-- [B.2 🥊 Circuit Relay v2](#2-circuit-relay-v2)
+### Listen on Secure WebSockets with libp2p.direct
 
-### 2023
+IP Shipyard have recently acquired the ability to create wildcard ACME certificates under the `libp2p.direct` domain.  This feature is being enabled in https://github.com/ipfs/kubo/pull/10521
 
-#### Early Q1 (January)
-- [C.1 🔮 Ergonomic metrics API](#1-ergonomic-metrics-api)
-- [***➡️ test-plans/DHT server mode scale test***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md##1-dht-server-mode-scale-test)
+JS should implement a similar extension to the `@libp2p/websocket` transport to allow config-free SSL encryption.
 
-#### Mid Q1 (February)
-- [A.3 📺 WebRTC: Browser to Browser](#3-webrtc-browser-to-browser)
+### WebSocket single encryption
 
-#### End of Q1 (March)
-- [B.3 🥊 Add QUIC Transport](#3-add-quic-transport)
-- [***➡️ test-plans/Benchmarking using remote runners***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#2-benchmarking-using-remote-runners)
+When a browser connects to a WebSocket listener they can only connect over TLS.  We then apply noise encryption as well which means everything is encrypted twice which is inefficient.
 
-#### Early Q2 (April)
-- [B.4 🥊 Hole Punching](#4-hole-punching)
-	- 🎉 Estimated Project Completion
+We should be able to use the noise handshake mechanism to ensure the remote has the private key corresponding to it's public key, then use the browser's TLS implementation to prevent eavesdropping.
 
-### Up Next
-- [***➡️ test-plans/Expansive protocol test coverage***](https://github.com/libp2p/test-plans/blob/master/ROADMAP.md#d-expansive-protocol-test-coverage)
+The specification is [in progress](https://github.com/libp2p/specs/pull/625) the milestone is to ship a POC.
 
-## 📖 Appendix
-### [A. 📺 Universal Browser Connectivity](https://github.com/libp2p/js-libp2p/issues/1463)
+## Node.js connectivity
 
-**Why**: A huge part of “the Web” is happening inside the browser. As a universal p2p networking stack, libp2p needs to be able to offer solutions for browser users.
+### QUIC in Node.js
 
-**Goal**: js-libp2p supports both WebTransport and (libp2p-) WebRTC protocols, enabled by default. This allows connections between browsers and public nodes, and eventually between browsers and non-public nodes and in between browser nodes.
+There's a decent chance the Node.js QUIC implementation is [not going to be exposed to userland](https://github.com/nodejs/node/pull/52628#issuecomment-2143475066), but we need this to have compatibility with other libp2p implementations.
 
-#### 1. [WebTransport](https://github.com/libp2p/js-libp2p-webtransport/issues/1)
-Implementation of WebTransport in js-libp2p. Allows for interoperability with go-libp2p.
-#### 2. [WebRTC: Browser to Server](https://github.com/little-bear-labs/js-libp2p-webrtc/pull/4)
-Add support for WebRTC transport in js-libp2p, enabling browser connectivity with servers. This will cover the browsers that don't support WebTransport (most notable is iOS Safari). This is getting close to finalized.
-#### [3. WebRTC: Browser to Browser](https://github.com/libp2p/js-libp2p/issues/1462)
-Even though this use case is made possible by [webrtc-star](https://github.com/libp2p/js-libp2p-webrtc-star) and [webrtc-direct](https://github.com/libp2p/js-libp2p-webrtc-direct) currently, they are a less than ideal solutions. Both libraries have shortcomings, aren't implemented in other languages, and don't employ newer libp2p advancements such as Circuit Relay v2, DCUtR, and authentication via Noise. Therefore, we want to support WebRTC Browser to Browser as a first class transport in js-libp2p and deprecate the previous libraries. A follow up to A.2 where we will begin the work to specify the semantics of browser to browser connectivity and then implement it in js-libp2p.
+https://github.com/ChainSafe/js-libp2p-quic is in-progress to add QUIC support via a native module that uses the Rust implementation.
 
-### [B. 🥊 Decentralized Hole Punching](https://github.com/libp2p/js-libp2p/issues/1461)
-**Why:**  P2P networks can have a combination of both public and private nodes. While private nodes can dial nodes on the public Internet, they are unreachable from the outside as they are behind a NAT or a firewall. We need a mechanism to dial them. A [previous DHT crawl found that almost 63%](https://github.com/libp2p/specs/blob/master/ROADMAP.md#-hole-punching-on-tcp-and-quic) of the network was undialable.
+### WebTransport in Node.js
 
-**Goal:** Implement Decentralized Hole Punching in js-libp2p and bring it to parity with the Go and Rust implementations.
-#### 1. [AutoNat](https://github.com/libp2p/js-libp2p/issues/1005)
-Determine whether a node is public or private (located behind a firewall or a NAT.) This is a dependency for enabling the DHT in server mode by default for projects like js-ipfs.
-#### 2. [Circuit Relay v2](https://github.com/libp2p/js-libp2p/issues/1029)
-Connect to, request reservations, and establish a secure relay connection through discovered public relay node.
-#### [3. Add QUIC Transport](https://github.com/libp2p/js-libp2p/issues/1459)
-Hole punching is [more reliable with UDP (therefore QUIC)](https://www.notion.so/pl-strflt/NAT-Hole-punching-Success-Rate-2022-09-29-Data-Analysis-8e72705ca3cc49ab983bc5e8792e3e98#5b76991da8d24736abd486aa93e85a97) than TCP. This requires adding support for QUIC in js-libp2p. There is some work [being done here](https://github.com/nodejs/node/pull/44325) to add support in node.js which we depend on.
-#### [4. Hole Punching](https://github.com/libp2p/js-libp2p/issues/1460)
-Use [DCUtR](https://github.com/libp2p/specs/blob/master/relay/DCUtR.md) to synchronize hole punching
+A [long-lived PR](https://github.com/libp2p/js-libp2p/pull/2422) is open that adds WebTransport support via the [@fails-components/webtransport](https://www.npmjs.com/package/@fails-components/webtransport) module, however it's blocked on [spec incompatibilities](https://github.com/fails-components/webtransport/issues/213).
 
-### [C. 🔮 Ergonomic Observability](https://github.com/libp2p/js-libp2p/issues/1458)
-**Why:** Though we already expose [per-component metrics](https://github.com/libp2p/js-libp2p/issues/1060) in js-libp2p, the overhead of recording metrics is high (excessive object allocation per metric to record). This will be helpful to [our users](https://github.com/chainsafe/lodestar) who record metrics on the order of thousands/second.
+We can either resolve these incompatibilities, implement WebTransport on top of https://github.com/ChainSafe/js-libp2p-quic, or perhaps Node.js will finally ship [HTTP3 support](https://github.com/nodejs/node/issues/38478) and WebTransport, whichever is most expedient.
 
-**Goal:**
-We make the lives of js-libp2p easier by adding an improved metrics API.
+### WebRTC Direct in Node.js
 
-#### [1. Ergonomic metrics API](https://github.com/libp2p/js-libp2p/issues/1458)
-Create a ergonomic, generalized metrics recording interface which addresses current allocation overhead and duplication of information. Do not bloat the browser bundle with [prom-client](https://github.com/siimon/prom-client).
+Another [long-lived PR](https://github.com/libp2p/js-libp2p/pull/2583) adds support for a [WebRTC Direct](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md) listener to Node.js.
+
+It's currently blocked on a number of PRs that require the input of upstream maintainers (see linked issues in [#2583](https://github.com/libp2p/js-libp2p/pull/2583)). We will continue to encourage the maintainers of these libraries to give feedback and ultimately merge those PRs but we may need to publish forks in the interim.

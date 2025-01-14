@@ -64,6 +64,358 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.4](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.3...upnp-nat-v3.0.4) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
+## [3.0.3](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.2...upnp-nat-v3.0.3) (2024-12-13)
+
+
+### Bug Fixes
+
+* confirm external ip ([#2895](https://github.com/libp2p/js-libp2p/issues/2895)) ([52f0f2f](https://github.com/libp2p/js-libp2p/commit/52f0f2f1324bb7316157c3bcdbbdb5f1b151e3ad))
+
+## [3.0.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.1...upnp-nat-v3.0.2) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.0...upnp-nat-v3.0.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* unhandled promise rejection when finding gateway ([#2884](https://github.com/libp2p/js-libp2p/issues/2884)) ([127abe2](https://github.com/libp2p/js-libp2p/commit/127abe24b567e462b5fb8809960201635bee2202))
+
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.12...upnp-nat-v3.0.0) (2024-12-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840))
+
+### Bug Fixes
+
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+* support IPv6 with IPv4 ([#2864](https://github.com/libp2p/js-libp2p/issues/2864)) ([406b391](https://github.com/libp2p/js-libp2p/commit/406b3916cac688cd98c02b61ee2e52a9cd041704))
+* use addresses with metadata to map ports ([#2878](https://github.com/libp2p/js-libp2p/issues/2878)) ([d51c21f](https://github.com/libp2p/js-libp2p/commit/d51c21f0b0e87d54841876a652fd9985dfafd030))
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840)) ([a82b07d](https://github.com/libp2p/js-libp2p/commit/a82b07d8c69640b6c72824a584b55bb7c30ca06e))
+
+
+### Dependencies
+
+* update nat-port-mapper to v3 ([#2843](https://github.com/libp2p/js-libp2p/issues/2843)) ([b02ea9b](https://github.com/libp2p/js-libp2p/commit/b02ea9b6edf1a6ef2e059ea8570ba57cc9052229))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
+## [2.0.12](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.11...upnp-nat-v2.0.12) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/interface-internal bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/utils bumped from ^6.2.0 to ^6.2.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.10...upnp-nat-v2.0.11) (2024-11-16)
+
+
+### Bug Fixes
+
+* require autonat when not automatically confirming addresses ([#2824](https://github.com/libp2p/js-libp2p/issues/2824)) ([eee97c7](https://github.com/libp2p/js-libp2p/commit/eee97c7d4ced5763f6620e535f3c9a5619abf046))
+* run UPnP nat on address change, update nat port mapper ([#2797](https://github.com/libp2p/js-libp2p/issues/2797)) ([7626b22](https://github.com/libp2p/js-libp2p/commit/7626b224d23c474d1c885c8a7922977ab7e4bea6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
+## [2.0.10](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.9...upnp-nat-v2.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/interface-internal bumped from ^2.0.9 to ^2.0.10
+    * @libp2p/utils bumped from ^6.1.2 to ^6.1.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+
+## [2.0.9](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.8...upnp-nat-v2.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+
+## [2.0.8](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.7...upnp-nat-v2.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/interface-internal bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/utils bumped from ^6.1.0 to ^6.1.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+
+## [2.0.7](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.6...upnp-nat-v2.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/utils bumped from ^6.0.6 to ^6.1.0
+
+## [2.0.6](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.5...upnp-nat-v2.0.6) (2024-09-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.5 to ^2.0.6
+    * @libp2p/utils bumped from ^6.0.5 to ^6.0.6
+
+## [2.0.5](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.4...upnp-nat-v2.0.5) (2024-09-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.4 to ^2.0.5
+    * @libp2p/utils bumped from ^6.0.4 to ^6.0.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+
+## [2.0.4](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.3...upnp-nat-v2.0.4) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+    * @libp2p/interface-internal bumped from ^2.0.3 to ^2.0.4
+    * @libp2p/utils bumped from ^6.0.3 to ^6.0.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/logger bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/peer-id bumped from ^5.0.3 to ^5.0.4
+
+## [2.0.3](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.2...upnp-nat-v2.0.3) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/interface-internal bumped from ^2.0.2 to ^2.0.3
+    * @libp2p/utils bumped from ^6.0.2 to ^6.0.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/logger bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/peer-id bumped from ^5.0.2 to ^5.0.3
+
+## [2.0.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.1...upnp-nat-v2.0.2) (2024-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+    * @libp2p/interface-internal bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/utils bumped from ^6.0.1 to ^6.0.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+
+## [2.0.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v2.0.0...upnp-nat-v2.0.1) (2024-09-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.0 to ^2.0.1
+    * @libp2p/interface-internal bumped from ^2.0.0 to ^2.0.1
+    * @libp2p/utils bumped from ^6.0.0 to ^6.0.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/logger bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/peer-id bumped from ^5.0.0 to ^5.0.1
+
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.5...upnp-nat-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+    * @libp2p/interface-internal bumped from ^1.3.4 to ^2.0.0
+    * @libp2p/utils bumped from ^5.4.9 to ^6.0.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+
+## [1.2.5](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.4...upnp-nat-v1.2.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+    * @libp2p/interface-internal bumped from ^1.3.3 to ^1.3.4
+    * @libp2p/utils bumped from ^5.4.8 to ^5.4.9
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+    * @libp2p/peer-id-factory bumped from ^4.2.3 to ^4.2.4
+
+## [1.2.4](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.3...upnp-nat-v1.2.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+    * @libp2p/interface-internal bumped from ^1.3.2 to ^1.3.3
+    * @libp2p/utils bumped from ^5.4.7 to ^5.4.8
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+
+## [1.2.3](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.2...upnp-nat-v1.2.3) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+    * @libp2p/interface-internal bumped from ^1.3.1 to ^1.3.2
+    * @libp2p/utils bumped from ^5.4.6 to ^5.4.7
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+    * @libp2p/peer-id-factory bumped from ^4.2.1 to ^4.2.2
+
+## [1.2.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.1...upnp-nat-v1.2.2) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+    * @libp2p/interface-internal bumped from ^1.3.0 to ^1.3.1
+    * @libp2p/utils bumped from ^5.4.5 to ^5.4.6
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+    * @libp2p/peer-id-factory bumped from ^4.2.0 to ^4.2.1
+
+## [1.2.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.2.0...upnp-nat-v1.2.1) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+    * @libp2p/interface-internal bumped from ^1.2.4 to ^1.3.0
+    * @libp2p/utils bumped from ^5.4.4 to ^5.4.5
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.1.0...upnp-nat-v1.2.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+    * @libp2p/interface-internal bumped from ^1.2.3 to ^1.2.4
+    * @libp2p/utils bumped from ^5.4.3 to ^5.4.4
+  * devDependencies
+    * @libp2p/logger bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/peer-id-factory bumped from ^4.1.3 to ^4.1.4
+
 ## [1.1.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v1.0.22...upnp-nat-v1.1.0) (2024-06-07)
 
 

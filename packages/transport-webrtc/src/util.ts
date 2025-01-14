@@ -1,6 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
+import { DEFAULT_ICE_SERVERS } from './constants.js'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { PeerConnection } from 'node-datachannel'
 
@@ -68,4 +69,20 @@ export interface AbortPromiseOptions {
 
 export function isPeerConnection (obj: any): obj is PeerConnection {
   return typeof obj.state === 'function'
+}
+
+export async function getRtcConfiguration (config?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)): Promise<RTCConfiguration> {
+  config = config ?? {}
+
+  if (typeof config === 'function') {
+    config = await config()
+  }
+
+  config.iceServers = config.iceServers ?? DEFAULT_ICE_SERVERS.map(url => ({
+    urls: [
+      url
+    ]
+  }))
+
+  return config
 }

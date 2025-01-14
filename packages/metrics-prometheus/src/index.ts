@@ -66,16 +66,25 @@
  * ```
  */
 
+import { statfs } from 'node:fs/promises'
+import { totalmem } from 'node:os'
 import { serviceCapabilities } from '@libp2p/interface'
 import each from 'it-foreach'
 import { collectDefaultMetrics, type DefaultMetricsCollectorConfiguration, register, type Registry, type RegistryContentType } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
+import { PrometheusHistogramGroup } from './histogram-group.js'
+import { PrometheusHistogram } from './histogram.js'
 import { PrometheusMetricGroup } from './metric-group.js'
 import { PrometheusMetric } from './metric.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, Stream, Connection, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics } from '@libp2p/interface'
+import { PrometheusSummaryGroup } from './summary-group.js'
+import { PrometheusSummary } from './summary.js'
+import type { ComponentLogger, Logger, MultiaddrConnection, Stream, Connection, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
+
+// export helper functions for creating buckets
+export { linearBuckets, exponentialBuckets } from 'prom-client'
 
 // prom-client metrics are global
 const metrics = new Map<string, any>()
@@ -104,9 +113,25 @@ export interface PrometheusMetricsInit {
    * pass true here
    */
   preserveExistingMetrics?: boolean
+
+  /**
+   * The current filesystem usage is reported as the metric
+   * `nodejs_fs_usage_bytes` using the `statfs` function from `node:fs` - the
+   * default location to stat is the current working directory, configured this
+   * location here
+   */
+  statfsLocation?: string
 }
 
 export interface PrometheusCalculatedMetricOptions<T=number> extends CalculatedMetricOptions<T> {
+  registry?: Registry
+}
+
+export interface PrometheusCalculatedHistogramOptions<T=number> extends CalculatedHistogramOptions<T> {
+  registry?: Registry
+}
+
+export interface PrometheusCalculatedSummaryOptions<T=number> extends CalculatedSummaryOptions<T> {
   registry?: Registry
 }
 
@@ -160,6 +185,25 @@ class PrometheusMetrics implements Metrics {
       calculate: () => {
         return {
           ...process.memoryUsage()
+        }
+      }
+    })
+    const totalMemoryMetric = this.registerMetric('nodejs_memory_total_bytes')
+    totalMemoryMetric.update(totalmem())
+
+    this.log('Collecting filesystem metrics')
+    this.registerMetricGroup('nodejs_fs_usage_bytes', {
+      label: 'filesystem',
+      calculate: async () => {
+        const stats = await statfs(init?.statfsLocation ?? process.cwd())
+        const total = stats.bsize * stats.blocks
+        const available = stats.bsize * stats.bavail
+
+        return {
+          total,
+          free: stats.bsize * stats.bfree,
+          available,
+          used: (available / total) * 100
         }
       }
     })
@@ -329,6 +373,131 @@ class PrometheusMetrics implements Metrics {
     if (opts.calculate == null) {
       return counterGroup
     }
+  }
+
+  registerHistogram (name: string, opts: PrometheusCalculatedHistogramOptions): void
+  registerHistogram (name: string, opts?: HistogramOptions): Histogram
+  registerHistogram (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Histogram name is required')
+    }
+
+    let metric = metrics.get(name)
+
+    if (metrics.has(name)) {
+      this.log('Reuse existing histogram', name)
+
+      if (opts.calculate != null) {
+        metric.addCalculator(opts.calculate)
+      }
+
+      return metrics.get(name)
+    }
+
+    this.log('Register histogram', name)
+    metric = new PrometheusHistogram(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metric)
+
+    if (opts.calculate == null) {
+      return metric
+    }
+  }
+
+  registerHistogramGroup (name: string, opts: PrometheusCalculatedHistogramOptions<Record<string, number>>): void
+  registerHistogramGroup (name: string, opts?: HistogramOptions): HistogramGroup
+  registerHistogramGroup (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Histogram group name is required')
+    }
+
+    let metricGroup = metrics.get(name)
+
+    if (metricGroup != null) {
+      this.log('Reuse existing histogram group', name)
+
+      if (opts.calculate != null) {
+        metricGroup.addCalculator(opts.calculate)
+      }
+
+      return metricGroup
+    }
+
+    this.log('Register histogram group', name)
+    metricGroup = new PrometheusHistogramGroup(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metricGroup)
+
+    if (opts.calculate == null) {
+      return metricGroup
+    }
+  }
+
+  registerSummary (name: string, opts: PrometheusCalculatedSummaryOptions): void
+  registerSummary (name: string, opts?: SummaryOptions): Summary
+  registerSummary (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Summary name is required')
+    }
+
+    let metric = metrics.get(name)
+
+    if (metrics.has(name)) {
+      this.log('Reuse existing summary', name)
+
+      if (opts.calculate != null) {
+        metric.addCalculator(opts.calculate)
+      }
+
+      return metrics.get(name)
+    }
+
+    this.log('Register summary', name)
+    metric = new PrometheusSummary(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metric)
+
+    if (opts.calculate == null) {
+      return metric
+    }
+  }
+
+  registerSummaryGroup (name: string, opts: PrometheusCalculatedSummaryOptions<Record<string, number>>): void
+  registerSummaryGroup (name: string, opts?: SummaryOptions): SummaryGroup
+  registerSummaryGroup (name: string, opts: any = {}): any {
+    if (name == null ?? name.trim() === '') {
+      throw new Error('Summary group name is required')
+    }
+
+    let metricGroup = metrics.get(name)
+
+    if (metricGroup != null) {
+      this.log('Reuse existing summary group', name)
+
+      if (opts.calculate != null) {
+        metricGroup.addCalculator(opts.calculate)
+      }
+
+      return metricGroup
+    }
+
+    this.log('Register summary group', name)
+    metricGroup = new PrometheusSummaryGroup(name, { registry: this.registry, ...opts })
+
+    metrics.set(name, metricGroup)
+
+    if (opts.calculate == null) {
+      return metricGroup
+    }
+  }
+
+  createTrace (): any {
+    // no-op
+  }
+
+  traceFunction <T extends (...args: any[]) => any> (name: string, fn: T): T {
+    // no-op
+    return fn
   }
 }
 

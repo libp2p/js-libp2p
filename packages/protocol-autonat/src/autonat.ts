@@ -1,53 +1,126 @@
-import { CodeError, ERR_TIMEOUT, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromBytes } from '@libp2p/peer-id'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { serviceCapabilities, serviceDependencies, setMaxListeners } from '@libp2p/interface'
+import { peerSet } from '@libp2p/peer-collections'
+import { peerIdFromMultihash } from '@libp2p/peer-id'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
+import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
+import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { repeatingTask } from '@libp2p/utils/repeating-task'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
-import first from 'it-first'
-import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import parallel from 'it-parallel'
-import { pipe } from 'it-pipe'
-import {
-  MAX_INBOUND_STREAMS,
-  MAX_OUTBOUND_STREAMS,
-  PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, REFRESH_INTERVAL, STARTUP_DELAY, TIMEOUT
-} from './constants.js'
+import { anySignal } from 'any-signal'
+import { pbStream } from 'it-protobuf-stream'
+import * as Digest from 'multiformats/hashes/digest'
+import { DEFAULT_CONNECTION_THRESHOLD, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
-import type { Logger, Connection, PeerId, PeerInfo, Startable, AbortOptions } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal'
+import type { Logger, Connection, PeerId, Startable, AbortOptions } from '@libp2p/interface'
+import type { AddressType, IncomingStreamData } from '@libp2p/interface-internal'
+import type { PeerSet } from '@libp2p/peer-collections'
+import type { Filter } from '@libp2p/utils/filters'
+import type { RepeatingTask } from '@libp2p/utils/repeating-task'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
 // IP then we are convinced that it is, in fact, our external IP
-// https://github.com/libp2p/specs/blob/master/autonat/README.md#autonat-protocol
+// https://github.com/libp2p/specs/blob/master/autonat/autonat-v1.md#autonat-protocol
 const REQUIRED_SUCCESSFUL_DIALS = 4
+const REQUIRED_FAILED_DIALS = 8
+
+interface TestAddressOptions extends AbortOptions {
+  multiaddr: Multiaddr
+  peerId: PeerId
+}
+
+interface DialResults {
+  /**
+   * The address being tested
+   */
+  multiaddr: Multiaddr
+
+  /**
+   * The number of successful dials from peers
+   */
+  success: number
+
+  /**
+   * The number of dial failures from peers
+   */
+  failure: number
+
+  /**
+   * For the multiaddr corresponding the the string key of the `dialResults`
+   * map, these are the IP segments that a successful dial result has been
+   * received from
+   */
+  networkSegments: string[]
+
+  /**
+   * Ensure that the same peer id can't verify multiple times
+   */
+  verifyingPeers: PeerSet
+
+  /**
+   * The number of peers currently verifying this address
+   */
+  queue: PeerQueue<void, TestAddressOptions>
+
+  /**
+   * Updated when this address is verified or failed
+   */
+  result?: boolean
+
+  /**
+   * The type of address
+   */
+  type: AddressType
+
+  /**
+   * The last time the address was verified
+   */
+  lastVerified?: number
+}
 
 export class AutoNATService implements Startable {
   private readonly components: AutoNATComponents
-  private readonly startupDelay: number
-  private readonly refreshInterval: number
   private readonly protocol: string
   private readonly timeout: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private verifyAddressTimeout?: ReturnType<typeof setTimeout>
+  private readonly maxMessageSize: number
   private started: boolean
   private readonly log: Logger
+  private topologyId?: string
+  private readonly dialResults: Map<string, DialResults>
+  private readonly findPeers: RepeatingTask
+  private readonly addressFilter: Filter
+  private readonly connectionThreshold: number
 
   constructor (components: AutoNATComponents, init: AutoNATServiceInit) {
     this.components = components
-    this.log = components.logger.forComponent('libp2p:autonat')
+    this.log = components.logger.forComponent('libp2p:auto-nat')
     this.started = false
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
     this.timeout = init.timeout ?? TIMEOUT
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.startupDelay = init.startupDelay ?? STARTUP_DELAY
-    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL
-    this._verifyExternalAddresses = this._verifyExternalAddresses.bind(this)
+    this.connectionThreshold = init.connectionThreshold ?? DEFAULT_CONNECTION_THRESHOLD
+    this.maxMessageSize = init.maxMessageSize ?? MAX_MESSAGE_SIZE
+    this.dialResults = new Map()
+    this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
+    this.addressFilter = createScalableCuckooFilter(1024)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/autonat'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/autonat'
+  ]
+
+  get [serviceDependencies] (): string[] {
+    return [
+      '@libp2p/identify'
+    ]
+  }
 
   isStarted (): boolean {
     return this.started
@@ -61,23 +134,91 @@ export class AutoNATService implements Startable {
     await this.components.registrar.handle(this.protocol, (data) => {
       void this.handleIncomingAutonatStream(data)
         .catch(err => {
-          this.log.error('error handling incoming autonat stream', err)
+          this.log.error('error handling incoming autonat stream - %e', err)
         })
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams
     })
 
-    this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.startupDelay)
+    this.topologyId = await this.components.registrar.register(this.protocol, {
+      onConnect: (peerId, connection) => {
+        this.verifyExternalAddresses(connection)
+          .catch(err => {
+            this.log.error('could not verify addresses - %e', err)
+          })
+      }
+    })
 
+    this.findPeers.start()
     this.started = true
   }
 
   async stop (): Promise<void> {
     await this.components.registrar.unhandle(this.protocol)
-    clearTimeout(this.verifyAddressTimeout)
 
+    if (this.topologyId != null) {
+      await this.components.registrar.unhandle(this.topologyId)
+    }
+
+    this.dialResults.clear()
+    this.findPeers.stop()
     this.started = false
+  }
+
+  private allAddressesAreVerified (): boolean {
+    return this.components.addressManager.getAddressesWithMetadata().every(addr => {
+      if (addr.expires > Date.now()) {
+        // ignore any unverified addresses within their TTL
+        return true
+      }
+
+      return addr.verified
+    })
+  }
+
+  async findRandomPeers (options?: AbortOptions): Promise<void> {
+    // skip if all addresses are verified
+    if (this.allAddressesAreVerified()) {
+      return
+    }
+
+    const signal = anySignal([
+      AbortSignal.timeout(10_000),
+      options?.signal
+    ])
+
+    // spend a few seconds finding random peers - dial them which will run
+    // identify to trigger the topology callbacks and run AutoNAT
+    try {
+      this.log('starting random walk to find peers to run AutoNAT')
+
+      for await (const peer of this.components.randomWalk.walk({ signal })) {
+        if (!(await this.components.connectionManager.isDialable(peer.multiaddrs))) {
+          this.log.trace('random peer %p was not dialable %s', peer.id, peer.multiaddrs.map(ma => ma.toString()).join(', '))
+
+          // skip peers we can't dial
+          continue
+        }
+
+        try {
+          this.log.trace('dial random peer %p', peer.id)
+          await this.components.connectionManager.openConnection(peer.multiaddrs, {
+            signal
+          })
+        } catch {}
+
+        if (this.allAddressesAreVerified()) {
+          this.log('stopping random walk, all addresses are verified')
+          return
+        }
+
+        if (!this.hasConnectionCapacity()) {
+          this.log('stopping random walk, too close to max connections')
+          return
+        }
+      }
+    } catch {}
   }
 
   /**
@@ -85,76 +226,29 @@ export class AutoNATService implements Startable {
    */
   async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
-
-    const onAbort = (): void => {
-      data.stream.abort(new CodeError('handleIncomingAutonatStream timeout', ERR_TIMEOUT))
-    }
-
-    signal.addEventListener('abort', onAbort, { once: true })
-
-    // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
-    // appearing in the console
     setMaxListeners(Infinity, signal)
 
+    const messages = pbStream(data.stream, {
+      maxDataLength: this.maxMessageSize
+    }).pb(Message)
+
     try {
-      const self = this
-
-      await pipe(
-        data.stream,
-        (source) => lp.decode(source),
-        async function * (stream) {
-          const buf = await first(stream)
-
-          if (buf == null) {
-            self.log('no message received')
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'No message was sent'
-              }
-            })
-
-            return
-          }
-
-          let request: Message
-
-          try {
-            request = Message.decode(buf)
-          } catch (err) {
-            self.log.error('could not decode message', err)
-
-            yield Message.encode({
-              type: Message.MessageType.DIAL_RESPONSE,
-              dialResponse: {
-                status: Message.ResponseStatus.E_BAD_REQUEST,
-                statusText: 'Could not decode message'
-              }
-            })
-
-            return
-          }
-
-          yield Message.encode(await self.handleAutonatMessage(request, data.connection, {
-            signal
-          }))
-        },
-        (source) => lp.encode(source),
-        data.stream
-      )
-    } catch (err) {
-      this.log.error('error handling incoming autonat stream', err)
-    } finally {
-      signal.removeEventListener('abort', onAbort)
-    }
-  }
-
-  _verifyExternalAddresses (): void {
-    void this.verifyExternalAddresses()
-      .catch(err => {
-        this.log.error('error verifying external address', err)
+      const request = await messages.read({
+        signal
       })
+      const response = await this.handleAutonatMessage(request, data.connection, {
+        signal
+      })
+      await messages.write(response, {
+        signal
+      })
+      await messages.unwrap().unwrap().close({
+        signal
+      })
+    } catch (err: any) {
+      this.log.error('error handling incoming autonat stream - %e', err)
+      data.stream.abort(err)
+    }
   }
 
   private async handleAutonatMessage (message: Message, connection: Connection, options?: AbortOptions): Promise<Message> {
@@ -178,7 +272,7 @@ export class AutoNATService implements Startable {
     let peerId: PeerId
     const peer = dialRequest.peer
 
-    if (peer == null || peer.id == null) {
+    if (peer?.id == null) {
       this.log.error('PeerId missing from message')
 
       return {
@@ -191,9 +285,10 @@ export class AutoNATService implements Startable {
     }
 
     try {
-      peerId = peerIdFromBytes(peer.id)
+      const digest = Digest.decode(peer.id)
+      peerId = peerIdFromMultihash(digest)
     } catch (err) {
-      this.log.error('invalid PeerId', err)
+      this.log.error('invalid PeerId - %e', err)
 
       return {
         type: Message.MessageType.DIAL_RESPONSE,
@@ -223,34 +318,31 @@ export class AutoNATService implements Startable {
     const multiaddrs = peer.addrs
       .map(buf => multiaddr(buf))
       .filter(ma => {
-        const isFromSameHost = ma.toOptions().host === connection.remoteAddr.toOptions().host
+        const options = ma.toOptions()
 
-        this.log.trace('request to dial %a was sent from %a is same host %s', ma, connection.remoteAddr, isFromSameHost)
-        // skip any Multiaddrs where the target node's IP does not match the sending node's IP
-        return isFromSameHost
-      })
-      .filter(ma => {
-        const host = ma.toOptions().host
-        const isPublicIp = !(isPrivateIp(host) ?? false)
+        if (isPrivate(ma)) {
+          // don't try to dial private addresses
+          return false
+        }
 
-        this.log.trace('host %s was public %s', host, isPublicIp)
-        // don't try to dial private addresses
-        return isPublicIp
-      })
-      .filter(ma => {
-        const host = ma.toOptions().host
-        const isNotOurHost = !ourHosts.includes(host)
+        if (options.host !== connection.remoteAddr.toOptions().host) {
+          // skip any Multiaddrs where the target node's IP does not match the sending node's IP
+          this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
+          return false
+        }
 
-        this.log.trace('host %s was not our host %s', host, isNotOurHost)
-        // don't try to dial nodes on the same host as us
-        return isNotOurHost
-      })
-      .filter(ma => {
-        const isSupportedTransport = Boolean(this.components.transportManager.dialTransportForMultiaddr(ma))
+        if (ourHosts.includes(options.host)) {
+          // don't try to dial nodes on the same host as us
+          return false
+        }
 
-        this.log.trace('transport for %a is supported %s', ma, isSupportedTransport)
-        // skip any Multiaddrs that have transports we do not support
-        return isSupportedTransport
+        if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
+          // skip any Multiaddrs that have transports we do not support
+          this.log.trace('not dialing %a - transport unsupported', ma)
+          return false
+        }
+
+        return true
       })
       .map(ma => {
         if (ma.getPeerId() == null) {
@@ -263,7 +355,7 @@ export class AutoNATService implements Startable {
 
     // make sure we have something to dial
     if (multiaddrs.length === 0) {
-      this.log('no valid multiaddrs for %p in message', peerId)
+      this.log('refused to dial all multiaddrs for %p from message', peerId)
 
       return {
         type: Message.MessageType.DIAL_RESPONSE,
@@ -291,7 +383,7 @@ export class AutoNATService implements Startable {
           throw new Error('Unexpected remote address')
         }
 
-        this.log('Success %p', peerId)
+        this.log('successfully dialed %p via %a', peerId, multiaddr)
 
         return {
           type: Message.MessageType.DIAL_RESPONSE,
@@ -301,7 +393,7 @@ export class AutoNATService implements Startable {
           }
         }
       } catch (err: any) {
-        this.log('could not dial %p', peerId, err)
+        this.log.error('could not dial %p - %e', peerId, err)
         errorMessage = err.message
       } finally {
         if (connection != null) {
@@ -321,191 +413,342 @@ export class AutoNATService implements Startable {
   }
 
   /**
+   * The AutoNAT v1 server is not required to send us the address that it
+   * dialed successfully.
+   *
+   * When addresses fail, it can be because they are NATed, or because the peer
+   * did't support the transport, we have no way of knowing, so just send them
+   * one address so we can treat the response as:
+   *
+   * - OK - the dial request worked and the address is not NATed
+   * - E_DIAL_ERROR - the dial request failed and the address may be NATed
+   * - E_DIAL_REFUSED/E_BAD_REQUEST/E_INTERNAL_ERROR - the remote didn't dial the address
+   */
+  private getFirstUnverifiedMultiaddr (segment: string, supportsIPv6: boolean): DialResults | undefined {
+    const addrs = this.components.addressManager.getAddressesWithMetadata()
+      .sort((a, b) => {
+        // sort addresses, de-prioritize observed addresses
+        if (a.type === 'observed' && b.type !== 'observed') {
+          return 1
+        }
+
+        if (b.type === 'observed' && a.type !== 'observed') {
+          return -1
+        }
+
+        return 0
+      })
+      .filter(addr => {
+        const expired = addr.expires < Date.now()
+
+        if (!expired) {
+          // skip verified/non-verified addresses within their TTL
+          return false
+        }
+
+        const options = addr.multiaddr.toOptions()
+
+        if (options.family === 6) {
+          // do not send IPv6 addresses to peers without IPv6 addresses
+          if (!supportsIPv6) {
+            return false
+          }
+
+          if (!isGlobalUnicast(addr.multiaddr)) {
+            // skip non-globally routable addresses
+            return false
+          }
+        }
+
+        if (isPrivate(addr.multiaddr)) {
+          // skip private addresses
+          return false
+        }
+
+        return true
+      })
+
+    for (const addr of addrs) {
+      const addrString = addr.multiaddr.toString()
+      let results = this.dialResults.get(addrString)
+
+      if (results != null) {
+        if (results.networkSegments.includes(segment)) {
+          this.log.trace('%a already has a network segment result from %s', results.multiaddr, segment)
+          // skip this address if we already have a dial result from the
+          // network segment the peer is in
+          continue
+        }
+
+        if (results.queue.size > 10) {
+          this.log.trace('%a already has enough peers queued', results.multiaddr)
+          // already have enough peers verifying this address, skip on to the
+          // next one
+          continue
+        }
+      }
+
+      // will include this multiaddr, ensure we have a results object
+      if (results == null) {
+        const needsRevalidating = addr.expires < Date.now()
+
+        // allow re-validating addresses that worked previously
+        if (needsRevalidating) {
+          this.addressFilter.remove?.(addrString)
+        }
+
+        if (this.addressFilter.has(addrString)) {
+          continue
+        }
+
+        // only try to validate the address once
+        this.addressFilter.add(addrString)
+
+        this.log.trace('creating dial result %s %s', needsRevalidating ? 'to revalidate' : 'for', addrString)
+        results = {
+          multiaddr: addr.multiaddr,
+          success: 0,
+          failure: 0,
+          networkSegments: [],
+          verifyingPeers: peerSet(),
+          queue: new PeerQueue({
+            concurrency: 3,
+            maxSize: 50
+          }),
+          type: addr.type,
+          lastVerified: addr.lastVerified
+        }
+
+        this.dialResults.set(addrString, results)
+      }
+
+      return results
+    }
+  }
+
+  /**
+   * Removes any multiaddr result objects created for old multiaddrs that we are
+   * no longer waiting on
+   */
+  private removeOutdatedMultiaddrResults (): void {
+    const unverifiedMultiaddrs = new Set(this.components.addressManager.getAddressesWithMetadata()
+      .filter(({ expires }) => {
+        if (expires < Date.now()) {
+          return true
+        }
+
+        return false
+      })
+      .map(({ multiaddr }) => multiaddr.toString())
+    )
+
+    for (const multiaddr of this.dialResults.keys()) {
+      if (!unverifiedMultiaddrs.has(multiaddr)) {
+        this.log.trace('remove results for %a', multiaddr)
+        this.dialResults.delete(multiaddr)
+      }
+    }
+  }
+
+  /**
    * Our multicodec topology noticed a new peer that supports autonat
    */
-  async verifyExternalAddresses (): Promise<void> {
-    clearTimeout(this.verifyAddressTimeout)
-
-    // Do not try to push if we are not running
+  async verifyExternalAddresses (connection: Connection): Promise<void> {
+    // do nothing if we are not running
     if (!this.isStarted()) {
       return
     }
 
-    const addressManager = this.components.addressManager
+    // perform cleanup
+    this.removeOutdatedMultiaddrResults()
 
-    const multiaddrs = addressManager.getObservedAddrs()
-      .filter(ma => {
-        const options = ma.toOptions()
+    const peer = await this.components.peerStore.get(connection.remotePeer)
 
-        return !(isPrivateIp(options.host) ?? false)
-      })
+    // if the remote peer has IPv6 addresses, we can probably send them an IPv6
+    // address to verify, otherwise only send them IPv4 addresses
+    const supportsIPv6 = peer.addresses.some(({ multiaddr }) => {
+      return multiaddr.toOptions().family === 6
+    })
 
-    if (multiaddrs.length === 0) {
-      this.log('no public addresses found, not requesting verification')
-      this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
+    // get multiaddrs this peer is eligible to verify
+    const segment = this.getNetworkSegment(connection.remoteAddr)
+    const results = this.getFirstUnverifiedMultiaddr(segment, supportsIPv6)
+
+    if (results == null) {
+      this.log.trace('no unverified public addresses found for peer %p to verify, not requesting verification', connection.remotePeer)
+      return
+    }
+
+    if (!this.hasConnectionCapacity()) {
+      // we are near the max connection limit - any dial attempts from remote
+      // peers may be rejected which will get flagged as false dial errors and
+      // lead us to un-verify an otherwise reachable address
+
+      if (results.lastVerified != null) {
+        this.log('automatically re-verifying %a because we are too close to the connection limit', results.multiaddr)
+        this.confirmAddress(results)
+      } else {
+        this.log('skipping verifying %a because we are too close to the connection limit', results.multiaddr)
+      }
 
       return
     }
 
-    const signal = AbortSignal.timeout(this.timeout)
-
-    // this controller may be used while dialing lots of peers so prevent MaxListenersExceededWarning
-    // appearing in the console
-    setMaxListeners(Infinity, signal)
-
-    const self = this
-
-    try {
-      this.log('verify multiaddrs %s', multiaddrs.map(ma => ma.toString()).join(', '))
-
-      const request = Message.encode({
-        type: Message.MessageType.DIAL,
-        dial: {
-          peer: {
-            id: this.components.peerId.toBytes(),
-            addrs: multiaddrs.map(map => map.bytes)
-          }
+    results.queue.add(async (options: TestAddressOptions) => {
+      await this.askPeerToVerify(connection, segment, options)
+    }, {
+      peerId: connection.remotePeer,
+      multiaddr: results.multiaddr
+    })
+      .catch(err => {
+        if (results?.result == null) {
+          this.log.error('error from %p verifying address %a - %e', connection.remotePeer, results?.multiaddr, err)
         }
       })
+  }
 
-      const results: Record<string, { success: number, failure: number }> = {}
-      const networkSegments: string[] = []
+  private async askPeerToVerify (connection: Connection, segment: string, options: TestAddressOptions): Promise<void> {
+    let results = this.dialResults.get(options.multiaddr.toString())
 
-      const verifyAddress = async (peer: PeerInfo): Promise<Message.DialResponse | undefined> => {
-        let onAbort = (): void => {}
+    if (results == null) {
+      this.log('%a was verified while %p was queued', options.multiaddr, connection.remotePeer)
+      return
+    }
 
-        try {
-          this.log('asking %p to verify multiaddr', peer.id)
+    const signal = AbortSignal.timeout(this.timeout)
+    setMaxListeners(Infinity, signal)
 
-          const connection = await self.components.connectionManager.openConnection(peer.id, {
-            signal
-          })
+    this.log.trace('asking %p to verify multiaddr %s', connection.remotePeer, options.multiaddr)
 
-          const stream = await connection.newStream(this.protocol, {
-            signal
-          })
+    const stream = await connection.newStream(this.protocol, {
+      signal
+    })
 
-          onAbort = () => { stream.abort(new CodeError('verifyAddress timeout', ERR_TIMEOUT)) }
-
-          signal.addEventListener('abort', onAbort, { once: true })
-
-          const buf = await pipe(
-            [request],
-            (source) => lp.encode(source),
-            stream,
-            (source) => lp.decode(source),
-            async (stream) => first(stream)
-          )
-          if (buf == null) {
-            this.log('no response received from %p', connection.remotePeer)
-            return undefined
-          }
-          const response = Message.decode(buf)
-
-          if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
-            this.log('invalid autonat response from %p', connection.remotePeer)
-            return undefined
-          }
-
-          if (response.dialResponse.status === Message.ResponseStatus.OK) {
-            // make sure we use different network segments
-            const options = connection.remoteAddr.toOptions()
-            let segment: string
-
-            if (options.family === 4) {
-              const octets = options.host.split('.')
-              segment = octets[0]
-            } else if (options.family === 6) {
-              const octets = options.host.split(':')
-              segment = octets[0]
-            } else {
-              this.log('remote address "%s" was not IP4 or IP6?', options.host)
-              return undefined
+    try {
+      const messages = pbStream(stream).pb(Message)
+      const [, response] = await Promise.all([
+        messages.write({
+          type: Message.MessageType.DIAL,
+          dial: {
+            peer: {
+              id: this.components.peerId.toMultihash().bytes,
+              addrs: [options.multiaddr.bytes]
             }
-
-            if (networkSegments.includes(segment)) {
-              this.log('already have response from network segment %d - %s', segment, options.host)
-              return undefined
-            }
-
-            networkSegments.push(segment)
           }
+        }, { signal }),
+        messages.read({ signal })
+      ])
 
-          return response.dialResponse
-        } catch (err) {
-          this.log.error('error asking remote to verify multiaddr', err)
-        } finally {
-          signal.removeEventListener('abort', onAbort)
-        }
+      if (response.type !== Message.MessageType.DIAL_RESPONSE || response.dialResponse == null) {
+        this.log('invalid autonat response from %p - %j', connection.remotePeer, response)
+        return
       }
 
-      // find some random peers
-      for await (const dialResponse of parallel(map(this.components.randomWalk.walk({
-        signal
-      }), (peer) => async () => verifyAddress(peer)), {
-        concurrency: REQUIRED_SUCCESSFUL_DIALS
-      })) {
-        try {
-          if (dialResponse == null) {
-            continue
-          }
+      const status = response.dialResponse.status
 
-          // they either told us which address worked/didn't work, or we only sent them one address
-          const addr = dialResponse.addr == null ? multiaddrs[0] : multiaddr(dialResponse.addr)
+      this.log.trace('autonat response from %p for %a is %s', connection.remotePeer, options.multiaddr, status)
 
-          this.log('autonat response for %a is %s', addr, dialResponse.status)
+      if (status !== Message.ResponseStatus.OK && status !== Message.ResponseStatus.E_DIAL_ERROR) {
+        return
+      }
 
-          if (dialResponse.status === Message.ResponseStatus.E_BAD_REQUEST) {
-            // the remote could not parse our request
-            continue
-          }
+      results = this.dialResults.get(options.multiaddr.toString())
 
-          if (dialResponse.status === Message.ResponseStatus.E_DIAL_REFUSED) {
-            // the remote could not honour our request
-            continue
-          }
+      if (results == null) {
+        this.log.trace('peer reported %a as %s but there is no result object', options.multiaddr, response.dialResponse.status)
+        return
+      }
 
-          if (dialResponse.addr == null && multiaddrs.length > 1) {
-            // we sent the remote multiple addrs but they didn't tell us which ones worked/didn't work
-            continue
-          }
+      if (results.networkSegments.includes(segment)) {
+        this.log.trace('%a results included network segment %s', options.multiaddr, segment)
+        return
+      }
 
-          if (!multiaddrs.some(ma => ma.equals(addr))) {
-            this.log('peer reported %a as %s but it was not in our observed address list', addr, dialResponse.status)
-            continue
-          }
+      if (results.result != null) {
+        this.log.trace('already resolved result for %a, ignoring response from', options.multiaddr, connection.remotePeer)
+        return
+      }
 
-          const addrStr = addr.toString()
+      if (results.verifyingPeers.has(connection.remotePeer)) {
+        this.log.trace('peer %p has already verified %a, ignoring response', connection.remotePeer, options.multiaddr)
+        return
+      }
 
-          if (results[addrStr] == null) {
-            results[addrStr] = { success: 0, failure: 0 }
-          }
+      results.verifyingPeers.add(connection.remotePeer)
+      results.networkSegments.push(segment)
 
-          if (dialResponse.status === Message.ResponseStatus.OK) {
-            results[addrStr].success++
-          } else if (dialResponse.status === Message.ResponseStatus.E_DIAL_ERROR) {
-            results[addrStr].failure++
-          }
+      if (status === Message.ResponseStatus.OK) {
+        results.success++
 
-          if (results[addrStr].success === REQUIRED_SUCCESSFUL_DIALS) {
-            // we are now convinced
-            this.log('%a is externally dialable', addr)
-            addressManager.confirmObservedAddr(addr)
-            return
-          }
-
-          if (results[addrStr].failure === REQUIRED_SUCCESSFUL_DIALS) {
-            // we are now unconvinced
-            this.log('%a is not externally dialable', addr)
-            addressManager.removeObservedAddr(addr)
-            return
-          }
-        } catch (err) {
-          this.log.error('could not verify external address', err)
+        // observed addresses require more confirmations
+        if (results.type !== 'observed') {
+          this.confirmAddress(results)
+          return
         }
+      } else if (status === Message.ResponseStatus.E_DIAL_ERROR) {
+        results.failure++
+      }
+
+      this.log('%a success %d failure %d', results.multiaddr, results.success, results.failure)
+
+      if (results.success === REQUIRED_SUCCESSFUL_DIALS) {
+        this.confirmAddress(results)
+      }
+
+      if (results.failure === REQUIRED_FAILED_DIALS) {
+        this.unconfirmAddress(results)
       }
     } finally {
-      this.verifyAddressTimeout = setTimeout(this._verifyExternalAddresses, this.refreshInterval)
+      try {
+        await stream.close({
+          signal
+        })
+      } catch (err: any) {
+        stream.abort(err)
+      }
     }
+  }
+
+  private hasConnectionCapacity (): boolean {
+    const connections = this.components.connectionManager.getConnections()
+    const currentConnectionCount = connections.length
+    const maxConnections = this.components.connectionManager.getMaxConnections()
+
+    return ((currentConnectionCount / maxConnections) * 100) < this.connectionThreshold
+  }
+
+  private confirmAddress (results: DialResults): void {
+    // we are now convinced
+    this.log('%s address %a is externally dialable', results.type, results.multiaddr)
+    this.components.addressManager.confirmObservedAddr(results.multiaddr)
+    this.dialResults.delete(results.multiaddr.toString())
+
+    // abort & remove any outstanding verification jobs for this multiaddr
+    results.result = true
+    results.queue.abort()
+  }
+
+  private unconfirmAddress (results: DialResults): void {
+    // we are now unconvinced
+    this.log('%s address %a is not externally dialable', results.type, results.multiaddr)
+    this.components.addressManager.removeObservedAddr(results.multiaddr)
+    this.dialResults.delete(results.multiaddr.toString())
+
+    // abort & remove any outstanding verification jobs for this multiaddr
+    results.result = false
+    results.queue.abort()
+  }
+
+  private getNetworkSegment (ma: Multiaddr): string {
+    // make sure we use different network segments
+    const options = ma.toOptions()
+
+    if (options.family === 4) {
+      const octets = options.host.split('.')
+      return octets[0].padStart(3, '0')
+    }
+
+    const octets = options.host.split(':')
+    return octets[0].padStart(4, '0')
   }
 }
