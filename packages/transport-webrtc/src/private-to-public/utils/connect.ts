@@ -97,7 +97,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   }
 
   options.log.trace('performing noise handshake')
-  const noisePrologue = await generateNoisePrologue(localFingerprint, options.remoteAddr, options.role)
+  const noisePrologue = generateNoisePrologue(localFingerprint, options.remoteAddr, options.role)
 
   // Since we use the default crypto interface and do not use a static key
   // or early data, we pass in undefined for these parameters.

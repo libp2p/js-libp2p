@@ -3,6 +3,7 @@ import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { IP4 } from '@multiformats/multiaddr-matcher'
+import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
 import { connect } from './utils/connect.js'
@@ -14,6 +15,8 @@ import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
 import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+
+const crypto = new Crypto()
 
 /**
  * The time to wait, in milliseconds, for the data channel handshake to complete
@@ -98,9 +101,13 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       // libjuice doesn't map 0 to a random free port so we have to do it
       // ourselves
       port = await getPort()
+
+      console.info('-----> listen on port', port)
     }
 
     this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, remoteHost, remotePort) => {
+      console.info('----> incoming connection, remote ufrag is', ufrag)
+
       this.incomingConnection(ufrag, remoteHost, remotePort)
         .catch(err => {
           this.log.error('error processing incoming STUN request', err)

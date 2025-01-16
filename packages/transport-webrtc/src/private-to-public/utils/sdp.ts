@@ -96,14 +96,14 @@ export function fingerprint2Ma (fingerprint: string): Multiaddr {
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'SHA-512' {
+export function toSupportedHashFunction (code: number): 'sha-1' | 'sha-256' | 'sha-512' {
   switch (code) {
     case 0x11:
-      return 'SHA-1'
+      return 'sha-1'
     case 0x12:
-      return 'SHA-256'
+      return 'sha-256'
     case 0x13:
-      return 'SHA-512'
+      return 'sha-512'
     default:
       throw new UnsupportedHashAlgorithmError(code)
   }

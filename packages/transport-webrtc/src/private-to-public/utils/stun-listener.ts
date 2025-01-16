@@ -65,25 +65,19 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
   }
 }
 
-let listening = false
-
 async function libjuiceListener (host: string, port: number, cb: Callback): Promise<StunServer> {
-  if (listening) {
-    throw new Error('There can only be one WebRTC-Direct listener per-process due to the limitations of libjuice. Please pass `useLibjuice=false` to override this, but this may break NAT traversal.')
-  }
-
   onUnhandledStunRequest(host, port, (request) => {
-    if (request.remoteUfrag == null) {
+    console.info('incoming unhandled STUN request', request)
+    if (request.ufrag == null) {
       return
     }
 
-    cb(request.remoteUfrag, request.address, request.port)
+    cb(request.ufrag, request.host, request.port)
   })
 
   return {
     close: async () => {
       onUnhandledStunRequest(host, port)
-      listening = false
     },
     address: () => {
       return {

@@ -3,7 +3,7 @@ import { webRTCDirect } from '@libp2p/webrtc'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { isNode, isElectron } from 'wherearewe'
 
-describe('webrtc-direct interface-transport compliance', () => {
+describe('WebRTC-Direct interface-transport compliance', () => {
   if (!isNode && !isElectron) {
     return
   }

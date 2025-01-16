@@ -1,9 +1,12 @@
-import { DescriptionType, PeerConnection } from 'node-datachannel'
+import { Crypto } from '@peculiar/webcrypto'
+import { PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from '../../webrtc/index.js'
 import { DEFAULT_STUN_SERVERS } from '../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
 import type { CertificateFingerprint, IceServer } from 'node-datachannel'
+
+const crypto = new Crypto()
 
 /**
  * Convert the lib.dom.d.ts RTCIceServer type into a libdatachannel IceServer
@@ -53,6 +56,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly ufrag: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
+    console.info('--> DirectRTCPeerConnection created', init)
     super(init)
 
     this.peerConnection = init.peerConnection
@@ -64,7 +68,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
 
     // have to set ufrag after first datachannel is created
     if (this.connectionState === 'new') {
-      this.peerConnection.setLocalDescription(DescriptionType.Offer, {
+      this.peerConnection.setLocalDescription('offer', {
         iceUfrag: this.ufrag,
         icePwd: this.ufrag
       })
