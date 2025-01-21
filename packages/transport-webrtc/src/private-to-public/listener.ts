@@ -101,13 +101,9 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       // libjuice doesn't map 0 to a random free port so we have to do it
       // ourselves
       port = await getPort()
-
-      console.info('-----> listen on port', port)
     }
 
     this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, remoteHost, remotePort) => {
-      console.info('----> incoming connection, remote ufrag is', ufrag)
-
       this.incomingConnection(ufrag, remoteHost, remotePort)
         .catch(err => {
           this.log.error('error processing incoming STUN request', err)

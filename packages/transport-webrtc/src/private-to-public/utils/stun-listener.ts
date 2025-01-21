@@ -1,6 +1,6 @@
 import { createSocket } from 'node:dgram'
 import { isIPv4 } from '@chainsafe/is-ip'
-import { onUnhandledStunRequest } from 'node-datachannel'
+import { listenIceUdpMux } from 'node-datachannel'
 import { pEvent } from 'p-event'
 // @ts-expect-error no types
 import stun from 'stun'
@@ -66,18 +66,17 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
 }
 
 async function libjuiceListener (host: string, port: number, cb: Callback): Promise<StunServer> {
-  onUnhandledStunRequest(host, port, (request) => {
-    console.info('incoming unhandled STUN request', request)
+  listenIceUdpMux(port, (request) => {
     if (request.ufrag == null) {
       return
     }
 
     cb(request.ufrag, request.host, request.port)
-  })
+  }, host)
 
   return {
     close: async () => {
-      onUnhandledStunRequest(host, port)
+      listenIceUdpMux(port, undefined, host)
     },
     address: () => {
       return {

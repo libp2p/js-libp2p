@@ -56,7 +56,6 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly ufrag: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
-    console.info('--> DirectRTCPeerConnection created', init)
     super(init)
 
     this.peerConnection = init.peerConnection

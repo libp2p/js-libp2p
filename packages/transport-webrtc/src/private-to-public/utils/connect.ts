@@ -49,33 +49,27 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   // respond to STUN messages without performing an actual SDP exchange.
   // This is because it can infer the passwd field by reading the USERNAME
   // attribute of the STUN message.
-  options.log.trace('creating local offer')
+  options.log.trace('%s creating local offer', options.role)
   const offerSdp = await peerConnection.createOffer()
   const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-  options.log.trace('setting local description')
+  options.log.trace('%s setting local description %s', options.role, mungedOfferSdp.sdp)
   await peerConnection.setLocalDescription(mungedOfferSdp)
-
-  if (options.role === 'initiator') {
-    options.log.trace('server offer', mungedOfferSdp.sdp)
-  } else {
-    options.log.trace('client offer', mungedOfferSdp.sdp)
-  }
 
   // construct answer sdp from multiaddr and ufrag
   let answerSdp: RTCSessionDescriptionInit
 
   if (options.role === 'initiator') {
     answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag)
-    options.log.trace('server derived client offer', answerSdp.sdp)
+    options.log.trace('%s derived responder offer %s', options.role, answerSdp.sdp)
   } else {
     answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag)
-    options.log.trace('client derived server offer', answerSdp.sdp)
+    options.log.trace('%s derived initiator offer %s', options.role, answerSdp.sdp)
   }
 
-  options.log.trace('setting remote description')
+  options.log.trace('%s setting remote description, options.role')
   await peerConnection.setRemoteDescription(answerSdp)
 
-  options.log.trace('wait for handshake channel to open')
+  options.log.trace('%s wait for handshake channel to open', options.role)
   await raceEvent(handshakeDataChannel, 'open', options.signal)
 
   if (options.role === 'initiator') {
@@ -96,7 +90,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     throw new WebRTCTransportError('Could not get fingerprint from local description sdp')
   }
 
-  options.log.trace('performing noise handshake')
+  options.log.trace('%s performing noise handshake', options.role)
   const noisePrologue = generateNoisePrologue(localFingerprint, options.remoteAddr, options.role)
 
   // Since we use the default crypto interface and do not use a static key
@@ -158,24 +152,28 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   if (options.role === 'responder') {
     // For outbound connections, the remote is expected to start the noise handshake.
     // Therefore, we need to secure an inbound noise connection from the remote.
-    options.log.trace('secure inbound')
+    options.log.trace('%s secure inbound', options.role)
     await connectionEncrypter.secureInbound(wrappedDuplex, {
       remotePeer: options.remotePeerId
     })
 
-    options.log.trace('upgrade outbound')
+    options.log.trace('%s upgrade outbound', options.role)
     return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
   }
 
   // For inbound connections, we are expected to start the noise handshake.
   // Therefore, we need to secure an outbound noise connection from the remote.
-  options.log.trace('secure outbound')
+  options.log.trace('%s secure outbound', options.role)
   const result = await connectionEncrypter.secureOutbound(wrappedDuplex, {
     remotePeer: options.remotePeerId
   })
   maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
-  options.log.trace('upgrade inbound')
+  options.log.trace('%s upgrade inbound', options.role)
 
-  await options.upgrader.upgradeInbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+  await options.upgrader.upgradeInbound(maConn, {
+    skipProtection: true,
+    skipEncryption: true,
+    muxerFactory
+  })
 }

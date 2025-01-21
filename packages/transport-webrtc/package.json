@@ -58,6 +58,7 @@
     "@libp2p/utils": "^6.3.1",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^1.11.0",
     "any-signal": "^4.1.1",
     "detect-browser": "^5.3.0",
@@ -67,7 +68,6 @@
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
     "multiformats": "^13.3.1",
-    "multihashes": "^4.0.3",
     "node-datachannel": "^0.24.0",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
@@ -95,8 +95,7 @@
     "p-retry": "^6.2.1",
     "protons": "^7.6.0",
     "sinon": "^19.0.2",
-    "sinon-ts": "^2.0.0",
-    "wherearewe": "^2.0.1"
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js",

@@ -294,7 +294,7 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
-    this.log.trace('-> will send', data.byteLength)
+    this.log.trace('-> will send %d bytes', data.byteLength)
 
     // sending messages is an async operation so use a copy of the list as it
     // may be changed beneath us
@@ -305,14 +305,14 @@ export class WebRTCStream extends AbstractStream {
       const buf = data.subarray(0, toSend)
       const msgbuf = Message.encode({ message: buf })
       const sendbuf = lengthPrefixed.encode.single(msgbuf)
-      this.log.trace('-> sending message', this.channel.readyState)
+      this.log.trace('-> sending message %s', this.channel.readyState)
       await this._sendMessage(sendbuf)
-      this.log.trace('-> sent message', this.channel.readyState)
+      this.log.trace('-> sent message %s', this.channel.readyState)
 
       data.consume(toSend)
     }
 
-    this.log.trace('-> sent data', this.channel.readyState)
+    this.log.trace('-> sent data %s', this.channel.readyState)
   }
 
   async sendReset (): Promise<void> {
