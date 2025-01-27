@@ -31,4 +31,32 @@ describe('is-promise', () => {
   it('should not detect partial promise', () => {
     expect(isPromise({ then: true })).to.be.false()
   })
+
+  it('should return true if the value is a promise', () => {
+    expect(isPromise(Promise.resolve())).to.be.true()
+    expect(isPromise(new Promise(() => {}))).to.be.true()
+    expect(isPromise(Promise.reject(new Error('test')))).to.be.true()
+  })
+
+  it('should return false if the value is not a promise', () => {
+    expect(isPromise(1)).to.be.false()
+    expect(isPromise('string')).to.be.false()
+    expect(isPromise({})).to.be.false()
+    expect(isPromise([])).to.be.false()
+    expect(isPromise(null)).to.be.false()
+    expect(isPromise(undefined)).to.be.false()
+    expect(isPromise(() => {})).to.be.false()
+    expect(isPromise(async () => {})).to.be.false()
+    expect(
+      isPromise(function * () {
+        yield 1
+      })
+    ).to.be.false()
+    expect(
+      isPromise(async function * () {
+        yield 1
+      })
+    ).to.be.false()
+    expect(isPromise({ then: 1 })).to.be.false()
+  })
 })
