@@ -139,14 +139,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     let peerConnection = this.connections.get(key)
 
     if (peerConnection != null) {
-      this.log('already got peer connection for', key)
+      this.log.trace('already got peer connection for %s', key)
       return
     }
 
-    this.log('create peer connection for', key)
+    this.log('create peer connection for %s', key)
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    peerConnection = await createDialerRTCPeerConnection('NodeB', ufrag, this.init.rtcConfiguration, this.certificate)
+    peerConnection = await createDialerRTCPeerConnection('listener', ufrag, this.init.rtcConfiguration, this.certificate)
 
     this.connections.set(key, peerConnection)
 

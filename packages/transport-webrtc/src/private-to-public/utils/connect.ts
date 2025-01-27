@@ -59,14 +59,12 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   let answerSdp: RTCSessionDescriptionInit
 
   if (options.role === 'initiator') {
-    answerSdp = sdp.clientOfferFromMultiaddr(options.remoteAddr, ufrag)
-    options.log.trace('%s derived responder offer %s', options.role, answerSdp.sdp)
+    answerSdp = sdp.responderOfferFromMultiaddr(options.remoteAddr, ufrag)
   } else {
-    answerSdp = sdp.serverOfferFromMultiAddr(options.remoteAddr, ufrag)
-    options.log.trace('%s derived initiator offer %s', options.role, answerSdp.sdp)
+    answerSdp = sdp.initiatorOfferFromMultiAddr(options.remoteAddr, ufrag)
   }
 
-  options.log.trace('%s setting remote description, options.role')
+  options.log.trace('%s setting remote description %s', options.role, answerSdp.sdp)
   await peerConnection.setRemoteDescription(answerSdp)
 
   options.log.trace('%s wait for handshake channel to open', options.role)

@@ -4,7 +4,7 @@ import { RTCPeerConnection } from '../../webrtc/index.js'
 import { DEFAULT_STUN_SERVERS } from '../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
-import type { CertificateFingerprint, IceServer } from 'node-datachannel'
+import type { CertificateFingerprint, IceServer, RTCIceMode } from 'node-datachannel'
 
 const crypto = new Crypto()
 
@@ -49,17 +49,20 @@ export function toLibdatachannelIceServers (arg?: RTCIceServer[]): IceServer[] |
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
   peerConnection: PeerConnection
   ufrag: string
+  iceMode?: RTCIceMode
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly peerConnection: PeerConnection
   private readonly ufrag: string
+  private readonly iceMode?: RTCIceMode
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
+    this.iceMode = init.iceMode
   }
 
   createDataChannel (label: string, dataChannelDict?: RTCDataChannelInit): RTCDataChannel {
@@ -69,7 +72,8 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
     if (this.connectionState === 'new') {
       this.peerConnection.setLocalDescription('offer', {
         iceUfrag: this.ufrag,
-        icePwd: this.ufrag
+        icePwd: this.ufrag,
+        iceMode: this.iceMode
       })
     }
 
@@ -81,7 +85,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   }
 }
 
-export async function createDialerRTCPeerConnection (name: string, ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
+export async function createDialerRTCPeerConnection (role: 'listener' | 'dialer', ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
   if (certificate == null) {
     // ECDSA is preferred over RSA here. From our testing we find that P-256
     // elliptic curve is supported by Pion, webrtc-rs, as well as Chromium
@@ -100,7 +104,7 @@ export async function createDialerRTCPeerConnection (name: string, ufrag: string
   const rtcConfig = typeof rtcConfiguration === 'function' ? await rtcConfiguration() : rtcConfiguration
 
   // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-  const peerConnection = new PeerConnection(name, {
+  const peerConnection = new PeerConnection(role, {
     disableFingerprintVerification: true,
     disableAutoNegotiation: true,
     certificatePemFile: certificate.pem,
@@ -111,6 +115,8 @@ export async function createDialerRTCPeerConnection (name: string, ufrag: string
 
   return new DirectRTCPeerConnection({
     peerConnection,
-    ufrag
+    ufrag,
+    // TODO: workaround for https://github.com/pion/ice/issues/359#issuecomment-2610300555
+    iceMode: role === 'listener' ? 'controlled' : 'controlling'
   })
 }

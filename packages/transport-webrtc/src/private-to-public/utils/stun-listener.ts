@@ -1,6 +1,6 @@
 import { createSocket } from 'node:dgram'
 import { isIPv4 } from '@chainsafe/is-ip'
-import { listenIceUdpMux } from 'node-datachannel'
+import { IceUdpMuxListener } from 'node-datachannel'
 import { pEvent } from 'p-event'
 // @ts-expect-error no types
 import stun from 'stun'
@@ -35,7 +35,7 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
     // TODO: this needs to be rate limited keyed by the remote host to
     // prevent a DOS attack
     try {
-      log('incoming STUN packet from %o', rinfo)
+      log.trace('incoming STUN packet from %o', rinfo)
       const stunMessage = stun.decode(msg)
       const usernameAttribute = stunMessage.getAttribute(stun.constants.STUN_ATTR_USERNAME)
       const username: string | undefined = usernameAttribute?.value?.toString()
@@ -66,17 +66,18 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
 }
 
 async function libjuiceListener (host: string, port: number, cb: Callback): Promise<StunServer> {
-  listenIceUdpMux(port, (request) => {
+  const listener = new IceUdpMuxListener(port, host)
+  listener.onUnhandledStunRequest(request => {
     if (request.ufrag == null) {
       return
     }
 
     cb(request.ufrag, request.host, request.port)
-  }, host)
+  })
 
   return {
     close: async () => {
-      listenIceUdpMux(port, undefined, host)
+      listener.stop()
     },
     address: () => {
       return {

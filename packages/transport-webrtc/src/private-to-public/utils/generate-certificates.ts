@@ -16,8 +16,6 @@ export interface GenerateTransportCertificateOptions {
   extensions?: any[]
 }
 
-x509.cryptoProvider.set(globalThis.crypto)
-
 export async function generateTransportCertificate (keyPair: CryptoKeyPair, options: GenerateTransportCertificateOptions): Promise<TransportCertificate> {
   const notBefore = options.start ?? new Date()
   notBefore.setMilliseconds(0)

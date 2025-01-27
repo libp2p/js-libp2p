@@ -112,7 +112,7 @@ export function toSupportedHashFunction (code: number): 'sha-1' | 'sha-256' | 's
 /**
  * Create an offer SDP message from a multiaddr
  */
-export function clientOfferFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function responderOfferFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
 
@@ -146,7 +146,7 @@ a=end-of-candidates
 /**
  * Create an answer SDP message from a multiaddr
  */
-export function serverOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function initiatorOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
   const { host, port } = ma.toOptions()
   const ipVersion = ipv(ma)
   const [CERTFP] = ma2Fingerprint(ma)
@@ -155,7 +155,7 @@ o=- 0 0 IN ${ipVersion} ${host}
 s=-
 c=IN ${ipVersion} ${host}
 t=0 0
-a=ice-lite
+a=ice-options:ice2,trickle
 m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive

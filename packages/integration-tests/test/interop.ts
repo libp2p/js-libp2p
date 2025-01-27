@@ -46,12 +46,6 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
-
-    if (options.transport === 'webrtc-direct') {
-      // dialing webrtc-direct is broken in go-libp2p at the moment
-      // https://github.com/libp2p/go-libp2p/issues/2827
-      throw new UnsupportedError()
-    }
   } else {
     if (options.transport == null || options.transport === 'tcp') {
       opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
@@ -204,7 +198,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     services
   })
 
-  const server = createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = createServer(multiaddr('/ip4/127.0.0.1/tcp/0'), node)
   await server.start()
 
   return {

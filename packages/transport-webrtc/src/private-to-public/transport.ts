@@ -131,7 +131,7 @@ export class WebRTCDirectTransport implements Transport {
     const ufrag = UFRAG_PREFIX + genUfrag(32)
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    const peerConnection = await createDialerRTCPeerConnection('NodeA', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
+    const peerConnection = await createDialerRTCPeerConnection('dialer', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
 
     try {
       return await raceSignal(connect(peerConnection, ufrag, {
