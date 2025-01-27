@@ -43,7 +43,7 @@ It also requires the Identify protocol.
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { autoTLS } from '@libp2p/auto-tls'
-import { autoNAT } from "@libp2p/autonat";
+import { autoNAT } from '@libp2p/autonat'
 import { identify } from '@libp2p/identify'
 import { keychain } from '@libp2p/keychain'
 import { webSockets } from '@libp2p/websockets'
@@ -66,7 +66,7 @@ const node = await createLibp2p({
     yamux()
   ],
   services: {
-    autonat: autoNAT(),
+    autoNAT: autoNAT(),
     autoTLS: autoTLS(),
     identify: identify(),
     keychain: keychain(),
