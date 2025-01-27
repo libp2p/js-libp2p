@@ -84,6 +84,14 @@
       "types": "./dist/src/ip-port-to-multiaddr.d.ts",
       "import": "./dist/src/ip-port-to-multiaddr.js"
     },
+    "./is-async-generator": {
+      "types": "./dist/src/is-async-generator.d.ts",
+      "import": "./dist/src/is-async-generator.js"
+    },
+    "./is-generator": {
+      "types": "./dist/src/is-generator.d.ts",
+      "import": "./dist/src/is-generator.js"
+    },
     "./is-promise": {
       "types": "./dist/src/is-promise.d.ts",
       "import": "./dist/src/is-promise.js"
