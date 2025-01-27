@@ -14,6 +14,7 @@ import { RoutingTableRefresh } from '../../src/routing-table/refresh.js'
 import {
   convertPeerId
 } from '../../src/utils.js'
+import type { Network } from '../../src/network.js'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
@@ -64,7 +65,9 @@ describe.skip('generate peers', function () {
     const table = new RoutingTable(components, {
       kBucketSize: 20,
       logPrefix: '',
-      protocol: '/ipfs/kad/1.0.0'
+      metricsPrefix: '',
+      protocol: '/ipfs/kad/1.0.0',
+      network: stubInterface<Network>()
     })
     refresh = new RoutingTableRefresh({
       logger: defaultLogger()

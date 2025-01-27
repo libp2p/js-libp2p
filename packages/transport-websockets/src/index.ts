@@ -18,42 +18,8 @@
  * })
  * await node.start()
  *
- * const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ws')
+ * const ma = multiaddr('/dns4/example.com/tcp/9090/tls/ws')
  * await node.dial(ma)
- * ```
- *
- * ## Filters
- *
- * When run in a browser by default this module will only connect to secure web socket addresses.
- *
- * To change this you should pass a filter to the factory function.
- *
- * You can create your own address filters for this transports, or rely in the filters [provided](./src/filters.js).
- *
- * The available filters are:
- *
- * - `filters.all`
- *   - Returns all TCP and DNS based addresses, both with `ws` or `wss`.
- * - `filters.dnsWss`
- *   - Returns all DNS based addresses with `wss`.
- * - `filters.dnsWsOrWss`
- *   - Returns all DNS based addresses, both with `ws` or `wss`.
- *
- * @example Allow dialing insecure WebSockets
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { webSockets } from '@libp2p/websockets'
- * import * as filters from '@libp2p/websockets/filters'
- *
- * const node = await createLibp2p({
- *   transports: [
- *     webSockets({
- *       // connect to all sockets, even insecure ones
- *       filter: filters.all
- *     })
- *   ]
- * })
  * ```
  */
 
@@ -63,25 +29,50 @@ import { connect, type WebSocketOptions } from 'it-ws/client'
 import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
-import { isBrowser, isWebWorker } from 'wherearewe'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, TypedEventTarget, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Server } from 'http'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type http from 'node:http'
+import type https from 'node:https'
 import type { ProgressEvent } from 'progress-events'
 import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
+  /**
+   * @deprecated Use a ConnectionGater instead
+   */
   filter?: MultiaddrFilter
+
+  /**
+   * Options used to create WebSockets
+   */
   websocket?: ClientOptions
-  server?: Server
+
+  /**
+   * Options used to create the HTTP server
+   */
+  http?: http.ServerOptions
+
+  /**
+   * Options used to create the HTTPs server. `options.http` will be used if
+   * unspecified.
+   */
+  https?: https.ServerOptions
+
+  /**
+   * Inbound connections must complete their upgrade within this many ms
+   *
+   * @default 5000
+   */
+  inboundConnectionUpgradeTimeout?: number
 }
 
 export interface WebSocketsComponents {
   logger: ComponentLogger
+  events: TypedEventTarget<Libp2pEvents>
   metrics?: Metrics
 }
 
@@ -95,12 +86,12 @@ export type WebSocketsDialEvents =
 
 class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly log: Logger
-  private readonly init?: WebSocketsInit
+  private readonly init: WebSocketsInit
   private readonly logger: ComponentLogger
   private readonly metrics?: WebSocketsMetrics
   private readonly components: WebSocketsComponents
 
-  constructor (components: WebSocketsComponents, init?: WebSocketsInit) {
+  constructor (components: WebSocketsComponents, init: WebSocketsInit = {}) {
     this.log = components.logger.forComponent('libp2p:websockets')
     this.logger = components.logger
     this.components = components
@@ -180,13 +171,14 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   }
 
   /**
-   * Creates a Websockets listener. The provided `handler` function will be called
+   * Creates a WebSockets listener. The provided `handler` function will be called
    * anytime a new incoming Connection has been successfully upgraded via
    * `upgrader.upgradeInbound`
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
       logger: this.logger,
+      events: this.components.events,
       metrics: this.components.metrics
     }, {
       ...this.init,
@@ -195,7 +187,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   }
 
   /**
-   * Takes a list of `Multiaddr`s and returns only valid Websockets addresses.
+   * Takes a list of `Multiaddr`s and returns only valid WebSockets addresses.
    * By default, in a browser environment only DNS+WSS multiaddr is accepted,
    * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
    */
@@ -204,11 +196,6 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     if (this.init?.filter != null) {
       return this.init?.filter(multiaddrs)
-    }
-
-    // Browser
-    if (isBrowser || isWebWorker) {
-      return filters.wss(multiaddrs)
     }
 
     return filters.all(multiaddrs)

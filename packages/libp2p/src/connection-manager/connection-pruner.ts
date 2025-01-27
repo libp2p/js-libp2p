@@ -1,6 +1,8 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { MAX_CONNECTIONS } from './constants.js'
+import { multiaddrToIpNet } from './utils.js'
+import type { IpNet } from '@chainsafe/netmask'
 import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -29,13 +31,13 @@ export class ConnectionPruner {
   private readonly maxConnections: number
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
-  private readonly allow: Multiaddr[]
+  private readonly allow: IpNet[]
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly log: Logger
 
   constructor (components: ConnectionPrunerComponents, init: ConnectionPrunerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
-    this.allow = init.allow ?? defaultOptions.allow
+    this.allow = (init.allow ?? []).map(ma => multiaddrToIpNet(ma))
     this.connectionManager = components.connectionManager
     this.peerStore = components.peerStore
     this.events = components.events
@@ -107,8 +109,8 @@ export class ConnectionPruner {
     for (const connection of sortedConnections) {
       this.log('too many connections open - closing a connection to %p', connection.remotePeer)
       // check allow list
-      const connectionInAllowList = this.allow.some((ma) => {
-        return connection.remoteAddr.toString().startsWith(ma.toString())
+      const connectionInAllowList = this.allow.some((ipNet) => {
+        return ipNet.contains(connection.remoteAddr.nodeAddress().address)
       })
 
       // Connections in the allow list should be excluded from pruning

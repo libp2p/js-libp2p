@@ -1,16 +1,13 @@
 import os from 'os'
 import path from 'path'
-import { AbortError, TypedEventEmitter } from '@libp2p/interface'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
 import pDefer from 'p-defer'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
-import type { MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
@@ -23,8 +20,13 @@ describe('listen', () => {
     transport = tcp()({
       logger: defaultLogger()
     })
-    upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
     })
   })
 
@@ -38,7 +40,7 @@ describe('listen', () => {
     }
   })
 
-  it('listen on path', async () => {
+  it('listen on unix domain socket', async () => {
     const mh = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     listener = transport.createListener({
@@ -163,21 +165,17 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
-  const protocol = '/echo/1.0.0'
   let transport: Transport
   let upgrader: Upgrader
 
   beforeEach(async () => {
-    const registrar = mockRegistrar()
-    void registrar.handle(protocol, (evt) => {
-      void pipe(
-        evt.stream,
-        evt.stream
-      )
-    })
-    upgrader = mockUpgrader({
-      registrar,
-      events: new TypedEventEmitter()
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
     })
 
     transport = tcp()({
@@ -185,30 +183,21 @@ describe('dial', () => {
     })
   })
 
-  it('dial on IPv4', async () => {
+  it('dial IPv4', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
 
-    const conn = await transport.dial(ma, {
+    await expect(transport.dial(ma, {
       upgrader
-    })
-    const stream = await conn.newStream([protocol])
+    })).to.eventually.be.ok()
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
-
-    expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
-    await conn.close()
     await listener.close()
   })
 
-  it('dial on IPv6', async () => {
+  it('dial IPv6', async () => {
     if (isCI != null) {
       return
     }
@@ -218,180 +207,122 @@ describe('dial', () => {
       upgrader
     })
     await listener.listen(ma)
-    const conn = await transport.dial(ma, {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
 
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
-    expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
-    await conn.close()
+    await expect(transport.dial(ma, {
+      upgrader
+    })).to.eventually.be.ok()
+
     await listener.close()
   })
 
-  it('dial on path', async () => {
+  it('dial unix domain socket', async () => {
     const ma = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
 
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
-    const conn = await transport.dial(ma, {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
-
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
-
-    expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
-    await conn.close()
-    await listener.close()
-  })
-
-  it('dial and destroy on listener', async () => {
-    let handled: () => void
-    const handledPromise = new Promise<void>(resolve => { handled = resolve })
-
-    const ma = multiaddr('/ip6/::/tcp/9090')
-
-    const listener = transport.createListener({
-      handler: (conn) => {
-        // let multistream select finish before closing
-        setTimeout(() => {
-          void conn.close()
-            .then(() => { handled() })
-        }, 100)
-      },
-      upgrader
-    })
-
-    await listener.listen(ma)
-    const addrs = listener.getAddrs()
-
-    const conn = await transport.dial(addrs[0], {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
-    pipe(stream)
-
-    await handledPromise
-    await conn.close()
-    await listener.close()
-  })
-
-  it('dial and destroy on dialer', async () => {
-    if (isCI != null) {
-      return
-    }
-
-    let handled: () => void
-    const handledPromise = new Promise<void>(resolve => { handled = resolve })
-
-    const ma = multiaddr('/ip6/::/tcp/9090')
-
-    const listener = transport.createListener({
-      handler: () => {
-        handled()
-      },
-      upgrader
-    })
-
-    await listener.listen(ma)
-    const addrs = listener.getAddrs()
-    const conn = await transport.dial(addrs[0], {
-      upgrader
-    })
-
-    await conn.close()
-    await handledPromise
-    await listener.close()
-  })
-
-  it('dials on IPv4 with IPFS Id', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const listener = transport.createListener({
-      upgrader
-    })
-    await listener.listen(ma)
-
-    const conn = await transport.dial(ma, {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
-
-    const values = await pipe(
-      [uint8ArrayFromString('hey')],
-      stream,
-      async (source) => all(source)
-    )
-    expect(values[0].subarray()).to.equalBytes(uint8ArrayFromString('hey'))
-
-    await conn.close()
-    await listener.close()
-  })
-
-  it('aborts during dial', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    const maConnPromise = pDefer<MultiaddrConnection>()
-
-    // @ts-expect-error missing return value
-    upgrader.upgradeOutbound = async (maConn, opts) => {
-      maConnPromise.resolve(maConn)
-
-      // abort the upgrade if the signal aborts
-      await new Promise<void>((resolve, reject) => {
-        opts?.signal?.addEventListener('abort', () => {
-          reject(new AbortError())
-        })
-      })
-    }
-
-    const listener = transport.createListener({
-      upgrader
-    })
-    await listener.listen(ma)
-
-    const abortController = new AbortController()
-
-    // abort once the upgrade process has started
-    void maConnPromise.promise.then(() => {
-      abortController.abort()
-    })
 
     await expect(transport.dial(ma, {
-      upgrader,
-      signal: abortController.signal
-    })).to.eventually.be.rejected('The operation was aborted')
-
-    await expect(maConnPromise.promise).to.eventually.have.nested.property('timeline.close')
-      .that.is.ok('did not gracefully close maConn')
+      upgrader
+    })).to.eventually.be.ok()
 
     await listener.close()
   })
 
-  it('aborts before dial', async () => {
+  it('dials IPv4 with IPFS Id', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
     const listener = transport.createListener({
       upgrader
     })
     await listener.listen(ma)
 
-    const abortController = new AbortController()
-    abortController.abort()
-
     await expect(transport.dial(ma, {
-      upgrader,
-      signal: abortController.signal
-    })).to.eventually.be.rejected('The operation was aborted')
+      upgrader
+    })).to.eventually.be.ok()
 
     await listener.close()
+  })
+
+  it('should close before connection upgrade is completed', async () => {
+    // create a Promise that resolves when the upgrade starts
+    const upgradeStarted = pDefer()
+
+    // create a listener with the handler
+    const listener = transport.createListener({
+      upgrader: {
+        async upgradeInbound () {
+          upgradeStarted.resolve()
+
+          return new Promise(() => {})
+        },
+        async upgradeOutbound () {
+          return new Promise(() => {})
+        }
+      }
+    })
+
+    // listen on a multiaddr
+    await listener.listen(multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+    const localAddrs = listener.getAddrs()
+    expect(localAddrs.length).to.equal(1)
+
+    // dial the listener address
+    transport.dial(localAddrs[0], {
+      upgrader
+    }).catch(() => {})
+
+    // wait for the upgrade to start
+    await upgradeStarted.promise
+
+    // close the listener, process should exit normally
+    await listener.close()
+  })
+
+  it('should abort inbound upgrade on close', async () => {
+    // create a Promise that resolves when the upgrade starts
+    const upgradeStarted = pDefer()
+    const abortedUpgrade = pDefer()
+
+    // create a listener with the handler
+    const listener = transport.createListener({
+      upgrader: {
+        async upgradeInbound (maConn, opts) {
+          upgradeStarted.resolve()
+
+          opts?.signal?.addEventListener('abort', () => {
+            abortedUpgrade.resolve()
+          }, {
+            once: true
+          })
+
+          return new Promise(() => {})
+        },
+        async upgradeOutbound () {
+          return new Promise(() => {})
+        }
+      }
+    })
+
+    // listen on a multiaddr
+    await listener.listen(multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+    const localAddrs = listener.getAddrs()
+    expect(localAddrs.length).to.equal(1)
+
+    // dial the listener address
+    transport.dial(localAddrs[0], {
+      upgrader
+    }).catch(() => {})
+
+    // wait for the upgrade to start
+    await upgradeStarted.promise
+
+    // close the listener
+    await listener.close()
+
+    // should abort the upgrade
+    await abortedUpgrade.promise
   })
 })

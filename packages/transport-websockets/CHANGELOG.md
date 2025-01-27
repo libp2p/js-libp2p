@@ -70,6 +70,125 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.1.2](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.1...websockets-v9.1.2) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+
+## [9.1.1](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.0...websockets-v9.1.1) (2025-01-06)
+
+
+### Bug Fixes
+
+* return empty address list during listen operation ([#2904](https://github.com/libp2p/js-libp2p/issues/2904)) ([ae75570](https://github.com/libp2p/js-libp2p/commit/ae75570c852fa9bfe00910dca1c219fa585dcb83)), closes [#2902](https://github.com/libp2p/js-libp2p/issues/2902)
+
+## [9.1.0](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.13...websockets-v9.1.0) (2024-12-09)
+
+
+### Features
+
+* auto-tls for websockets ([#2800](https://github.com/libp2p/js-libp2p/issues/2800)) ([8a9258a](https://github.com/libp2p/js-libp2p/commit/8a9258a24168d13172eb139d32bc6889e71f81dc))
+
+
+### Bug Fixes
+
+* ignore IPv6 link-local addresses ([#2865](https://github.com/libp2p/js-libp2p/issues/2865)) ([f8da60e](https://github.com/libp2p/js-libp2p/commit/f8da60e73fede669986b8d48218f66c4e55fd776))
+* remove browser dial filter ([#2838](https://github.com/libp2p/js-libp2p/issues/2838)) ([d6cd25d](https://github.com/libp2p/js-libp2p/commit/d6cd25d0deca292420093d894edbfbc47b347e5d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
+## [9.0.13](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.12...websockets-v9.0.13) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/utils bumped from ^6.2.0 to ^6.2.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+
+## [9.0.12](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.11...websockets-v9.0.12) (2024-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
+## [9.0.11](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.10...websockets-v9.0.11) (2024-10-28)
+
+
+### Bug Fixes
+
+* replace mafmt with @multiformats/multiaddr-matcher ([#2791](https://github.com/libp2p/js-libp2p/issues/2791)) ([a5cd8cf](https://github.com/libp2p/js-libp2p/commit/a5cd8cfbe7d150659012879239ef2ef4ac3143c9))
+
+## [9.0.10](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.9...websockets-v9.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/utils bumped from ^6.1.2 to ^6.1.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.7 to ^6.1.8
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+
+## [9.0.9](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.8...websockets-v9.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
+## [9.0.8](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.7...websockets-v9.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/utils bumped from ^6.1.0 to ^6.1.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.5 to ^6.1.6
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+
+## [9.0.7](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.6...websockets-v9.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.0.6 to ^6.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.4 to ^6.1.5
+
 ## [9.0.6](https://github.com/libp2p/js-libp2p/compare/websockets-v9.0.5...websockets-v9.0.6) (2024-09-27)
 
 

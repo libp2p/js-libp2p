@@ -19,6 +19,70 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [6.0.11](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.10...multistream-select-v6.0.11) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+
+## [6.0.10](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.9...multistream-select-v6.0.10) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
+## [6.0.9](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.8...multistream-select-v6.0.9) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+
+## [6.0.8](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.7...multistream-select-v6.0.8) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+
+## [6.0.7](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.6...multistream-select-v6.0.7) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
+## [6.0.6](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.5...multistream-select-v6.0.6) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+
 ## [6.0.5](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.4...multistream-select-v6.0.5) (2024-09-25)
 
 

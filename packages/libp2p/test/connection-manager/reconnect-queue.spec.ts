@@ -7,7 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pRetry from 'p-retry'
-import sinon from 'sinon'
+import Sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { ReconnectQueue } from '../../src/connection-manager/reconnect-queue.js'
 import type { ComponentLogger, Libp2pEvents, PeerStore, TypedEventTarget, Peer } from '@libp2p/interface'
@@ -28,15 +28,15 @@ describe('reconnect queue', () => {
     components = {
       connectionManager: stubInterface(),
       events: new TypedEventEmitter<Libp2pEvents>(),
-      peerStore: stubInterface<PeerStore>(),
+      peerStore: stubInterface<PeerStore>({
+        all: Sinon.stub().resolves([])
+      }),
       logger: peerLogger(peerId)
     }
   })
 
   afterEach(async () => {
     await stop(queue)
-
-    sinon.reset()
   })
 
   it('should reconnect to KEEP_ALIVE peers on startup', async () => {
@@ -114,5 +114,44 @@ describe('reconnect queue', () => {
     await delay(1000)
 
     expect(components.connectionManager.openConnection.calledWith(nonKeepAlivePeer)).to.be.false()
+  })
+
+  it('should remove KEEP_ALIVE tags when reconnecting fails', async () => {
+    queue = new ReconnectQueue(components, {
+      retries: 1,
+      retryInterval: 10,
+      backoffFactor: 1
+    })
+
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.peerStore.all.resolves([])
+    components.peerStore.get.withArgs(keepAlivePeer).resolves(
+      stubInterface<Peer>({
+        id: keepAlivePeer,
+        tags: new Map([[KEEP_ALIVE, {
+          value: 1
+        }]])
+      })
+    )
+
+    await start(queue)
+
+    components.connectionManager.openConnection.withArgs(keepAlivePeer).rejects(new Error('Dial failed'))
+
+    components.events.safeDispatchEvent('peer:disconnect', new CustomEvent('peer:disconnect', {
+      detail: keepAlivePeer
+    }))
+
+    await pRetry(() => {
+      expect(components.peerStore.merge.calledWith(keepAlivePeer, {
+        tags: {
+          [KEEP_ALIVE]: undefined
+        }
+      })).to.be.true()
+    }, {
+      retries: 5,
+      factor: 1
+    })
   })
 })

@@ -1,27 +1,22 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { duplexPair } from 'it-pair/duplex'
 import sinon from 'sinon'
 import { plaintext } from '../src/index.js'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 describe('plaintext', () => {
   let localPeer: PeerId
-  let remotePeer: PeerId
   let wrongPeer: PeerId
   let encrypter: ConnectionEncrypter
   let encrypterRemote: ConnectionEncrypter
 
   beforeEach(async () => {
-    [remotePeer, wrongPeer] = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
+    wrongPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const localKeyPair = await generateKeyPair('Ed25519')
     localPeer = peerIdFromPrivateKey(localKeyPair)
@@ -41,13 +36,7 @@ describe('plaintext', () => {
   })
 
   it('should verify the public key and id match', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      remotePeer,
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ]
-    })
+    const [inbound, outbound] = duplexPair<any>()
 
     await Promise.all([
       encrypter.secureInbound(inbound),
@@ -62,21 +51,13 @@ describe('plaintext', () => {
 
   it('should fail if the peer does not provide its public key', async () => {
     const keyPair = await generateKeyPair('RSA', 512)
-    const peer = peerIdFromPrivateKey(keyPair)
-    remotePeer = peerIdFromMultihash(peer.toMultihash())
 
     encrypter = plaintext()({
       privateKey: keyPair,
       logger: defaultLogger()
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      remotePeer,
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ]
-    })
+    const [inbound, outbound] = duplexPair<any>()
 
     await expect(Promise.all([
       encrypter.secureInbound(inbound),

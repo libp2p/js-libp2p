@@ -49,7 +49,7 @@ $ npm i @libp2p/utils
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pUtils` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pUtils` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/utils/dist/index.min.js"></script>

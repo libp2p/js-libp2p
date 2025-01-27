@@ -274,7 +274,11 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendReset (): Promise<void> {
-    await this._sendFlag(Message.Flag.RESET)
+    try {
+      await this._sendFlag(Message.Flag.RESET)
+    } catch (err) {
+      this.log.error('failed to send reset - %e', err)
+    }
   }
 
   async sendCloseWrite (options: AbortOptions): Promise<void> {
@@ -362,7 +366,7 @@ export class WebRTCStream extends AbstractStream {
 
       return true
     } catch (err: any) {
-      this.log.error('could not send flag %s', flag.toString(), err)
+      this.log.error('could not send flag %s - %e', flag.toString(), err)
     }
 
     return false

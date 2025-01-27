@@ -36,7 +36,7 @@ import { TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { TCPComponents, TCPCreateListenerOptions, TCPDialEvents, TCPDialOptions, TCPMetrics, TCPOptions } from './index.js'
-import type { Logger, Connection, Transport, Listener } from '@libp2p/interface'
+import type { Logger, Connection, Transport, Listener, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
@@ -53,7 +53,11 @@ export class TCP implements Transport<TCPDialEvents> {
 
     if (components.metrics != null) {
       this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_tcp_dialer_events_total', {
+        events: components.metrics.registerCounterGroup('libp2p_tcp_dialer_events_total', {
+          label: 'event',
+          help: 'Total count of TCP dialer events by type'
+        }),
+        errors: components.metrics.registerCounterGroup('libp2p_tcp_dialer_errors_total', {
           label: 'event',
           help: 'Total count of TCP dialer events by type'
         })
@@ -76,23 +80,28 @@ export class TCP implements Transport<TCPDialEvents> {
     // options.signal destroys the socket before 'connect' event
     const socket = await this._connect(ma, options)
 
-    // Avoid uncaught errors caused by unstable connections
-    socket.on('error', err => {
-      this.log('socket error', err)
-    })
+    let maConn: MultiaddrConnection
 
-    const maConn = toMultiaddrConnection(socket, {
-      remoteAddr: ma,
-      socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
-      socketCloseTimeout: this.opts.socketCloseTimeout,
-      metrics: this.metrics?.dialerEvents,
-      logger: this.components.logger
-    })
+    try {
+      maConn = toMultiaddrConnection(socket, {
+        remoteAddr: ma,
+        socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
+        socketCloseTimeout: this.opts.socketCloseTimeout,
+        metrics: this.metrics?.events,
+        logger: this.components.logger,
+        direction: 'outbound'
+      })
+    } catch (err: any) {
+      this.metrics?.errors.increment({ outbound_to_connection: true })
+      socket.destroy(err)
+      throw err
+    }
 
     try {
       this.log('new outbound connection %s', maConn.remoteAddr)
       return await options.upgrader.upgradeOutbound(maConn, options)
     } catch (err: any) {
+      this.metrics?.errors.increment({ outbound_upgrade: true })
       this.log.error('error upgrading outbound connection', err)
       maConn.abort(err)
       throw err
@@ -103,6 +112,8 @@ export class TCP implements Transport<TCPDialEvents> {
     options.signal?.throwIfAborted()
     options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
+    let rawSocket: Socket
+
     return new Promise<Socket>((resolve, reject) => {
       const start = Date.now()
       const cOpts = multiaddrToNetConfig(ma, {
@@ -111,35 +122,34 @@ export class TCP implements Transport<TCPDialEvents> {
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
       this.log('dialing %a', ma)
-      const rawSocket = net.connect(cOpts)
+      rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
+        this.log.error('dial to %a errored - %e', ma, err)
         const cOptsStr = cOpts.path ?? `${cOpts.host ?? ''}:${cOpts.port}`
         err.message = `connection error ${cOptsStr}: ${err.message}`
-        this.metrics?.dialerEvents.increment({ error: true })
-
+        this.metrics?.events.increment({ error: true })
         done(err)
       }
 
       const onTimeout = (): void => {
         this.log('connection timeout %a', ma)
-        this.metrics?.dialerEvents.increment({ timeout: true })
+        this.metrics?.events.increment({ timeout: true })
 
-        const err = new TimeoutError(`connection timeout after ${Date.now() - start}ms`)
+        const err = new TimeoutError(`Connection timeout after ${Date.now() - start}ms`)
         // Note: this will result in onError() being called
         rawSocket.emit('error', err)
       }
 
       const onConnect = (): void => {
         this.log('connection opened %a', ma)
-        this.metrics?.dialerEvents.increment({ connect: true })
+        this.metrics?.events.increment({ connect: true })
         done()
       }
 
       const onAbort = (): void => {
         this.log('connection aborted %a', ma)
-        this.metrics?.dialerEvents.increment({ abort: true })
-        rawSocket.destroy()
+        this.metrics?.events.increment({ abort: true })
         done(new AbortError())
       }
 
@@ -167,6 +177,10 @@ export class TCP implements Transport<TCPDialEvents> {
         options.signal.addEventListener('abort', onAbort)
       }
     })
+      .catch(err => {
+        rawSocket?.destroy()
+        throw err
+      })
   }
 
   /**

@@ -2,31 +2,15 @@
   <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/main/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
 
-<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
+<h3 align="center">The JavaScript implementation of the libp2p Networking Stack</h3>
 
-<p align="center">
-  <a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
-  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="https://riot.im/app/#/room/#libp2p:matrix.org"><img src="https://img.shields.io/badge/matrix-%23libp2p%3Apermaweb.io-blue.svg?style=flat-square" /> </a>
-  <a href="https://discord.gg/ipfs"><img src="https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square" /></a>
-  <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
-  <a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
-  <a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amaster+workflow%3Aci+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square" /></a>
-  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/master.svg?style=flat-square"></a>
-  <br>
-  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
-  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
-  <br>
-</p>
-
-> JavaScript implementation of libp2p, a modular peer to peer network stack
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![npm](https://img.shields.io/npm/dm/libp2p.svg?style=flat-square)](https://www.npmjs.com/package/libp2p)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![Matrix](https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 # About
 
@@ -79,8 +63,6 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/main/ROADMAP.md>
 
 It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
-
-It is complementary to the overarching libp2p project roadmap: <https://github.com/libp2p/specs/blob/master/ROADMAP.md>
 
 # Usage
 

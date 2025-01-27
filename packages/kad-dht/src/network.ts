@@ -11,11 +11,12 @@ import {
   queryErrorEvent
 } from './query/events.js'
 import type { KadDHTComponents, QueryEvent } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
 
 export interface NetworkInit {
   protocol: string
   logPrefix: string
+  metricsPrefix: string
   timeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 }
 
@@ -32,6 +33,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   private running: boolean
   private readonly components: KadDHTComponents
   private readonly timeout: AdaptiveTimeout
+  private readonly metrics: {
+    operations?: CounterGroup
+    errors?: CounterGroup
+  }
 
   /**
    * Create a new network
@@ -39,16 +44,74 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   constructor (components: KadDHTComponents, init: NetworkInit) {
     super()
 
-    const { protocol } = init
     this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:network`)
     this.running = false
-    this.protocol = protocol
+    this.protocol = init.protocol
     this.timeout = new AdaptiveTimeout({
       ...(init.timeout ?? {}),
       metrics: components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_network_message_send_times_milliseconds`
+      metricName: `${init.metricsPrefix}_network_message_send_times_milliseconds`
     })
+    this.metrics = {
+      operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_errors_total`)
+    }
+
+    this.sendRequest = components.metrics?.traceFunction('libp2p.kadDHT.sendRequest', this.sendRequest.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs ([to, message], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          'message type': `${message.type}`
+        }
+      },
+      getAttributesFromYieldedValue: (event, attrs) => {
+        if (event.name === 'PEER_RESPONSE') {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value, index) => {
+              attrs[`providers-${index}`] = value.id.toString()
+            })
+          }
+
+          if (event.closer.length > 0) {
+            event.closer.forEach((value, index) => {
+              attrs[`closer-${index}`] = value.id.toString()
+            })
+          }
+        }
+
+        return attrs
+      }
+    }) ?? this.sendRequest
+    this.sendMessage = components.metrics?.traceFunction('libp2p.kadDHT.sendMessage', this.sendMessage.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs ([to, message], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          'message type': `${message.type}`
+        }
+      },
+      getAttributesFromYieldedValue: (event, attrs) => {
+        if (event.name === 'PEER_RESPONSE') {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value, index) => {
+              attrs[`providers-${index}`] = value.id.toString()
+            })
+          }
+
+          if (event.closer.length > 0) {
+            event.closer.forEach((value, index) => {
+              attrs[`closer-${index}`] = value.id.toString()
+            })
+          }
+        }
+
+        return attrs
+      }
+    }) ?? this.sendMessage
   }
 
   /**
@@ -77,7 +140,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   }
 
   /**
-   * Send a request and record RTT for latency measurements
+   * Send a request and read a response
    */
   async * sendRequest (to: PeerId, msg: Partial<Message>, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
@@ -103,6 +166,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     try {
+      this.metrics.operations?.increment({ [type]: true })
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
       const response = await this._writeReadMessage(stream, msg, options)
@@ -121,6 +186,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record)
       }, options)
     } catch (err: any) {
+      this.metrics.errors?.increment({ [type]: true })
+
       stream?.abort(err)
 
       // only log if the incoming signal was not aborted - this means we were
@@ -162,6 +229,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     try {
+      this.metrics.operations?.increment({ [type]: true })
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
 
@@ -175,6 +244,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       yield peerResponseEvent({ from: to, messageType: type }, options)
     } catch (err: any) {
+      this.metrics.errors?.increment({ [type]: true })
+
       stream?.abort(err)
       yield queryErrorEvent({ from: to, error: err }, options)
     } finally {
@@ -188,7 +259,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   async _writeMessage (stream: Stream, msg: Partial<Message>, options: AbortOptions): Promise<void> {
     const pb = pbStream(stream)
     await pb.write(msg, Message, options)
-    await pb.unwrap().close(options)
   }
 
   /**
@@ -202,8 +272,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     await pb.write(msg, Message, options)
 
     const message = await pb.read(Message, options)
-
-    await pb.unwrap().close(options)
 
     // tell any listeners about new peers we've seen
     message.closer.forEach(peerData => {

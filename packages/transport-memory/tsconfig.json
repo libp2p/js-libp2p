@@ -1,0 +1,21 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    }
+  ]
+}

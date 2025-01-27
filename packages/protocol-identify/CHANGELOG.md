@@ -76,6 +76,142 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.15](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.14...identify-v3.0.15) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/peer-record bumped from ^8.0.13 to ^8.0.14
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+
+## [3.0.14](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.13...identify-v3.0.14) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
+## [3.0.13](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.12...identify-v3.0.13) (2024-12-09)
+
+
+### Bug Fixes
+
+* ignore observed IPv6 addresses that are not global unicast ([#2873](https://github.com/libp2p/js-libp2p/issues/2873)) ([4e55fe8](https://github.com/libp2p/js-libp2p/commit/4e55fe8ff5bef906fd8ba21037c55861d9fefae0))
+* use isPrivate to detect private multiaddrs ([#2868](https://github.com/libp2p/js-libp2p/issues/2868)) ([2c182d2](https://github.com/libp2p/js-libp2p/commit/2c182d2e23d3246ece92ac937dfd91275b39bdc0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/peer-record bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
+## [3.0.12](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.11...identify-v3.0.12) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/interface-internal bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/peer-record bumped from ^8.0.11 to ^8.0.12
+    * @libp2p/utils bumped from ^6.2.0 to ^6.2.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+
+## [3.0.11](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.10...identify-v3.0.11) (2024-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/peer-record bumped from ^8.0.10 to ^8.0.11
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
+## [3.0.10](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.9...identify-v3.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/interface-internal bumped from ^2.0.9 to ^2.0.10
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/peer-record bumped from ^8.0.9 to ^8.0.10
+    * @libp2p/utils bumped from ^6.1.2 to ^6.1.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.7 to ^6.1.8
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+
+## [3.0.9](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.8...identify-v3.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/peer-record bumped from ^8.0.8 to ^8.0.9
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
+## [3.0.8](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.7...identify-v3.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/interface-internal bumped from ^2.0.7 to ^2.0.8
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/peer-record bumped from ^8.0.7 to ^8.0.8
+    * @libp2p/utils bumped from ^6.1.0 to ^6.1.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.5 to ^6.1.6
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+
+## [3.0.7](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.6...identify-v3.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.6 to ^2.0.7
+    * @libp2p/peer-record bumped from ^8.0.6 to ^8.0.7
+    * @libp2p/utils bumped from ^6.0.6 to ^6.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.4 to ^6.1.5
+
 ## [3.0.6](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.5...identify-v3.0.6) (2024-09-27)
 
 

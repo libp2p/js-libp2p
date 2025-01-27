@@ -5,6 +5,42 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.3.0...interface-v2.4.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.1...interface-v2.3.0) (2024-12-09)
+
+
+### Features
+
+* add auto-tls service ([#2798](https://github.com/libp2p/js-libp2p/issues/2798)) ([d866eb5](https://github.com/libp2p/js-libp2p/commit/d866eb5bb8269485364c233119331ca073ff1343))
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.0...interface-v2.2.1) (2024-11-18)
+
+
+### Bug Fixes
+
+* update transport listener options ([#2826](https://github.com/libp2p/js-libp2p/issues/2826)) ([656db81](https://github.com/libp2p/js-libp2p/commit/656db81cff6f5cb8d1d5523f1928323057308b5a))
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.3...interface-v2.2.0) (2024-10-28)
+
+
+### Features
+
+* add reprovide ([#2785](https://github.com/libp2p/js-libp2p/issues/2785)) ([52b3b1a](https://github.com/libp2p/js-libp2p/commit/52b3b1a16e56f73de9a75e7f62d5c3b367d757d9))
+
+## [2.1.3](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.2...interface-v2.1.3) (2024-10-09)
+
+
+### Bug Fixes
+
+* emit 'listening' when relays change ([#2758](https://github.com/libp2p/js-libp2p/issues/2758)) ([0d326d1](https://github.com/libp2p/js-libp2p/commit/0d326d102e4f6bf06c6f3e961a3b6b5844486495))
+* use keep-alive as a tag prefix ([#2757](https://github.com/libp2p/js-libp2p/issues/2757)) ([29b47ad](https://github.com/libp2p/js-libp2p/commit/29b47adb47b48e9a2b01580bd0d50dc7c2be8fd6))
+
 ## [2.1.2](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.1...interface-v2.1.2) (2024-09-24)
 
 

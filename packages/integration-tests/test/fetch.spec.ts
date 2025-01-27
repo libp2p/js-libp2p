@@ -3,6 +3,7 @@
 import { type Fetch, fetch } from '@libp2p/fetch'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isWebWorker } from 'wherearewe'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -31,9 +32,9 @@ describe('fetch', () => {
   const DATA_B = { foobar: 'goodnight moon' }
 
   const generateLookupFunction = function (prefix: string, data: Record<string, string>) {
-    return async function (key: string): Promise<Uint8Array | undefined> {
+    return async function (key: Uint8Array): Promise<Uint8Array | undefined> {
       key = key.slice(prefix.length) // strip prefix from key
-      const val = data[key]
+      const val = data[uint8ArrayToString(key)]
       if (val != null) {
         return (new TextEncoder()).encode(val)
       }

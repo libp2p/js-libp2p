@@ -32,6 +32,107 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.2.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.1...interface-internal-v2.2.2) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/peer-collections bumped from ^6.0.13 to ^6.0.14
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.0...interface-internal-v2.2.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* auto-confirm relay addresses ([#2886](https://github.com/libp2p/js-libp2p/issues/2886)) ([5c4a79e](https://github.com/libp2p/js-libp2p/commit/5c4a79e5a6e8d0db1ef6464075841a0b9de507ef)), closes [#2883](https://github.com/libp2p/js-libp2p/issues/2883)
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.1.1...interface-internal-v2.2.0) (2024-12-09)
+
+
+### Features
+
+* add getMaxConnections method to connection manager ([#2877](https://github.com/libp2p/js-libp2p/issues/2877)) ([1729fca](https://github.com/libp2p/js-libp2p/commit/1729fcaebc78307ff06783d5a2201ad83f92c109))
+* allow adding external ip/port mapping ([#2836](https://github.com/libp2p/js-libp2p/issues/2836)) ([6ddc1b8](https://github.com/libp2p/js-libp2p/commit/6ddc1b80ebe396afee58082865ae6cae2bb39fb1))
+
+
+### Bug Fixes
+
+* require confirmation of global unicast addresses ([#2876](https://github.com/libp2p/js-libp2p/issues/2876)) ([92cc740](https://github.com/libp2p/js-libp2p/commit/92cc740828963a4786ea83befe606dac4ba25e45))
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+
+## [2.1.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.1.0...interface-internal-v2.1.1) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/peer-collections bumped from ^6.0.11 to ^6.0.12
+
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.10...interface-internal-v2.1.0) (2024-11-16)
+
+
+### Features
+
+* add dns mappings to address manager ([#2818](https://github.com/libp2p/js-libp2p/issues/2818)) ([7dcabb8](https://github.com/libp2p/js-libp2p/commit/7dcabb884c37dfba69e3ce427544ab05209d137b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.10 to ^6.0.11
+
+## [2.0.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.9...interface-internal-v2.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/peer-collections bumped from ^6.0.9 to ^6.0.10
+
+## [2.0.9](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.8...interface-internal-v2.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.8 to ^6.0.9
+
+## [2.0.8](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.7...interface-internal-v2.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/peer-collections bumped from ^6.0.7 to ^6.0.8
+
+## [2.0.7](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.6...interface-internal-v2.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.6 to ^6.0.7
+
 ## [2.0.6](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.5...interface-internal-v2.0.6) (2024-09-27)
 
 

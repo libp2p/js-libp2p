@@ -48,6 +48,126 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.15...fetch-v3.0.0) (2025-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* registered lookup functions now receive a Uint8Array identifier instead of a string
+
+### Bug Fixes
+
+* accept Uint8Arrays as keys ([#2909](https://github.com/libp2p/js-libp2p/issues/2909)) ([b56d918](https://github.com/libp2p/js-libp2p/commit/b56d918848b22febde02171e90d2d04eb07203a4))
+
+## [2.0.15](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.14...fetch-v2.0.15) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
+## [2.0.14](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.13...fetch-v2.0.14) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
+## [2.0.13](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.12...fetch-v2.0.13) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
+## [2.0.12](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.11...fetch-v2.0.12) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/interface-internal bumped from ^2.1.0 to ^2.1.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.10...fetch-v2.0.11) (2024-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+
+## [2.0.10](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.9...fetch-v2.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/interface-internal bumped from ^2.0.9 to ^2.0.10
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+
+## [2.0.9](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.8...fetch-v2.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+
+## [2.0.8](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.7...fetch-v2.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/interface-internal bumped from ^2.0.7 to ^2.0.8
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+
+## [2.0.7](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.6...fetch-v2.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.6 to ^2.0.7
+
 ## [2.0.6](https://github.com/libp2p/js-libp2p/compare/fetch-v2.0.5...fetch-v2.0.6) (2024-09-27)
 
 

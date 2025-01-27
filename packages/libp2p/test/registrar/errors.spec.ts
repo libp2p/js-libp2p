@@ -1,8 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type ConnectionGater, type PeerId } from '@libp2p/interface'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
@@ -12,6 +11,7 @@ import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { DefaultRegistrar } from '../../src/registrar.js'
 import type { Components } from '../../src/components.js'
+import type { Upgrader, ConnectionGater, PeerId } from '@libp2p/interface'
 import type { Registrar, TransportManager } from '@libp2p/interface-internal'
 
 describe('registrar errors', () => {
@@ -26,7 +26,7 @@ describe('registrar errors', () => {
       peerId,
       events,
       datastore: new MemoryDatastore(),
-      upgrader: mockUpgrader({ events }),
+      upgrader: stubInterface<Upgrader>(),
       transportManager: stubInterface<TransportManager>(),
       connectionGater: stubInterface<ConnectionGater>()
     })

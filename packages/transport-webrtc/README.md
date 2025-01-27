@@ -97,14 +97,15 @@ const relay = await createLibp2p({
 // WebRTC connections
 const listener = await createLibp2p({
   addresses: {
-  listen: ['/webrtc']
+    listen: [
+      '/p2p-circuit',
+      '/webrtc'
+    ]
   },
   transports: [
     webSockets({filter: filters.all}),
     webRTC(),
-    circuitRelayTransport({
-      discoverRelays: 1
-    })
+    circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
@@ -221,7 +222,7 @@ $ npm i @libp2p/webrtc
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pWebrtc` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pWebrtc` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/webrtc/dist/index.min.js"></script>

@@ -36,6 +36,118 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.0...utils-v6.3.1) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
+## [6.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.2.1...utils-v6.3.0) (2024-12-09)
+
+
+### Features
+
+* add isGlobalUnicast function ([#2872](https://github.com/libp2p/js-libp2p/issues/2872)) ([b5a2d3e](https://github.com/libp2p/js-libp2p/commit/b5a2d3e29a82dd075d68928120d4bb1403caf50f))
+* add isLinkLocal function ([#2856](https://github.com/libp2p/js-libp2p/issues/2856)) ([5ac8c8b](https://github.com/libp2p/js-libp2p/commit/5ac8c8b5e06be915080f0798a1c0a3abad939a08))
+* add isLinkLocalIp function ([#2863](https://github.com/libp2p/js-libp2p/issues/2863)) ([97978b9](https://github.com/libp2p/js-libp2p/commit/97978b93e5f014d26d127136d7025aa4e76bec3c))
+
+
+### Bug Fixes
+
+* isPrivate should handle more types of addresses ([#2846](https://github.com/libp2p/js-libp2p/issues/2846)) ([671bc47](https://github.com/libp2p/js-libp2p/commit/671bc47656199d90410719824f1af5cdf989fdf1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
+## [6.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.2.0...utils-v6.2.1) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+
+## [6.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.3...utils-v6.2.0) (2024-11-16)
+
+
+### Features
+
+* add debounce and repeating task to utils ([#2795](https://github.com/libp2p/js-libp2p/issues/2795)) ([0a3406a](https://github.com/libp2p/js-libp2p/commit/0a3406a0536f8e7390e67eec88ccc518bd90e9a6))
+
+
+### Bug Fixes
+
+* only close stream if it is open ([#2823](https://github.com/libp2p/js-libp2p/issues/2823)) ([3098232](https://github.com/libp2p/js-libp2p/commit/30982327b3924614d1fb552fd42b7b8f5a7419cd))
+
+## [6.1.3](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.2...utils-v6.1.3) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+
+## [6.1.2](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.1...utils-v6.1.2) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+
+## [6.1.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.1.0...utils-v6.1.1) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+
+## [6.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.0.6...utils-v6.1.0) (2024-10-05)
+
+
+### Features
+
+* add maxSize to queues ([#2742](https://github.com/libp2p/js-libp2p/issues/2742)) ([116a887](https://github.com/libp2p/js-libp2p/commit/116a88743bc004aee3f73440437e8c23f49c7e78))
+
+
+### Bug Fixes
+
+* make queue job args non-optional ([#2743](https://github.com/libp2p/js-libp2p/issues/2743)) ([80e798c](https://github.com/libp2p/js-libp2p/commit/80e798cdccc8ef579634dc140f35d5327e2e5cf2))
+
 ## [6.0.6](https://github.com/libp2p/js-libp2p/compare/utils-v6.0.5...utils-v6.0.6) (2024-09-27)
 
 

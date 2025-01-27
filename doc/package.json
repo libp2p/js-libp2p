@@ -24,7 +24,7 @@
     "doc-check": "aegir doc-check"
   },
   "devDependencies": {
-    "aegir": "^44.0.1"
+    "aegir": "^45.0.5"
   },
   "private": true
 }

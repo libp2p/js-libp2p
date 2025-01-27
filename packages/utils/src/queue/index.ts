@@ -1,6 +1,7 @@
 import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
+import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 
@@ -22,6 +23,14 @@ export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = Abor
   concurrency?: number
 
   /**
+   * If the queue size grows to larger than this number the promise returned
+   * from the add function will reject
+   *
+   * @default Infinity
+   */
+  maxSize?: number
+
+  /**
    * The name of the metric for the queue length
    */
   metricName?: string
@@ -39,8 +48,8 @@ export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = Abor
 
 export type JobStatus = 'queued' | 'running' | 'errored' | 'complete'
 
-export interface RunFunction<Options = AbortOptions, ReturnType = void> {
-  (opts?: Options): Promise<ReturnType>
+export interface RunFunction<Options extends AbortOptions = AbortOptions, ReturnType = void> {
+  (options: Options): Promise<ReturnType>
 }
 
 export interface JobMatcher<JobOptions extends AbortOptions = AbortOptions> {
@@ -114,6 +123,7 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
  */
 export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
+  public maxSize: number
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
   private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
@@ -122,6 +132,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     super()
 
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
+    this.maxSize = init.maxSize ?? Number.POSITIVE_INFINITY
     this.pending = 0
 
     if (init.metricName != null) {
@@ -211,6 +222,10 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
    */
   async add (fn: RunFunction<JobOptions, JobReturnType>, options?: JobOptions): Promise<JobReturnType> {
     options?.signal?.throwIfAborted()
+
+    if (this.size === this.maxSize) {
+      throw new QueueFullError()
+    }
 
     const job = new Job<JobOptions, JobReturnType>(fn, options)
     this.enqueue(job)

@@ -9,6 +9,8 @@ import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
+import { multiaddrToIpNet } from './utils.js'
+import type { IpNet } from '@chainsafe/netmask'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
@@ -176,10 +178,11 @@ export interface DefaultConnectionManagerComponents {
 export class DefaultConnectionManager implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
-  private readonly allow: Multiaddr[]
-  private readonly deny: Multiaddr[]
+  private readonly allow: IpNet[]
+  private readonly deny: IpNet[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
+  private outboundPendingConnections: number
   private readonly maxConnections: number
 
   public readonly dialQueue: DialQueue
@@ -215,11 +218,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
-    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(str))
+    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(str))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
+    this.outboundPendingConnections = 0
 
     // controls individual peers trying to dial us too quickly
     this.inboundConnectionRateLimiter = new RateLimiter({
@@ -235,7 +239,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       logger: components.logger
     }, {
       maxConnections: this.maxConnections,
-      allow: this.allow
+      allow: init.allow?.map(a => multiaddr(a))
     })
 
     this.dialQueue = new DialQueue(components, {
@@ -276,7 +280,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         const metric = {
           inbound: 0,
           'inbound pending': this.incomingPendingConnections,
-          outbound: 0
+          outbound: 0,
+          'outbound pending': this.outboundPendingConnections
         }
 
         for (const conns of this.connections.values()) {
@@ -392,6 +397,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.log('stopped')
   }
 
+  getMaxConnections (): number {
+    return this.maxConnections
+  }
+
   onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
       this.log.error(err)
@@ -482,67 +491,73 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       throw new NotStartedError('Not started')
     }
 
-    options.signal?.throwIfAborted()
+    this.outboundPendingConnections++
 
-    const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+    try {
+      options.signal?.throwIfAborted()
 
-    if (this.peerId.equals(peerId)) {
-      throw new InvalidPeerIdError('Can not dial self')
-    }
+      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
 
-    if (peerId != null && options.force !== true) {
-      this.log('dial %p', peerId)
-      const existingConnection = this.getConnections(peerId)
-        .find(conn => conn.limits == null)
-
-      if (existingConnection != null) {
-        this.log('had an existing non-limited connection to %p', peerId)
-
-        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-        return existingConnection
-      }
-    }
-
-    const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
-      ...options,
-      priority: options.priority ?? DEFAULT_DIAL_PRIORITY
-    })
-
-    if (connection.status !== 'open') {
-      throw new ConnectionClosedError('Remote closed connection during opening')
-    }
-
-    let peerConnections = this.connections.get(connection.remotePeer)
-
-    if (peerConnections == null) {
-      peerConnections = []
-      this.connections.set(connection.remotePeer, peerConnections)
-    }
-
-    // we get notified of connections via the Upgrader emitting "connection"
-    // events, double check we aren't already tracking this connection before
-    // storing it
-    let trackedConnection = false
-
-    for (const conn of peerConnections) {
-      if (conn.id === connection.id) {
-        trackedConnection = true
+      if (this.peerId.equals(peerId)) {
+        throw new InvalidPeerIdError('Can not dial self')
       }
 
-      // make sure we don't already have a connection to this multiaddr
-      if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
-        connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+      if (peerId != null && options.force !== true) {
+        this.log('dial %p', peerId)
+        const existingConnection = this.getConnections(peerId)
+          .find(conn => conn.limits == null)
 
-        // return the existing connection
-        return conn
+        if (existingConnection != null) {
+          this.log('had an existing non-limited connection to %p', peerId)
+
+          options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          return existingConnection
+        }
       }
-    }
 
-    if (!trackedConnection) {
-      peerConnections.push(connection)
-    }
+      const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
+        ...options,
+        priority: options.priority ?? DEFAULT_DIAL_PRIORITY
+      })
 
-    return connection
+      if (connection.status !== 'open') {
+        throw new ConnectionClosedError('Remote closed connection during opening')
+      }
+
+      let peerConnections = this.connections.get(connection.remotePeer)
+
+      if (peerConnections == null) {
+        peerConnections = []
+        this.connections.set(connection.remotePeer, peerConnections)
+      }
+
+      // we get notified of connections via the Upgrader emitting "connection"
+      // events, double check we aren't already tracking this connection before
+      // storing it
+      let trackedConnection = false
+
+      for (const conn of peerConnections) {
+        if (conn.id === connection.id) {
+          trackedConnection = true
+        }
+
+        // make sure we don't already have a connection to this multiaddr
+        if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
+          connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+
+          // return the existing connection
+          return conn
+        }
+      }
+
+      if (!trackedConnection) {
+        peerConnections.push(connection)
+      }
+
+      return connection
+    } finally {
+      this.outboundPendingConnections--
+    }
   }
 
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
@@ -562,7 +577,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
     const denyConnection = this.deny.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return ma.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (denyConnection) {
@@ -571,8 +586,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }
 
     // check allow list
-    const allowConnection = this.allow.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    const allowConnection = this.allow.some(ipNet => {
+      return ipNet.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (allowConnection) {

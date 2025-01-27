@@ -14,8 +14,9 @@ import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { kadDHT, passthroughMapper, type KadDHT } from '../src/index.js'
 import { Message, MessageType } from '../src/message/dht.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerIds, type PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
@@ -87,7 +88,7 @@ describe('content routing', () => {
   beforeEach(async () => {
     key = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
 
-    const unsortedPeers = await createPeerIds(5)
+    const unsortedPeers = await createPeerIdsWithPrivateKey(5)
 
     // sort remaining peers by XOR distance to the key, closest -> furthest
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
@@ -114,6 +115,9 @@ describe('content routing', () => {
       clientMode: false,
       allowQueryWithZeroPeers: true
     })(components)
+
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
 
     await start(dht)
 
@@ -217,7 +221,7 @@ describe('peer routing', () => {
   beforeEach(async () => {
     key = CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')
 
-    const unsortedPeers = await createPeerIds(5)
+    const unsortedPeers = await createPeerIdsWithPrivateKey(5)
 
     // sort remaining peers by XOR distance to the key, closest -> furthest
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
@@ -246,6 +250,9 @@ describe('peer routing', () => {
     })(components)
 
     await start(dht)
+
+    // @ts-expect-error not part of public api
+    dht.routingTable.kb.verify = async () => true
 
     // @ts-expect-error cannot use symbol to index KadDHT type
     peerRouting = dht[peerRoutingSymbol]

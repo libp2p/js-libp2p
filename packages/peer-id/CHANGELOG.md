@@ -11,6 +11,63 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [5.0.10](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.9...peer-id-v5.0.10) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+
+## [5.0.9](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.8...peer-id-v5.0.9) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+
+## [5.0.8](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.7...peer-id-v5.0.8) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+
+## [5.0.7](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.6...peer-id-v5.0.7) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+
+## [5.0.6](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.5...peer-id-v5.0.6) (2024-10-23)
+
+
+### Documentation
+
+* update peer id string ([#2780](https://github.com/libp2p/js-libp2p/issues/2780)) ([dc3bdb9](https://github.com/libp2p/js-libp2p/commit/dc3bdb9f67a708dc5b7d72654a2cab5ade2c0d9c))
+
+## [5.0.5](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.4...peer-id-v5.0.5) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+
 ## [5.0.4](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.3...peer-id-v5.0.4) (2024-09-24)
 
 

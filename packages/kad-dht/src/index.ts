@@ -78,12 +78,47 @@
  *
  * console.info(peerInfo) // peer id, multiaddrs
  * ```
+ *
+ * @example Connecting to both a LAN-only DHT and the IPFS Amino DHT
+ *
+ * When using multiple DHTs, you should specify distinct datastore, metrics and
+ * log prefixes to ensure that data is kept separate for each instance.
+ *
+ * ```TypeScript
+ * import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+ * import { createLibp2p } from 'libp2p'
+ * import { peerIdFromString } from '@libp2p/peer-id'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     lanDHT: kadDHT({
+ *       protocol: '/ipfs/lan/kad/1.0.0',
+ *       peerInfoMapper: removePublicAddressesMapper,
+ *       clientMode: false,
+ *       logPrefix: 'libp2p:dht-lan',
+ *       datastorePrefix: '/dht-lan',
+ *       metricsPrefix: 'libp2p_dht_lan'
+ *     }),
+ *     aminoDHT: kadDHT({
+ *       protocol: '/ipfs/kad/1.0.0',
+ *       peerInfoMapper: removePrivateAddressesMapper,
+ *       logPrefix: 'libp2p:dht-amino',
+ *       datastorePrefix: '/dht-amino',
+ *       metricsPrefix: 'libp2p_dht_amino'
+ *     })
+ *   }
+ * })
+ *
+ * const peerId = peerIdFromString('QmFoo')
+ * const peerInfo = await node.peerRouting.findPeer(peerId)
+ *
+ * console.info(peerInfo) // peer id, multiaddrs
+ * ```
  */
 
 import { KadDHT as KadDHTClass } from './kad-dht.js'
 import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
-import type { ProvidersInit } from './providers.js'
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
@@ -252,6 +287,12 @@ export interface KadDHT {
   provide(key: CID, options?: RoutingOptions): AsyncIterable<QueryEvent>
 
   /**
+   * Provider records must be re-published every 24 hours - pass a previously
+   * provided CID here to not re-publish a record for it any more
+   */
+  cancelReprovide(key: CID): Promise<void>
+
+  /**
    * Store the passed value under the passed key on the DHT
    */
   put(key: Uint8Array, value: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
@@ -299,7 +340,61 @@ export type Selectors = Record<string, SelectFn>
  */
 export type Validators = Record<string, ValidateFn>
 
-export type { ProvidersInit }
+export interface ProvidersInit {
+  /**
+   * @default 256
+   */
+  cacheSize?: number
+  /**
+   * How often invalid records are cleaned in seconds
+   *
+   * @default 5_400
+   */
+  cleanupInterval?: number
+  /**
+   * How long is a provider valid for in seconds
+   *
+   * @default 86_400
+   */
+  provideValidity?: number
+}
+
+export interface ReProvideInit {
+  /**
+   * How many re-provide operations to run simultaneously
+   *
+   * @default 10
+   */
+  concurrency?: number
+
+  /**
+   * How long to let the re-provide queue grow
+   *
+   * @default 16_384
+   */
+  maxQueueSize?: number
+
+  /**
+   * How long before the record expiry to re-provide in ms
+   *
+   * @default 86_400_000 (24 hours)
+   */
+  threshold?: number
+
+  /**
+   * How often to check which records need re-providing in ms
+   *
+   * @default 3_600_000 (1 hour)
+   */
+  interval?: number
+
+  /**
+   * How long provider records are valid for in ms
+   *
+   * @default 172_800_000 (48 hours)
+   */
+  validity?: number
+}
 
 export interface KadDHTInit {
   /**
@@ -397,12 +492,24 @@ export interface KadDHTInit {
   logPrefix?: string
 
   /**
-   * How long to wait in ms when pinging DHT peers to decide if they
-   * should be evicted from the routing table or not.
+   * The datastore prefix to use
    *
-   * @default 10000
+   * @default "/dht"
    */
-  pingTimeout?: number
+  datastorePrefix?: string
+
+  /**
+   * The metrics prefix to use
+   *
+   * @default "libp2p_kad_dht"
+   */
+  metricsPrefix?: string
+
+  /**
+   * Settings for how long to wait in ms when pinging DHT peers to decide if
+   * they should be evicted from the routing table or not.
+   */
+  pingOldContactTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
    * How many peers to ping in parallel when deciding if they should
@@ -410,7 +517,35 @@ export interface KadDHTInit {
    *
    * @default 10
    */
-  pingConcurrency?: number
+  pingOldContactConcurrency?: number
+
+  /**
+   * How long the queue to ping peers is allowed to grow
+   *
+   * @default 100
+   */
+  pingOldContactMaxQueueSize?: number
+
+  /**
+   * Settings for how long to wait in ms when pinging DHT peers to decide if
+   * they should be added to the routing table or not.
+   */
+  pingNewContactTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
+
+  /**
+   * How many peers to ping in parallel when deciding if they should be added to
+   * the routing table or not
+   *
+   * @default 10
+   */
+  pingNewContactConcurrency?: number
+
+  /**
+   * How long the queue to ping peers is allowed to grow
+   *
+   * @default 100
+   */
+  pingNewContactMaxQueueSize?: number
 
   /**
    * How many parallel incoming streams to allow on the DHT protocol per
@@ -432,6 +567,11 @@ export interface KadDHTInit {
    * Initialization options for the Providers component
    */
   providers?: ProvidersInit
+
+  /**
+   * Initialization options for the Reprovider component
+   */
+  reprovide?: ReProvideInit
 
   /**
    * For every incoming and outgoing PeerInfo, override address configuration

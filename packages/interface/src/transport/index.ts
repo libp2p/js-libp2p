@@ -6,9 +6,21 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export interface ListenerEvents {
-  'connection': CustomEvent<Connection>
+  /**
+   * This event signals to the transport manager that the listening addresses
+   * have changed and may be emitted at any point and/or multiple times
+   */
   'listening': CustomEvent
+
+  /**
+   * Emitted if listening on an address failed
+   */
   'error': CustomEvent<Error>
+
+  /**
+   * Emitted when the listener has been shut down, has no open connections and
+   * will no longer accept new connections
+   */
   'close': CustomEvent
 }
 
@@ -31,16 +43,21 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
 
 export const transportSymbol = Symbol.for('@libp2p/transport')
 
-export interface ConnectionHandler { (connection: Connection): void }
-
 export interface MultiaddrFilter { (multiaddrs: Multiaddr[]): Multiaddr[] }
 
 export interface CreateListenerOptions {
-  handler?: ConnectionHandler
+  /**
+   * The upgrader turns a MultiaddrConnection into a Connection and notifies
+   * other libp2p components about a new incoming connection.
+   */
   upgrader: Upgrader
 }
 
 export interface DialTransportOptions<DialEvents extends ProgressEvent = ProgressEvent> extends AbortOptions, ProgressOptions<DialEvents> {
+  /**
+   * The upgrader turns a MultiaddrConnection into a Connection which should be
+   * returned by the transport's dial method
+   */
   upgrader: Upgrader
 }
 
@@ -117,12 +134,13 @@ ProgressEvent<'upgrader:multiplex-outbound-connection'>
 
 export interface Upgrader {
   /**
-   * Upgrades an outbound connection on `transport.dial`.
+   * Upgrades an outbound connection created by the `dial` method of a transport
    */
   upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<OutboundConnectionUpgradeEvents>): Promise<Connection>
 
   /**
-   * Upgrades an inbound connection on transport listener.
+   * Upgrades an inbound connection received by a transport listener and
+   * notifies other libp2p components about the new connection
    */
-  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<Connection>
+  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<void>
 }

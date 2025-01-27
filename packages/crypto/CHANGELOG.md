@@ -17,6 +17,57 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.9](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.8...crypto-v5.0.9) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+
+## [5.0.8](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.7...crypto-v5.0.8) (2024-12-09)
+
+
+### Dependencies
+
+* bump @stablelib/ed25519 in /packages/crypto/benchmark/ed25519 ([#2855](https://github.com/libp2p/js-libp2p/issues/2855)) ([86a646b](https://github.com/libp2p/js-libp2p/commit/86a646b7fb0efb1c09fdbd068dc9a78653553fcf))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+
+## [5.0.7](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.6...crypto-v5.0.7) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+
+## [5.0.6](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.5...crypto-v5.0.6) (2024-10-28)
+
+
+### Bug Fixes
+
+* use raw asn1js int value to improve performance ([#2788](https://github.com/libp2p/js-libp2p/issues/2788)) ([c4399dc](https://github.com/libp2p/js-libp2p/commit/c4399dcb93b24339a15e152d48009f448fc701d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+
+## [5.0.5](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.4...crypto-v5.0.5) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+
 ## [5.0.4](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.3...crypto-v5.0.4) (2024-09-24)
 
 

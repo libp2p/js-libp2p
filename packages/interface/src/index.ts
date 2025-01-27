@@ -53,6 +53,18 @@ export interface SignedPeerRecord {
   seq: bigint
 }
 
+export interface TLSCertificate {
+  /**
+   * The private key that corresponds to the certificate in PEM format
+   */
+  key: string
+
+  /**
+   * The certificate chain in PEM format
+   */
+  cert: string
+}
+
 /**
  * Data returned from a successful identify response
  */
@@ -161,9 +173,10 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:connect': CustomEvent<PeerId>
 
   /**
-   * This event will be triggered any time we are disconnected from another peer, regardless of
-   * the circumstances of that disconnection. If we happen to have multiple connections to a
-   * peer, this event will **only** be triggered when the last connection is closed.
+   * This event will be triggered any time we are disconnected from another
+   * peer, regardless of the circumstances of that disconnection. If we happen
+   * to have multiple connections to a peer, this event will **only** be
+   * triggered when the last connection is closed.
    *
    * @example
    *
@@ -177,9 +190,26 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'peer:disconnect': CustomEvent<PeerId>
 
   /**
-   * This event is dispatched after a remote peer has successfully responded to the identify
-   * protocol. Note that for this to be emitted, both peers must have an identify service
-   * configured.
+   * When a peer tagged with `keep-alive` disconnects, we will make multiple
+   * attempts to reconnect to it with a backoff factor (see the connection
+   * manager settings for details). If these all fail, the `keep-alive` tag will
+   * be removed and this event will be emitted.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.addEventListener('peer:reconnect-failure', (event) => {
+   *   const peerId = event.detail
+   *   // ...
+   * })
+   * ```
+   */
+  'peer:reconnect-failure': CustomEvent<PeerId>
+
+  /**
+   * This event is dispatched after a remote peer has successfully responded to
+   * the identify protocol. Note that for this to be emitted, both peers must
+   * have an identify service configured.
    *
    * @example
    *
@@ -248,6 +278,17 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * closed.
    */
   'connection:close': CustomEvent<Connection>
+
+  /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate:provision': CustomEvent<TLSCertificate>
+
+  /**
+   * This event notifies listeners that a new TLS certificate is available for
+   * use. Any previous certificate may no longer be valid.
+   */
+  'certificate:renew': CustomEvent<TLSCertificate>
 
   /**
    * This event notifies listeners that the node has started
@@ -713,12 +754,21 @@ export interface LoggerOptions {
 }
 
 /**
+ * An object that includes a trace object that is passed onwards.
+ *
+ * This is used by metrics method tracing to link function calls together.
+ */
+export interface TraceOptions {
+  trace?: any
+}
+
+/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,
  * these options allow tuning that behaviour.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**
    * Pass `false` to not use the network
    *

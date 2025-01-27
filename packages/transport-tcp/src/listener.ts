@@ -1,5 +1,6 @@
 import net from 'net'
-import { AbortError, AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter } from '@libp2p/interface'
+import { AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { pEvent } from 'p-event'
 import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
@@ -8,7 +9,7 @@ import {
   type NetConfig
 } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, Connection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface CloseServerOnMaxConnectionsOpts {
@@ -29,7 +30,6 @@ export interface CloseServerOnMaxConnectionsOpts {
 }
 
 interface Context extends TCPCreateListenerOptions {
-  handler?(conn: Connection): void
   upgrader: Upgrader
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
@@ -67,18 +67,22 @@ type Status = { code: TCPListenerStatusCode.INACTIVE } | {
 
 export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private readonly server: net.Server
-  /** Keep track of open connections to destroy in case of timeout */
-  private readonly connections = new Set<MultiaddrConnection>()
+  /** Keep track of open sockets to destroy in case of timeout */
+  private readonly sockets = new Set<net.Socket>()
   private status: Status = { code: TCPListenerStatusCode.INACTIVE }
   private metrics?: TCPListenerMetrics
   private addr: string
   private readonly log: Logger
+  private readonly shutdownController: AbortController
 
   constructor (private readonly context: Context) {
     super()
 
     context.keepAlive = context.keepAlive ?? true
     context.noDelay = context.noDelay ?? true
+
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.log = context.logger.forComponent('libp2p:tcp:listener')
     this.addr = 'unknown'
@@ -119,7 +123,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
             help: 'Current active connections in TCP listener',
             calculate: () => {
               return {
-                [this.addr]: this.connections.size
+                [this.addr]: this.sockets.size
               }
             }
           })
@@ -163,19 +167,18 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           this.safeDispatchEvent('close')
         }
       })
+      .on('drop', () => {
+        this.metrics?.events.increment({ [`${this.addr} drop`]: true })
+      })
   }
 
   private onSocket (socket: net.Socket): void {
+    this.metrics?.events.increment({ [`${this.addr} connection`]: true })
+
     if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
       socket.destroy()
       throw new NotStartedError('Server is not listening yet')
     }
-
-    // Avoid uncaught errors caused by unstable connections
-    socket.on('error', err => {
-      this.log('socket error', err)
-      this.metrics?.events.increment({ [`${this.addr} error`]: true })
-    })
 
     let maConn: MultiaddrConnection
     try {
@@ -185,27 +188,31 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         socketCloseTimeout: this.context.socketCloseTimeout,
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
-        logger: this.context.logger
+        logger: this.context.logger,
+        direction: 'inbound'
       })
-    } catch (err) {
+    } catch (err: any) {
       this.log.error('inbound connection failed', err)
       this.metrics?.errors.increment({ [`${this.addr} inbound_to_connection`]: true })
+      socket.destroy()
       return
     }
 
     this.log('new inbound connection %s', maConn.remoteAddr)
+    this.sockets.add(socket)
 
-    this.context.upgrader.upgradeInbound(maConn)
-      .then((conn) => {
+    this.context.upgrader.upgradeInbound(maConn, {
+      signal: this.shutdownController.signal
+    })
+      .then(() => {
         this.log('inbound connection upgraded %s', maConn.remoteAddr)
-        this.connections.add(maConn)
 
         socket.once('close', () => {
-          this.connections.delete(maConn)
+          this.sockets.delete(socket)
 
           if (
             this.context.closeServerOnMaxConnections != null &&
-            this.connections.size < this.context.closeServerOnMaxConnections.listenBelow
+            this.sockets.size < this.context.closeServerOnMaxConnections.listenBelow
           ) {
             // The most likely case of error is if the port taken by this
             // application is bound by another process during the time the
@@ -220,24 +227,17 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           }
         })
 
-        if (this.context.handler != null) {
-          this.context.handler(conn)
-        }
-
         if (
           this.context.closeServerOnMaxConnections != null &&
-          this.connections.size >= this.context.closeServerOnMaxConnections.closeAbove
+          this.sockets.size >= this.context.closeServerOnMaxConnections.closeAbove
         ) {
-          this.pause(false).catch(e => {
-            this.log.error('error attempting to close server once connection count over limit', e)
-          })
+          this.pause()
         }
-
-        this.safeDispatchEvent('connection', { detail: conn })
       })
       .catch(async err => {
         this.log.error('inbound connection upgrade failed', err)
         this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
+        this.sockets.delete(socket)
         maConn.abort(err)
       })
   }
@@ -299,15 +299,28 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   }
 
   async close (): Promise<void> {
-    const err = new AbortError('Listener is closing')
+    const events: Array<Promise<void>> = []
 
-    // synchronously close each connection
-    this.connections.forEach(conn => {
-      conn.abort(err)
-    })
+    if (this.server.listening) {
+      events.push(pEvent(this.server, 'close'))
+    }
 
     // shut down the server socket, permanently
-    await this.pause(true)
+    this.pause(true)
+
+    // stop any in-progress connection upgrades
+    this.shutdownController.abort()
+
+    // synchronously close any open connections - should be done after closing
+    // the server socket in case new sockets are opened during the shutdown
+    this.sockets.forEach(socket => {
+      if (socket.readable) {
+        events.push(pEvent(socket, 'close'))
+        socket.destroy()
+      }
+    })
+
+    await Promise.all(events)
   }
 
   /**
@@ -331,7 +344,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     this.log('listening on %s', this.server.address())
   }
 
-  private async pause (permanent: boolean): Promise<void> {
+  private pause (permanent: boolean = false): void {
     if (!this.server.listening && this.status.code === TCPListenerStatusCode.PAUSED && permanent) {
       this.status = { code: TCPListenerStatusCode.INACTIVE }
       return
@@ -360,15 +373,10 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     // during the time the server is closing
     this.status = permanent ? { code: TCPListenerStatusCode.INACTIVE } : { ...this.status, code: TCPListenerStatusCode.PAUSED }
 
-    await new Promise<void>((resolve, reject) => {
-      this.server.close(err => {
-        if (err != null) {
-          reject(err)
-          return
-        }
-
-        resolve()
-      })
-    })
+    // stop accepting incoming connections - existing connections are maintained
+    // - any callback passed here would be invoked after existing connections
+    // close, we want to maintain them so no callback is passed otherwise his
+    // method will never return
+    this.server.close()
   }
 }

@@ -17,6 +17,8 @@ import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, PeerData, PeerU
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
+const addr3 = multiaddr('/ip6/2a00:23c6:14b1:7e00:440d:76a7:f9f:b53f/tcp/8001')
+const addr4 = multiaddr('/ip6/fdad:bda1:c508:6261:1e:bea5:2ae6:fef0/tcp/8001')
 
 describe('save', () => {
   let peerId: PeerId
@@ -218,7 +220,9 @@ describe('save', () => {
     const peer: PeerData = {
       multiaddrs: [
         addr1,
-        addr2
+        addr2,
+        addr3,
+        addr4
       ],
       metadata: {
         foo: Uint8Array.from([0, 1, 2])
@@ -239,6 +243,12 @@ describe('save', () => {
       isCertified: false
     }, {
       multiaddr: addr2,
+      isCertified: false
+    }, {
+      multiaddr: addr3,
+      isCertified: false
+    }, {
+      multiaddr: addr4,
       isCertified: false
     }])
     expect(saved).to.have.property('metadata').that.deep.equals(

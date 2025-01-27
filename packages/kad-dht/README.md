@@ -102,6 +102,42 @@ const peerInfo = await node.peerRouting.findPeer(peerId)
 console.info(peerInfo) // peer id, multiaddrs
 ```
 
+## Example - Connecting to both a LAN-only DHT and the IPFS Amino DHT
+
+When using multiple DHTs, you should specify distinct datastore, metrics and
+log prefixes to ensure that data is kept separate for each instance.
+
+```TypeScript
+import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+import { createLibp2p } from 'libp2p'
+import { peerIdFromString } from '@libp2p/peer-id'
+
+const node = await createLibp2p({
+  services: {
+    lanDHT: kadDHT({
+      protocol: '/ipfs/lan/kad/1.0.0',
+      peerInfoMapper: removePublicAddressesMapper,
+      clientMode: false,
+      logPrefix: 'libp2p:dht-lan',
+      datastorePrefix: '/dht-lan',
+      metricsPrefix: 'libp2p_dht_lan'
+    }),
+    aminoDHT: kadDHT({
+      protocol: '/ipfs/kad/1.0.0',
+      peerInfoMapper: removePrivateAddressesMapper,
+      logPrefix: 'libp2p:dht-amino',
+      datastorePrefix: '/dht-amino',
+      metricsPrefix: 'libp2p_dht_amino'
+    })
+  }
+})
+
+const peerId = peerIdFromString('QmFoo')
+const peerInfo = await node.peerRouting.findPeer(peerId)
+
+console.info(peerInfo) // peer id, multiaddrs
+```
+
 # Install
 
 ```console
@@ -110,7 +146,7 @@ $ npm i @libp2p/kad-dht
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pKadDht` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pKadDht` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/kad-dht/dist/index.min.js"></script>

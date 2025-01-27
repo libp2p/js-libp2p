@@ -5,6 +5,70 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [1.3.0](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.8...simple-metrics-v1.3.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+
+## [1.2.8](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.7...simple-metrics-v1.2.8) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+
+## [1.2.7](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.6...simple-metrics-v1.2.7) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+
+## [1.2.6](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.5...simple-metrics-v1.2.6) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+
+## [1.2.5](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.4...simple-metrics-v1.2.5) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+
+## [1.2.4](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.3...simple-metrics-v1.2.4) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+
 ## [1.2.3](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.2.2...simple-metrics-v1.2.3) (2024-09-25)
 
 

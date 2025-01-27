@@ -2,15 +2,17 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { start, stop } from '@libp2p/interface'
+import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
+import pRetry from 'p-retry'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -18,7 +20,7 @@ import { AutoNATService } from '../src/autonat.js'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
 import { Message } from '../src/pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
-import type { Connection, Stream, PeerId, PeerInfo, Transport } from '@libp2p/interface'
+import type { Connection, Stream, PeerId, Transport, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
@@ -40,6 +42,7 @@ describe('autonat', () => {
   let addressManager: StubbedInstance<AddressManager>
   let connectionManager: StubbedInstance<ConnectionManager>
   let transportManager: StubbedInstance<TransportManager>
+  let peerStore: StubbedInstance<PeerStore>
 
   beforeEach(async () => {
     randomWalk = stubInterface<RandomWalk>()
@@ -47,8 +50,12 @@ describe('autonat', () => {
     addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([])
 
-    connectionManager = stubInterface<ConnectionManager>()
+    connectionManager = stubInterface<ConnectionManager>({
+      getConnections: () => [],
+      getMaxConnections: () => 100
+    })
     transportManager = stubInterface<TransportManager>()
+    peerStore = stubInterface<PeerStore>()
 
     components = {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
@@ -57,7 +64,9 @@ describe('autonat', () => {
       registrar,
       addressManager,
       connectionManager,
-      transportManager
+      transportManager,
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      peerStore
     }
 
     service = new AutoNATService(components, defaultInit)
@@ -74,45 +83,61 @@ describe('autonat', () => {
   })
 
   describe('verify our observed addresses', () => {
-    async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId): Promise<PeerInfo> {
+    async function stubPeerResponse (host: string, dialResponse: Message.DialResponse, peerId?: PeerId): Promise<Connection> {
       // stub random peer lookup
-      const peer = {
+      const peer: Peer = {
         id: peerId ?? peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        multiaddrs: [],
-        protocols: []
+        addresses: [{
+          multiaddr: multiaddr(`/ip4/${host}/tcp/28319`),
+          isCertified: true
+        }],
+        protocols: [],
+        metadata: new Map(),
+        tags: new Map()
       }
+
+      peerStore.get.withArgs(peer.id).resolves(peer)
 
       // stub connection to remote peer
       const connection = stubInterface<Connection>()
       connection.remoteAddr = multiaddr(`/ip4/${host}/tcp/28319/p2p/${peer.id.toString()}`)
+      connection.remotePeer = peer.id
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
       connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).callsFake(async () => {
-        // stub autonat protocol stream
-        const stream = stubInterface<Stream>()
-
         // stub autonat response
         const response = Message.encode({
           type: Message.MessageType.DIAL_RESPONSE,
           dialResponse
         })
-        stream.source = (async function * () {
-          yield lp.encode.single(response)
-        }())
-        stream.sink.returns(Promise.resolve())
+
+        // stub autonat protocol stream
+        const stream = stubInterface<Stream>({
+          source: (async function * () {
+            yield lp.encode.single(response)
+          }()),
+          sink: async (source) => {
+            await drain(source)
+          }
+        })
 
         return stream
       })
 
-      return peer
+      return connection
     }
 
     it('should request peers verify our observed address', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       // The network says OK
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.OK
         }),
@@ -127,11 +152,50 @@ describe('autonat', () => {
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
-      await service.verifyExternalAddresses()
+      await pRetry(() => {
+        expect(addressManager.confirmObservedAddr).to.have.property('called', true)
+      })
+
+      expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
+        .to.be.true('Did not confirm observed multiaddr')
+    })
+
+    it('should request peers re-verify our observed address', async () => {
+      const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: true,
+        type: 'observed',
+        expires: Date.now() - 1000
+      }])
+
+      // The network says OK
+      const connections = [
+        await stubPeerResponse('124.124.124.124', {
+          status: Message.ResponseStatus.OK
+        }),
+        await stubPeerResponse('125.124.124.124', {
+          status: Message.ResponseStatus.OK
+        }),
+        await stubPeerResponse('126.124.124.124', {
+          status: Message.ResponseStatus.OK
+        }),
+        await stubPeerResponse('127.124.124.124', {
+          status: Message.ResponseStatus.OK
+        })
+      ]
+
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
+
+      await pRetry(() => {
+        expect(addressManager.confirmObservedAddr).to.have.property('called', true)
+      })
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
         .to.be.true('Did not confirm observed multiaddr')
@@ -139,10 +203,15 @@ describe('autonat', () => {
 
     it('should mark observed address as low confidence when dialing fails', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       // The network says ERROR
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         }),
@@ -154,14 +223,28 @@ describe('autonat', () => {
         }),
         await stubPeerResponse('127.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('128.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('129.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('130.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('131.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
-      await service.verifyExternalAddresses()
+      await pRetry(() => {
+        expect(addressManager.removeObservedAddr).to.have.property('called', true)
+      })
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
         .to.be.true('Did not verify external multiaddr')
@@ -169,10 +252,15 @@ describe('autonat', () => {
 
     it('should ignore non error or success statuses', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       // Mix of responses, mostly OK
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.OK
         }),
@@ -196,25 +284,29 @@ describe('autonat', () => {
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
-      await service.verifyExternalAddresses()
+      await pRetry(() => {
+        expect(addressManager.confirmObservedAddr).to.have.property('called', true)
+      })
 
       expect(addressManager.confirmObservedAddr.calledWith(observedAddress))
         .to.be.true('Did not confirm external multiaddr')
-
-      expect(connectionManager.openConnection.callCount)
-        .to.equal(peers.length, 'Did not open connections to all peers')
     })
 
     it('should require confirmation from diverse networks', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       // an attacker says OK, the rest of the network says ERROR
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.OK
         }),
@@ -238,30 +330,46 @@ describe('autonat', () => {
         }),
         await stubPeerResponse('130.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('131.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('132.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('133.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
+        }),
+        await stubPeerResponse('134.124.124.124', {
+          status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
-      await service.verifyExternalAddresses()
+      await pRetry(() => {
+        expect(addressManager.removeObservedAddr).to.have.property('called', true)
+      })
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
         .to.be.true('Did not verify external multiaddr')
-
-      expect(connectionManager.openConnection.callCount)
-        .to.equal(peers.length, 'Did not open connections to all peers')
     })
 
     it('should require confirmation from diverse peers', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
       // an attacker says OK, the rest of the network says ERROR
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.OK
         }, peerId),
@@ -285,80 +393,44 @@ describe('autonat', () => {
         }),
         await stubPeerResponse('131.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
-        })
-      ]
-
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
-
-      await service.verifyExternalAddresses()
-
-      expect(addressManager.removeObservedAddr.calledWith(observedAddress))
-        .to.be.true('Did not verify external multiaddr')
-
-      expect(connectionManager.openConnection.callCount)
-        .to.equal(peers.length, 'Did not open connections to all peers')
-    })
-
-    it('should only accept observed addresses', async () => {
-      const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      const reportedAddress = multiaddr('/ip4/100.100.100.100/tcp/28319')
-
-      // our observed addresses
-      addressManager.getObservedAddrs.returns([observedAddress])
-
-      // an attacker says OK, the rest of the network says ERROR
-      const peers = [
-        await stubPeerResponse('124.124.124.124', {
-          status: Message.ResponseStatus.OK,
-          addr: reportedAddress.bytes
         }),
-        await stubPeerResponse('125.124.124.125', {
-          status: Message.ResponseStatus.OK,
-          addr: reportedAddress.bytes
-        }),
-        await stubPeerResponse('126.124.124.126', {
-          status: Message.ResponseStatus.OK,
-          addr: reportedAddress.bytes
-        }),
-        await stubPeerResponse('127.124.124.127', {
-          status: Message.ResponseStatus.OK,
-          addr: reportedAddress.bytes
-        }),
-        await stubPeerResponse('128.124.124.124', {
+        await stubPeerResponse('132.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         }),
-        await stubPeerResponse('129.124.124.124', {
+        await stubPeerResponse('133.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         }),
-        await stubPeerResponse('130.124.124.124', {
+        await stubPeerResponse('134.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         }),
-        await stubPeerResponse('131.124.124.124', {
+        await stubPeerResponse('135.124.124.124', {
           status: Message.ResponseStatus.E_DIAL_ERROR
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
-      await service.verifyExternalAddresses()
+      await pRetry(() => {
+        expect(addressManager.removeObservedAddr).to.have.property('called', true)
+      })
 
       expect(addressManager.removeObservedAddr.calledWith(observedAddress))
         .to.be.true('Did not verify external multiaddr')
-
-      expect(connectionManager.openConnection.callCount)
-        .to.equal(peers.length, 'Did not open connections to all peers')
     })
 
     it('should time out when verifying an observed address', async () => {
       const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-      addressManager.getObservedAddrs.returns([observedAddress])
+      addressManager.getAddressesWithMetadata.returns([{
+        multiaddr: observedAddress,
+        verified: false,
+        type: 'observed',
+        expires: 0
+      }])
 
       // The network says OK
-      const peers = [
+      const connections = [
         await stubPeerResponse('124.124.124.124', {
           status: Message.ResponseStatus.OK
         }),
@@ -373,28 +445,9 @@ describe('autonat', () => {
         })
       ]
 
-      randomWalk.walk.returns(async function * () {
-        yield * peers
-      }())
-
-      connectionManager.openConnection.reset()
-      connectionManager.openConnection.callsFake(async (peer, options = {}) => {
-        return Promise.race<Connection>([
-          new Promise<Connection>((resolve, reject) => {
-            options.signal?.addEventListener('abort', () => {
-              reject(new Error('Dial aborted!'))
-            })
-          }),
-          new Promise<Connection>((resolve, reject) => {
-            // longer than the timeout
-            setTimeout(() => {
-              reject(new Error('Dial Timeout!'))
-            }, 1000)
-          })
-        ])
-      })
-
-      await service.verifyExternalAddresses()
+      for (const conn of connections) {
+        await service.verifyExternalAddresses(conn)
+      }
 
       expect(addressManager.addObservedAddr.called)
         .to.be.false('Verify external multiaddr when we should have timed out')
@@ -424,11 +477,13 @@ describe('autonat', () => {
           for await (const buf of stream) {
             sink.push(new Uint8ArrayList(buf))
           }
-
           sink.end()
         },
         abort: (err) => {
           void stream.source.throw(err)
+        },
+        close: async () => {
+          sink.end()
         }
       }
       const connection = {
@@ -509,26 +564,6 @@ describe('autonat', () => {
 
       expect(message).to.have.property('type', Message.MessageType.DIAL_RESPONSE)
       expect(message).to.have.nested.property('dialResponse.status', Message.ResponseStatus.OK)
-    })
-
-    it('should expect a message', async () => {
-      const message = await stubIncomingStream({
-        message: false
-      })
-
-      expect(message).to.have.property('type', Message.MessageType.DIAL_RESPONSE)
-      expect(message).to.have.nested.property('dialResponse.status', Message.ResponseStatus.E_BAD_REQUEST)
-      expect(message).to.have.nested.property('dialResponse.statusText', 'No message was sent')
-    })
-
-    it('should expect a valid message', async () => {
-      const message = await stubIncomingStream({
-        message: Uint8Array.from([3, 2, 1, 0])
-      })
-
-      expect(message).to.have.property('type', Message.MessageType.DIAL_RESPONSE)
-      expect(message).to.have.nested.property('dialResponse.status', Message.ResponseStatus.E_BAD_REQUEST)
-      expect(message).to.have.nested.property('dialResponse.statusText', 'Could not decode message')
     })
 
     it('should expect a dial message', async () => {
@@ -633,32 +668,6 @@ describe('autonat', () => {
       expect(message).to.have.property('type', Message.MessageType.DIAL_RESPONSE)
       expect(message).to.have.nested.property('dialResponse.status', Message.ResponseStatus.E_DIAL_ERROR)
       expect(message).to.have.nested.property('dialResponse.statusText', 'Could not dial')
-    })
-
-    it('should time out when dialing a requested address', async () => {
-      connectionManager.openConnection.callsFake(async function (ma, options = {}) {
-        return Promise.race<Connection>([
-          new Promise<Connection>((resolve, reject) => {
-            options.signal?.addEventListener('abort', () => {
-              reject(new Error('Dial aborted!'))
-            })
-          }),
-          new Promise<Connection>((resolve, reject) => {
-            // longer than the timeout
-            setTimeout(() => {
-              reject(new Error('Dial Timeout!'))
-            }, 1000)
-          })
-        ])
-      })
-
-      const message = await stubIncomingStream({
-        canDial: undefined
-      })
-
-      expect(message).to.have.property('type', Message.MessageType.DIAL_RESPONSE)
-      expect(message).to.have.nested.property('dialResponse.status', Message.ResponseStatus.E_DIAL_ERROR)
-      expect(message).to.have.nested.property('dialResponse.statusText', 'Dial aborted!')
     })
   })
 })

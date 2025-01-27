@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { mockRegistrar, mockUpgrader, streamPair } from '@libp2p/interface-compliance-tests/mocks'
+import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
@@ -16,8 +16,8 @@ import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
 import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger, Connection, Stream, ComponentLogger } from '@libp2p/interface'
-import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { Logger, Connection, Stream, ComponentLogger, Upgrader } from '@libp2p/interface'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 const browser = detect()
 
@@ -155,7 +155,7 @@ describe('webrtc basic', () => {
       }),
       handleIncomingStream(recipient)
     ]))
-      .to.eventually.be.rejected.with.property('message', 'Oh noes!')
+      .to.eventually.be.rejected.with.property('message').that.matches(/Oh noes!/)
   })
 })
 
@@ -250,8 +250,8 @@ describe('webrtc filter', () => {
       transportManager: stubInterface<TransportManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
       peerId: Sinon.stub() as any,
-      registrar: mockRegistrar(),
-      upgrader: mockUpgrader({}),
+      registrar: stubInterface<Registrar>(),
+      upgrader: stubInterface<Upgrader>(),
       logger: defaultLogger()
     })
 

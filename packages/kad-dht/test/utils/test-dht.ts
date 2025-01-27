@@ -33,7 +33,6 @@ export class TestDHT {
       privateKey,
       datastore: new MemoryDatastore(),
       registrar: mockRegistrar(),
-      // connectionGater: mockConnectionGater(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
@@ -65,6 +64,11 @@ export class TestDHT {
 
     components.addressManager = addressManager
 
+    // ensure the current node is in it's own peer store
+    await components.peerStore.merge(peerId, {
+      multiaddrs: addressManager.getAddresses()
+    })
+
     const opts: KadDHTInit = {
       validators: {
         async v () {
@@ -85,6 +89,9 @@ export class TestDHT {
     }
 
     const dht = new KadDHTClass(components, opts)
+
+    // skip peer validation
+    dht.routingTable.kb.verify = async () => true
 
     // simulate libp2p._onDiscoveryPeer
     dht.addEventListener('peer', (evt) => {

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/fetch",
-  "version": "2.0.6",
+  "version": "3.0.0",
   "description": "Implementation of the Fetch Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-fetch#readme",
@@ -52,21 +52,21 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.1.2",
-    "@libp2p/interface-internal": "^2.0.6",
-    "it-protobuf-stream": "^1.1.3",
-    "protons-runtime": "^5.4.0",
+    "@libp2p/interface": "^2.4.0",
+    "@libp2p/interface-internal": "^2.2.2",
+    "it-protobuf-stream": "^1.1.5",
+    "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.0.4",
-    "@libp2p/logger": "^5.1.0",
-    "@libp2p/peer-id": "^5.0.4",
-    "aegir": "^44.0.1",
+    "@libp2p/crypto": "^5.0.9",
+    "@libp2p/logger": "^5.1.6",
+    "@libp2p/peer-id": "^5.0.10",
+    "aegir": "^45.0.5",
     "it-pair": "^2.0.6",
-    "protons": "^7.5.0",
-    "sinon": "^18.0.0",
+    "protons": "^7.6.0",
+    "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

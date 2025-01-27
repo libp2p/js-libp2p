@@ -33,6 +33,7 @@ export class ReconnectQueue implements Startable {
   private readonly retryInterval?: number
   private readonly backoffFactor?: number
   private readonly connectionManager: ConnectionManager
+  private readonly events: TypedEventTarget<Libp2pEvents>
 
   constructor (components: ReconnectQueueComponents, init: ReconnectQueueInit = {}) {
     this.log = components.logger.forComponent('libp2p:reconnect-queue')
@@ -47,11 +48,12 @@ export class ReconnectQueue implements Startable {
     this.retries = init.retries ?? 5
     this.backoffFactor = init.backoffFactor
     this.retryInterval = init.retryInterval
+    this.events = components.events
 
     components.events.addEventListener('peer:disconnect', (evt) => {
       this.maybeReconnect(evt.detail)
         .catch(err => {
-          this.log.error('failed to maybe reconnect to %p', evt.detail, err)
+          this.log.error('failed to maybe reconnect to %p - %e', evt.detail, err)
         })
     })
   }
@@ -63,7 +65,7 @@ export class ReconnectQueue implements Startable {
 
     const peer = await this.peerStore.get(peerId)
 
-    if (!peer.tags.has(KEEP_ALIVE)) {
+    if (!hasKeepAliveTag(peer)) {
       return
     }
 
@@ -82,7 +84,7 @@ export class ReconnectQueue implements Startable {
             signal: options?.signal
           })
         } catch (err) {
-          this.log('reconnecting to %p attempt %d of %d failed', peerId, attempt, this.retries, err)
+          this.log('reconnecting to %p attempt %d of %d failed - %e', peerId, attempt, this.retries, err)
           throw err
         }
       }, {
@@ -94,8 +96,27 @@ export class ReconnectQueue implements Startable {
     }, {
       peerId
     })
-      .catch(err => {
-        this.log.error('failed to reconnect to %p', peerId, err)
+      .catch(async err => {
+        this.log.error('failed to reconnect to %p - %e', peerId, err)
+
+        const tags: Record<string, undefined> = {}
+
+        ;[...peer.tags.keys()].forEach(key => {
+          if (key.startsWith(KEEP_ALIVE)) {
+            tags[key] = undefined
+          }
+        })
+
+        await this.peerStore.merge(peerId, {
+          tags
+        })
+
+        this.events.safeDispatchEvent('peer:reconnect-failure', {
+          detail: peerId
+        })
+      })
+      .catch(async err => {
+        this.log.error('failed to remove keep-alive tag from %p - %e', peerId, err)
       })
   }
 
@@ -108,9 +129,9 @@ export class ReconnectQueue implements Startable {
     void Promise.resolve()
       .then(async () => {
         const keepAlivePeers: Peer[] = await this.peerStore.all({
-          filters: [(peer) => {
-            return peer.tags.has(KEEP_ALIVE)
-          }]
+          filters: [
+            (peer) => hasKeepAliveTag(peer)
+          ]
         })
 
         await Promise.all(
@@ -131,4 +152,14 @@ export class ReconnectQueue implements Startable {
     this.started = false
     this.queue.abort()
   }
+}
+
+function hasKeepAliveTag (peer: Peer): boolean {
+  for (const tag of peer.tags.keys()) {
+    if (tag.startsWith(KEEP_ALIVE)) {
+      return true
+    }
+  }
+
+  return false
 }

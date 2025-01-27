@@ -1,55 +1,55 @@
-import { upnpNat, type NatAPI, type MapPortOptions } from '@achingbrain/nat-port-mapper'
-import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
-import { fromNodeAddress } from '@multiformats/multiaddr'
-import { isBrowser } from 'wherearewe'
-import { DoubleNATError } from './errors.js'
+import { upnpNat } from '@achingbrain/nat-port-mapper'
+import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
+import { debounce } from '@libp2p/utils/debounce'
+import { GatewayFinder } from './gateway-finder.js'
+import { UPnPPortMapper } from './upnp-port-mapper.js'
 import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
+import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
 import type { Logger, Startable } from '@libp2p/interface'
-
-const DEFAULT_TTL = 7200
-
-export type { NatAPI, MapPortOptions }
-
-function highPort (min = 1024, max = 65535): number {
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
+import type { DebouncedFunction } from '@libp2p/utils/debounce'
 
 export class UPnPNAT implements Startable, UPnPNATInterface {
-  public client: NatAPI
-  private readonly components: UPnPNATComponents
-  private readonly externalAddress?: string
-  private readonly localAddress?: string
-  private readonly description: string
-  private readonly ttl: number
-  private readonly keepAlive: boolean
-  private readonly gateway?: string
-  private started: boolean
   private readonly log: Logger
+  private readonly components: UPnPNATComponents
+  private readonly init: UPnPNATInit
+  private started: boolean
+  public portMappingClient: UPnPNATClient
+  private shutdownController?: AbortController
+  private readonly mapIpAddressesDebounced: DebouncedFunction
+  private readonly gatewayFinder: GatewayFinder
+  private readonly portMappers: UPnPPortMapper[]
+  private readonly autoConfirmAddress: boolean
 
   constructor (components: UPnPNATComponents, init: UPnPNATInit) {
-    this.components = components
-
     this.log = components.logger.forComponent('libp2p:upnp-nat')
+    this.components = components
+    this.init = init
     this.started = false
-    this.externalAddress = init.externalAddress
-    this.localAddress = init.localAddress
-    this.description = init.description ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${this.components.peerId.toString()}`
-    this.ttl = init.ttl ?? DEFAULT_TTL
-    this.keepAlive = init.keepAlive ?? true
-    this.gateway = init.gateway
+    this.portMappers = []
+    this.autoConfirmAddress = init.autoConfirmAddress ?? false
 
-    if (this.ttl < DEFAULT_TTL) {
-      throw new InvalidParametersError(`NatManager ttl should be at least ${DEFAULT_TTL} seconds`)
-    }
-
-    this.client = upnpNat({
-      description: this.description,
-      ttl: this.ttl,
-      keepAlive: this.keepAlive,
-      gateway: this.gateway
+    this.portMappingClient = init.portMappingClient ?? upnpNat({
+      description: init.portMappingDescription ?? `${components.nodeInfo.name}@${components.nodeInfo.version} ${components.peerId.toString()}`,
+      ttl: init.portMappingTTL,
+      autoRefresh: init.portMappingAutoRefresh,
+      refreshThreshold: init.portMappingRefreshThreshold
     })
+
+    // trigger update when our addresses change
+    this.mapIpAddressesDebounced = debounce(async () => {
+      try {
+        await this.mapIpAddresses()
+      } catch (err: any) {
+        this.log.error('error mapping IP addresses - %e', err)
+      }
+    }, 5_000)
+
+    // trigger update when we discovery gateways on the network
+    this.gatewayFinder = new GatewayFinder(components, {
+      portMappingClient: this.portMappingClient
+    })
+
+    this.onGatewayDiscovered = this.onGatewayDiscovered.bind(this)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/upnp-nat'
@@ -58,99 +58,68 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
     '@libp2p/nat-traversal'
   ]
 
+  get [serviceDependencies] (): string[] {
+    if (!this.autoConfirmAddress) {
+      return [
+        '@libp2p/autonat'
+      ]
+    }
+
+    return []
+  }
+
   isStarted (): boolean {
     return this.started
   }
 
-  start (): void {
-    // #TODO: is there a way to remove this? Seems like a hack
-  }
-
-  /**
-   * Attempt to use uPnP to configure port mapping using the current gateway.
-   *
-   * Run after start to ensure the transport manager has all addresses configured.
-   */
-  afterStart (): void {
-    if (isBrowser || this.started) {
+  async start (): Promise<void> {
+    if (this.started) {
       return
     }
 
     this.started = true
-
-    // done async to not slow down startup
-    void this.mapIpAddresses().catch((err) => {
-      // hole punching errors are non-fatal
-      this.log.error(err)
-    })
-  }
-
-  async mapIpAddresses (): Promise<void> {
-    const addrs = this.components.transportManager.getAddrs()
-
-    for (const addr of addrs) {
-      // try to open uPnP ports for each thin waist address
-      const { family, host, port, transport } = addr.toOptions()
-
-      if (!addr.isThinWaistAddress() || transport !== 'tcp') {
-        // only bare tcp addresses
-        // eslint-disable-next-line no-continue
-        continue
-      }
-
-      if (isLoopback(addr)) {
-        // eslint-disable-next-line no-continue
-        continue
-      }
-
-      if (family !== 4) {
-        // ignore ipv6
-        // eslint-disable-next-line no-continue
-        continue
-      }
-
-      const publicIp = this.externalAddress ?? await this.client.externalIp()
-      const isPrivate = isPrivateIp(publicIp)
-
-      if (isPrivate === true) {
-        throw new DoubleNATError(`${publicIp} is private - please set config.nat.externalIp to an externally routable IP or ensure you are not behind a double NAT`)
-      }
-
-      if (isPrivate == null) {
-        throw new InvalidParametersError(`${publicIp} is not an IP address`)
-      }
-
-      const publicPort = highPort()
-
-      this.log(`opening uPnP connection from ${publicIp}:${publicPort} to ${host}:${port}`)
-
-      await this.client.map({
-        publicPort,
-        localPort: port,
-        localAddress: this.localAddress,
-        protocol: transport.toUpperCase() === 'TCP' ? 'TCP' : 'UDP'
-      })
-
-      this.components.addressManager.addObservedAddr(fromNodeAddress({
-        family: 4,
-        address: publicIp,
-        port: publicPort
-      }, transport))
-    }
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
+    this.components.events.addEventListener('self:peer:update', this.mapIpAddressesDebounced)
+    this.gatewayFinder.addEventListener('gateway', this.onGatewayDiscovered)
+    await start(this.mapIpAddressesDebounced, this.gatewayFinder, ...this.portMappers)
   }
 
   /**
    * Stops the NAT manager
    */
   async stop (): Promise<void> {
-    if (isBrowser || this.client == null) {
-      return
-    }
+    this.shutdownController?.abort()
+    this.components.events.removeEventListener('self:peer:update', this.mapIpAddressesDebounced)
+    this.gatewayFinder.removeEventListener('gateway', this.onGatewayDiscovered)
+    await stop(this.mapIpAddressesDebounced, this.gatewayFinder, ...this.portMappers)
+    this.started = false
+  }
 
+  onGatewayDiscovered (event: CustomEvent<Gateway>): void {
+    const mapper = new UPnPPortMapper(this.components, {
+      ...this.init,
+      gateway: event.detail
+    })
+
+    this.portMappers.push(mapper)
+
+    start(mapper)
+      .then(() => {
+        this.mapIpAddressesDebounced()
+      })
+      .catch(() => {})
+  }
+
+  async mapIpAddresses (): Promise<void> {
     try {
-      await this.client.close()
+      await Promise.all(
+        this.portMappers.map(async mapper => mapper.mapIpAddresses({
+          autoConfirmAddress: this.autoConfirmAddress
+        }))
+      )
     } catch (err: any) {
-      this.log.error(err)
+      this.log.error('error mapping IP addresses - %e', err)
     }
   }
 }

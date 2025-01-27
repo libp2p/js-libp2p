@@ -35,6 +35,99 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [6.0.14](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.13...peer-collections-v6.0.14) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+
+## [6.0.13](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.12...peer-collections-v6.0.13) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+
+## [6.0.12](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.11...peer-collections-v6.0.12) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/utils bumped from ^6.2.0 to ^6.2.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+
+## [6.0.11](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.10...peer-collections-v6.0.11) (2024-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
+## [6.0.10](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.9...peer-collections-v6.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/utils bumped from ^6.1.2 to ^6.1.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+
+## [6.0.9](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.8...peer-collections-v6.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+
+## [6.0.8](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.7...peer-collections-v6.0.8) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/utils bumped from ^6.1.0 to ^6.1.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+
+## [6.0.7](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.6...peer-collections-v6.0.7) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.0.6 to ^6.1.0
+
 ## [6.0.6](https://github.com/libp2p/js-libp2p/compare/peer-collections-v6.0.5...peer-collections-v6.0.6) (2024-09-27)
 
 

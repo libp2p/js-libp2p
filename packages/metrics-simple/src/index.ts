@@ -551,6 +551,15 @@ class SimpleMetrics implements Metrics, Startable {
 
     return metric
   }
+
+  createTrace (): any {
+    // no-op
+  }
+
+  traceFunction <T extends (...args: any[]) => any> (name: string, fn: T): T {
+    // no-op
+    return fn
+  }
 }
 
 export function simpleMetrics (init: SimpleMetricsInit): (components: unknown) => Metrics {
