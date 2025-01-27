@@ -34,6 +34,9 @@
  */
 
 import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
+import { isAsyncGenerator } from '@libp2p/utils/is-async-generator'
+import { isGenerator } from '@libp2p/utils/is-generator'
+import { isPromise } from '@libp2p/utils/is-promise'
 import { trace, metrics, context, SpanStatusCode } from '@opentelemetry/api'
 import each from 'it-foreach'
 import { OpenTelemetryCounterGroup } from './counter-group.js'
@@ -438,10 +441,6 @@ export function openTelemetryMetrics (init: OpenTelemetryMetricsInit = {}): (com
   return (components: OpenTelemetryComponents) => new OpenTelemetryMetrics(components, init)
 }
 
-export function isPromise <T = any> (obj?: any): obj is Promise<T> {
-  return typeof obj?.then === 'function'
-}
-
 async function wrapPromise (promise: Promise<any>, span: Span, attributes: TraceAttributes, options?: TraceFunctionOptions<any, any>): Promise<any> {
   return promise
     .then(res => {
@@ -456,15 +455,6 @@ async function wrapPromise (promise: Promise<any>, span: Span, attributes: Trace
     .finally(() => {
       span.end()
     })
-}
-
-export function isGenerator (obj: unknown): obj is Generator {
-  if (obj == null) return false
-  const iterator = (obj as { [Symbol.iterator]?: unknown })?.[Symbol.iterator]
-  if (typeof iterator !== 'function') return false
-
-  const instance = obj as { next?: unknown }
-  return typeof instance.next === 'function'
 }
 
 function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes, options?: TraceGeneratorFunctionOptions<any, any, any>): Generator {
@@ -505,17 +495,6 @@ function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes,
   }
 
   return wrapped
-}
-
-export function isAsyncGenerator (obj: unknown): obj is AsyncGenerator {
-  if (obj == null) return false
-  const asyncIterator = (obj as { [Symbol.asyncIterator]?: unknown })?.[
-    Symbol.asyncIterator
-  ]
-  if (typeof asyncIterator !== 'function') return false
-
-  const instance = obj as { next?: unknown }
-  return typeof instance.next === 'function'
 }
 
 function wrapAsyncGenerator (gen: AsyncGenerator, span: Span, attributes: TraceAttributes, options?: TraceGeneratorFunctionOptions<any, any, any>): AsyncGenerator {
