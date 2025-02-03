@@ -44,6 +44,22 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.16](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.15...dcutr-v2.0.16) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/interface-internal bumped from ^2.2.2 to ^2.2.3
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+
 ## [2.0.15](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.14...dcutr-v2.0.15) (2025-01-07)
 
 

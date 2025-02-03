@@ -36,6 +36,29 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.1...utils-v6.4.0) (2025-02-03)
+
+
+### Features
+
+* add generator detection functions to utils ([#2923](https://github.com/libp2p/js-libp2p/issues/2923)) ([31a15a1](https://github.com/libp2p/js-libp2p/commit/31a15a1483e0af0f9ede24de0a7f1d24bf9d408d))
+
+
+### Bug Fixes
+
+* use isPromise/etc function from utils ([#2925](https://github.com/libp2p/js-libp2p/issues/2925)) ([a32fbeb](https://github.com/libp2p/js-libp2p/commit/a32fbeb1dbf1ffbb59445f56ba011af4123ab085))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
 ## [6.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.0...utils-v6.3.1) (2025-01-07)
 
 
