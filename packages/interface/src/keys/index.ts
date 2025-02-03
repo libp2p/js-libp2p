@@ -193,7 +193,7 @@ export interface Ed25519PrivateKey {
   readonly publicKey: Ed25519PublicKey
 
   /**
-   * The raw public key bytes
+   * The raw private key bytes
    */
   readonly raw: Uint8Array
 
@@ -221,7 +221,7 @@ export interface Secp256k1PrivateKey {
   readonly publicKey: Secp256k1PublicKey
 
   /**
-   * The raw public key bytes
+   * The raw private key bytes
    */
   readonly raw: Uint8Array
 
