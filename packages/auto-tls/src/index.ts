@@ -60,7 +60,7 @@
  */
 
 import { AutoTLS as AutoTLSClass } from './auto-tls.js'
-import type { PeerId, PrivateKey, ComponentLogger, Libp2pEvents, TypedEventTarget, TLSCertificate } from '@libp2p/interface'
+import type { PeerId, PrivateKey, ComponentLogger, Libp2pEvents, TypedEventTarget, TLSCertificate, NodeInfo } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
 import type { Datastore } from 'interface-datastore'
@@ -73,6 +73,7 @@ export interface AutoTLSComponents {
   events: TypedEventTarget<Libp2pEvents>
   keychain: Keychain
   datastore: Datastore
+  nodeInfo: NodeInfo
 }
 
 export interface AutoTLSInit {

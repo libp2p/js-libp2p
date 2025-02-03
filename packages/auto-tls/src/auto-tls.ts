@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { ClientAuth } from '@libp2p/http-fetch/auth'
 import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
@@ -340,7 +341,8 @@ export class AutoTLS implements AutoTLSInterface {
     const response = await this.clientAuth.authenticatedFetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': `${this.components.nodeInfo.name}/${this.components.nodeInfo.version} ${process.release.name}/${process.version.replaceAll('v', '')}`
       },
       body: JSON.stringify({
         Value: keyAuthorization,
