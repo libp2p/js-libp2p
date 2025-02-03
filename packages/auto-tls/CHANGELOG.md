@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.5](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.4...auto-tls-v1.0.5) (2025-02-03)
+
+
+### Bug Fixes
+
+* add toStringTag for auto-tls ([#2914](https://github.com/libp2p/js-libp2p/issues/2914)) ([06fc82d](https://github.com/libp2p/js-libp2p/commit/06fc82da85bdd4fdba5bba797135c7e8b2b10c53))
+
+
+### Documentation
+
+* wss as been replaced with tls/ws and autoNat is mandatory by default ([#2921](https://github.com/libp2p/js-libp2p/issues/2921)) ([827a38a](https://github.com/libp2p/js-libp2p/commit/827a38a3895df6eef2feab4c3a715e093f7e430d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/interface-internal bumped from ^2.2.2 to ^2.2.3
+    * @libp2p/keychain bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
 ## [1.0.4](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.3...auto-tls-v1.0.4) (2025-01-13)
 
 

@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.4.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.4.0...interface-v2.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Documentation
+
+* correct typo ([#2919](https://github.com/libp2p/js-libp2p/issues/2919)) ([d33abe8](https://github.com/libp2p/js-libp2p/commit/d33abe89d9ed54e910059efe4f9282fc18fe7317))
+
 ## [2.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.3.0...interface-v2.4.0) (2025-01-07)
 
 

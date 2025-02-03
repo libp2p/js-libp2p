@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.2.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.2...interface-internal-v2.2.3) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/peer-collections bumped from ^6.0.14 to ^6.0.15
+
 ## [2.2.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.1...interface-internal-v2.2.2) (2025-01-07)
 
 
