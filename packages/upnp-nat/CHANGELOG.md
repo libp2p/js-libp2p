@@ -64,6 +64,26 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.5...upnp-nat-v3.1.0) (2025-02-04)
+
+
+### Features
+
+* allow specifying UPnP gateways and external address ([#2937](https://github.com/libp2p/js-libp2p/issues/2937)) ([26313e6](https://github.com/libp2p/js-libp2p/commit/26313e6959513eeb6235662ad4b5dc53cfb61470))
+
+
+### Bug Fixes
+
+* increase initial gateway search interval ([#2936](https://github.com/libp2p/js-libp2p/issues/2936)) ([66c3ec5](https://github.com/libp2p/js-libp2p/commit/66c3ec5e1de2706de53e9b5261df8b470d2294a4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
 ## [3.0.5](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.0.4...upnp-nat-v3.0.5) (2025-02-03)
 
 
