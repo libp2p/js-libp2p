@@ -15,7 +15,7 @@ import { AutoTLS } from '../src/auto-tls.js'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME } from '../src/constants.js'
 import { importFromPem } from '../src/utils.js'
 import { CERT, CERT_FOR_OTHER_KEY, EXPIRED_CERT, INVALID_CERT, PRIVATE_KEY_PEM } from './fixtures/cert.js'
-import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PrivateKey, RSAPrivateKey, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, Peer, PeerId, PrivateKey, RSAPrivateKey, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager, NodeAddress } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
 import type { StubbedInstance } from 'sinon-ts'
@@ -28,6 +28,7 @@ interface StubbedAutoTLSComponents {
   events: TypedEventTarget<Libp2pEvents>
   keychain: StubbedInstance<Keychain>
   datastore: Datastore
+  nodeInfo: NodeInfo
 }
 
 describe('auto-tls', () => {
@@ -46,7 +47,11 @@ describe('auto-tls', () => {
       addressManager: stubInterface<AddressManager>(),
       events: new TypedEventEmitter(),
       keychain: stubInterface<Keychain>(),
-      datastore: new MemoryDatastore()
+      datastore: new MemoryDatastore(),
+      nodeInfo: {
+        name: 'name',
+        version: 'version'
+      }
     }
 
     // a mixture of LAN and public addresses

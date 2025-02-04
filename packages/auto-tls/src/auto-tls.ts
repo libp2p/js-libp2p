@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { ClientAuth } from '@libp2p/http-fetch/auth'
 import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
@@ -53,6 +54,7 @@ export class AutoTLS implements AutoTLSInterface {
   private readonly domain
   private readonly domainMapper: DomainMapper
   private readonly autoConfirmAddress: boolean
+  private readonly userAgent: string
 
   constructor (components: AutoTLSComponents, init: AutoTLSInit = {}) {
     this.log = components.logger.forComponent('libp2p:auto-tls')
@@ -77,6 +79,8 @@ export class AutoTLS implements AutoTLSInterface {
     const base36EncodedPeer = base36.encode(this.components.peerId.toCID().bytes)
     this.domain = `${base36EncodedPeer}.${this.forgeDomain}`
     this.email = `${base36EncodedPeer}@${this.forgeDomain}`
+    this.userAgent = init.userAgent ?? `${this.components.nodeInfo.name}/${this.components.nodeInfo.version} ${process.release.name}/${process.version.replaceAll('v', '')}`
+    acme.axios.defaults.headers.common['User-Agent'] = this.userAgent
 
     this.domainMapper = new DomainMapper(components, {
       ...init,
@@ -340,7 +344,8 @@ export class AutoTLS implements AutoTLSInterface {
     const response = await this.clientAuth.authenticatedFetch(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': this.userAgent
       },
       body: JSON.stringify({
         Value: keyAuthorization,
