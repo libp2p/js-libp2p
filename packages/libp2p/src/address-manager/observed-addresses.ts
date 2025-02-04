@@ -84,6 +84,7 @@ export class ObservedAddresses {
     }
     const startingConfidence = metadata.verified
     metadata.verified = true
+    metadata.expires = Date.now() + ttl
     metadata.lastVerified = Date.now()
 
     this.log('marking observed address %a as verified', addrString)
