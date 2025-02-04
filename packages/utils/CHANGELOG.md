@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.5.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.4.0...utils-v6.5.0) (2025-02-04)
+
+
+### Features
+
+* allow changing repeating task interval and timeout ([#2934](https://github.com/libp2p/js-libp2p/issues/2934)) ([d708bb6](https://github.com/libp2p/js-libp2p/commit/d708bb6c848a548d7e5e88bdd623b00e08fa31c8))
+
 ## [6.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.1...utils-v6.4.0) (2025-02-03)
 
 

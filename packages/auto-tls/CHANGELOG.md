@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.6](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.5...auto-tls-v1.0.6) (2025-02-04)
+
+
+### Bug Fixes
+
+* send user agent during auto tls ([#2932](https://github.com/libp2p/js-libp2p/issues/2932)) ([80ddad5](https://github.com/libp2p/js-libp2p/commit/80ddad5bbbed06552d805cab4d341367300a4388))
+
+
+### Documentation
+
+* fix syntax of example in auto-tls module ([#2938](https://github.com/libp2p/js-libp2p/issues/2938)) ([bf0f74d](https://github.com/libp2p/js-libp2p/commit/bf0f74d662a5219cce7082cc7a3230486325c6e9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p/compare/auto-tls-v1.0.4...auto-tls-v1.0.5) (2025-02-03)
 
 

@@ -70,6 +70,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.1.4](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.3...websockets-v9.1.4) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
 ## [9.1.3](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.2...websockets-v9.1.3) (2025-02-03)
 
 

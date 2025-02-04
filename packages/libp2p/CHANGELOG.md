@@ -110,6 +110,23 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.5.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.1...libp2p-v2.5.2) (2025-02-04)
+
+
+### Bug Fixes
+
+* set expires on observed address ([#2935](https://github.com/libp2p/js-libp2p/issues/2935)) ([d61cbac](https://github.com/libp2p/js-libp2p/commit/d61cbacec14b9cdc61984d3b9e67f20eec038c4e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+    * @libp2p/peer-collections bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/peer-store bumped from ^11.0.15 to ^11.0.16
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
 ## [2.5.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.0...libp2p-v2.5.1) (2025-02-03)
 
 

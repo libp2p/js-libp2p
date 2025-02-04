@@ -50,6 +50,15 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.16...ping-v2.0.17) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+
 ## [2.0.16](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.15...ping-v2.0.16) (2025-02-03)
 
 
