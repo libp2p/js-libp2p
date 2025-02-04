@@ -109,6 +109,74 @@ export interface UPnPNATInit {
    * @default false
    */
   autoConfirmAddress?: boolean
+
+  /**
+   * How often to search for network gateways in ms.
+   *
+   * This interval is used before a gateway has been found on the network, after
+   * that it switches to `gatewaySearchInterval` which lowers the frequency of
+   * the search.
+   *
+   * @default 5_000
+   */
+  initialGatewaySearchInterval?: number
+
+  /**
+   * How often to send the `M-SEARCH` SSDP message during a gateway search in
+   * ms.
+   *
+   * Some routers are flaky and may not respond to every query so decreasing
+   * this will increase the number of search messages sent before the timeout.
+   *
+   * This interval is used before a gateway has been found on the network, after
+   * that it switches to `gatewaySearchMessageInterval` which lowers the
+   * frequency of search messages sent.
+   *
+   * @default 1_000
+   */
+  initialGatewaySearchMessageInterval?: number
+
+  /**
+   * How long to search for gateways for before giving up in ms.
+   *
+   * This timeout is used before a gateway has been found on the network, after
+   * that it switches to `gatewaySearchTimeout` which increases the timeout to
+   * give gateways more time to respond.
+   *
+   * @default 5_000
+   */
+  initialGatewaySearchTimeout?: number
+
+  /**
+   * How often to search for network gateways in ms.
+   *
+   * This interval is used after a gateway has been found on the network.
+   *
+   * @default 300_000
+   */
+  gatewaySearchInterval?: number
+
+  /**
+   * How often to send the `M-SEARCH` SSDP message during a gateway search in
+   * ms.
+   *
+   * Some routers are flaky and may not respond to every query so decreasing
+   * this will increase the number of search messages sent before the timeout.
+   *
+   * This interval is used after a gateway has been found on the network.
+   *
+   * @default 10_000
+   */
+  gatewaySearchMessageInterval?: number
+
+  /**
+   * How long to search for gateways for before giving up in ms.
+   *
+   * This timeout is used after a gateway has been found on the network.
+   *
+   * @default 60_000
+   */
+  gatewaySearchTimeout?: number
 }
 
 export interface UPnPNATComponents {

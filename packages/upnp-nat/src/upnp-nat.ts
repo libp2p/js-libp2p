@@ -46,7 +46,13 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
 
     // trigger update when we discovery gateways on the network
     this.gatewayFinder = new GatewayFinder(components, {
-      portMappingClient: this.portMappingClient
+      portMappingClient: this.portMappingClient,
+      initialSearchInterval: init.initialGatewaySearchInterval,
+      initialSearchTimeout: init.initialGatewaySearchTimeout,
+      initialSearchMessageInterval: init.initialGatewaySearchMessageInterval,
+      searchInterval: init.gatewaySearchInterval,
+      searchTimeout: init.gatewaySearchTimeout,
+      searchMessageInterval: init.gatewaySearchMessageInterval
     })
 
     this.onGatewayDiscovered = this.onGatewayDiscovered.bind(this)
