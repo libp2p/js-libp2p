@@ -33,6 +33,46 @@
  *   }
  * })
  * ```
+ *
+ * @example Manually specifying gateways and external ports
+ *
+ * Some ISP-provided routers are underpowered and may require rebooting before
+ * they will respond to SSDP M-SEARCH messages.
+ *
+ * You can manually specify your external address and/or gateways, though note
+ * that those gateways will still need to have UPnP enabled in order for libp2p
+ * to configure mapping of external ports (for IPv4) and/or opening pinholes in
+ * the firewall (for IPv6).
+ *
+ * ```typescript
+ * import { createLibp2p } from 'libp2p'
+ * import { tcp } from '@libp2p/tcp'
+ * import { uPnPNAT } from '@libp2p/upnp-nat'
+ *
+ * const node = await createLibp2p({
+ *   addresses: {
+ *     listen: [
+ *       '/ip4/0.0.0.0/tcp/0'
+ *     ]
+ *   },
+ *   transports: [
+ *     tcp()
+ *   ],
+ *   services: {
+ *     upnpNAT: uPnPNAT({
+ *       // manually specify external address - this will normally be an IPv4
+ *       // address that the router is performing NAT with
+ *       externalAddress: '92.137.164.96',
+ *       gateways: [
+ *         // an IPv4 gateway
+ *         'http://192.168.1.1:8080/path/to/descriptor.xml',
+ *         // an IPv6 gateway
+ *         'http://[xx:xx:xx:xx]:8080/path/to/descriptor.xml'
+ *       ]
+ *     })
+ *   }
+ * })
+ * ```
  */
 
 import { UPnPNAT as UPnPNATClass } from './upnp-nat.js'
@@ -50,6 +90,14 @@ export interface PMPOptions {
 }
 
 export interface UPnPNATInit {
+  /**
+   * By default we query discovered/configured gateways for their external
+   * address. To specify it manually instead, pass a value here.
+   *
+   * Typically this would be an IPv4 address that the router performs NAT with.
+   */
+  externalAddress?: string
+
   /**
    * Check if the external address has changed this often in ms. Ignored if an
    * external address is specified.
@@ -109,6 +157,23 @@ export interface UPnPNATInit {
    * @default false
    */
   autoConfirmAddress?: boolean
+
+  /**
+   * By default we search for local gateways using SSDP M-SEARCH messages. To
+   * manually specify a gateway instead, pass values here.
+   *
+   * A lot of ISP-provided gateway/routers are underpowered so may need
+   * rebooting before they will respond to M-SEARCH messages.
+   *
+   * Each value is an IPv4 or IPv6 URL of the UPnP device descriptor document,
+   * e.g. `http://192.168.1.1:8080/description.xml`. Please see the
+   * documentation of your gateway to discover the URL.
+   *
+   * Note that some gateways will randomise the port/path the descriptor
+   * document is served from and even change it over time so you may be forced
+   * to use an SSDP search instead.
+   */
+  gateways?: string[]
 
   /**
    * How often to search for network gateways in ms.

@@ -1,15 +1,16 @@
 import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
 import { DEFAULT_GATEWAY_SEARCH_INTERVAL, DEFAULT_GATEWAY_SEARCH_MESSAGE_INTERVAL, DEFAULT_GATEWAY_SEARCH_TIMEOUT, DEFAULT_INITIAL_GATEWAY_SEARCH_INTERVAL, DEFAULT_INITIAL_GATEWAY_SEARCH_MESSAGE_INTERVAL, DEFAULT_INITIAL_GATEWAY_SEARCH_TIMEOUT } from './constants.js'
+import type { GatewayFinder, GatewayFinderEvents } from './upnp-nat.js'
 import type { Gateway, UPnPNAT } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils/repeating-task'
 
-export interface GatewayFinderComponents {
+export interface SearchGatewayFinderComponents {
   logger: ComponentLogger
 }
 
-export interface GatewayFinderInit {
+export interface SearchGatewayFinderInit {
   portMappingClient: UPnPNAT
   initialSearchInterval?: number
   initialSearchTimeout?: number
@@ -19,18 +20,14 @@ export interface GatewayFinderInit {
   searchMessageInterval?: number
 }
 
-export interface GatewayFinderEvents {
-  'gateway': CustomEvent<Gateway>
-}
-
-export class GatewayFinder extends TypedEventEmitter<GatewayFinderEvents> {
+export class SearchGatewayFinder extends TypedEventEmitter<GatewayFinderEvents> implements GatewayFinder {
   private readonly log: Logger
   private readonly gateways: Gateway[]
   private readonly findGateways: RepeatingTask
   private readonly portMappingClient: UPnPNAT
   private started: boolean
 
-  constructor (components: GatewayFinderComponents, init: GatewayFinderInit) {
+  constructor (components: SearchGatewayFinderComponents, init: SearchGatewayFinderInit) {
     super()
 
     this.log = components.logger.forComponent('libp2p:upnp-nat')
@@ -90,9 +87,6 @@ export class GatewayFinder extends TypedEventEmitter<GatewayFinderEvents> {
     await start(this.findGateways)
   }
 
-  /**
-   * Stops the NAT manager
-   */
   async stop (): Promise<void> {
     await stop(this.findGateways)
     this.started = false
