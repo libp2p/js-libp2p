@@ -21,7 +21,7 @@
       "path": "../logger"
     },
     {
-      "path": "../peer-id-factory"
+      "path": "../peer-id"
     }
   ]
 }

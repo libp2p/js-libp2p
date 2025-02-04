@@ -1,9 +1,4 @@
-// MaxRecordAge specifies the maximum time that any node will hold onto a record
-// from the time its received. This does not apply to any other forms of validity that
-// the record may contain.
-// For example, a record may contain an ipns entry with an EOL saying its valid
-// until the year 2020 (a great time in the future). For that record to stick around
-// it must be rebroadcasted more frequently than once every 'MaxRecordAge'
+import { KEEP_ALIVE } from '@libp2p/interface'
 
 export const second = 1000
 export const minute = 60 * second
@@ -13,15 +8,24 @@ export const MAX_RECORD_AGE = 36 * hour
 
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
-export const RECORD_KEY_PREFIX = '/dht/record'
-
-export const PROVIDER_KEY_PREFIX = '/dht/provider'
-
-export const PROVIDERS_LRU_CACHE_SIZE = 256
-
-export const PROVIDERS_VALIDITY = 24 * hour
+/**
+ * @see https://github.com/libp2p/specs/blob/master/kad-dht/README.md#content-provider-advertisement-and-discovery
+ */
+export const PROVIDERS_VALIDITY = 48 * hour
 
 export const PROVIDERS_CLEANUP_INTERVAL = hour
+
+// Re-run the provide operation when the expiry of our provider records is within this amount
+export const REPROVIDE_THRESHOLD = 24 * hour
+
+// How many reprovide operations to run at once
+export const REPROVIDE_CONCURRENCY = 10
+
+// How long to let the reprovide queue grow before we wait for capacity
+export const REPROVIDE_MAX_QUEUE_SIZE = 16_384
+
+// How often to check if records need reproviding
+export const REPROVIDE_INTERVAL = hour
 
 export const READ_MESSAGE_TIMEOUT = 10 * second
 
@@ -51,3 +55,6 @@ export const TABLE_REFRESH_QUERY_TIMEOUT = 30 * second
 
 // When a timeout is not specified, run a query for this long
 export const DEFAULT_QUERY_TIMEOUT = 180 * second
+
+// used to ensure connections to our closest peers remain open
+export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-kad-dht`

@@ -17,5 +17,5 @@
     }
   ],
   "secureChannels": ["noise"],
-  "muxers": ["mplex", "yamux"]
+  "muxers": ["yamux", "mplex"]
 }

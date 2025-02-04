@@ -57,7 +57,7 @@
  */
 
 import { randomBytes } from '@libp2p/crypto'
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { byteStream } from 'it-byte-stream'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
@@ -67,7 +67,6 @@ import {
   createUnboxStream,
   decodeV1PSK
 } from './crypto.js'
-import * as Errors from './errors.js'
 import { NONCE_LENGTH } from './key-generator.js'
 import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -82,7 +81,8 @@ export interface ProtectorInit {
   psk: Uint8Array
   /**
    * The initial nonce exchange must complete within this many milliseconds
-   * (default: 1000)
+   *
+   * @default 1000
    */
   timeout?: number
 }
@@ -110,6 +110,8 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     this.tag = decodedPSK.tag ?? ''
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/pnet'
+
   /**
    * Takes a given Connection and creates a private encryption stream
    * between its two peers from the PSK the Protector instance was
@@ -117,7 +119,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    */
   async protect (connection: MultiaddrConnection): Promise<MultiaddrConnection> {
     if (connection == null) {
-      throw new CodeError(Errors.NO_HANDSHAKE_CONNECTION, Errors.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('No connection for the handshake provided')
     }
 
     // Exchange nonces

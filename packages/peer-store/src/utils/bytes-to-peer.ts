@@ -1,4 +1,5 @@
-import { peerIdFromPeerId } from '@libp2p/peer-id'
+import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId, Peer, Tag } from '@libp2p/interface'
@@ -7,10 +8,8 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   const peer = PeerPB.decode(buf)
 
   if (peer.publicKey != null && peerId.publicKey == null) {
-    peerId = peerIdFromPeerId({
-      ...peerId,
-      publicKey: peerId.publicKey
-    })
+    const publicKey = publicKeyFromProtobuf(peer.publicKey)
+    peerId = peerIdFromPublicKey(publicKey)
   }
 
   const tags = new Map<string, Tag>()

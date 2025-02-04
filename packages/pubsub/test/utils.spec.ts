@@ -1,7 +1,6 @@
-import { peerIdFromBytes, peerIdFromString } from '@libp2p/peer-id'
-import * as PeerIdFactory from '@libp2p/peer-id-factory'
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as utils from '../src/utils.js'
 import type { Message, PubSubRPCMessage } from '@libp2p/interface'
 
@@ -15,10 +14,10 @@ describe('utils', () => {
     expect(first).to.not.equal(second)
   })
 
-  it('msgId should not generate same ID for two different Uint8Arrays', () => {
-    const peerId = peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22')
-    const msgId0 = utils.msgId(peerId.multihash.bytes, 1n)
-    const msgId1 = utils.msgId(peerId.multihash.bytes, 2n)
+  it('msgId should not generate same ID for two different Uint8Arrays', async () => {
+    const key = await generateKeyPair('RSA', 512)
+    const msgId0 = utils.msgId(key.publicKey, 1n)
+    const msgId1 = utils.msgId(key.publicKey, 2n)
     expect(msgId0).to.not.deep.equal(msgId1)
   })
 
@@ -41,40 +40,44 @@ describe('utils', () => {
     expect(utils.ensureArray([1, 2])).to.be.eql([1, 2])
   })
 
-  it('converts an OUT msg.from to binary', () => {
-    const binaryId = uint8ArrayFromString('1220e2187eb3e6c4fb3e7ff9ad4658610624a6315e0240fc6f37130eedb661e939cc', 'base16')
-    const stringId = 'QmdZEWgtaWAxBh93fELFT298La1rsZfhiC2pqwMVwy3jZM'
+  it('converts an OUT msg.from to binary', async () => {
+    const edKey = await generateKeyPair('Ed25519')
+    const edPeer = peerIdFromPrivateKey(edKey)
+
+    const rsaKey = await generateKeyPair('RSA', 512)
+    const rsaPeer = peerIdFromPrivateKey(rsaKey)
+
     const m: Message[] = [{
       type: 'signed',
-      from: peerIdFromBytes(binaryId),
+      from: edPeer,
       topic: '',
       data: new Uint8Array(),
       sequenceNumber: 1n,
       signature: new Uint8Array(),
-      key: new Uint8Array()
+      key: edPeer.publicKey
     }, {
       type: 'signed',
-      from: peerIdFromString(stringId),
+      from: rsaPeer,
       topic: '',
       data: new Uint8Array(),
       sequenceNumber: 1n,
       signature: new Uint8Array(),
-      key: new Uint8Array()
+      key: rsaKey.publicKey
     }]
     const expected: PubSubRPCMessage[] = [{
-      from: binaryId,
+      from: edPeer.toMultihash().bytes,
       topic: '',
       data: new Uint8Array(),
       sequenceNumber: utils.bigIntToBytes(1n),
       signature: new Uint8Array(),
-      key: new Uint8Array()
+      key: publicKeyToProtobuf(edPeer.publicKey)
     }, {
-      from: binaryId,
+      from: rsaPeer.toMultihash().bytes,
       topic: '',
       data: new Uint8Array(),
       sequenceNumber: utils.bigIntToBytes(1n),
       signature: new Uint8Array(),
-      key: new Uint8Array()
+      key: publicKeyToProtobuf(rsaKey.publicKey)
     }]
     for (let i = 0; i < m.length; i++) {
       expect(utils.toRpcMessage(m[i])).to.deep.equal(expected[i])
@@ -97,33 +100,37 @@ describe('utils', () => {
   })
 
   it('ensures message is signed if public key is extractable', async () => {
-    const dummyPeerID = await PeerIdFactory.createRSAPeerId()
+    const dummyKeyPair = await generateKeyPair('RSA', 1024)
+    const dummyPeerID = peerIdFromPrivateKey(dummyKeyPair)
+
+    const secp256k1Key = await generateKeyPair('secp256k1')
+    const secp256k1Peer = peerIdFromPrivateKey(secp256k1Key)
 
     const cases: PubSubRPCMessage[] = [
       {
-        from: (await PeerIdFactory.createSecp256k1PeerId()).toBytes(),
+        from: secp256k1Peer.toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0)
       },
       {
-        from: peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22').toBytes(),
+        from: peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22').toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0)
       },
       {
-        from: dummyPeerID.toBytes(),
+        from: dummyPeerID.toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0),
-        key: dummyPeerID.publicKey
+        key: publicKeyToProtobuf(dummyKeyPair.publicKey)
       },
       {
-        from: (await PeerIdFactory.createEd25519PeerId()).toBytes(),
+        from: (peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),

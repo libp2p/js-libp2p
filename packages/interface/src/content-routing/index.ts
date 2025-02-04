@@ -46,6 +46,13 @@ export interface ContentRouting {
   provide(cid: CID, options?: RoutingOptions): Promise<void>
 
   /**
+   * If network peers need to be periodically reminded that the caller can
+   * provide content corresponding to the passed CID, call this function to no
+   * longer remind them.
+   */
+  cancelReprovide (key: CID, options?: RoutingOptions): Promise<void>
+
+  /**
    * Find the providers of the passed CID.
    *
    * @example

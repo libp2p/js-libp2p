@@ -35,7 +35,7 @@ describe('restrict size', () => {
         async (source) => { await drain(source) }
       )
     } catch (err: any) {
-      expect(err).to.have.property('code', 'ERR_MSG_TOO_BIG')
+      expect(err).to.have.property('name', 'InvalidMessageError')
       expect(output).to.have.length(3)
       expect(output[0]).to.deep.equal(input[0])
       expect(output[1]).to.deep.equal(input[1])
@@ -92,7 +92,7 @@ describe('restrict size', () => {
         async (source) => { await drain(source) }
       )
     } catch (err: any) {
-      expect(err).to.have.property('code', 'ERR_MSG_QUEUE_TOO_BIG')
+      expect(err).to.have.property('name', 'InvalidMessageError')
       expect(output).to.have.length(0)
       return
     }
@@ -115,7 +115,7 @@ describe('restrict size', () => {
         async (source) => { await drain(source) }
       )
     } catch (err: any) {
-      expect(err).to.have.property('code', 'ERR_MSG_QUEUE_TOO_BIG')
+      expect(err).to.have.property('name', 'InvalidMessageError')
       expect(output).to.have.length(0)
       return
     }

@@ -1,13 +1,16 @@
 /* eslint-env mocha */
 
-import { ERR_INVALID_PARAMETERS, start, stop } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { Fetch } from '../src/fetch.js'
 import { FetchRequest, FetchResponse } from '../src/pb/proto.js'
 import type { ComponentLogger, Connection, Stream, PeerId } from '@libp2p/interface'
@@ -75,7 +78,7 @@ describe('fetch', () => {
 
   describe('outgoing', () => {
     it('should be able to fetch from another peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
       const value = Uint8Array.from([0, 1, 2, 3, 4])
 
@@ -88,7 +91,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.OK,
@@ -99,7 +102,7 @@ describe('fetch', () => {
     })
 
     it('should be handle NOT_FOUND from the other peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {
@@ -111,7 +114,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.NOT_FOUND
@@ -121,7 +124,7 @@ describe('fetch', () => {
     })
 
     it('should be handle ERROR from the other peer', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {
@@ -133,18 +136,18 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.ERROR
       }, FetchResponse)
 
       await expect(result).to.eventually.be.rejected
-        .with.property('code', ERR_INVALID_PARAMETERS)
+        .with.property('name', 'ProtocolError')
     })
 
     it('should time out fetching from another peer when waiting for the record', async () => {
-      const remotePeer = await createEd25519PeerId()
+      const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = 'key'
 
       const {
@@ -158,7 +161,7 @@ describe('fetch', () => {
       await expect(fetch.fetch(remotePeer, key, {
         signal: AbortSignal.timeout(10)
       })).to.eventually.be.rejected
-        .with.property('code', 'ABORT_ERR')
+        .with.property('name', 'AbortError')
 
       expect(outgoingStream.abort.called).to.be.true()
     })
@@ -176,7 +179,7 @@ describe('fetch', () => {
       } = createStreams(components)
 
       fetch.registerLookupFunction('/test', async (k) => {
-        expect(k).to.equal(key)
+        expect(k).to.equalBytes(uint8arrayFromString(key))
         return value
       })
 
@@ -188,7 +191,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -217,7 +220,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -241,7 +244,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -264,7 +267,7 @@ describe('fetch', () => {
       })
 
       expect(incomingStream.abort.called).to.be.true()
-      expect(incomingStream.abort.getCall(0).args[0]).to.have.property('code', 'ABORT_ERR')
+      expect(incomingStream.abort.getCall(0).args[0]).to.have.property('name', 'AbortError')
     })
   })
 })

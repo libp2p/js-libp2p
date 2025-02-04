@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/record",
-  "version": "4.0.1",
+  "version": "4.0.4",
   "description": "libp2p record implementation",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/record#readme",
@@ -57,17 +57,17 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "protons-runtime": "^5.4.0",
+    "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.3"
+    "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
-    "@types/which": "^3.0.3",
-    "aegir": "^42.2.5",
-    "multiformats": "^13.1.0",
-    "protons": "^7.5.0"
+    "@types/which": "^3.0.4",
+    "aegir": "^45.0.5",
+    "multiformats": "^13.3.1",
+    "protons": "^7.6.0"
   },
   "sideEffects": false
 }

@@ -81,6 +81,390 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.3.1](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.3.0...prometheus-metrics-v4.3.1) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface-compliance-tests bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
+## [4.3.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.10...prometheus-metrics-v4.3.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface-compliance-tests bumped from ^6.2.2 to ^6.2.3
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+
+## [4.2.10](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.9...prometheus-metrics-v4.2.10) (2024-12-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.1 to ^6.2.2
+
+## [4.2.9](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.8...prometheus-metrics-v4.2.9) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.0 to ^6.2.1
+
+## [4.2.8](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.7...prometheus-metrics-v4.2.8) (2024-12-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface-compliance-tests bumped from ^6.1.11 to ^6.2.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+
+## [4.2.7](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.6...prometheus-metrics-v4.2.7) (2024-11-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.10 to ^6.1.11
+
+## [4.2.6](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.5...prometheus-metrics-v4.2.6) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface-compliance-tests bumped from ^6.1.9 to ^6.1.10
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+
+## [4.2.5](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.4...prometheus-metrics-v4.2.5) (2024-11-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.8 to ^6.1.9
+
+## [4.2.4](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.3...prometheus-metrics-v4.2.4) (2024-10-28)
+
+
+### Bug Fixes
+
+* fix metric group timers ([#2789](https://github.com/libp2p/js-libp2p/issues/2789)) ([a4b2db1](https://github.com/libp2p/js-libp2p/commit/a4b2db1e286052fbd0383cdb7be430590502c5dc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface-compliance-tests bumped from ^6.1.7 to ^6.1.8
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+
+## [4.2.3](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.2...prometheus-metrics-v4.2.3) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+
+## [4.2.2](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.1...prometheus-metrics-v4.2.2) (2024-10-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.2 to ^2.1.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.4 to ^5.0.5
+    * @libp2p/interface-compliance-tests bumped from ^6.1.5 to ^6.1.6
+    * @libp2p/logger bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-id bumped from ^5.0.4 to ^5.0.5
+
+## [4.2.1](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.2.0...prometheus-metrics-v4.2.1) (2024-10-05)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.4 to ^6.1.5
+
+## [4.2.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.3...prometheus-metrics-v4.2.0) (2024-09-27)
+
+
+### Features
+
+* collect metrics on available storage ([#2730](https://github.com/libp2p/js-libp2p/issues/2730)) ([a74c75d](https://github.com/libp2p/js-libp2p/commit/a74c75d02404feae119f232424b430f904c9d8b5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.3 to ^6.1.4
+
+## [4.1.3](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.2...prometheus-metrics-v4.1.3) (2024-09-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.1.2 to ^6.1.3
+    * @libp2p/logger bumped from ^5.0.4 to ^5.1.0
+
+## [4.1.2](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.1...prometheus-metrics-v4.1.2) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.1 to ^2.1.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/interface-compliance-tests bumped from ^6.1.1 to ^6.1.2
+    * @libp2p/logger bumped from ^5.0.3 to ^5.0.4
+    * @libp2p/peer-id bumped from ^5.0.3 to ^5.0.4
+
+## [4.1.1](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.1.0...prometheus-metrics-v4.1.1) (2024-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.0 to ^2.1.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/interface-compliance-tests bumped from ^6.1.0 to ^6.1.1
+    * @libp2p/logger bumped from ^5.0.2 to ^5.0.3
+    * @libp2p/peer-id bumped from ^5.0.2 to ^5.0.3
+
+## [4.1.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.0.1...prometheus-metrics-v4.1.0) (2024-09-23)
+
+
+### Features
+
+* add histogram and summary metric types ([#2705](https://github.com/libp2p/js-libp2p/issues/2705)) ([21fe841](https://github.com/libp2p/js-libp2p/commit/21fe841f2584e0166253d78fc390401d7cee5601))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.1 to ^2.1.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/interface-compliance-tests bumped from ^6.0.1 to ^6.1.0
+    * @libp2p/logger bumped from ^5.0.1 to ^5.0.2
+    * @libp2p/peer-id bumped from ^5.0.1 to ^5.0.2
+
+## [4.0.1](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.0.0...prometheus-metrics-v4.0.1) (2024-09-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.0.0 to ^2.0.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/interface-compliance-tests bumped from ^6.0.0 to ^6.0.1
+    * @libp2p/logger bumped from ^5.0.0 to ^5.0.1
+    * @libp2p/peer-id bumped from ^5.0.0 to ^5.0.1
+
+## [4.0.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.5...prometheus-metrics-v4.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+
+### Bug Fixes
+
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.7.0 to ^2.0.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^4.1.9 to ^5.0.0
+    * @libp2p/interface-compliance-tests bumped from ^5.4.12 to ^6.0.0
+    * @libp2p/logger bumped from ^4.0.20 to ^5.0.0
+    * @libp2p/peer-id bumped from ^4.2.4 to ^5.0.0
+
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.4...prometheus-metrics-v3.1.5) (2024-08-15)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.3 to ^1.7.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.11 to ^5.4.12
+    * @libp2p/logger bumped from ^4.0.19 to ^4.0.20
+    * @libp2p/peer-id-factory bumped from ^4.2.3 to ^4.2.4
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.3...prometheus-metrics-v3.1.4) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.2 to ^1.6.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.10 to ^5.4.11
+    * @libp2p/logger bumped from ^4.0.18 to ^4.0.19
+    * @libp2p/peer-id-factory bumped from ^4.2.2 to ^4.2.3
+
+## [3.1.3](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.2...prometheus-metrics-v3.1.3) (2024-07-29)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.1 to ^1.6.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.9 to ^5.4.10
+    * @libp2p/logger bumped from ^4.0.17 to ^4.0.18
+    * @libp2p/peer-id-factory bumped from ^4.2.1 to ^4.2.2
+
+## [3.1.2](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.1...prometheus-metrics-v3.1.2) (2024-07-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.6.0 to ^1.6.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.8 to ^5.4.9
+    * @libp2p/logger bumped from ^4.0.16 to ^4.0.17
+    * @libp2p/peer-id-factory bumped from ^4.2.0 to ^4.2.1
+
+## [3.1.1](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.1.0...prometheus-metrics-v3.1.1) (2024-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.5.0 to ^1.6.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.7 to ^5.4.8
+    * @libp2p/logger bumped from ^4.0.15 to ^4.0.16
+    * @libp2p/peer-id-factory bumped from ^4.1.4 to ^4.2.0
+
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.25...prometheus-metrics-v3.1.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.1 to ^1.5.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.6 to ^5.4.7
+    * @libp2p/logger bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/peer-id-factory bumped from ^4.1.3 to ^4.1.4
+
+## [3.0.25](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.24...prometheus-metrics-v3.0.25) (2024-06-07)
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.4.0 to ^1.4.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.5 to ^5.4.6
+    * @libp2p/logger bumped from ^4.0.13 to ^4.0.14
+    * @libp2p/peer-id-factory bumped from ^4.1.2 to ^4.1.3
+
+## [3.0.24](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.23...prometheus-metrics-v3.0.24) (2024-05-17)
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^1.3.1 to ^1.4.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.4 to ^5.4.5
+    * @libp2p/logger bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/peer-id-factory bumped from ^4.1.1 to ^4.1.2
+
+## [3.0.23](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.22...prometheus-metrics-v3.0.23) (2024-05-14)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^5.4.3 to ^5.4.4
+
 ## [3.0.22](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v3.0.21...prometheus-metrics-v3.0.22) (2024-05-01)
 
 

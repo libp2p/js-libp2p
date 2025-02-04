@@ -16,6 +16,7 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
   - [Debugging](#debugging)
     - [Node](#node)
     - [Browser](#browser)
+  - [React Native](#react-native)
   - [What is next](#what-is-next)
 
 ## Install
@@ -106,7 +107,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()]
+  connectionEncrypters: [noise()]
 })
 ```
 
@@ -137,7 +138,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()]
 })
 ```
@@ -147,7 +148,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 - https://docs.libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
-- https://github.com/libp2p/specs/tree/master/mplex
+- https://github.com/libp2p/specs/tree/master/yamux
 </details>
 
 #### Running Libp2p
@@ -167,7 +168,7 @@ const node = await createLibp2p({
     listen: ['/ip4/127.0.0.1/tcp/8000/ws']
   },
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()]
 })
 
@@ -223,7 +224,7 @@ const bootstrapMultiaddrs = [
 
 const node = await createLibp2p({
   transports: [webSockets()],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   peerDiscovery: [
     bootstrap({
@@ -270,6 +271,10 @@ localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the
 // networking debug logs
 localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
 ```
+
+## React Native
+
+Libp2p can be used in React Native applications. However, there are some limitations and considerations to take into account as not all transports are supported and some of the underlying dependencies may not work as expected. There is on-going work to address these issues, particularly around the support of TCP. For a demo on how to use libp2p in a React Native application, see https://github.com/ipfs-shipyard/js-libp2p-react-native
 
 ## What is next
 

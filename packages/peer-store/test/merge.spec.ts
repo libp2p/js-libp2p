@@ -1,14 +1,18 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerData } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { pEvent } from 'p-event'
-import { PersistentPeerStore } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.js'
+import { peerIdToDatastoreKey } from '../src/utils/peer-id-to-datastore-key.js'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, PeerData } from '@libp2p/interface'
+import type { Datastore } from 'interface-datastore'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
@@ -17,17 +21,19 @@ const addr3 = multiaddr('/ip4/127.0.0.1/tcp/8002')
 describe('merge', () => {
   let peerId: PeerId
   let otherPeerId: PeerId
-  let peerStore: PersistentPeerStore
+  let peerStore: PeerStore
   let events: TypedEventTarget<Libp2pEvents>
+  let datastore: Datastore
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-    otherPeerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
-    peerStore = new PersistentPeerStore({
+    datastore = new MemoryDatastore()
+    peerStore = persistentPeerStore({
       peerId,
       events,
-      datastore: new MemoryDatastore(),
+      datastore,
       logger: defaultLogger()
     })
   })
@@ -246,5 +252,31 @@ describe('merge', () => {
     expect(updated).to.have.property('metadata').that.deep.equals(original.metadata)
     expect(updated).to.have.property('tags').that.deep.equals(original.tags)
     expect(updated).to.have.property('protocols').that.deep.equals(original.protocols)
+  })
+
+  it('should ignore corrupt peer store data', async () => {
+    const badPeer: PeerData = {
+      multiaddrs: [
+        addr1
+      ]
+    }
+    await peerStore.save(otherPeerId, badPeer)
+    const key = peerIdToDatastoreKey(otherPeerId)
+
+    // store unparsable data
+    await datastore.put(key, Uint8Array.from([0, 1, 2, 3, 4, 5]))
+
+    // update the peer
+    const peer: PeerData = {
+      multiaddrs: [
+        addr2
+      ]
+    }
+    const updated = await peerStore.merge(otherPeerId, peer)
+
+    expect(updated).to.have.property('addresses').that.deep.equals([{
+      multiaddr: addr2,
+      isCertified: false
+    }])
   })
 })

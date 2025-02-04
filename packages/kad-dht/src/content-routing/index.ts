@@ -50,6 +50,29 @@ export class ContentRouting {
     this.queryManager = queryManager
     this.routingTable = routingTable
     this.providers = providers
+
+    this.findProviders = components.metrics?.traceFunction('libp2p.kadDHT.findProviders', this.findProviders.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: (event, attrs: { providers?: string[] }) => {
+        if (event.name === 'PROVIDER') {
+          attrs.providers ??= []
+          attrs.providers.push(...event.providers.map(info => info.id.toString()))
+        }
+
+        return attrs
+      }
+    }) ?? this.findProviders
+    this.provide = components.metrics?.traceFunction('libp2p.kadDHT.provide', this.provide.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: (event, attrs: { providers?: string[] }) => {
+        if (event.name === 'PEER_RESPONSE' && event.messageName === 'ADD_PROVIDER') {
+          attrs.providers ??= []
+          attrs.providers.push(event.from.toString())
+        }
+
+        return attrs
+      }
+    }) ?? this.provide
   }
 
   /**
@@ -150,7 +173,7 @@ export class ContentRouting {
             multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
           })
         } catch (err: any) {
-          if (err.code !== 'ERR_NOT_FOUND') {
+          if (err.name !== 'NotFoundError') {
             throw err
           }
 

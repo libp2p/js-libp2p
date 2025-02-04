@@ -60,7 +60,7 @@ $ npm i @libp2p/pubsub
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pPubsub` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pPubsub` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/pubsub/dist/index.min.js"></script>

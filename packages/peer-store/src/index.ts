@@ -4,6 +4,7 @@
  * The peer store is where libp2p stores data about the peers it has encountered on the network.
  */
 
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
@@ -22,7 +23,7 @@ export interface PersistentPeerStoreComponents {
  * Return true to allow storing the passed multiaddr for the passed peer
  */
 export interface AddressFilter {
-  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean>
+  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean> | boolean
 }
 
 export interface PersistentPeerStoreInit {
@@ -32,7 +33,7 @@ export interface PersistentPeerStoreInit {
 /**
  * An implementation of PeerStore that stores data in a Datastore
  */
-export class PersistentPeerStore implements PeerStore {
+class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly peerId: PeerId
@@ -44,6 +45,8 @@ export class PersistentPeerStore implements PeerStore {
     this.peerId = components.peerId
     this.store = new PersistentStore(components, init)
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/peer-store'
 
   async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
     this.log.trace('forEach await read lock')
@@ -165,9 +168,10 @@ export class PersistentPeerStore implements PeerStore {
 
   async consumePeerRecord (buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean> {
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN)
+    const peerId = peerIdFromCID(envelope.publicKey.toCID())
 
-    if (expectedPeer?.equals(envelope.peerId) === false) {
-      this.log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, envelope.peerId)
+    if (expectedPeer?.equals(peerId) === false) {
+      this.log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, peerId)
       return false
     }
 
@@ -175,9 +179,9 @@ export class PersistentPeerStore implements PeerStore {
     let peer: Peer | undefined
 
     try {
-      peer = await this.get(envelope.peerId)
+      peer = await this.get(peerId)
     } catch (err: any) {
-      if (err.code !== 'ERR_NOT_FOUND') {
+      if (err.name !== 'NotFoundError') {
         throw err
       }
     }
@@ -215,4 +219,8 @@ export class PersistentPeerStore implements PeerStore {
       this.events.safeDispatchEvent('peer:update', { detail: result })
     }
   }
+}
+
+export function persistentPeerStore (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}): PeerStore {
+  return new PersistentPeerStore(components, init)
 }

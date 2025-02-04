@@ -1,8 +1,12 @@
-import { AbortError, CodeError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
+import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
+
+export type { Job, JobTimeline } from './job.js'
+export type { JobRecipient } from './recipient.js'
 
 export interface Comparator<T> {
   (a: T, b: T): -1 | 0 | 1
@@ -17,6 +21,14 @@ export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = Abor
    * @default Infinity
    */
   concurrency?: number
+
+  /**
+   * If the queue size grows to larger than this number the promise returned
+   * from the add function will reject
+   *
+   * @default Infinity
+   */
+  maxSize?: number
 
   /**
    * The name of the metric for the queue length
@@ -36,8 +48,8 @@ export interface QueueInit<JobReturnType, JobOptions extends AbortOptions = Abor
 
 export type JobStatus = 'queued' | 'running' | 'errored' | 'complete'
 
-export interface RunFunction<Options = AbortOptions, ReturnType = void> {
-  (opts?: Options): Promise<ReturnType>
+export interface RunFunction<Options extends AbortOptions = AbortOptions, ReturnType = void> {
+  (options: Options): Promise<ReturnType>
 }
 
 export interface JobMatcher<JobOptions extends AbortOptions = AbortOptions> {
@@ -111,6 +123,7 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
  */
 export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
+  public maxSize: number
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
   private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
@@ -119,6 +132,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     super()
 
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
+    this.maxSize = init.maxSize ?? Number.POSITIVE_INFINITY
     this.pending = 0
 
     if (init.metricName != null) {
@@ -174,7 +188,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
       this.pending++
 
-      job.run()
+      void job.run()
         .finally(() => {
           // remove the job from the queue
           for (let i = 0; i < this.queue.length; i++) {
@@ -209,9 +223,16 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
   async add (fn: RunFunction<JobOptions, JobReturnType>, options?: JobOptions): Promise<JobReturnType> {
     options?.signal?.throwIfAborted()
 
-    const job = new Job<JobOptions, JobReturnType>(fn, options)
+    if (this.size === this.maxSize) {
+      throw new QueueFullError()
+    }
 
-    const p = job.join(options)
+    const job = new Job<JobOptions, JobReturnType>(fn, options)
+    this.enqueue(job)
+    this.safeDispatchEvent('add')
+    this.tryToStartAnother()
+
+    return job.join(options)
       .then(result => {
         this.safeDispatchEvent('completed', { detail: result })
         this.safeDispatchEvent('success', { detail: { job, result } })
@@ -234,12 +255,6 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
         throw err
       })
-
-    this.enqueue(job)
-    this.safeDispatchEvent('add')
-    this.tryToStartAnother()
-
-    return p
   }
 
   /**
@@ -377,7 +392,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     // clear the queue and throw if the query is aborted
     const onSignalAbort = (): void => {
-      cleanup(new CodeError('Queue aborted', 'ERR_QUEUE_ABORTED'))
+      cleanup(new AbortError('Queue aborted'))
     }
 
     // add listeners

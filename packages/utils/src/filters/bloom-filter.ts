@@ -78,12 +78,8 @@ export class BloomFilter implements Filter {
   }
 
   setbit (bit: number): void {
-    let pos = 0
-    let shift = bit
-    while (shift > 7) {
-      pos++
-      shift -= 8
-    }
+    const pos = Math.floor(bit / 8)
+    const shift = bit % 8
 
     let bitfield = this.buffer[pos]
     bitfield |= (0x1 << shift)
@@ -91,12 +87,8 @@ export class BloomFilter implements Filter {
   }
 
   getbit (bit: number): boolean {
-    let pos = 0
-    let shift = bit
-    while (shift > 7) {
-      pos++
-      shift -= 8
-    }
+    const pos = Math.floor(bit / 8)
+    const shift = bit % 8
 
     const bitfield = this.buffer[pos]
     return (bitfield & (0x1 << shift)) !== 0

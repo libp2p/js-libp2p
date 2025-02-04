@@ -36,11 +36,11 @@
  * await node.dial(ma)
  *
  * // after a while the connection should automatically get upgraded to a
- * // direct connection (e.g. non-transient)
+ * // direct connection (e.g. non-limited)
  * while (true) {
  *   const connections = node.getConnections()
  *
- *   if (connections.find(conn => conn.transient === false)) {
+ *   if (connections.find(conn => conn.limits == null)) {
  *     console.info('have direct connection')
  *     break
  *   } else {
@@ -61,24 +61,32 @@ import type { AddressManager, ConnectionManager, Registrar, TransportManager } f
 
 export interface DCUtRServiceInit {
   /**
-   * How long we should wait for the connection upgrade to complete (default: 5s)
+   * How long we should wait for the connection upgrade to complete
+   *
+   * @default 5000
    */
   timeout?: number
 
   /**
-   * How many times to retry the connection upgrade (default: 3)
+   * How many times to retry the connection upgrade
+   *
+   * @default 3
    */
   retries?: number
 
   /**
    * How many simultaneous inbound DCUtR protocol streams to allow on each
-   * connection (default: 1)
+   * connection
+   *
+   * @default 1
    */
   maxInboundStreams?: number
 
   /**
    * How many simultaneous outbound DCUtR protocol streams to allow on each
-   * connection (default: 1)
+   * connection
+   *
+   * @default 1
    */
   maxOutboundStreams?: number
 }

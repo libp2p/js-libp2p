@@ -3,10 +3,10 @@
 js-libp2p is comprised of a number of components that work together to provide functionality such as dailling peers, managing connections, registering protocols, storing information about peers and much more. This document aims to provide a high level overview of the components and how they interact with each other.
 
 - [Libp2p Architecture](#libp2p-architecture)
-	- [Component Diagram](#component-diagram)
-	- [Sequence Diagrams](#sequence-diagrams)
-		- [Dialing a Peer](#dialing-a-peer)
-		- [Opening a stream on a connection](#opening-a-stream-on-a-connection)
+  - [Component Diagram](#component-diagram)
+  - [Sequence Diagrams](#sequence-diagrams)
+    - [Dialing a Peer](#dialing-a-peer)
+    - [Opening a stream on a connection](#opening-a-stream-on-a-connection)
 
 ## Component Diagram
 
@@ -57,7 +57,6 @@ flowchart TB
         subgraph Multiplexer[Stream Multiplexers]
             direction TB
             Yamux
-            Mplex
         end
 
         Multiplexer ~~~ Encryption ~~~ Transports

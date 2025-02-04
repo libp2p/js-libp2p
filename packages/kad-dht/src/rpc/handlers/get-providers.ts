@@ -1,4 +1,6 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidMessageError } from '@libp2p/interface'
+import all from 'it-all'
+import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
@@ -17,11 +19,13 @@ export interface GetProvidersHandlerInit {
 }
 
 export interface GetProvidersHandlerComponents {
+  peerId: PeerId
   peerStore: PeerStore
   logger: ComponentLogger
 }
 
 export class GetProvidersHandler implements DHTMessageHandler {
+  private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
   private readonly peerStore: PeerStore
@@ -32,6 +36,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     const { peerRouting, providers, logPrefix } = init
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:get-providers`)
+    this.peerId = components.peerId
     this.peerStore = components.peerStore
     this.peerRouting = peerRouting
     this.providers = providers
@@ -40,41 +45,47 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
     if (msg.key == null) {
-      throw new CodeError('Invalid GET_PROVIDERS message received - key was missing', 'ERR_INVALID_MESSAGE')
+      throw new InvalidMessageError('Invalid GET_PROVIDERS message received - key was missing')
     }
 
     let cid
     try {
       cid = CID.decode(msg.key)
     } catch (err: any) {
-      throw new CodeError('Invalid CID', 'ERR_INVALID_CID')
+      throw new InvalidMessageError('Invalid CID')
     }
 
     this.log('%p asking for providers for %s', peerId, cid)
 
-    const [peers, closer] = await Promise.all([
-      this.providers.getProviders(cid),
-      this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+    const [providerPeers, closerPeers] = await Promise.all([
+      all(map(await this.providers.getProviders(cid), async (peerId) => {
+        const peer = await this.peerStore.get(peerId)
+        const info: PeerInfo = {
+          id: peer.id,
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
+        }
+
+        return info
+      })),
+      this.peerRouting.getCloserPeersOffline(msg.key, this.peerId)
     ])
 
-    const providerPeers = await this._getPeers(peers)
-    const closerPeers = await this._getPeers(closer.map(({ id }) => id))
     const response: Message = {
       type: MessageType.GET_PROVIDERS,
       key: msg.key,
       clusterLevel: msg.clusterLevel,
       closer: closerPeers
         .map(this.peerInfoMapper)
-        .filter(({ multiaddrs }) => multiaddrs.length)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: providerPeers
         .map(this.peerInfoMapper)
-        .filter(({ multiaddrs }) => multiaddrs.length)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
-          id: peerInfo.id.toBytes(),
+          id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         }))
     }
@@ -86,30 +97,5 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async _getAddresses (peerId: PeerId): Promise<Multiaddr[]> {
     return []
-  }
-
-  async _getPeers (peerIds: PeerId[]): Promise<PeerInfo[]> {
-    const output: PeerInfo[] = []
-
-    for (const peerId of peerIds) {
-      try {
-        const peer = await this.peerStore.get(peerId)
-
-        const peerAfterFilter = this.peerInfoMapper({
-          id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
-        })
-
-        if (peerAfterFilter.multiaddrs.length > 0) {
-          output.push(peerAfterFilter)
-        }
-      } catch (err: any) {
-        if (err.code !== 'ERR_NOT_FOUND') {
-          throw err
-        }
-      }
-    }
-
-    return output
   }
 }

@@ -1,4 +1,4 @@
-import { CodeError } from '@libp2p/interface'
+import { StreamResetError, StreamStateError } from '@libp2p/interface'
 import { type Pushable, pushable } from 'it-pushable'
 import defer, { type DeferredPromise } from 'p-defer'
 import pDefer from 'p-defer'
@@ -9,8 +9,6 @@ import type { AbortOptions, Direction, ReadStatus, Stream, StreamStatus, StreamT
 import type { Logger } from '@libp2p/logger'
 import type { Source } from 'it-stream-types'
 
-const ERR_STREAM_RESET = 'ERR_STREAM_RESET'
-const ERR_SINK_INVALID_STATE = 'ERR_SINK_INVALID_STATE'
 const DEFAULT_SEND_CLOSE_WRITE_TIMEOUT = 5000
 
 export interface AbstractStreamInit {
@@ -61,7 +59,9 @@ export interface AbstractStreamInit {
 
   /**
    * How long to wait in ms for stream data to be written to the underlying
-   * connection when closing the writable end of the stream. (default: 500)
+   * connection when closing the writable end of the stream.
+   *
+   * @default 500
    */
   closeTimeout?: number
 
@@ -150,7 +150,7 @@ export abstract class AbstractStream implements Stream {
 
   async sink (source: Source<Uint8ArrayList | Uint8Array>): Promise<void> {
     if (this.writeStatus !== 'ready') {
-      throw new CodeError(`writable end state is "${this.writeStatus}" not "ready"`, ERR_SINK_INVALID_STATE)
+      throw new StreamStateError(`writable end state is "${this.writeStatus}" not "ready"`)
     }
 
     try {
@@ -284,6 +284,10 @@ export abstract class AbstractStream implements Stream {
 
   // Close for both Reading and Writing
   async close (options?: AbortOptions): Promise<void> {
+    if (this.status !== 'open') {
+      return
+    }
+
     this.log.trace('closing gracefully')
 
     this.status = 'closing'
@@ -389,7 +393,7 @@ export abstract class AbstractStream implements Stream {
       return
     }
 
-    const err = new CodeError('stream reset', ERR_STREAM_RESET)
+    const err = new StreamResetError('stream reset')
 
     this.status = 'reset'
     this.timeline.reset = Date.now()

@@ -1,10 +1,10 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, type TypedEventTarget, type ComponentLogger, type Libp2pEvents, type Connection, type Stream, type ConnectionGater, type ContentRouting, type PeerId, type PeerStore, type Upgrader } from '@libp2p/interface'
-import { isStartable } from '@libp2p/interface'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { TypedEventEmitter, isStartable } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -14,7 +14,8 @@ import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
-import type { AddressManager, ConnectionManager, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId
@@ -24,7 +25,7 @@ interface StubbedCircuitRelayTransportComponents {
   transportManager: StubbedInstance<TransportManager>
   upgrader: StubbedInstance<Upgrader>
   addressManager: StubbedInstance<AddressManager>
-  contentRouting: StubbedInstance<ContentRouting>
+  randomWalk: StubbedInstance<RandomWalk>
   connectionGater: StubbedInstance<ConnectionGater>
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
@@ -41,12 +42,14 @@ describe('circuit-relay stop protocol', function () {
   let remoteStream: Stream
 
   beforeEach(async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+
     components = {
       addressManager: stubInterface<AddressManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
-      contentRouting: stubInterface<ContentRouting>(),
-      peerId: await createEd25519PeerId(),
+      peerId: peerIdFromPrivateKey(privateKey),
       peerStore: stubInterface<PeerStore>(),
+      randomWalk: stubInterface<RandomWalk>(),
       registrar: stubInterface<Registrar>(),
       transportManager: stubInterface<TransportManager>(),
       upgrader: stubInterface<Upgrader>(),
@@ -63,7 +66,8 @@ describe('circuit-relay stop protocol', function () {
       await transport.start()
     }
 
-    sourcePeer = await createEd25519PeerId()
+    const sourcePrivateKey = await generateKeyPair('Ed25519')
+    sourcePeer = peerIdFromPrivateKey(sourcePrivateKey)
 
     handler = components.registrar.handle.getCall(0).args[1]
 
@@ -90,7 +94,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -110,7 +114,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.STATUS,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -132,7 +136,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: [
           new Uint8Array(32)
         ]
@@ -149,7 +153,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })
@@ -162,7 +166,8 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('should try to listen on the address of a relay we are dialed via if no reservation exists', async () => {
-    const remotePeer = await createEd25519PeerId()
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
     const remoteAddr = multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
     transport.reservationStore.hasReservation = Sinon.stub().returns(false)
     const connection = stubInterface<Connection>({
@@ -180,7 +185,7 @@ describe('circuit-relay stop protocol', function () {
     await pbstr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
-        id: sourcePeer.toBytes(),
+        id: sourcePeer.toMultihash().bytes,
         addrs: []
       }
     })

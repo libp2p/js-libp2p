@@ -41,7 +41,7 @@ const receiver = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     echo: echo()
@@ -52,7 +52,7 @@ const sender = await createLibp2p({
   addresses: {
     listen: ['/ip4/0.0.0.0/tcp/0']
   },
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     echo: echo()
@@ -72,7 +72,7 @@ $ npm i @libp2p/echo
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pEcho` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pEcho` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/echo/dist/index.min.js"></script>

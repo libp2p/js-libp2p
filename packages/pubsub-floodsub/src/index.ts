@@ -32,6 +32,7 @@
  * ```
  */
 
+import { pubSubSymbol, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
@@ -55,7 +56,7 @@ export interface FloodSubComponents extends PubSubComponents {
  * delivering an API for Publish/Subscribe, but with no CastTree Forming
  * (it just floods the network).
  */
-export class FloodSub extends PubSubBaseProtocol {
+class FloodSub extends PubSubBaseProtocol {
   public seenCache: SimpleTimeCache<boolean>
 
   constructor (components: FloodSubComponents, init?: FloodSubInit) {
@@ -76,6 +77,18 @@ export class FloodSub extends PubSubBaseProtocol {
       validityMs: init?.seenTTL ?? 30000
     })
   }
+
+  readonly [pubSubSymbol] = true
+
+  readonly [Symbol.toStringTag] = '@libp2p/floodsub'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/pubsub'
+  ]
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
 
   /**
    * Decode a Uint8Array into an RPC object

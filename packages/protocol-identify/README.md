@@ -32,7 +32,7 @@ A second function, `identifyPush` is also exported to add support for [identify/
 
 This protocol will send updates to all connected peers when the multiaddrs or protocols of the current node change.
 
-> [!TIP]
+> \[!TIP]
 > For maximum network compatibility you should configure both protocols
 
 ## Example - Enabling identify
@@ -71,7 +71,7 @@ $ npm i @libp2p/identify
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pIdentify` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pIdentify` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/identify/dist/index.min.js"></script>

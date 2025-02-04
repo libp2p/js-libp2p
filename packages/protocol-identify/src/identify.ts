@@ -1,10 +1,13 @@
 /* eslint-disable complexity */
 
-import { CodeError, setMaxListeners } from '@libp2p/interface'
-import { peerIdFromKeys } from '@libp2p/peer-id'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
+import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { protocols } from '@multiformats/multiaddr'
-import { IP_OR_DOMAIN } from '@multiformats/multiaddr-matcher'
+import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
 import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
@@ -15,6 +18,8 @@ import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultia
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
+
+const CODEC_IP6 = 0x29
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -28,10 +33,22 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       // When a new connection happens, trigger identify
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
-        this.identify(connection).catch(err => { this.log.error('error during identify trigged by connection:open', err) })
+        this.identify(connection)
+          .catch(err => {
+            if (err.name === UnsupportedProtocolError.name) {
+              // the remote did not support identify, ignore the error
+              return
+            }
+
+            this.log.error('error during identify trigged by connection:open', err)
+          })
       })
     }
   }
+
+  [serviceCapabilities]: string[] = [
+    '@libp2p/identify'
+  ]
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyMessage> {
     let stream: Stream | undefined
@@ -49,7 +66,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
-        runOnTransientConnection: this.runOnTransientConnection
+        runOnLimitedConnection: this.runOnLimitedConnection
       })
 
       const pb = pbStream(stream, {
@@ -62,7 +79,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       return message
     } catch (err: any) {
-      this.log.error('error while reading identify message', err)
       stream?.abort(err)
       throw err
     }
@@ -77,32 +93,60 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     } = message
 
     if (publicKey == null) {
-      throw new CodeError('public key was missing from identify message', 'ERR_MISSING_PUBLIC_KEY')
+      throw new InvalidMessageError('public key was missing from identify message')
     }
 
-    const id = await peerIdFromKeys(publicKey)
+    const key = publicKeyFromProtobuf(publicKey)
+    const id = peerIdFromCID(key.toCID())
 
     if (!connection.remotePeer.equals(id)) {
-      throw new CodeError('identified peer does not match the expected peer', 'ERR_INVALID_PEER')
+      throw new InvalidMessageError('identified peer does not match the expected peer')
     }
 
     if (this.peerId.equals(id)) {
-      throw new CodeError('identified peer is our own peer id?', 'ERR_INVALID_PEER')
+      throw new InvalidMessageError('identified peer is our own peer id?')
     }
 
-    // Get the observedAddr if there is one
-    const cleanObservedAddr = getCleanMultiaddr(observedAddr)
+    // if the observed address is publicly routable, add it to the address
+    // manager for verification via AutoNAT
+    this.maybeAddObservedAddress(observedAddr)
 
     this.log('identify completed for peer %p and protocols %o', id, protocols)
-    this.log('our observed address is %a', cleanObservedAddr)
-
-    if (cleanObservedAddr != null &&
-        this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      this.log('storing our observed address %a', cleanObservedAddr)
-      this.addressManager.addObservedAddr(cleanObservedAddr)
-    }
 
     return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+  }
+
+  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
+    const cleanObservedAddr = getCleanMultiaddr(observedAddr)
+
+    if (cleanObservedAddr == null) {
+      return
+    }
+
+    this.log.trace('our observed address was %a', cleanObservedAddr)
+
+    if (isPrivate(cleanObservedAddr)) {
+      this.log.trace('our observed address was private')
+      return
+    }
+
+    const tuples = cleanObservedAddr.stringTuples()
+
+    if (tuples[0][0] === CODEC_IP6 && !isGlobalUnicast(cleanObservedAddr)) {
+      this.log.trace('our observed address was IPv6 but not a global unicast address')
+      return
+    }
+
+    if (TCP.exactMatch(cleanObservedAddr)) {
+      // TODO: because socket dials can't use the same local port as the TCP
+      // listener, many unique observed addresses are reported so ignore all
+      // TCP addresses until https://github.com/libp2p/js-libp2p/issues/2620
+      // is resolved
+      return
+    }
+
+    this.log.trace('storing the observed address')
+    this.addressManager.addObservedAddr(cleanObservedAddr)
   }
 
   /**
@@ -117,7 +161,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     setMaxListeners(Infinity, signal)
 
     try {
-      const publicKey = this.peerId.publicKey ?? new Uint8Array(0)
       const peerData = await this.peerStore.get(this.peerId)
       const multiaddrs = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
       let signedPeerRecord = peerData.peerRecordEnvelope
@@ -128,7 +171,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
           multiaddrs
         })
 
-        const envelope = await RecordEnvelope.seal(peerRecord, this.peerId)
+        const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey)
         signedPeerRecord = envelope.marshal().subarray()
       }
 
@@ -143,7 +186,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       await pb.write({
         protocolVersion: this.host.protocolVersion,
         agentVersion: this.host.agentVersion,
-        publicKey,
+        publicKey: publicKeyToProtobuf(this.privateKey.publicKey),
         listenAddrs: multiaddrs.map(addr => addr.bytes),
         signedPeerRecord,
         observedAddr,

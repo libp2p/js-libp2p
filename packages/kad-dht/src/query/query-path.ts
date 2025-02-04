@@ -1,8 +1,9 @@
-import { CodeError, setMaxListeners } from '@libp2p/interface'
+import { setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
 import { anySignal } from 'any-signal'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { QueryAbortedError } from '../errors.js'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
@@ -120,6 +121,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
       try {
         for await (const event of query({
+          ...options,
           key,
           peer,
           signal: compoundSignal,
@@ -134,7 +136,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
               if (peersSeen.has(closerPeer.id)) { // eslint-disable-line max-depth
-                log('already seen %p in query', closerPeer.id)
+                log.trace('already seen %p in query', closerPeer.id)
                 continue
               }
 
@@ -153,11 +155,11 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
               // only continue query if closer peer is actually closer
               if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
-                log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
+                log.trace('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
                 continue
               }
 
-              log('querying closer peer %p', closerPeer.id)
+              log.trace('querying closer peer %p', closerPeer.id)
               queryPeer(closerPeer.id, closerPeerKadId)
             }
           }
@@ -195,7 +197,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     }
   } catch (err) {
     if (signal.aborted) {
-      throw new CodeError('Query aborted', 'ERR_QUERY_ABORTED')
+      throw new QueryAbortedError('Query aborted')
     }
 
     throw err

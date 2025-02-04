@@ -1,5 +1,5 @@
 import { pushable } from 'it-pushable'
-import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_TRANSIENT_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_LIMITED_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
 import type { Logger, Startable } from '@libp2p/interface'
 import type { IncomingStreamData } from '@libp2p/interface-internal'
@@ -14,7 +14,7 @@ export class Perf implements Startable, PerfInterface {
   private readonly writeBlockSize: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
-  private readonly runOnTransientConnection: boolean
+  private readonly runOnLimitedConnection: boolean
 
   constructor (components: PerfComponents, init: PerfInit = {}) {
     this.components = components
@@ -25,8 +25,10 @@ export class Perf implements Startable, PerfInterface {
     this.databuf = new ArrayBuffer(this.writeBlockSize)
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
-    this.runOnTransientConnection = init.runOnTransientConnection ?? RUN_ON_TRANSIENT_CONNECTION
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? RUN_ON_LIMITED_CONNECTION
   }
+
+  readonly [Symbol.toStringTag] = '@libp2p/perf'
 
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
@@ -36,7 +38,7 @@ export class Perf implements Startable, PerfInterface {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: this.runOnTransientConnection
+      runOnLimitedConnection: this.runOnLimitedConnection
     })
     this.started = true
   }

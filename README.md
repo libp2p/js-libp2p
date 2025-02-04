@@ -2,38 +2,18 @@
   <a href="https://libp2p.io"><img width="250" src="https://github.com/libp2p/js-libp2p/blob/main/img/libp2p.png?raw=true" alt="libp2p hex logo" /></a>
 </h1>
 
-<h3 align="center">The JavaScript implementation of the libp2p Networking Stack.</h3>
-
-<p align="center">
-  <a href="http://protocol.ai"><img src="https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square" /></a>
-  <a href="http://libp2p.io/"><img src="https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="http://webchat.freenode.net/?channels=%23libp2p"><img src="https://img.shields.io/badge/freenode-%23libp2p-yellow.svg?style=flat-square" /></a>
-  <a href="https://matrix.to/#/#libp2p-implementers:ipfs.io"><img src="https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square" /> </a>
-  <a href="https://discord.gg/ipfs"><img src="https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square" /></a>
-  <a href="https://discuss.libp2p.io"><img src="https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg" /></a>
-  <a href="https://www.npmjs.com/package/libp2p"><img src="https://img.shields.io/npm/dm/libp2p.svg" /></a>
-  <a href="https://www.jsdelivr.com/package/npm/libp2p"><img src="https://data.jsdelivr.com/v1/package/npm/libp2p/badge"/></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/libp2p/js-libp2p/actions?query=branch%3Amain+workflow%3ACI+"><img src="https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square" /></a>
-  <a href="https://codecov.io/gh/libp2p/js-libp2p"><img src="https://img.shields.io/codecov/c/github/libp2p/js-libp2p/main.svg?style=flat-square"></a>
-  <br>
-  <a href="https://github.com/feross/standard"><img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"></a>
-  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/npm-%3E%3D7.0.0-orange.svg?style=flat-square" /></a>
-  <a href=""><img src="https://img.shields.io/badge/Node.js-%3E%3D15.0.0-orange.svg?style=flat-square" /></a>
-  <br>
-</p>
-
-# js-libp2p-monorepo <!-- omit in toc -->
+<h3 align="center">The JavaScript implementation of the libp2p Networking Stack</h3>
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![npm](https://img.shields.io/npm/dm/libp2p.svg?style=flat-square)](https://www.npmjs.com/package/libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![Matrix](https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
+[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-> JavaScript implementation of libp2p, a modular peer to peer network stack
+> [!NOTE]
+> Are you tring to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
 
 ### Project status
 
@@ -41,31 +21,10 @@ This project has been used in production for years in Ethereum, IPFS, and more. 
 
 The documentation in the main branch may contain changes from a pre-release.
 
-If you are looking for the documentation of the latest release, you can view the latest release on [**npm**](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
+If you are looking for the documentation of the latest release, you can view the latest release on [npm](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
-**Want to get started?** Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
-
-**Want to update libp2p in your project?** Check our [migrations folder](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations).
-
-## Table of contents <!-- omit in toc -->
-
-- [Background](#background)
-- [Roadmap](#roadmap)
-- [Install](#install)
-- [Usage](#usage)
-  - [Configuration](#configuration)
-  - [Limits](#limits)
-  - [Getting started](#getting-started)
-  - [Tutorials and Examples](#tutorials-and-examples)
-- [Structure](#structure)
-- [Development](#development)
-  - [Tests](#tests)
-    - [Run unit tests](#run-unit-tests)
-  - [Packages](#packages)
-- [Used by](#used-by)
-- [Contribute](#contribute)
-- [API Docs](#api-docs)
-- [License](#license)
+> [!TIP]
+> Just tring to figure out what this is all about? Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
 
 ## Background
 
@@ -89,8 +48,6 @@ To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separ
 The js-libp2p roadmap can be found here: <https://github.com/libp2p/js-libp2p/blob/main/ROADMAP.md>
 
 It represents current projects the js-libp2p maintainers are focused on and provides an estimation of completion targets.
-
-It is complementary to the overarching libp2p project roadmap: <https://github.com/libp2p/specs/blob/master/ROADMAP.md>
 
 ## Install
 
@@ -134,7 +91,6 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-discovery-bootstrap`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) Peer discovery via a list of bootstrap peers
 - [`/packages/peer-discovery-mdns`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) Node.js libp2p mDNS discovery implementation for peer discovery
 - [`/packages/peer-id`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id) Implementation of @libp2p/interface-peer-id
-- [`/packages/peer-id-factory`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id-factory) Create PeerId instances
 - [`/packages/peer-record`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record) Used to transfer signed peer data across the network
 - [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
 - [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol
@@ -195,7 +151,6 @@ List of packages currently in existence for libp2p
 | [`@chainsafe/libp2p-noise`](//github.com/ChainSafe/js-libp2p-noise) | [![npm](https://img.shields.io/npm/v/%40chainsafe%2Flibp2p-noise.svg?maxAge=86400&style=flat-square)](//github.com/ChainSafe/js-libp2p-noise/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40chainsafe%2Flibp2p-noise?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40chainsafe%2Flibp2p-noise) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/ChainSafe/js-libp2p-noise/js-test-and-release.yml?branch=master&label=ci&style=flat-square)](//github.com/ChainSafe/js-libp2p-noise/actions?query=branch%3Amaster+workflow%3Aci+) | [![codecov](https://codecov.io/gh/ChainSafe/js-libp2p-noise/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/ChainSafe/js-libp2p-noise) |
 | [`@libp2p/plaintext`](//github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Fplaintext.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Fplaintext?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Fplaintext) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext) |
 | **stream multiplexers** |
-| [`@libp2p/mplex`](//github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Fmplex.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Fmplex?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Fmplex) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) |
 | [`@chainsafe/libp2p-yamux`](//github.com/ChainSafe/js-libp2p-yamux) | [![npm](https://img.shields.io/npm/v/%40chainsafe%2Flibp2p-yamux.svg?maxAge=86400&style=flat-square)](//github.com/ChainSafe/js-libp2p-yamux/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40chainsafe%2Flibp2p-yamux?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40chainsafe%2Flibp2p-yamux) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/ChainSafe/js-libp2p-yamux/js-test-and-release.yml?branch=master&label=ci&style=flat-square)](//github.com/ChainSafe/js-libp2p-yamux/actions?query=branch%3Amaster+workflow%3Aci+) | [![codecov](https://codecov.io/gh/ChainSafe/js-libp2p-yamux/branch/master/graph/badge.svg?style=flat-square)](https://codecov.io/gh/ChainSafe/js-libp2p-yamux) |
 | **peer discovery** |
 | [`@libp2p/bootstrap`](//github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Fbootstrap.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Fbootstrap?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Fbootstrap) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) |
@@ -222,10 +177,11 @@ List of packages currently in existence for libp2p
 
 <div style="padding: 20px">
   <p align="middle">
-    <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true"></a>
-    <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo">
+    <a href="https://lodestar.chainsafe.io/"><img width="300" src="https://github.com/ChainSafe/lodestar/blob/unstable/assets/lodestar_icon_text_black_stroke.png?raw=true" /></a>
+    <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo" /></a>
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia (IPFS in JavaScript) logo" width="150" /></a>
     <a href="https://peerbit.org/"><img src="https://github.com/dao-xyz/peerbit/blob/master/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
+    <a href="https://topology.gg/"><img src="https://avatars.githubusercontent.com/u/157637200" alt="Topology logo" width="150" /></a>
   </p>
 </div>
 

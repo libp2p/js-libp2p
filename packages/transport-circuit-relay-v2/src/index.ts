@@ -43,11 +43,31 @@ import type { Limit } from './pb/index.js'
 import type { TypedEventEmitter } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { RetimeableAbortSignal } from 'retimeable-signal'
+
+export type { Limit }
 
 export interface RelayReservation {
-  expire: Date
+  /**
+   * When this reservation expires
+   */
+  expiry: Date
+
+  /**
+   * The address of the relay client
+   */
   addr: Multiaddr
+
+  /**
+   * How much data can be transferred over each relayed connection and for how
+   * long before the underlying stream is reset
+   */
   limit?: Limit
+
+  /**
+   * This signal will fire it's "abort" event when the reservation expires
+   */
+  signal: RetimeableAbortSignal
 }
 
 export interface CircuitRelayServiceEvents {
@@ -61,7 +81,12 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 }
 
 export { circuitRelayServer } from './server/index.js'
+export type { CircuitRelayServerInit, CircuitRelayServerComponents } from './server/index.js'
+export type { ReservationStoreInit as ServerReservationStoreInit } from './server/reservation-store.js'
 export { circuitRelayTransport } from './transport/index.js'
+export type { RelayDiscoveryComponents } from './transport/discovery.js'
+export type { ReservationStoreInit as TransportReservationStoreInit } from './transport/reservation-store.js'
+export type { CircuitRelayTransportInit, CircuitRelayTransportComponents } from './transport/index.js'
 
 export {
   RELAY_V2_HOP_CODEC,

@@ -18,21 +18,27 @@ export interface StreamHandler {
 
 export interface StreamHandlerOptions {
   /**
-   * How many incoming streams can be open for this protocol at the same time on each connection (default: 32)
+   * How many incoming streams can be open for this protocol at the same time on each connection
+   *
+   * @default 32
    */
   maxInboundStreams?: number
 
   /**
-   * How many outgoing streams can be open for this protocol at the same time on each connection (default: 64)
+   * How many outgoing streams can be open for this protocol at the same time on each connection
+   *
+   * @default 64
    */
   maxOutboundStreams?: number
 
   /**
    * If true, allow this protocol to run on limited connections (e.g.
    * connections with data or duration limits such as circuit relay
-   * connections) (default: false)
+   * connections)
+   *
+   * @default false
    */
-  runOnTransientConnection?: boolean
+  runOnLimitedConnection?: boolean
 }
 
 export interface StreamHandlerRecord {

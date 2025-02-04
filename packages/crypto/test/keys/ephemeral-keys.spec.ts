@@ -1,10 +1,11 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import * as crypto from '../../src/index.js'
+import { generateEphemeralKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-elliptic-key.js'
+import type { Curve } from '../../src/keys/ecdh/index.js'
 
-const curves = ['P-256', 'P-384'] // 'P-521' fails in tests :( no clue why
+const curves: Curve[] = ['P-256', 'P-384', 'P-521']
 const lengths: Record<string, number> = {
   'P-256': 65,
   'P-384': 97,
@@ -21,8 +22,8 @@ describe('generateEphemeralKeyPair', () => {
   curves.forEach((curve) => {
     it(`generate and shared key ${curve}`, async () => {
       const keys = await Promise.all([
-        crypto.keys.generateEphemeralKeyPair(curve),
-        crypto.keys.generateEphemeralKeyPair(curve)
+        generateEphemeralKeyPair(curve),
+        generateEphemeralKeyPair(curve)
       ])
 
       expect(keys[0].key).to.have.length(lengths[curve])
@@ -34,29 +35,33 @@ describe('generateEphemeralKeyPair', () => {
   })
 
   describe('go interop', () => {
-    it('generates a shared secret', async () => {
-      const curve = fixtures.curve
+    curves.forEach((curve) => {
+      it(`generates a shared secret ${curve}`, async () => {
+        const keys = await Promise.all([
+          generateEphemeralKeyPair(curve),
+          generateEphemeralKeyPair(curve)
+        ])
 
-      const keys = await Promise.all([
-        crypto.keys.generateEphemeralKeyPair(curve),
-        crypto.keys.generateEphemeralKeyPair(curve)
-      ])
+        const alice = keys[0]
+        const bob = keys[1]
+        alice.key = fixtures[curve].alice.public
+        bob.key = fixtures[curve].bob.public
 
-      const alice = keys[0]
-      const bob = keys[1]
-      bob.key = fixtures.bob.public
+        const secrets = await Promise.all([
+          alice.genSharedKey(bob.key, fixtures[curve].alice),
+          bob.genSharedKey(alice.key, fixtures[curve].bob)
+        ])
 
-      const secrets = await Promise.all([
-        alice.genSharedKey(bob.key),
-        bob.genSharedKey(alice.key, fixtures.bob)
-      ])
-
-      expect(secrets[0]).to.eql(secrets[1])
-      expect(secrets[0]).to.have.length(32)
+        expect(secrets[0]).to.eql(secrets[1])
+        expect(secrets[0]).to.eql(fixtures[curve].shared)
+        expect(secrets[0]).to.have.length(secretLengths[curve])
+      })
     })
   })
 
   it('handles bad curve name', async () => {
-    await expect(crypto.keys.generateEphemeralKeyPair('bad name')).to.eventually.be.rejected.with.property('code', 'ERR_INVALID_CURVE')
+    // @ts-expect-error argument is not a Curve
+    await expect(generateEphemeralKeyPair('bad name')).to.eventually.be.rejected
+      .with.property('name', 'InvalidParametersError')
   })
 })

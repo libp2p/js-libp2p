@@ -24,7 +24,7 @@ describe('dcutr', () => {
   async function waitForOnlyDirectConnections (): Promise<void> {
     await pRetry(async () => {
       const connections = libp2pA.getConnections(libp2pB.peerId)
-      const onlyDirect = connections.filter(conn => !conn.transient)
+      const onlyDirect = connections.filter(conn => conn.limits == null)
 
       if (onlyDirect.length === connections.length) {
         // all connections are direct
@@ -109,8 +109,8 @@ describe('dcutr', () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 
-      // connection should be transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be limited
+      expect(connection).to.have.property('limits').that.is.ok()
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
@@ -120,7 +120,7 @@ describe('dcutr', () => {
     })
   })
 
-  // TODO: how to test this?
+  // TODO: how to test this? We need to simulate a firewall of some sort
   describe.skip('dctur connection upgrade', () => {
     beforeEach(async () => {
       libp2pA = await createLibp2p(createBaseOptions({
@@ -162,15 +162,29 @@ describe('dcutr', () => {
       }
     })
 
-    it('should perform connection upgrade', async () => {
+    it('should perform unilateral connection upgrade', async () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 
-      // connection should be transient
-      expect(connection).to.have.property('transient', true)
+      // connection should be limited
+      expect(connection).to.have.property('limits').that.is.ok()
 
       // wait for DCUtR unilateral upgrade
       await waitForOnlyDirectConnections()
+
+      // should have closed the relayed connection
+      expect(libp2pA.getConnections(libp2pB.peerId)).to.have.lengthOf(1, 'had multiple connections to remote peer')
+    })
+
+    it('should perform holepunch using TCP Simultaneous Connect', async () => {
+      const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
+      const connection = await libp2pA.dial(relayedAddress)
+
+      // connection should be limited
+      expect(connection).to.have.property('limits').that.is.ok()
+
+      // wait for DCUtR TCP Simultaneous Connect upgrade
+      // TODO: implement me
 
       // should have closed the relayed connection
       expect(libp2pA.getConnections(libp2pB.peerId)).to.have.lengthOf(1, 'had multiple connections to remote peer')

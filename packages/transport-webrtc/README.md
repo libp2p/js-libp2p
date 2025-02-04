@@ -52,7 +52,7 @@ At the time of writing, WebRTC Direct is dial-only in browsers and not supported
 
 Support in Node.js is possible but PRs will need to be opened to [libdatachannel](https://github.com/paullouisageneau/libdatachannel) and the appropriate APIs exposed in [node-datachannel](https://github.com/murat-dogan/node-datachannel).
 
-For both WebRTC and WebRTC Direct, support is arriving soon in go-libp2p but they are unsupported in rust-libp2p.
+WebRTC Direct support is available in rust-libp2p and arriving soon in go-libp2p.
 
 See the WebRTC section of <https://connectivity.libp2p.io> for more information.
 
@@ -84,7 +84,7 @@ const relay = await createLibp2p({
   transports: [
     webSockets({filter: filters.all})
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -97,16 +97,17 @@ const relay = await createLibp2p({
 // WebRTC connections
 const listener = await createLibp2p({
   addresses: {
-  listen: ['/webrtc']
+    listen: [
+      '/p2p-circuit',
+      '/webrtc'
+    ]
   },
   transports: [
     webSockets({filter: filters.all}),
     webRTC(),
-    circuitRelayTransport({
-      discoverRelays: 1
-    })
+    circuitRelayTransport()
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -143,7 +144,7 @@ const dialer = await createLibp2p({
     webRTC(),
     circuitRelayTransport()
   ],
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
@@ -189,7 +190,7 @@ const node = await createLibp2p({
   transports: [
     webRTCDirect()
   ],
-  connectionEncryption: [
+  connectionEncrypters: [
     noise()
   ]
 })
@@ -221,7 +222,7 @@ $ npm i @libp2p/webrtc
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pWebrtc` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pWebrtc` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/webrtc/dist/index.min.js"></script>

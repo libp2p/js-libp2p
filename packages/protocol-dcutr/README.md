@@ -59,11 +59,11 @@ const ma = multiaddr('/ip4/.../p2p/QmRelay/p2p-circuit/p2p/QmTarget')
 await node.dial(ma)
 
 // after a while the connection should automatically get upgraded to a
-// direct connection (e.g. non-transient)
+// direct connection (e.g. non-limited)
 while (true) {
   const connections = node.getConnections()
 
-  if (connections.find(conn => conn.transient === false)) {
+  if (connections.find(conn => conn.limits == null)) {
     console.info('have direct connection')
     break
   } else {
@@ -85,7 +85,7 @@ $ npm i @libp2p/dcutr
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pDcutr` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pDcutr` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/dcutr/dist/index.min.js"></script>

@@ -5,6 +5,192 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.4.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.4.0...interface-v2.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Documentation
+
+* correct typo ([#2919](https://github.com/libp2p/js-libp2p/issues/2919)) ([d33abe8](https://github.com/libp2p/js-libp2p/commit/d33abe89d9ed54e910059efe4f9282fc18fe7317))
+
+## [2.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.3.0...interface-v2.4.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.1...interface-v2.3.0) (2024-12-09)
+
+
+### Features
+
+* add auto-tls service ([#2798](https://github.com/libp2p/js-libp2p/issues/2798)) ([d866eb5](https://github.com/libp2p/js-libp2p/commit/d866eb5bb8269485364c233119331ca073ff1343))
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.2.0...interface-v2.2.1) (2024-11-18)
+
+
+### Bug Fixes
+
+* update transport listener options ([#2826](https://github.com/libp2p/js-libp2p/issues/2826)) ([656db81](https://github.com/libp2p/js-libp2p/commit/656db81cff6f5cb8d1d5523f1928323057308b5a))
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.3...interface-v2.2.0) (2024-10-28)
+
+
+### Features
+
+* add reprovide ([#2785](https://github.com/libp2p/js-libp2p/issues/2785)) ([52b3b1a](https://github.com/libp2p/js-libp2p/commit/52b3b1a16e56f73de9a75e7f62d5c3b367d757d9))
+
+## [2.1.3](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.2...interface-v2.1.3) (2024-10-09)
+
+
+### Bug Fixes
+
+* emit 'listening' when relays change ([#2758](https://github.com/libp2p/js-libp2p/issues/2758)) ([0d326d1](https://github.com/libp2p/js-libp2p/commit/0d326d102e4f6bf06c6f3e961a3b6b5844486495))
+* use keep-alive as a tag prefix ([#2757](https://github.com/libp2p/js-libp2p/issues/2757)) ([29b47ad](https://github.com/libp2p/js-libp2p/commit/29b47adb47b48e9a2b01580bd0d50dc7c2be8fd6))
+
+## [2.1.2](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.1...interface-v2.1.2) (2024-09-24)
+
+
+### Bug Fixes
+
+* simplify connection upgrade ([#2719](https://github.com/libp2p/js-libp2p/issues/2719)) ([c258b35](https://github.com/libp2p/js-libp2p/commit/c258b35af60eec906437129ab31201bfb9c80d16))
+
+## [2.1.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.1.0...interface-v2.1.1) (2024-09-24)
+
+
+### Bug Fixes
+
+* export transiently referenced types ([#2717](https://github.com/libp2p/js-libp2p/issues/2717)) ([7f7ec82](https://github.com/libp2p/js-libp2p/commit/7f7ec82ae4ee7761360bdfdd294de271feaf1841))
+
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.1...interface-v2.1.0) (2024-09-23)
+
+
+### Features
+
+* add histogram and summary metric types ([#2705](https://github.com/libp2p/js-libp2p/issues/2705)) ([21fe841](https://github.com/libp2p/js-libp2p/commit/21fe841f2584e0166253d78fc390401d7cee5601))
+* add isPubSub method to detect PubSub implementations ([#2707](https://github.com/libp2p/js-libp2p/issues/2707)) ([6ccbb06](https://github.com/libp2p/js-libp2p/commit/6ccbb06f0e76dcd1ba20d31e2518f3a1acb0efbc))
+
+## [2.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.0.0...interface-v2.0.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* add public/private key type disambiguators ([#2698](https://github.com/libp2p/js-libp2p/issues/2698)) ([18dd3cb](https://github.com/libp2p/js-libp2p/commit/18dd3cb2649412126b995c90e976ed06220c8590))
+
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.7.0...interface-v2.0.0) (2024-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* instead of `CodeError`, use `TimeoutError`, `UnexpectedPeerError`, etc
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* the final argument to `secureOutbound` and `secureInbound` in the `ConnectionEncrypter` interface is now an options object
+* The `.code` property has been removed from most errors, use `.name` instead
+* removes `localPeer: PeerId` first parameter from `secureInbound` and `secureOutbound` in `ConnectionEncrypter`
+* * The `notifyOnTransient` property of `libp2p.register` has been renamed `notifyOnLimitedConnection`
+* `@libp2p/interface` no longer exports a `CustomEvent` polyfill
+
+### Features
+
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* add optional generics to metric groups ([#2665](https://github.com/libp2p/js-libp2p/issues/2665)) ([df33069](https://github.com/libp2p/js-libp2p/commit/df330695a0ee627f79c51c1ab737cbf3278a91e8))
+* make connection securing abortable ([#2662](https://github.com/libp2p/js-libp2p/issues/2662)) ([51f7b57](https://github.com/libp2p/js-libp2p/commit/51f7b570c3a5bae8dd7da7edbc4145893328400e))
+* remove CodeError class ([#2688](https://github.com/libp2p/js-libp2p/issues/2688)) ([81ebe4e](https://github.com/libp2p/js-libp2p/commit/81ebe4e47e82508a847bb3af0af36cc249b78765))
+* remove CustomEvent export from `@libp2p/interface` ([#2656](https://github.com/libp2p/js-libp2p/issues/2656)) ([fab6fc9](https://github.com/libp2p/js-libp2p/commit/fab6fc960b6bc03a6bc00ae5a4b3551d7d080c73))
+* remove localPeer from secureInbound and secureOutbound ([#2304](https://github.com/libp2p/js-libp2p/issues/2304)) ([b435a21](https://github.com/libp2p/js-libp2p/commit/b435a214cf342c6015f474d26143fc27f0f673e9))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* rename "transient" connections to "limited" ([#2645](https://github.com/libp2p/js-libp2p/issues/2645)) ([2988602](https://github.com/libp2p/js-libp2p/commit/29886022eddc8a793217b2c888beac8aef63f1be)), closes [#2622](https://github.com/libp2p/js-libp2p/issues/2622)
+
+## [1.7.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.3...interface-v1.7.0) (2024-08-15)
+
+
+### Features
+
+* add connection monitor ([#2644](https://github.com/libp2p/js-libp2p/issues/2644)) ([7939dbd](https://github.com/libp2p/js-libp2p/commit/7939dbd5cbab1c7b4be671ff976d0258e9b48178))
+
+
+### Bug Fixes
+
+* remove CustomEvent polyfill ([#2652](https://github.com/libp2p/js-libp2p/issues/2652)) ([0edbfe7](https://github.com/libp2p/js-libp2p/commit/0edbfe7af1ccf4bd23dd78b2bcc29ecf54ea02eb))
+
+## [1.6.3](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.2...interface-v1.6.3) (2024-08-02)
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+
+## [1.6.2](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.1...interface-v1.6.2) (2024-07-29)
+
+
+### Documentation
+
+* update `connection.newStream` return value ([#2630](https://github.com/libp2p/js-libp2p/issues/2630)) ([c164e2e](https://github.com/libp2p/js-libp2p/commit/c164e2e237716be17891ae8015ca78f46d0dea17))
+
+## [1.6.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.6.0...interface-v1.6.1) (2024-07-13)
+
+
+### Bug Fixes
+
+* expose progress events in dial/dialProtocol types ([#2614](https://github.com/libp2p/js-libp2p/issues/2614)) ([e1f0b30](https://github.com/libp2p/js-libp2p/commit/e1f0b307c6992414d39cd5b44cf971d30f079fab))
+
+
+### Documentation
+
+* fix metrics example typo ([#2613](https://github.com/libp2p/js-libp2p/issues/2613)) ([3805a20](https://github.com/libp2p/js-libp2p/commit/3805a20fa77e10cd30dc38c85e3d7eef00ce328b))
+
+## [1.6.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.5.0...interface-v1.6.0) (2024-07-03)
+
+
+### Features
+
+* add url peer id ([#2598](https://github.com/libp2p/js-libp2p/issues/2598)) ([b0b6cae](https://github.com/libp2p/js-libp2p/commit/b0b6cae121f23b8b09b36aed6815bddd2ff6e149))
+
+
+### Bug Fixes
+
+* add dial progress events to transports ([#2607](https://github.com/libp2p/js-libp2p/issues/2607)) ([abb9f90](https://github.com/libp2p/js-libp2p/commit/abb9f90c7694ac9ff77b45930304a92b1db428ea))
+
+## [1.5.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.4.1...interface-v1.5.0) (2024-06-18)
+
+
+### Features
+
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+
+
+### Bug Fixes
+
+* allow custom services to depend on each other ([#2588](https://github.com/libp2p/js-libp2p/issues/2588)) ([0447913](https://github.com/libp2p/js-libp2p/commit/044791342239b187d4fdabb957b0ca6af93d9b73))
+
+## [1.4.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.4.0...interface-v1.4.1) (2024-06-07)
+
+
+### Dependencies
+
+* bump aegir from 42.2.11 to 43.0.1 ([#2571](https://github.com/libp2p/js-libp2p/issues/2571)) ([757fb26](https://github.com/libp2p/js-libp2p/commit/757fb2674f0a3e06fd46d3ff63f7f461c32d47d2))
+
+## [1.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.1...interface-v1.4.0) (2024-05-17)
+
+
+### Features
+
+* add optional topology filter ([#2544](https://github.com/libp2p/js-libp2p/issues/2544)) ([3c73707](https://github.com/libp2p/js-libp2p/commit/3c73707ff5c1635d4ab26dcc39499ab497d217a6))
+
+
+### Bug Fixes
+
+* update project config ([48444f7](https://github.com/libp2p/js-libp2p/commit/48444f750ebe3f03290bf70e84d7590edc030ea4))
+
 ## [1.3.1](https://github.com/libp2p/js-libp2p/compare/interface-v1.3.0...interface-v1.3.1) (2024-05-01)
 
 

@@ -1,33 +1,36 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerUpdate, type PeerId, type PeerData } from '@libp2p/interface'
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { createEd25519PeerId, createRSAPeerId, createSecp256k1PeerId } from '@libp2p/peer-id-factory'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
-import { codes } from '../src/errors.js'
-import { PersistentPeerStore } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.js'
 import { Peer as PeerPB } from '../src/pb/peer.js'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, PeerData, PeerUpdate } from '@libp2p/interface'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
+const addr3 = multiaddr('/ip6/2a00:23c6:14b1:7e00:440d:76a7:f9f:b53f/tcp/8001')
+const addr4 = multiaddr('/ip6/fdad:bda1:c508:6261:1e:bea5:2ae6:fef0/tcp/8001')
 
 describe('save', () => {
   let peerId: PeerId
   let otherPeerId: PeerId
-  let peerStore: PersistentPeerStore
+  let peerStore: PeerStore
   let events: TypedEventTarget<Libp2pEvents>
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
-    otherPeerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
-    peerStore = new PersistentPeerStore({
+    peerStore = persistentPeerStore({
       peerId,
       events,
       datastore: new MemoryDatastore(),
@@ -38,13 +41,13 @@ describe('save', () => {
   it('throws invalid parameters error if invalid PeerId is provided', async () => {
     // @ts-expect-error invalid input
     await expect(peerStore.save('invalid peerId'))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('throws invalid parameters error if no peer data provided', async () => {
     // @ts-expect-error invalid input
     await expect(peerStore.save(peerId))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('throws invalid parameters error if invalid multiaddrs are provided', async () => {
@@ -52,7 +55,7 @@ describe('save', () => {
       // @ts-expect-error invalid input
       addresses: ['invalid multiaddr']
     }))
-      .to.eventually.be.rejected.with.property('code', codes.ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
   })
 
   it('replaces the stored content by default and emit change event', async () => {
@@ -149,7 +152,7 @@ describe('save', () => {
   })
 
   it('should not set public key when key does not match', async () => {
-    const edKey = await createEd25519PeerId()
+    const edKey = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     if (peerId.publicKey == null) {
       throw new Error('Public key was missing')
@@ -187,7 +190,7 @@ describe('save', () => {
       throw new Error('Public key was missing')
     }
 
-    const edKey = await createEd25519PeerId()
+    const edKey = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     await peerStore.save(edKey, {
       publicKey: edKey.publicKey
     })
@@ -195,7 +198,7 @@ describe('save', () => {
     const dbPeerEdKey = PeerPB.decode(spy.getCall(0).args[1])
     expect(dbPeerEdKey).to.not.have.property('publicKey')
 
-    const secpKey = await createSecp256k1PeerId()
+    const secpKey = peerIdFromPrivateKey(await generateKeyPair('secp256k1'))
     await peerStore.save(secpKey, {
       publicKey: secpKey.publicKey
     })
@@ -203,20 +206,23 @@ describe('save', () => {
     const dbPeerSecpKey = PeerPB.decode(spy.getCall(1).args[1])
     expect(dbPeerSecpKey).to.not.have.property('publicKey')
 
-    const rsaKey = await createRSAPeerId()
-    await peerStore.save(rsaKey, {
+    const rsaKey = await generateKeyPair('RSA', 512)
+    const rsaPeer = peerIdFromPrivateKey(rsaKey)
+    await peerStore.save(rsaPeer, {
       publicKey: rsaKey.publicKey
     })
 
     const dbPeerRsaKey = PeerPB.decode(spy.getCall(2).args[1])
-    expect(dbPeerRsaKey).to.have.property('publicKey').that.equalBytes(rsaKey.publicKey)
+    expect(dbPeerRsaKey).to.have.property('publicKey').that.equalBytes(publicKeyToProtobuf(rsaKey.publicKey))
   })
 
   it('saves all of the fields', async () => {
     const peer: PeerData = {
       multiaddrs: [
         addr1,
-        addr2
+        addr2,
+        addr3,
+        addr4
       ],
       metadata: {
         foo: Uint8Array.from([0, 1, 2])
@@ -237,6 +243,12 @@ describe('save', () => {
       isCertified: false
     }, {
       multiaddr: addr2,
+      isCertified: false
+    }, {
+      multiaddr: addr3,
+      isCertified: false
+    }, {
+      multiaddr: addr4,
       isCertified: false
     }])
     expect(saved).to.have.property('metadata').that.deep.equals(

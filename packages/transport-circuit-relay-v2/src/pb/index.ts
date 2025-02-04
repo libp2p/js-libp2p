@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface HopMessage {
@@ -72,7 +72,7 @@ export namespace HopMessage {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -81,24 +81,36 @@ export namespace HopMessage {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = HopMessage.Type.codec().decode(reader)
               break
-            case 2:
-              obj.peer = Peer.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.peer = Peer.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.peer
+              })
               break
-            case 3:
-              obj.reservation = Reservation.codec().decode(reader, reader.uint32())
+            }
+            case 3: {
+              obj.reservation = Reservation.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.reservation
+              })
               break
-            case 4:
-              obj.limit = Limit.codec().decode(reader, reader.uint32())
+            }
+            case 4: {
+              obj.limit = Limit.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.limit
+              })
               break
-            case 5:
+            }
+            case 5: {
               obj.status = Status.codec().decode(reader)
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -113,8 +125,8 @@ export namespace HopMessage {
     return encodeMessage(obj, HopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): HopMessage => {
-    return decodeMessage(buf, HopMessage.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HopMessage>): HopMessage => {
+    return decodeMessage(buf, HopMessage.codec(), opts)
   }
 }
 
@@ -174,7 +186,7 @@ export namespace StopMessage {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -183,21 +195,30 @@ export namespace StopMessage {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = StopMessage.Type.codec().decode(reader)
               break
-            case 2:
-              obj.peer = Peer.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.peer = Peer.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.peer
+              })
               break
-            case 3:
-              obj.limit = Limit.codec().decode(reader, reader.uint32())
+            }
+            case 3: {
+              obj.limit = Limit.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.limit
+              })
               break
-            case 4:
+            }
+            case 4: {
               obj.status = Status.codec().decode(reader)
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -212,8 +233,8 @@ export namespace StopMessage {
     return encodeMessage(obj, StopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): StopMessage => {
-    return decodeMessage(buf, StopMessage.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<StopMessage>): StopMessage => {
+    return decodeMessage(buf, StopMessage.codec(), opts)
   }
 }
 
@@ -247,9 +268,9 @@ export namespace Peer {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          id: new Uint8Array(0),
+          id: uint8ArrayAlloc(0),
           addrs: []
         }
 
@@ -259,15 +280,22 @@ export namespace Peer {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.id = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
+                throw new MaxLengthError('Decode error - map field "addrs" had too many elements')
+              }
+
               obj.addrs.push(reader.bytes())
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -282,15 +310,15 @@ export namespace Peer {
     return encodeMessage(obj, Peer.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
-    return decodeMessage(buf, Peer.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Peer => {
+    return decodeMessage(buf, Peer.codec(), opts)
   }
 }
 
 export interface Reservation {
   expire: bigint
   addrs: Uint8Array[]
-  voucher?: Uint8Array
+  voucher?: Envelope
 }
 
 export namespace Reservation {
@@ -317,13 +345,13 @@ export namespace Reservation {
 
         if (obj.voucher != null) {
           w.uint32(26)
-          w.bytes(obj.voucher)
+          Envelope.codec().encode(obj.voucher, w)
         }
 
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           expire: 0n,
           addrs: []
@@ -335,18 +363,28 @@ export namespace Reservation {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.expire = reader.uint64()
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
+                throw new MaxLengthError('Decode error - map field "addrs" had too many elements')
+              }
+
               obj.addrs.push(reader.bytes())
               break
-            case 3:
-              obj.voucher = reader.bytes()
+            }
+            case 3: {
+              obj.voucher = Envelope.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.voucher
+              })
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -361,8 +399,8 @@ export namespace Reservation {
     return encodeMessage(obj, Reservation.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Reservation => {
-    return decodeMessage(buf, Reservation.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Reservation>): Reservation => {
+    return decodeMessage(buf, Reservation.codec(), opts)
   }
 }
 
@@ -394,7 +432,7 @@ export namespace Limit {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -403,15 +441,18 @@ export namespace Limit {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.duration = reader.uint32()
               break
-            case 2:
+            }
+            case 2: {
               obj.data = reader.uint64()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -426,8 +467,8 @@ export namespace Limit {
     return encodeMessage(obj, Limit.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Limit => {
-    return decodeMessage(buf, Limit.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Limit>): Limit => {
+    return decodeMessage(buf, Limit.codec(), opts)
   }
 }
 
@@ -494,10 +535,10 @@ export namespace ReservationVoucher {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          relay: new Uint8Array(0),
-          peer: new Uint8Array(0),
+          relay: uint8ArrayAlloc(0),
+          peer: uint8ArrayAlloc(0),
           expiration: 0n
         }
 
@@ -507,18 +548,22 @@ export namespace ReservationVoucher {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.relay = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.peer = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.expiration = reader.uint64()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -533,7 +578,101 @@ export namespace ReservationVoucher {
     return encodeMessage(obj, ReservationVoucher.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): ReservationVoucher => {
-    return decodeMessage(buf, ReservationVoucher.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ReservationVoucher>): ReservationVoucher => {
+    return decodeMessage(buf, ReservationVoucher.codec(), opts)
+  }
+}
+
+export interface Envelope {
+  publicKey: Uint8Array
+  payloadType: Uint8Array
+  payload?: ReservationVoucher
+  signature: Uint8Array
+}
+
+export namespace Envelope {
+  let _codec: Codec<Envelope>
+
+  export const codec = (): Codec<Envelope> => {
+    if (_codec == null) {
+      _codec = message<Envelope>((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork()
+        }
+
+        if ((obj.publicKey != null && obj.publicKey.byteLength > 0)) {
+          w.uint32(10)
+          w.bytes(obj.publicKey)
+        }
+
+        if ((obj.payloadType != null && obj.payloadType.byteLength > 0)) {
+          w.uint32(18)
+          w.bytes(obj.payloadType)
+        }
+
+        if (obj.payload != null) {
+          w.uint32(26)
+          ReservationVoucher.codec().encode(obj.payload, w)
+        }
+
+        if ((obj.signature != null && obj.signature.byteLength > 0)) {
+          w.uint32(42)
+          w.bytes(obj.signature)
+        }
+
+        if (opts.lengthDelimited !== false) {
+          w.ldelim()
+        }
+      }, (reader, length, opts = {}) => {
+        const obj: any = {
+          publicKey: uint8ArrayAlloc(0),
+          payloadType: uint8ArrayAlloc(0),
+          signature: uint8ArrayAlloc(0)
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              obj.publicKey = reader.bytes()
+              break
+            }
+            case 2: {
+              obj.payloadType = reader.bytes()
+              break
+            }
+            case 3: {
+              obj.payload = ReservationVoucher.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.payload
+              })
+              break
+            }
+            case 5: {
+              obj.signature = reader.bytes()
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
+
+        return obj
+      })
+    }
+
+    return _codec
+  }
+
+  export const encode = (obj: Partial<Envelope>): Uint8Array => {
+    return encodeMessage(obj, Envelope.codec())
+  }
+
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Envelope => {
+    return decodeMessage(buf, Envelope.codec(), opts)
   }
 }

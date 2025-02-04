@@ -4,20 +4,19 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
-  Secp256k1 = 'Secp256k1'
+  secp256k1 = 'secp256k1'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
-  Secp256k1 = 2
+  secp256k1 = 2
 }
 
 export namespace KeyType {
@@ -53,7 +52,7 @@ export namespace PublicKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -62,15 +61,18 @@ export namespace PublicKey {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.Type = KeyType.codec().decode(reader)
               break
-            case 2:
+            }
+            case 2: {
               obj.Data = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -85,8 +87,8 @@ export namespace PublicKey {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PublicKey => {
-    return decodeMessage(buf, PublicKey.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+    return decodeMessage(buf, PublicKey.codec(), opts)
   }
 }
 
@@ -118,7 +120,7 @@ export namespace PrivateKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -127,15 +129,18 @@ export namespace PrivateKey {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.Type = KeyType.codec().decode(reader)
               break
-            case 2:
+            }
+            case 2: {
               obj.Data = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
@@ -150,7 +155,7 @@ export namespace PrivateKey {
     return encodeMessage(obj, PrivateKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): PrivateKey => {
-    return decodeMessage(buf, PrivateKey.codec())
+  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PrivateKey>): PrivateKey => {
+    return decodeMessage(buf, PrivateKey.codec(), opts)
   }
 }

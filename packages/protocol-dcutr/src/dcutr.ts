@@ -1,5 +1,6 @@
-import { CodeError, ERR_INVALID_MESSAGE } from '@libp2p/interface'
+import { InvalidMessageError, serviceDependencies } from '@libp2p/interface'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
 import { HolePunch } from './pb/message.js'
@@ -52,6 +53,12 @@ export class DefaultDCUtRService implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/dcutr'
+
+  readonly [serviceDependencies]: string[] = [
+    '@libp2p/identify'
+  ]
+
   isStarted (): boolean {
     return this.started
   }
@@ -64,9 +71,9 @@ export class DefaultDCUtRService implements Startable {
     // register for notifications of when peers that support DCUtR connect
     // nb. requires the identify service to be enabled
     this.topologyId = await this.registrar.register(multicodec, {
-      notifyOnTransient: true,
+      notifyOnLimitedConnection: true,
       onConnect: (peerId, connection) => {
-        if (!connection.transient) {
+        if (!Circuit.exactMatch(connection.remoteAddr)) {
           // the connection is already direct, no upgrade is required
           return
         }
@@ -91,7 +98,7 @@ export class DefaultDCUtRService implements Startable {
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
-      runOnTransientConnection: true
+      runOnLimitedConnection: true
     })
 
     this.started = true
@@ -134,7 +141,7 @@ export class DefaultDCUtRService implements Startable {
         // 1. B opens a stream to A using the /libp2p/dcutr protocol.
         stream = await relayedConnection.newStream([multicodec], {
           signal: options.signal,
-          runOnTransientConnection: true
+          runOnLimitedConnection: true
         })
 
         const pb = pbStream(stream, {
@@ -157,14 +164,14 @@ export class DefaultDCUtRService implements Startable {
 
         if (connect.type !== HolePunch.Type.CONNECT) {
           this.log('A sent wrong message type')
-          throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+          throw new InvalidMessageError('DCUtR message type was incorrect')
         }
 
         const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
         if (multiaddrs.length === 0) {
           this.log('A did not have any dialable multiaddrs')
-          throw new CodeError('DCUtR connect message had no multiaddrs', ERR_INVALID_MESSAGE)
+          throw new InvalidMessageError('DCUtR connect message had no multiaddrs')
         }
 
         const rtt = Date.now() - connectTimer
@@ -185,10 +192,13 @@ export class DefaultDCUtRService implements Startable {
         // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
 
         this.log('B dialing', multiaddrs)
-        // Upon expiry of the timer, B dials the address to A.
+        // Upon expiry of the timer, B dials the address to A and acts as the
+        // multistream-select server
         const conn = await this.connectionManager.openConnection(multiaddrs, {
           signal: options.signal,
-          priority: DCUTR_DIAL_PRIORITY
+          priority: DCUTR_DIAL_PRIORITY,
+          force: true,
+          initiator: false
         })
 
         this.log('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)
@@ -250,8 +260,8 @@ export class DefaultDCUtRService implements Startable {
           force: true
         })
 
-        if (connection.transient) {
-          throw new Error('Could not open a new, non-transient, connection')
+        if (Circuit.exactMatch(connection.remoteAddr)) {
+          throw new Error('Could not open a new, non-limited, connection')
         }
 
         this.log('unilateral connection upgrade to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
@@ -294,19 +304,19 @@ export class DefaultDCUtRService implements Startable {
 
       if (connect.type !== HolePunch.Type.CONNECT) {
         this.log('B sent wrong message type')
-        throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR message type was incorrect')
       }
 
       if (connect.observedAddresses.length === 0) {
         this.log('B sent no multiaddrs')
-        throw new CodeError('DCUtR connect message had no multiaddrs', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR connect message had no multiaddrs')
       }
 
       const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
       if (multiaddrs.length === 0) {
         this.log('B had no dialable multiaddrs')
-        throw new CodeError('DCUtR connect message had no dialable multiaddrs', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR connect message had no dialable multiaddrs')
       }
 
       this.log('A sending connect')
@@ -319,7 +329,7 @@ export class DefaultDCUtRService implements Startable {
       const sync = await pb.read(options)
 
       if (sync.type !== HolePunch.Type.SYNC) {
-        throw new CodeError('DCUtR message type was incorrect', ERR_INVALID_MESSAGE)
+        throw new InvalidMessageError('DCUtR message type was incorrect')
       }
 
       // TODO: when we have a QUIC transport, the dial step is different - for

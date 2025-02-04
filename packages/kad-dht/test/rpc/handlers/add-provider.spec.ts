@@ -1,9 +1,12 @@
 /* eslint-env mocha */
 
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import createMortice from 'mortice'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { type Message, MessageType } from '../../../src/message/dht.js'
 import { Providers } from '../../../src/providers.js'
@@ -11,7 +14,7 @@ import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
 import { createPeerIds } from '../../utils/create-peer-id.js'
 import { createValues } from '../../utils/create-values.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 
 describe('rpc - handlers - AddProvider', () => {
@@ -19,6 +22,7 @@ describe('rpc - handlers - AddProvider', () => {
   let values: Array<{ cid: CID, value: Uint8Array }>
   let handler: DHTMessageHandler
   let providers: Providers
+  let peerStore: PeerStore
 
   before(async () => {
     [peerIds, values] = await Promise.all([
@@ -29,13 +33,25 @@ describe('rpc - handlers - AddProvider', () => {
 
   beforeEach(async () => {
     const datastore = new MemoryDatastore()
+    peerStore = persistentPeerStore({
+      peerId: peerIds[0],
+      datastore: new MemoryDatastore(),
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
+    })
 
     providers = new Providers({
       datastore,
       logger: defaultLogger()
+    }, {
+      logPrefix: '',
+      datastorePrefix: '/dht',
+      lock: createMortice()
     })
 
     handler = new AddProviderHandler({
+      peerId: peerIds[0],
+      peerStore,
       logger: defaultLogger()
     }, {
       providers,
@@ -51,7 +67,7 @@ describe('rpc - handlers - AddProvider', () => {
         closer: [],
         providers: []
       },
-      error: 'ERR_MISSING_KEY'
+      error: 'InvalidMessageError'
     }, {
       message: {
         type: MessageType.ADD_PROVIDER,
@@ -59,16 +75,16 @@ describe('rpc - handlers - AddProvider', () => {
         closer: [],
         providers: []
       },
-      error: 'ERR_INVALID_CID'
+      error: 'InvalidMessageError'
     }]
 
     tests.forEach((t) => {
       it(t.error.toString(), async () => {
         try {
-          await handler.handle(peerIds[0], t.message)
+          await handler.handle(peerIds[1], t.message)
         } catch (err: any) {
           expect(err).to.exist()
-          expect(err.code).to.equal(t.error)
+          expect(err).to.have.property('name', t.error)
           return
         }
         throw new Error()
@@ -89,17 +105,17 @@ describe('rpc - handlers - AddProvider', () => {
     const ma2 = multiaddr('/ip4/127.0.0.1/tcp/2345')
 
     msg.providers = [{
-      id: peerIds[0].toBytes(),
+      id: peerIds[1].toMultihash().bytes,
       multiaddrs: [ma1.bytes]
     }, {
-      id: peerIds[1].toBytes(),
+      id: peerIds[2].toMultihash().bytes,
       multiaddrs: [ma2.bytes]
     }]
 
-    await handler.handle(peerIds[0], msg)
+    await handler.handle(peerIds[1], msg)
 
     const provs = await providers.getProviders(cid)
     expect(provs).to.have.length(1)
-    expect(provs[0].toString()).to.equal(peerIds[0].toString())
+    expect(provs[0].toString()).to.equal(peerIds[1].toString())
   })
 })

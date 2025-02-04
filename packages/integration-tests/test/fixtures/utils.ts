@@ -1,5 +1,6 @@
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Libp2p, AbortOptions, ContentRouting, PeerId, PeerInfo } from '@libp2p/interface'
@@ -7,6 +8,9 @@ import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID, Version } from 'multiformats'
 import type { Options as PWaitForOptions } from 'p-wait-for'
+
+const browser = detect()
+export const isFirefox = ((browser != null) && browser.name === 'firefox')
 
 export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
@@ -59,13 +63,20 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
 
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+    const relayHosts = new Set<string>()
+
+    const relayAddrs = node.getMultiaddrs().filter(addr => {
+      const options = addr.toOptions()
+      relayHosts.add(options.host)
+
+      return addr.protoNames().includes('p2p-circuit')
+    })
 
     if (relayAddrs.length === 0) {
       return false
     }
 
-    if (relayAddrs.length !== 1) {
+    if (relayHosts.size !== 1) {
       throw new Error(`node listening on too many relays - ${relayAddrs.length}`)
     }
 
@@ -160,6 +171,10 @@ export class MockContentRouting implements ContentRouting {
     })
 
     MockContentRouting.providers.set(cid.toString(), providers)
+  }
+
+  async cancelReprovide (): Promise<void> {
+
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<PeerInfo, void, undefined> {

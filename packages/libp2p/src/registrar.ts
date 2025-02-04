@@ -1,8 +1,8 @@
-import { CodeError } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import merge from 'merge-options'
-import { codes } from './errors.js'
+import * as errorsJs from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
-import type { ConnectionManager, StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
+import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
@@ -10,7 +10,6 @@ export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
 
 export interface RegistrarComponents {
   peerId: PeerId
-  connectionManager: ConnectionManager
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
@@ -40,6 +39,8 @@ export class DefaultRegistrar implements Registrar {
     this.components.events.addEventListener('peer:identify', this._onPeerIdentify)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/registrar'
+
   getProtocols (): string[] {
     return Array.from(new Set<string>([
       ...this.handlers.keys()
@@ -50,7 +51,7 @@ export class DefaultRegistrar implements Registrar {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw new CodeError(`No handler registered for protocol ${protocol}`, codes.ERR_NO_HANDLER_FOR_PROTOCOL)
+      throw new errorsJs.UnhandledProtocolError(`No handler registered for protocol ${protocol}`)
     }
 
     return handler
@@ -73,7 +74,7 @@ export class DefaultRegistrar implements Registrar {
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
     if (this.handlers.has(protocol)) {
-      throw new CodeError(`Handler already registered for protocol ${protocol}`, codes.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED)
+      throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
     const options = merge.bind({ ignoreUndefined: true })({
@@ -114,7 +115,7 @@ export class DefaultRegistrar implements Registrar {
    */
   async register (protocol: string, topology: Topology): Promise<string> {
     if (topology == null) {
-      throw new CodeError('invalid topology', codes.ERR_INVALID_PARAMETERS)
+      throw new InvalidParametersError('invalid topology')
     }
 
     // Create topology
@@ -164,12 +165,17 @@ export class DefaultRegistrar implements Registrar {
           }
 
           for (const topology of topologies.values()) {
+            if (topology.filter?.has(remotePeer) === false) {
+              continue
+            }
+
+            topology.filter?.remove(remotePeer)
             topology.onDisconnect?.(remotePeer)
           }
         }
       })
       .catch(err => {
-        if (err.code === codes.ERR_NOT_FOUND) {
+        if (err.name === 'NotFoundError') {
           // peer has not completed identify so they are not in the peer store
           return
         }
@@ -195,6 +201,11 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
+        if (topology.filter?.has(peer.id) === false) {
+          continue
+        }
+
+        topology.filter?.remove(peer.id)
         topology.onDisconnect?.(peer.id)
       }
     }
@@ -218,10 +229,15 @@ export class DefaultRegistrar implements Registrar {
       }
 
       for (const topology of topologies.values()) {
-        if (connection.transient && topology.notifyOnTransient !== true) {
+        if (connection.limits != null && topology.notifyOnLimitedConnection !== true) {
           continue
         }
 
+        if (topology.filter?.has(peerId) === true) {
+          continue
+        }
+
+        topology.filter?.add(peerId)
         topology.onConnect?.(peerId, connection)
       }
     }

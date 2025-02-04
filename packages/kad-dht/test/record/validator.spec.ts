@@ -1,23 +1,22 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 
-import { generateKeyPair, unmarshalPublicKey } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as validator from '../../src/record/validators.js'
 import * as fixture from '../fixtures/record/go-key-records.js'
 import type { Validators } from '../../src/index.js'
+import type { RSAPrivateKey } from '@libp2p/interface'
 
 interface Cases {
   valid: {
     publicKey: Uint8Array[]
   }
   invalid: {
-    publicKey: Array<{
-      data: Uint8Array
-      code: string
-    }>
+    publicKey: Uint8Array[]
   }
 }
 
@@ -32,32 +31,25 @@ const generateCases = (hash: Uint8Array): Cases => {
       ]
     },
     invalid: {
-      publicKey: [{
-        data: uint8ArrayFromString('/pk/'),
-        code: 'ERR_INVALID_RECORD_KEY_TOO_SHORT'
-      }, {
-        data: Uint8Array.of(...uint8ArrayFromString('/pk/'), ...uint8ArrayFromString('random')),
-        code: 'ERR_INVALID_RECORD_HASH_MISMATCH'
-      }, {
-        data: hash,
-        code: 'ERR_INVALID_RECORD_KEY_BAD_PREFIX'
-      }, {
+      publicKey: [
+        uint8ArrayFromString('/pk/'),
+        Uint8Array.of(...uint8ArrayFromString('/pk/'), ...uint8ArrayFromString('random')),
+        hash,
         // @ts-expect-error invalid input
-        data: 'not a buffer',
-        code: 'ERR_INVALID_RECORD_KEY_NOT_BUFFER'
-      }]
+        'not a buffer'
+      ]
     }
   }
 }
 
 describe('validator', () => {
-  let key: any
+  let key: RSAPrivateKey
   let hash: Uint8Array
   let cases: Cases
 
   before(async () => {
     key = await generateKeyPair('RSA', 1024)
-    hash = await key.public.hash()
+    hash = key.publicKey.toMultihash().bytes
     cases = generateCases(hash)
   })
 
@@ -86,7 +78,7 @@ describe('validator', () => {
         }
       }
       await expect(validator.verifyRecord(validators, rec))
-        .to.eventually.rejected.with.property('code', 'ERR_INVALID_RECORD_KEY_TYPE')
+        .to.eventually.rejected.with.property('name', 'InvalidParametersError')
     })
   })
 
@@ -104,20 +96,20 @@ describe('validator', () => {
 
       it('does not error on valid record', async () => {
         return Promise.all(cases.valid.publicKey.map(async (k) => {
-          await validator.validators.pk(k, key.public.bytes)
+          await validator.validators.pk(k, publicKeyToProtobuf(key.publicKey))
         }))
       })
 
       it('throws on invalid records', async () => {
-        return Promise.all(cases.invalid.publicKey.map(async ({ data, code }) => {
+        return Promise.all(cases.invalid.publicKey.map(async data => {
           try {
             //
-            await validator.validators.pk(data, key.public.bytes)
+            await validator.validators.pk(data, publicKeyToProtobuf(key.publicKey))
           } catch (err: any) {
-            expect(err.code).to.eql(code)
+            expect(err).to.have.property('name', 'InvalidParametersError')
             return
           }
-          expect.fail('did not throw an error with code ' + code)
+          expect.fail('did not throw an InvalidParametersError')
         }))
       })
     })
@@ -125,11 +117,13 @@ describe('validator', () => {
 
   describe('go interop', () => {
     it('record with key from from go', async () => {
-      const pubKey = unmarshalPublicKey(fixture.publicKey)
+      const pubKey = publicKeyFromProtobuf(fixture.publicKey)
+      const k = uint8ArrayConcat([
+        uint8ArrayFromString('/pk/'),
+        pubKey.toMultihash().bytes
+      ])
 
-      const hash = await pubKey.hash()
-      const k = Uint8Array.of(...uint8ArrayFromString('/pk/'), ...hash)
-      await validator.validators.pk(k, pubKey.bytes)
+      await validator.validators.pk(k, fixture.publicKey)
     })
   })
 })

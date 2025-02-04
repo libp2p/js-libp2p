@@ -1,18 +1,22 @@
-import { CodeError } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
 import { CLOSE_TIMEOUT } from './constants.js'
-import type { AbortOptions, ComponentLogger, MultiaddrConnection } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, CounterGroup, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
 
 export interface SocketToConnOptions {
   localAddr?: Multiaddr
   logger: ComponentLogger
+  metrics?: CounterGroup
+  metricPrefix?: string
 }
 
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
 export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, options: SocketToConnOptions): MultiaddrConnection {
   const log = options.logger.forComponent('libp2p:websockets:maconn')
+  const metrics = options.metrics
+  const metricPrefix = options.metricPrefix ?? ''
 
   const maConn: MultiaddrConnection = {
     log,
@@ -58,7 +62,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
 
-        this.abort(new CodeError('Socket close timeout', 'ERR_SOCKET_CLOSE_TIMEOUT'))
+        this.abort(new AbortError('Socket close timeout'))
       }
 
       options.signal?.addEventListener('abort', listener)
@@ -81,10 +85,18 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
       stream.destroy()
       maConn.timeline.close = Date.now()
+
+      // ws WebSocket.terminate does not accept an Error arg to emit an 'error'
+      // event on destroy like other node streams so we can't update a metric
+      // with an event listener
+      // https://github.com/websockets/ws/issues/1752#issuecomment-622380981
+      metrics?.increment({ [`${metricPrefix}error`]: true })
     }
   }
 
   stream.socket.addEventListener('close', () => {
+    metrics?.increment({ [`${metricPrefix}close`]: true })
+
     // In instances where `close` was not explicitly called,
     // such as an iterable stream ending, ensure we have set the close
     // timeline

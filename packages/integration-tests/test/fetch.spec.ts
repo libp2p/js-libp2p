@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
 import { type Fetch, fetch } from '@libp2p/fetch'
-import { ERR_INVALID_PARAMETERS } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { isWebWorker } from 'wherearewe'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
@@ -12,16 +12,13 @@ async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
   return createLibp2p(createBaseOptions({
     services: {
       fetch: fetch()
-    },
-    connectionManager: {
-      minConnections: 0
     }
   }))
 }
 
 describe('fetch', () => {
   if (isWebWorker) {
-    it.skip('tests are skipped because WebWorkers can only have transient connections', () => {
+    it.skip('tests are skipped because WebWorkers can only have limited connections', () => {
 
     })
     return
@@ -35,9 +32,9 @@ describe('fetch', () => {
   const DATA_B = { foobar: 'goodnight moon' }
 
   const generateLookupFunction = function (prefix: string, data: Record<string, string>) {
-    return async function (key: string): Promise<Uint8Array | undefined> {
+    return async function (key: Uint8Array): Promise<Uint8Array | undefined> {
       key = key.slice(prefix.length) // strip prefix from key
-      const val = data[key]
+      const val = data[uint8ArrayToString(key)]
       if (val != null) {
         return (new TextEncoder()).encode(val)
       }
@@ -113,14 +110,14 @@ describe('fetch', () => {
     receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
     await expect(sender.services.fetch.fetch(receiver.peerId, '/moduleUNKNOWN/foobar'))
-      .to.eventually.be.rejected.with.property('code', ERR_INVALID_PARAMETERS)
+      .to.eventually.be.rejected.with.property('name', 'ProtocolError')
   })
 
   it('registering multiple handlers for same prefix errors', async () => {
     receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_A))
 
     expect(() => { receiver.services.fetch.registerLookupFunction(PREFIX_A, generateLookupFunction(PREFIX_A, DATA_B)) })
-      .to.throw().with.property('code', 'ERR_KEY_ALREADY_EXISTS')
+      .to.throw().with.property('name', 'InvalidParametersError')
   })
 
   it('can unregister handler', async () => {

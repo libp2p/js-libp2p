@@ -30,12 +30,12 @@ describe('utils', () => {
 
   it('should reject certificate with a the wrong peer id in the extension', async () => {
     await expect(verifyPeerCertificate(testVectors.wrongPeerIdInExtension.cert, undefined, logger('libp2p'))).to.eventually.be.rejected
-      .with.property('code', 'ERR_INVALID_CRYPTO_EXCHANGE')
+      .with.property('name', 'InvalidCryptoExchangeError')
   })
 
   it('should reject certificate with invalid self signature', async () => {
     await expect(verifyPeerCertificate(testVectors.invalidCertificateSignature.cert, undefined, logger('libp2p'))).to.eventually.be.rejected
-      .with.property('code', 'ERR_INVALID_CRYPTO_EXCHANGE')
+      .with.property('name', 'InvalidCryptoExchangeError')
   })
 
   it('should reject certificate with a chain', async () => {
@@ -72,6 +72,6 @@ describe('utils', () => {
     })
 
     await expect(verifyPeerCertificate(new Uint8Array(cert.rawData), undefined, logger('libp2p'))).to.eventually.be.rejected
-      .with.property('code', 'ERR_INVALID_CRYPTO_EXCHANGE')
+      .with.property('name', 'InvalidCryptoExchangeError')
   })
 })

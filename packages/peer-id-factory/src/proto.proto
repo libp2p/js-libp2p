@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-message PeerIdProto {
-  optional bytes id = 1;
-  optional bytes pubKey = 2;
-  optional bytes privKey = 3;
-}

@@ -1,6 +1,6 @@
 /* eslint-disable complexity */
 
-import { setMaxListeners } from '@libp2p/interface'
+import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
 import drain from 'it-drain'
@@ -40,6 +40,10 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }
   }
 
+  [serviceCapabilities]: string[] = [
+    '@libp2p/identify-push'
+  ]
+
   /**
    * Calls `push` on all peer connections
    */
@@ -54,7 +58,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       peerId: this.peerId,
       multiaddrs: listenAddresses
     })
-    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId)
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey)
     const supportedProtocols = this.registrar.getProtocols()
     const peer = await this.peerStore.get(this.peerId)
     const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
@@ -78,7 +82,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
           try {
             stream = await connection.newStream(self.protocol, {
               signal,
-              runOnTransientConnection: self.runOnTransientConnection
+              runOnLimitedConnection: self.runOnLimitedConnection
             })
 
             const pb = pbStream(stream, {
@@ -141,6 +145,6 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       return
     }
 
-    this.log('handled push from %p', connection.remotePeer)
+    this.log.trace('handled push from %p', connection.remotePeer)
   }
 }

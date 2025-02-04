@@ -1,10 +1,11 @@
-import { bases } from 'multiformats/basics'
-import * as multihashes from 'multihashes'
-import { inappropriateMultiaddr, invalidArgument, invalidFingerprint, unsupportedHashAlgorithm } from '../error.js'
+import { InvalidParametersError } from '@libp2p/interface'
+import { type Multiaddr } from '@multiformats/multiaddr'
+import { bases, digest } from 'multiformats/basics'
+import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../error.js'
+import { MAX_MESSAGE_SIZE } from '../stream.js'
 import { CERTHASH_CODE } from './transport.js'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { HashCode, HashName } from 'multihashes'
+import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 /**
  * Get base2 | identity decoders
@@ -15,7 +16,7 @@ export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d
 export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptions): string | undefined {
   // try to fetch fingerprint from local certificate
   const localCert = pc.getConfiguration().certificates?.at(0)
-  if (localCert == null || localCert.getFingerprints == null) {
+  if (localCert?.getFingerprints == null) {
     options.log.trace('fetching fingerprint from local SDP')
     const localDescription = pc.localDescription
     if (localDescription == null) {
@@ -32,7 +33,7 @@ export function getLocalFingerprint (pc: RTCPeerConnection, options: LoggerOptio
 
   const fingerprint = localCert.getFingerprints()[0].value
   if (fingerprint == null) {
-    throw invalidFingerprint('', 'no fingerprint on local certificate')
+    throw new InvalidFingerprintError('', 'no fingerprint on local certificate')
   }
 
   return fingerprint
@@ -43,6 +44,7 @@ export function getFingerprintFromSdp (sdp: string): string | undefined {
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
 }
+
 /**
  * Get base2 | identity decoders
  */
@@ -62,7 +64,7 @@ export function certhash (ma: Multiaddr): string {
   const certhash = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0]
 
   if (certhash === undefined || certhash === '') {
-    throw inappropriateMultiaddr(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
+    throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
   }
 
   return certhash
@@ -71,9 +73,8 @@ export function certhash (ma: Multiaddr): string {
 /**
  * Convert a certhash into a multihash
  */
-export function decodeCerthash (certhash: string): { code: HashCode, name: HashName, length: number, digest: Uint8Array } {
-  const mbdecoded = mbdecoder.decode(certhash)
-  return multihashes.decode(mbdecoded)
+export function decodeCerthash (certhash: string): MultihashDigest {
+  return digest.decode(mbdecoder.decode(certhash))
 }
 
 /**
@@ -81,30 +82,30 @@ export function decodeCerthash (certhash: string): { code: HashCode, name: HashN
  */
 export function ma2Fingerprint (ma: Multiaddr): string[] {
   const mhdecoded = decodeCerthash(certhash(ma))
-  const prefix = toSupportedHashFunction(mhdecoded.name)
+  const prefix = toSupportedHashFunction(mhdecoded.code)
   const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
   const sdp = fingerprint.match(/.{1,2}/g)
 
   if (sdp == null) {
-    throw invalidFingerprint(fingerprint, ma.toString())
+    throw new InvalidFingerprintError(fingerprint, ma.toString())
   }
 
-  return [`${prefix.toUpperCase()} ${sdp.join(':').toUpperCase()}`, fingerprint]
+  return [`${prefix} ${sdp.join(':').toUpperCase()}`, fingerprint]
 }
 
 /**
  * Normalize the hash name from a given multihash has name
  */
-export function toSupportedHashFunction (name: multihashes.HashName): string {
-  switch (name) {
-    case 'sha1':
-      return 'sha-1'
-    case 'sha2-256':
-      return 'sha-256'
-    case 'sha2-512':
-      return 'sha-512'
+export function toSupportedHashFunction (code: number): 'SHA-1' | 'SHA-256' | 'SHA-512' {
+  switch (code) {
+    case 0x11:
+      return 'SHA-1'
+    case 0x12:
+      return 'SHA-256'
+    case 0x13:
+      return 'SHA-512'
     default:
-      throw unsupportedHashAlgorithm(name)
+      throw new UnsupportedHashAlgorithmError(code)
   }
 }
 
@@ -129,7 +130,7 @@ a=ice-ufrag:${ufrag}
 a=ice-pwd:${ufrag}
 a=fingerprint:${CERTFP}
 a=sctp-port:5000
-a=max-message-size:16384
+a=max-message-size:${MAX_MESSAGE_SIZE}
 a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r\n`
 }
 
@@ -148,7 +149,7 @@ export function fromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescript
  */
 export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessionDescriptionInit {
   if (desc.sdp === undefined) {
-    throw invalidArgument("Can't munge a missing SDP")
+    throw new InvalidParametersError("Can't munge a missing SDP")
   }
 
   desc.sdp = desc.sdp

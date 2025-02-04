@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
+ * A logger for libp2p based on [weald](https://www.npmjs.com/package/weald), a TypeScript port of the venerable [debug](https://www.npmjs.com/package/debug) module.
  *
  * @example
  *
@@ -32,10 +32,10 @@
  * ```
  */
 
-import debug from 'debug'
 import { base32 } from 'multiformats/bases/base32'
 import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
+import debug from 'weald'
 import { truncatePeerId } from './utils.js'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -75,6 +75,11 @@ debug.formatters.k = (v: Key): string => {
 // Add a formatter for stringifying Multiaddrs
 debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
+}
+
+// Add a formatter for stringifying Errors
+debug.formatters.e = (v?: Error): string => {
+  return v == null ? 'undefined' : notEmpty(v.stack) ?? notEmpty(v.message) ?? v.toString()
 }
 
 export interface Logger {
@@ -194,7 +199,7 @@ export function logger (name: string): Logger {
   let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)
 
   // look at all the debug names and see if trace logging has explicitly been enabled
-  if (debug.enabled(`${name}:trace`) && debug.names.map(r => r.toString()).find(n => n.includes(':trace')) != null) {
+  if (debug.enabled(`${name}:trace`) && debug.names.map((r: any) => r.toString()).find((n: string) => n.includes(':trace')) != null) {
     trace = debug(`${name}:trace`)
   }
 
@@ -214,4 +219,18 @@ export function enable (namespaces: string): void {
 
 export function enabled (namespaces: string): boolean {
   return debug.enabled(namespaces)
+}
+
+function notEmpty (str?: string): string | undefined {
+  if (str == null) {
+    return
+  }
+
+  str = str.trim()
+
+  if (str.length === 0) {
+    return
+  }
+
+  return str
 }

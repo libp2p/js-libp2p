@@ -1,35 +1,26 @@
 /* eslint-env mocha */
 
 import { TypedEventEmitter } from '@libp2p/interface'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'
-import type { PeerDiscovery, PeerDiscoveryEvents, PeerId, Startable, Libp2p } from '@libp2p/interface'
+import type { PeerDiscovery, PeerDiscoveryEvents, Startable, Libp2p } from '@libp2p/interface'
 
 describe('peer discovery', () => {
-  let peerId: PeerId
   let libp2p: Libp2p
-
-  before(async () => {
-    peerId = await createEd25519PeerId()
-  })
 
   afterEach(async () => {
     if (libp2p != null) {
       await libp2p.stop()
     }
-
-    sinon.reset()
   })
 
   it('should start/stop startable discovery on libp2p start/stop', async () => {
     const discovery = stubInterface<PeerDiscovery & Startable>()
 
     libp2p = await createLibp2p({
-      peerId,
       peerDiscovery: [
         () => discovery
       ]

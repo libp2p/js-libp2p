@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
+import { generateKeyPair } from '@libp2p/crypto/keys'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { dedupeFilterAndSortAddresses } from '../../src/utils/dedupe-addresses.js'
@@ -13,7 +14,7 @@ describe('dedupe-addresses', () => {
   let peerId: PeerId
 
   beforeEach(async () => {
-    peerId = await createEd25519PeerId()
+    peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   it('should dedupe addresses', async () => {
