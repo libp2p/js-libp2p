@@ -55,7 +55,7 @@
  *
  * console.info(node.getMultiaddrs())
  * // includes public WSS address:
- * // [ '/ip4/123.123.123.123/tcp/12345/tls/ws ]
+ * // [ '/ip4/123.123.123.123/tcp/12345/tls/ws' ]
  * ```
  */
 
