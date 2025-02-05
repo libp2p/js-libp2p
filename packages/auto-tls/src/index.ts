@@ -182,6 +182,14 @@ export interface AutoTLSInit {
    * @default false
    */
   autoConfirmAddress?: boolean
+  
+  /**
+   * The User-Agent header sent during HTTP requests
+   *
+   * @default "js-libp2p/${version} node/${version}"
+   * @deprecated Use `nodeInfo.userAgent` in the main libp2p config instead
+   */
+  userAgent?: string
 }
 
 export interface AutoTLS {
