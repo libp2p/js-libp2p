@@ -6,7 +6,8 @@ describe('opentelemetry-metrics', () => {
     const metrics = openTelemetryMetrics()({
       nodeInfo: {
         name: 'test',
-        version: '1.0.0'
+        version: '1.0.0',
+        userAgent: 'test/1.0.0 node/1.0.0'
       }
     })
 

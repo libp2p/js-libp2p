@@ -4,7 +4,6 @@ import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { isNode, isBrowser, isWebWorker, isElectronMain, isElectronRenderer, isReactNative } from 'wherearewe'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
@@ -42,15 +41,7 @@ export function getAgentVersion (nodeInfo: NodeInfo, agentVersion?: string): str
     return agentVersion
   }
 
-  agentVersion = `${nodeInfo.name}/${nodeInfo.version}`
-  // Append user agent version to default AGENT_VERSION depending on the environment
-  if (isNode || isElectronMain) {
-    agentVersion += ` UserAgent=${globalThis.process.version}`
-  } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
-    agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`
-  }
-
-  return agentVersion
+  return nodeInfo.userAgent
 }
 
 export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {

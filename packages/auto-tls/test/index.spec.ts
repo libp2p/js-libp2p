@@ -50,7 +50,8 @@ describe('auto-tls', () => {
       datastore: new MemoryDatastore(),
       nodeInfo: {
         name: 'name',
-        version: 'version'
+        version: 'version',
+        userAgent: 'userAgent'
       }
     }
 

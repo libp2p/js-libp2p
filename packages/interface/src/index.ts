@@ -723,6 +723,11 @@ export interface NodeInfo {
    * The implementation version
    */
   version: string
+
+  /**
+   * A string that contains information about the implementation and runtime
+   */
+  userAgent: string
 }
 
 /**

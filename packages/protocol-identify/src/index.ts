@@ -56,6 +56,8 @@ export interface IdentifyInit {
 
   /**
    * What details we should send as part of an identify message
+   *
+   * @deprecated Use `nodeInfo.userAgent` in the main libp2p config instead
    */
   agentVersion?: string
 

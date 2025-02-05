@@ -19,6 +19,7 @@ import { RandomWalk } from './random-walk.js'
 import { DefaultRegistrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
+import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
@@ -64,13 +65,18 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
+
+    const nodeInfoName = init.nodeInfo?.name ?? pkg.name
+    const nodeInfoVersion = init.nodeInfo?.version ?? pkg.name
+
     // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
-      nodeInfo: init.nodeInfo ?? {
-        name: pkg.name,
-        version: pkg.version
+      nodeInfo: {
+        name: nodeInfoName,
+        version: nodeInfoVersion,
+        userAgent: init.nodeInfo?.userAgent ?? userAgent(nodeInfoName, nodeInfoVersion)
       },
       logger: this.logger,
       events,
