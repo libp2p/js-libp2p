@@ -2,6 +2,6 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/version.ts",
-    "./src/config/user-agent.ts"
+    "./src/user-agent.ts"
   ]
 }
