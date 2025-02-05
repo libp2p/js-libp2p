@@ -182,6 +182,7 @@ export interface AutoTLSInit {
    * @default false
    */
   autoConfirmAddress?: boolean
+
   /**
    * The User-Agent header sent during HTTP requests
    *
