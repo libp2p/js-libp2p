@@ -1,6 +1,7 @@
 {
   "entryPoints": [
     "./src/index.ts",
-    "./src/version.ts"
+    "./src/version.ts",
+    "./src/config/user-agent.ts"
   ]
 }

@@ -52,6 +52,10 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
+    "./user-agent": {
+      "types": "./dist/src/user-agent.d.ts",
+      "import": "./dist/src/user-agent.js"
+    },
     "./version": {
       "types": "./dist/src/version.d.ts",
       "import": "./dist/src/version.js"
@@ -132,11 +136,13 @@
   },
   "browser": {
     "./dist/src/connection-manager/constants.js": "./dist/src/connection-manager/constants.browser.js",
-    "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js"
+    "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js",
+    "./dist/src/user-agent.js": "./dist/src/user-agent.browser.js"
   },
   "react-native": {
     "./dist/src/connection-manager/constants.js": "./dist/src/connection-manager/constants.browser.js",
-    "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js"
+    "./dist/src/config/connection-gater.js": "./dist/src/config/connection-gater.browser.js",
+    "./dist/src/user-agent.js": "./dist/src/user-agent.react-native.js"
   },
   "sideEffects": false
 }
