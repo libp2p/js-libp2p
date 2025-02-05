@@ -1,19 +1,9 @@
 import fnv1aHash from '@sindresorhus/fnv1a'
-import mur from 'murmurhash3js-revisited'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 export interface Hash {
   hash(input: Uint8Array, seed: number): number
   hashV(input: Uint8Array, seed: number): Uint8Array
-}
-
-export const murmur3: Hash = {
-  hash: (input, seed) => {
-    return mur.x86.hash32(input, seed)
-  },
-  hashV: (input, seed) => {
-    return numberToBuffer(murmur3.hash(input, seed))
-  }
 }
 
 export const fnv1a: Hash = {
