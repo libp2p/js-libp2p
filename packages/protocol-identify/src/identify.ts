@@ -16,8 +16,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { IdentifyResult, AbortOptions, Connection, Stream, Startable } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal'
+import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, IncomingStreamData } from '@libp2p/interface'
 
 const CODEC_IP6 = 0x29
 
