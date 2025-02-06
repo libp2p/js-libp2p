@@ -1,56 +1,25 @@
-import type { Connection, Stream, Topology } from '@libp2p/interface'
+import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, IncomingStreamData } from '@libp2p/interface'
 
-export interface IncomingStreamData {
+export type {
   /**
-   * The stream that has been opened
+   * @deprecated This type should be imported from @libp2p/interface directly
    */
-  stream: Stream
-
-  /**
-   * The connection that the stream was opened on
-   */
-  connection: Connection
-}
-
-export interface StreamHandler {
-  (data: IncomingStreamData): void
-}
-
-export interface StreamHandlerOptions {
-  /**
-   * How many incoming streams can be open for this protocol at the same time on each connection
-   *
-   * @default 32
-   */
-  maxInboundStreams?: number
+  IncomingStreamData,
 
   /**
-   * How many outgoing streams can be open for this protocol at the same time on each connection
-   *
-   * @default 64
+   * @deprecated This type should be imported from @libp2p/interface directly
    */
-  maxOutboundStreams?: number
+  StreamHandler,
 
   /**
-   * If true, allow this protocol to run on limited connections (e.g.
-   * connections with data or duration limits such as circuit relay
-   * connections)
-   *
-   * @default false
+   * @deprecated This type should be imported from @libp2p/interface directly
    */
-  runOnLimitedConnection?: boolean
-}
-
-export interface StreamHandlerRecord {
-  /**
-   * The handler that was registered to handle streams opened on the protocol
-   */
-  handler: StreamHandler
+  StreamHandlerOptions,
 
   /**
-   * The options that were used to register the stream handler
+   * @deprecated This type should be imported from @libp2p/interface directly
    */
-  options: StreamHandlerOptions
+  StreamHandlerRecord
 }
 
 export interface Registrar {
