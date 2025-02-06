@@ -1,6 +1,16 @@
-import type { PublicKey } from '../keys/index.js'
-import type { PeerId } from '../peer-id/index.js'
+import type { PublicKey } from './keys.js'
+import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+
+/**
+ * When a peer that is tagged with this prefix disconnects, we will attempt to
+ * redial it, up to a limit.
+ *
+ * To allow multiple components to add/remove their own keep-alive tags without
+ * accidentally overwriting those of other components, attach a unique suffix to
+ * the tag, e.g. `keep-alive-circuit-relay` or `keep-alive-kad-dht`, etc.
+ */
+export const KEEP_ALIVE = 'keep-alive'
 
 /**
  * A multiaddr with an optional flag that indicates if its trustworthy

@@ -1,5 +1,5 @@
-import type { MultiaddrConnection } from '../connection/index.js'
-import type { PeerId } from '../peer-id/index.js'
+import type { MultiaddrConnection } from './connection.js'
+import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ConnectionGater {

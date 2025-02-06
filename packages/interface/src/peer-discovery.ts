@@ -1,5 +1,5 @@
-import type { TypedEventTarget } from '../event-target.js'
-import type { PeerInfo } from '../peer-info/index.js'
+import type { TypedEventTarget } from './event-target.js'
+import type { PeerInfo } from './peer-info.js'
 
 /**
  * Any object that implements this Symbol as a property should return a

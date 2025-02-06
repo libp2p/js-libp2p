@@ -1,6 +1,6 @@
-import type { RoutingOptions } from '../index.js'
-import type { PeerId } from '../peer-id/index.js'
-import type { PeerInfo } from '../peer-info/index.js'
+import type { RoutingOptions } from './index.js'
+import type { PeerId } from './peer-id.js'
+import type { PeerInfo } from './peer-info.js'
 
 /**
  * Any object that implements this Symbol as a property should return a

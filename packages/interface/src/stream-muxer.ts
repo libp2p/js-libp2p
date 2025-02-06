@@ -1,5 +1,5 @@
-import type { Direction, Stream } from '../connection/index.js'
-import type { AbortOptions } from '../index.js'
+import type { Direction, Stream } from './connection.js'
+import type { AbortOptions } from './index.js'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
