@@ -1,8 +1,8 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import merge from 'merge-options'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
-import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandlerRecord, StreamHandlerOptions } from '@libp2p/interface'
+import type { Registrar as RegistrarInterface, StreamHandler } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
@@ -18,7 +18,7 @@ export interface RegistrarComponents {
 /**
  * Responsible for notifying registered protocols of events in the network.
  */
-export class DefaultRegistrar implements Registrar {
+export class Registrar implements RegistrarInterface {
   private readonly log: Logger
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
@@ -73,7 +73,7 @@ export class DefaultRegistrar implements Registrar {
    * Registers the `handler` for each protocol
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
-    if (this.handlers.has(protocol)) {
+    if (this.handlers.has(protocol) && opts?.force !== true) {
       throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 

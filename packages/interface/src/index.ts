@@ -620,7 +620,8 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * `libp2p.handle(protocols, handler, options)`
    *
-   * In the event of a new handler for the same protocol being added, the first one is discarded.
+   * In the event of a new handler for the same protocol being added and error
+   * will be thrown. Pass `force: true` to override this.
    *
    * @example
    *

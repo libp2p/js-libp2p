@@ -16,15 +16,14 @@ import { ConnectionMonitor } from './connection-monitor.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
-import { DefaultRegistrar } from './registrar.js'
+import { Registrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
 import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey } from '@libp2p/interface'
-import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
@@ -132,7 +131,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     // Create the Registrar
-    this.configureComponent('registrar', new DefaultRegistrar(this.components))
+    this.configureComponent('registrar', new Registrar(this.components))
 
     // Addresses {listen, announce, noAnnounce}
     this.configureComponent('addressManager', new AddressManager(this.components, init.addresses))
