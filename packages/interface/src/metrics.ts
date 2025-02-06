@@ -1,4 +1,4 @@
-import type { MultiaddrConnection, Stream, Connection } from '../connection/index.js'
+import type { MultiaddrConnection, Stream, Connection } from './connection.js'
 
 /**
  * Create tracked metrics with these options. Loosely based on the

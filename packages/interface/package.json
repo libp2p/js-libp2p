@@ -59,7 +59,7 @@
     "aegir": "^45.0.5"
   },
   "browser": {
-    "events": "./dist/src/events.browser.js"
+    "./dist/src/events.js": "./dist/src/events.browser.js"
   },
   "react-native": {
     "./dist/src/events.js": "./dist/src/events.browser.js"

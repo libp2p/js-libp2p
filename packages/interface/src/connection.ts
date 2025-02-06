@@ -1,5 +1,5 @@
-import type { AbortOptions, Logger } from '../index.js'
-import type { PeerId } from '../peer-id/index.js'
+import type { AbortOptions, Logger } from './index.js'
+import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'

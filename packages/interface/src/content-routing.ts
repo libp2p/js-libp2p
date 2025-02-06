@@ -1,5 +1,5 @@
-import type { RoutingOptions } from '../index.js'
-import type { PeerInfo } from '../peer-info/index.js'
+import type { RoutingOptions } from './index.js'
+import type { PeerInfo } from './peer-info.js'
 import type { CID } from 'multiformats/cid'
 
 /**

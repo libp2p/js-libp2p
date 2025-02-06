@@ -1,4 +1,4 @@
-import type { Connection, Stream } from '../connection/index.js'
+import type { Connection, Stream } from './connection.js'
 
 export interface IncomingStreamData {
   /**

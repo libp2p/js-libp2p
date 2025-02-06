@@ -1,6 +1,6 @@
-import type { MultiaddrConnection } from '../connection/index.js'
-import type { AbortOptions } from '../index.js'
-import type { PeerId } from '../peer-id/index.js'
+import type { MultiaddrConnection } from './connection.js'
+import type { AbortOptions } from './index.js'
+import type { PeerId } from './peer-id.js'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

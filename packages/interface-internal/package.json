@@ -51,8 +51,7 @@
     "@libp2p/interface": "^2.4.1",
     "@libp2p/peer-collections": "^6.0.16",
     "@multiformats/multiaddr": "^12.3.3",
-    "progress-events": "^1.0.1",
-    "uint8arraylist": "^2.4.8"
+    "progress-events": "^1.0.1"
   },
   "devDependencies": {
     "aegir": "^45.0.5"

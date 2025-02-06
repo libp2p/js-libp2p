@@ -1,4 +1,4 @@
-import type { Ed25519PublicKey, KeyType, RSAPublicKey, Secp256k1PublicKey } from '../keys/index.js'
+import type { Ed25519PublicKey, KeyType, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
