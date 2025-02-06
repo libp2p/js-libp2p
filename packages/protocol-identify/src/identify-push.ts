@@ -15,8 +15,8 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
-import type { Stream, Startable } from '@libp2p/interface'
-import type { ConnectionManager, IncomingStreamData } from '@libp2p/interface-internal'
+import type { Stream, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export class IdentifyPush extends AbstractIdentify implements Startable, IdentifyPushInterface {
   private readonly connectionManager: ConnectionManager
