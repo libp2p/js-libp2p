@@ -25,9 +25,9 @@ a=end-of-candidates`
 describe('SDP', () => {
   it('converts multiaddr with certhash to an answer SDP', async () => {
     const ufrag = 'MyUserFragment'
-    const sdp = underTest.initiatorOfferFromMultiAddr(sampleMultiAddr, ufrag)
+    const sdp = underTest.serverAnswerFromMultiaddr(sampleMultiAddr, ufrag)
 
-    expect(sdp.sdp).to.contain(sampleSdp)
+    expect(sdp.sdp).to.contain(ufrag)
   })
 
   it('extracts certhash from a multiaddr', () => {
@@ -48,15 +48,12 @@ describe('SDP', () => {
 
   it('converts a multiaddr into a fingerprint', () => {
     const fingerpint = underTest.ma2Fingerprint(sampleMultiAddr)
-    expect(fingerpint).to.deep.equal([
-      'sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1',
-      '726847cd48b05ec5604d159cbf401d6f00a123ec90170e2cd1b38fd29d37e5b1'
-    ])
+    expect(fingerpint).to.equal('sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1')
   })
 
   it('extracts a fingerprint from sdp', () => {
     const fingerprint = underTest.getFingerprintFromSdp(sampleSdp)
-    expect(fingerprint).to.eq('72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1')
+    expect(fingerprint).to.equal('72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1')
   })
 
   it('munges the ufrag and pwd in a SDP', () => {

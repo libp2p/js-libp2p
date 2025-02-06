@@ -18,7 +18,7 @@ export interface ConnectOptions {
   metrics?: Metrics
   events?: CounterGroup
   remoteAddr: Multiaddr
-  role: 'initiator' | 'responder'
+  role: 'client' | 'server'
   dataChannel?: DataChannelOptions
   upgrader: Upgrader
   peerId: PeerId
@@ -27,50 +27,65 @@ export interface ConnectOptions {
   privateKey: PrivateKey
 }
 
-export interface InitiatorOptions extends ConnectOptions {
-  role: 'initiator'
+export interface ClientOptions extends ConnectOptions {
+  role: 'client'
 }
 
-export interface ResponderOptions extends ConnectOptions {
-  role: 'responder'
+export interface ServerOptions extends ConnectOptions {
+  role: 'server'
 }
 
 const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: InitiatorOptions): Promise<void>
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ResponderOptions): Promise<Connection>
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ClientOptions): Promise<Connection>
+export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ServerOptions): Promise<void>
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<any> {
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the remote will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
   const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
 
-  // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-  // respond to STUN messages without performing an actual SDP exchange.
-  // This is because it can infer the passwd field by reading the USERNAME
-  // attribute of the STUN message.
-  options.log.trace('%s creating local offer', options.role)
-  const offerSdp = await peerConnection.createOffer()
-  const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-  options.log.trace('%s setting local description %s', options.role, mungedOfferSdp.sdp)
-  await peerConnection.setLocalDescription(mungedOfferSdp)
+  if (options.role === 'client') {
+    // the client has to set the local offer before the remote answer
 
-  // construct answer sdp from multiaddr and ufrag
-  let answerSdp: RTCSessionDescriptionInit
+    // Create offer and munge sdp with ufrag == pwd. This allows the remote to
+    // respond to STUN messages without performing an actual SDP exchange.
+    // This is because it can infer the passwd field by reading the USERNAME
+    // attribute of the STUN message.
+    options.log.trace('client creating local offer')
+    const offerSdp = await peerConnection.createOffer()
+    options.log.trace('client created local offer %s', offerSdp.sdp)
+    const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
+    options.log.trace('client setting local offer %s', mungedOfferSdp.sdp)
+    await peerConnection.setLocalDescription(mungedOfferSdp)
 
-  if (options.role === 'initiator') {
-    answerSdp = sdp.responderOfferFromMultiaddr(options.remoteAddr, ufrag)
+    const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, ufrag)
+    options.log.trace('client setting server description %s', answerSdp.sdp)
+    await peerConnection.setRemoteDescription(answerSdp)
   } else {
-    answerSdp = sdp.initiatorOfferFromMultiAddr(options.remoteAddr, ufrag)
-  }
+    // the server has to set the remote offer before the local answer
+    const offerSdp = sdp.clientOfferFromMultiAddr(options.remoteAddr, ufrag)
+    options.log.trace('server setting client %s %s', offerSdp.type, offerSdp.sdp)
+    await peerConnection.setRemoteDescription(offerSdp)
 
-  options.log.trace('%s setting remote description %s', options.role, answerSdp.sdp)
-  await peerConnection.setRemoteDescription(answerSdp)
+    // Create offer and munge sdp with ufrag == pwd. This allows the remote to
+    // respond to STUN messages without performing an actual SDP exchange.
+    // This is because it can infer the passwd field by reading the USERNAME
+    // attribute of the STUN message.
+    options.log.trace('server creating local answer')
+    const answerSdp = await peerConnection.createAnswer()
+    options.log.trace('server created local answer')
+    const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
+    options.log.trace('server setting local description %s', mungedAnswerSdp.sdp)
+    await peerConnection.setLocalDescription(mungedAnswerSdp)
+  }
 
   options.log.trace('%s wait for handshake channel to open', options.role)
   await raceEvent(handshakeDataChannel, 'open', options.signal)
 
-  if (options.role === 'initiator') {
+  options.log.trace('%s handshake channel opened', options.role)
+
+  if (options.role === 'server') {
     // now that the connection has been opened, add the remote's certhash to
     // it's multiaddr so we can complete the noise handshake
     const remoteFingerprint = peerConnection.remoteFingerprint()?.value ?? ''
@@ -147,7 +162,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     dataChannelOptions: options.dataChannel
   })
 
-  if (options.role === 'responder') {
+  if (options.role === 'client') {
     // For outbound connections, the remote is expected to start the noise handshake.
     // Therefore, we need to secure an inbound noise connection from the remote.
     options.log.trace('%s secure inbound', options.role)

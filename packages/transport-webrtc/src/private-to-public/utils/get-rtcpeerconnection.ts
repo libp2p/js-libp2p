@@ -1,91 +1,81 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { PeerConnection } from 'node-datachannel'
-import { RTCPeerConnection } from '../../webrtc/index.js'
+import { RTCPeerConnection } from 'node-datachannel/polyfill'
 import { DEFAULT_STUN_SERVERS } from '../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
-import type { CertificateFingerprint, IceServer, RTCIceMode } from 'node-datachannel'
+import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
 
-/**
- * Convert the lib.dom.d.ts RTCIceServer type into a libdatachannel IceServer
- */
-export function toLibdatachannelIceServers (arg?: RTCIceServer[]): IceServer[] | undefined {
-  if (arg == null) {
-    return
-  }
-
-  if (arg.length === 0) {
-    return []
-  }
-
-  function toLibdatachannelIceServer <T> (arg: string, init: T): T & { hostname: string, port: number } {
-    const url = new URL(arg)
-
-    return {
-      ...init,
-      hostname: url.hostname,
-      port: parseInt(url.port)
-    }
-  }
-
-  const output: IceServer[] = []
-
-  for (const server of arg) {
-    if (typeof server.urls === 'string') {
-      output.push(toLibdatachannelIceServer(server.urls, server))
-      continue
-    }
-
-    for (const url of server.urls) {
-      output.push(toLibdatachannelIceServer(url, server))
-    }
-  }
-
-  return output
-}
-
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
-  peerConnection: PeerConnection
+  certificate: TransportCertificate
   ufrag: string
-  iceMode?: RTCIceMode
+  role: 'client' | 'server'
+  peerConnection: PeerConnection
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly peerConnection: PeerConnection
   private readonly ufrag: string
-  private readonly iceMode?: RTCIceMode
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
-    this.iceMode = init.iceMode
   }
 
-  createDataChannel (label: string, dataChannelDict?: RTCDataChannelInit): RTCDataChannel {
-    const channel = super.createDataChannel(label, dataChannelDict)
-
-    // have to set ufrag after first datachannel is created
+  async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
+    // have to set ufrag before creating offer
     if (this.connectionState === 'new') {
-      this.peerConnection.setLocalDescription('offer', {
+      this.peerConnection?.setLocalDescription('offer', {
         iceUfrag: this.ufrag,
-        icePwd: this.ufrag,
-        iceMode: this.iceMode
+        icePwd: this.ufrag
       })
     }
 
-    return channel
+    return super.createOffer()
+  }
+
+  async createAnswer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
+    // have to set ufrag before creating answer
+    if (this.connectionState === 'new') {
+      this.peerConnection?.setLocalDescription('answer', {
+        iceUfrag: this.ufrag,
+        icePwd: this.ufrag
+      })
+    }
+
+    return super.createAnswer()
   }
 
   remoteFingerprint (): CertificateFingerprint {
+    if (this.peerConnection == null) {
+      throw new Error('Invalid state: peer connection not set')
+    }
+
     return this.peerConnection.remoteFingerprint()
   }
 }
 
-export async function createDialerRTCPeerConnection (role: 'listener' | 'dialer', ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
+function mapIceServers (iceServers?: RTCIceServer[]): string[] {
+  return iceServers
+    ?.map((server) => {
+      const urls = Array.isArray(server.urls) ? server.urls : [server.urls]
+
+      return urls.map((url) => {
+        if (server.username != null && server.credential != null) {
+          const [protocol, rest] = url.split(/:(.*)/)
+          return `${protocol}:${server.username}:${server.credential}@${rest}`
+        }
+        return url
+      })
+    })
+    .flat() ?? []
+}
+
+export async function createDialerRTCPeerConnection (role: 'client' | 'server', ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
   if (certificate == null) {
     // ECDSA is preferred over RSA here. From our testing we find that P-256
     // elliptic curve is supported by Pion, webrtc-rs, as well as Chromium
@@ -103,20 +93,18 @@ export async function createDialerRTCPeerConnection (role: 'listener' | 'dialer'
 
   const rtcConfig = typeof rtcConfiguration === 'function' ? await rtcConfiguration() : rtcConfiguration
 
-  // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-  const peerConnection = new PeerConnection(role, {
-    disableFingerprintVerification: true,
-    disableAutoNegotiation: true,
-    certificatePemFile: certificate.pem,
-    keyPemFile: certificate.privateKey,
-    maxMessageSize: 16384,
-    iceServers: toLibdatachannelIceServers(rtcConfig?.iceServers) ?? DEFAULT_STUN_SERVERS
-  })
-
   return new DirectRTCPeerConnection({
-    peerConnection,
+    ...rtcConfig,
     ufrag,
-    // TODO: workaround for https://github.com/pion/ice/issues/359#issuecomment-2610300555
-    iceMode: role === 'listener' ? 'controlled' : 'controlling'
+    certificate,
+    role,
+    peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
+      disableFingerprintVerification: true,
+      disableAutoNegotiation: true,
+      certificatePemFile: certificate.pem,
+      keyPemFile: certificate.privateKey,
+      maxMessageSize: 16384,
+      iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_STUN_SERVERS.map(urls => ({ urls })))
+    })
   })
 }

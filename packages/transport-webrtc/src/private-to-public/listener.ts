@@ -146,7 +146,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.log('create peer connection for %s', key)
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    peerConnection = await createDialerRTCPeerConnection('listener', ufrag, this.init.rtcConfiguration, this.certificate)
+    peerConnection = await createDialerRTCPeerConnection('server', ufrag, this.init.rtcConfiguration, this.certificate)
 
     this.connections.set(key, peerConnection)
 
@@ -164,7 +164,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     try {
       await connect(peerConnection, ufrag, {
-        role: 'initiator',
+        role: 'server',
         log: this.log,
         logger: this.components.logger,
         metrics: this.components.metrics,
