@@ -182,7 +182,7 @@ stopTimer()
 
 ## Extracting metrics
 
-Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [docs](https://libp2p.github.io/js-libp2p-prometheus-metrics/)
+Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [Prometheus Metrics API Docs](https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-prometheus)
 
 
 ```TypeScript
