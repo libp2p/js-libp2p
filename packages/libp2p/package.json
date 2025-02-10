@@ -54,6 +54,7 @@
     },
     "./user-agent": {
       "types": "./dist/src/user-agent.d.ts",
+      "browser": "./dist/src/user-agent.browser.js",
       "import": "./dist/src/user-agent.js"
     },
     "./version": {
