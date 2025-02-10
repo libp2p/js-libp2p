@@ -6,17 +6,6 @@ import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology
  * The `Registrar` module provides an interface for managing protocol handlers
  * and topologies in a libp2p network. It enables registering and managing
  * protocol-specific handlers, ensuring efficient peer-to-peer communication.
- *
- * @example
- * ```typescript
- * const registrar = libp2p.registrar
- *
- * await registrar.handle('/my-protocol/1.0.0', ({ stream }) => {
- *   console.log('Received stream:', stream)
- * })
- *
- * console.log(registrar.getProtocols()) // ['/my-protocol/1.0.0']
- * ```
  */
 
 /**
@@ -55,12 +44,6 @@ export interface Registrar {
    * Retrieve the list of registered protocol handlers.
    *
    * @returns An array of protocol strings.
-   *
-   * @example
-   * ```typescript
-   * const protocols = registrar.getProtocols()
-   * console.log(protocols) // ['/my-protocol/1.0.0']
-   * ```
    */
   getProtocols(): string[]
 
@@ -71,13 +54,6 @@ export interface Registrar {
    * @param handler - The function that handles incoming streams.
    * @param options - Optional configuration options for the handler.
    * @returns A promise that resolves once the handler is registered.
-   *
-   * @example
-   * ```typescript
-   * await registrar.handle('/chat/1.0.0', ({ stream }) => {
-   *   console.log('New chat stream:', stream)
-   * })
-   * ```
    */
   handle(protocol: string, handler: StreamHandler, options?: StreamHandlerOptions): Promise<void>
 
@@ -86,11 +62,6 @@ export interface Registrar {
    *
    * @param protocol - The protocol to unhandle.
    * @returns A promise that resolves once the handler is removed.
-   *
-   * @example
-   * ```typescript
-   * await registrar.unhandle('/chat/1.0.0')
-   * ```
    */
   unhandle(protocol: string): Promise<void>
 
@@ -111,12 +82,6 @@ export interface Registrar {
    * @param protocol - The protocol to register.
    * @param topology - The topology handler to register.
    * @returns A promise resolving to a unique ID for the registered topology.
-   *
-   * @example
-   * ```typescript
-   * const topologyId = await registrar.register('/fileshare/1.0.0', topologyHandler)
-   * console.log(topologyId) // 'topology-123'
-   * ```
    */
   register(protocol: string, topology: Topology): Promise<string>
 
@@ -124,11 +89,6 @@ export interface Registrar {
    * Unregister a topology handler using its unique ID.
    *
    * @param id - The ID of the topology to unregister.
-   *
-   * @example
-   * ```typescript
-   * registrar.unregister(topologyId)
-   * ```
    */
   unregister(id: string): void
 

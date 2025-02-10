@@ -7,8 +7,8 @@ import type { ProgressOptions } from 'progress-events'
  * @packageDocumentation
  *
  * The `ConnectionManager` module handles managing connections between peers in a libp2p network.
- * It provides methods for opening, closing, and querying connections, ensuring efficient
- * peer-to-peer communication.
+ * It provides methods for opening, closing, and querying connections.This also provides methods
+ * for accessing the dial queue.
  */
 
 /**
@@ -46,7 +46,7 @@ export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<Ope
 }
 
 /**
- * Manages peer-to-peer connections within a libp2p network.
+ * Manages the dialing, opening, and closing of connections.
  */
 export interface ConnectionManager {
   /**
@@ -54,13 +54,6 @@ export interface ConnectionManager {
    *
    * @param peerId - The PeerId to filter connections (optional).
    * @returns An array of active `Connection` objects.
-   * 
-   * @example
-   *
-   * ```TypeScript
-   * const connections = libp2p.connectionManager.get(peerId)
-   * // []
-   * ```
    */
   getConnections(peerId?: PeerId): Connection[]
 
@@ -68,12 +61,6 @@ export interface ConnectionManager {
    * Return a map of all connections with their associated PeerIds
    *
    * @returns A `PeerMap` containing `Connection[]` objects.
-   * 
-   * @example
-   *
-   * ```TypeScript
-   * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
-   * ```
    */
   getConnectionsMap(): PeerMap<Connection[]>
 
@@ -90,12 +77,6 @@ export interface ConnectionManager {
    * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.
    * @param options - Optional parameters for connection handling.
    * @returns A promise that resolves to a `Connection` object.
-   * 
-   * @example
-   *
-   * ```TypeScript
-   * const connection = await libp2p.connectionManager.openConnection(peerId)
-   * ```
    */
   openConnection(peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions): Promise<Connection>
 
@@ -128,12 +109,6 @@ export interface ConnectionManager {
    * Return the list of in-progress or queued dials
    *
    * @returns An array of `PendingDial` objects.
-   * 
-   * @example
-   *
-   * ```TypeScript
-   * const dials = libp2p.connectionManager.getDialQueue()
-   * ```
    */
   getDialQueue(): PendingDial[]
 

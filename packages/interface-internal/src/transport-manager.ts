@@ -6,15 +6,7 @@ import type { ProgressOptions } from 'progress-events'
  * @packageDocumentation
  *
  * The `TransportManager` module handles the management of transport protocols in a libp2p network.
- * It is responsible for adding, removing, and managing transport connections used for peer communication.
- *
- * @example
- * ```typescript
- * const transportManager = libp2p.transportManager
- *
- * await transportManager.listen([multiaddr('/ip4/127.0.0.1/tcp/4001')])
- * console.log('Listening on:', transportManager.getAddrs())
- * ```
+ * It is responsible for managing the transport themselves - dialling, querying addresses and listening.
  */
 
 /**
@@ -32,11 +24,6 @@ export interface TransportManager {
    * Add a transport to the transport manager.
    * 
    * @param transport - The transport instance to be added.
-   *
-   * @example
-   * ```typescript
-   * transportManager.add(myTransport)
-   * ```
    */
   add(transport: Transport): void
 
@@ -49,22 +36,12 @@ export interface TransportManager {
    * @param ma - The multiaddr to dial.
    * @param options - Optional dial options.
    * @returns A promise that resolves to a `Connection` object.
-   *
-   * @example
-   * ```typescript
-   * const conn = await transportManager.dial(multiaddr('/ip4/192.168.1.1/tcp/4001'))
-   * ```
    */
   dial(ma: Multiaddr, options?: TransportManagerDialOptions): Promise<Connection>
 
   /**
    * Return all addresses currently being listened on
    * @returns An array of `Multiaddr` objects.
-   *
-   * @example
-   * ```typescript
-   * console.log(transportManager.getAddrs())
-   * ```
    */
   getAddrs(): Multiaddr[]
 
@@ -72,11 +49,6 @@ export interface TransportManager {
    * Return all registered transports
    * 
    * @returns An array of `Transport` instances.
-   *
-   * @example
-   * ```typescript
-   * console.log(transportManager.getTransports())
-   * ```
    */
   getTransports(): Transport[]
 
@@ -92,11 +64,6 @@ export interface TransportManager {
    * 
    * @param ma - The target multiaddr.
    * @returns A `Transport` instance if available, otherwise `undefined`.
-   *
-   * @example
-   * ```typescript
-   * const transport = transportManager.dialTransportForMultiaddr(multiaddr('/ip4/192.168.1.1/tcp/4001'))
-   * ```
    */
   dialTransportForMultiaddr(ma: Multiaddr): Transport | undefined
 
@@ -113,11 +80,6 @@ export interface TransportManager {
    * Listen on the passed multiaddrs
    * @param addrs - An array of multiaddrs to listen on.
    * @returns A promise that resolves once the transport is actively listening.
-   *
-   * @example
-   * ```typescript
-   * await transportManager.listen([multiaddr('/ip4/127.0.0.1/tcp/4001')])
-   * ```
    */
   listen(addrs: Multiaddr[]): Promise<void>
 
@@ -125,11 +87,6 @@ export interface TransportManager {
    * Remove a previously configured transport
    * @param key - The transport key or identifier.
    * @returns A promise that resolves once the transport is removed.
-   *
-   * @example
-   * ```typescript
-   * await transportManager.remove('tcp')
-   * ```
    */
   remove(key: string): Promise<void>
 
@@ -137,11 +94,6 @@ export interface TransportManager {
    * Remove all transports
    * 
    * @returns A promise that resolves once all transports are removed.
-   *
-   * @example
-   * ```typescript
-   * await transportManager.removeAll()
-   * ```
    */
   removeAll(): Promise<void>
 }
