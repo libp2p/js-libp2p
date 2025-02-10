@@ -1,6 +1,6 @@
 import { createSocket } from 'node:dgram'
 import { isIPv4 } from '@chainsafe/is-ip'
-import { IceUdpMuxListener } from 'node-datachannel'
+import { IceUdpMuxListener } from '@ipshipyard/node-datachannel'
 import { pEvent } from 'p-event'
 // @ts-expect-error no types
 import stun from 'stun'

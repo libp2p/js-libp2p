@@ -1,10 +1,10 @@
+import { PeerConnection } from '@ipshipyard/node-datachannel'
+import { RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
 import { Crypto } from '@peculiar/webcrypto'
-import { PeerConnection } from 'node-datachannel'
-import { RTCPeerConnection } from 'node-datachannel/polyfill'
 import { DEFAULT_STUN_SERVERS } from '../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
-import type { CertificateFingerprint } from 'node-datachannel'
+import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
 
 const crypto = new Crypto()
 

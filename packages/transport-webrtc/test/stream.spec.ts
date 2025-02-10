@@ -13,6 +13,7 @@ import { Message } from '../src/private-to-public/pb/message.js'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD, type WebRTCStream, createStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { mockDataChannel, receiveFinAck } from './util.js'
+import type { RTCDataChannel } from '../src/webrtc/index.js'
 import type { Stream } from '@libp2p/interface'
 
 describe('Max message size', () => {

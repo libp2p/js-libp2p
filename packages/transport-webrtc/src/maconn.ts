@@ -1,4 +1,5 @@
 import { nopSink, nopSource } from './util.js'
+import type { RTCPeerConnection } from './webrtc/index.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, MultiaddrConnectionTimeline, CounterGroup } from '@libp2p/interface'
 import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'

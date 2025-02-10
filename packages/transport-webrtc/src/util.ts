@@ -2,8 +2,9 @@ import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import { DEFAULT_ICE_SERVERS } from './constants.js'
+import type { RTCDataChannel } from './webrtc/index.js'
+import type { PeerConnection } from '@ipshipyard/node-datachannel'
 import type { LoggerOptions } from '@libp2p/interface'
-import type { PeerConnection } from 'node-datachannel'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')

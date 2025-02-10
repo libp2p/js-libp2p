@@ -11,6 +11,7 @@ import { encodingLength } from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
+import type { RTCDataChannel } from './webrtc/index.js'
 import type { AbortOptions, ComponentLogger, Direction } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
