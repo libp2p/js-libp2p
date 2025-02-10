@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.6.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.0...libp2p-v2.6.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* override user agent in exports map ([#2952](https://github.com/libp2p/js-libp2p/issues/2952)) ([d8f003e](https://github.com/libp2p/js-libp2p/commit/d8f003e6e512fb3cff46ab167e7cd4f521c13f1b))
+
 ## [2.6.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.2...libp2p-v2.6.0) (2025-02-10)
 
 
