@@ -50,8 +50,8 @@ const privateKey = await loadOrCreateSelfKey(datastore, keychainInit)
 
 const node = await createLibp2p({
   privateKey,
+  datastore,
   services: {
-    datastore,
     keychain: keychain(keychainInit)
   }
 })

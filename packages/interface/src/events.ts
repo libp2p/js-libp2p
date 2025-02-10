@@ -1,4 +1,4 @@
-import { setMaxListeners as nodeSetMaxListeners } from 'events'
+import { setMaxListeners as nodeSetMaxListeners } from 'node:events'
 
 /**
  * Create a setMaxListeners that doesn't break browser usage

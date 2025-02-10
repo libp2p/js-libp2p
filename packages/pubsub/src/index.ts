@@ -40,8 +40,8 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey } from '@libp2p/interface'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, IncomingStreamData } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PubSubComponents {

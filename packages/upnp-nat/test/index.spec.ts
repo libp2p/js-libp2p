@@ -29,7 +29,7 @@ describe('UPnP NAT (TCP)', () => {
   async function createNatManager (natManagerOptions: UPnPNATInit = {}): Promise<{ natManager: any, components: StubbedUPnPNATComponents }> {
     const components: StubbedUPnPNATComponents = {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      nodeInfo: { name: 'test', version: 'test' },
+      nodeInfo: { name: 'test', version: 'test', userAgent: 'test' },
       logger: defaultLogger(),
       addressManager: stubInterface<AddressManager>(),
       events: new TypedEventEmitter()

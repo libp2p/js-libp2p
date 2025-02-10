@@ -4,8 +4,7 @@ import { byteStream } from 'it-byte-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, Startable } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal'
+import type { AbortOptions, Logger, Stream, PeerId, Startable, IncomingStreamData } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class PingService implements Startable, PingServiceInterface {

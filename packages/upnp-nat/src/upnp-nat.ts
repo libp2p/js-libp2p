@@ -1,12 +1,21 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
 import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
-import { GatewayFinder } from './gateway-finder.js'
+import { SearchGatewayFinder } from './search-gateway-finder.js'
+import { StaticGatewayFinder } from './static-gateway-finder.js'
 import { UPnPPortMapper } from './upnp-port-mapper.js'
 import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
 import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
-import type { Logger, Startable } from '@libp2p/interface'
+import type { Logger, Startable, TypedEventTarget } from '@libp2p/interface'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
+
+export interface GatewayFinderEvents {
+  'gateway': CustomEvent<Gateway>
+}
+
+export interface GatewayFinder extends TypedEventTarget<GatewayFinderEvents> {
+
+}
 
 export class UPnPNAT implements Startable, UPnPNATInterface {
   private readonly log: Logger
@@ -44,10 +53,23 @@ export class UPnPNAT implements Startable, UPnPNATInterface {
       }
     }, 5_000)
 
-    // trigger update when we discovery gateways on the network
-    this.gatewayFinder = new GatewayFinder(components, {
-      portMappingClient: this.portMappingClient
-    })
+    if (init.gateways != null) {
+      this.gatewayFinder = new StaticGatewayFinder(components, {
+        portMappingClient: this.portMappingClient,
+        gateways: init.gateways
+      })
+    } else {
+      // trigger update when we discovery gateways on the network
+      this.gatewayFinder = new SearchGatewayFinder(components, {
+        portMappingClient: this.portMappingClient,
+        initialSearchInterval: init.initialGatewaySearchInterval,
+        initialSearchTimeout: init.initialGatewaySearchTimeout,
+        initialSearchMessageInterval: init.initialGatewaySearchMessageInterval,
+        searchInterval: init.gatewaySearchInterval,
+        searchTimeout: init.gatewaySearchTimeout,
+        searchMessageInterval: init.gatewaySearchMessageInterval
+      })
+    }
 
     this.onGatewayDiscovered = this.onGatewayDiscovered.bind(this)
   }

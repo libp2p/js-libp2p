@@ -1,9 +1,9 @@
 // ported from xxbloom - https://github.com/ceejbot/xxbloom/blob/master/LICENSE
 import { randomBytes } from '@libp2p/crypto'
-import mur from 'murmurhash3js-revisited'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { alloc } from 'uint8arrays/alloc'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { fnv1a } from './hashes.js'
 import type { Filter } from './index.js'
 
 const LN2_SQUARED = Math.LN2 * Math.LN2
@@ -39,7 +39,7 @@ export class BloomFilter implements Filter {
     }
 
     for (let i = 0; i < this.seeds.length; i++) {
-      const hash = mur.x86.hash32(item, this.seeds[i])
+      const hash = fnv1a.hash(item, this.seeds[i])
       const bit = hash % this.bits
 
       this.setbit(bit)
@@ -57,7 +57,7 @@ export class BloomFilter implements Filter {
     }
 
     for (let i = 0; i < this.seeds.length; i++) {
-      const hash = mur.x86.hash32(item, this.seeds[i])
+      const hash = fnv1a.hash(item, this.seeds[i])
       const bit = hash % this.bits
 
       const isSet = this.getbit(bit)

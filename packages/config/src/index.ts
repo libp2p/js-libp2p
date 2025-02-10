@@ -27,8 +27,8 @@
  *
  * const node = await createLibp2p({
  *   privateKey,
+ *   datastore,
  *   services: {
- *     datastore,
  *     keychain: keychain(keychainInit)
  *   }
  * })

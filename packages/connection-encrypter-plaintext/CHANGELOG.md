@@ -72,6 +72,34 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.15](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.14...plaintext-v2.0.15) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+
+## [2.0.14](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.13...plaintext-v2.0.14) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+
 ## [2.0.13](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.12...plaintext-v2.0.13) (2025-01-07)
 
 

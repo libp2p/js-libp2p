@@ -105,6 +105,59 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.21](https://github.com/libp2p/js-libp2p/compare/mdns-v11.0.20...mdns-v11.0.21) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.6 to ^6.2.7
+
+## [11.0.20](https://github.com/libp2p/js-libp2p/compare/mdns-v11.0.19...mdns-v11.0.20) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/interface-internal bumped from ^2.2.4 to ^2.3.0
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/utils bumped from ^6.5.0 to ^6.5.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface-compliance-tests bumped from ^6.2.5 to ^6.2.6
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+
+## [11.0.19](https://github.com/libp2p/js-libp2p/compare/mdns-v11.0.18...mdns-v11.0.19) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.4 to ^6.2.5
+
+## [11.0.18](https://github.com/libp2p/js-libp2p/compare/mdns-v11.0.17...mdns-v11.0.18) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/interface-internal bumped from ^2.2.2 to ^2.2.3
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface-compliance-tests bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+
 ## [11.0.17](https://github.com/libp2p/js-libp2p/compare/mdns-v11.0.16...mdns-v11.0.17) (2025-01-07)
 
 

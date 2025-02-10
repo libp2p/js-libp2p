@@ -19,8 +19,8 @@ import { createLimitedRelay } from '../utils.js'
 import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar } from '@libp2p/interface-internal'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions, IncomingStreamData } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)

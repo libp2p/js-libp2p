@@ -47,6 +47,30 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.0.14](https://github.com/libp2p/js-libp2p/compare/keychain-v5.0.13...keychain-v5.0.14) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+
+## [5.0.13](https://github.com/libp2p/js-libp2p/compare/keychain-v5.0.12...keychain-v5.0.13) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+
 ## [5.0.12](https://github.com/libp2p/js-libp2p/compare/keychain-v5.0.11...keychain-v5.0.12) (2025-01-07)
 
 

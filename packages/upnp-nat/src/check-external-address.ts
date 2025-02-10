@@ -30,7 +30,6 @@ export interface ExternalAddress {
 class ExternalAddressChecker implements ExternalAddress, Startable {
   private readonly log: Logger
   private readonly gateway: Gateway
-  private readonly addressManager: AddressManager
   private started: boolean
   private lastPublicIp?: string
   private lastPublicIpPromise?: DeferredPromise<string>
@@ -40,7 +39,6 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
   constructor (components: ExternalAddressCheckerComponents, init: ExternalAddressCheckerInit) {
     this.log = components.logger.forComponent('libp2p:upnp-nat:external-address-check')
     this.gateway = components.gateway
-    this.addressManager = components.addressManager
     this.onExternalAddressChange = init.onExternalAddressChange
     this.started = false
 

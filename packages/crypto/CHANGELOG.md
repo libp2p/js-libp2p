@@ -17,6 +17,29 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.11](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.10...crypto-v5.0.11) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+
+## [5.0.10](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.9...crypto-v5.0.10) (2025-02-03)
+
+
+### Bug Fixes
+
+* use publicKey.x instead of privateKey.x for Ed25519 keys ([#2926](https://github.com/libp2p/js-libp2p/issues/2926)) ([e2ec7bd](https://github.com/libp2p/js-libp2p/commit/e2ec7bdaae767061c0aa07ea101184608a5072bb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+
 ## [5.0.9](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.8...crypto-v5.0.9) (2025-01-07)
 
 

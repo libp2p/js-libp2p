@@ -50,7 +50,7 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   /**
    * Metadata about the node - implementation name, version number, etc
    */
-  nodeInfo?: NodeInfo
+  nodeInfo?: Partial<NodeInfo>
 
   /**
    * Addresses for transport listening and to advertise to the network

@@ -11,6 +11,8 @@
     "./src/filters/index.ts",
     "./src/global-unicast-ip.ts",
     "./src/ip-port-to-multiaddr.ts",
+    "./src/is-async-generator.ts",
+    "./src/is-generator.ts",
     "./src/is-promise.ts",
     "./src/link-local-ip.ts",
     "./src/moving-average.ts",
