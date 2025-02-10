@@ -138,6 +138,7 @@ export class WebRTCStream extends AbstractStream {
         .then(() => {
         // stop processing incoming messages
           this.incomingData.end()
+          this.channel.close()
 
           // final cleanup
           originalOnEnd?.(err)
