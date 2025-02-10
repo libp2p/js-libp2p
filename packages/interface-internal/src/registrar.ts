@@ -1,14 +1,6 @@
 import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, IncomingStreamData } from '@libp2p/interface'
 
 /**
- * @packageDocumentation
- *
- * The `Registrar` module provides an interface for managing protocol handlers
- * and topologies in a libp2p network. It enables registering and managing
- * protocol-specific handlers, ensuring efficient peer-to-peer communication.
- */
-
-/**
  * Deprecated types that should be imported from `@libp2p/interface` directly.
  *
  * These exports ensure backward compatibility but should be avoided in new code.
@@ -34,11 +26,18 @@ export type {
    */
   StreamHandlerRecord
 }
-
+/**
+ * @packageDocumentation
+ *
+ * The `Registrar` module provides an interface for managing protocol handlers
+ * and topologies in a libp2p network. It enables registering and managing
+ * protocol-specific handlers, ensuring efficient peer-to-peer communication.
+ */
 /**
  * The `Registrar` interface allows modules to register, manage, and remove
  * protocol handlers and topology discovery mechanisms in libp2p.
  */
+
 export interface Registrar {
   /**
    * Retrieve the list of registered protocol handlers.

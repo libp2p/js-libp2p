@@ -3,18 +3,18 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 /**
+ * Options for dialing a connection using the `TransportManager`.
+ */
+export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
+
+}
+/**
  * @packageDocumentation
  *
  * The `TransportManager` module handles the management of transport protocols in a libp2p network.
  * It is responsible for managing the transport themselves - dialling, querying addresses and listening.
  */
 
-/**
- * Options for dialing a connection using the `TransportManager`.
- */
-export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
-
-}
 /**
  * The `TransportManager` interface manages available transports for dialing and listening in a libp2p node.
  */

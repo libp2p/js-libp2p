@@ -4,14 +4,6 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 /**
- * @packageDocumentation
- *
- * The `ConnectionManager` module handles managing connections between peers in a libp2p network.
- * It provides methods for opening, closing, and querying connections.This also provides methods
- * for accessing the dial queue.
- */
-
-/**
  * Options for opening a connection to a remote peer.
  */
 export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
@@ -46,8 +38,16 @@ export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<Ope
 }
 
 /**
+ * @packageDocumentation
+ *
+ * The `ConnectionManager` module handles managing connections between peers in a libp2p network.
+ * It provides methods for opening, closing, and querying connections.This also provides methods
+ * for accessing the dial queue.
+ */
+/**
  * Manages the dialing, opening, and closing of connections.
  */
+
 export interface ConnectionManager {
   /**
    * Return connections, optionally filtering by a PeerId

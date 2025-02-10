@@ -1,14 +1,6 @@
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
- * @packageDocumentation
- *
- * The `AddressManager` module provides an interface for managing peer addresses
- * in libp2p. It supports handling multiple types of addresses, verifying their validity,
- * and storing mappings between internal and external addresses.
- */
-
-/**
  * The type of address:
  *
  * - 'transport' a listen address supplied by a transport
@@ -65,6 +57,13 @@ export interface ConfirmAddressOptions {
   type?: AddressType
 }
 
+/**
+ * @packageDocumentation
+ *
+ * The `AddressManager` module provides an interface for managing peer addresses
+ * in libp2p. It supports handling multiple types of addresses, verifying their validity,
+ * and storing mappings between internal and external addresses.
+ */
 /**
  * Interface for managing peer addresses in libp2p.
  */
