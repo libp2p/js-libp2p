@@ -39,8 +39,8 @@
   "scripts": {
     "generate": "protons src/private-to-private/pb/message.proto src/pb/message.proto",
     "build": "aegir build",
-    "test": "aegir test -t node -t browser -- --exit",
-    "test:node": "aegir test -t node --cov -- --exit",
+    "test": "aegir test -t node -t browser",
+    "test:node": "aegir test -t node --cov",
     "test:chrome": "aegir test -t browser --cov",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:webkit": "aegir test -t browser -- --browser webkit",
