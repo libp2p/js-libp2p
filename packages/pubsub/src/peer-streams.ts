@@ -16,9 +16,13 @@ export interface PeerStreamsComponents {
   logger: ComponentLogger
 }
 
+import { type DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
+
+// ...
+
 // Define the DecodeOptions type locally
-interface DecoderOptions {
-  maxDataLength?: number
+interface DecoderOptions extends LpDecoderOptions {
+  // other custom options we might want for `attachInboundStream`
 }
 
 /**
