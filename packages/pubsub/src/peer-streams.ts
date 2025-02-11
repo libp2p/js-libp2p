@@ -108,7 +108,6 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this._rawInboundStream = stream
     this.inboundStream = pipe(
       this._rawInboundStream,
-      // (source) => lp.decode(source)
       (source) => lp.decode(source, decoderOptions)
     )
 
