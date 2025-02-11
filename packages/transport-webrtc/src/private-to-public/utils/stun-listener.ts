@@ -4,7 +4,7 @@ import { IceUdpMuxListener } from '@ipshipyard/node-datachannel'
 import { pEvent } from 'p-event'
 // @ts-expect-error no types
 import stun from 'stun'
-import { UFRAG_PREFIX } from '../constants.js'
+import { UFRAG_PREFIX } from '../../constants.js'
 import type { Logger } from '@libp2p/interface'
 import type { AddressInfo } from 'node:net'
 

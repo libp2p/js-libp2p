@@ -3,10 +3,9 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
-import { UFRAG_PREFIX } from './constants.js'
+import { genUfrag } from '../util.js'
 import { WebRTCDirectListener } from './listener.js'
 import { connect } from './utils/connect.js'
-import { genUfrag } from './utils/generate-ufrag.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { WebRTCDialEvents } from '../private-to-private/transport.js'
@@ -128,7 +127,7 @@ export class WebRTCDirectTransport implements Transport {
       theirPeerId = peerIdFromString(remotePeerString)
     }
 
-    const ufrag = UFRAG_PREFIX + genUfrag(32)
+    const ufrag = genUfrag()
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
     const peerConnection = await createDialerRTCPeerConnection('client', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})

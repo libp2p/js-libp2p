@@ -1,7 +1,7 @@
 import { PeerConnection } from '@ipshipyard/node-datachannel'
 import { RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
 import { Crypto } from '@peculiar/webcrypto'
-import { DEFAULT_STUN_SERVERS } from '../constants.js'
+import { DEFAULT_ICE_SERVERS } from '../../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
 import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
@@ -104,7 +104,7 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
       certificatePemFile: certificate.pem,
       keyPemFile: certificate.privateKey,
       maxMessageSize: 16384,
-      iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_STUN_SERVERS.map(urls => ({ urls })))
+      iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
     })
   })
 }
