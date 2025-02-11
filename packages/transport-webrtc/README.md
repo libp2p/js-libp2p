@@ -174,7 +174,12 @@ import { pipe } from 'it-pipe'
 import { fromString, toString } from 'uint8arrays'
 import { webRTCDirect } from '@libp2p/webrtc'
 
-const node = await createLibp2p({
+const listener = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/udp/0/webrtc-direct'
+    ]
+  },
   transports: [
     webRTCDirect()
   ],
@@ -183,11 +188,20 @@ const node = await createLibp2p({
   ]
 })
 
-await node.start()
+await listener.start()
 
-// this multiaddr corresponds to a remote node running a WebRTC Direct listener
-const ma = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc-direct/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
-const stream = await node.dialProtocol(ma, '/my-protocol/1.0.0', {
+const dialer = await createLibp2p({
+  transports: [
+    webRTCDirect()
+  ],
+  connectionEncrypters: [
+    noise()
+  ]
+})
+
+await dialer.start()
+
+const stream = await dialer.dialProtocol(listener.getMultiaddrs(), '/my-protocol/1.0.0', {
   signal: AbortSignal.timeout(10_000)
 })
 

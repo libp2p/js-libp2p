@@ -76,7 +76,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     const answerSdp = await peerConnection.createAnswer()
     options.log.trace('server created local answer')
     const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
-    options.log.trace('server setting local description %s', mungedAnswerSdp.sdp)
+    options.log.trace('server setting local description %s', answerSdp.sdp)
     await peerConnection.setLocalDescription(mungedAnswerSdp)
   }
 

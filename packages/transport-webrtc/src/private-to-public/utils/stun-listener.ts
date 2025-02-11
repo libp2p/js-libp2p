@@ -65,12 +65,14 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
   }
 }
 
-async function libjuiceListener (host: string, port: number, cb: Callback): Promise<StunServer> {
+async function libjuiceListener (host: string, port: number, log: Logger, cb: Callback): Promise<StunServer> {
   const listener = new IceUdpMuxListener(port, host)
   listener.onUnhandledStunRequest(request => {
     if (request.ufrag == null) {
       return
     }
+
+    log.trace('incoming STUN packet from %s:%d %s', request.host, request.port, request.ufrag)
 
     cb(request.ufrag, request.host, request.port)
   })
@@ -98,5 +100,5 @@ export async function stunListener (host: string, port: number, ipVersion: 4 | 6
     return dgramListener(host, port, ipVersion, log, cb)
   }
 
-  return libjuiceListener(host, port, cb)
+  return libjuiceListener(host, port, log, cb)
 }

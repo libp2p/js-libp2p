@@ -18,12 +18,14 @@ interface DirectRTCPeerConnectionInit extends RTCConfiguration {
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly peerConnection: PeerConnection
   private readonly ufrag: string
+  private readonly role: 'client' | 'server'
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
+    this.role = init.role
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
@@ -103,6 +105,7 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
       disableAutoNegotiation: true,
       certificatePemFile: certificate.pem,
       keyPemFile: certificate.privateKey,
+      enableIceUdpMux: true,
       maxMessageSize: 16384,
       iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
     })
