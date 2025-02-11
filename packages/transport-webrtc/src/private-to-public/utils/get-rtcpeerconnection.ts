@@ -105,7 +105,7 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
       disableAutoNegotiation: true,
       certificatePemFile: certificate.pem,
       keyPemFile: certificate.privateKey,
-      enableIceUdpMux: true,
+      enableIceUdpMux: role === 'server',
       maxMessageSize: 16384,
       iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
     })

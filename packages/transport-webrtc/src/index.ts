@@ -160,7 +160,7 @@
  *   transports: [
  *     webRTCDirect()
  *   ],
- *   connectionEncryption: [
+ *   connectionEncrypters: [
  *     noise()
  *   ]
  * })
@@ -171,7 +171,7 @@
  *   transports: [
  *     webRTCDirect()
  *   ],
- *   connectionEncryption: [
+ *   connectionEncrypters: [
  *     noise()
  *   ]
  * })
