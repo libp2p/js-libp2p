@@ -16,7 +16,7 @@ describe('PeerStreams large message handling', () => {
     otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
-  it('should receive messages larger than MAX_DATA_LENGTH when maxDataLength is set', async () => {
+  it('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
     const messageSize = 6 * 1024 * 1024 // 6MB
     const largeMessage = new Uint8ArrayList(new Uint8Array(messageSize).fill(65)) // Fill with "A"
 
