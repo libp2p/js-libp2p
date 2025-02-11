@@ -16,6 +16,11 @@ export interface PeerStreamsComponents {
   logger: ComponentLogger
 }
 
+// Define the DecodeOptions type locally
+interface DecoderOptions {
+  maxDataLength?: number
+}
+
 /**
  * Thin wrapper around a peer's inbound / outbound pubsub streams
  */
@@ -86,7 +91,8 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
   /**
    * Attach a raw inbound stream and setup a read stream
    */
-  attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+  // attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+  attachInboundStream (stream: Stream, decoderOptions?: DecoderOptions): AsyncIterable<Uint8ArrayList> {
     const abortListener = (): void => {
       closeSource(stream.source, this.log)
     }
@@ -102,7 +108,8 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this._rawInboundStream = stream
     this.inboundStream = pipe(
       this._rawInboundStream,
-      (source) => lp.decode(source)
+      // (source) => lp.decode(source)
+      (source) => lp.decode(source, decoderOptions)
     )
 
     this.dispatchEvent(new CustomEvent('stream:inbound'))
