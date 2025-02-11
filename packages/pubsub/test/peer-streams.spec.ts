@@ -62,7 +62,6 @@ describe('PeerStreams large message handling', () => {
     expect(receivedMessages).to.have.lengthOf(1)
     expect(receivedMessages[0].byteLength).to.equal(messageSize)
     // Check that the content of the sent and received messages are identical
-    // expect(receivedMessages[0].slice()).to.eql(largeMessage.slice())
     const data = receivedMessages[0].slice()
     const input = largeMessage.slice()
     expect(data.length).to.equal(input.length)
