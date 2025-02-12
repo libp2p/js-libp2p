@@ -67,6 +67,7 @@ describe('ping test (listener)', function () {
     }
 
     console.error('inform redis of dial address')
+    console.error(multiaddrs)
     // Send the listener addr over the proxy server so this works on both the Browser and Node
     await redisProxy(['RPUSH', 'listenerAddr', multiaddrs[0]])
     // Wait
