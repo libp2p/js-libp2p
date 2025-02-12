@@ -32,7 +32,7 @@ describe('ping test (dialer)', function () {
   })
 
   it('should dial and ping', async function () {
-    let [, otherMaStr]: string[] = await redisProxy(['BLPOP', 'listenerAddr', timeoutSecs])
+    let [, otherMaStr]: string[] = await redisProxy(['BLPOP', 'listenerAddr', timeoutMs * 1000])
 
     // Hack until these are merged:
     // - https://github.com/multiformats/js-multiaddr-to-uri/pull/120
