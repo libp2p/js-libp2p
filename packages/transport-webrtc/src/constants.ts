@@ -12,3 +12,7 @@ export const DEFAULT_ICE_SERVERS = [
   'stun:stun.cloudflare.com:3478',
   'stun:stun.services.mozilla.com:3478'
 ]
+
+export const UFRAG_ALPHABET = Array.from('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
+
+export const UFRAG_PREFIX = 'libp2p+webrtc+v1/'
