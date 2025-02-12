@@ -9,8 +9,6 @@ export interface TransportManagerDialOptions extends AbortOptions, ProgressOptio
 
 }
 /**
- * @packageDocumentation
- *
  * The `TransportManager` module handles the management of transport protocols in a libp2p network.
  * It is responsible for managing the transport themselves - dialling, querying addresses and listening.
  */

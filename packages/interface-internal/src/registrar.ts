@@ -27,8 +27,6 @@ export type {
   StreamHandlerRecord
 }
 /**
- * @packageDocumentation
- *
  * The `Registrar` module provides an interface for managing protocol handlers
  * and topologies in a libp2p network. It enables registering and managing
  * protocol-specific handlers, ensuring efficient peer-to-peer communication.

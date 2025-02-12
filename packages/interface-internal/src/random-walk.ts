@@ -1,8 +1,6 @@
 import type { AbortOptions, PeerInfo } from '@libp2p/interface'
 
 /**
- * @packageDocumentation
- *
  * The `RandomWalk` module facilitates peer discovery by randomly finding and dialing peers 
  * on the libp2p network. It is useful in conjunction with a registered `Topology` to 
  * discover common network services.
