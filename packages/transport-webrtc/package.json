@@ -53,7 +53,7 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@chainsafe/libp2p-noise": "^16.0.0",
-    "@ipshipyard/node-datachannel": "^0.26.3",
+    "@ipshipyard/node-datachannel": "^0.26.4",
     "@libp2p/interface": "^2.5.0",
     "@libp2p/interface-internal": "^2.3.0",
     "@libp2p/peer-id": "^5.0.12",

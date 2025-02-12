@@ -145,7 +145,6 @@
  *
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
- * import { noise } from '@chainsafe/libp2p-noise'
  * import { multiaddr } from '@multiformats/multiaddr'
  * import { pipe } from 'it-pipe'
  * import { fromString, toString } from 'uint8arrays'
@@ -159,9 +158,6 @@
  *   },
  *   transports: [
  *     webRTCDirect()
- *   ],
- *   connectionEncrypters: [
- *     noise()
  *   ]
  * })
  *
@@ -170,9 +166,6 @@
  * const dialer = await createLibp2p({
  *   transports: [
  *     webRTCDirect()
- *   ],
- *   connectionEncrypters: [
- *     noise()
  *   ]
  * })
  *

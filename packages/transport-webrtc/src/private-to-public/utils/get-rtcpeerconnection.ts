@@ -2,6 +2,7 @@ import { PeerConnection } from '@ipshipyard/node-datachannel'
 import { RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
 import { Crypto } from '@peculiar/webcrypto'
 import { DEFAULT_ICE_SERVERS } from '../../constants.js'
+import { MAX_MESSAGE_SIZE } from '../../stream.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
 import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
@@ -9,23 +10,19 @@ import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
 const crypto = new Crypto()
 
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
-  certificate: TransportCertificate
   ufrag: string
-  role: 'client' | 'server'
   peerConnection: PeerConnection
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private readonly peerConnection: PeerConnection
   private readonly ufrag: string
-  private readonly role: 'client' | 'server'
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
-    this.role = init.role
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
@@ -98,15 +95,13 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   return new DirectRTCPeerConnection({
     ...rtcConfig,
     ufrag,
-    certificate,
-    role,
     peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
       disableFingerprintVerification: true,
       disableAutoNegotiation: true,
       certificatePemFile: certificate.pem,
       keyPemFile: certificate.privateKey,
       enableIceUdpMux: role === 'server',
-      maxMessageSize: 16384,
+      maxMessageSize: MAX_MESSAGE_SIZE,
       iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
     })
   })
