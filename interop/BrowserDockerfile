@@ -1,9 +1,12 @@
-FROM js-libp2p-head
+# Workaround: https://github.com/docker/cli/issues/996
+ARG BASE_IMAGE=node-js-libp2p-head
+FROM ${BASE_IMAGE} AS js-libp2p-base
+
+COPY --from=js-libp2p-base /app/ /app/
+WORKDIR /app
 
 # Options: chromium, firefox, webkit
 ARG BROWSER=chromium
 ENV BROWSER=${BROWSER}
-
-WORKDIR /app/interop
 
 ENTRYPOINT npm test -- -t browser -- --browser $BROWSER
