@@ -64,6 +64,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.1.2](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.1.1...upnp-nat-v3.1.2) (2025-02-13)
+
+
+### Bug Fixes
+
+* add browser polyfill to upnp-nat ([#2959](https://github.com/libp2p/js-libp2p/issues/2959)) ([d188511](https://github.com/libp2p/js-libp2p/commit/d188511b97ef9fc320233d284d16a6275b029b81))
+
 ## [3.1.1](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.1.0...upnp-nat-v3.1.1) (2025-02-10)
 
 
