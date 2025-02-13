@@ -151,6 +151,7 @@ jobs:
       - run: |
           sudo rm /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update
+      - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
       - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         with:
