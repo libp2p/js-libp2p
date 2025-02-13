@@ -69,7 +69,8 @@
     "@libp2p/logger": "^5.1.8",
     "@libp2p/peer-id": "^5.0.12",
     "aegir": "^45.0.5",
-    "sinon-ts": "^2.0.0"
+    "sinon-ts": "^2.0.0",
+    "wherearewe": "^2.0.1"
   },
   "browser": {
     "./dist/src/upnp-nat.js": "./dist/src/upnp-nat.browser.js"
