@@ -1,10 +1,5 @@
 import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, IncomingStreamData } from '@libp2p/interface'
 
-/**
- * Deprecated types that should be imported from `@libp2p/interface` directly.
- *
- * These exports ensure backward compatibility but should be avoided in new code.
- */
 export type {
   /**
    * @deprecated This type should be imported from @libp2p/interface directly
@@ -26,16 +21,19 @@ export type {
    */
   StreamHandlerRecord
 }
-/**
- * The `Registrar` module provides an interface for managing protocol handlers
- * and topologies in a libp2p network. It enables registering and managing
- * protocol-specific handlers, ensuring efficient peer-to-peer communication.
- */
-/**
- * The `Registrar` interface allows modules to register, manage, and remove
- * protocol handlers and topology discovery mechanisms in libp2p.
- */
 
+/**
+ * The `Registrar` provides an interface for registering protocol handlers -
+ * these are invoked when remote peers open streams on the local node with the
+ * corresponding protocol name.
+ *
+ * It also allows configuring network topologies for a given protocol(s). The
+ * topology callbacks are invoked when a peer that supports those protocols
+ * connects or disconnects.
+ *
+ * The Identify protocol must be configured on the current node for topologies
+ * to function.
+ */
 export interface Registrar {
   /**
    * Retrieve the list of registered protocol handlers.
@@ -71,11 +69,13 @@ export interface Registrar {
   getHandler(protocol: string): StreamHandlerRecord
 
   /**
-   * Register a topology handler for a specific protocol.
+   * Register a topology handler for a protocol - the topology will be
+   * invoked when peers are discovered on the network that support the
+   * passed protocol.
    *
-   * The topology will be notified when peers supporting the protocol
-   * are discovered on the network.
-   *
+   * An id will be returned that can later be used to unregister the
+   * topology.
+   * 
    * @param protocol - The protocol to register.
    * @param topology - The topology handler to register.
    * @returns A promise resolving to a unique ID for the registered topology.

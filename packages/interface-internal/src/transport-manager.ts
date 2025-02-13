@@ -9,13 +9,15 @@ export interface TransportManagerDialOptions extends AbortOptions, ProgressOptio
 
 }
 /**
- * The `TransportManager` module handles the management of transport protocols in a libp2p network.
- * It is responsible for managing the transport themselves - dialling, querying addresses and listening.
+ * The `TransportManager` handles the management of network transports, allowing
+ * opening connections or listening using specific transports, etc.
+ *
+ * This is a low-level component - any connections opened will not be managed by
+ * the `ConnectionManager` or included in any configured connection limits, etc.
+ *
+ * Most consumers will call `openConnection` on the `ConnectionManager` instead.
  */
 
-/**
- * The `TransportManager` interface manages available transports for dialing and listening in a libp2p node.
- */
 
 export interface TransportManager {
   /**

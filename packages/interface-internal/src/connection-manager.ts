@@ -42,10 +42,6 @@ export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<Ope
  * It provides methods for opening, closing, and querying connections.This also provides methods
  * for accessing the dial queue.
  */
-/**
- * Manages the dialing, opening, and closing of connections.
- */
-
 export interface ConnectionManager {
   /**
    * Return connections, optionally filtering by a PeerId

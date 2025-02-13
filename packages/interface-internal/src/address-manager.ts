@@ -62,10 +62,6 @@ export interface ConfirmAddressOptions {
  * in libp2p. It supports handling multiple types of addresses, verifying their validity,
  * and storing mappings between internal and external addresses.
  */
-/**
- * Interface for managing peer addresses in libp2p.
- */
-
 export interface AddressManager {
   /**
    * Get peer listen multiaddrs
