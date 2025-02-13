@@ -12,7 +12,6 @@ ENV CI=true
 
 # install inside the container so any native deps will have the docker arch
 RUN npm i
-RUN npm run build
 
 WORKDIR /app/interop
 
