@@ -3,6 +3,9 @@ import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
+/**
+ * Options for opening a connection to a remote peer.
+ */
 export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * Connection requests with a higher priority will be executed before those
@@ -34,49 +37,53 @@ export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<Ope
   initiator?: boolean
 }
 
+/**
+ * The `ConnectionManager` module handles managing connections between peers in a libp2p network.
+ * It provides methods for opening, closing, and querying connections.This also provides methods
+ * for accessing the dial queue.
+ */
+/**
+ * Manages the dialing, opening, and closing of connections.
+ */
+
 export interface ConnectionManager {
   /**
    * Return connections, optionally filtering by a PeerId
    *
-   * @example
-   *
-   * ```TypeScript
-   * const connections = libp2p.connectionManager.get(peerId)
-   * // []
-   * ```
+   * @param peerId - The PeerId to filter connections (optional).
+   * @returns An array of active `Connection` objects.
    */
   getConnections(peerId?: PeerId): Connection[]
 
   /**
    * Return a map of all connections with their associated PeerIds
    *
-   * @example
-   *
-   * ```TypeScript
-   * const connectionsMap = libp2p.connectionManager.getConnectionsMap()
-   * ```
+   * @returns A `PeerMap` containing `Connection[]` objects.
    */
   getConnectionsMap(): PeerMap<Connection[]>
 
   /**
    * Returns the configured maximum number of connections this connection
    * manager will accept
+   * @returns The maximum connection limit.
    */
   getMaxConnections(): number
 
   /**
    * Open a connection to a remote peer
    *
-   * @example
-   *
-   * ```TypeScript
-   * const connection = await libp2p.connectionManager.openConnection(peerId)
-   * ```
+   * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.
+   * @param options - Optional parameters for connection handling.
+   * @returns A promise that resolves to a `Connection` object.
    */
   openConnection(peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions): Promise<Connection>
 
   /**
    * Close our connections to a peer
+   * 
+   * @param peer - The `PeerId` whose connections should be closed.
+   * @param options - Optional abort options.
+   * @returns A promise that resolves once the connections are closed.
    */
   closeConnections(peer: PeerId, options?: AbortOptions): Promise<void>
 
@@ -85,6 +92,9 @@ export interface ConnectionManager {
    * exchanged, this lets the ConnectionManager check we have sufficient
    * resources to accept the connection in which case it will return true,
    * otherwise it will return false.
+   * 
+   * @param maConn - The multiaddr connection to evaluate.
+   * @returns A promise that resolves to `true` if the connection can be accepted, `false` otherwise.
    */
   acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
 
@@ -96,11 +106,7 @@ export interface ConnectionManager {
   /**
    * Return the list of in-progress or queued dials
    *
-   * @example
-   *
-   * ```TypeScript
-   * const dials = libp2p.connectionManager.getDialQueue()
-   * ```
+   * @returns An array of `PendingDial` objects.
    */
   getDialQueue(): PendingDial[]
 
@@ -112,6 +118,9 @@ export interface ConnectionManager {
    * would not block the dial attempt.
    *
    * This may involve resolving DNS addresses so you should pass an AbortSignal.
+   * @param multiaddr - The target multiaddr or an array of multiaddrs.
+   * @param options - Optional parameters for dialability check.
+   * @returns A promise that resolves to `true` if the multiaddr is dialable, `false` otherwise.
    */
   isDialable(multiaddr: Multiaddr | Multiaddr[], options?: IsDialableOptions): Promise<boolean>
 }
