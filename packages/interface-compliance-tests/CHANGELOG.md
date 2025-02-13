@@ -75,6 +75,20 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.3.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.2.7...interface-compliance-tests-v6.3.0) (2025-02-13)
+
+
+### Features
+
+* WebRTC-Direct support for Node.js ([#2583](https://github.com/libp2p/js-libp2p/issues/2583)) ([200c2bd](https://github.com/libp2p/js-libp2p/commit/200c2bd22e4db2e74c4533c12bc52085ecf7296b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^2.6.1 to ^2.6.2
+
 ## [6.2.7](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.2.6...interface-compliance-tests-v6.2.7) (2025-02-10)
 
 
