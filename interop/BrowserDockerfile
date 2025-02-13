@@ -12,11 +12,6 @@ ENV CI=true
 RUN npm i
 RUN npm run build
 
-# We install browsers here instead of the cached version so that we use the
-# latest browsers at run time. Ideally this would also be pinned, but playwright
-# controls this, so there isn't much we can do about it.
-RUN npx playwright install-deps
-
 # Options: chromium, firefox, webkit
 ARG BROWSER=chromium
 ENV BROWSER=${BROWSER}
