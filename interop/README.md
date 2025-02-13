@@ -75,7 +75,7 @@ $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
      - When starting the docker container add `-e GOLOG_LOG_LEVEL=debug`
 4. Build the version you want to test against
    ```console
-   $ cd multidim-interop/impl/$IMPL/$VERSION
+   $ cd transport-interop/impl/$IMPL/$VERSION
    $ make
    ...
    ```

@@ -91,7 +91,7 @@ export default {
       proxyServer.listen(0)
 
       await pEvent(proxyServer, 'listening', {
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(30_000)
       })
 
       console.error('redis proxy is listening on port', proxyServer.address().port, 'after', Date.now() - start, 'ms')

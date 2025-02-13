@@ -16,4 +16,4 @@ RUN npm run build
 
 WORKDIR /app/interop
 
-ENTRYPOINT npm test -- -t node
+ENTRYPOINT npm test -- -t node -- --exit
