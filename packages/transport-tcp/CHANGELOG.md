@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.18...tcp-v10.0.19) (2025-02-13)
+
+
+### Bug Fixes
+
+* remove unused fields from browser polyfill ([#2958](https://github.com/libp2p/js-libp2p/issues/2958)) ([c4e8627](https://github.com/libp2p/js-libp2p/commit/c4e8627313f40cd625b6149da6967df48ce6ffba))
+
 ## [10.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.17...tcp-v10.0.18) (2025-02-10)
 
 
