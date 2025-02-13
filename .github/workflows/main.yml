@@ -228,7 +228,7 @@ jobs:
           path: |
             package-lock.json
             interop/package-lock.json
-      - uses: libp2p/test-plans/.github/actions/run-transport-interop-test@fix/apply-timeout-to-ping
+      - uses: libp2p/test-plans/.github/actions/run-transport-interop-test@master
         with:
           test-filter: js-libp2p-head
           extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json ${{ github.workspace }}/interop/webkit-version.json
@@ -236,7 +236,6 @@ jobs:
           s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
           s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
           worker-count: 16
-          timeout: 600
 
   release:
     runs-on: ubuntu-latest
