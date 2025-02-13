@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.5.0",
-    "it-length-prefixed": "^9.1.0",
+    "it-length-prefixed": "^10.0.1",
     "it-length-prefixed-stream": "^1.2.0",
     "it-stream-types": "^2.0.2",
     "p-defer": "^4.0.1",

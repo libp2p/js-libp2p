@@ -70,7 +70,7 @@
     "aegir": "^45.0.5",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
-    "it-length-prefixed": "^9.1.0",
+    "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "p-retry": "^6.2.1",
