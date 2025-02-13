@@ -228,7 +228,7 @@ jobs:
           path: |
             package-lock.json
             interop/package-lock.json
-      - uses: libp2p/test-plans/.github/actions/run-transport-interop-test@master
+      - uses: libp2p/test-plans/.github/actions/run-transport-interop-test@fix/use-latest-playwright-image
         with:
           test-filter: js-libp2p-head
           extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json ${{ github.workspace }}/interop/webkit-version.json
