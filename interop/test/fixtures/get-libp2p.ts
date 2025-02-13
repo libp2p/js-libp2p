@@ -28,6 +28,9 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     connectionGater: {
       denyDialMultiaddr: async () => false
     },
+    connectionMonitor: {
+      enabled: false
+    },
     services: {
       ping: ping(),
       identify: identify()

@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.6.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.1...libp2p-v2.6.2) (2025-02-13)
+
+
+### Bug Fixes
+
+* respect dial signal and expose protocol negotiation timeouts ([#2956](https://github.com/libp2p/js-libp2p/issues/2956)) ([f9345a7](https://github.com/libp2p/js-libp2p/commit/f9345a7a10974edf47a61279360b57012aae2da0))
+
 ## [2.6.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.0...libp2p-v2.6.1) (2025-02-10)
 
 

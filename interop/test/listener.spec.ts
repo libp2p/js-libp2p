@@ -8,7 +8,7 @@ import type { Libp2p } from '@libp2p/interface'
 import type { PingService } from '@libp2p/ping'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
-const timeoutSecs: string = process.env.test_timeout_secs ?? '180'
+const timeoutMs: number = parseInt(process.env.test_timeout_secs ?? '180') * 1000
 
 describe('ping test (listener)', function () {
   if (isDialer) {
@@ -16,7 +16,7 @@ describe('ping test (listener)', function () {
   }
 
   // make the default timeout longer than the listener timeout
-  this.timeout((parseInt(timeoutSecs) * 1000) + 30000)
+  this.timeout(timeoutMs + 30_000)
   let node: Libp2p<{ ping: PingService }>
 
   beforeEach(async () => {
@@ -32,6 +32,8 @@ describe('ping test (listener)', function () {
   })
 
   it('should listen for ping', async function () {
+    this.timeout(timeoutMs + 30_000)
+
     const sortByNonLocalIp = (a: Multiaddr, b: Multiaddr): -1 | 0 | 1 => {
       if (a.toString().includes('127.0.0.1')) {
         return 1
@@ -61,7 +63,9 @@ describe('ping test (listener)', function () {
       }
       // const conn = await node.dial(multiaddr(relayAddr))
       console.error('dial relay')
-      await node.dial(multiaddr(relayAddr))
+      await node.dial(multiaddr(relayAddr), {
+        signal: AbortSignal.timeout(timeoutMs)
+      })
       console.error('wait for relay reservation')
       multiaddrs = await hasWebrtcMultiaddr
     }
@@ -72,6 +76,6 @@ describe('ping test (listener)', function () {
     await redisProxy(['RPUSH', 'listenerAddr', multiaddrs[0]])
     // Wait
     console.error('wait for incoming ping')
-    await new Promise(resolve => setTimeout(resolve, 1000 * parseInt(timeoutSecs, 10)))
+    await new Promise(resolve => setTimeout(resolve, timeoutMs))
   })
 })

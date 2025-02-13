@@ -32,6 +32,8 @@ describe('ping test (dialer)', function () {
   })
 
   it('should dial and ping', async function () {
+    this.timeout(timeoutMs + 30_000)
+
     let [, otherMaStr]: string[] = await redisProxy(['BLPOP', 'listenerAddr', `${timeoutMs / 1000}`])
 
     // Hack until these are merged:
@@ -42,7 +44,9 @@ describe('ping test (dialer)', function () {
     const handshakeStartInstant = Date.now()
 
     console.error(`node ${node.peerId.toString()} dials: ${otherMa}`)
-    await node.dial(otherMa)
+    await node.dial(otherMa, {
+      signal: AbortSignal.timeout(timeoutMs)
+    })
 
     console.error(`node ${node.peerId.toString()} pings: ${otherMa}`)
     const pingRTT = await node.services.ping.ping(multiaddr(otherMa), {
