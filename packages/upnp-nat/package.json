@@ -46,6 +46,10 @@
     "doc-check": "aegir doc-check",
     "build": "aegir build --no-bundle",
     "test": "aegir test -t node -t electron-main",
+    "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
+    "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
+    "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main"
   },
@@ -66,6 +70,9 @@
     "@libp2p/peer-id": "^5.0.12",
     "aegir": "^45.0.5",
     "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "./dist/src/upnp-nat.js": "./dist/src/upnp-nat.browser.js"
   },
   "sideEffects": false
 }
