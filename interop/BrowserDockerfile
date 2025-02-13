@@ -1,16 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.50.1
-
-WORKDIR /app
-
-COPY package.json ./
-COPY ./packages ./packages
-COPY ./interop ./interop
-
-# disable colored output and CLI animation from test runners
-ENV CI=true
-
-RUN npm i
-RUN npm run build
+FROM js-libp2p-head
 
 # Options: chromium, firefox, webkit
 ARG BROWSER=chromium
