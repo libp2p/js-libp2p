@@ -65,7 +65,7 @@
     "any-signal": "^4.1.1",
     "detect-browser": "^5.3.0",
     "get-port": "^7.1.0",
-    "it-length-prefixed": "^10.0.0",
+    "it-length-prefixed": "^10.0.1",
     "it-protobuf-stream": "^1.1.5",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
