@@ -29,7 +29,10 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       denyDialMultiaddr: async () => false
     },
     services: {
-      ping: ping(),
+      ping: ping({
+        maxInboundStreams: Infinity,
+        maxOutboundStreams: Infinity
+      }),
       identify: identify()
     }
   }
