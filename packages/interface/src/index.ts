@@ -31,7 +31,8 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
- * Used by the connection manager to sort addresses into order before dialling
+ * Used by the connection manager to sort addresses before dialing.
+ * The function returns -1, 0, or 1 to determine order.
  */
 export interface AddressSorter {
   (a: Address, b: Address): -1 | 0 | 1
@@ -41,18 +42,26 @@ export interface AddressSorter {
  * Event detail emitted when peer data changes
  */
 export interface PeerUpdate {
+  /** The updated peer data */
   peer: Peer
+  /** The previous state of the peer, if available. */
   previous?: Peer
 }
+
 
 /**
  * Peer data signed by the remote Peer's public key
  */
 export interface SignedPeerRecord {
+  /** Peer network addresses */
   addresses: Multiaddr[]
+  /** Sequence number for tracking updates */
   seq: bigint
 }
 
+/**
+ * TLS certificate and key pair in PEM format
+ */
 export interface TLSCertificate {
   /**
    * The private key that corresponds to the certificate in PEM format
@@ -121,18 +130,40 @@ export interface IdentifyResult {
 
 /**
  * Logger component for libp2p
+ *
+ * Provides methods for logging messages, errors, and traces.
  */
 export interface Logger {
+  /**
+   * Logs a message with the formatter and arguments.
+   */
   (formatter: any, ...args: any[]): void
+
+  /**
+   * Logs an error with the formatter and arguments.
+   */
   error(formatter: any, ...args: any[]): void
+
+  /**
+   * Logs a trace with the formatter and arguments.
+   */
   trace(formatter: any, ...args: any[]): void
+
+  /**
+   * Flag to check if logging is enabled.
+   */
   enabled: boolean
 }
 
 /**
  * Peer logger component for libp2p
+ *
+ * Provides a method to get a logger for a specific component.
  */
 export interface ComponentLogger {
+  /**
+   * Gets a logger for a component.
+   */
   forComponent(name: string): Logger
 }
 
@@ -335,6 +366,10 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
  */
 export type ServiceMap = Record<string, unknown>
 
+/**
+ * The status of a pending dial operation.
+ * Can be one of: 'queued', 'active', 'error', or 'success'.
+ */
 export type PendingDialStatus = 'queued' | 'active' | 'error' | 'success'
 
 /**
@@ -364,8 +399,15 @@ export interface PendingDial {
   multiaddrs: Multiaddr[]
 }
 
+/**
+ * The status of a libp2p node.
+ * Can be one of: 'starting', 'started', 'stopping', or 'stopped'.
+ */
 export type Libp2pStatus = 'starting' | 'started' | 'stopping' | 'stopped'
 
+/**
+ * Options for checking if a multiaddr is dialable.
+ */
 export interface IsDialableOptions extends AbortOptions {
   /**
    * If the dial attempt would open a protocol, and the multiaddr being dialed
@@ -376,18 +418,47 @@ export interface IsDialableOptions extends AbortOptions {
   runOnLimitedConnection?: boolean
 }
 
+/**
+ * Progress events for the transport manager.
+ */
 export type TransportManagerDialProgressEvents =
+  /**
+   * Emitted when the selected transport is changed.
+   */
   ProgressEvent<'transport-manager:selected-transport', string>
 
+/**
+ * Progress events for the open connection process.
+ */
 export type OpenConnectionProgressEvents =
-  TransportManagerDialProgressEvents |
+  /**
+   * Emitted when the connection is already connected.
+   */
   ProgressEvent<'dial-queue:already-connected'> |
+  /**
+   * Emitted when the connection is already in the dial queue.
+   */
   ProgressEvent<'dial-queue:already-in-dial-queue'> |
+  /**
+   * Emitted when the connection is added to the dial queue.
+   */
   ProgressEvent<'dial-queue:add-to-dial-queue'> |
+  /**
+   * Emitted when the dial starts.
+   */
   ProgressEvent<'dial-queue:start-dial'> |
+  /**
+   * Emitted when the calculated addresses are available.
+   */
   ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
+  /**
+   * Emitted when the outbound connection upgrade starts.
+   */
   OutboundConnectionUpgradeEvents
 
+/**
+ * Options for dialing a peer.
+ */
 export interface DialOptions extends AbortOptions, ProgressOptions {
   /**
    * If true, open a new connection to the remote even if one already exists
@@ -395,6 +466,9 @@ export interface DialOptions extends AbortOptions, ProgressOptions {
   force?: boolean
 }
 
+/**
+ * Options for dialing a peer with a specific protocol.
+ */
 export interface DialProtocolOptions extends NewStreamOptions {
 
 }
@@ -557,6 +631,14 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
 
   /**
    * Return a list of all peers we currently have a connection open to
+   * 
+   * @example
+   *
+   * ```TypeScript
+   * for (const peer of libp2p.getPeers()) {
+   *   console.log(peer)
+   * }
+   * ```
    */
   getPeers(): PeerId[]
 
