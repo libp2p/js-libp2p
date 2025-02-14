@@ -1,6 +1,7 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
+import { type DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -14,6 +15,11 @@ export interface PeerStreamsInit {
 
 export interface PeerStreamsComponents {
   logger: ComponentLogger
+}
+
+// Define the DecodeOptions type locally
+interface DecoderOptions extends LpDecoderOptions {
+  // other custom options we might want for `attachInboundStream`
 }
 
 /**
@@ -86,7 +92,8 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
   /**
    * Attach a raw inbound stream and setup a read stream
    */
-  attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+  // attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
+  attachInboundStream (stream: Stream, decoderOptions?: DecoderOptions): AsyncIterable<Uint8ArrayList> {
     const abortListener = (): void => {
       closeSource(stream.source, this.log)
     }
@@ -102,7 +109,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this._rawInboundStream = stream
     this.inboundStream = pipe(
       this._rawInboundStream,
-      (source) => lp.decode(source)
+      (source) => lp.decode(source, decoderOptions)
     )
 
     this.dispatchEvent(new CustomEvent('stream:inbound'))
