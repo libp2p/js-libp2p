@@ -71,7 +71,7 @@
     "@libp2p/logger": "^5.1.8",
     "aegir": "^45.0.5",
     "delay": "^6.0.0",
-    "it-length-prefixed": "^9.1.0",
+    "it-length-prefixed": "^10.0.1",
     "it-pair": "^2.0.6",
     "it-pushable": "^3.2.3",
     "protons": "^7.6.0",
