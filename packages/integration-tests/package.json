@@ -29,7 +29,7 @@
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov -- --exit",
-    "test:interop": "aegir test -t node -f dist/test/interop.js",
+    "test:interop": "IPFS_LOGGING=debug DEBUG=go-libp2p* aegir test -t node -f dist/test/interop.js",
     "dep-check": "aegir dep-check"
   },
   "devDependencies": {
