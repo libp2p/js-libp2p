@@ -75,6 +75,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [10.0.19](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.0.18...pubsub-v10.0.19) (2025-02-14)
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#2962](https://github.com/libp2p/js-libp2p/issues/2962)) ([1fc0e26](https://github.com/libp2p/js-libp2p/commit/1fc0e26620d2fd9d752179ab4f6dcc7b6ed5ee5c))
+
 ## [10.0.18](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.0.17...pubsub-v10.0.18) (2025-02-10)
 
 
