@@ -2,6 +2,9 @@ import { setMaxListeners as nodeSetMaxListeners } from 'events'
 
 /**
  * Create a setMaxListeners that doesn't break browser usage
+ *
+ * @param n - The maximum number of listeners.
+ * @param eventTargets - The event targets to set the maximum number of listeners for.
  */
 export const setMaxListeners: typeof nodeSetMaxListeners = (n, ...eventTargets) => {
   try {
