@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/bootstrap",
-  "version": "11.0.22",
+  "version": "11.0.22-security-fix.1",
   "description": "Peer discovery via a list of bootstrap peers",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",

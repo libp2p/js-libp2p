@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/perf",
-  "version": "4.0.22",
+  "version": "4.0.22-security-fix.1",
   "description": "Implementation of Perf Protocol",
   "author": "@maschad / @marcopolo",
   "license": "Apache-2.0 OR MIT",

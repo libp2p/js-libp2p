@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id",
-  "version": "5.0.12",
+  "version": "5.0.12-security-fix.1",
   "description": "Implementation of @libp2p/interface-peer-id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id#readme",

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/echo",
-  "version": "2.1.9",
+  "version": "2.1.9-security-fix.1",
   "description": "Implementation of an Echo protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo#readme",

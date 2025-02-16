@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/integration-tests",
-  "version": "0.0.0",
+  "version": "0.0.0-security-fix.1",
   "description": "libp2p integration tests",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/integration-tests#readme",

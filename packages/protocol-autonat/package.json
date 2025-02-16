@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/autonat",
-  "version": "2.0.19",
+  "version": "2.0.19-security-fix.1",
   "description": "Implementation of Autonat Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-autonat#readme",

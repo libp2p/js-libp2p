@@ -31,13 +31,14 @@
     "dep-check": "aegir run dep-check",
     "doc-check": "aegir run doc-check",
     "release": "run-s build docs:no-publish npm:release docs",
-    "npm:release": "aegir exec --bail false npm -- publish",
+    "npm:release": "aegir exec --bail false npm -- publish --registry https://npm.pkg.github.com",
     "release:rc": "aegir release-rc",
     "docs": "aegir docs",
     "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
   },
   "devDependencies": {
     "aegir": "^45.0.5",
+    "lerna": "^8.1.9",
     "npm-run-all": "^4.1.5"
   },
   "eslintConfig": {
@@ -50,5 +51,10 @@
     "doc",
     "interop",
     "packages/*"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "dependencies": {}
 }

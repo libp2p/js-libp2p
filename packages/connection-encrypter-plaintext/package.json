@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/plaintext",
-  "version": "2.0.15",
+  "version": "2.0.15-security-fix.1",
   "description": "An insecure connection encrypter",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext#readme",

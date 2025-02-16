@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/prometheus-metrics",
-  "version": "4.3.5",
+  "version": "4.3.5-security-fix.1",
   "description": "Collect libp2p metrics for scraping by Prometheus or Graphana",
   "author": "",
   "license": "Apache-2.0 OR MIT",

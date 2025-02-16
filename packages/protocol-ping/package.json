@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/ping",
-  "version": "2.0.18",
+  "version": "2.0.18-security-fix.1",
   "description": "Implementation of Ping Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-ping#readme",

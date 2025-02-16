@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pubsub",
-  "version": "10.0.18",
+  "version": "10.0.18-security-fix.1",
   "description": "libp2p pubsub base class",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub#readme",
