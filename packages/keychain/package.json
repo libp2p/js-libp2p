@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/keychain",
+  "name": "@devlux76/keychain",
   "version": "5.0.14-security-fix.1",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/keychain#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -59,8 +59,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
+    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/interface": "^2.5.0",
     "@noble/hashes": "^1.6.1",
     "asn1js": "^3.0.5",
     "interface-datastore": "^8.3.1",
@@ -70,7 +70,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.8",
+    "@devlux76/logger": "^5.1.8",
     "aegir": "^45.0.5",
     "datastore-core": "^10.0.2"
   },

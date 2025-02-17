@@ -6,7 +6,7 @@
   "homepage": "https://github.com/libp2p/js-libp2p#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"

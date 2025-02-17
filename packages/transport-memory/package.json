@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/memory",
+  "name": "@devlux76/memory",
   "version": "1.0.5-security-fix.1",
   "description": "A memory transport for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-memory#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/transport-memory#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -51,7 +51,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.5.0",
+    "@devlux76/interface": "^2.5.0",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "@types/sinon": "^17.0.3",
@@ -62,8 +62,8 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.8",
-    "@libp2p/peer-id": "^5.0.12",
+    "@devlux76/logger": "^5.1.8",
+    "@devlux76/peer-id": "^5.0.12",
     "aegir": "^45.0.5",
     "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0"

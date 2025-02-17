@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/peer-id",
+  "name": "@devlux76/peer-id",
   "version": "5.0.12-security-fix.1",
   "description": "Implementation of @libp2p/interface-peer-id",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/peer-id#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -54,8 +54,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
+    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/interface": "^2.5.0",
     "multiformats": "^13.3.1",
     "uint8arrays": "^5.1.0"
   },

@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/bootstrap",
+  "name": "@devlux76/bootstrap",
   "version": "11.0.22-security-fix.1",
   "description": "Peer discovery via a list of bootstrap peers",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -54,15 +54,15 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/interface-internal": "^2.3.0",
-    "@libp2p/peer-id": "^5.0.12",
+    "@devlux76/interface": "^2.5.0",
+    "@devlux76/interface-internal": "^2.3.0",
+    "@devlux76/peer-id": "^5.0.12",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^6.3.0",
-    "@libp2p/logger": "^5.1.8",
+    "@devlux76/interface-compliance-tests": "^6.3.0",
+    "@devlux76/logger": "^5.1.8",
     "aegir": "^45.0.5",
     "sinon-ts": "^2.0.0"
   },

@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/record",
+  "name": "@devlux76/record",
   "version": "4.0.4-security-fix.1",
   "description": "libp2p record implementation",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/record#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/record#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",

@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/identify",
+  "name": "@devlux76/identify",
   "version": "3.0.18-security-fix.1",
   "description": "Implementation of the Identify Protocol",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-identify#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/protocol-identify#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -52,12 +52,12 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/interface-internal": "^2.3.0",
-    "@libp2p/peer-id": "^5.0.12",
-    "@libp2p/peer-record": "^8.0.17",
-    "@libp2p/utils": "^6.5.1",
+    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/interface": "^2.5.0",
+    "@devlux76/interface-internal": "^2.3.0",
+    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/peer-record": "^8.0.17",
+    "@devlux76/utils": "^6.5.1",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "it-drain": "^3.0.7",
@@ -68,7 +68,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.8",
+    "@devlux76/logger": "^5.1.8",
     "aegir": "^45.0.5",
     "delay": "^6.0.0",
     "it-length-prefixed": "^10.0.1",

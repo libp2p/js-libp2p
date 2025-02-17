@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/peer-record",
+  "name": "@devlux76/peer-record",
   "version": "8.0.17-security-fix.1",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/peer-record#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -61,10 +61,10 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/peer-id": "^5.0.12",
-    "@libp2p/utils": "^6.5.1",
+    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/interface": "^2.5.0",
+    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/utils": "^6.5.1",
     "@multiformats/multiaddr": "^12.3.3",
     "multiformats": "^13.3.1",
     "protons-runtime": "^5.5.0",

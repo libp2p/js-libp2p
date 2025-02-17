@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/tcp",
+  "name": "@devlux76/tcp",
   "version": "10.0.19-security-fix.1",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/transport-tcp#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -60,8 +60,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/utils": "^6.5.1",
+    "@devlux76/interface": "^2.5.0",
+    "@devlux76/utils": "^6.5.1",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3",
     "@types/sinon": "^17.0.3",
@@ -72,7 +72,7 @@
     "stream-to-it": "^1.0.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.8",
+    "@devlux76/logger": "^5.1.8",
     "aegir": "^45.0.5",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",

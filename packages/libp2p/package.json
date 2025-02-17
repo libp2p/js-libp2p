@@ -3,13 +3,13 @@
   "version": "2.6.2-security-fix.1",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/libp2p#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -92,15 +92,15 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@chainsafe/netmask": "^2.0.0",
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/interface-internal": "^2.3.0",
-    "@libp2p/logger": "^5.1.8",
-    "@libp2p/multistream-select": "^6.0.13",
-    "@libp2p/peer-collections": "^6.0.17",
-    "@libp2p/peer-id": "^5.0.12",
-    "@libp2p/peer-store": "^11.0.17",
-    "@libp2p/utils": "^6.5.1",
+    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/interface": "^2.5.0",
+    "@devlux76/interface-internal": "^2.3.0",
+    "@devlux76/logger": "^5.1.8",
+    "@devlux76/multistream-select": "^6.0.13",
+    "@devlux76/peer-collections": "^6.0.17",
+    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/peer-store": "^11.0.17",
+    "@devlux76/utils": "^6.5.1",
     "@multiformats/dns": "^1.0.6",
     "@multiformats/multiaddr": "^12.3.5",
     "@multiformats/multiaddr-matcher": "^1.6.0",

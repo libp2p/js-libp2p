@@ -1,15 +1,15 @@
 {
-  "name": "@libp2p/crypto",
+  "name": "@devlux76/crypto",
   "version": "5.0.11-security-fix.1",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
+  "homepage": "https://github.com/devlux76/js-libp2p/tree/main/packages/crypto#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/devlux76/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/devlux76/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -92,7 +92,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.5.0",
+    "@devlux76/interface": "^2.5.0",
     "@noble/curves": "^1.7.0",
     "@noble/hashes": "^1.6.1",
     "asn1js": "^3.0.5",
