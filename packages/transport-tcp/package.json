@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS",
@@ -60,8 +60,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/utils": "^6.5.1",
+    "@devlux76/interface": "*",
+    "@devlux76/utils": "*",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3",
     "@types/sinon": "^17.0.3",
@@ -72,7 +72,7 @@
     "stream-to-it": "^1.0.1"
   },
   "devDependencies": {
-    "@devlux76/logger": "^5.1.8",
+    "@devlux76/logger": "*",
     "aegir": "^45.0.5",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",

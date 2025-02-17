@@ -17,28 +17,47 @@ TIER_1=(
     "interface-internal"
     "peer-id"
     "utils"
+    "logger"
 )
 
-# Second tier - packages that depend on tier 1
+# Second tier - packages that depend only on tier 1
 TIER_2=(
     "interface-compliance-tests"
-    "logger"
-    "tcp"
+    "keychain"
+    "peer-collections"
+    "peer-record"
+    "record"
 )
 
-# Third tier - everything else
+# Third tier - packages that depend on tier 1 and 2
 TIER_3=(
-    "webrtc"
-    "webtransport"
+    "config"
+    "connection-encrypter-plaintext"
+    "connection-encrypter-tls"
+    "peer-store"
+    "pnet"
+    "transport-tcp"
+    "transport-websockets"
+)
+
+# Fourth tier - everything else
+TIER_4=(
+    "transport-webrtc"
+    "transport-webtransport"
     "upnp-nat"
+    "protocol-ping"
+    "pubsub"
+    "pubsub-floodsub"
 )
 
 publish_tier() {
     local tier=("$@")
+    local success=true
+
     for pkg in "${tier[@]}"; do
         if [ -d "packages/$pkg" ]; then
-            echo "Building and publishing @devlux76/$pkg..."
-            cd "packages/$pkg"
+            echo "Processing @devlux76/$pkg..."
+            pushd "packages/$pkg" >/dev/null
             
             # Get version from package.json
             version=$(node -p "require('./package.json').version")
@@ -46,43 +65,66 @@ publish_tier() {
             # Check if already published
             if check_package_published "$pkg" "$version"; then
                 echo "@devlux76/$pkg@$version already published, skipping..."
-            else
-                # First, link all local dependencies
-                echo "Installing dependencies for @devlux76/$pkg..."
-                for dep in ../*/; do
-                    if [ -f "$dep/package.json" ]; then
-                        dep_name=$(node -p "require('$dep/package.json').name")
-                        if [[ $dep_name == @libp2p/* ]]; then
-                            echo "Linking local dependency $dep_name..."
-                            (cd "$dep" && npm link)
-                            npm link "${dep_name//@libp2p/@devlux76}"
-                        fi
-                    fi
-                done
-
-                # Now install remaining dependencies
-                npm install
-                npm run build
-                npm publish --registry https://npm.pkg.github.com
+                popd >/dev/null
+                continue
             fi
-            cd ../..
+
+            # Clean install and build
+            echo "Installing dependencies for @devlux76/$pkg..."
+            rm -rf node_modules package-lock.json
+            if ! npm install --force; then
+                echo "Failed to install dependencies for @devlux76/$pkg"
+                success=false
+                popd >/dev/null
+                continue
+            fi
+
+            if ! npm run build; then
+                echo "Failed to build @devlux76/$pkg"
+                success=false
+                popd >/dev/null
+                continue
+            fi
+
+            # Publish
+            echo "Publishing @devlux76/$pkg@$version..."
+            if ! npm publish --registry https://npm.pkg.github.com --force; then
+                echo "Failed to publish @devlux76/$pkg"
+                success=false
+                popd >/dev/null
+                continue
+            fi
+            
+            # Wait a bit to ensure the package is available
+            sleep 10
+            
+            popd >/dev/null
         fi
     done
+
+    return $([ "$success" = true ] && echo 0 || echo 1)
 }
 
-# First, build all packages
-for pkg in packages/*/; do
-    if [ -f "$pkg/package.json" ]; then
-        echo "Building $pkg..."
-        (cd "$pkg" && npm install && npm run build)
-    fi
-done
-
 echo "Publishing Tier 1 packages..."
-publish_tier "${TIER_1[@]}"
+if ! publish_tier "${TIER_1[@]}"; then
+    echo "Failed to publish some Tier 1 packages"
+    exit 1
+fi
 
 echo "Publishing Tier 2 packages..."
-publish_tier "${TIER_2[@]}"
+if ! publish_tier "${TIER_2[@]}"; then
+    echo "Failed to publish some Tier 2 packages"
+    exit 1
+fi
 
 echo "Publishing Tier 3 packages..."
-publish_tier "${TIER_3[@]}"
+if ! publish_tier "${TIER_3[@]}"; then
+    echo "Failed to publish some Tier 3 packages"
+    exit 1
+fi
+
+echo "Publishing Tier 4 packages..."
+if ! publish_tier "${TIER_4[@]}"; then
+    echo "Failed to publish some Tier 4 packages"
+    exit 1
+fi

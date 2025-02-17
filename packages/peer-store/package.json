@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS"
@@ -59,10 +59,10 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/peer-id": "^5.0.12",
-    "@devlux76/peer-record": "^8.0.17",
+    "@devlux76/crypto": "*",
+    "@devlux76/interface": "*",
+    "@devlux76/peer-id": "*",
+    "@devlux76/peer-record": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "interface-datastore": "^8.3.1",
     "it-all": "^3.0.6",
@@ -73,7 +73,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@devlux76/logger": "^5.1.8",
+    "@devlux76/logger": "*",
     "@types/sinon": "^17.0.3",
     "aegir": "^45.0.5",
     "datastore-core": "^10.0.2",

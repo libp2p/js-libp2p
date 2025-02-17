@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS"
@@ -56,18 +56,18 @@
   "dependencies": {
     "@achingbrain/nat-port-mapper": "^4.0.0",
     "@chainsafe/is-ip": "^2.0.2",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
-    "@devlux76/utils": "^6.5.1",
+    "@devlux76/interface": "*",
+    "@devlux76/interface-internal": "*",
+    "@devlux76/utils": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "p-defer": "^4.0.1",
     "race-signal": "^1.1.0"
   },
   "devDependencies": {
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/crypto": "*",
+    "@devlux76/logger": "*",
+    "@devlux76/peer-id": "*",
     "aegir": "^45.0.5",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"

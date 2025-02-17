@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS",
@@ -92,7 +92,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
+    "@devlux76/interface": "*",
     "@noble/curves": "^1.7.0",
     "@noble/hashes": "^1.6.1",
     "asn1js": "^3.0.5",

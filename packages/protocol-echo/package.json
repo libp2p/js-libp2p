@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -51,14 +51,14 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
+    "@devlux76/interface": "*",
+    "@devlux76/interface-internal": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "it-byte-stream": "^1.1.0",
     "it-pipe": "^3.0.1"
   },
   "devDependencies": {
-    "@devlux76/logger": "^5.1.8",
+    "@devlux76/logger": "*",
     "aegir": "^45.0.5",
     "it-all": "^3.0.6",
     "it-pair": "^2.0.6",

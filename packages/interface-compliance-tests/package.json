@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "interface",
@@ -104,17 +104,17 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/echo": "^2.1.9",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/memory": "^1.0.5",
-    "@devlux76/multistream-select": "^6.0.13",
-    "@devlux76/peer-collections": "^6.0.17",
-    "@devlux76/peer-id": "^5.0.12",
-    "@devlux76/plaintext": "^2.0.15",
-    "@devlux76/utils": "^6.5.1",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "abortable-iterator": "^5.1.0",

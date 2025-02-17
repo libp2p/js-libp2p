@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "interface",
@@ -48,8 +48,9 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/peer-collections": "^6.0.17",
+    "@devlux76/interface": "*",
+    "@devlux76/peer-id": "*",
+    "@devlux76/logger": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "progress-events": "^1.0.1"
   },

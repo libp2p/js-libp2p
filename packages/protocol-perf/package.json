@@ -14,7 +14,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -52,14 +52,16 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
+    "@devlux76/interface": "*",
+    "@devlux76/interface-internal": "*",
+    "@devlux76/crypto": "*",
+    "@devlux76/logger": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "it-pushable": "^3.2.3"
   },
   "devDependencies": {
-    "@devlux76/interface-compliance-tests": "^6.3.0",
-    "@devlux76/logger": "^5.1.8",
+    "@devlux76/interface-compliance-tests": "*",
+    "@devlux76/logger": "*",
     "aegir": "^45.0.5",
     "it-last": "^3.0.6",
     "it-pair": "^2.0.6",

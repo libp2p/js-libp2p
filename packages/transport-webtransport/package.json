@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS"
@@ -51,9 +51,9 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^16.0.0",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/peer-id": "^5.0.12",
-    "@devlux76/utils": "^6.5.1",
+    "@devlux76/interface": "*",
+    "@devlux76/peer-id": "*",
+    "@devlux76/utils": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "it-stream-types": "^2.0.2",
@@ -64,10 +64,10 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/daemon-client": "^9.0.4",
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/ping": "^2.0.18",
+    "@devlux76/crypto": "*",
+    "@devlux76/daemon-client": "*",
+    "@devlux76/logger": "*",
+    "@devlux76/ping": "*",
     "@noble/hashes": "^1.6.1",
     "aegir": "^45.0.5",
     "execa": "^9.5.1",

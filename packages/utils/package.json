@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -181,9 +181,9 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@chainsafe/netmask": "^2.0.0",
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/logger": "^5.1.8",
+    "@devlux76/crypto": "*",
+    "@devlux76/interface": "*",
+    "@devlux76/logger": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "@sindresorhus/fnv1a": "^3.1.0",
     "any-signal": "^4.1.1",
@@ -202,7 +202,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/peer-id": "*",
     "@types/netmask": "^2.0.5",
     "aegir": "^45.0.5",
     "benchmark": "^2.1.4",

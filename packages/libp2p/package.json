@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "IPFS",
@@ -92,15 +92,15 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@chainsafe/netmask": "^2.0.0",
-    "@devlux76/crypto": "^5.0.11",
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/multistream-select": "^6.0.13",
-    "@devlux76/peer-collections": "^6.0.17",
-    "@devlux76/peer-id": "^5.0.12",
-    "@devlux76/peer-store": "^11.0.17",
-    "@devlux76/utils": "^6.5.1",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
+    "@devlux76/latest": "*",
     "@multiformats/dns": "^1.0.6",
     "@multiformats/multiaddr": "^12.3.5",
     "@multiformats/multiaddr-matcher": "^1.6.0",

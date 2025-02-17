@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -51,7 +51,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
+    "@devlux76/interface": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "@types/sinon": "^17.0.3",
@@ -62,8 +62,8 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/peer-id": "^5.0.12",
+    "@devlux76/logger": "*",
+    "@devlux76/peer-id": "*",
     "aegir": "^45.0.5",
     "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0"

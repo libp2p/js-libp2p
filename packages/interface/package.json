@@ -13,7 +13,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "interface",
@@ -53,7 +53,10 @@
     "it-stream-types": "^2.0.2",
     "multiformats": "^13.3.1",
     "progress-events": "^1.0.1",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.8",
+    "@devlux76/crypto": "*",
+    "@devlux76/peer-id": "*",
+    "@devlux76/logger": "*"
   },
   "devDependencies": {
     "aegir": "^45.0.5"

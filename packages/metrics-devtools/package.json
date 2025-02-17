@@ -14,7 +14,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "registry": "https://npm.pkg.github.com"
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -68,11 +68,11 @@
     "test:firefox": "aegir test -t browser --browser firefox"
   },
   "dependencies": {
-    "@devlux76/interface": "^2.5.0",
-    "@devlux76/interface-internal": "^2.3.0",
-    "@devlux76/logger": "^5.1.8",
-    "@devlux76/peer-id": "^5.0.12",
-    "@devlux76/simple-metrics": "^1.3.2",
+    "@devlux76/interface": "*",
+    "@devlux76/interface-internal": "*",
+    "@devlux76/logger": "*",
+    "@devlux76/peer-id": "*",
+    "@devlux76/simple-metrics": "*",
     "@multiformats/multiaddr": "^12.3.3",
     "cborg": "^4.2.6",
     "it-pipe": "^3.0.1",
@@ -82,7 +82,7 @@
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
-    "@devlux76/crypto": "^5.0.11",
+    "@devlux76/crypto": "*",
     "aegir": "^45.0.5",
     "sinon-ts": "^2.0.0"
   },
