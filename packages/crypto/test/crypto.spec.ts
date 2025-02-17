@@ -85,7 +85,7 @@ describe('libp2p-crypto', function () {
 
       if (isSafari()) {
         // eslint-disable-next-line no-console
-        console.warn('Running differnt test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
+        console.warn('Running different test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
         const key2 = privateKeyFromProtobuf(marshalled)
         expect(key2.raw).to.equalBytes(key.raw)
         return
