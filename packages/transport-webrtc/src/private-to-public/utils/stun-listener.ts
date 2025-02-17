@@ -2,11 +2,15 @@ import { createSocket } from 'node:dgram'
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from '@ipshipyard/node-datachannel'
 import { pEvent } from 'p-event'
-// @ts-expect-error no types
-import stun from 'stun'
 import { UFRAG_PREFIX } from '../../constants.js'
 import type { Logger } from '@libp2p/interface'
 import type { AddressInfo } from 'node:net'
+
+// STUN Message Type
+const BINDING_REQUEST = 0x0001
+
+// STUN Attribute Type
+const USERNAME = 0x0006
 
 export interface StunServer {
   close(): Promise<void>
@@ -15,6 +19,53 @@ export interface StunServer {
 
 export interface Callback {
   (ufrag: string, remoteHost: string, remotePort: number): void
+}
+
+function isStunBindingRequest(msg: Uint8Array): boolean {
+  // Check if message is at least 20 bytes (STUN header size)
+  if (msg.length < 20) {
+    return false
+  }
+
+  // First two bits must be 0 to be a STUN message
+  if ((msg[0] & 0xc0) !== 0) {
+    return false
+  }
+
+  // Check message type (first 16 bits) is BINDING_REQUEST
+  const messageType = (msg[0] << 8) | msg[1]
+  if (messageType !== BINDING_REQUEST) {
+    return false
+  }
+
+  // Check magic cookie (bytes 4-7)
+  if (msg[4] !== 0x21 || msg[5] !== 0x12 || msg[6] !== 0xa4 || msg[7] !== 0x42) {
+    return false
+  }
+
+  return true
+}
+
+function parseUsername(msg: Uint8Array): string | undefined {
+  let offset = 20 // Start after header
+
+  while (offset + 4 <= msg.length) {
+    const type = (msg[offset] << 8) | msg[offset + 1]
+    const length = (msg[offset + 2] << 8) | msg[offset + 3]
+    offset += 4
+
+    if (type === USERNAME) {
+      if (offset + length > msg.length) {
+        return undefined
+      }
+      return new TextDecoder().decode(msg.slice(offset, offset + length))
+    }
+
+    // Move to next attribute (padding to 4 bytes)
+    offset += Math.ceil(length / 4) * 4
+  }
+
+  return undefined
 }
 
 async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log: Logger, cb: Callback): Promise<StunServer> {
@@ -31,14 +82,16 @@ async function dgramListener (host: string, port: number, ipVersion: 4 | 6, log:
     throw err
   }
 
-  socket.on('message', (msg, rinfo) => {
-    // TODO: this needs to be rate limited keyed by the remote host to
-    // prevent a DOS attack
+  socket.on('message', (msg: Buffer, rinfo) => {
     try {
       log.trace('incoming STUN packet from %o', rinfo)
-      const stunMessage = stun.decode(msg)
-      const usernameAttribute = stunMessage.getAttribute(stun.constants.STUN_ATTR_USERNAME)
-      const username: string | undefined = usernameAttribute?.value?.toString()
+      
+      if (!isStunBindingRequest(msg)) {
+        log.trace('incoming packet is not a STUN binding request from %s:%s', rinfo.address, rinfo.port)
+        return
+      }
+
+      const username = parseUsername(msg)
 
       if (username?.startsWith(UFRAG_PREFIX) !== true) {
         log.trace('ufrag missing from incoming STUN message from %s:%s', rinfo.address, rinfo.port)
