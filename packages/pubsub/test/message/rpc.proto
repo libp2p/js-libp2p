@@ -6,7 +6,7 @@ message RPC {
   optional ControlMessage control = 3;
 
   message SubOpts {
-    optional bool subscribe = 1; // subscribe or unsubcribe
+    optional bool subscribe = 1; // subscribe or unsubscribe
     optional string topic = 2;
   }
 
