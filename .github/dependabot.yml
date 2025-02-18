@@ -2,7 +2,10 @@ version: 2
 updates:
 - package-ecosystem: npm
   directories:
-    - "**/*"
+    - "."
+    - "doc"
+    - "interop"
+    - "packages/*"
   schedule:
     interval: daily
     time: "10:00"
