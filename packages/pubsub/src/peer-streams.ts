@@ -17,8 +17,7 @@ export interface PeerStreamsComponents {
   logger: ComponentLogger
 }
 
-// Define the DecodeOptions type locally
-interface DecoderOptions extends LpDecoderOptions {
+export interface DecoderOptions extends LpDecoderOptions {
   // other custom options we might want for `attachInboundStream`
 }
 
@@ -92,7 +91,6 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
   /**
    * Attach a raw inbound stream and setup a read stream
    */
-  // attachInboundStream (stream: Stream): AsyncIterable<Uint8ArrayList> {
   attachInboundStream (stream: Stream, decoderOptions?: DecoderOptions): AsyncIterable<Uint8ArrayList> {
     const abortListener = (): void => {
       closeSource(stream.source, this.log)
@@ -130,13 +128,11 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this._rawOutboundStream = stream
     this.outboundStream = pushable<Uint8ArrayList>({
       onEnd: (shouldEmit) => {
-        // close writable side of the stream
-        if (this._rawOutboundStream != null) { // eslint-disable-line @typescript-eslint/prefer-optional-chain
-          this._rawOutboundStream.closeWrite()
-            .catch(err => {
-              this.log('error closing outbound stream', err)
-            })
-        }
+        // close writable side of the stream if it exists
+        this._rawOutboundStream?.closeWrite()
+          .catch(err => {
+            this.log('error closing outbound stream', err)
+          })
 
         this._rawOutboundStream = undefined
         this.outboundStream = undefined

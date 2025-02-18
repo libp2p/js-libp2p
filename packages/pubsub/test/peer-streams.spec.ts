@@ -9,7 +9,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { PeerStreams } from '../src/peer-streams.js'
 import { ConnectionPair } from './utils/index.js'
 
-describe('PeerStreams large message handling', () => {
+describe('peer-streams', () => {
   let otherPeerId: PeerId
 
   beforeEach(async () => {
@@ -41,11 +41,6 @@ describe('PeerStreams large message handling', () => {
     await pipe(
       [largeMessage],
       (source) => lp.encode(source, { maxDataLength: messageSize }),
-      async function * (source) {
-        for await (const chunk of source) {
-          yield chunk
-        }
-      },
       outboundStream.sink
     )
 
