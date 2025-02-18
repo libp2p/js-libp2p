@@ -32,6 +32,45 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.4...interface-internal-v2.3.0) (2025-02-10)
+
+
+### Features
+
+* allow overriding stream handlers ([#2945](https://github.com/libp2p/js-libp2p/issues/2945)) ([21088c5](https://github.com/libp2p/js-libp2p/commit/21088c5195df2c3c371fc28bb824f5f84760bf12)), closes [#2928](https://github.com/libp2p/js-libp2p/issues/2928)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/peer-collections bumped from ^6.0.16 to ^6.0.17
+
+## [2.2.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.3...interface-internal-v2.2.4) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.15 to ^6.0.16
+
+## [2.2.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.2...interface-internal-v2.2.3) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/peer-collections bumped from ^6.0.14 to ^6.0.15
+
 ## [2.2.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.1...interface-internal-v2.2.2) (2025-01-07)
 
 

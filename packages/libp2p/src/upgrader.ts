@@ -1,7 +1,6 @@
 import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
 import { createConnection } from './connection/index.js'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, UPGRADE_TIMEOUT } from './connection-manager/constants.js'
@@ -228,7 +227,14 @@ export class DefaultUpgrader implements Upgrader {
         await this.shouldBlockConnection('denyOutboundConnection', remotePeerId, maConn)
       }
 
-      return await this._performUpgrade(maConn, 'outbound', opts)
+      let direction: 'inbound' | 'outbound' = 'outbound'
+
+      // act as the multistream-select server if we are not to be the initiator
+      if (opts.initiator === false) {
+        direction = 'inbound'
+      }
+
+      return await this._performUpgrade(maConn, direction, opts)
     } catch (err) {
       this.metrics.errors?.increment({
         outbound: true
@@ -245,10 +251,13 @@ export class DefaultUpgrader implements Upgrader {
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
-    const upgradeTimeoutSignal = AbortSignal.timeout(direction === 'inbound' ? this.inboundUpgradeTimeout : this.outboundUpgradeTimeout)
-    const signal = anySignal([upgradeTimeoutSignal, opts.signal])
-    setMaxListeners(Infinity, upgradeTimeoutSignal, signal)
-    opts.signal = signal
+    if (opts.signal == null) {
+      maConn.log('no abort signal was passed while trying to upgrade connection, falling back to default timeout')
+
+      const upgradeTimeoutSignal = AbortSignal.timeout(direction === 'inbound' ? this.inboundUpgradeTimeout : this.outboundUpgradeTimeout)
+      setMaxListeners(Infinity, upgradeTimeoutSignal)
+      opts.signal = upgradeTimeoutSignal
+    }
 
     this.components.metrics?.trackMultiaddrConnection(maConn)
 
@@ -277,14 +286,8 @@ export class DefaultUpgrader implements Upgrader {
           remotePeer,
           protocol: cryptoProtocol
         } = await (direction === 'inbound'
-          ? this._encryptInbound(protectedConn, {
-            ...opts,
-            signal
-          })
-          : this._encryptOutbound(protectedConn, {
-            ...opts,
-            signal
-          })
+          ? this._encryptInbound(protectedConn, opts)
+          : this._encryptOutbound(protectedConn, opts)
         ))
 
         const maConn: MultiaddrConnection = {
@@ -336,8 +339,6 @@ export class DefaultUpgrader implements Upgrader {
     } catch (err: any) {
       maConn.log.error('failed to upgrade inbound connection %s %a - %e', direction === 'inbound' ? 'from' : 'to', maConn.remoteAddr, err)
       throw err
-    } finally {
-      signal.clear()
     }
 
     await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)

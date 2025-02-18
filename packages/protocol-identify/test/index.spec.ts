@@ -39,7 +39,8 @@ describe('identify', () => {
       logger: defaultLogger(),
       nodeInfo: {
         name: 'test',
-        version: '1.0.0'
+        version: '1.0.0',
+        userAgent: 'test'
       }
     }
   })

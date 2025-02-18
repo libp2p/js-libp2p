@@ -8,9 +8,8 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
-import { DefaultRegistrar } from '../../src/registrar.js'
+import { Registrar } from '../../src/registrar.js'
 import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
-import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 const protocol = '/test/1.0.0'
@@ -31,7 +30,7 @@ describe('registrar topologies', () => {
     peerStore = stubInterface<PeerStore>()
     events = new TypedEventEmitter<Libp2pEvents>()
 
-    registrar = new DefaultRegistrar({
+    registrar = new Registrar({
       peerId,
       peerStore,
       events,

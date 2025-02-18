@@ -16,14 +16,14 @@ import { ConnectionMonitor } from './connection-monitor.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
-import { DefaultRegistrar } from './registrar.js'
+import { Registrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
 import { DefaultUpgrader } from './upgrader.js'
+import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey } from '@libp2p/interface'
-import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
@@ -38,6 +38,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   public components: Components & T
   private readonly log: Logger
 
+  // eslint-disable-next-line complexity
   constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
     super()
 
@@ -64,13 +65,18 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
+
+    const nodeInfoName = init.nodeInfo?.name ?? pkg.name
+    const nodeInfoVersion = init.nodeInfo?.version ?? pkg.name
+
     // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
-      nodeInfo: init.nodeInfo ?? {
-        name: pkg.name,
-        version: pkg.version
+      nodeInfo: {
+        name: nodeInfoName,
+        version: nodeInfoVersion,
+        userAgent: init.nodeInfo?.userAgent ?? userAgent(nodeInfoName, nodeInfoVersion)
       },
       logger: this.logger,
       events,
@@ -111,7 +117,9 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
-      outboundUpgradeTimeout: init.connectionManager?.outboundUpgradeTimeout
+      outboundUpgradeTimeout: init.connectionManager?.outboundUpgradeTimeout,
+      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
+      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout
     })
 
     // Setup the transport manager
@@ -126,7 +134,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     // Create the Registrar
-    this.configureComponent('registrar', new DefaultRegistrar(this.components))
+    this.configureComponent('registrar', new Registrar(this.components))
 
     // Addresses {listen, announce, noAnnounce}
     this.configureComponent('addressManager', new AddressManager(this.components, init.addresses))

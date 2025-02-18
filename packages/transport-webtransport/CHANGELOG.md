@@ -96,6 +96,68 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.27](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.26...webtransport-v5.0.27) (2025-02-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.6.1 to ^2.6.2
+
+## [5.0.26](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.25...webtransport-v5.0.26) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.6.0 to ^2.6.1
+
+## [5.0.25](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.24...webtransport-v5.0.25) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/utils bumped from ^6.5.0 to ^6.5.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/ping bumped from ^2.0.17 to ^2.0.18
+    * libp2p bumped from ^2.5.2 to ^2.6.0
+
+## [5.0.24](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.23...webtransport-v5.0.24) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+  * devDependencies
+    * @libp2p/ping bumped from ^2.0.16 to ^2.0.17
+    * libp2p bumped from ^2.5.1 to ^2.5.2
+
+## [5.0.23](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.22...webtransport-v5.0.23) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/ping bumped from ^2.0.15 to ^2.0.16
+    * libp2p bumped from ^2.5.0 to ^2.5.1
+
 ## [5.0.22](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.21...webtransport-v5.0.22) (2025-01-07)
 
 

@@ -14,8 +14,8 @@ import Sinon from 'sinon'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
-import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, RandomWalk, Registrar, StreamHandler, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, StreamHandler } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId

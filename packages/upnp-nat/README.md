@@ -57,6 +57,46 @@ const node = await createLibp2p({
 })
 ```
 
+## Example - Manually specifying gateways and external ports
+
+Some ISP-provided routers are underpowered and may require rebooting before
+they will respond to SSDP M-SEARCH messages.
+
+You can manually specify your external address and/or gateways, though note
+that those gateways will still need to have UPnP enabled in order for libp2p
+to configure mapping of external ports (for IPv4) and/or opening pinholes in
+the firewall (for IPv6).
+
+```typescript
+import { createLibp2p } from 'libp2p'
+import { tcp } from '@libp2p/tcp'
+import { uPnPNAT } from '@libp2p/upnp-nat'
+
+const node = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/tcp/0'
+    ]
+  },
+  transports: [
+    tcp()
+  ],
+  services: {
+    upnpNAT: uPnPNAT({
+      // manually specify external address - this will normally be an IPv4
+      // address that the router is performing NAT with
+      externalAddress: '92.137.164.96',
+      gateways: [
+        // an IPv4 gateway
+        'http://192.168.1.1:8080/path/to/descriptor.xml',
+        // an IPv6 gateway
+        'http://[xx:xx:xx:xx]:8080/path/to/descriptor.xml'
+      ]
+    })
+  }
+})
+```
+
 # Install
 
 ```console

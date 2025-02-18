@@ -44,18 +44,6 @@ A WebRTC Direct multiaddr also includes a certhash of the target peer - this is 
 
 In both cases, once the connection is established a [Noise handshake](https://noiseprotocol.org/noise.html) is carried out to ensure that the remote peer has the private key that corresponds to the public key that makes up their PeerId, giving you both encryption and authentication.
 
-## Support
-
-WebRTC is supported in both Node.js and browsers.
-
-At the time of writing, WebRTC Direct is dial-only in browsers and not supported in Node.js at all.
-
-Support in Node.js is possible but PRs will need to be opened to [libdatachannel](https://github.com/paullouisageneau/libdatachannel) and the appropriate APIs exposed in [node-datachannel](https://github.com/murat-dogan/node-datachannel).
-
-WebRTC Direct support is available in rust-libp2p and arriving soon in go-libp2p.
-
-See the WebRTC section of <https://connectivity.libp2p.io> for more information.
-
 ## Example - WebRTC
 
 WebRTC requires use of a relay to connect two nodes. The listener first discovers a relay server and makes a reservation, then the dialer can connect via the relayed address.
@@ -180,26 +168,33 @@ The only implementation that supports a WebRTC Direct listener is go-libp2p and 
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
-import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import { fromString, toString } from 'uint8arrays'
 import { webRTCDirect } from '@libp2p/webrtc'
 
-const node = await createLibp2p({
+const listener = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/udp/0/webrtc-direct'
+    ]
+  },
   transports: [
     webRTCDirect()
-  ],
-  connectionEncrypters: [
-    noise()
   ]
 })
 
-await node.start()
+await listener.start()
 
-// this multiaddr corresponds to a remote node running a WebRTC Direct listener
-const ma = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc-direct/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
-const stream = await node.dialProtocol(ma, '/my-protocol/1.0.0', {
+const dialer = await createLibp2p({
+  transports: [
+    webRTCDirect()
+  ]
+})
+
+await dialer.start()
+
+const stream = await dialer.dialProtocol(listener.getMultiaddrs(), '/my-protocol/1.0.0', {
   signal: AbortSignal.timeout(10_000)
 })
 

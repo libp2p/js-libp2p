@@ -1,6 +1,7 @@
 import { createStream } from './stream.js'
 import { drainAndClose, nopSink, nopSource } from './util.js'
 import type { DataChannelOptions } from './index.js'
+import type { RTCPeerConnection, RTCDataChannel } from './webrtc/index.js'
 import type { ComponentLogger, Logger, Stream, CounterGroup, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
@@ -56,7 +57,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.metrics = init.metrics
     this.protocol = init.protocol ?? PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
-    this.log = components.logger.forComponent('libp2p:webrtc:datachannelmuxerfactory')
+    this.log = components.logger.forComponent('libp2p:webrtc:muxerfactory')
 
     // store any datachannels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
@@ -243,7 +244,7 @@ export class DataChannelMuxer implements StreamMuxer {
   sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
   newStream (): Stream {
-    // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
+    // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
     // lib-datachannel throws if `.getId` is called on a closed channel so
     // memoize it

@@ -89,6 +89,46 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.18...tcp-v10.0.19) (2025-02-13)
+
+
+### Bug Fixes
+
+* remove unused fields from browser polyfill ([#2958](https://github.com/libp2p/js-libp2p/issues/2958)) ([c4e8627](https://github.com/libp2p/js-libp2p/commit/c4e8627313f40cd625b6149da6967df48ce6ffba))
+
+## [10.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.17...tcp-v10.0.18) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/utils bumped from ^6.5.0 to ^6.5.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+
+## [10.0.17](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.16...tcp-v10.0.17) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
+## [10.0.16](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.15...tcp-v10.0.16) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+
 ## [10.0.15](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.14...tcp-v10.0.15) (2025-01-07)
 
 

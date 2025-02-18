@@ -36,6 +36,54 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.5.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.0...utils-v6.5.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* switch bloom filter hash from murmur to fnv1a ([#2943](https://github.com/libp2p/js-libp2p/issues/2943)) ([34b3c14](https://github.com/libp2p/js-libp2p/commit/34b3c14b87e57cdec90861830f4c26edad5b8dcc))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+
+## [6.5.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.4.0...utils-v6.5.0) (2025-02-04)
+
+
+### Features
+
+* allow changing repeating task interval and timeout ([#2934](https://github.com/libp2p/js-libp2p/issues/2934)) ([d708bb6](https://github.com/libp2p/js-libp2p/commit/d708bb6c848a548d7e5e88bdd623b00e08fa31c8))
+
+## [6.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.1...utils-v6.4.0) (2025-02-03)
+
+
+### Features
+
+* add generator detection functions to utils ([#2923](https://github.com/libp2p/js-libp2p/issues/2923)) ([31a15a1](https://github.com/libp2p/js-libp2p/commit/31a15a1483e0af0f9ede24de0a7f1d24bf9d408d))
+
+
+### Bug Fixes
+
+* use isPromise/etc function from utils ([#2925](https://github.com/libp2p/js-libp2p/issues/2925)) ([a32fbeb](https://github.com/libp2p/js-libp2p/commit/a32fbeb1dbf1ffbb59445f56ba011af4123ab085))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
 ## [6.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v6.3.0...utils-v6.3.1) (2025-01-07)
 
 
