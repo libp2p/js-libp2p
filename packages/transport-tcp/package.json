@@ -82,5 +82,8 @@
   "browser": {
     "./dist/src/tcp.js": "./dist/src/tcp.browser.js"
   },
+  "react-native": {
+    "./dist/src/tcp.js": "./dist/src/tcp.js"
+  },
   "sideEffects": false
 }
