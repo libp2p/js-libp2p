@@ -19,6 +19,13 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [6.0.14](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.13...multistream-select-v6.0.14) (2025-02-18)
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#2962](https://github.com/libp2p/js-libp2p/issues/2962)) ([1fc0e26](https://github.com/libp2p/js-libp2p/commit/1fc0e26620d2fd9d752179ab4f6dcc7b6ed5ee5c))
+
 ## [6.0.13](https://github.com/libp2p/js-libp2p/compare/multistream-select-v6.0.12...multistream-select-v6.0.13) (2025-02-10)
 
 

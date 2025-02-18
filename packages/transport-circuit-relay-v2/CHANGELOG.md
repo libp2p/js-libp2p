@@ -101,6 +101,17 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.13](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.1.12...circuit-relay-v2-v3.1.13) (2025-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.0 to ^2.3.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.0 to ^6.3.1
+
 ## [3.1.12](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.1.11...circuit-relay-v2-v3.1.12) (2025-02-13)
 
 

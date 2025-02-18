@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.20](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.19...tcp-v10.0.20) (2025-02-18)
+
+
+### Bug Fixes
+
+* override browser override for react-native ([#2970](https://github.com/libp2p/js-libp2p/issues/2970)) ([5a9bbf7](https://github.com/libp2p/js-libp2p/commit/5a9bbf7eeb52df79a5d8b99a19d2b108f8bbbc55)), closes [#2969](https://github.com/libp2p/js-libp2p/issues/2969)
+
 ## [10.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.18...tcp-v10.0.19) (2025-02-13)
 
 
