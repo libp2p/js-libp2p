@@ -1,11 +1,11 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { closeSource } from '@libp2p/utils/close-source'
 import * as lp from 'it-length-prefixed'
-import { type DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { ComponentLogger, Logger, Stream, PeerId, PeerStreamEvents } from '@libp2p/interface'
+import type { DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
 import type { Pushable } from 'it-pushable'
 
 export interface PeerStreamsInit {
