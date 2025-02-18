@@ -32,6 +32,13 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.0...interface-internal-v2.3.1) (2025-02-18)
+
+
+### Documentation
+
+* add TSDoc comments interface-internal module ([#2949](https://github.com/libp2p/js-libp2p/issues/2949)) ([d222968](https://github.com/libp2p/js-libp2p/commit/d2229682c16e07ce67276127da9ee96fe5197c59))
+
 ## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.4...interface-internal-v2.3.0) (2025-02-10)
 
 

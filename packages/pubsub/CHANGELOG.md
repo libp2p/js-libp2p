@@ -75,6 +75,21 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [10.1.0](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.0.18...pubsub-v10.1.0) (2025-02-18)
+
+
+### Features
+
+* expose maxDataLength for outgoing messages in PeerStreams ([#2954](https://github.com/libp2p/js-libp2p/issues/2954)) ([e7e2802](https://github.com/libp2p/js-libp2p/commit/e7e28025777d9ca5315d63cb822bcef6d7b961ed))
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#2962](https://github.com/libp2p/js-libp2p/issues/2962)) ([1fc0e26](https://github.com/libp2p/js-libp2p/commit/1fc0e26620d2fd9d752179ab4f6dcc7b6ed5ee5c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.0 to ^2.3.1
+
 ## [10.0.18](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.0.17...pubsub-v10.0.18) (2025-02-10)
 
 
