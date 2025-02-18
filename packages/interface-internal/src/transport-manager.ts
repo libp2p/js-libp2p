@@ -8,6 +8,7 @@ import type { ProgressOptions } from 'progress-events'
 export interface TransportManagerDialOptions extends AbortOptions, ProgressOptions<TransportManagerDialProgressEvents> {
 
 }
+
 /**
  * The `TransportManager` handles the management of network transports, allowing
  * opening connections or listening using specific transports, etc.
@@ -17,8 +18,6 @@ export interface TransportManagerDialOptions extends AbortOptions, ProgressOptio
  *
  * Most consumers will call `openConnection` on the `ConnectionManager` instead.
  */
-
-
 export interface TransportManager {
   /**
    * Add a transport to the transport manager.

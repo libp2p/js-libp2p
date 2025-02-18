@@ -58,7 +58,7 @@ export interface ConfirmAddressOptions {
 }
 
 /**
- * The `AddressManager` module provides an interface for managing peer addresses
+ * The `AddressManager` provides an interface for managing peer addresses
  * in libp2p. It supports handling multiple types of addresses, verifying their validity,
  * and storing mappings between internal and external addresses.
  */

@@ -38,7 +38,7 @@ export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<Ope
 }
 
 /**
- * The `ConnectionManager` module handles managing connections between peers in a libp2p network.
+ * The `ConnectionManager` handles managing connections between peers in a libp2p network.
  * It provides methods for opening, closing, and querying connections.This also provides methods
  * for accessing the dial queue.
  */
