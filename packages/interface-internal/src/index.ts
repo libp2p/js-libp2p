@@ -2,7 +2,7 @@
  * @packageDocumentation
  *
  * This module serves as the entry point for `@libp2p/interface-internal`,
- * re-exporting key components such as `AddressManager`, `ConnectionManager`, 
+ * re-exporting key components such as `AddressManager`, `ConnectionManager`,
  * `RandomWalk`, `Registrar`, and `TransportManager`.
  *
  * These interfaces and classes define the core internal behaviors of libp2p.

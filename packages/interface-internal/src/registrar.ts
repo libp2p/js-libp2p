@@ -75,7 +75,7 @@ export interface Registrar {
    *
    * An id will be returned that can later be used to unregister the
    * topology.
-   * 
+   *
    * @param protocol - The protocol to register.
    * @param topology - The topology handler to register.
    * @returns A promise resolving to a unique ID for the registered topology.

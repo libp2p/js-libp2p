@@ -8,3 +8,5 @@ package-lock.json
 yarn.lock
 .vscode
 interop/*-image.json
+.tmp-compiled-docs
+tsconfig-doc-check.aegir.json

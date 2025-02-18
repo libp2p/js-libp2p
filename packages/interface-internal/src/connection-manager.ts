@@ -61,6 +61,7 @@ export interface ConnectionManager {
   /**
    * Returns the configured maximum number of connections this connection
    * manager will accept
+   *
    * @returns The maximum connection limit.
    */
   getMaxConnections(): number
@@ -76,7 +77,7 @@ export interface ConnectionManager {
 
   /**
    * Close our connections to a peer
-   * 
+   *
    * @param peer - The `PeerId` whose connections should be closed.
    * @param options - Optional abort options.
    * @returns A promise that resolves once the connections are closed.
@@ -88,7 +89,7 @@ export interface ConnectionManager {
    * exchanged, this lets the ConnectionManager check we have sufficient
    * resources to accept the connection in which case it will return true,
    * otherwise it will return false.
-   * 
+   *
    * @param maConn - The multiaddr connection to evaluate.
    * @returns A promise that resolves to `true` if the connection can be accepted, `false` otherwise.
    */
@@ -114,6 +115,7 @@ export interface ConnectionManager {
    * would not block the dial attempt.
    *
    * This may involve resolving DNS addresses so you should pass an AbortSignal.
+   *
    * @param multiaddr - The target multiaddr or an array of multiaddrs.
    * @param options - Optional parameters for dialability check.
    * @returns A promise that resolves to `true` if the multiaddr is dialable, `false` otherwise.
