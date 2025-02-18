@@ -57,32 +57,45 @@ export interface ConfirmAddressOptions {
   type?: AddressType
 }
 
+/**
+ * The `AddressManager` provides an interface for managing peer addresses
+ * in libp2p. It supports handling multiple types of addresses, verifying their validity,
+ * and storing mappings between internal and external addresses.
+ */
 export interface AddressManager {
   /**
    * Get peer listen multiaddrs
+   * @returns An array of `Multiaddr` objects representing listen addresses.
    */
   getListenAddrs(): Multiaddr[]
 
   /**
    * Get peer announcing multiaddrs
+   * @returns An array of `Multiaddr` objects representing announce addresses.
    */
   getAnnounceAddrs(): Multiaddr[]
 
   /**
    * Get observed multiaddrs - these addresses may not have been confirmed as
    * publicly dialable yet
+   * @returns An array of `Multiaddr` objects representing observed addresses.
    */
   getObservedAddrs(): Multiaddr[]
 
   /**
    * Signal that we have confidence an observed multiaddr is publicly dialable -
    * this will make it appear in the output of getAddresses()
+   * 
+   * @param addr - The observed address.
+   * @param options - Additional options for confirmation.
    */
   confirmObservedAddr(addr: Multiaddr, options?: ConfirmAddressOptions): void
 
   /**
    * Signal that we do not have confidence an observed multiaddr is publicly dialable -
    * this will remove it from the output of getObservedAddrs()
+   * 
+   * @param addr - The observed address to remove.
    */
   removeObservedAddr(addr: Multiaddr): void
 
@@ -90,16 +103,20 @@ export interface AddressManager {
    * Add peer observed addresses.  These will then appear in the output of getObservedAddrs
    * but not getAddresses() until their dialability has been confirmed via a call to
    * confirmObservedAddr.
+   * 
+   * @param addr - The observed address to add.
    */
   addObservedAddr(addr: Multiaddr): void
 
   /**
    * Get the current node's addresses
+   * @returns An array of `Multiaddr` objects representing node addresses.
    */
   getAddresses(): Multiaddr[]
 
   /**
    * Return all known addresses with metadata
+   * @returns An array of `NodeAddress` objects.
    */
   getAddressesWithMetadata(): NodeAddress[]
 
@@ -108,11 +125,16 @@ export interface AddressManager {
    * `getAddresses` is invoked, where the IP addresses are present in a
    * multiaddr, an additional multiaddr will be added with `ip4` and `ip6`
    * tuples replaced with `dns4` and `dns6 ones respectively.
+   * 
+   * @param domain - The domain name to map.
+   * @param ipAddresses - The associated IP addresses.
    */
   addDNSMapping(domain: string, ipAddresses: string[]): void
 
   /**
    * Remove a mapping previously added with `addDNSMapping`.
+   * 
+   * @param domain - The domain name mapping to remove.
    */
   removeDNSMapping(domain: string): void
 
@@ -125,11 +147,23 @@ export interface AddressManager {
    * It's possible to add a IPv6 address here and have it added to the address
    * list, this is for the case when a router has an external IPv6 address with
    * port forwarding configured, but it does IPv6 -> IPv4 NAT.
+   * 
+   * @param internalIp - The internal IP address.
+   * @param internalPort - The internal port number.
+   * @param externalIp - The external IP address.
+   * @param externalPort - The external port number (optional).
+   * @param protocol - The transport protocol (`tcp` or `udp`).
    */
   addPublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort?: number, protocol?: 'tcp' | 'udp'): void
 
   /**
    * Remove a publicly routable address that this node is no longer reachable on
+   * 
+   * @param internalIp - The internal IP address.
+   * @param internalPort - The internal port number.
+   * @param externalIp - The external IP address.
+   * @param externalPort - The external port number (optional).
+   * @param protocol - The transport protocol (`tcp` or `udp`).
    */
   removePublicAddressMapping (internalIp: string, internalPort: number, externalIp: string, externalPort?: number, protocol?: 'tcp' | 'udp'): void
 }
