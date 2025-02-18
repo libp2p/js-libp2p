@@ -103,13 +103,11 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       port = await getPort()
     }
 
-    this.server = await stunListener(host, port, ipVersion, this.log, (ufrag, remoteHost, remotePort) => {
+    this.server = await stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
       this.incomingConnection(ufrag, remoteHost, remotePort)
         .catch(err => {
           this.log.error('error processing incoming STUN request', err)
         })
-    }, {
-      useLibjuice: this.init.useLibjuice
     })
 
     let certificate = this.certificate

@@ -51,6 +51,10 @@ export interface WebRTCTransportDirectInit {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
   certificates?: TransportCertificate[]
+
+  /**
+   * @deprecated this setting is ignored and will be removed in a future release
+   */
   useLibjuice?: boolean
 }
 
