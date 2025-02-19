@@ -162,9 +162,22 @@ await pipe(
 
 ## Example - WebRTC Direct
 
-At the time of writing WebRTC Direct is dial-only in browsers and unsupported in Node.js.
+WebRTC Direct allows a client to establish a WebRTC connection to a server
+without using a relay to first exchange SDP messages.
 
-The only implementation that supports a WebRTC Direct listener is go-libp2p and it's not yet enabled by default.
+Instead the server listens on a public UDP port and embeds its certificate
+hash in the published multiaddr. It derives the client's SDP offer based on
+the incoming IP/port of STUN messages sent to this public port.
+
+The client derives the server's SDP answer based on the information in the
+multiaddr so no SDP handshake via a third party is required.
+
+Full details of the connection protocol can be found in the [WebRTC Direct spec](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
+
+Browsers cannot listen on WebRTC Direct addresses since they cannot open
+ports, but they can dial all spec-compliant servers.
+
+Node.js/go and rust-libp2p can listen on and dial WebRTC Direct addresses.
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
