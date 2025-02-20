@@ -5,13 +5,13 @@ import { transportSymbol, type Upgrader } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
 import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.js'
 import type { TransportManager } from '@libp2p/interface-internal'
-import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 
 function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
   let port: number | undefined
