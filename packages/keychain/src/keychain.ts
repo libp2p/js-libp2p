@@ -93,6 +93,7 @@ export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
   private readonly log: Logger
+  private readonly self: string
 
   /**
    * Creates a new instance of a key chain
@@ -101,6 +102,7 @@ export class Keychain implements KeychainInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:keychain')
     this.init = mergeOptions(defaultOptions, init)
+    this.self = init.selfKey ?? 'self'
 
     // Enforce NIST SP 800-132
     if (this.init.pass != null && this.init.pass?.length < 20) {
@@ -266,7 +268,7 @@ export class Keychain implements KeychainInterface {
   }
 
   async removeKey (name: string): Promise<KeyInfo> {
-    if (!validateKeyName(name) || name === 'self') {
+    if (!validateKeyName(name) || name === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
@@ -307,11 +309,11 @@ export class Keychain implements KeychainInterface {
    * @returns {Promise<KeyInfo>}
    */
   async renameKey (oldName: string, newName: string): Promise<KeyInfo> {
-    if (!validateKeyName(oldName) || oldName === 'self') {
+    if (!validateKeyName(oldName) || oldName === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid old key name '${oldName}'`)
     }
-    if (!validateKeyName(newName) || newName === 'self') {
+    if (!validateKeyName(newName) || newName === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }

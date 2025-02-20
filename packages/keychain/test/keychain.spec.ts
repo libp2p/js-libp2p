@@ -41,6 +41,23 @@ describe('keychain', () => {
     }()).to.eventually.be.ok()
   })
 
+  it('can override the self key name', async () => {
+    const selfKey = 'other-key'
+    const kc = new KeychainClass({
+      datastore: new MemoryDatastore(),
+      logger
+    }, {
+      selfKey
+    })
+
+    const privateKey = await generateKeyPair('Ed25519')
+    await kc.importKey(selfKey, privateKey)
+    await expect(kc.removeKey(selfKey)).to.eventually.be.rejected()
+
+    await kc.importKey('self', privateKey)
+    await expect(kc.removeKey('self')).to.eventually.be.ok()
+  })
+
   it('needs a NIST SP 800-132 non-weak pass phrase', async () => {
     await expect(async function () {
       return new KeychainClass({

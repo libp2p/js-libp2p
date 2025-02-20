@@ -63,8 +63,29 @@ export interface DEKConfig {
 }
 
 export interface KeychainInit {
+  /**
+   * The password is used to derive a key which encrypts the keychain at rest
+   */
   pass?: string
+
+  /**
+   * This key configures how the keychain encryption key is derived from the
+   * configured password
+   */
   dek?: DEKConfig
+
+  /**
+   * The 'self' key is the private key of the node from which the peer id is
+   * derived.
+   *
+   * It cannot be renamed or removed.
+   *
+   * By default it is stored under the 'self' key, to use a different name, pass
+   * this option.
+   *
+   * @default 'self'
+   */
+  selfKey?: string
 }
 
 export interface KeychainComponents {
