@@ -1,4 +1,7 @@
+import os from 'node:os'
+import { isIPv6 } from '@chainsafe/is-ip'
 import * as lengthPrefixed from 'it-length-prefixed'
+import { isNode, isElectronMain } from 'wherearewe'
 import { Message } from '../src/private-to-public/pb/message.js'
 import type { RTCDataChannel } from '../src/webrtc/index.js'
 
@@ -25,4 +28,22 @@ export const mockDataChannel = (opts: { send(bytes: Uint8Array): void, bufferedA
   }
 
   return channel
+}
+
+/**
+ * If we don't have any IPv6 network interfaces, the network we are on probably
+ * doesn't support IPv6
+ */
+export function supportsIpV6 (): boolean {
+  if (!isNode && !isElectronMain) {
+    return false
+  }
+
+  return Object.entries(os.networkInterfaces())
+    .flatMap(([_, addresses]) => addresses)
+    .map(address => address?.address)
+    .filter(address => {
+      return address != null && isIPv6(address)
+    })
+    .length > 0
 }
