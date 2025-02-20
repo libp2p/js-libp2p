@@ -115,7 +115,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // if the server has not been started yet, or the port is a wildcard port
     // and there is already a wildcard port for this address family, start a new
     // UDP mux server
-    if (existingServer == null || (port === 0 && existingServer.port === 0 && ((existingServer.isIPv4 && isIPv4(host)) || (existingServer.isIPv6 && isIPv6(host))))) {
+    const wildcardPorts = port === 0 && existingServer?.port === 0
+    const sameAddressFamily = (existingServer?.isIPv4 === true && isIPv4(host)) || (existingServer?.isIPv6 === true && isIPv6(host))
+
+    if (existingServer == null || (wildcardPorts && sameAddressFamily)) {
       existingServer = this.startUDPMuxServer(host, port)
       this.servers.push(existingServer)
     }
