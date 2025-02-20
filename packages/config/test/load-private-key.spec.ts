@@ -20,6 +20,25 @@ describe('load-private-key', () => {
     expect(loaded).to.deep.equal(key)
   })
 
+  it('should load a private key with a different name', async () => {
+    const selfKey = 'my-key'
+    const datastore = new MemoryDatastore()
+    const chain = keychain({
+      selfKey
+    })({
+      datastore,
+      logger: defaultLogger()
+    })
+    const key = await generateKeyPair('secp256k1')
+    await chain.importKey(selfKey, key)
+
+    const loaded = await loadOrCreateSelfKey(datastore, {
+      selfKey
+    })
+
+    expect(loaded).to.deep.equal(key)
+  })
+
   it('should create a private key', async () => {
     const datastore = new MemoryDatastore()
     const loaded = await loadOrCreateSelfKey(datastore)

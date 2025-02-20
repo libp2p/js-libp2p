@@ -13,24 +13,31 @@ export interface LoadOrCreateSelfKeyOptions extends KeychainInit {
    * @default 'Ed25519'
    */
   keyType?: KeyType
+
+  /**
+   * Override the default key name if desired
+   *
+   * @default 'self'
+   */
+  selfKey?: string
 }
 
 export async function loadOrCreateSelfKey (datastore: Datastore, init: LoadOrCreateSelfKeyOptions = {}): Promise<PrivateKey> {
+  const selfKey = init.selfKey ?? 'self'
   const chain = keychain(init)({
     datastore,
     logger: defaultLogger()
   })
 
-  const selfKey = new Key('/pkcs8/self')
   let privateKey
 
-  if (await datastore.has(selfKey)) {
-    privateKey = await chain.exportKey('self')
+  if (await datastore.has(new Key(`/pkcs8/${selfKey}`))) {
+    privateKey = await chain.exportKey(selfKey)
   } else {
     privateKey = await generateKeyPair(init.keyType ?? 'Ed25519')
 
     // persist the peer id in the keychain for next time
-    await chain.importKey('self', privateKey)
+    await chain.importKey(selfKey, privateKey)
   }
 
   return privateKey
