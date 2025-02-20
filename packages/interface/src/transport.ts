@@ -39,6 +39,11 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
    * @returns {Promise<void>}
    */
   close(): Promise<void>
+  /**
+   * Allows transports to amend announce addresses - to add certificate hashes
+   * or other metadata that cannot be known before runtime
+   */
+  updateAnnounceAddrs(addrs: Multiaddr[]): void
 }
 
 export const transportSymbol = Symbol.for('@libp2p/transport')

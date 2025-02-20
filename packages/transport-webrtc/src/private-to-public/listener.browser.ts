@@ -22,6 +22,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     return []
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async close (): Promise<void> {
 
   }

@@ -382,6 +382,11 @@ export class AddressManager implements AddressManagerInterface {
     const announceMultiaddrs = this.getAnnounceAddrs()
 
     if (announceMultiaddrs.length > 0) {
+      // allow transports to add certhashes and other runtime information
+      this.components.transportManager.getListeners().forEach(listener => {
+        listener.updateAnnounceAddrs(announceMultiaddrs)
+      })
+
       return announceMultiaddrs.map(multiaddr => ({
         multiaddr,
         verified: true,

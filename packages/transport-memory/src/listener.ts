@@ -134,6 +134,10 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     ]
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async close (): Promise<void> {
     this.connection?.close()
 

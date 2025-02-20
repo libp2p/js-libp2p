@@ -5,6 +5,7 @@ import { transportSymbol, type Upgrader, type Listener, type Transport } from '@
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
@@ -169,5 +170,37 @@ describe('WebRTCDirect Transport', () => {
     const addrs = listener.getAddrs()
     expect(addrs).to.have.lengthOf(2)
     expect(addrs[0].toOptions().port).to.not.equal(addrs[1].toOptions().port, 'wildcard port listeners with the same ip family should not share ports')
+  })
+
+  it('should add certificate to announce addresses', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const announceAddrs = [
+      multiaddr('/ip4/80.123.123.43/tcp/12345'),
+      multiaddr('/dns/example.com/tcp/12345/wss'),
+      multiaddr('/ip4/80.123.123.43/udp/12346/webrtc-direct'),
+      multiaddr('/ip6/2a00:23c6:14b1:7e00:ac57:dafd:a294:f01/tcp/12345'),
+      multiaddr('/ip6/2a00:23c6:14b1:7e00:ac57:dafd:a294:f01/udp/12346/webrtc-direct'),
+      multiaddr('/ip6/2a00:23c6:14b1:7e00:ac57:dafd:a294:f01/udp/12346/webrtc-direct/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+    ]
+
+    const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
+    const ipv6 = multiaddr('/ip6/::/udp/0')
+
+    await Promise.all([
+      listener.listen(ipv4),
+      listener.listen(ipv6)
+    ])
+
+    listener.updateAnnounceAddrs(announceAddrs)
+
+    const webRTCDirectAddrs = announceAddrs.filter(ma => WebRTCDirect.exactMatch(ma))
+    expect(webRTCDirectAddrs).to.have.lengthOf(3)
+
+    for (const ma of webRTCDirectAddrs) {
+      expect(ma.toString()).to.include('/udp/12346/webrtc-direct/certhash/u', 'did not add certhash to all WebRTC Direct addresses')
+    }
   })
 })

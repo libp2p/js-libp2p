@@ -274,6 +274,10 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     return addrs.map(ma => peerId != null ? ma.encapsulate(`/p2p/${peerId}`) : ma)
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async listen (ma: Multiaddr): Promise<void> {
     if (this.status.code === TCPListenerStatusCode.ACTIVE || this.status.code === TCPListenerStatusCode.PAUSED) {
       throw new AlreadyStartedError('server is already listening')

@@ -46,6 +46,10 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
       .flat()
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async close (): Promise<void> {
     this.shutdownController.abort()
     queueMicrotask(() => {

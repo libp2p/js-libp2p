@@ -113,6 +113,10 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     return [...this.listeningAddrs.values()].flat()
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async close (): Promise<void> {
     this.reservationStore.cancelReservations()
     this.listeningAddrs = []

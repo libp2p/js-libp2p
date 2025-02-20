@@ -1,8 +1,8 @@
 import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { TypedEventEmitter } from '@libp2p/interface'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
-import { IP4 } from '@multiformats/multiaddr-matcher'
+import { multiaddr, protocols, fromStringTuples } from '@multiformats/multiaddr'
+import { IP4, WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
@@ -22,6 +22,8 @@ const crypto = new Crypto()
  * The time to wait, in milliseconds, for the data channel handshake to complete
  */
 const HANDSHAKE_TIMEOUT_MS = 10_000
+const CODEC_WEBRTC_DIRECT = 0x0118
+const CODEC_CERTHASH = 0x01d2
 
 export interface WebRTCDirectListenerComponents {
   peerId: PeerId
@@ -222,6 +224,34 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
   getAddrs (): Multiaddr[] {
     return this.multiaddrs
+  }
+
+  updateAnnounceAddrs (multiaddrs: Multiaddr[]): void {
+    for (let i = 0; i < multiaddrs.length; i++) {
+      let ma = multiaddrs[i]
+
+      if (!WebRTCDirect.exactMatch(ma)) {
+        continue
+      }
+
+      // add the certhash if it is missing
+      const tuples = ma.stringTuples()
+
+      for (let j = 0; j < tuples.length; j++) {
+        if (tuples[j][0] !== CODEC_WEBRTC_DIRECT) {
+          continue
+        }
+
+        const certhashIndex = j + 1
+
+        if (tuples[certhashIndex] == null || tuples[certhashIndex][0] !== CODEC_CERTHASH) {
+          tuples.splice(certhashIndex, 0, [CODEC_CERTHASH, this.certificate?.certhash])
+
+          ma = fromStringTuples(tuples)
+          multiaddrs[i] = ma
+        }
+      }
+    }
   }
 
   async close (): Promise<void> {
