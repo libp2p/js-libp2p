@@ -94,13 +94,15 @@
     "p-retry": "^6.2.1",
     "protons": "^7.6.0",
     "sinon": "^19.0.2",
-    "sinon-ts": "^2.0.0"
+    "sinon-ts": "^2.0.0",
+    "wherearewe": "^2.0.1"
   },
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js",
     "./dist/src/private-to-public/listener.js": "./dist/src/private-to-public/listener.browser.js",
     "./dist/src/private-to-public/utils/get-rtcpeerconnection.js": "./dist/src/private-to-public/utils/get-rtcpeerconnection.browser.js",
-    "node:net": false
+    "node:net": false,
+    "node:os": false
   },
   "react-native": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.react-native.js"

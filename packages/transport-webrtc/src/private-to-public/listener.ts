@@ -48,7 +48,7 @@ const IP4_PROTOCOL = protocols('ip4')
 const IP6_PROTOCOL = protocols('ip6')
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private server?: StunServer
+  private readonly servers: Record<number, Promise<StunServer>>
   private readonly multiaddrs: Multiaddr[]
   private certificate?: TransportCertificate
   private readonly connections: Map<string, DirectRTCPeerConnection>
@@ -63,6 +63,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.init = init
     this.components = components
     this.multiaddrs = []
+    this.servers = {}
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
     this.certificate = init.certificates?.[0]
@@ -89,7 +90,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     if (host == null) {
       throw new Error('IP4/6 host must be specified in webrtc-direct mulitaddr')
     }
-    let port = parseInt(parts
+    const port = parseInt(parts
       .filter(([code, value]) => code === UDP_PROTOCOL.code)
       .pop()?.[1] ?? '')
 
@@ -97,39 +98,50 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       throw new Error('UDP port must be specified in webrtc-direct mulitaddr')
     }
 
-    if (port === 0 && this.init.useLibjuice !== false) {
+    // have to do this before any async work happens so starting two listeners
+    // for the same port concurrently (e.g. ipv4/ipv6 both port 0) results in a
+    // single mux listener. This is necessary because libjuice binds to all
+    // interfaces for a given port so we we need to key on just the port number
+    // not the host + the port number
+    if (this.servers[port] == null) {
+      this.servers[port] = this.startUDPMuxServer(host, port)
+    }
+
+    const server = await this.servers[port]
+    const address = server.address()
+
+    getNetworkAddresses(host, address.port, ipVersion).forEach((ma) => {
+      this.multiaddrs.push(multiaddr(`${ma}/webrtc-direct/certhash/${this.certificate?.certhash}`))
+    })
+
+    this.safeDispatchEvent('listening')
+  }
+
+  private async startUDPMuxServer (host: string, port: number): Promise<StunServer> {
+    if (port === 0) {
       // libjuice doesn't map 0 to a random free port so we have to do it
       // ourselves
       port = await getPort()
     }
 
-    this.server = await stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
-      this.incomingConnection(ufrag, remoteHost, remotePort)
-        .catch(err => {
-          this.log.error('error processing incoming STUN request', err)
-        })
-    })
-
-    let certificate = this.certificate
-
-    if (certificate == null) {
+    // ensure we have a certificate
+    if (this.certificate == null) {
       const keyPair = await crypto.subtle.generateKey({
         name: 'ECDSA',
         namedCurve: 'P-256'
       }, true, ['sign', 'verify'])
 
-      certificate = this.certificate = await generateTransportCertificate(keyPair, {
-        days: 365
+      this.certificate = await generateTransportCertificate(keyPair, {
+        days: 365 * 10
       })
     }
 
-    const address = this.server.address()
-
-    getNetworkAddresses(address.address, address.port, ipVersion).forEach((ma) => {
-      this.multiaddrs.push(multiaddr(`${ma}/webrtc-direct/certhash/${certificate.certhash}`))
+    return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
+      this.incomingConnection(ufrag, remoteHost, remotePort)
+        .catch(err => {
+          this.log.error('error processing incoming STUN request', err)
+        })
     })
-
-    this.safeDispatchEvent('listening')
   }
 
   private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number): Promise<void> {
@@ -189,7 +201,13 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       connection.close()
     }
 
-    await this.server?.close()
+    // stop all UDP mux listeners
+    await Promise.all(
+      Object.values(this.servers).map(async p => {
+        const server = await p
+        await server.close()
+      })
+    )
 
     // RTCPeerConnections will be removed from the connections map when their
     // connection state changes to 'closed'/'disconnected'/'failed
@@ -202,7 +220,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 }
 
 function getNetworkAddresses (host: string, port: number, version: 4 | 6): string[] {
-  if (host === '0.0.0.0' || host === '::1') {
+  if (host === '0.0.0.0' || host === '::') {
     // return all ip4 interfaces
     return Object.entries(networkInterfaces())
       .flatMap(([_, addresses]) => addresses)
