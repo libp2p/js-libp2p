@@ -13,13 +13,6 @@ export interface LoadOrCreateSelfKeyOptions extends KeychainInit {
    * @default 'Ed25519'
    */
   keyType?: KeyType
-
-  /**
-   * Override the default key name if desired
-   *
-   * @default 'self'
-   */
-  selfKey?: string
 }
 
 export async function loadOrCreateSelfKey (datastore: Datastore, init: LoadOrCreateSelfKeyOptions = {}): Promise<PrivateKey> {
