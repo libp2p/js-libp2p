@@ -420,6 +420,10 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     ]
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   private httpRequestHandler (req: http.IncomingMessage, res: http.ServerResponse): void {
     res.writeHead(400)
     res.write('Only WebSocket connections are supported')
