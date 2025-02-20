@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.7.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.3...libp2p-v2.7.0) (2025-02-20)
+
+
+### Features
+
+* allow transports to modify announce addresses ([#2978](https://github.com/libp2p/js-libp2p/issues/2978)) ([8331c8e](https://github.com/libp2p/js-libp2p/commit/8331c8ea8feef1d642b6667213409dbe8293b606))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/interface-internal bumped from ^2.3.1 to ^2.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/multistream-select bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/peer-collections bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/peer-store bumped from ^11.0.17 to ^11.0.18
+    * @libp2p/utils bumped from ^6.5.1 to ^6.5.2
+
 ## [2.6.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.2...libp2p-v2.6.3) (2025-02-18)
 
 
