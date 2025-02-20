@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/memory-v1.0.5...memory-v1.1.0) (2025-02-20)
+
+
+### Features
+
+* allow transports to modify announce addresses ([#2978](https://github.com/libp2p/js-libp2p/issues/2978)) ([8331c8e](https://github.com/libp2p/js-libp2p/commit/8331c8ea8feef1d642b6667213409dbe8293b606))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+
 ## [1.0.5](https://github.com/libp2p/js-libp2p/compare/memory-v1.0.4...memory-v1.0.5) (2025-02-10)
 
 

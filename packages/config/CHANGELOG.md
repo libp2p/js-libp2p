@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/libp2p/js-libp2p/compare/config-v1.0.3...config-v1.1.0) (2025-02-20)
+
+
+### Features
+
+* allow configuring self-key name in config ([#2975](https://github.com/libp2p/js-libp2p/issues/2975)) ([56e5a2a](https://github.com/libp2p/js-libp2p/commit/56e5a2a87f2218d5c4d5b84f3941741a176b0cd7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/keychain bumped from ^5.0.14 to ^5.1.0
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+
 ## [1.0.3](https://github.com/libp2p/js-libp2p/compare/config-v1.0.2...config-v1.0.3) (2025-02-10)
 
 

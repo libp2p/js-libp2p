@@ -111,6 +111,38 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.1.1...webrtc-v5.2.0) (2025-02-20)
+
+
+### Features
+
+* allow transports to modify announce addresses ([#2978](https://github.com/libp2p/js-libp2p/issues/2978)) ([8331c8e](https://github.com/libp2p/js-libp2p/commit/8331c8ea8feef1d642b6667213409dbe8293b606))
+
+
+### Bug Fixes
+
+* support multiple udp mux listeners on the same port ([#2976](https://github.com/libp2p/js-libp2p/issues/2976)) ([ff951f1](https://github.com/libp2p/js-libp2p/commit/ff951f1a0a959f2a2a15aaab7cef63860a827048))
+* support multiple wildcard ports ([20e8844](https://github.com/libp2p/js-libp2p/commit/20e8844990acfe1c626ecf08fab679160ce3ac77))
+
+
+### Documentation
+
+* update webrtc-direct docs ([#2971](https://github.com/libp2p/js-libp2p/issues/2971)) ([a2c529a](https://github.com/libp2p/js-libp2p/commit/a2c529aa2abe18c20a1a36196e1d5cfe535d9493))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/interface-internal bumped from ^2.3.1 to ^2.3.2
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/utils bumped from ^6.5.1 to ^6.5.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface-compliance-tests bumped from ^6.3.1 to ^6.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+
 ## [5.1.1](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.1.0...webrtc-v5.1.1) (2025-02-18)
 
 
