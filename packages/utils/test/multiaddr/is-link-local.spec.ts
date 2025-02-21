@@ -12,7 +12,7 @@ describe('multiaddr isLinkLocal', () => {
       multiaddr('/ip4/169.254.0.0/tcp/1000'),
       multiaddr('/ip4/169.254.255.255/tcp/1000')
     ].forEach(ma => {
-      expect(isLinkLocal(ma)).to.be.true()
+      expect(isLinkLocal(ma)).to.be.true(`"${ma}" was not identified as link local`)
     })
   })
 
@@ -23,7 +23,7 @@ describe('multiaddr isLinkLocal', () => {
       multiaddr('/ip4/192.168.0.1/tcp/1000'),
       multiaddr('/ip4/172.16.0.1/tcp/1000')
     ].forEach(ma => {
-      expect(isLinkLocal(ma)).to.be.false()
+      expect(isLinkLocal(ma)).to.be.false(`"${ma}" was identified as link local`)
     })
   })
 
@@ -35,7 +35,7 @@ describe('multiaddr isLinkLocal', () => {
       multiaddr('/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a/udp/2183')
     ].forEach(ma => {
-      expect(isLinkLocal(ma)).to.be.true()
+      expect(isLinkLocal(ma)).to.be.true(`"${ma}" was not identified as link local`)
     })
   })
 
@@ -44,7 +44,7 @@ describe('multiaddr isLinkLocal', () => {
       multiaddr('/ip6/2001:8a0:7ac5:4201:3ac9:86ff:fe31:7095/tcp/1000'),
       multiaddr('/ip6/::/tcp/1000')
     ].forEach(ma => {
-      expect(isLinkLocal(ma)).to.be.false()
+      expect(isLinkLocal(ma)).to.be.false(`"${ma}" was identified as link local`)
     })
   })
 
@@ -52,9 +52,10 @@ describe('multiaddr isLinkLocal', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
+      multiaddr('/unix/path/to/socket'),
       multiaddr('/memory/addr-1')
     ].forEach(ma => {
-      expect(isLinkLocal(ma)).to.be.false()
+      expect(isLinkLocal(ma)).to.be.false(`"${ma}" was identified as link local`)
     })
   })
 })

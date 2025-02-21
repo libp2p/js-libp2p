@@ -1,3 +1,4 @@
+import { isNetworkAddress } from '@libp2p/utils/multiaddr/is-network-address'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
@@ -41,7 +42,7 @@ export class TransportAddresses {
 
     if (metadata == null) {
       metadata = {
-        verified: false,
+        verified: !isNetworkAddress(multiaddr),
         expires: 0
       }
 
@@ -109,8 +110,13 @@ export class TransportAddresses {
   }
 
   private toKey (ma: Multiaddr): string {
-    const options = ma.toOptions()
+    if (isNetworkAddress(ma)) {
+      // only works for dns/ip based addresses
+      const options = ma.toOptions()
 
-    return `${options.host}-${options.port}-${options.transport}`
+      return `${options.host}-${options.port}-${options.transport}`
+    }
+
+    return ma.toString()
   }
 }

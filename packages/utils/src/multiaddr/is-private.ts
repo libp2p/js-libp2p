@@ -1,18 +1,20 @@
 import { isPrivateIp } from '../private-ip.js'
+import { isIpBased } from './is-ip-based.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const CODEC_IP4 = 0x04
-const CODEC_IP6 = 0x29
 
 /**
  * Check if a given multiaddr starts with a private address
  */
 export function isPrivate (ma: Multiaddr): boolean {
   try {
-    const [[codec, value]] = ma.stringTuples()
-
-    if ((codec !== CODEC_IP4 && codec !== CODEC_IP6) || value == null) {
+    if (!isIpBased(ma)) {
       // not an IP based multiaddr, cannot be private
+      return false
+    }
+
+    const [[, value]] = ma.stringTuples()
+
+    if (value == null) {
       return false
     }
 
