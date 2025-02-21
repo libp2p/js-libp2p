@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-internal",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "Interfaces implemented by internal libp2p components",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-internal#readme",
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.6.0",
-    "@libp2p/peer-collections": "^6.0.18",
+    "@libp2p/peer-collections": "^6.0.19",
     "@multiformats/multiaddr": "^12.3.3",
     "progress-events": "^1.0.1"
   },

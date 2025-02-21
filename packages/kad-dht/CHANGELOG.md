@@ -106,6 +106,20 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [14.2.8](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.7...kad-dht-v14.2.8) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.2 to ^6.3.3
+    * @libp2p/peer-store bumped from ^11.0.18 to ^11.0.19
+
 ## [14.2.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.6...kad-dht-v14.2.7) (2025-02-20)
 
 

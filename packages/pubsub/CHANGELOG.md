@@ -75,6 +75,17 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [10.1.2](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.1.1...pubsub-v10.1.2) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+
 ## [10.1.1](https://github.com/libp2p/js-libp2p/compare/pubsub-v10.1.0...pubsub-v10.1.1) (2025-02-20)
 
 

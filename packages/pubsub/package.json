@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pubsub",
-  "version": "10.1.1",
+  "version": "10.1.2",
   "description": "libp2p pubsub base class",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub#readme",
@@ -86,10 +86,10 @@
   "dependencies": {
     "@libp2p/crypto": "^5.0.12",
     "@libp2p/interface": "^2.6.0",
-    "@libp2p/interface-internal": "^2.3.2",
-    "@libp2p/peer-collections": "^6.0.18",
+    "@libp2p/interface-internal": "^2.3.3",
+    "@libp2p/peer-collections": "^6.0.19",
     "@libp2p/peer-id": "^5.0.13",
-    "@libp2p/utils": "^6.5.2",
+    "@libp2p/utils": "^6.5.3",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",

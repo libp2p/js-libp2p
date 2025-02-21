@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "11.0.18",
+  "version": "11.0.19",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
@@ -62,7 +62,7 @@
     "@libp2p/crypto": "^5.0.12",
     "@libp2p/interface": "^2.6.0",
     "@libp2p/peer-id": "^5.0.13",
-    "@libp2p/peer-record": "^8.0.18",
+    "@libp2p/peer-record": "^8.0.19",
     "@multiformats/multiaddr": "^12.3.3",
     "interface-datastore": "^8.3.1",
     "it-all": "^3.0.6",

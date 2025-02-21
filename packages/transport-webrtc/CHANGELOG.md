@@ -111,6 +111,25 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.1](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.0...webrtc-v5.2.1) (2025-02-21)
+
+
+### Bug Fixes
+
+* make UDP mux registry global ([#2979](https://github.com/libp2p/js-libp2p/issues/2979)) ([7718d02](https://github.com/libp2p/js-libp2p/commit/7718d020ae5809dd6ef149c29aace4ea3258face))
+* maximum call stack size with duplicate webrtc addresses ([#2980](https://github.com/libp2p/js-libp2p/issues/2980)) ([d98cc46](https://github.com/libp2p/js-libp2p/commit/d98cc46e4c9557c0eeb6caf528b9b97261d1d165))
+* remove ws filters ([#2983](https://github.com/libp2p/js-libp2p/issues/2983)) ([2b49a5f](https://github.com/libp2p/js-libp2p/commit/2b49a5f74e8c79d571396e8a6a70f904b73763f2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.2 to ^6.3.3
+
 ## [5.2.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.1.1...webrtc-v5.2.0) (2025-02-20)
 
 
