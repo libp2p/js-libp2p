@@ -36,7 +36,7 @@ export class WebRTCPeerListener extends TypedEventEmitter<ListenerEvents> implem
   getAddrs (): Multiaddr[] {
     return this.transportManager
       .getListeners()
-      .filter(l => l !== this)
+      .filter(l => !(l instanceof WebRTCPeerListener))
       .map(l => l.getAddrs()
         .filter(ma => Circuit.exactMatch(ma))
         .map(ma => {
