@@ -9,7 +9,6 @@ import { type PingService, ping } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
 import { type Libp2pOptions, createLibp2p } from 'libp2p'
 import type { Libp2p } from '@libp2p/interface'
@@ -59,7 +58,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     case 'webrtc':
       options.transports = [
         webRTC(),
-        webSockets({ filter: filters.all }), // ws needed to connect to relay
+        webSockets(), // ws needed to connect to relay
         circuitRelayTransport()
       ]
       options.addresses = {

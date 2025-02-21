@@ -6,7 +6,6 @@ import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import mergeOptions from 'merge-options'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
@@ -23,9 +22,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     transports: [
       tcp(),
       webRTC(),
-      webSockets({
-        filter: filters.all
-      }),
+      webSockets(),
       circuitRelayTransport()
     ],
     streamMuxers: [
