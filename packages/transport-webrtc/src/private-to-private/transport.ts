@@ -129,9 +129,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
    * Returns only unique multiaddrs.
    */
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs
-      .filter(WebRTC.exactMatch)
-      .filter((ma, i, arr) => arr.map(x => x.toString()).indexOf(ma.toString()) === i)
+    return multiaddrs.filter(WebRTC.exactMatch)
   }
 
   /**
