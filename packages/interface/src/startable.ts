@@ -45,11 +45,26 @@ export interface Startable {
   afterStop?(): void | Promise<void>
 }
 
+/**
+ * Checks if an object implements the Startable interface.
+ *
+ * @param obj - The object to check.
+ * @returns True if the object implements the Startable interface, false otherwise.
+ */
 export function isStartable (obj: any): obj is Startable {
   return obj != null && typeof obj.start === 'function' && typeof obj.stop === 'function'
 }
 
+/**
+ * Starts a list of startable objects.
+ *
+ * @param objs - The objects to start.
+ * @returns A promise that resolves when all objects have been started.
+ */
 export async function start (...objs: any[]): Promise<void> {
+  /**
+   * The list of startable objects.
+   */
   const startables: Startable[] = []
 
   for (const obj of objs) {
@@ -81,7 +96,16 @@ export async function start (...objs: any[]): Promise<void> {
   )
 }
 
+/**
+ * Stops a list of startable objects.
+ *
+ * @param objs - The objects to stop.
+ * @returns A promise that resolves when all objects have been stopped.
+ */
 export async function stop (...objs: any[]): Promise<void> {
+  /**
+   * The list of startable objects.
+   */
   const startables: Startable[] = []
 
   for (const obj of objs) {
