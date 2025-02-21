@@ -1,6 +1,6 @@
 import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { TypedEventEmitter } from '@libp2p/interface'
+import { InvalidPeerIdError, TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr, protocols, fromStringTuples } from '@multiformats/multiaddr'
 import { IP4, WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { Crypto } from '@peculiar/webcrypto'
@@ -54,10 +54,13 @@ interface UDPMuxServer {
   isIPv4: boolean
   isIPv6: boolean
   port: number
+  owner: WebRTCDirectListener
+  peerId: PeerId
 }
 
+let UDP_MUX_LISTENERS: UDPMuxServer[] = []
+
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly servers: UDPMuxServer[]
   private readonly multiaddrs: Multiaddr[]
   private certificate?: TransportCertificate
   private readonly connections: Map<string, DirectRTCPeerConnection>
@@ -72,7 +75,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.init = init
     this.components = components
     this.multiaddrs = []
-    this.servers = []
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
     this.certificate = init.certificates?.[0]
@@ -112,21 +114,34 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // single mux listener. This is necessary because libjuice binds to all
     // interfaces for a given port so we we need to key on just the port number
     // not the host + the port number
-    let existingServer = this.servers.find(s => s.port === port)
+    let existingServer = UDP_MUX_LISTENERS.find(s => s.port === port)
 
     // if the server has not been started yet, or the port is a wildcard port
     // and there is already a wildcard port for this address family, start a new
     // UDP mux server
     const wildcardPorts = port === 0 && existingServer?.port === 0
     const sameAddressFamily = (existingServer?.isIPv4 === true && isIPv4(host)) || (existingServer?.isIPv6 === true && isIPv6(host))
+    let createdMuxServer = false
 
     if (existingServer == null || (wildcardPorts && sameAddressFamily)) {
+      this.log('starting UDP mux server on %s:%p', host, port)
       existingServer = this.startUDPMuxServer(host, port)
-      this.servers.push(existingServer)
+      UDP_MUX_LISTENERS.push(existingServer)
+      createdMuxServer = true
+    }
+
+    if (!existingServer.peerId.equals(this.components.peerId)) {
+      // this would have to be another in-process peer so we are likely in a
+      // testing environment
+      throw new InvalidPeerIdError(`Another peer is already performing UDP mux on ${host}:${existingServer.port}`)
     }
 
     const server = await existingServer.server
     const address = server.address()
+
+    if (!createdMuxServer) {
+      this.log('reused existing UDP mux server on %s:%p', host, address.port)
+    }
 
     getNetworkAddresses(host, address.port, ipVersion).forEach((ma) => {
       this.multiaddrs.push(multiaddr(`${ma}/webrtc-direct/certhash/${this.certificate?.certhash}`))
@@ -137,19 +152,16 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
   private startUDPMuxServer (host: string, port: number): UDPMuxServer {
     return {
+      peerId: this.components.peerId,
+      owner: this,
       port,
       isIPv4: isIPv4(host),
       isIPv6: isIPv6(host),
       server: Promise.resolve()
         .then(async (): Promise<StunServer> => {
-          if (port === 0) {
-            // libjuice doesn't map 0 to a random free port so we have to do it
-            // ourselves
-            port = await getPort()
-          }
-
           // ensure we have a certificate
           if (this.certificate == null) {
+            this.log.trace('creating TLS certificate')
             const keyPair = await crypto.subtle.generateKey({
               name: 'ECDSA',
               namedCurve: 'P-256'
@@ -162,6 +174,13 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
             if (this.certificate == null) {
               this.certificate = certificate
             }
+          }
+
+          if (port === 0) {
+            // libjuice doesn't map 0 to a random free port so we have to do it
+            // ourselves
+            this.log.trace('searching for free port')
+            port = await getPort()
           }
 
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
@@ -259,13 +278,18 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       connection.close()
     }
 
-    // stop all UDP mux listeners
+    // stop our UDP mux listeners
     await Promise.all(
-      this.servers.map(async p => {
-        const server = await p.server
-        await server.close()
-      })
+      UDP_MUX_LISTENERS
+        .filter(listener => listener.owner === this)
+        .map(async listener => {
+          const server = await listener.server
+          await server.close()
+        })
     )
+
+    // remove our stopped UDP mux listeners
+    UDP_MUX_LISTENERS = UDP_MUX_LISTENERS.filter(listener => listener.owner !== this)
 
     // RTCPeerConnections will be removed from the connections map when their
     // connection state changes to 'closed'/'disconnected'/'failed
