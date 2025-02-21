@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.5.3](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.2...utils-v6.5.3) (2025-02-21)
+
+
+### Bug Fixes
+
+* dial loopback addresses last ([#2982](https://github.com/libp2p/js-libp2p/issues/2982)) ([1ab50cc](https://github.com/libp2p/js-libp2p/commit/1ab50cc0d1ce19f629105b9e154be9f8571dba8d))
+
 ## [6.5.2](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.1...utils-v6.5.2) (2025-02-20)
 
 

@@ -70,6 +70,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.1](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.0...websockets-v9.2.1) (2025-02-21)
+
+
+### Bug Fixes
+
+* remove ws filters ([#2983](https://github.com/libp2p/js-libp2p/issues/2983)) ([2b49a5f](https://github.com/libp2p/js-libp2p/commit/2b49a5f74e8c79d571396e8a6a70f904b73763f2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+
 ## [9.2.0](https://github.com/libp2p/js-libp2p/compare/websockets-v9.1.5...websockets-v9.2.0) (2025-02-20)
 
 

@@ -110,6 +110,23 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.7.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.0...libp2p-v2.7.1) (2025-02-21)
+
+
+### Bug Fixes
+
+* dial loopback addresses last ([#2982](https://github.com/libp2p/js-libp2p/issues/2982)) ([1ab50cc](https://github.com/libp2p/js-libp2p/commit/1ab50cc0d1ce19f629105b9e154be9f8571dba8d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-store bumped from ^11.0.18 to ^11.0.19
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+
 ## [2.7.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.3...libp2p-v2.7.0) (2025-02-20)
 
 
