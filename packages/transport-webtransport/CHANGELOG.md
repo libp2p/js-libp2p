@@ -96,6 +96,23 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.31](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.30...webtransport-v5.0.31) (2025-02-21)
+
+
+### Bug Fixes
+
+* update race-signal ([#2986](https://github.com/libp2p/js-libp2p/issues/2986)) ([2a3cec9](https://github.com/libp2p/js-libp2p/commit/2a3cec9220f1250b7558635c4cb37d61f745645d)), closes [#2702](https://github.com/libp2p/js-libp2p/issues/2702)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.3 to ^6.5.4
+  * devDependencies
+    * @libp2p/ping bumped from ^2.0.21 to ^2.0.22
+    * libp2p bumped from ^2.7.1 to ^2.7.2
+
 ## [5.0.30](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.29...webtransport-v5.0.30) (2025-02-21)
 
 

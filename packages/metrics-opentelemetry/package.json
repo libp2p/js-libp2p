@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/opentelemetry-metrics",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Opentelemetry metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-opentelemetry#readme",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.6.0",
-    "@libp2p/utils": "^6.5.3",
+    "@libp2p/utils": "^6.5.4",
     "@opentelemetry/api": "^1.9.0",
     "it-foreach": "^2.1.1",
     "it-stream-types": "^2.0.2"
