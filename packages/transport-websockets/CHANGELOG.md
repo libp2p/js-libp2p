@@ -70,6 +70,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.2](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.1...websockets-v9.2.2) (2025-02-21)
+
+
+### Bug Fixes
+
+* update race-signal ([#2986](https://github.com/libp2p/js-libp2p/issues/2986)) ([2a3cec9](https://github.com/libp2p/js-libp2p/commit/2a3cec9220f1250b7558635c4cb37d61f745645d)), closes [#2702](https://github.com/libp2p/js-libp2p/issues/2702)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.3 to ^6.5.4
+
 ## [9.2.1](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.0...websockets-v9.2.1) (2025-02-21)
 
 
