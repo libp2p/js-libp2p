@@ -85,7 +85,9 @@ describe('multiaddr isPrivate', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/dns6/wss0.bootstrap.libp2p.io')
+      multiaddr('/dns6/wss0.bootstrap.libp2p.io'),
+      multiaddr('/memory/addr-1'),
+      multiaddr('/unix/foo/bar/baz.sock')
     ].forEach(ma => {
       expect(isPrivate(ma)).to.be.false()
     })
@@ -94,7 +96,6 @@ describe('multiaddr isPrivate', () => {
   it('identifies non-public addresses', () => {
     [
       multiaddr('/ip4/127.0.0.1/tcp/1000/p2p-circuit'),
-      multiaddr('/unix/foo/bar/baz.sock'),
       multiaddr('/ip4/127.0.0.1/sctp/1000'),
       multiaddr('/ip4/127.0.0.1')
     ].forEach(ma => {

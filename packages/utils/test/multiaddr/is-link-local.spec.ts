@@ -51,7 +51,8 @@ describe('multiaddr isLinkLocal', () => {
   it('identifies other multiaddrs as not link-local addresses', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443')
+      multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
+      multiaddr('/memory/addr-1')
     ].forEach(ma => {
       expect(isLinkLocal(ma)).to.be.false()
     })
