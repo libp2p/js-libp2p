@@ -108,6 +108,10 @@
       "types": "./dist/src/multiaddr/is-global-unicast.d.ts",
       "import": "./dist/src/multiaddr/is-global-unicast.js"
     },
+    "./multiaddr/is-ip-based": {
+      "types": "./dist/src/multiaddr/is-ip-based.d.ts",
+      "import": "./dist/src/multiaddr/is-ip-based.js"
+    },
     "./multiaddr/is-link-local": {
       "types": "./dist/src/multiaddr/is-link-local.d.ts",
       "import": "./dist/src/multiaddr/is-link-local.js"
@@ -115,6 +119,10 @@
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
       "import": "./dist/src/multiaddr/is-loopback.js"
+    },
+    "./multiaddr/is-network-address": {
+      "types": "./dist/src/multiaddr/is-network-address.d.ts",
+      "import": "./dist/src/multiaddr/is-network-address.js"
     },
     "./multiaddr/is-private": {
       "types": "./dist/src/multiaddr/is-private.d.ts",
