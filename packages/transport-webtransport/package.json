@@ -59,7 +59,7 @@
     "it-stream-types": "^2.0.2",
     "multiformats": "^13.3.1",
     "progress-events": "^1.0.1",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
