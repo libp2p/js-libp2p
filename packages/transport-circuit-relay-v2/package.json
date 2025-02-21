@@ -83,7 +83,7 @@
     "it-to-buffer": "^4.0.7",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.0",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.2",
     "sinon": "^19.0.2",
     "sinon-ts": "^2.0.0"
   },

@@ -84,7 +84,7 @@
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.2",
     "ws": "^8.18.0"
   },
   "devDependencies": {

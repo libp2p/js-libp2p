@@ -116,7 +116,7 @@
     "p-retry": "^6.2.1",
     "progress-events": "^1.0.1",
     "race-event": "^1.3.0",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.2",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
