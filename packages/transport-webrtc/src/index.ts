@@ -33,7 +33,6 @@
  * import { identify } from '@libp2p/identify'
  * import { webRTC } from '@libp2p/webrtc'
  * import { webSockets } from '@libp2p/websockets'
- * import * as filters from '@libp2p/websockets/filters'
  * import { WebRTC } from '@multiformats/multiaddr-matcher'
  * import delay from 'delay'
  * import { pipe } from 'it-pipe'
@@ -47,10 +46,13 @@
  *   listen: ['/ip4/127.0.0.1/tcp/0/ws']
  *   },
  *   transports: [
- *     webSockets({filter: filters.all})
+ *     webSockets()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     relay: circuitRelayServer()
@@ -68,12 +70,15 @@
  *     ]
  *   },
  *   transports: [
- *     webSockets({filter: filters.all}),
+ *     webSockets(),
  *     webRTC(),
  *     circuitRelayTransport()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     echo: echo()
@@ -105,12 +110,15 @@
  * // direct WebRTC connection
  * const dialer = await createLibp2p({
  *   transports: [
- *     webSockets({filter: filters.all}),
+ *     webSockets(),
  *     webRTC(),
  *     circuitRelayTransport()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     echo: echo()

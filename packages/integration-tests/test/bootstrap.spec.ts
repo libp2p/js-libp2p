@@ -7,7 +7,6 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
-import * as Filter from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
@@ -118,9 +117,7 @@ describe('bootstrap', () => {
         plaintext()
       ],
       transports: [
-        webSockets({
-          filter: Filter.all
-        })
+        webSockets()
       ],
       streamMuxers: [
         mplex()
