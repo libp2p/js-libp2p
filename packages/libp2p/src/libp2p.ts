@@ -67,7 +67,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.services = {}
 
     const nodeInfoName = init.nodeInfo?.name ?? pkg.name
-    const nodeInfoVersion = init.nodeInfo?.version ?? pkg.name
+    const nodeInfoVersion = init.nodeInfo?.version ?? pkg.version
 
     // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
