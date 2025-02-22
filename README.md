@@ -13,7 +13,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > [!NOTE]
-> Are you tring to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
+> Are you trying to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
 
 ### Project status
 
@@ -121,7 +121,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 #### Run unit tests
 
 ```sh
-# run all the unit tsts
+# run all the unit tests
 > npm test
 
 # run just Node.js tests
