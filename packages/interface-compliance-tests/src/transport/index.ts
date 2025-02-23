@@ -210,7 +210,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
     })
 
-    it('should omit peerid in listening addresses', async function () {
+    it('should omit peer id in listening addresses', async function () {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       if (listener == null) {

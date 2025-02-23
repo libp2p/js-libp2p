@@ -44,6 +44,8 @@ jobs:
       - uses: streetsidesoftware/cspell-action@ef95dc49d631fc2a9e9ea089ae2b2127b7c4588e # v6.10.0
         with:
             config: .github/cspell.json
+            use_cspell_files: true
+            incremental_files_only: false
 
   test-node:
     needs: build

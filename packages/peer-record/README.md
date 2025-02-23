@@ -126,7 +126,7 @@ When a libp2p node changes its listen addresses, the identify service will be in
 
 ### Subsystem receiving a record
 
-Considering that a node can discover other peers' addresses from a variety of sources, Libp2p Peerstore can differentiate the addresses that were obtained through a signed peer record.
+Considering that a node can discover other peers' addresses from a variety of sources, Libp2p PeerStore can differentiate the addresses that were obtained through a signed peer record.
 
 Once a record is received and its signature properly validated, its envelope is stored in the AddressBook in its byte representation. The `seqNumber` remains unmarshaled so that we can quickly compare it against incoming records to determine the most recent record.
 

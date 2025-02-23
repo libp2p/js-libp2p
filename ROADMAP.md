@@ -74,7 +74,7 @@ The specification is [in progress](https://github.com/libp2p/specs/pull/625) the
 
 ### QUIC in Node.js
 
-There's a decent chance the Node.js QUIC implementation is [not going to be exposed to userland](https://github.com/nodejs/node/pull/52628#issuecomment-2143475066), but we need this to have compatibility with other libp2p implementations.
+There's a decent chance the Node.js QUIC implementation is [not going to be exposed to user land](https://github.com/nodejs/node/pull/52628#issuecomment-2143475066), but we need this to have compatibility with other libp2p implementations.
 
 https://github.com/ChainSafe/js-libp2p-quic is in-progress to add QUIC support via a native module that uses the Rust implementation.
 

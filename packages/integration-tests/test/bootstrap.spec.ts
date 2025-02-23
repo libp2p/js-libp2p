@@ -69,7 +69,7 @@ describe('bootstrap', () => {
   it('bootstrap should discover all peers in the list', async () => {
     const deferred = defer()
 
-    const bootstrappers = [
+    const list = [
       `${listenAddr.toString()}/p2p/${remotePeerId1.toString()}`,
       `${listenAddr.toString()}/p2p/${remotePeerId2.toString()}`
     ]
@@ -80,7 +80,7 @@ describe('bootstrap', () => {
       ],
       peerDiscovery: [
         bootstrap({
-          list: bootstrappers
+          list
         })
       ]
     })
@@ -108,7 +108,7 @@ describe('bootstrap', () => {
   it('bootstrap should dial all peers in the list', async () => {
     const deferred = defer()
 
-    const bootstrappers = [
+    const list = [
       `${process.env.RELAY_MULTIADDR}`
     ]
 
@@ -124,7 +124,7 @@ describe('bootstrap', () => {
       ],
       peerDiscovery: [
         bootstrap({
-          list: bootstrappers
+          list
         })
       ],
       connectionGater: {
@@ -133,7 +133,7 @@ describe('bootstrap', () => {
     })
 
     const expectedPeers = new Set(
-      bootstrappers.map(ma => multiaddr(ma).getPeerId())
+      list.map(ma => multiaddr(ma).getPeerId())
     )
 
     libp2p.addEventListener('connection:open', (evt) => {

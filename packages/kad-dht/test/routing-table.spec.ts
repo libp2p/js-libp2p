@@ -462,7 +462,7 @@ describe('Routing Table', () => {
     expect(movedPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
   })
 
-  it('adds peerstore peers to the routing table on startup', async () => {
+  it('adds peer store peers to the routing table on startup', async () => {
     const peer = stubInterface<Peer>({
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       protocols: [
