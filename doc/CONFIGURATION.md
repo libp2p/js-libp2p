@@ -20,7 +20,7 @@
     - [Setup with Delegated Content and Peer Routing](#setup-with-delegated-content-and-peer-routing)
     - [Setup with Relay](#setup-with-relay)
     - [Setup with Automatic Reservations](#setup-with-automatic-reservations)
-    - [Setup with Preconfigured Reservations](#setup-with-preconfigured-reservations)
+    - [Setup with Pre-configured Reservations](#setup-with-pre-configured-reservations)
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Connection Manager](#configuring-connection-manager)
     - [Configuring Connection Gater](#configuring-connection-gater)
@@ -175,7 +175,7 @@ If none of the available peer routing protocols fulfills your needs, you can cre
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia white paper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
@@ -501,7 +501,7 @@ const node = await createLibp2p({
 })
 ```
 
-#### Setup with Preconfigured Reservations
+#### Setup with Pre-configured Reservations
 
 In this configuration the libp2p node is a circuit relay client which connects to a relay, `/ip4/123.123.123.123/p2p/QmRelay` which has been configured to have slots available.
 
@@ -795,7 +795,7 @@ const node = await createLibp2p({
 
 PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
 
-The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
+The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with un-flushed records when the window is closed.
 
 | Name        | Type      | Description                    |
 | ----------- | --------- | ------------------------------ |

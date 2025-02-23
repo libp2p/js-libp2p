@@ -398,7 +398,7 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | 
   remoteAddr: Multiaddr
 
   /**
-   * When connection lifecycle events occurred
+   * When connection life cycle events occurred
    */
   timeline: MultiaddrConnectionTimeline
 

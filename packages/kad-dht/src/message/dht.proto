@@ -4,7 +4,7 @@ syntax = "proto3";
 // import "record.proto";
 
 message Record {
-  // adjusted for javascript
+  // adjusted for JavaScript
   optional bytes key = 1;
   optional bytes value = 2;
   optional bytes author = 3;
@@ -57,7 +57,7 @@ message Message {
 
   // Used to specify the key associated with this message.
   // PUT_VALUE, GET_VALUE, ADD_PROVIDER, GET_PROVIDERS
-  // adjusted for javascript
+  // adjusted for JavaScript
   optional bytes key = 2;
 
   // Used to return a value

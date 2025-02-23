@@ -50,7 +50,7 @@ Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and 
 }
 ```
 
-For more info on enablng ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
+For more info on enabling ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
 
 ### Basic setup
 
@@ -254,7 +254,7 @@ When running libp2p you may want to see what things are happening behind the sce
 
 ### Node
 
-```javascript
+```JavaScript
 # all libp2p debug logs
 DEBUG="libp2p:*" node myscript.js
 
@@ -264,7 +264,7 @@ DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:di
 
 ### Browser
 
-```javascript
+```JavaScript
 // all libp2p debug logs
 localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
 

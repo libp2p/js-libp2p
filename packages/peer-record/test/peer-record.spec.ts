@@ -26,7 +26,7 @@ describe('PeerRecord', () => {
     const record = PeerRecord.createFromProtobuf(env.payload)
 
     // The payload isn't going to match because of how the protobuf encodes uint64 values
-    // They are marshalled correctly on both sides, but will be off by 1 value
+    // They are marshaled correctly on both sides, but will be off by 1 value
     // Signatures will still be validated
     const jsEnv = await RecordEnvelope.seal(record, key)
     expect(env.payloadType).to.eql(jsEnv.payloadType)

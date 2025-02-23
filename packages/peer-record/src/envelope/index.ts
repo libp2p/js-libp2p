@@ -54,8 +54,8 @@ export class RecordEnvelope implements Envelope {
   }
 
   /**
-   * Open and certify a given marshalled envelope.
-   * Data is unmarshalled and the signature validated for the given domain.
+   * Open and certify a given marshaled envelope.
+   * Data is unmarshaled and the signature validated for the given domain.
    */
   static openAndCertify = async (data: Uint8Array | Uint8ArrayList, domain: string): Promise<RecordEnvelope> => {
     const envelope = await RecordEnvelope.createFromProtobuf(data)

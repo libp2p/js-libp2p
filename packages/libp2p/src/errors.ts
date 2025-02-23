@@ -66,6 +66,13 @@ export class NoValidAddressesError extends Error {
   }
 }
 
+export class NoSupportedAddressesError extends Error {
+  constructor (message = 'No supported addresses') {
+    super(message)
+    this.name = 'NoSupportedAddressesError'
+  }
+}
+
 export class ConnectionInterceptedError extends Error {
   constructor (message = 'Connection intercepted') {
     super(message)

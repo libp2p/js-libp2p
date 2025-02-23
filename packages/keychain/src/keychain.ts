@@ -82,7 +82,7 @@ export async function keyId (key: PrivateKey): Promise<string> {
 }
 
 /**
- * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
+ * Manages the life cycle of a key. Keys are encrypted at rest using PKCS #8.
  *
  * A key in the store has two entries
  * - '/info/*key-name*', contains the KeyInfo for the key

@@ -1,11 +1,11 @@
 /**
  * @packageDocumentation
  *
- * - Manages the lifecycle of a key
+ * - Manages the life cycle of a key
  * - Keys are encrypted at rest
  * - Enforces the use of safe key names
  * - Uses encrypted PKCS 8 for key storage
- * - Uses PBKDF2 for a "stetched" key encryption key
+ * - Uses PBKDF2 for a "stretched" key encryption key
  * - Enforces NIST SP 800-131A and NIST SP 800-132
  * - Delays reporting errors to slow down brute force attacks
  *
@@ -26,9 +26,9 @@
  *
  * ## Private key storage
  *
- * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.
+ * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *pass phrase* using **PBKDF2**.
  *
- * The default options for generating the derived encryption key are in the `dek` object.  This, along with the passPhrase, is the input to a `PBKDF2` function.
+ * The default options for generating the derived encryption key are in the `dek` object.  This, along with the pass phrase, is the input to a `PBKDF2` function.
  *
  * ```TypeScript
  * const defaultOptions = {
