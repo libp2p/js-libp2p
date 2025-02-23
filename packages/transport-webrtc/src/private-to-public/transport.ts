@@ -1,8 +1,8 @@
 import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
+import { HANDSHAKE_TIMEOUT_MS } from '../constants.js'
 import { genUfrag } from '../util.js'
 import { WebRTCDirectListener } from './listener.js'
 import { connect } from './utils/connect.js'
@@ -12,25 +12,6 @@ import type { WebRTCDialEvents } from '../private-to-private/transport.js'
 import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-/**
- * The time to wait, in milliseconds, for the data channel handshake to complete
- */
-const HANDSHAKE_TIMEOUT_MS = 10_000
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const WEBRTC_CODE: number = protocols('webrtc-direct').code
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const CERTHASH_CODE: number = protocols('certhash').code
 
 /**
  * The peer for this transport
