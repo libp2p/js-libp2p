@@ -54,9 +54,9 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): 
   }
 
   const pubKey = publicKeyFromProtobuf(publicKey)
-  const keyhash = key.slice(4)
+  const keyHash = key.slice(4)
 
-  if (!uint8ArrayEquals(keyhash, pubKey.toMultihash().bytes)) {
+  if (!uint8ArrayEquals(keyHash, pubKey.toMultihash().bytes)) {
     throw new InvalidParametersError('public key does not match passed in key')
   }
 }

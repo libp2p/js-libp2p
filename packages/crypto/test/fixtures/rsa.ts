@@ -1,3 +1,4 @@
+/* spell-checker: disable */
 import type { JWKKeyPair } from '../../src/keys/interface'
 
 /**

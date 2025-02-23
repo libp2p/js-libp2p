@@ -413,7 +413,7 @@ export class DefaultUpgrader implements Upgrader {
               }
 
               // after the handshake the returned stream can have early data so override
-              // the souce/sink
+              // the source/sink
               muxedStream.source = stream.source
               muxedStream.sink = stream.sink
               muxedStream.protocol = protocol
@@ -434,7 +434,7 @@ export class DefaultUpgrader implements Upgrader {
               }
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
-              // the peerstore should ensure that the peer is registered with that protocol
+              // the peer store should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
                 protocols: [protocol]
               })
@@ -499,13 +499,13 @@ export class DefaultUpgrader implements Upgrader {
           }
 
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
-          // the peerstore should ensure that the peer is registered with that protocol
+          // the peer store should ensure that the peer is registered with that protocol
           await this.components.peerStore.merge(remotePeer, {
             protocols: [protocol]
           })
 
           // after the handshake the returned stream can have early data so override
-          // the souce/sink
+          // the source/sink
           muxedStream.source = stream.source
           muxedStream.sink = stream.sink
           muxedStream.protocol = protocol

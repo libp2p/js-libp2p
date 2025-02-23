@@ -148,7 +148,7 @@ function bufToBn (u8: Uint8Array): bigint {
 }
 
 /**
- * Turn PCKS#1 DER bytes to a PrivateKey
+ * Turn PKCS#1 DER bytes to a PrivateKey
  */
 export function pkcs1ToRSAPrivateKey (bytes: Uint8Array): RSAPrivateKey {
   const jwk = pkcs1ToJwk(bytes)

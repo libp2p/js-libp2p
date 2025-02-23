@@ -193,8 +193,8 @@ function collectEventLoopStats (metrics: Metrics): void {
         return new Promise<number>(resolve => {
           setImmediate(() => {
             const delta = process.hrtime(start)
-            const nanosec = delta[0] * 1e9 + delta[1]
-            const seconds = nanosec / 1e9
+            const ns = delta[0] * 1e9 + delta[1]
+            const seconds = ns / 1e9
 
             lagMin.update(histogram.min / 1e9)
             lagMax.update(histogram.max / 1e9)

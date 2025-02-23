@@ -59,7 +59,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.dataChannelOptions = init.dataChannelOptions ?? {}
     this.log = components.logger.forComponent('libp2p:webrtc:muxerfactory')
 
-    // store any datachannels opened before upgrade has been completed
+    // store any data channels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming early datachannel with channel id %d and label "%s"', channel.id)
 

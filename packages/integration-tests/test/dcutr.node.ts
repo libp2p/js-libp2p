@@ -121,7 +121,7 @@ describe('dcutr', () => {
   })
 
   // TODO: how to test this? We need to simulate a firewall of some sort
-  describe.skip('dctur connection upgrade', () => {
+  describe.skip('DCUtR connection upgrade', () => {
     beforeEach(async () => {
       libp2pA = await createLibp2p(createBaseOptions({
         addresses: {
@@ -176,7 +176,7 @@ describe('dcutr', () => {
       expect(libp2pA.getConnections(libp2pB.peerId)).to.have.lengthOf(1, 'had multiple connections to remote peer')
     })
 
-    it('should perform holepunch using TCP Simultaneous Connect', async () => {
+    it('should perform hole punch using TCP Simultaneous Connect', async () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 

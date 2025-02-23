@@ -97,7 +97,7 @@ export interface Transport<DialEvents extends ProgressEvent = ProgressEvent> {
   listenFilter: MultiaddrFilter
 
   /**
-   * Takes a list of `Multiaddr`s and returns only addresses that are vali for
+   * Takes a list of `Multiaddr`s and returns only addresses that are valid for
    * the transport to dial
    */
   dialFilter: MultiaddrFilter

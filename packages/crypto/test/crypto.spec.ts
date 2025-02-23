@@ -51,7 +51,7 @@ describe('libp2p-crypto', function () {
     return typeof navigator !== 'undefined' && navigator.userAgent.includes('AppleWebKit') && !navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Mac')
   }
 
-  // marshalled keys seem to be slightly different
+  // marshaled keys seem to be slightly different
   // unsure as to if this is just a difference in encoding
   // or a bug
   describe.skip('go interop', () => {
@@ -81,23 +81,23 @@ describe('libp2p-crypto', function () {
 
     it.skip('unmarshal -> marshal, private key', async () => {
       const key = privateKeyFromProtobuf(fixtures.private.key)
-      const marshalled = privateKeyToProtobuf(key)
+      const marshaled = privateKeyToProtobuf(key)
 
       if (isSafari()) {
         // eslint-disable-next-line no-console
-        console.warn('Running differnt test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
-        const key2 = privateKeyFromProtobuf(marshalled)
+        console.warn('Running different test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
+        const key2 = privateKeyFromProtobuf(marshaled)
         expect(key2.raw).to.equalBytes(key.raw)
         return
       }
 
-      expect(marshalled).to.equalBytes(fixtures.private.key)
+      expect(marshaled).to.equalBytes(fixtures.private.key)
     })
 
     it('unmarshal -> marshal, public key', async () => {
       const key = publicKeyFromProtobuf(fixtures.public.key)
-      const marshalled = publicKeyToProtobuf(key)
-      expect(uint8ArrayEquals(fixtures.public.key, marshalled)).to.be.true()
+      const marshaled = publicKeyToProtobuf(key)
+      expect(uint8ArrayEquals(fixtures.public.key, marshaled)).to.be.true()
     })
   })
 

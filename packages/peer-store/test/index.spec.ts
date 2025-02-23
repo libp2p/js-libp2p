@@ -152,7 +152,7 @@ describe('PersistentPeerStore', () => {
         .that.does.not.have.key(name)
     })
 
-    it('untags a peer', async () => {
+    it('un-tags a peer', async () => {
       const name = 'a-tag'
       const peer = await peerStore.save(peerId, {
         tags: {

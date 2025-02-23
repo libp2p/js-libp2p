@@ -81,17 +81,17 @@ export class BloomFilter implements Filter {
     const pos = Math.floor(bit / 8)
     const shift = bit % 8
 
-    let bitfield = this.buffer[pos]
-    bitfield |= (0x1 << shift)
-    this.buffer[pos] = bitfield
+    let bitField = this.buffer[pos]
+    bitField |= (0x1 << shift)
+    this.buffer[pos] = bitField
   }
 
   getbit (bit: number): boolean {
     const pos = Math.floor(bit / 8)
     const shift = bit % 8
 
-    const bitfield = this.buffer[pos]
-    return (bitfield & (0x1 << shift)) !== 0
+    const bitField = this.buffer[pos]
+    return (bitField & (0x1 << shift)) !== 0
   }
 }
 
@@ -99,8 +99,8 @@ export class BloomFilter implements Filter {
  * Create a `BloomFilter` with the smallest `bits` and `hashes` value for the
  * specified item count and error rate.
  */
-export function createBloomFilter (itemcount: number, errorRate: number = 0.005): Filter {
-  const opts = optimize(itemcount, errorRate)
+export function createBloomFilter (itemCount: number, errorRate: number = 0.005): Filter {
+  const opts = optimize(itemCount, errorRate)
   return new BloomFilter(opts)
 }
 

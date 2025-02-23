@@ -1,0 +1,39 @@
+{
+  // Enable your dictionary by adding it to the list of `dictionaries`
+  "dictionaries": ["custom-words"],
+
+  // Tell CSpell about your dictionary
+  "dictionaryDefinitions": [{
+    // The name of the dictionary is used to look it up.
+    "name": "custom-words",
+    // Path to the custom word file. Relative to this `cspell.json` file.
+    "path": "./wordlist.txt",
+    // Some editor extensions will use `addWords` for adding words to your
+    // personal dictionary.
+    "addWords": true
+  }],
+
+  "files": [
+    "**/*.{ts,js,md}",
+    "!**/dist/**",
+    "!**/node_modules/**",
+    "!**/CHANGELOG.md"
+  ],
+
+  "ignoreRegExpList": [
+    // ignore import names (e.g. `import foo from 'module-name-with-typo'`)
+    "/from\\s+(['\"]).*\\1/",
+
+    // ignore anything in backticks
+    "/`.*`/",
+
+    // multiaddrs are not spell checked
+    "/multiaddr(.*)/",
+
+    // peer ids are not spell checked
+    "/peerIdFromString(.*)/",
+
+    // string encoded binary is not spell checked
+    "/uint8ArrayFromString(.*)/"
+  ]
+}

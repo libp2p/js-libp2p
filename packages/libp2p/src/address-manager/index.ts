@@ -260,17 +260,17 @@ export class AddressManager implements AddressManagerInterface {
     }
 
     if (options?.type === 'dns-mapping' || this.dnsMappings.has(addr)) {
-      const dnsMapingStartingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+      const dnsMappingStartingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
 
-      if (!dnsMapingStartingConfidence && startingConfidence) {
+      if (!dnsMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
 
     if (options?.type === 'ip-mapping' || this.ipMappings.has(addr)) {
-      const ipMapingStartingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+      const ipMappingStartingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
 
-      if (!ipMapingStartingConfidence && startingConfidence) {
+      if (!ipMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
@@ -317,17 +317,17 @@ export class AddressManager implements AddressManagerInterface {
     }
 
     if (this.dnsMappings.has(addr)) {
-      const dnsMapingStartingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+      const dnsMappingStartingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
 
-      if (!dnsMapingStartingConfidence && startingConfidence) {
+      if (!dnsMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
 
     if (this.ipMappings.has(addr)) {
-      const ipMapingStartingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+      const ipMappingStartingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
 
-      if (!ipMapingStartingConfidence && startingConfidence) {
+      if (!ipMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }

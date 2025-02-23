@@ -85,7 +85,7 @@ describe('Max message size', () => {
     }
   })
 
-  it('closes the stream if bufferamountlow timeout', async () => {
+  it('closes the stream if buffer amount low timeout', async () => {
     const timeout = 100
     const closed = pDefer()
     const channel = mockDataChannel({

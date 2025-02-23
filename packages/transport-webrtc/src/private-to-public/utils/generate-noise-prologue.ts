@@ -15,7 +15,7 @@ export function generateNoisePrologue (localFingerprint: string, remoteAddr: Mul
   const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')
   const localFpArray = uint8arrayFromString(localFpString, 'hex')
   const local = Digest.create(sha256.code, localFpArray)
-  const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(remoteAddr))
+  const remote: Uint8Array = sdp.multibaseDecoder.decode(sdp.certhash(remoteAddr))
   const byteLength = PREFIX.byteLength + local.bytes.byteLength + remote.byteLength
 
   if (role === 'server') {

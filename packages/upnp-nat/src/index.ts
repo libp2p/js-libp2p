@@ -36,7 +36,7 @@
  *
  * @example Manually specifying gateways and external ports
  *
- * Some ISP-provided routers are underpowered and may require rebooting before
+ * Some ISP-provided routers are under powered and may require rebooting before
  * they will respond to SSDP M-SEARCH messages.
  *
  * You can manually specify your external address and/or gateways, though note
@@ -142,7 +142,7 @@ export interface UPnPNATInit {
   portMappingRefreshThreshold?: number
 
   /**
-   * A preconfigured instance of a NatAPI client can be passed as an option,
+   * A pre-configured instance of a NatAPI client can be passed as an option,
    * otherwise one will be created
    */
   portMappingClient?: UPnPNATClient
@@ -162,14 +162,14 @@ export interface UPnPNATInit {
    * By default we search for local gateways using SSDP M-SEARCH messages. To
    * manually specify a gateway instead, pass values here.
    *
-   * A lot of ISP-provided gateway/routers are underpowered so may need
+   * A lot of ISP-provided gateway/routers are under powered so may need
    * rebooting before they will respond to M-SEARCH messages.
    *
    * Each value is an IPv4 or IPv6 URL of the UPnP device descriptor document,
    * e.g. `http://192.168.1.1:8080/description.xml`. Please see the
    * documentation of your gateway to discover the URL.
    *
-   * Note that some gateways will randomise the port/path the descriptor
+   * Note that some gateways will randomize the port/path the descriptor
    * document is served from and even change it over time so you may be forced
    * to use an SSDP search instead.
    */

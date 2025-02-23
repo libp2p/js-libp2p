@@ -216,7 +216,7 @@ export class DialQueue {
 
       try {
         // load addresses from address book, resolve and dnsaddrs, filter
-        // undiallables, add peer IDs, etc
+        // undialables, add peer IDs, etc
         addrsToDial = await this.calculateMultiaddrs(peerId, options?.multiaddrs, {
           ...options,
           signal
@@ -449,17 +449,17 @@ export class DialQueue {
       throw new NoValidAddressesError('The dial request has no valid addresses')
     }
 
-    const gatedAdrs: Address[] = []
+    const gatedAddrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
       if (this.components.connectionGater.denyDialMultiaddr != null && await this.components.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
         continue
       }
 
-      gatedAdrs.push(addr)
+      gatedAddrs.push(addr)
     }
 
-    const sortedGatedAddrs = this.addressSorter == null ? defaultAddressSorter(gatedAdrs) : gatedAdrs.sort(this.addressSorter)
+    const sortedGatedAddrs = this.addressSorter == null ? defaultAddressSorter(gatedAddrs) : gatedAddrs.sort(this.addressSorter)
 
     // make sure we actually have some addresses to dial
     if (sortedGatedAddrs.length === 0) {

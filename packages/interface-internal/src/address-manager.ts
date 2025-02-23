@@ -87,7 +87,7 @@ export interface AddressManager {
 
   /**
    * Signal that we have confidence an observed multiaddr is publicly dialable -
-   * this will make it appear in the output of getAddresses()
+   * this will make it appear in the output of `getAddresses()`
    *
    * @param addr - The observed address.
    * @param options - Additional options for confirmation.
@@ -96,15 +96,15 @@ export interface AddressManager {
 
   /**
    * Signal that we do not have confidence an observed multiaddr is publicly dialable -
-   * this will remove it from the output of getObservedAddrs()
+   * this will remove it from the output of `getObservedAddrs()`
    *
    * @param addr - The observed address to remove.
    */
   removeObservedAddr(addr: Multiaddr): void
 
   /**
-   * Add peer observed addresses.  These will then appear in the output of getObservedAddrs
-   * but not getAddresses() until their dialability has been confirmed via a call to
+   * Add peer observed addresses.  These will then appear in the output of `getObservedAddrs()`
+   * but not `getAddresses()` until their dialability has been confirmed via a call to
    * confirmObservedAddr.
    *
    * @param addr - The observed address to add.

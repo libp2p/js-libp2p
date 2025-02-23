@@ -114,7 +114,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             }
           ],
           orders: [
-            // randomise
+            // randomize
             () => Math.random() < 0.5 ? 1 : -1,
             // prefer peers we've connected to in the past
             (a, b) => {

@@ -391,7 +391,7 @@ describe('Routing Table', () => {
     // ensure the lastPing threshold is passed
     await delay(100)
 
-    // reset network stub so we can have specific behaviour
+    // reset network stub so we can have specific behavior
     table.network = network = stubInterface()
 
     // libp2p fails to dial the old peer
@@ -462,7 +462,7 @@ describe('Routing Table', () => {
     expect(movedPeerData.tags.has(KAD_PEER_TAG_NAME)).to.be.true()
   })
 
-  it('adds peerstore peers to the routing table on startup', async () => {
+  it('adds peer store peers to the routing table on startup', async () => {
     const peer = stubInterface<Peer>({
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       protocols: [

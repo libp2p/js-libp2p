@@ -341,7 +341,7 @@ describe('identify', () => {
     expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
-  it('should not send unroutable observed addresses', async () => {
+  it('should not send un-routable observed addresses', async () => {
     identify = new Identify(components)
 
     await start(identify)

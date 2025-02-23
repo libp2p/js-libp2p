@@ -305,10 +305,10 @@ export class WebRTCStream extends AbstractStream {
     while (data.byteLength > 0) {
       const toSend = Math.min(data.byteLength, this.maxMessageSize)
       const buf = data.subarray(0, toSend)
-      const msgbuf = Message.encode({ message: buf })
-      const sendbuf = lengthPrefixed.encode.single(msgbuf)
+      const messageBuf = Message.encode({ message: buf })
+      const sendBuf = lengthPrefixed.encode.single(messageBuf)
       this.log.trace('-> sending message %s', this.channel.readyState)
-      await this._sendMessage(sendbuf)
+      await this._sendMessage(sendBuf)
       this.log.trace('-> sent message %s', this.channel.readyState)
 
       data.consume(toSend)
@@ -411,8 +411,8 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.log.trace('sending flag %s', flag.toString())
-    const msgbuf = Message.encode({ flag })
-    const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
+    const messageBuf = Message.encode({ flag })
+    const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
 
     try {
       await this._sendMessage(prefixedBuf, false)

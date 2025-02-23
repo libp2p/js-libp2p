@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC datachannels](https://webrtc.org/).
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
  *
  * [WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
  *

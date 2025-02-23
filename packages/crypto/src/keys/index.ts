@@ -97,7 +97,7 @@ export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
  * encoded Ed25519 or secp256k1 public key.
  *
  * RSA keys are not supported as in practice we they are not stored in identity
- * multihashes since the hash would be very large.
+ * multihash since the hash would be very large.
  */
 export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519PublicKey | Secp256k1PublicKey {
   const { Type, Data } = pb.PublicKey.decode(digest.digest)

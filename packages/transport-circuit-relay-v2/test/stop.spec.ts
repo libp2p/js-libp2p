@@ -35,7 +35,7 @@ describe('circuit-relay stop protocol', function () {
   let transport: CircuitRelayTransport
   let components: StubbedCircuitRelayTransportComponents
   let handler: StreamHandler
-  let pbstr: MessageStream<StopMessage>
+  let pbStr: MessageStream<StopMessage>
   let sourcePeer: PeerId
   const stopTimeout = 100
   let localStream: Stream
@@ -81,7 +81,7 @@ describe('circuit-relay stop protocol', function () {
       connection: stubInterface<Connection>()
     })
 
-    pbstr = pbStream(localStream).pb(StopMessage)
+    pbStr = pbStream(localStream).pb(StopMessage)
   })
 
   this.afterEach(async function () {
@@ -91,7 +91,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop - success', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -99,19 +99,19 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.OK)
   })
 
   it('handle stop error - invalid request - missing type', async function () {
-    await pbstr.write({})
+    await pbStr.write({})
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - wrong type', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.STATUS,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -119,21 +119,21 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -143,14 +143,14 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - timeout', async function () {
     const abortSpy = Sinon.spy(remoteStream, 'abort')
 
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -182,7 +182,7 @@ describe('circuit-relay stop protocol', function () {
       stream: remoteStream
     })
 
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -190,7 +190,7 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.OK)
 
     expect(components.transportManager.listen.called).to.be.true()
