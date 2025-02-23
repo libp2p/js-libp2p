@@ -111,6 +111,13 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.3](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.2...webrtc-v5.2.3) (2025-02-23)
+
+
+### Bug Fixes
+
+* pass abort signal to noise and the upgrader ([#2992](https://github.com/libp2p/js-libp2p/issues/2992)) ([e7e01f5](https://github.com/libp2p/js-libp2p/commit/e7e01f58fa7cb4f0a0e5a43fd4501f58f5ed29ad))
+
 ## [5.2.2](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.1...webrtc-v5.2.2) (2025-02-21)
 
 
