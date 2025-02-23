@@ -31,27 +31,27 @@ describe('ed25519', function () {
 
   it('generates a valid key from seed', async () => {
     const seed = randomBytes(32)
-    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
-    expect(seededkey).to.have.property('type', 'Ed25519')
+    const seededKey = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededKey).to.have.property('type', 'Ed25519')
     expect(key.raw).to.have.length(64)
     expect(key.publicKey.raw).to.have.length(32)
   })
 
   it('generates the same key from the same seed', async () => {
     const seed = randomBytes(32)
-    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed)
-    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed)
-    expect(seededkey1.equals(seededkey2)).to.be.true()
-    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.true()
+    const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed)
+    const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededKey1.equals(seededKey2)).to.be.true()
+    expect(seededKey1.publicKey.equals(seededKey2.publicKey)).to.be.true()
   })
 
   it('generates different keys for different seeds', async () => {
     const seed1 = randomBytes(32)
-    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed1)
+    const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed1)
     const seed2 = randomBytes(32)
-    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed2)
-    expect(seededkey1.equals(seededkey2)).to.be.false()
-    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.false()
+    const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed2)
+    expect(seededKey1.equals(seededKey2)).to.be.false()
+    expect(seededKey1.publicKey.equals(seededKey2.publicKey)).to.be.false()
   })
 
   it('signs', async () => {
@@ -123,10 +123,10 @@ describe('ed25519', function () {
 
   it('sign and verify from seed', async () => {
     const seed = new Uint8Array(32).fill(1)
-    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
+    const seededKey = await generateKeyPairFromSeed('Ed25519', seed)
     const data = uint8ArrayFromString('hello world')
-    const sig = await seededkey.sign(data)
-    const valid = await seededkey.publicKey.verify(data, sig)
+    const sig = await seededKey.sign(data)
+    const valid = await seededKey.publicKey.verify(data, sig)
     expect(valid).to.be.true()
   })
 

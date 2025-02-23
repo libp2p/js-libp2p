@@ -95,7 +95,7 @@ describe('Query Self', () => {
     expect(initialQuerySelfHasRunResolved).to.be.true()
   })
 
-  it('should join an existing query promise and not run twise', async () => {
+  it('should join an existing query promise and not run twice', async () => {
     querySelf.start()
 
     // @ts-expect-error read-only property

@@ -185,7 +185,7 @@ export interface Keychain {
    *
    * ```TypeScript
    * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewNtest')
+   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewTest')
    * ```
    */
   renameKey(oldName: string, newName: string): Promise<KeyInfo>

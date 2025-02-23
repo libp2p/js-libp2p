@@ -99,14 +99,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       .pop()?.[1]
 
     if (host == null) {
-      throw new Error('IP4/6 host must be specified in webrtc-direct mulitaddr')
+      throw new Error('IP4/6 host must be specified in webrtc-direct multiaddr')
     }
     const port = parseInt(parts
       .filter(([code, value]) => code === UDP_PROTOCOL.code)
       .pop()?.[1] ?? '')
 
     if (isNaN(port)) {
-      throw new Error('UDP port must be specified in webrtc-direct mulitaddr')
+      throw new Error('UDP port must be specified in webrtc-direct multiaddr')
     }
 
     // have to do this before any async work happens so starting two listeners

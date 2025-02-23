@@ -563,7 +563,7 @@ const node = await createLibp2p({
     noise()
   ],
   keychain: {
-    pass: 'notsafepassword123456789',
+    pass: 'not-safe-password-123456789',
   },
   datastore
 })
@@ -640,7 +640,7 @@ const node = await createLibp2p({
      * multiaddr for the given peer.
      *
      * This is called by the dialer.connectToPeer implementation after it has
-     * resolved the peer's addrs, and prior to dialling each.
+     * resolved the peer's addresses, and prior to dialling each.
      *
      * Return true to prevent dialing the passed peer on the passed multiaddr.
      */

@@ -133,7 +133,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
 
           this.log('walk iteration for %b and %d walkers finished, found %d peers', data, this.walkers, found)
         } catch (err) {
-          this.log.error('randomwalk errored', err)
+          this.log.error('random walk errored', err)
 
           this.safeDispatchEvent('walk:error', {
             detail: err
@@ -144,7 +144,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
       this.log('no walkers left, ended walk')
     })
       .catch(err => {
-        this.log.error('randomwalk errored', err)
+        this.log.error('random walk errored', err)
       })
       .finally(() => {
         this.log('finished walk, found %d peers after %dms', found, Date.now() - start)

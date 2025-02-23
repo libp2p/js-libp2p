@@ -21,7 +21,7 @@ export function toDatastorePeer (peerId: PeerId, data: PeerData): PeerPB {
       .concat((data.multiaddrs ?? []).map(multiaddr => ({ multiaddr, isCertified: false })))
       .filter(address => {
         if (!isMultiaddr(address.multiaddr)) {
-          throw new InvalidParametersError('Invalid mulitaddr')
+          throw new InvalidParametersError('Invalid multiaddr')
         }
 
         if (addressSet.has(address.multiaddr.toString())) {

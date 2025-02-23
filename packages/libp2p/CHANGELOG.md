@@ -2334,7 +2334,7 @@
 ### Bug Fixes
 
 * encapsulate /p2p-circuit multiaddrs when dialing a known peerid ([#1680](https://www.github.com/libp2p/js-libp2p/issues/1680)) ([4078082](https://www.github.com/libp2p/js-libp2p/commit/4078082dac944c6feb64e9e45e5275d7f0bf6ae4))
-* refactor connection manager to use a prioritised queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
+* refactor connection manager to use a prioritized queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
 
 ### [0.43.4](https://www.github.com/libp2p/js-libp2p/compare/v0.43.3...v0.43.4) (2023-04-05)
 
@@ -2476,7 +2476,7 @@
 ### ⚠ BREAKING CHANGES
 
 * modules no longer implement `Initializable` instead switching to constructor injection
-* the old behaviour was to dial any peer we discover, now we just add them to the peer store instead
+* the old behavior was to dial any peer we discover, now we just add them to the peer store instead
 
 ### Features
 

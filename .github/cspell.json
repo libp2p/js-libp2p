@@ -20,5 +20,13 @@
     "!**/dist/**/*.{ts,js,md}",
     "!**/node_modules/**/*",
     "!**/CHANGELOG.md"
+  ],
+
+  "ignoreRegExpList": [
+    "/from\\s+(['\"]).*\\1/",
+    "/`.*`/",
+    "/multiaddr(.*)/",
+    "/peerIdFromString(.*)/",
+    "/uint8ArrayFromString(.*)/"
   ]
 }

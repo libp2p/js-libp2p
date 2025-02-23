@@ -413,7 +413,7 @@ export class DefaultUpgrader implements Upgrader {
               }
 
               // after the handshake the returned stream can have early data so override
-              // the souce/sink
+              // the source/sink
               muxedStream.source = stream.source
               muxedStream.sink = stream.sink
               muxedStream.protocol = protocol
@@ -505,7 +505,7 @@ export class DefaultUpgrader implements Upgrader {
           })
 
           // after the handshake the returned stream can have early data so override
-          // the souce/sink
+          // the source/sink
           muxedStream.source = stream.source
           muxedStream.sink = stream.sink
           muxedStream.protocol = protocol

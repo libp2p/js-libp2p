@@ -781,7 +781,7 @@ describe('circuit-relay', () => {
     })
   })
 
-  describe('preconfigured relay address', () => {
+  describe('pre-configured relay address', () => {
     let local: Libp2p
     let remote: Libp2p
     let relay: Libp2p<{ relay: CircuitRelayService }>
@@ -810,14 +810,14 @@ describe('circuit-relay', () => {
       }))
     })
 
-    it('should be able to dial remote on preconfigured relay address', async () => {
+    it('should be able to dial remote on pre-configured relay address', async () => {
       const ma = getRelayAddress(remote)
 
       await expect(local.dial(ma)).to.eventually.be.ok()
     })
   })
 
-  describe('preconfigured relay without a peer id', () => {
+  describe('pre-configured relay without a peer id', () => {
     let local: Libp2p
     let remote: Libp2p
     let relay: Libp2p<{ relay: CircuitRelayService }>
@@ -846,7 +846,7 @@ describe('circuit-relay', () => {
       }))
     })
 
-    it('should be able to dial remote on preconfigured relay address', async () => {
+    it('should be able to dial remote on pre-configured relay address', async () => {
       await usingAsRelay(remote, relay)
 
       const ma = getRelayAddress(remote)

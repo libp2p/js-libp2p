@@ -16,14 +16,14 @@ import type { CID } from 'multiformats/cid'
 
 describe('content routing', () => {
   let cid: CID
-  let tdht: TestDHT
+  let testDHT: TestDHT
 
   beforeEach(() => {
-    tdht = new TestDHT()
+    testDHT = new TestDHT()
   })
 
   afterEach(async () => {
-    await tdht.teardown()
+    await testDHT.teardown()
   })
 
   before(async function () {
@@ -40,19 +40,19 @@ describe('content routing', () => {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn()
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     sinon.spy(dhts[3].network, 'sendMessage')
 
     // connect peers
     await Promise.all([
-      tdht.connect(dhts[0], dhts[1]),
-      tdht.connect(dhts[1], dhts[2]),
-      tdht.connect(dhts[2], dhts[3])
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
     ])
 
     // run provide operation
@@ -100,17 +100,17 @@ describe('content routing', () => {
 
   it('provides if in server mode', async function () {
     const dhts = await sortDHTs(await Promise.all([
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn()
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     // connect peers
     await Promise.all([
-      tdht.connect(dhts[0], dhts[1]),
-      tdht.connect(dhts[1], dhts[2]),
-      tdht.connect(dhts[2], dhts[3])
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
     ])
 
     const sendMessageSpy = sinon.spy(dhts[0].network, 'sendMessage')
@@ -126,15 +126,15 @@ describe('content routing', () => {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn()
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     // Connect
     await Promise.all([
-      tdht.connect(dhts[0], dhts[1]),
-      tdht.connect(dhts[1], dhts[2])
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2])
     ])
 
     await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(cid)) }))
@@ -158,17 +158,17 @@ describe('content routing', () => {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
-      tdht.spawn(),
-      tdht.spawn(),
-      tdht.spawn()
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
-    const clientDHT = await tdht.spawn({ clientMode: true })
+    const clientDHT = await testDHT.spawn({ clientMode: true })
 
     // Connect
     await Promise.all([
-      tdht.connect(clientDHT, dhts[0]),
-      tdht.connect(dhts[0], dhts[1]),
-      tdht.connect(dhts[1], dhts[2])
+      testDHT.connect(clientDHT, dhts[0]),
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2])
     ])
 
     await drain(dhts[2].provide(cid))
@@ -195,15 +195,15 @@ describe('content routing', () => {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
-      tdht.spawn(),
-      tdht.spawn()
+      testDHT.spawn(),
+      testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
-    const clientDHT = await tdht.spawn({ clientMode: true })
+    const clientDHT = await testDHT.spawn({ clientMode: true })
 
     // Connect
     await Promise.all([
-      tdht.connect(clientDHT, dhts[0]),
-      tdht.connect(dhts[0], dhts[1])
+      testDHT.connect(clientDHT, dhts[0]),
+      testDHT.connect(dhts[0], dhts[1])
     ])
 
     await drain(clientDHT.provide(cid))
@@ -228,7 +228,7 @@ describe('content routing', () => {
   it('find one provider locally', async function () {
     this.timeout(20 * 1000)
 
-    const dht = await tdht.spawn()
+    const dht = await testDHT.spawn()
 
     sinon.stub(dht.components.peerStore, 'get').withArgs(dht.components.peerId)
       .resolves({

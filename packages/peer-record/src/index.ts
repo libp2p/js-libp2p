@@ -123,7 +123,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * - Some addresses may be ambiguous. For example, addresses on a private subnet are valid within that subnet but are useless on the public internet.
  * - Once all these pieces are in place, we will also need a way to prioritize addresses based on their authenticity, that is, the dialer can prioritize self-certified addresses over addresses from an unknown origin.
  * - Modular dialer? (taken from go PR notes)
- *     - With the modular dialer, users should easily be able to configure precedence. With dialer v1, anything we do to prioritise dials is gonna be spaghetti and adhoc. With the modular dialer, you’d be able to specify the order of dials when instantiating the pipeline.
+ *     - With the modular dialer, users should easily be able to configure precedence. With dialer v1, anything we do to prioritize dials is gonna be spaghetti and adhoc. With the modular dialer, you’d be able to specify the order of dials when instantiating the pipeline.
  *     - Multiple parallel dials. We already have the issue where new addresses aren't added to existing dials.
  */
 

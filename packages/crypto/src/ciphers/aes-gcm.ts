@@ -32,7 +32,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * will then be used to encrypt the data.
    */
   async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
-    // Generate a 128-bit salt using a CSPRNG.
+    // Generate a 128-bit salt
     const salt = crypto.randomBytes(saltLength)
 
     if (typeof password === 'string') {

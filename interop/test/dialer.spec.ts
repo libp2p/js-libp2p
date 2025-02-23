@@ -55,7 +55,7 @@ describe('ping test (dialer)', function () {
     const handshakePlusOneRTT = Date.now() - handshakeStartInstant
     console.log(JSON.stringify({
       handshakePlusOneRTTMillis: handshakePlusOneRTT,
-      pingRTTMilllis: pingRTT
+      pingRTTMillis: pingRTT
     }))
   })
 })

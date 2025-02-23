@@ -159,7 +159,7 @@ describe('UPnP NAT (TCP)', () => {
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
 
-  it('should not map TCP connections when double-natted', async () => {
+  it('should not map TCP connections when double-NATed', async () => {
     const {
       natManager,
       components

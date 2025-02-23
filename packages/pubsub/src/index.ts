@@ -488,7 +488,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
         }
 
         if (msg.sequenceNumber == null) {
-          throw new InvalidMessageError('Need seqno when signature policy is StrictSign but it was missing')
+          throw new InvalidMessageError('Need sequence number when signature policy is StrictSign but it was missing')
         }
 
         if (msg.key == null) {
@@ -505,7 +505,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
   /**
    * Whether to accept a message from a peer
-   * Override to create a graylist
+   * Override to create a gray list
    */
   acceptFrom (id: PeerId): boolean {
     return true

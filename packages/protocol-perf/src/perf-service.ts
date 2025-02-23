@@ -65,7 +65,7 @@ export class Perf implements Startable, PerfInterface {
           bytesToSendBack = Number(buf.getBigUint64(0, false))
         }
 
-        // Ingest all the bufs and wait for the read side to close
+        // Ingest all the data and wait for the read side to close
       }
 
       if (bytesToSendBack == null) {

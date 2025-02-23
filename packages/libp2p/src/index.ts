@@ -102,7 +102,7 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
 
   /**
    * Connection encrypters ensure that data sent over connections cannot be
-   * eavesdropped on, and that the remote peer posesses the private key that
+   * eavesdropped on, and that the remote peer possesses the private key that
    * corresponds to the public key that it's Peer ID is derived from.
    */
   connectionEncrypters?: Array<(components: Components) => ConnectionEncrypter>

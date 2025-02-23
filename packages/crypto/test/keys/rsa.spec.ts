@@ -33,14 +33,14 @@ describe('RSA', function () {
     /*
     const k = RSA_KEY_8200_BITS
 
-    const pubk = new RSAPublicKeyClass(k.publicKey)
+    const pubK = new RSAPublicKeyClass(k.publicKey)
     const sk = new RSAPrivateKeyClass(k.privateKey, k.publicKey)
 
     const m = sk.marshal()
-    const pubm = pubk.marshal()
+    const pubM = pubK.marshal()
 
     await expect(pkcs1ToRSAPrivateKey(m)).to.eventually.be.rejectedWith(/too large/)
-    expect(() => pkixToRSAPublicKey(pubm)).to.throw(/too large/)
+    expect(() => pkixToRSAPublicKey(pubM)).to.throw(/too large/)
     await expect(fromJwk(k.privateKey)).to.eventually.be.rejectedWith(/too large/)
     */
   })

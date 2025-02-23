@@ -9,7 +9,7 @@ import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import debug from 'weald'
 import { logger, peerLogger } from '../src/index.js'
 
@@ -145,7 +145,7 @@ describe('logger', () => {
   it('test datastore key formatter', () => {
     const buf = uint8ArrayFromString('jbswy3dpfqqho33snrscc===', 'base32')
 
-    const key = new Key('/' + unint8ArrayToString(buf, 'base32'), false)
+    const key = new Key('/' + uint8ArrayToString(buf, 'base32'), false)
 
     expect(debug.formatters.k(key)).to.equal(key.toString())
   })

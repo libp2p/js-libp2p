@@ -142,7 +142,7 @@ export interface UPnPNATInit {
   portMappingRefreshThreshold?: number
 
   /**
-   * A preconfigured instance of a NatAPI client can be passed as an option,
+   * A pre-configured instance of a NatAPI client can be passed as an option,
    * otherwise one will be created
    */
   portMappingClient?: UPnPNATClient
@@ -169,7 +169,7 @@ export interface UPnPNATInit {
    * e.g. `http://192.168.1.1:8080/description.xml`. Please see the
    * documentation of your gateway to discover the URL.
    *
-   * Note that some gateways will randomise the port/path the descriptor
+   * Note that some gateways will randomize the port/path the descriptor
    * document is served from and even change it over time so you may be forced
    * to use an SSDP search instead.
    */

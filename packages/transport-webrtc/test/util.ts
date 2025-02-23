@@ -9,8 +9,8 @@ import type { RTCDataChannel } from '../src/webrtc/index.js'
  * simulates receiving a FIN_ACK on the passed datachannel
  */
 export function receiveFinAck (channel: RTCDataChannel): void {
-  const msgbuf = Message.encode({ flag: Message.Flag.FIN_ACK })
-  const data = lengthPrefixed.encode.single(msgbuf).subarray()
+  const msgBuf = Message.encode({ flag: Message.Flag.FIN_ACK })
+  const data = lengthPrefixed.encode.single(msgBuf).subarray()
   channel.onmessage?.(new MessageEvent<ArrayBuffer>('message', { data }))
 }
 

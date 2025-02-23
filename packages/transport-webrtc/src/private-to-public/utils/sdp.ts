@@ -14,7 +14,7 @@ import type { MultihashDigest } from 'multiformats/hashes/interface'
  * Get base2 | identity decoders
  */
 // @ts-expect-error - Not easy to combine these types.
-export const mbdecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
+export const multibaseDecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
 const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
 export function getFingerprintFromSdp (sdp: string | undefined): string | undefined {
@@ -42,16 +42,16 @@ export function certhash (ma: Multiaddr): string {
  * Convert a certhash into a multihash
  */
 export function decodeCerthash (certhash: string): MultihashDigest {
-  return digest.decode(mbdecoder.decode(certhash))
+  return digest.decode(multibaseDecoder.decode(certhash))
 }
 
 export function certhashToFingerprint (certhash: string): string {
-  const mbdecoded = decodeCerthash(certhash)
+  const multibaseDecoded = decodeCerthash(certhash)
 
-  return new Array(mbdecoded.bytes.length)
+  return new Array(multibaseDecoded.bytes.length)
     .fill(0)
     .map((val, index) => {
-      return mbdecoded.digest[index].toString(16).padStart(2, '0').toUpperCase()
+      return multibaseDecoded.digest[index].toString(16).padStart(2, '0').toUpperCase()
     })
     .join(':')
 }
@@ -60,9 +60,9 @@ export function certhashToFingerprint (certhash: string): string {
  * Extract the fingerprint from a multiaddr
  */
 export function ma2Fingerprint (ma: Multiaddr): string {
-  const mhdecoded = decodeCerthash(certhash(ma))
-  const prefix = toSupportedHashFunction(mhdecoded.code)
-  const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+  const multihashDecoded = decodeCerthash(certhash(ma))
+  const prefix = toSupportedHashFunction(multihashDecoded.code)
+  const fingerprint = multihashDecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
   const sdp = fingerprint.match(/.{1,2}/g)
 
   if (sdp == null) {

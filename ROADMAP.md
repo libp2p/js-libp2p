@@ -8,7 +8,7 @@ js-libp2p is deployed in many production environments so to take adoption to the
 
 ### js-libp2p amino DHT bootstrapper
 
-Deploying a public bootstrapper is a great test of the capacity of js-libp2p since it will need to maintain several thousand simultaneous connections and service many DHT RPC requests.  Comprehensive metrics and logging will also give us insight into real world usage patterns that can further direct performance optimisations.
+Deploying a public bootstrapper is a great test of the capacity of js-libp2p since it will need to maintain several thousand simultaneous connections and service many DHT RPC requests.  Comprehensive metrics and logging will also give us insight into real world usage patterns that can further direct performance optimizations.
 
   - Deploy a bootstrap server that acts as an entry point to the network for DHT clients
   - Ship it in the default config of majority libp2p/IPFS implementations

@@ -391,7 +391,7 @@ describe('Routing Table', () => {
     // ensure the lastPing threshold is passed
     await delay(100)
 
-    // reset network stub so we can have specific behaviour
+    // reset network stub so we can have specific behavior
     table.network = network = stubInterface()
 
     // libp2p fails to dial the old peer

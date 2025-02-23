@@ -13,7 +13,7 @@ import { type AddressFilter, AddressManager } from '../../src/address-manager/in
 import type { NodeAddress, TransportManager } from '@libp2p/interface-internal'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
-const announceAddreses = ['/dns4/peer.io']
+const announceAddresses = ['/dns4/peer.io']
 
 describe('Address Manager', () => {
   let peerId: PeerId
@@ -74,15 +74,15 @@ describe('Address Manager', () => {
     }, {
       announceFilter: stubInterface<AddressFilter>(),
       listen: listenAddresses,
-      announce: announceAddreses
+      announce: announceAddresses
     })
 
     expect(am.getListenAddrs()).to.have.lengthOf(listenAddresses.length)
-    expect(am.getAnnounceAddrs()).to.have.lengthOf(announceAddreses.length)
+    expect(am.getAnnounceAddrs()).to.have.lengthOf(announceAddresses.length)
 
     const announceMultiaddrs = am.getAnnounceAddrs()
     expect(announceMultiaddrs.length).to.equal(1)
-    expect(announceMultiaddrs[0].equals(multiaddr(announceAddreses[0]))).to.equal(true)
+    expect(announceMultiaddrs[0].equals(multiaddr(announceAddresses[0]))).to.equal(true)
   })
 
   it('should add appendAnnounce multiaddrs on get', () => {
@@ -96,19 +96,19 @@ describe('Address Manager', () => {
     }, {
       announceFilter: (mas) => mas,
       listen: listenAddresses,
-      appendAnnounce: announceAddreses
+      appendAnnounce: announceAddresses
     })
 
     transportManager.getAddrs.returns(listenAddresses.map(ma => multiaddr(ma)))
 
     expect(am.getListenAddrs()).to.have.lengthOf(listenAddresses.length)
-    expect(am.getAppendAnnounceAddrs()).to.have.lengthOf(announceAddreses.length)
+    expect(am.getAppendAnnounceAddrs()).to.have.lengthOf(announceAddresses.length)
 
     const announceMultiaddrs = am.getAddresses()
     expect(announceMultiaddrs.length).to.equal(3)
     expect(announceMultiaddrs.map(ma => ma.toString())).to.deep.equal([
       ...listenAddresses.map(ma => `${ma}/p2p/${peerId}`),
-      ...announceAddreses.map(ma => `${ma}/p2p/${peerId}`)
+      ...announceAddresses.map(ma => `${ma}/p2p/${peerId}`)
     ])
   })
 
@@ -550,6 +550,7 @@ describe('Address Manager', () => {
       logger: defaultLogger()
     })
 
+    /* spell-checker:disable-next-line */
     const internalIp = 'fdad:23c6:14b1:7e00:28b8:30d:944e:27f3'
     const internalPort = 4567
     const externalIp = '81.12.12.1'

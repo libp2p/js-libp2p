@@ -74,20 +74,20 @@ export class RoutingTableRefresh {
     this.log('refreshing routing table')
 
     const prefixLength = this._maxCommonPrefix()
-    const refreshCpls = this._getTrackedCommonPrefixLengthsForRefresh(prefixLength)
+    const refreshCommonPrefixLengths = this._getTrackedCommonPrefixLengthsForRefresh(prefixLength)
 
     this.log(`max common prefix length ${prefixLength}`)
-    this.log(`tracked CPLs [ ${refreshCpls.map(date => date.toISOString()).join(', ')} ]`)
+    this.log(`tracked CPLs [ ${refreshCommonPrefixLengths.map(date => date.toISOString()).join(', ')} ]`)
 
     /**
      * If we see a gap at a common prefix length in the Routing table, we ONLY refresh up until
      * the maximum cpl we have in the Routing Table OR (2 * (Cpl+ 1) with the gap), whichever
      * is smaller.
      *
-     * This is to prevent refreshes for Cpls that have no peers in the network but happen to be
-     * before a very high max Cpl for which we do have peers in the network.
+     * This is to prevent refreshes for common-prefix-lengths that have no peers in the network but happen to be
+     * before a very high max common-prefix-length for which we do have peers in the network.
      *
-     * The number of 2 * (Cpl + 1) can be proved and a proof would have been written here if
+     * The number of 2 * (common-prefix-length + 1) can be proved and a proof would have been written here if
      * the programmer had paid more attention in the Math classes at university.
      *
      * So, please be patient and a doc explaining it will be published soon.
@@ -95,12 +95,12 @@ export class RoutingTableRefresh {
      * https://github.com/libp2p/go-libp2p-kad-dht/commit/2851c88acb0a3f86bcfe3cfd0f4604a03db801d8#diff-ad45f4ba97ffbc4083c2eb87a4420c1157057b233f048030d67c6b551855ccf6R219
      */
     Promise.all(
-      refreshCpls.map(async (lastRefresh, index) => {
+      refreshCommonPrefixLengths.map(async (lastRefresh, index) => {
         try {
           await this._refreshCommonPrefixLength(index, lastRefresh, force)
 
           if (this._numPeersForCpl(prefixLength) === 0) {
-            const lastCpl = Math.min(2 * (index + 1), refreshCpls.length - 1)
+            const lastCpl = Math.min(2 * (index + 1), refreshCommonPrefixLengths.length - 1)
 
             for (let n = index + 1; n < lastCpl + 1; n++) {
               try {

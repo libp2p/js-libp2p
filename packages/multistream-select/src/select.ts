@@ -40,7 +40,7 @@ export interface SelectStream extends Duplex<any, any, any> {
  * // Select from one of the passed protocols (in priority order)
  * // Returns selected stream and protocol
  * const { stream: dhtStream, protocol } = await mss.select(muxedStream, [
- *   // This might just be different versions of DHT, but could be different impls
+ *   // This might just be different versions of DHT, but could be different implementations
  *   '/ipfs-dht/2.0.0', // Most of the time this will probably just be one item.
  *   '/ipfs-dht/1.0.0'
  * ])

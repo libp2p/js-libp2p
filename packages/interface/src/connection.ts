@@ -282,7 +282,7 @@ export interface Connection {
   streams: Stream[]
 
   /**
-   * Outbound conections are opened by the local node, inbound streams are opened by the remote
+   * Outbound connections are opened by the local node, inbound streams are opened by the remote
    */
   direction: Direction
 

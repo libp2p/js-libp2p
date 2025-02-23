@@ -60,7 +60,7 @@ These types are pulled from [@alanshaw's gist](https://gist.github.com/alanshaw/
 A "source" is something that can be consumed. It is an iterable object.
 
 ```js
-const ints = {
+const integers = {
   [Symbol.asyncIterator] () {
     let i = 0
     return {
@@ -73,7 +73,7 @@ const ints = {
 
 // or, more succinctly using a generator and for/await:
 
-const ints = (async function * () {
+const integers = (async function * () {
   let i = 0
   while (true) yield i++
 })()
