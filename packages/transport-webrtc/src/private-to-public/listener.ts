@@ -6,6 +6,7 @@ import { IP4, WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
+import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT, HANDSHAKE_TIMEOUT_MS } from '../constants.js'
 import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
@@ -17,13 +18,6 @@ import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logge
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const crypto = new Crypto()
-
-/**
- * The time to wait, in milliseconds, for the data channel handshake to complete
- */
-const HANDSHAKE_TIMEOUT_MS = 10_000
-const CODEC_WEBRTC_DIRECT = 0x0118
-const CODEC_CERTHASH = 0x01d2
 
 export interface WebRTCDirectListenerComponents {
   peerId: PeerId

@@ -4,9 +4,9 @@ import { base64url } from 'multiformats/bases/base64'
 import { bases, digest } from 'multiformats/basics'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { CODEC_CERTHASH } from '../../constants.js'
 import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../../error.js'
 import { MAX_MESSAGE_SIZE } from '../../stream.js'
-import { CERTHASH_CODE } from '../transport.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -29,7 +29,7 @@ export function getFingerprintFromSdp (sdp: string | undefined): string | undefi
 // Extract the certhash from a multiaddr
 export function certhash (ma: Multiaddr): string {
   const tups = ma.stringTuples()
-  const certhash = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0]
+  const certhash = tups.filter((tup) => tup[0] === CODEC_CERTHASH).map((tup) => tup[1])[0]
 
   if (certhash === undefined || certhash === '') {
     throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
