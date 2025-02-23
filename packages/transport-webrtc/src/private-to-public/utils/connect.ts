@@ -146,6 +146,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       case 'closed':
         maConn.close().catch((err) => {
           options.log.error('error closing connection', err)
+          maConn.abort(err)
         })
         break
       default:
@@ -167,18 +168,25 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // Therefore, we need to secure an inbound noise connection from the remote.
     options.log.trace('%s secure inbound', options.role)
     await connectionEncrypter.secureInbound(wrappedDuplex, {
-      remotePeer: options.remotePeerId
+      remotePeer: options.remotePeerId,
+      signal: options.signal
     })
 
     options.log.trace('%s upgrade outbound', options.role)
-    return options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
+    return options.upgrader.upgradeOutbound(maConn, {
+      skipProtection: true,
+      skipEncryption: true,
+      muxerFactory,
+      signal: options.signal
+    })
   }
 
   // For inbound connections, we are expected to start the noise handshake.
   // Therefore, we need to secure an outbound noise connection from the remote.
   options.log.trace('%s secure outbound', options.role)
   const result = await connectionEncrypter.secureOutbound(wrappedDuplex, {
-    remotePeer: options.remotePeerId
+    remotePeer: options.remotePeerId,
+    signal: options.signal
   })
   maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
@@ -187,6 +195,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
   await options.upgrader.upgradeInbound(maConn, {
     skipProtection: true,
     skipEncryption: true,
-    muxerFactory
+    muxerFactory,
+    signal: options.signal
   })
 }
