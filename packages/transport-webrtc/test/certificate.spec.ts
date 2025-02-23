@@ -55,12 +55,12 @@ describe('WebRTCDirectListener', () => {
   })
 
   it('should re-emit listening event when a new certificate is generated', async () => {
-    const emitSpy = sinon.spy(listener as any, 'emit')
-    const createCertificateSpy = sinon.spy(listener as any, 'createCertificate')
+    const emitSpy = sinon.spy(listener as any, 'safeDispatchEvent')
+    const generateCertificateSpy = sinon.spy(generateTransportCertificate)
 
     await (listener as any).startUDPMuxServer('127.0.0.1', 0)
 
-    expect(createCertificateSpy.calledOnce).to.be.true
+    expect(generateCertificateSpy.called).to.be.true
     expect(emitSpy.calledWith('listening')).to.be.true
   })
 
@@ -70,11 +70,11 @@ describe('WebRTCDirectListener', () => {
     }
 
     const isCertificateExpiringSpy = sinon.spy(listener as any, 'isCertificateExpiring')
-    const createCertificateSpy = sinon.spy(listener as any, 'createCertificate')
+    const generateCertificateSpy = sinon.spy(generateTransportCertificate) 
 
     await (listener as any).startUDPMuxServer('127.0.0.1', 0)
 
     expect(isCertificateExpiringSpy.returned(true)).to.be.true
-    expect(createCertificateSpy.calledOnce).to.be.true
+    expect(generateCertificateSpy.called).to.be.true
   })
 })
