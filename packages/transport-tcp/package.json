@@ -65,6 +65,7 @@
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3",
     "@types/sinon": "^17.0.3",
+    "any-signal": "^4.1.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",

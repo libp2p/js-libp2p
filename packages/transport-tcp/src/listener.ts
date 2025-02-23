@@ -1,7 +1,8 @@
 import net from 'net'
 import { AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { anySignal } from 'any-signal'
 import { pEvent } from 'p-event'
-import { CODE_P2P } from './constants.js'
+import { CODE_P2P, INBOUND_UPGRADE_TIMEOUT } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import {
   getMultiaddrs,
@@ -31,6 +32,7 @@ export interface CloseServerOnMaxConnectionsOpts {
 
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
+  inboundUpgradeTimeout?: number
   socketInactivityTimeout?: number
   socketCloseTimeout?: number
   maxConnections?: number
@@ -74,6 +76,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   private addr: string
   private readonly log: Logger
   private readonly shutdownController: AbortController
+  private readonly inboundUpgradeTimeout: number
 
   constructor (private readonly context: Context) {
     super()
@@ -85,6 +88,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.log = context.logger.forComponent('libp2p:tcp:listener')
+    this.inboundUpgradeTimeout = context.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     this.addr = 'unknown'
     this.server = net.createServer(context, this.onSocket.bind(this))
 
@@ -201,8 +205,14 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     this.log('new inbound connection %s', maConn.remoteAddr)
     this.sockets.add(socket)
 
+    const signal = anySignal([
+      this.shutdownController.signal,
+      AbortSignal.timeout(this.inboundUpgradeTimeout)
+    ])
+    setMaxListeners(Infinity, signal)
+
     this.context.upgrader.upgradeInbound(maConn, {
-      signal: this.shutdownController.signal
+      signal
     })
       .then(() => {
         this.log('inbound connection upgraded %s', maConn.remoteAddr)
@@ -239,6 +249,9 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
         this.sockets.delete(socket)
         maConn.abort(err)
+      })
+      .finally(() => {
+        signal.clear()
       })
   }
 

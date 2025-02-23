@@ -192,6 +192,7 @@ export class TCP implements Transport<TCPDialEvents> {
     return new TCPListener({
       ...(this.opts.listenOpts ?? {}),
       ...options,
+      inboundUpgradeTimeout: this.opts.inboundUpgradeTimeout,
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
       closeServerOnMaxConnections: this.opts.closeServerOnMaxConnections,

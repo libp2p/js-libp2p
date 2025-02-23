@@ -78,6 +78,14 @@ export interface TCPOptions {
    * Options passed to every `net.createServer` for every TCP server
    */
   listenOpts?: TCPSocketOptions
+
+  /**
+   * Upgrading an inbound connection must happen within this many ms otherwise
+   * the connection will be closed.
+   *
+   * @default 10_000
+   */
+  inboundUpgradeTimeout?: number
 }
 
 /**
