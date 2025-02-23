@@ -33,6 +33,7 @@ export interface WebRTCDirectListenerInit {
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   useLibjuice?: boolean
+  certificateDuration?: number
 }
 
 export interface WebRTCListenerMetrics {
@@ -81,6 +82,15 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         })
       }
     }
+  }
+
+  private isCertificateExpiring (): boolean {
+    if (this.certificate == null) return true
+    const expiryDate = new Date(this.certificate.notAfter)
+    const now = new Date()
+    const timeToExpiry = expiryDate.getTime() - now.getTime()
+    const threshold = 30 * 24 * 60 * 60 * 1000
+    return timeToExpiry < threshold
   }
 
   async listen (ma: Multiaddr): Promise<void> {
@@ -154,7 +164,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       server: Promise.resolve()
         .then(async (): Promise<StunServer> => {
           // ensure we have a certificate
-          if (this.certificate == null) {
+          if (this.certificate == null || this.isCertificateExpiring()) {
             this.log.trace('creating TLS certificate')
             const keyPair = await crypto.subtle.generateKey({
               name: 'ECDSA',
@@ -162,12 +172,11 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
             }, true, ['sign', 'verify'])
 
             const certificate = await generateTransportCertificate(keyPair, {
-              days: 365 * 10
+              days: this.init.certificateDuration ?? 365 * 10
             })
+            this.safeDispatchEvent('listening')
 
-            if (this.certificate == null) {
-              this.certificate = certificate
-            }
+            this.certificate = certificate
           }
 
           if (port === 0) {

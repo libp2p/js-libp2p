@@ -46,6 +46,7 @@ export async function generateTransportCertificate (keyPair: CryptoKeyPair, opti
   return {
     privateKey: privateKeyPem,
     pem: cert.toString('pem'),
-    certhash: base64url.encode((await sha256.digest(new Uint8Array(cert.rawData))).bytes)
+    certhash: base64url.encode((await sha256.digest(new Uint8Array(cert.rawData))).bytes),
+    notAfter: notAfter.toISOString()
   }
 }
