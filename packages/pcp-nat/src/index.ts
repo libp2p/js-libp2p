@@ -22,14 +22,14 @@
  * const node = await createLibp2p({
  *   addresses: {
  *     listen: [
- *       '/ip4/0.0.0.0/tcp/0'
+ *       '/ip6/2001:db8:85a3:8d3:aaaa:aaaa:aaaa:aaaa/tcp/0'
  *     ]
  *   },
  *   transports: [
  *     tcp()
  *   ],
  *   services: {
-       pcpNat: pcpNAT("2001:DB8::8:800:200C:417A") // IPv6 Global Unicast Address (GUA) of your router
+       pcpNat: pcpNAT("2001:db8:85a3:8d3:1319:8a2e:370:7348") // IPv6 Global Unicast Address (GUA) LAN address of your router
  *   }
  * })
  * ```
@@ -44,7 +44,7 @@ export type { PCPNATClient, MapPortOptions }
 
 export interface PCPNATInit {
   /**
-   * By default we query discovered/configured gateways for their external
+   * By default we query configured gateways for their external
    * address. To specify it manually instead, pass a value here.
    *
    * Typically this would be an IPv4 address that the router performs NAT with.
