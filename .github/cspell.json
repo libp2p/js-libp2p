@@ -17,8 +17,8 @@
 
   "files": [
     "**/*.{ts,js,md}",
-    "!**/dist/**/*",
-    "!**/node_modules/**/*",
+    "!**/dist/**",
+    "!**/node_modules/**",
     "!**/CHANGELOG.md"
   ],
 
