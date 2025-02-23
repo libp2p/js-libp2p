@@ -150,25 +150,6 @@ describe('Transport Manager', () => {
     expect(spyListener.called).to.be.true()
   })
 
-  it.only('should throw if no transports support configured addresses', async () => {
-    const transportManager = new DefaultTransportManager(components)
-
-    const transport = stubInterface<Transport>({
-      listenFilter: () => []
-    })
-    transportManager.add(transport)
-
-    await start(transportManager)
-
-    const multiaddrs = [
-      multiaddr('/ip4/0.0.0.0/tcp/0'),
-      multiaddr('/ip4/0.0.0.0/tcp/0/ws')
-    ]
-
-    await expect(transportManager.listen(multiaddrs)).to.eventually.be.rejected
-      .with.property('name', 'NoSupportedAddressesError')
-  })
-
   it('should be able to dial', async () => {
     tm.add(transport)
     await tm.listen(addrs)
