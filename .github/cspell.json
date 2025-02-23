@@ -13,5 +13,12 @@
           // personal dictionary.
           "addWords": true
       }
+  ],
+
+  "files": [
+    "**/*.{ts,js,md}",
+    "!**/dist/**/*.{ts,js,md}",
+    "!**/node_modules/**/*",
+    "!**/CHANGELOG.md"
   ]
 }

@@ -41,9 +41,6 @@ jobs:
       - run: npm run --if-present dep-check
       - run: npm run --if-present docs:no-publish
       - run: npm run --if-present doc-check
-      - uses: rojopolis/spellcheck-github-actions@ed0756273a1658136c36d26e3d0353de35b98c8b # v0.47.0
-        with:
-            config_path: .github/spellcheck.yml
       - uses: streetsidesoftware/cspell-action@ef95dc49d631fc2a9e9ea089ae2b2127b7c4588e # v6.10.0
         with:
             config: .github/cspell.json
