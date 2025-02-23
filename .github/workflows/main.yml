@@ -18,29 +18,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - uses: ipfs/aegir/actions/cache-node-modules@main
-      with:
-        directories: ${{ env.CACHE_DIRS }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
 
   check:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - uses: ipfs/aegir/actions/cache-node-modules@main
-      with:
-        directories: ${{ env.CACHE_DIRS }}
-    - run: npm run --if-present lint
-    - run: npm run --if-present dep-check
-    - run: npm run --if-present docs:no-publish
-    - run: npm run --if-present doc-check
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
+      - run: npm run --if-present lint
+      - run: npm run --if-present dep-check
+      - run: npm run --if-present docs:no-publish
+      - run: npm run --if-present doc-check
+      - run: npm run docs
+      - uses: streetsidesoftware/cspell-action@ef95dc49d631fc2a9e9ea089ae2b2127b7c4588e # v6.10.0
+        with:
+            files: |
+              **/*.{ts,js,md}
+              !**/dist/**/*.{ts,js,md}
+              !**/node_modules/**/*
+              !**/CHANGELOG.md
+
   test-node:
     needs: build
     runs-on: ${{ matrix.os }}
