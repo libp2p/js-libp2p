@@ -45,7 +45,6 @@ jobs:
         with:
             config: .github/cspell.json
             use_cspell_files: true
-            incremental_files_only: false
 
   test-node:
     needs: build
