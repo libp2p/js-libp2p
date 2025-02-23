@@ -17,16 +17,25 @@
 
   "files": [
     "**/*.{ts,js,md}",
-    "!**/dist/**/*.{ts,js,md}",
+    "!**/dist/**/*",
     "!**/node_modules/**/*",
     "!**/CHANGELOG.md"
   ],
 
   "ignoreRegExpList": [
+    // ignore import names (e.g. `import foo from 'module-name-with-typo'`)
     "/from\\s+(['\"]).*\\1/",
+
+    // ignore anything in backticks
     "/`.*`/",
+
+    // multiaddrs are not spell checked
     "/multiaddr(.*)/",
+
+    // peer ids are not spell checked
     "/peerIdFromString(.*)/",
+
+    // string encoded binary is not spell checked
     "/uint8ArrayFromString(.*)/"
   ]
 }
