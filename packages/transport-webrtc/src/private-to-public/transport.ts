@@ -104,9 +104,9 @@ export class WebRTCDirectTransport implements Transport {
   /**
    * Connect to a peer using a multiaddr
    */
-  async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents> & Required<Pick<DialTransportOptions, 'signal'>>): Promise<Connection> {
+  async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
     // do not create RTCPeerConnection if the signal has already been aborted
-    options.signal?.throwIfAborted()
+    options.signal.throwIfAborted()
 
     let theirPeerId: PeerId | undefined
     const remotePeerString = ma.getPeerId()
