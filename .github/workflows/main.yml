@@ -41,10 +41,7 @@ jobs:
       - run: npm run --if-present dep-check
       - run: npm run --if-present docs:no-publish
       - run: npm run --if-present doc-check
-      - uses: streetsidesoftware/cspell-action@ef95dc49d631fc2a9e9ea089ae2b2127b7c4588e # v6.10.0
-        with:
-            config: .github/cspell.json
-            use_cspell_files: true
+      - run: npm run --if-present spell-check
 
   test-node:
     needs: build

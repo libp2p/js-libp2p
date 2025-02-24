@@ -96,7 +96,7 @@
     "@types/lodash.range": "^3.2.9",
     "@types/sinon": "^17.0.3",
     "@types/which": "^3.0.4",
-    "aegir": "^45.0.5",
+    "aegir": "^45.1.1",
     "datastore-core": "^10.0.2",
     "delay": "^6.0.0",
     "execa": "^9.5.1",
