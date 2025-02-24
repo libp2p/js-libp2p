@@ -71,8 +71,3 @@ export const MAX_CONNECTIONS = 300
 
 export const DEFAULT_DISCOVERY_FILTER_SIZE = 4096
 export const DEFAULT_DISCOVERY_FILTER_ERROR_RATE = 0.001
-
-/**
- * Inbound connection upgrades must complete within this many ms
- */
-export const INBOUND_UPGRADE_TIMEOUT = 10_000

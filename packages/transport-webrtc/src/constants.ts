@@ -23,8 +23,3 @@ export const UFRAG_PREFIX = 'libp2p+webrtc+v1/'
 export const HANDSHAKE_TIMEOUT_MS = 10_000
 export const CODEC_WEBRTC_DIRECT = 0x0118
 export const CODEC_CERTHASH = 0x01d2
-
-/**
- * Inbound connection upgrades must complete within this many ms
- */
-export const INBOUND_UPGRADE_TIMEOUT = 10_000

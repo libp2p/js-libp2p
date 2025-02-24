@@ -8,6 +8,7 @@ import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedErro
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
 import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import { anySignal, type ClearableSignal } from 'any-signal'
 
 interface CreateConnectionOptions {
   cryptoProtocol: string
@@ -183,6 +184,13 @@ export class Upgrader implements UpgraderInterface {
   async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
     let accepted = false
 
+    // always apply upgrade timeout for incoming upgrades
+    const signal = anySignal([
+      AbortSignal.timeout(this.inboundUpgradeTimeout),
+      opts.signal
+    ])
+    setMaxListeners(Infinity, signal)
+
     try {
       this.metrics.dials?.increment({
         inbound: true
@@ -196,7 +204,10 @@ export class Upgrader implements UpgraderInterface {
 
       await this.shouldBlockConnection('denyInboundConnection', maConn)
 
-      await this._performUpgrade(maConn, 'inbound', opts)
+      await this._performUpgrade(maConn, 'inbound', {
+        ...opts,
+        signal
+      })
     } catch (err) {
       this.metrics.errors?.increment({
         inbound: true
@@ -204,6 +215,8 @@ export class Upgrader implements UpgraderInterface {
 
       throw err
     } finally {
+      signal.clear()
+
       if (accepted) {
         this.components.connectionManager.afterUpgradeInbound()
       }
@@ -234,7 +247,19 @@ export class Upgrader implements UpgraderInterface {
         direction = 'inbound'
       }
 
-      return await this._performUpgrade(maConn, direction, opts)
+      let signal = opts.signal
+
+      if (signal == null) {
+        maConn.log('no abort signal was passed while trying to upgrade connection, falling back to default timeout')
+        signal = AbortSignal.timeout(this.outboundUpgradeTimeout)
+        setMaxListeners(Infinity, signal)
+        opts.signal = signal
+      }
+
+      return await this._performUpgrade(maConn, direction, {
+        ...opts,
+        signal
+      })
     } catch (err) {
       this.metrics.errors?.increment({
         outbound: true
@@ -250,14 +275,6 @@ export class Upgrader implements UpgraderInterface {
     let upgradedConn: MultiaddrConnection
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
-
-    if (opts.signal == null) {
-      maConn.log('no abort signal was passed while trying to upgrade connection, falling back to default timeout')
-
-      const upgradeTimeoutSignal = AbortSignal.timeout(direction === 'inbound' ? this.inboundUpgradeTimeout : this.outboundUpgradeTimeout)
-      setMaxListeners(Infinity, upgradeTimeoutSignal)
-      opts.signal = upgradeTimeoutSignal
-    }
 
     this.components.metrics?.trackMultiaddrConnection(maConn)
 

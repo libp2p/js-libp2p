@@ -65,9 +65,9 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
    * Inbound connections must complete their upgrade within this many ms
    *
-   * @default 10_000
+   * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
    */
-  inboundUpgradeTimeout?: number
+  inboundConnectionUpgradeTimeout?: number
 }
 
 export interface WebSocketsComponents {

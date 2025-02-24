@@ -2,16 +2,14 @@ import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
 import os from 'node:os'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { isLinkLocalIp } from '@libp2p/utils/link-local-ip'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
-import { anySignal } from 'any-signal'
 import duplex from 'it-ws/duplex'
 import { pEvent } from 'p-event'
 import * as ws from 'ws'
-import { INBOUND_UPGRADE_TIMEOUT } from './constants.js'
 import { socketToMaConn } from './socket-to-conn.js'
 import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, TypedEventTarget, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -29,7 +27,6 @@ export interface WebSocketListenerComponents {
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
-  inboundUpgradeTimeout?: number
   cert?: string
   key?: string
   http?: http.ServerOptions
@@ -50,7 +47,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   private readonly metrics: WebSocketListenerMetrics
   private readonly sockets: Set<net.Socket>
   private readonly upgrader: Upgrader
-  private readonly inboundUpgradeTimeout: number
   private readonly httpOptions?: http.ServerOptions
   private readonly httpsOptions?: https.ServerOptions
   private readonly shutdownController: AbortController
@@ -67,7 +63,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.upgrader = init.upgrader
     this.httpOptions = init.http
     this.httpsOptions = init.https ?? init.http
-    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     this.sockets = new Set()
     this.shutdownController = new AbortController()
 
@@ -218,14 +213,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     this.log('new inbound connection %s', maConn.remoteAddr)
-    const signal = anySignal([
-      this.shutdownController.signal,
-      AbortSignal.timeout(this.inboundUpgradeTimeout)
-    ])
-    setMaxListeners(Infinity, signal)
 
     this.upgrader.upgradeInbound(maConn, {
-      signal
+      signal: this.shutdownController.signal
     })
       .catch(async err => {
         this.log.error('inbound connection failed to upgrade - %e', err)
@@ -236,9 +226,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
             this.log.error('inbound connection failed to close after upgrade failed', err)
             this.metrics.errors?.increment({ [`${this.addr} inbound_closing_failed`]: true })
           })
-      })
-      .finally(() => {
-        signal.clear()
       })
   }
 

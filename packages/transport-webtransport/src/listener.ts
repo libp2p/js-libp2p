@@ -12,7 +12,6 @@ export interface WebTransportListenerInit extends CreateListenerOptions {
   upgrader: Upgrader
   certificates?: WebTransportCertificate[]
   maxInboundStreams?: number
-  inboundUpgradeTimeout?: number
 }
 
 export default function createListener (components: WebTransportListenerComponents, options: WebTransportListenerInit): Listener {

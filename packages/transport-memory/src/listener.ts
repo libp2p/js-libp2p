@@ -1,9 +1,7 @@
-import { ListenError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { ListenError, TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
-import { anySignal } from 'any-signal'
 import { nanoid } from 'nanoid'
 import { MemoryConnection, connections } from './connections.js'
-import { INBOUND_UPGRADE_TIMEOUT } from './constants.js'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { Listener, CreateListenerOptions, ListenerEvents, MultiaddrConnection, UpgraderOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -51,21 +49,12 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   }
 
   onConnection (maConn: MultiaddrConnection): void {
-    const signal = anySignal([
-      AbortSignal.timeout(this.init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT),
-      this.shutdownController.signal
-    ])
-    setMaxListeners(Infinity, signal)
-
     this.init.upgrader.upgradeInbound(maConn, {
       ...this.init.upgraderOptions,
-      signal
+      signal: this.shutdownController.signal
     })
       .catch(err => {
         maConn.abort(err)
-      })
-      .finally(() => {
-        signal.clear()
       })
   }
 

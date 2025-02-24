@@ -80,7 +80,6 @@
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
     "@types/ws": "^8.5.13",
-    "any-signal": "^4.1.1",
     "it-ws": "^6.1.5",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
