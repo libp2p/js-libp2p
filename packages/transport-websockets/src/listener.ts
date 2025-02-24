@@ -2,7 +2,7 @@ import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
 import os from 'node:os'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { isLinkLocalIp } from '@libp2p/utils/link-local-ip'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -27,7 +27,6 @@ export interface WebSocketListenerComponents {
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
-  inboundConnectionUpgradeTimeout?: number
   cert?: string
   key?: string
   http?: http.ServerOptions
@@ -48,9 +47,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   private readonly metrics: WebSocketListenerMetrics
   private readonly sockets: Set<net.Socket>
   private readonly upgrader: Upgrader
-  private readonly inboundConnectionUpgradeTimeout: number
   private readonly httpOptions?: http.ServerOptions
   private readonly httpsOptions?: https.ServerOptions
+  private readonly shutdownController: AbortController
   private http?: http.Server
   private https?: https.Server
   private addr?: string
@@ -64,8 +63,8 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.upgrader = init.upgrader
     this.httpOptions = init.http
     this.httpsOptions = init.https ?? init.http
-    this.inboundConnectionUpgradeTimeout = init.inboundConnectionUpgradeTimeout ?? 5000
     this.sockets = new Set()
+    this.shutdownController = new AbortController()
 
     this.wsServer = new ws.WebSocketServer({
       noServer: true
@@ -214,11 +213,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     this.log('new inbound connection %s', maConn.remoteAddr)
-    const signal = AbortSignal.timeout(this.inboundConnectionUpgradeTimeout)
-    setMaxListeners(Infinity, signal)
 
     this.upgrader.upgradeInbound(maConn, {
-      signal
+      signal: this.shutdownController.signal
     })
       .catch(async err => {
         this.log.error('inbound connection failed to upgrade - %e', err)
@@ -329,6 +326,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     ;[...this.sockets].forEach(socket => {
       socket.destroy()
     })
+
+    // abort and in-flight connection upgrades
+    this.shutdownController.abort()
 
     await Promise.all([
       pEvent(this.server, 'close'),

@@ -1,5 +1,7 @@
+import { setMaxListeners } from '@libp2p/interface'
+import { anySignal } from 'any-signal'
 import { mockConnection } from './connection.js'
-import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions } from '@libp2p/interface'
+import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions, ClearableSignal } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export interface MockUpgraderInit {
@@ -16,7 +18,7 @@ class MockUpgrader implements Upgrader {
     this.events = init.events
   }
 
-  async upgradeOutbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+  async upgradeOutbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions): Promise<Connection> {
     const connection = mockConnection(multiaddrConnection, {
       direction: 'outbound',
       registrar: this.registrar,
@@ -28,7 +30,7 @@ class MockUpgrader implements Upgrader {
     return connection
   }
 
-  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
+  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions): Promise<void> {
     const connection = mockConnection(multiaddrConnection, {
       direction: 'inbound',
       registrar: this.registrar,
@@ -36,6 +38,16 @@ class MockUpgrader implements Upgrader {
     })
 
     this.events?.safeDispatchEvent('connection:open', { detail: connection })
+  }
+
+  createInboundAbortSignal (signal?: AbortSignal): ClearableSignal {
+    const output = anySignal([
+      AbortSignal.timeout(10_000),
+      signal
+    ])
+    setMaxListeners(Infinity, output)
+
+    return output
   }
 }
 

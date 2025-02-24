@@ -17,7 +17,6 @@ import type { ProgressEvent } from 'progress-events'
 const WEBRTC_TRANSPORT = '/webrtc'
 const CIRCUIT_RELAY_TRANSPORT = '/p2p-circuit'
 export const SIGNALING_PROTO_ID = '/webrtc-signaling/0.0.1'
-const INBOUND_CONNECTION_TIMEOUT = 30 * 1000
 
 export interface WebRTCTransportInit {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
@@ -106,7 +105,16 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
-      this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+      // ensure we don't try to upgrade forever
+      const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+
+      this._onProtocol(data, signal)
+        .catch(err => {
+          this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err)
+        })
+        .finally(() => {
+          signal.clear()
+        })
     }, {
       runOnLimitedConnection: true
     })
@@ -172,7 +180,8 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       skipProtection: true,
       skipEncryption: true,
       muxerFactory,
-      onProgress: options.onProgress
+      onProgress: options.onProgress,
+      signal: options.signal
     })
 
     // close the connection on shut down
@@ -181,8 +190,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     return connection
   }
 
-  async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
-    const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
+  async _onProtocol ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
     const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,
@@ -213,7 +221,8 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
-        muxerFactory
+        muxerFactory,
+        signal
       })
 
       // close the connection on shut down

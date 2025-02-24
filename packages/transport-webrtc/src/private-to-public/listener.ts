@@ -6,7 +6,7 @@ import { IP4, WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
-import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT, HANDSHAKE_TIMEOUT_MS } from '../constants.js'
+import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT } from '../constants.js'
 import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
@@ -23,6 +23,7 @@ export interface WebRTCDirectListenerComponents {
   peerId: PeerId
   privateKey: PrivateKey
   logger: ComponentLogger
+  upgrader: Upgrader
   metrics?: Metrics
 }
 
@@ -62,6 +63,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   private readonly init: WebRTCDirectListenerInit
   private readonly components: WebRTCDirectListenerComponents
   private readonly metrics?: WebRTCListenerMetrics
+  private readonly shutdownController: AbortController
 
   constructor (components: WebRTCDirectListenerComponents, init: WebRTCDirectListenerInit) {
     super()
@@ -72,6 +74,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
     this.certificate = init.certificates?.[0]
+    this.shutdownController = new AbortController()
 
     if (components.metrics != null) {
       this.metrics = {
@@ -178,16 +181,21 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
           }
 
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
-            this.incomingConnection(ufrag, remoteHost, remotePort)
+            const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+
+            this.incomingConnection(ufrag, remoteHost, remotePort, signal)
               .catch(err => {
                 this.log.error('error processing incoming STUN request', err)
+              })
+              .finally(() => {
+                signal.clear()
               })
           })
         })
     }
   }
 
-  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number): Promise<void> {
+  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
     const key = `${remoteHost}:${remotePort}:${ufrag}`
     let peerConnection = this.connections.get(key)
 
@@ -197,6 +205,9 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     }
 
     this.log('create peer connection for %s', key)
+
+    // do not create RTCPeerConnection objects if the signal has aborted already
+    signal.throwIfAborted()
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
     peerConnection = await createDialerRTCPeerConnection('server', ufrag, this.init.rtcConfiguration, this.certificate)
@@ -222,7 +233,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         logger: this.components.logger,
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
-        signal: AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
+        signal,
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
@@ -268,10 +279,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async close (): Promise<void> {
-    for (const connection of this.connections.values()) {
-      connection.close()
-    }
-
     // stop our UDP mux listeners
     await Promise.all(
       UDP_MUX_LISTENERS
@@ -284,6 +291,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     // remove our stopped UDP mux listeners
     UDP_MUX_LISTENERS = UDP_MUX_LISTENERS.filter(listener => listener.owner !== this)
+
+    // close existing connections
+    for (const connection of this.connections.values()) {
+      connection.close()
+    }
+
+    // stop any in-progress incoming dials
+    this.shutdownController.abort()
 
     // RTCPeerConnections will be removed from the connections map when their
     // connection state changes to 'closed'/'disconnected'/'failed

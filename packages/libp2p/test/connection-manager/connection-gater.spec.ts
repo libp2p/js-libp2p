@@ -9,7 +9,7 @@ import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { DefaultUpgrader } from '../../src/upgrader.js'
+import { Upgrader } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from '../upgrading/utils.js'
 import { createDefaultConnectionManagerComponents } from './utils.js'
 import type { Transport, MultiaddrConnection, StreamMuxerFactory } from '@libp2p/interface'
@@ -63,7 +63,7 @@ describe('connection-gater', () => {
   it('intercept accept inbound connection', async () => {
     const denyInboundConnection = Sinon.stub().returns(true)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundConnection
       }
@@ -82,7 +82,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -92,7 +93,7 @@ describe('connection-gater', () => {
   it('intercept accept outbound connection', async () => {
     const denyOutboundConnection = Sinon.stub().returns(true)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundConnection
       }
@@ -111,7 +112,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
   })
@@ -121,7 +123,7 @@ describe('connection-gater', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundEncryptedConnection
       }
@@ -144,7 +146,8 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -157,7 +160,7 @@ describe('connection-gater', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundEncryptedConnection
       }
@@ -180,7 +183,8 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -192,7 +196,7 @@ describe('connection-gater', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyInboundUpgradedConnection
       }
@@ -209,7 +213,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -221,7 +226,7 @@ describe('connection-gater', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionGater: {
         denyOutboundUpgradedConnection
       }
@@ -238,7 +243,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 

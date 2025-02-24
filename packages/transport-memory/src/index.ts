@@ -52,7 +52,6 @@ export interface MemoryTransportComponents {
 
 export interface MemoryTransportInit {
   upgraderOptions?: UpgraderOptions
-  inboundUpgradeTimeout?: number
 
   /**
    * Add this much latency in ms to every buffer sent over the transport

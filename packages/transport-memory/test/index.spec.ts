@@ -31,7 +31,8 @@ describe('memory', () => {
     await listener.listen(ma)
 
     const conn = await transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })
 
     await conn.close()
@@ -54,7 +55,8 @@ describe('memory', () => {
 
     const start = Date.now()
     const conn = await transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })
     const end = Date.now()
 

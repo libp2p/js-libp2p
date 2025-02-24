@@ -191,7 +191,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -209,7 +210,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -224,7 +226,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -238,7 +241,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -250,7 +254,7 @@ describe('dial', () => {
 
     // create a listener with the handler
     const listener = transport.createListener({
-      upgrader: {
+      upgrader: stubInterface<Upgrader>({
         async upgradeInbound () {
           upgradeStarted.resolve()
 
@@ -259,7 +263,7 @@ describe('dial', () => {
         async upgradeOutbound () {
           return new Promise(() => {})
         }
-      }
+      })
     })
 
     // listen on a multiaddr
@@ -270,7 +274,8 @@ describe('dial', () => {
 
     // dial the listener address
     transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     }).catch(() => {})
 
     // wait for the upgrade to start
@@ -287,7 +292,7 @@ describe('dial', () => {
 
     // create a listener with the handler
     const listener = transport.createListener({
-      upgrader: {
+      upgrader: stubInterface<Upgrader>({
         async upgradeInbound (maConn, opts) {
           upgradeStarted.resolve()
 
@@ -302,7 +307,7 @@ describe('dial', () => {
         async upgradeOutbound () {
           return new Promise(() => {})
         }
-      }
+      })
     })
 
     // listen on a multiaddr
@@ -313,7 +318,8 @@ describe('dial', () => {
 
     // dial the listener address
     transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     }).catch(() => {})
 
     // wait for the upgrade to start

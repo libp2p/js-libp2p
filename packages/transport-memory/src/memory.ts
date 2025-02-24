@@ -24,7 +24,7 @@ export class MemoryTransport implements Transport {
   ]
 
   async dial (ma: Multiaddr, options: DialTransportOptions): Promise<Connection> {
-    options.signal?.throwIfAborted()
+    options.signal.throwIfAborted()
 
     const memoryConnection = connections.get(`${ma.getPeerId() == null ? ma : ma.decapsulate('/p2p')}`)
 
@@ -32,10 +32,10 @@ export class MemoryTransport implements Transport {
       throw new ConnectionFailedError(`No memory listener found at ${ma}`)
     }
 
-    const maConn = await memoryConnection.dial(this.components.peerId)
+    const maConn = await memoryConnection.dial(this.components.peerId, options.signal)
 
     try {
-      options.signal?.throwIfAborted()
+      options.signal.throwIfAborted()
 
       return await options.upgrader.upgradeOutbound(maConn, {
         ...options,

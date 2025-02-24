@@ -262,7 +262,8 @@ describe('dial', () => {
 
     it('dial', async () => {
       await expect(ws.dial(ma, {
-        upgrader
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
       })).to.eventually.be.ok()
     })
 
@@ -270,7 +271,8 @@ describe('dial', () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
       await expect(ws.dial(ma, {
-        upgrader
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
       })).to.eventually.be.ok()
     })
 
@@ -300,7 +302,10 @@ describe('dial', () => {
       expect(localAddrs.length).to.equal(1)
 
       // Dial to that address
-      await ws.dial(localAddrs[0], { upgrader })
+      await ws.dial(localAddrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })
 
       // Wait for the incoming dial to be handled
       await pWaitFor(() => {
@@ -344,7 +349,10 @@ describe('dial', () => {
       }
 
       // Dial first no loopback address
-      await expect(ws.dial(addrs[0], { upgrader }))
+      await expect(ws.dial(addrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })
@@ -385,7 +393,10 @@ describe('dial', () => {
     })
 
     it('dial ip4', async () => {
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })
@@ -411,13 +422,19 @@ describe('dial', () => {
     })
 
     it('dial ip6', async () => {
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })

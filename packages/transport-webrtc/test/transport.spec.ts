@@ -7,6 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
+import { anySignal } from 'any-signal'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
 import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
@@ -40,7 +41,15 @@ describe('WebRTCDirect Transport', () => {
       peerId: peerIdFromPrivateKey(privateKey),
       logger: defaultLogger(),
       transportManager: stubInterface<TransportManager>(),
-      privateKey
+      privateKey,
+      upgrader: stubInterface<Upgrader>({
+        createInboundAbortSignal: (signal) => {
+          return anySignal([
+            AbortSignal.timeout(5_000),
+            signal
+          ])
+        }
+      })
     }
 
     upgrader = stubInterface<Upgrader>()

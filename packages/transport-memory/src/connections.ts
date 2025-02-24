@@ -47,6 +47,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import map from 'it-map'
 import { pushable } from 'it-pushable'
+import { raceSignal } from 'race-signal'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -75,7 +76,7 @@ export class MemoryConnection {
     this.latency = init.latency ?? 0
   }
 
-  async dial (dialingPeerId: PeerId): Promise<MultiaddrConnection> {
+  async dial (dialingPeerId: PeerId, signal: AbortSignal): Promise<MultiaddrConnection> {
     const dialerPushable = pushable<Uint8Array | Uint8ArrayList>()
     const listenerPushable = pushable<Uint8Array | Uint8ArrayList>()
     const self = this
@@ -163,7 +164,7 @@ export class MemoryConnection {
     this.connections.add(dialer)
     this.connections.add(listener)
 
-    await delay(this.latency)
+    await raceSignal(delay(this.latency), signal)
 
     this.init.onConnection(listener)
 

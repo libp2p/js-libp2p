@@ -263,7 +263,7 @@ describe('connections', () => {
         })
       ],
       connectionManager: {
-        outboundUpgradeTimeout: 10
+        dialTimeout: 10
       }
     }, {
       transports: [

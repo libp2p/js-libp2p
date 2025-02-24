@@ -45,14 +45,14 @@ export interface CircuitRelayTransportInit extends ReservationStoreInit {
    * relay) must finish the initial protocol negotiation within this timeout in
    * ms
    *
-   * @default 30000
+   * @deprecated Configure `connectionManager.inboundUpgradeTimeout` instead
    */
   stopTimeout?: number
 
   /**
    * When creating a reservation it must complete within this number of ms
    *
-   * @default 10000
+   * @default 10_000
    */
   reservationCompletionTimeout?: number
 }
