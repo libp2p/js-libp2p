@@ -34,6 +34,7 @@ import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
+import { INBOUND_UPGRADE_TIMEOUT, MAX_INBOUND_STREAMS } from './constants.js'
 import createListener from './listener.js'
 import { webtransportMuxer } from './muxer.js'
 import { inertDuplex } from './utils/inert-duplex.js'
@@ -64,6 +65,7 @@ interface WebTransportSessionCleanup {
 export interface WebTransportInit {
   maxInboundStreams?: number
   certificates?: WebTransportCertificate[]
+  inboundUpgradeTimeout?: number
 }
 
 export interface WebTransportComponents {
@@ -101,8 +103,9 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     this.components = components
     this.config = {
       ...init,
-      maxInboundStreams: init.maxInboundStreams ?? 1000,
-      certificates: init.certificates ?? []
+      maxInboundStreams: init.maxInboundStreams ?? MAX_INBOUND_STREAMS,
+      certificates: init.certificates ?? [],
+      inboundUpgradeTimeout: init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     }
 
     if (components.metrics != null) {

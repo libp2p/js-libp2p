@@ -33,6 +33,7 @@ export interface WebRTCDirectListenerInit {
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   useLibjuice?: boolean
+  inboundUpgradeTimeout?: number
 }
 
 export interface WebRTCListenerMetrics {

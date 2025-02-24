@@ -59,7 +59,7 @@ export interface ConnectionManagerInit {
    * How long a dial attempt is allowed to take, including DNS resolution
    * of the multiaddr, opening a socket and upgrading it to a Connection.
    *
-   * @default 5000
+   * @default 10_000
    */
   dialTimeout?: number
 
@@ -67,7 +67,7 @@ export interface ConnectionManagerInit {
    * When a new incoming connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 3000
+   * @default 10_000
    */
   inboundUpgradeTimeout?: number
 
@@ -77,7 +77,7 @@ export interface ConnectionManagerInit {
    *
    * Does not apply if an abort signal is passed to the `.dial` method.
    *
-   * @default 3000
+   * @default 10_000
    */
   outboundUpgradeTimeout?: number
 
@@ -94,14 +94,14 @@ export interface ConnectionManagerInit {
    *
    * Does not apply if an abort signal is passed to the `.dial` method.
    *
-   * @default 2000
+   * @default 10_000
    */
   outboundStreamProtocolNegotiationTimeout?: number
 
   /**
    * Inbound protocol negotiation must complete within this number of ms
    *
-   * @default 2000
+   * @default 10_000
    */
   inboundStreamProtocolNegotiationTimeout?: number
 

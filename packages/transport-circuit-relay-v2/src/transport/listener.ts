@@ -20,7 +20,6 @@ export interface CircuitRelayTransportListenerInit {
 }
 
 class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
   private readonly addressManager: AddressManager
   private readonly reservationStore: ReservationStore
@@ -34,7 +33,6 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:listener')
-    this.peerId = components.peerId
     this.connectionManager = components.connectionManager
     this.addressManager = components.addressManager
     this.reservationStore = components.reservationStore

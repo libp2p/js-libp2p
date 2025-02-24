@@ -1,69 +1,9 @@
-/**
- * @packageDocumentation
- *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/)
- * that operates in-memory only.
- *
- * This is intended for testing and can only be used to connect two libp2p nodes
- * that are running in the same process.
- *
- * @example
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- * import { multiaddr } from '@multiformats/multiaddr'
- *
- * const listener = await createLibp2p({
- *   addresses: {
- *     listen: [
- *       '/memory/node-a'
- *     ]
- *   },
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const ma = multiaddr('/memory/node-a')
- *
- * // dial the listener, timing out after 10s
- * const connection = await dialer.dial(ma, {
- *   signal: AbortSignal.timeout(10_000)
- * })
- *
- * // use connection...
- * ```
- *
- * @example Simulating slow connections
- *
- * A `latency` argument can be passed to the factory. Each byte array that
- * passes through the transport will be delayed by this many ms.
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory({
- *       latency: 100
- *     })
- *   ]
- * })
- * ```
- */
-
-import { ListenError, TypedEventEmitter } from '@libp2p/interface'
+import { ListenError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
+import { anySignal } from 'any-signal'
 import { nanoid } from 'nanoid'
 import { MemoryConnection, connections } from './connections.js'
+import { INBOUND_UPGRADE_TIMEOUT } from './constants.js'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { Listener, CreateListenerOptions, ListenerEvents, MultiaddrConnection, UpgraderOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -77,12 +17,14 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   private connection?: MemoryConnection
   private readonly components: MemoryTransportComponents
   private readonly init: MemoryTransportListenerInit
+  private readonly shutdownController: AbortController
 
   constructor (components: MemoryTransportComponents, init: MemoryTransportListenerInit) {
     super()
 
     this.components = components
     this.init = init
+    this.shutdownController = new AbortController()
   }
 
   async listen (ma: Multiaddr): Promise<void> {
@@ -109,11 +51,11 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   }
 
   onConnection (maConn: MultiaddrConnection): void {
-    let signal: AbortSignal | undefined
-
-    if (this.init.inboundUpgradeTimeout != null) {
-      signal = AbortSignal.timeout(this.init.inboundUpgradeTimeout)
-    }
+    const signal = anySignal([
+      AbortSignal.timeout(this.init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT),
+      this.shutdownController.signal
+    ])
+    setMaxListeners(Infinity, signal)
 
     this.init.upgrader.upgradeInbound(maConn, {
       ...this.init.upgraderOptions,
@@ -121,6 +63,9 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     })
       .catch(err => {
         maConn.abort(err)
+      })
+      .finally(() => {
+        signal.clear()
       })
   }
 
@@ -144,6 +89,8 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     if (this.listenAddr != null) {
       connections.delete(this.listenAddr.toString())
     }
+
+    this.shutdownController.abort()
 
     queueMicrotask(() => {
       this.safeDispatchEvent('close')

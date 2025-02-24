@@ -2,6 +2,7 @@ import { InvalidParametersError, serviceCapabilities, serviceDependencies, setMa
 import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
+import { anySignal } from 'any-signal'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { getRtcConfiguration } from '../util.js'
@@ -106,7 +107,17 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
   async start (): Promise<void> {
     await this.components.registrar.handle(SIGNALING_PROTO_ID, (data: IncomingStreamData) => {
-      this._onProtocol(data).catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+      const signal = anySignal([
+        AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT),
+        this.shutdownController.signal
+      ])
+      setMaxListeners(Infinity, signal)
+
+      this._onProtocol(data, signal)
+        .catch(err => { this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err) })
+        .finally(() => {
+          signal.clear()
+        })
     }, {
       runOnLimitedConnection: true
     })
@@ -181,8 +192,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     return connection
   }
 
-  async _onProtocol ({ connection, stream }: IncomingStreamData): Promise<void> {
-    const signal = AbortSignal.timeout(this.init.inboundConnectionTimeout ?? INBOUND_CONNECTION_TIMEOUT)
+  async _onProtocol ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
     const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
     const muxerFactory = new DataChannelMuxerFactory(this.components, {
       peerConnection,

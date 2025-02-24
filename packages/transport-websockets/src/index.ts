@@ -65,9 +65,9 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
    * Inbound connections must complete their upgrade within this many ms
    *
-   * @default 5000
+   * @default 10_000
    */
-  inboundConnectionUpgradeTimeout?: number
+  inboundUpgradeTimeout?: number
 }
 
 export interface WebSocketsComponents {
