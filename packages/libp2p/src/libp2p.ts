@@ -18,7 +18,7 @@ import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
 import { Registrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
-import { DefaultUpgrader } from './upgrader.js'
+import { Upgrader } from './upgrader.js'
 import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
@@ -113,7 +113,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     // Set up the Upgrader
-    this.components.upgrader = new DefaultUpgrader(this.components, {
+    this.components.upgrader = new Upgrader(this.components, {
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,

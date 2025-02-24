@@ -13,7 +13,7 @@ import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DefaultUpgrader, type UpgraderInit } from '../../src/upgrader.js'
+import { Upgrader, type UpgraderInit } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from './utils.js'
 import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
@@ -76,14 +76,14 @@ describe('upgrader', () => {
   })
 
   it('should upgrade outbound with valid muxers and crypto', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), init)
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), init)
     const conn = await upgrader.upgradeOutbound(maConn)
     expect(conn.encryption).to.equal(encrypterProtocol)
     expect(conn.multiplexer).to.equal(muxerProtocol)
   })
 
   it('should upgrade outbound with only crypto', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       streamMuxers: []
     })
@@ -98,7 +98,7 @@ describe('upgrader', () => {
     const connectionProtector = stubInterface<ConnectionProtector>()
     connectionProtector.protect.callsFake(async (conn) => conn)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionProtector
     }), init)
 
@@ -111,7 +111,7 @@ describe('upgrader', () => {
     const connectionProtector = stubInterface<ConnectionProtector>()
     connectionProtector.protect.callsFake(async (conn) => conn)
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionProtector
     }), init)
 
@@ -121,7 +121,7 @@ describe('upgrader', () => {
   })
 
   it('should fail inbound if crypto fails', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       connectionEncrypters: [
         new BoomCrypto()
@@ -133,7 +133,7 @@ describe('upgrader', () => {
   })
 
   it('should fail outbound if crypto fails', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       connectionEncrypters: [
         new BoomCrypto()
@@ -145,7 +145,7 @@ describe('upgrader', () => {
   })
 
   it('should abort if inbound upgrade is slow', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       inboundUpgradeTimeout: 100
     })
@@ -155,12 +155,12 @@ describe('upgrader', () => {
       return buf
     })
 
-    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
       .with.property('message').that.include('aborted')
   })
 
   it('should abort if outbound upgrade is slow', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       outboundUpgradeTimeout: 100
     })
@@ -175,7 +175,7 @@ describe('upgrader', () => {
   })
 
   it('should abort by signal if inbound upgrade is slow', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       inboundUpgradeTimeout: 10000
     })
@@ -192,7 +192,7 @@ describe('upgrader', () => {
   })
 
   it('should abort by signal if outbound upgrade is slow', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       outboundUpgradeTimeout: 10000
     })
@@ -210,7 +210,7 @@ describe('upgrader', () => {
 
   it('should not abort if inbound upgrade is successful', async () => {
     const components = await createDefaultUpgraderComponents()
-    const upgrader = new DefaultUpgrader(components, {
+    const upgrader = new Upgrader(components, {
       ...init,
       inboundUpgradeTimeout: 100
     })
@@ -228,7 +228,7 @@ describe('upgrader', () => {
   })
 
   it('should not abort if outbound upgrade is successful', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       inboundUpgradeTimeout: 100
     })
@@ -242,7 +242,7 @@ describe('upgrader', () => {
 
   it('should not abort by signal if inbound upgrade is successful', async () => {
     const components = await createDefaultUpgraderComponents()
-    const upgrader = new DefaultUpgrader(components, {
+    const upgrader = new Upgrader(components, {
       ...init,
       inboundUpgradeTimeout: 10000
     })
@@ -262,7 +262,7 @@ describe('upgrader', () => {
   })
 
   it('should not abort by signal if outbound upgrade is successful', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       inboundUpgradeTimeout: 10000
     })
@@ -277,7 +277,7 @@ describe('upgrader', () => {
   })
 
   it('should abort protocol selection for slow outbound stream creation', async () => {
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
@@ -310,7 +310,7 @@ describe('upgrader', () => {
   it('should abort stream when protocol negotiation fails on outbound stream', async () => {
     let stream: Stream | undefined
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents(), {
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
@@ -356,7 +356,7 @@ describe('upgrader', () => {
       protocol: encrypterProtocol
     })
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionProtector
     }), {
       ...init,
@@ -385,7 +385,7 @@ describe('upgrader', () => {
       protocol: encrypterProtocol
     })
 
-    const upgrader = new DefaultUpgrader(await createDefaultUpgraderComponents({
+    const upgrader = new Upgrader(await createDefaultUpgraderComponents({
       connectionProtector
     }), {
       ...init,
@@ -414,7 +414,7 @@ describe('upgrader', () => {
         acceptIncomingConnection: async () => false
       })
     })
-    const upgrader = new DefaultUpgrader(components, init)
+    const upgrader = new Upgrader(components, init)
     await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
       .with.property('name', 'ConnectionDeniedError')
 
@@ -437,7 +437,7 @@ describe('upgrader', () => {
         getProtocols: () => [protocol]
       })
     })
-    const upgrader = new DefaultUpgrader(components, {
+    const upgrader = new Upgrader(components, {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
@@ -503,7 +503,7 @@ describe('upgrader', () => {
         getProtocols: () => [protocol]
       })
     })
-    const upgrader = new DefaultUpgrader(components, {
+    const upgrader = new Upgrader(components, {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
@@ -564,7 +564,7 @@ describe('upgrader', () => {
         getProtocols: () => [protocol]
       })
     })
-    const upgrader = new DefaultUpgrader(components, {
+    const upgrader = new Upgrader(components, {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
