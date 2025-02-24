@@ -101,7 +101,7 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.9",
     "@types/sinon": "^17.0.3",
-    "aegir": "^45.0.5",
+    "aegir": "^45.1.1",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",

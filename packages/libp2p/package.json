@@ -120,7 +120,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^45.0.5",
+    "aegir": "^45.1.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",
     "it-drain": "^3.0.7",
