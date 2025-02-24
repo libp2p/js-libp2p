@@ -35,7 +35,7 @@ export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
 export type { AddressManagerInit, AddressFilter }
 
 /**
- * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
+ * * For Libp2p configurations and modules details read the [Configuration Document](../doc/CONFIGURATION.md).
  */
 export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   /**
