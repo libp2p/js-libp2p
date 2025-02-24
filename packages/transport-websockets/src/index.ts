@@ -153,7 +153,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
-      if (options.signal?.aborted === true) {
+      if (options.signal?.aborted) {
         this.metrics?.dialerEvents.increment({ abort: true })
       }
 

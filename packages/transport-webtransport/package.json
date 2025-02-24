@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.0.12",
-    "@libp2p/daemon-client": "^9.0.4",
+    "@libp2p/daemon-client": "^9.0.5",
     "@libp2p/logger": "^5.1.9",
     "@libp2p/ping": "^2.0.22",
     "@noble/hashes": "^1.6.1",

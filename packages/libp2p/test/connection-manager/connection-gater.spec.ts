@@ -82,7 +82,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -111,7 +112,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
   })
@@ -144,7 +146,8 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -180,7 +183,8 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -209,7 +213,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 
@@ -238,7 +243,8 @@ describe('connection-gater', () => {
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
       skipProtection: true,
-      muxerFactory: stubInterface<StreamMuxerFactory>()
+      muxerFactory: stubInterface<StreamMuxerFactory>(),
+      signal: AbortSignal.timeout(5_000)
     }))
       .to.eventually.be.rejected().with.property('name', 'ConnectionInterceptedError')
 

@@ -77,7 +77,7 @@ export interface ConnectionManagerInit {
    *
    * Does not apply if an abort signal is passed to the `.dial` method.
    *
-   * @default 10_000
+   * @deprecated This is handled by `dialTimeout`
    */
   outboundUpgradeTimeout?: number
 
@@ -92,7 +92,9 @@ export interface ConnectionManagerInit {
   /**
    * Outbound protocol negotiation must complete within this number of ms.
    *
-   * Does not apply if an abort signal is passed to the `.dial` method.
+   * Does not apply if an abort signal is passed to the `.dial` or
+   * `.dialProtocol` method of the `ConnectionManager` or the `openStream`
+   * method of the `Connection`.
    *
    * @default 10_000
    */

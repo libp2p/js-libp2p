@@ -1,14 +1,14 @@
 import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
 import { createConnection } from './connection/index.js'
-import { PROTOCOL_NEGOTIATION_TIMEOUT, UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup, ClearableSignal } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import { anySignal, type ClearableSignal } from 'any-signal'
 
 interface CreateConnectionOptions {
   cryptoProtocol: string
@@ -40,13 +40,6 @@ export interface UpgraderInit {
    * @default 3000
    */
   inboundUpgradeTimeout?: number
-
-  /**
-   * An amount of ms by which an outbound connection upgrade must complete
-   *
-   * @default 3000
-   */
-  outboundUpgradeTimeout?: number
 
   /**
    * When a new incoming stream is opened on a multiplexed connection, protocol
@@ -126,7 +119,6 @@ export class Upgrader implements UpgraderInterface {
   private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
   private readonly streamMuxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
-  private readonly outboundUpgradeTimeout: number
   private readonly inboundStreamProtocolNegotiationTimeout: number
   private readonly outboundStreamProtocolNegotiationTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
@@ -149,8 +141,7 @@ export class Upgrader implements UpgraderInterface {
       this.streamMuxers.set(muxer.protocol, muxer)
     })
 
-    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? UPGRADE_TIMEOUT
-    this.outboundUpgradeTimeout = init.outboundUpgradeTimeout ?? UPGRADE_TIMEOUT
+    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.events = components.events
@@ -178,18 +169,24 @@ export class Upgrader implements UpgraderInterface {
     }
   }
 
+  createInboundAbortSignal (signal: AbortSignal): ClearableSignal {
+    const output = anySignal([
+      AbortSignal.timeout(this.inboundUpgradeTimeout),
+      signal
+    ])
+    setMaxListeners(Infinity, output)
+
+    return output
+  }
+
   /**
    * Upgrades an inbound connection
    */
-  async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
+  async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions): Promise<void> {
     let accepted = false
 
     // always apply upgrade timeout for incoming upgrades
-    const signal = anySignal([
-      AbortSignal.timeout(this.inboundUpgradeTimeout),
-      opts.signal
-    ])
-    setMaxListeners(Infinity, signal)
+    const signal = this.createInboundAbortSignal(opts.signal)
 
     try {
       this.metrics.dials?.increment({
@@ -226,7 +223,7 @@ export class Upgrader implements UpgraderInterface {
   /**
    * Upgrades an outbound connection
    */
-  async upgradeOutbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+  async upgradeOutbound (maConn: MultiaddrConnection, opts: UpgraderOptions): Promise<Connection> {
     try {
       this.metrics.dials?.increment({
         outbound: true
@@ -247,19 +244,7 @@ export class Upgrader implements UpgraderInterface {
         direction = 'inbound'
       }
 
-      let signal = opts.signal
-
-      if (signal == null) {
-        maConn.log('no abort signal was passed while trying to upgrade connection, falling back to default timeout')
-        signal = AbortSignal.timeout(this.outboundUpgradeTimeout)
-        setMaxListeners(Infinity, signal)
-        opts.signal = signal
-      }
-
-      return await this._performUpgrade(maConn, direction, {
-        ...opts,
-        signal
-      })
+      return await this._performUpgrade(maConn, direction, opts)
     } catch (err) {
       this.metrics.errors?.increment({
         outbound: true

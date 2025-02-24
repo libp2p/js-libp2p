@@ -77,7 +77,9 @@ describe('upgrader', () => {
 
   it('should upgrade outbound with valid muxers and crypto', async () => {
     const upgrader = new Upgrader(await createDefaultUpgraderComponents(), init)
-    const conn = await upgrader.upgradeOutbound(maConn)
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
     expect(conn.encryption).to.equal(encrypterProtocol)
     expect(conn.multiplexer).to.equal(muxerProtocol)
   })
@@ -88,7 +90,9 @@ describe('upgrader', () => {
       streamMuxers: []
     })
 
-    const connection = await upgrader.upgradeOutbound(maConn)
+    const connection = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     await expect(connection.newStream('/echo/1.0.0')).to.eventually.be.rejected
       .with.property('name', 'MuxerUnavailableError')
@@ -102,7 +106,9 @@ describe('upgrader', () => {
       connectionProtector
     }), init)
 
-    await upgrader.upgradeInbound(maConn)
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -115,7 +121,9 @@ describe('upgrader', () => {
       connectionProtector
     }), init)
 
-    await upgrader.upgradeOutbound(maConn)
+    await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -128,7 +136,9 @@ describe('upgrader', () => {
       ]
     })
 
-    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
+    await expect(upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -140,7 +150,9 @@ describe('upgrader', () => {
       ]
     })
 
-    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+    await expect(upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -155,22 +167,9 @@ describe('upgrader', () => {
       return buf
     })
 
-    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
-  })
-
-  it('should abort if outbound upgrade is slow', async () => {
-    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
-      ...init,
-      outboundUpgradeTimeout: 100
-    })
-
-    maConn.source = map(maConn.source, async (buf) => {
-      await delay(2000)
-      return buf
-    })
-
-    await expect(upgrader.upgradeOutbound(maConn)).to.eventually.be.rejected
+    await expect(upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })).to.eventually.be.rejected
       .with.property('message').that.include('aborted')
   })
 
@@ -178,23 +177,6 @@ describe('upgrader', () => {
     const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
       ...init,
       inboundUpgradeTimeout: 10000
-    })
-
-    maConn.source = map(maConn.source, async (buf) => {
-      await delay(2000)
-      return buf
-    })
-
-    await expect(upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(100)
-    })).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
-  })
-
-  it('should abort by signal if outbound upgrade is slow', async () => {
-    const upgrader = new Upgrader(await createDefaultUpgraderComponents(), {
-      ...init,
-      outboundUpgradeTimeout: 10000
     })
 
     maConn.source = map(maConn.source, async (buf) => {
@@ -217,7 +199,9 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn)
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     const event = await connectionPromise
 
@@ -232,7 +216,9 @@ describe('upgrader', () => {
       ...init,
       inboundUpgradeTimeout: 100
     })
-    const conn = await upgrader.upgradeOutbound(maConn)
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     await delay(1000)
 
@@ -299,7 +285,9 @@ describe('upgrader', () => {
         })
       ]
     })
-    const conn = await upgrader.upgradeOutbound(maConn)
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     await expect(conn.newStream('/echo/1.0.0', {
       signal: AbortSignal.timeout(100)
@@ -339,7 +327,9 @@ describe('upgrader', () => {
         })
       ]
     })
-    const conn = await upgrader.upgradeOutbound(maConn)
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     await expect(conn.newStream('/foo/1.0.0'))
       .to.eventually.be.rejected.with.property('name', 'UnsupportedProtocolError')
@@ -373,7 +363,8 @@ describe('upgrader', () => {
           sink: async (source) => drain(source),
           source: (async function * () {})()
         })
-      })
+      }),
+      signal: AbortSignal.timeout(5_000)
     })
     expect(connectionProtector.protect).to.have.property('called', false)
     expect(connectionEncrypter.secureOutbound).to.have.property('called', false)
@@ -402,7 +393,8 @@ describe('upgrader', () => {
           sink: async (source) => drain(source),
           source: (async function * () {})()
         })
-      })
+      }),
+      signal: AbortSignal.timeout(5_000)
     })
     expect(connectionProtector.protect).to.have.property('called', false)
     expect(connectionEncrypter.secureOutbound).to.have.property('called', false)
@@ -415,7 +407,9 @@ describe('upgrader', () => {
       })
     })
     const upgrader = new Upgrader(components, init)
-    await expect(upgrader.upgradeInbound(maConn)).to.eventually.be.rejected
+    await expect(upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })).to.eventually.be.rejected
       .with.property('name', 'ConnectionDeniedError')
 
     expect(components.connectionManager.afterUpgradeInbound).to.have.property('called', false)
@@ -458,7 +452,9 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn)
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     const event = await connectionPromise
 
@@ -538,7 +534,9 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn)
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     const event = await connectionPromise
     const conn = event.detail
@@ -599,7 +597,9 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn)
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
 
     const event = await connectionPromise
     const conn = event.detail
