@@ -1,5 +1,6 @@
 import { FaultTolerance, InvalidParametersError, NotStartedError } from '@libp2p/interface'
 import { trackedMap } from '@libp2p/utils/tracked-map'
+import { IP4, IP6 } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { NoValidAddressesError, TransportUnavailableError } from './errors.js'
 import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
@@ -16,6 +17,17 @@ export interface DefaultTransportManagerComponents {
   upgrader: Upgrader
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+}
+
+interface IPStats {
+  success: number
+  attempts: number
+}
+
+interface ListenStats {
+  unsupportedAddresses: Set<string>
+  ipv4: IPStats
+  ipv6: IPStats
 }
 
 export class DefaultTransportManager implements TransportManager, Startable {
@@ -192,11 +204,26 @@ export class DefaultTransportManager implements TransportManager, Startable {
       return
     }
 
-    const couldNotListen = []
+    // track IPv4/IPv6 results - if we succeed on IPv4 but all IPv6 attempts
+    // fail then we are probably on a network without IPv6 support
+    const listenStats: ListenStats = {
+      unsupportedAddresses: new Set(
+        addrs.map(ma => ma.toString())
+      ),
+      ipv4: {
+        success: 0,
+        attempts: 0
+      },
+      ipv6: {
+        success: 0,
+        attempts: 0
+      }
+    }
+
+    const tasks: Array<Promise<void>> = []
 
     for (const [key, transport] of this.transports.entries()) {
       const supportedAddrs = transport.listenFilter(addrs)
-      const tasks = []
 
       // For each supported multiaddr, create a listener
       for (const addr of supportedAddrs) {
@@ -231,36 +258,70 @@ export class DefaultTransportManager implements TransportManager, Startable {
           })
         })
 
+        // track IPv4/IPv6 support
+        if (IP4.matches(addr)) {
+          listenStats.ipv4.attempts++
+        } else if (IP6.matches(addr)) {
+          listenStats.ipv6.attempts++
+        }
+
         // We need to attempt to listen on everything
-        tasks.push(listener.listen(addr))
-      }
+        tasks.push(
+          listener.listen(addr)
+            .then(() => {
+              listenStats.unsupportedAddresses.delete(addr.toString())
 
-      // Keep track of transports we had no addresses for
-      if (tasks.length === 0) {
-        couldNotListen.push(key)
-        continue
-      }
+              if (IP4.matches(addr)) {
+                listenStats.ipv4.success++
+              }
 
-      const results = await Promise.allSettled(tasks)
-      // If we are listening on at least 1 address, succeed.
-      // TODO: we should look at adding a retry (`p-retry`) here to better support
-      // listening on remote addresses as they may be offline. We could then potentially
-      // just wait for any (`p-any`) listener to succeed on each transport before returning
-      const isListening = results.find(r => r.status === 'fulfilled')
-      if ((isListening == null) && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw new NoValidAddressesError(`Transport (${key}) could not listen on any available address`)
+              if (IP6.matches(addr)) {
+                listenStats.ipv6.success++
+              }
+            }, (err) => {
+              this.log.error('transport %s could not listen on address %a - %e', key, addr, err)
+              throw err
+            })
+        )
       }
     }
 
-    // If no transports were able to listen, throw an error. This likely
-    // means we were given addresses we do not have transports for
-    if (couldNotListen.length === this.transports.size) {
-      const message = `no valid addresses were provided for transports [${couldNotListen.join(', ')}]`
-      if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw new NoValidAddressesError(message)
-      }
-      this.log(`libp2p in dial mode only: ${message}`)
+    const results = await Promise.allSettled(tasks)
+
+    // listening on all addresses, all good
+    if (results.length > 0 && results.every(res => res.status === 'fulfilled')) {
+      return
     }
+
+    // detect lack of IPv6 support on the current network - if we tried to
+    // listen on IPv4 and IPv6 addresses, and all IPv4 addresses succeeded but
+    // all IPv6 addresses fail, then we can assume there's no IPv6 here
+    if (this.ipv6Unsupported(listenStats)) {
+      this.log('all IPv4 addresses succeed but all IPv6 failed')
+      return
+    }
+
+    if (this.faultTolerance === FaultTolerance.NO_FATAL) {
+      // ok to be dial-only
+      this.log('failed to listen on any address but fault tolerance allows this')
+      return
+    }
+
+    // if a configured address was not able to be listened on, throw an error
+    throw new NoValidAddressesError(`No configured transport could listen on these addresses, please remove them from your config: ${[
+      ...listenStats.unsupportedAddresses
+    ].join(', ')}`)
+  }
+
+  private ipv6Unsupported (listenStats: ListenStats): boolean {
+    if (listenStats.ipv4.attempts === 0 || listenStats.ipv6.attempts === 0) {
+      return false
+    }
+
+    const allIpv4Succeeded = listenStats.ipv4.attempts === listenStats.ipv4.success
+    const allIpv6Failed = listenStats.ipv6.success === 0
+
+    return allIpv4Succeeded && allIpv6Failed
   }
 
   /**
