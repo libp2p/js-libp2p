@@ -44,6 +44,23 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.23](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.22...dcutr-v2.0.23) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+    * @libp2p/utils bumped from ^6.5.4 to ^6.5.5
+
 ## [2.0.22](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.21...dcutr-v2.0.22) (2025-02-21)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id",
-  "version": "5.0.13",
+  "version": "5.0.14",
   "description": "Implementation of @libp2p/interface-peer-id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id#readme",
@@ -54,8 +54,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.12",
-    "@libp2p/interface": "^2.6.0",
+    "@libp2p/crypto": "^5.0.13",
+    "@libp2p/interface": "^2.6.1",
     "multiformats": "^13.3.1",
     "uint8arrays": "^5.1.0"
   },

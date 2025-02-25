@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.14](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.13...echo-v2.1.14) (2025-02-25)
+
+
+### Documentation
+
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+
 ## [2.1.13](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.12...echo-v2.1.13) (2025-02-21)
 
 

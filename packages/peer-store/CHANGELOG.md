@@ -68,6 +68,26 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.0.21](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.20...peer-store-v11.0.21) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/peer-record bumped from ^8.0.20 to ^8.0.21
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+
 ## [11.0.20](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.19...peer-store-v11.0.20) (2025-02-21)
 
 
