@@ -278,15 +278,18 @@ export class DefaultTransportManager implements TransportManager, Startable {
               if (IP6.matches(addr)) {
                 listenStats.ipv6.success++
               }
+            }, (err) => {
+              this.log.error('transport %s could not listen on address %a - %e', key, addr, err)
+              throw err
             })
         )
       }
     }
 
-    await Promise.allSettled(tasks)
+    const results = await Promise.allSettled(tasks)
 
     // listening on all addresses, all good
-    if (listenStats.unsupportedAddresses.size === 0) {
+    if (results.length > 0 && results.every(res => res.status === 'fulfilled')) {
       return
     }
 
@@ -300,6 +303,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
     if (this.faultTolerance === FaultTolerance.NO_FATAL) {
       // ok to be dial-only
+      this.log('failed to listen on any address but fault tolerance allows this')
       return
     }
 
