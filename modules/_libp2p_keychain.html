@@ -1,9 +1,9 @@
 <!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@libp2p/keychain | libp2p</title><meta name="description" content="Documentation for libp2p"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search" data-base=".."><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">libp2p</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb"><li><a href="../index.html">libp2p</a></li><li><a href="_libp2p_keychain.html">@libp2p/keychain</a></li></ul><h1>Module @libp2p/keychain</h1></div><section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography"><ul>
-<li>Manages the lifecycle of a key</li>
+<li>Manages the life cycle of a key</li>
 <li>Keys are encrypted at rest</li>
 <li>Enforces the use of safe key names</li>
 <li>Uses encrypted PKCS 8 for key storage</li>
-<li>Uses PBKDF2 for a &quot;stetched&quot; key encryption key</li>
+<li>Uses PBKDF2 for a &quot;stretched&quot; key encryption key</li>
 <li>Enforces NIST SP 800-131A and NIST SP 800-132</li>
 <li>Delays reporting errors to slow down brute force attacks</li>
 </ul>
@@ -12,8 +12,8 @@
 </code><button>Copy</button></pre>
 <p>The <strong>key id</strong> is the SHA-256 <a href="https://github.com/multiformats/multihash">multihash</a> of its public key.</p>
 <p>The <em>public key</em> is a <a href="https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto.js">protobuf encoding</a> containing a type and the <a href="https://en.wikipedia.org/wiki/X.690">DER encoding</a> of the PKCS <a href="https://www.ietf.org/rfc/rfc3279.txt">SubjectPublicKeyInfo</a>.</p>
-<a id="md:private-key-storage" class="tsd-anchor"></a><h2><a href="#md:private-key-storage">Private key storage</a></h2><p>A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain&#39;s <em>passPhrase</em> using <strong>PBKDF2</strong>.</p>
-<p>The default options for generating the derived encryption key are in the <code>dek</code> object.  This, along with the passPhrase, is the input to a <code>PBKDF2</code> function.</p>
+<a id="md:private-key-storage" class="tsd-anchor"></a><h2><a href="#md:private-key-storage">Private key storage</a></h2><p>A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain&#39;s <em>pass phrase</em> using <strong>PBKDF2</strong>.</p>
+<p>The default options for generating the derived encryption key are in the <code>dek</code> object.  This, along with the pass phrase, is the input to a <code>PBKDF2</code> function.</p>
 <pre><code class="language-TypeScript"><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">defaultOptions</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-3">// See https://cryptosense.com/parameter-choice-for-pbkdf2/</span><br/><span class="hl-1">  </span><span class="hl-5">dek:</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-5">keyLength:</span><span class="hl-1"> </span><span class="hl-14">512</span><span class="hl-1"> / </span><span class="hl-14">8</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">iterationCount:</span><span class="hl-1"> </span><span class="hl-14">1000</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">salt:</span><span class="hl-1"> </span><span class="hl-2">&#39;at least 16 characters long&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">hash:</span><span class="hl-1"> </span><span class="hl-2">&#39;sha2-512&#39;</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
 </code><button>Copy</button></pre>
 <p><img src="https://github.com/libp2p/js-libp2p/blob/main/doc/private-key.png?raw=true" alt="key storage"></p>
@@ -42,11 +42,11 @@ repo and examine the changes made.
 -->
 
 <ul>
-<li>Manages the lifecycle of a key</li>
+<li>Manages the life cycle of a key</li>
 <li>Keys are encrypted at rest</li>
 <li>Enforces the use of safe key names</li>
 <li>Uses encrypted PKCS 8 for key storage</li>
-<li>Uses PBKDF2 for a &quot;stetched&quot; key encryption key</li>
+<li>Uses PBKDF2 for a &quot;stretched&quot; key encryption key</li>
 <li>Enforces NIST SP 800-131A and NIST SP 800-132</li>
 <li>Delays reporting errors to slow down brute force attacks</li>
 </ul>
@@ -55,8 +55,8 @@ repo and examine the changes made.
 </code><button>Copy</button></pre>
 <p>The <strong>key id</strong> is the SHA-256 <a href="https://github.com/multiformats/multihash">multihash</a> of its public key.</p>
 <p>The <em>public key</em> is a <a href="https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto.js">protobuf encoding</a> containing a type and the <a href="https://en.wikipedia.org/wiki/X.690">DER encoding</a> of the PKCS <a href="https://www.ietf.org/rfc/rfc3279.txt">SubjectPublicKeyInfo</a>.</p>
-<a id="md:private-key-storage" class="tsd-anchor"></a><h2><a href="#md:private-key-storage">Private key storage</a></h2><p>A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain&#39;s <em>passPhrase</em> using <strong>PBKDF2</strong>.</p>
-<p>The default options for generating the derived encryption key are in the <code>dek</code> object.  This, along with the passPhrase, is the input to a <code>PBKDF2</code> function.</p>
+<a id="md:private-key-storage" class="tsd-anchor"></a><h2><a href="#md:private-key-storage">Private key storage</a></h2><p>A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain&#39;s <em>pass phrase</em> using <strong>PBKDF2</strong>.</p>
+<p>The default options for generating the derived encryption key are in the <code>dek</code> object.  This, along with the pass phrase, is the input to a <code>PBKDF2</code> function.</p>
 <pre><code class="language-TypeScript"><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">defaultOptions</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-3">// See https://cryptosense.com/parameter-choice-for-pbkdf2/</span><br/><span class="hl-1">  </span><span class="hl-5">dek:</span><span class="hl-1"> {</span><br/><span class="hl-1">    </span><span class="hl-5">keyLength:</span><span class="hl-1"> </span><span class="hl-14">512</span><span class="hl-1"> / </span><span class="hl-14">8</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">iterationCount:</span><span class="hl-1"> </span><span class="hl-14">1000</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">salt:</span><span class="hl-1"> </span><span class="hl-2">&#39;at least 16 characters long&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-5">hash:</span><span class="hl-1"> </span><span class="hl-2">&#39;sha2-512&#39;</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">}</span>
 </code><button>Copy</button></pre>
 <p><img src="https://github.com/libp2p/js-libp2p/blob/main/doc/private-key.png?raw=true" alt="key storage"></p>
