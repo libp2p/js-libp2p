@@ -8,6 +8,3 @@ export const CLOSE_TIMEOUT = 500
 
 // Close the socket if there is no activity after this long in ms
 export const SOCKET_TIMEOUT = 2 * 60000 // 2 mins
-
-// Inbound connection upgrades must complete within this many ms
-export const INBOUND_UPGRADE_TIMEOUT = 10_000

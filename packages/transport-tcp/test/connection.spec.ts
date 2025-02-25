@@ -42,7 +42,8 @@ describe('valid localAddr and remoteAddr', () => {
 
     // Dial to that address
     await transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })
 
     // Wait for the incoming dial to be handled
@@ -68,7 +69,8 @@ describe('valid localAddr and remoteAddr', () => {
 
     // Dial to that address
     const dialerConn = await transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })
 
     // Wait for the incoming dial to be handled

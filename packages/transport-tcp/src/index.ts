@@ -30,7 +30,6 @@
 import { TCP } from './tcp.js'
 import type { CloseServerOnMaxConnectionsOpts } from './listener.js'
 import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
 export type { CloseServerOnMaxConnectionsOpts }
@@ -78,20 +77,12 @@ export interface TCPOptions {
    * Options passed to every `net.createServer` for every TCP server
    */
   listenOpts?: TCPSocketOptions
-
-  /**
-   * Upgrading an inbound connection must happen within this many ms otherwise
-   * the connection will be closed.
-   *
-   * @default 10_000
-   */
-  inboundUpgradeTimeout?: number
 }
 
 /**
  * Expose a subset of net.connect options
  */
-export interface TCPSocketOptions extends AbortOptions {
+export interface TCPSocketOptions {
   /**
    * @see https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
    */

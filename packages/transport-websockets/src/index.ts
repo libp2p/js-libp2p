@@ -65,7 +65,7 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
    * Inbound connections must complete their upgrade within this many ms
    *
-   * @default 5000
+   * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
    */
   inboundConnectionUpgradeTimeout?: number
 }
@@ -153,7 +153,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
-      if (options.signal?.aborted === true) {
+      if (options.signal?.aborted) {
         this.metrics?.dialerEvents.increment({ abort: true })
       }
 
