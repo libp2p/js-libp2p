@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { isIPv6 } from '@chainsafe/is-ip'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
@@ -148,6 +149,52 @@ describe('Transport Manager', () => {
     expect(tm.getAddrs().length).to.equal(addrs.length)
     await tm.stop()
     expect(spyListener.called).to.be.true()
+  })
+
+  it('should throw if no transports support configured addresses', async () => {
+    components.addressManager = new AddressManager(components, {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0',
+        '/ip4/0.0.0.0/tcp/0/ws'
+      ]
+    })
+
+    const transportManager = new DefaultTransportManager(components)
+
+    const transport = stubInterface<Transport>({
+      listenFilter: () => []
+    })
+    transportManager.add(transport)
+
+    await expect(start(transportManager)).to.eventually.be.rejected
+      .with.property('name', 'NoValidAddressesError')
+  })
+
+  it('should detect lack of IPv6 support', async () => {
+    components.addressManager = new AddressManager(components, {
+      listen: [
+        '/ip4/0.0.0.0/tcp/0',
+        '/ip6/::/tcp/0'
+      ]
+    })
+
+    const transportManager = new DefaultTransportManager(components)
+
+    const transport = stubInterface<Transport>({
+      listenFilter: (addrs) => addrs,
+      createListener: () => {
+        return stubInterface<Listener>({
+          listen: async (ma) => {
+            if (isIPv6(ma.toOptions().host)) {
+              throw new Error('Listen on IPv6 failed')
+            }
+          }
+        })
+      }
+    })
+    transportManager.add(transport)
+
+    await start(transportManager)
   })
 
   it('should be able to dial', async () => {
