@@ -29,7 +29,10 @@
  *     tcp()
  *   ],
  *   services: {
-       pcpNat: pcpNAT("2001:db8:85a3:8d3:1319:8a2e:370:7348") // IPv6 Global Unicast Address (GUA) LAN address of your router
+ *     // IPv6 Global Unicast Address (GUA) LAN address of your router
+ *     pcpNat: pcpNAT("2001:db8:85a3:8d3:1319:8a2e:370:7348", {
+ *      autoConfirmAddress: true
+ *    })
  *   }
  * })
  * ```
