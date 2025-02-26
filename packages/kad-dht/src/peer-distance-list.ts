@@ -50,13 +50,13 @@ export class PeerDistanceList {
   async add (peer: PeerInfo): Promise<void> {
     const dhtKey = await convertPeerId(peer.id)
 
-    this.addWitKadId(peer, dhtKey)
+    this.addWithKadId(peer, dhtKey)
   }
 
   /**
    * Add a peerId to the list.
    */
-  addWitKadId (peer: PeerInfo, kadId: Uint8Array): void {
+  addWithKadId (peer: PeerInfo, kadId: Uint8Array): void {
     if (this.peerDistances.find(pd => pd.peer.id.equals(peer.id)) != null) {
       return
     }
@@ -66,8 +66,21 @@ export class PeerDistanceList {
       distance: uint8ArrayXor(this.originDhtKey, kadId)
     }
 
-    this.peerDistances.push(el)
-    this.peerDistances.sort((a, b) => uint8ArrayXorCompare(a.distance, b.distance))
+    let added = false
+
+    for (let j = 0; j < this.peerDistances.length; j++) {
+      const distance = uint8ArrayXorCompare(this.peerDistances[j].distance, el.distance)
+      if (distance === 0 || distance === 1) {
+        added = true
+        this.peerDistances.splice(j, 0, el)
+        break
+      }
+    }
+
+    if (!added) {
+      this.peerDistances.push(el)
+    }
+
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
   }
 
