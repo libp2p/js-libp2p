@@ -1,17 +1,30 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
+import { base58btc } from 'multiformats/bases/base58'
+import * as Digest from 'multiformats/hashes/digest'
 import { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId, Peer, Tag } from '@libp2p/interface'
 
-export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
-  const peer = PeerPB.decode(buf)
-
-  if (peer.publicKey != null && peerId.publicKey == null) {
-    const publicKey = publicKeyFromProtobuf(peer.publicKey)
-    peerId = peerIdFromPublicKey(publicKey)
+function populatePublicKey (peerId: PeerId, protobuf: PeerPB): PeerId {
+  if (peerId.publicKey != null || protobuf.publicKey == null) {
+    return peerId
   }
 
+  let digest: any
+
+  if (peerId.type === 'RSA') {
+    // avoid hashing public key
+    const multihash = base58btc.decode(`z${peerId}`)
+    digest = Digest.decode(multihash)
+  }
+
+  const publicKey = publicKeyFromProtobuf(protobuf.publicKey, digest)
+  return peerIdFromPublicKey(publicKey)
+}
+
+export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
+  const peer = PeerPB.decode(buf)
   const tags = new Map<string, Tag>()
 
   // remove any expired tags
@@ -27,7 +40,7 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
 
   return {
     ...peer,
-    id: peerId,
+    id: populatePublicKey(peerId, peer),
     addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
       return {
         multiaddr: multiaddr(ma),
