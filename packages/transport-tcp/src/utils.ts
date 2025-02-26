@@ -21,8 +21,14 @@ export function multiaddrToNetConfig (addr: Multiaddr, config: NetConfig = {}): 
     }
   }
 
+  const options = addr.toOptions()
+
   // tcp listening
-  return { ...config, ...addr.toOptions() }
+  return {
+    ...config,
+    ...options,
+    ipv6Only: options.family === 6
+  }
 }
 
 export function getMultiaddrs (proto: 'ip4' | 'ip6', ip: string, port: number): Multiaddr[] {
