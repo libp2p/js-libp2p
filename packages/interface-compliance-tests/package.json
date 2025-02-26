@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface-compliance-tests",
-  "version": "6.3.5",
+  "version": "6.3.6",
   "description": "Compliance tests for JS libp2p interfaces",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface-compliance-tests#readme",
@@ -132,7 +132,7 @@
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
     "it-to-buffer": "^4.0.7",
-    "libp2p": "^2.7.3",
+    "libp2p": "^2.7.4",
     "merge-options": "^3.0.4",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",

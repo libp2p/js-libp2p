@@ -110,6 +110,15 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.7.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.3...libp2p-v2.7.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* check for new addresses during dialing ([#3003](https://github.com/libp2p/js-libp2p/issues/3003)) ([be9b6a0](https://github.com/libp2p/js-libp2p/commit/be9b6a0708b82f97da00d1e94d74f38314cf1f4f))
+* ignore failures to listen on IPv6 addresses when IPv4 succeeds ([#3001](https://github.com/libp2p/js-libp2p/issues/3001)) ([e2f4943](https://github.com/libp2p/js-libp2p/commit/e2f49432b58fe3f8484c8f7f0237f996b4d211fa)), closes [#2977](https://github.com/libp2p/js-libp2p/issues/2977)
+* improve error message when starting server ([#3008](https://github.com/libp2p/js-libp2p/issues/3008)) ([ab1bb86](https://github.com/libp2p/js-libp2p/commit/ab1bb862f3c22059c8d3c7f750ceab0755a0a0f2))
+
 ## [2.7.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.2...libp2p-v2.7.3) (2025-02-25)
 
 
