@@ -123,7 +123,7 @@ describe('Transport Manager', () => {
 
     await expect(start(tm))
       .to.eventually.be.rejected()
-      .and.to.have.property('name', 'NoValidAddressesError')
+      .and.to.have.property('name', 'UnsupportedListenAddressesError')
 
     await stop(tm)
   })
@@ -167,7 +167,7 @@ describe('Transport Manager', () => {
     transportManager.add(transport)
 
     await expect(start(transportManager)).to.eventually.be.rejected
-      .with.property('name', 'NoValidAddressesError')
+      .with.property('name', 'UnsupportedListenAddressesError')
   })
 
   it('should detect lack of IPv6 support', async () => {

@@ -2,7 +2,7 @@ import { FaultTolerance, InvalidParametersError, NotStartedError } from '@libp2p
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import { IP4, IP6 } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import { NoValidAddressesError, TransportUnavailableError } from './errors.js'
+import { TransportUnavailableError, UnsupportedListenAddressError, UnsupportedListenAddressesError } from './errors.js'
 import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
 import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -25,7 +25,7 @@ interface IPStats {
 }
 
 interface ListenStats {
-  unsupportedAddresses: Set<string>
+  errors: Map<string, Error>
   ipv4: IPStats
   ipv6: IPStats
 }
@@ -207,9 +207,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     // track IPv4/IPv6 results - if we succeed on IPv4 but all IPv6 attempts
     // fail then we are probably on a network without IPv6 support
     const listenStats: ListenStats = {
-      unsupportedAddresses: new Set(
-        addrs.map(ma => ma.toString())
-      ),
+      errors: new Map(),
       ipv4: {
         success: 0,
         attempts: 0
@@ -219,6 +217,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
         attempts: 0
       }
     }
+
+    addrs.forEach(ma => {
+      listenStats.errors.set(ma.toString(), new UnsupportedListenAddressError())
+    })
 
     const tasks: Array<Promise<void>> = []
 
@@ -269,7 +271,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
         tasks.push(
           listener.listen(addr)
             .then(() => {
-              listenStats.unsupportedAddresses.delete(addr.toString())
+              listenStats.errors.delete(addr.toString())
 
               if (IP4.matches(addr)) {
                 listenStats.ipv4.success++
@@ -280,6 +282,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
               }
             }, (err) => {
               this.log.error('transport %s could not listen on address %a - %e', key, addr, err)
+              listenStats.errors.set(addr.toString(), err)
               throw err
             })
         )
@@ -308,9 +311,13 @@ export class DefaultTransportManager implements TransportManager, Startable {
     }
 
     // if a configured address was not able to be listened on, throw an error
-    throw new NoValidAddressesError(`No configured transport could listen on these addresses, please remove them from your config: ${[
-      ...listenStats.unsupportedAddresses
-    ].join(', ')}`)
+    throw new UnsupportedListenAddressesError(`Some configured addresses failed to be listened on, you may need to remove one or more listen addresses from your configuration or set \`transportManager.faultTolerance\` to NO_FATAL:\n${
+      [...listenStats.errors.entries()].map(([addr, err]) => {
+        return `
+  ${addr}: ${`${err.stack ?? err}`.split('\n').join('\n  ')}
+`
+      }).join('')
+    }`)
   }
 
   private ipv6Unsupported (listenStats: ListenStats): boolean {

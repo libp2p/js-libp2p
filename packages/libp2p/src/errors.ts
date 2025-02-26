@@ -59,6 +59,20 @@ export class DialDeniedError extends Error {
   }
 }
 
+export class UnsupportedListenAddressError extends Error {
+  constructor (message = 'No transport was configured to listen on this address') {
+    super(message)
+    this.name = 'UnsupportedListenAddressError'
+  }
+}
+
+export class UnsupportedListenAddressesError extends Error {
+  constructor (message = 'Configured listen addresses could not be listened on') {
+    super(message)
+    this.name = 'UnsupportedListenAddressesError'
+  }
+}
+
 export class NoValidAddressesError extends Error {
   constructor (message = 'No valid addresses') {
     super(message)
