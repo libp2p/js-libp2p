@@ -53,7 +53,7 @@ describe('Listening', () => {
     })
 
     await expect(libp2p.start()).to.eventually.be.rejected
-      .with.property('name', 'NoValidAddressesError')
+      .with.property('name', 'UnsupportedListenAddressesError')
   })
 
   it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
