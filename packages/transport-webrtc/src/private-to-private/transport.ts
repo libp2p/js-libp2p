@@ -10,7 +10,7 @@ import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
-import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
+import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData, Libp2pEvents, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { ProgressEvent } from 'progress-events'
 
@@ -38,6 +38,7 @@ export interface WebRTCTransportComponents {
   connectionManager: ConnectionManager
   metrics?: Metrics
   logger: ComponentLogger
+  events: TypedEventTarget<Libp2pEvents>
 }
 
 export interface WebRTCTransportMetrics {

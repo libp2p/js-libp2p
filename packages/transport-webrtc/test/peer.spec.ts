@@ -1,4 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -252,7 +253,8 @@ describe('webrtc filter', () => {
       peerId: Sinon.stub() as any,
       registrar: stubInterface<Registrar>(),
       upgrader: stubInterface<Upgrader>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      events: new TypedEventEmitter()
     })
 
     const valid = [
