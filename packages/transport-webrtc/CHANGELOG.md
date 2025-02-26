@@ -111,6 +111,25 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.5](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.4...webrtc-v5.2.5) (2025-02-26)
+
+
+### Bug Fixes
+
+* ignore failures to listen on IPv6 addresses when IPv4 succeeds ([#3001](https://github.com/libp2p/js-libp2p/issues/3001)) ([e2f4943](https://github.com/libp2p/js-libp2p/commit/e2f49432b58fe3f8484c8f7f0237f996b4d211fa)), closes [#2977](https://github.com/libp2p/js-libp2p/issues/2977)
+
+
+### Documentation
+
+* update WebRTC jsdocs ([#3005](https://github.com/libp2p/js-libp2p/issues/3005)) ([f3d9f56](https://github.com/libp2p/js-libp2p/commit/f3d9f56b685f4e5b731571e56a4967d34f9ec6c8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.5 to ^6.3.6
+
 ## [5.2.4](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.3...webrtc-v5.2.4) (2025-02-25)
 
 

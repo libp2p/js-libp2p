@@ -106,6 +106,20 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [14.2.11](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.10...kad-dht-v14.2.11) (2025-02-26)
+
+
+### Bug Fixes
+
+* improve kad distance list performance ([#3009](https://github.com/libp2p/js-libp2p/issues/3009)) ([4939ef7](https://github.com/libp2p/js-libp2p/commit/4939ef7aeda77ee506d38fef548344e5bdd73d52))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.5 to ^6.3.6
+
 ## [14.2.10](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.9...kad-dht-v14.2.10) (2025-02-25)
 
 
