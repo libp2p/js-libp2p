@@ -380,8 +380,8 @@ describe('dial queue', () => {
 
   it('should continue dial when new addresses are discovered', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const ma1 = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`)
-    const ma2 = multiaddr(`/ip6/2001:db8:1:2:3:4:5:6/tcp/123/p2p/${remotePeer}`)
+    const ma1 = multiaddr(`/ip6/2001:db8:1:2:3:4:5:6/tcp/123/p2p/${remotePeer}`)
+    const ma2 = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`)
 
     components.transportManager.dialTransportForMultiaddr.callsFake(ma => {
       if (TCP.exactMatch(ma)) {
