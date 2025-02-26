@@ -81,12 +81,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   }
 
   async listen (addr: Multiaddr): Promise<void> {
-    this.log('listen on %a', addr)
-
     if (CircuitSearch.exactMatch(addr)) {
+      this.log('searching for circuit relay servers')
+
       // start relay discovery
       this.reservationId = this.reservationStore.reserveRelay()
     } else if (CircuitListen.exactMatch(addr)) {
+      this.log('listen on specific relay server %a', addr)
+
       const signal = AbortSignal.timeout(this.listenTimeout)
       setMaxListeners(Infinity, signal)
 
