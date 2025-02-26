@@ -70,6 +70,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.4](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.3...websockets-v9.2.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* constrain ip6 ws listener to ip6 stack ([#3011](https://github.com/libp2p/js-libp2p/issues/3011)) ([0555339](https://github.com/libp2p/js-libp2p/commit/0555339ba3bb67822fd4595684f9175aaedaf963))
+
 ## [9.2.3](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.2...websockets-v9.2.3) (2025-02-25)
 
 
