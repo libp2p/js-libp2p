@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { MAX_MESSAGE_SIZE } from '../src/constants.js'
 import * as underTest from '../src/private-to-public/utils/sdp.js'
-import { MAX_MESSAGE_SIZE } from '../src/stream.js'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
 /* spell-checker:disable-next-line */
