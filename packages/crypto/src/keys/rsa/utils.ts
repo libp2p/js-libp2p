@@ -5,13 +5,16 @@ import { create } from 'multiformats/hashes/digest'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as pb from '../keys.js'
+import { decodeDer } from './der.js'
 import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from './rsa.js'
 import { generateRSAKey, rsaKeySize } from './index.js'
 import type { JWKKeyPair } from '../interface.js'
 import type { RSAPrivateKey, RSAPublicKey } from '@libp2p/interface'
+import type { Digest } from 'multiformats/hashes/digest'
 
 export const MAX_RSA_KEY_SIZE = 8192
 const SHA2_256_CODE = 0x12
+const MAX_RSA_JWK_SIZE = 1062
 
 /**
  * Convert a PKCS#1 in ASN1 DER format to a JWK key
@@ -70,16 +73,22 @@ export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
  * Convert a PKIX in ASN1 DER format to a JWK key
  */
 export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
-  const { result } = asn1js.fromBER(bytes)
+  const decoded = decodeDer(bytes, {
+    offset: 0
+  })
 
-  // @ts-expect-error this looks fragile but DER is a canonical format so we are
-  // safe to have deeply property chains like this
-  const values: asn1js.Integer[] = result.valueBlock.value[1].valueBlock.value[0].valueBlock.value
-
+  // this looks fragile but DER is a canonical format so we are safe to have
+  // deeply property chains like this
   return {
     kty: 'RSA',
-    n: asn1jsIntegerToBase64(values[0]),
-    e: asn1jsIntegerToBase64(values[1])
+    n: uint8ArrayToString(
+      decoded[1][0],
+      'base64url'
+    ),
+    e: uint8ArrayToString(
+      decoded[1][1],
+      'base64url'
+    )
   }
 }
 
@@ -159,18 +168,20 @@ export function pkcs1ToRSAPrivateKey (bytes: Uint8Array): RSAPrivateKey {
 /**
  * Turn PKIX bytes to a PublicKey
  */
-export function pkixToRSAPublicKey (bytes: Uint8Array): RSAPublicKey {
-  const jwk = pkixToJwk(bytes)
-
-  if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
+export function pkixToRSAPublicKey (bytes: Uint8Array, digest?: Digest<18, number>): RSAPublicKey {
+  if (bytes.byteLength > MAX_RSA_JWK_SIZE) {
     throw new InvalidPublicKeyError('Key size is too large')
   }
 
-  const hash = sha256(pb.PublicKey.encode({
-    Type: pb.KeyType.RSA,
-    Data: bytes
-  }))
-  const digest = create(SHA2_256_CODE, hash)
+  const jwk = pkixToJwk(bytes)
+
+  if (digest == null) {
+    const hash = sha256(pb.PublicKey.encode({
+      Type: pb.KeyType.RSA,
+      Data: bytes
+    }))
+    digest = create(SHA2_256_CODE, hash)
+  }
 
   return new RSAPublicKeyClass(jwk, digest)
 }
