@@ -179,7 +179,15 @@ export function encodeInteger (value: Uint8Array | Uint8ArrayList): Uint8ArrayLi
   )
 }
 
-export function encodeBitString (contents: Uint8Array | Uint8ArrayList): Uint8ArrayList {
+export function encodeBitString (value: Uint8Array | Uint8ArrayList): Uint8ArrayList {
+  // unused bits is always 0 with full-byte-only values
+  const unusedBits = Uint8Array.from([0])
+
+  const contents = new Uint8ArrayList(
+    unusedBits,
+    value
+  )
+
   return new Uint8ArrayList(
     Uint8Array.from([0x03]),
     encodeLength(contents),

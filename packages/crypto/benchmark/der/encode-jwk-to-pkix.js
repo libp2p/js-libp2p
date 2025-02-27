@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import * as asn1js from 'asn1js'
 import Benchmark from 'benchmark'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encodeBitString, encodeSequence, encodeInteger } from '../../dist/src/keys/rsa/der.js'
 import { RSA_KEY_512_BITS } from '../../dist/test/fixtures/rsa.js'
@@ -49,13 +48,10 @@ suite.add('encodeDer', async () => {
   return encodeSequence([
     algorithmIdentifierSequence,
     encodeBitString(
-      new Uint8ArrayList(
-        Uint8Array.from([0]),
-        encodeSequence([
-          encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
-          encodeInteger(uint8ArrayFromString(jwk.e, 'base64url'))
-        ])
-      )
+      encodeSequence([
+        encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
+        encodeInteger(uint8ArrayFromString(jwk.e, 'base64url'))
+      ])
     )
   ]).subarray()
 })

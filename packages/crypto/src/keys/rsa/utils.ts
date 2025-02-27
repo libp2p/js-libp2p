@@ -1,7 +1,6 @@
 import { InvalidParametersError, InvalidPublicKeyError } from '@libp2p/interface'
 import { sha256 } from '@noble/hashes/sha256'
 import { create } from 'multiformats/hashes/digest'
-import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import * as pb from '../keys.js'
@@ -94,13 +93,10 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
   const subjectPublicKeyInfo = encodeSequence([
     RSA_ALGORITHM_IDENTIFIER,
     encodeBitString(
-      new Uint8ArrayList(
-        Uint8Array.from([0]),
-        encodeSequence([
-          encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
-          encodeInteger(uint8ArrayFromString(jwk.e, 'base64url'))
-        ])
-      )
+      encodeSequence([
+        encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
+        encodeInteger(uint8ArrayFromString(jwk.e, 'base64url'))
+      ])
     )
   ])
 
