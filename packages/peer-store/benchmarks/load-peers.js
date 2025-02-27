@@ -39,9 +39,9 @@ for (const peer of toAdd) {
 const main = function () {
   const bench = new Benchmark('read all', {
     defer: true,
-    fn: async function (defered) {
+    fn: async function (deferred) {
       await peerStore.all()
-      defered.resolve()
+      deferred.resolve()
     }
   })
     .on('complete', function (stats) {
