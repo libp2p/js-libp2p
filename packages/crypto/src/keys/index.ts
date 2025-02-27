@@ -15,6 +15,7 @@ import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair } from './
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
+import type { Digest } from 'multiformats/hashes/digest'
 
 export { generateEphemeralKeyPair } from './ecdh/index.js'
 export type { Curve } from './ecdh/index.js'
@@ -61,15 +62,21 @@ export async function generateKeyPairFromSeed (type: string, seed: Uint8Array): 
 }
 
 /**
- * Converts a protobuf serialized public key into its representative object
+ * Converts a protobuf serialized public key into its representative object.
+ *
+ * For RSA public keys optionally pass the multihash digest of the public key if
+ * it is known. If the digest is omitted it will be calculated which can be
+ * expensive.
+ *
+ * For other key types the digest option is ignored.
  */
-export function publicKeyFromProtobuf (buf: Uint8Array): PublicKey {
+export function publicKeyFromProtobuf (buf: Uint8Array, digest?: Digest<18, number>): PublicKey {
   const { Type, Data } = pb.PublicKey.decode(buf)
   const data = Data ?? new Uint8Array()
 
   switch (Type) {
     case pb.KeyType.RSA:
-      return pkixToRSAPublicKey(data)
+      return pkixToRSAPublicKey(data, digest)
     case pb.KeyType.Ed25519:
       return unmarshalEd25519PublicKey(data)
     case pb.KeyType.secp256k1:
