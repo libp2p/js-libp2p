@@ -89,6 +89,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.4](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.3...tcp-v10.1.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* constrain ip6 listener to ip6 addresses ([#3010](https://github.com/libp2p/js-libp2p/issues/3010)) ([22e62d0](https://github.com/libp2p/js-libp2p/commit/22e62d00f508b0d77fc61e93b2f365963b6b699a))
+
 ## [10.1.3](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.2...tcp-v10.1.3) (2025-02-25)
 
 

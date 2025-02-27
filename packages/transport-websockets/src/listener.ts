@@ -249,10 +249,13 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     this.listeningMultiaddr = ma
-    const { host, port } = ma.toOptions()
-    this.addr = `${host}:${port}`
+    const options = ma.toOptions()
+    this.addr = `${options.host}:${options.port}`
 
-    this.server.listen(port, host)
+    this.server.listen({
+      ...options,
+      ipv6Only: options.family === 6
+    })
 
     await new Promise<void>((resolve, reject) => {
       const onListening = (): void => {
