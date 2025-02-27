@@ -1,3 +1,5 @@
+import { Uint8ArrayList } from 'uint8arraylist'
+
 interface Context {
   offset: number
 }
@@ -11,16 +13,16 @@ interface Decoder {
 }
 
 const decoders: Record<number, Decoder> = {
-  2: readInteger,
-  3: readBitString,
-  5: readNull,
-  6: readObjectIdentifier,
-  10: readSequence,
-  16: readSequence,
-  30: readSequence
+  0x2: readInteger,
+  0x3: readBitString,
+  0x5: readNull,
+  0x6: readObjectIdentifier,
+  0x10: readSequence,
+  0x16: readSequence,
+  0x30: readSequence
 }
 
-export function decodeDer (buf: Uint8Array, context: Context): any {
+export function decodeDer (buf: Uint8Array, context: Context = { offset: 0 }): any {
   const tag = buf[context.offset] & TAG_MASK
   context.offset++
 
@@ -124,4 +126,79 @@ function readBitString (buf: Uint8Array, context: Context): any {
   return decodeDer(bytes, {
     offset: 0
   })
+}
+
+function encodeNumber (value: number): Uint8ArrayList {
+  let number = value.toString(16)
+
+  if (number.length % 2 === 1) {
+    number = '0' + number
+  }
+
+  const array = new Uint8ArrayList()
+
+  for (let i = 0; i < number.length; i += 2) {
+    array.append(Uint8Array.from([parseInt(`${number[i]}${number[i + 1]}`, 16)]))
+  }
+
+  return array
+}
+
+function encodeLength (bytes: { byteLength: number }): Uint8Array | Uint8ArrayList {
+  if (bytes.byteLength < 128) {
+    return Uint8Array.from([bytes.byteLength])
+  }
+
+  // long length
+  const length = encodeNumber(bytes.byteLength)
+
+  return new Uint8ArrayList(
+    Uint8Array.from([
+      length.byteLength | LONG_LENGTH_MASK
+    ]),
+    length
+  )
+}
+
+export function encodeInteger (value: Uint8Array | Uint8ArrayList): Uint8ArrayList {
+  const contents = new Uint8ArrayList()
+
+  const mask = parseInt('10000000', 2)
+  const positive = (value.subarray()[0] & mask) === mask
+
+  if (positive) {
+    contents.append(Uint8Array.from([0]))
+  }
+
+  contents.append(value)
+
+  return new Uint8ArrayList(
+    Uint8Array.from([0x02]),
+    encodeLength(contents),
+    contents
+  )
+}
+
+export function encodeBitString (contents: Uint8Array | Uint8ArrayList): Uint8ArrayList {
+  return new Uint8ArrayList(
+    Uint8Array.from([0x03]),
+    encodeLength(contents),
+    contents
+  )
+}
+
+export function encodeSequence (values: Array<Uint8Array | Uint8ArrayList>): Uint8ArrayList {
+  const output = new Uint8ArrayList()
+
+  for (const buf of values) {
+    output.append(
+      buf
+    )
+  }
+
+  return new Uint8ArrayList(
+    Uint8Array.from([0x30]),
+    encodeLength(output),
+    output
+  )
 }

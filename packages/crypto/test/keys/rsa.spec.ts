@@ -3,6 +3,7 @@
 import { isPrivateKey, isPublicKey } from '@libp2p/interface'
 import { sha256 } from '@noble/hashes/sha256'
 import { expect } from 'aegir/chai'
+import * as asn1js from 'asn1js'
 import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -10,10 +11,11 @@ import { randomBytes } from '../../src/index.js'
 import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
 import * as pb from '../../src/keys/keys.js'
 import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.js'
-import { MAX_RSA_KEY_SIZE, jwkToRSAPrivateKey, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
+import { MAX_RSA_KEY_SIZE, jwkToPkcs1, jwkToPkix, jwkToRSAPrivateKey, pkcs1ToJwk, pkcs1ToRSAPrivateKey, pkixToJwk, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
-import { RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
+import { RSA_KEY_1024_BITS, RSA_KEY_2048_BITS, RSA_KEY_512_BITS, RSA_KEY_8192_BITS, RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
+import type { JWKKeyPair } from '../../src/keys/interface.js'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
 const SHA2_256_CODE = 0x12
@@ -188,4 +190,109 @@ describe('RSA', function () {
       expect(ok).to.equal(true)
     })
   })
+
+  describe('pkix', () => {
+    function roundTrip (jwk: JWKKeyPair): void {
+      const pkix = jwkToPkix(jwk.publicKey)
+
+      const buf = new asn1js.Sequence({
+        value: [
+          new asn1js.Sequence({
+            value: [
+              // rsaEncryption
+              new asn1js.ObjectIdentifier({
+                value: '1.2.840.113549.1.1.1'
+              }),
+              new asn1js.Null()
+            ]
+          }),
+          new asn1js.BitString({
+            valueHex:
+            new asn1js.Sequence({
+              value: [
+                asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.publicKey.n ?? '', 'base64url'))),
+                asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.publicKey.e ?? '', 'base64url')))
+              ]
+            }).toBER()
+          })
+        ]
+      }).toBER()
+
+      expect(pkix).to.equalBytes(new Uint8Array(buf))
+
+      expect(pkixToJwk(pkix)).to.deep.equal(jwk.publicKey)
+    }
+
+    it('should round trip 512 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_512_BITS)
+    })
+
+    it('should round trip 1024 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_1024_BITS)
+    })
+
+    it('should round trip 2048 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_2048_BITS)
+    })
+
+    it('should round trip 8192 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_8192_BITS)
+    })
+  })
+
+  describe('pkcs#1', () => {
+    function roundTrip (jwk: JWKKeyPair): void {
+      const pkcs1 = jwkToPkcs1(jwk.privateKey)
+
+      const buf = new asn1js.Sequence({
+        value: [
+          new asn1js.Integer({ value: 0 }),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.n ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.e ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.d ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.p ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.q ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.dp ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.dq ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.qi ?? '', 'base64url')))
+        ]
+      }).toBER()
+
+      expect(pkcs1).to.equalBytes(new Uint8Array(buf))
+
+      expect(pkcs1ToJwk(pkcs1)).to.deep.equal(jwk.privateKey)
+    }
+
+    it('should round trip 512 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_512_BITS)
+    })
+
+    it('should round trip 1024 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_1024_BITS)
+    })
+
+    it('should round trip 2048 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_2048_BITS)
+    })
+
+    it('should round trip 8192 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_8192_BITS)
+    })
+  })
 })
+
+function bufToBn (u8: Uint8Array): bigint {
+  const hex: string[] = []
+
+  u8.forEach(function (i) {
+    let h = i.toString(16)
+
+    if (h.length % 2 > 0) {
+      h = `0${h}`
+    }
+
+    hex.push(h)
+  })
+
+  return BigInt('0x' + hex.join(''))
+}
