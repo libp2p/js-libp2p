@@ -169,7 +169,7 @@ export function pkcs1ToRSAPrivateKey (bytes: Uint8Array): RSAPrivateKey {
  * Turn PKIX bytes to a PublicKey
  */
 export function pkixToRSAPublicKey (bytes: Uint8Array, digest?: Digest<18, number>): RSAPublicKey {
-  if (bytes.byteLength > MAX_RSA_JWK_SIZE) {
+  if (bytes.byteLength >= MAX_RSA_JWK_SIZE) {
     throw new InvalidPublicKeyError('Key size is too large')
   }
 

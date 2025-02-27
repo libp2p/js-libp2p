@@ -79,19 +79,19 @@ function readInteger (buf: Uint8Array, context: Context): Uint8Array {
   const start = context.offset
   const end = context.offset + length
 
-  const nums: number[] = []
+  const vals: number[] = []
 
   for (let i = start; i < end; i++) {
     if (i === start && buf[i] === 0) {
       continue
     }
 
-    nums.push(buf[i])
+    vals.push(buf[i])
   }
 
   context.offset += length
 
-  return Uint8Array.from(nums)
+  return Uint8Array.from(vals)
 }
 
 function readObjectIdentifier (buf: Uint8Array, context: Context): string[] {
@@ -118,7 +118,7 @@ function readBitString (buf: Uint8Array, context: Context): any {
 
   if (unusedBits !== 0) {
     // need to shift all bytes along by this many bits
-    throw new Error('Unused bits in bitstring is unimplemented')
+    throw new Error('Unused bits in bit string is unimplemented')
   }
 
   return decodeDer(bytes, {

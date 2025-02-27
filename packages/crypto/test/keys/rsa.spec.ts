@@ -1,15 +1,22 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { isPrivateKey, isPublicKey } from '@libp2p/interface'
+import { sha256 } from '@noble/hashes/sha256'
 import { expect } from 'aegir/chai'
+import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
-import { MAX_RSA_KEY_SIZE, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
+import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
+import * as pb from '../../src/keys/keys.js'
+import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.js'
+import { MAX_RSA_KEY_SIZE, jwkToRSAPrivateKey, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
+import { RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { RSAPrivateKey } from '@libp2p/interface'
+
+const SHA2_256_CODE = 0x12
 
 describe('RSA', function () {
   this.timeout(20 * 1000)
@@ -30,19 +37,23 @@ describe('RSA', function () {
   })
 
   it('does not unmarshal a big key', async function () {
-    /*
     const k = RSA_KEY_8200_BITS
 
-    const pubK = new RSAPublicKeyClass(k.publicKey)
-    const sk = new RSAPrivateKeyClass(k.privateKey, k.publicKey)
+    const hash = sha256(pb.PublicKey.encode({
+      Type: pb.KeyType.RSA,
+      Data: uint8ArrayFromString(k.publicKey.n ?? '', 'base64url')
+    }))
+    const digest = create(SHA2_256_CODE, hash)
 
-    const m = sk.marshal()
-    const pubM = pubK.marshal()
+    const pubK = new RSAPublicKeyClass(k.publicKey, digest)
+    const sk = new RSAPrivateKeyClass(k.privateKey, pubK)
 
-    await expect(pkcs1ToRSAPrivateKey(m)).to.eventually.be.rejectedWith(/too large/)
-    expect(() => pkixToRSAPublicKey(pubM)).to.throw(/too large/)
-    await expect(fromJwk(k.privateKey)).to.eventually.be.rejectedWith(/too large/)
-    */
+    const m = privateKeyToProtobuf(sk)
+    const pubM = publicKeyToProtobuf(pubK)
+
+    expect(() => privateKeyFromProtobuf(m)).to.throw(/too large/)
+    expect(() => publicKeyFromProtobuf(pubM)).to.throw(/too large/)
+    expect(() => jwkToRSAPrivateKey(k.privateKey)).to.throw(/too large/)
   })
 
   it('signs', async () => {
