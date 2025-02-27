@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.0.14](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.13...crypto-v5.0.14) (2025-02-27)
+
+
+### Bug Fixes
+
+* add DER decoder and allow passing protobuf digest ([#3013](https://github.com/libp2p/js-libp2p/issues/3013)) ([9acccaa](https://github.com/libp2p/js-libp2p/commit/9acccaaed99ae7a42e3dc750437b29f8a002463f))
+
 ## [5.0.13](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.12...crypto-v5.0.13) (2025-02-25)
 
 
