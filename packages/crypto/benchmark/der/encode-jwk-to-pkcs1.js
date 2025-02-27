@@ -3,25 +3,16 @@ import * as asn1js from 'asn1js'
 import Benchmark from 'benchmark'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encodeSequence, encodeInteger } from '../../dist/src/keys/rsa/der.js'
+import { RSA_KEY_512_BITS } from '../../dist/test/fixtures/rsa.js'
 
 // results
 // % node ./benchmark/der/encode-jwk-to-pkcs1.js
 // asn1js x 21,453 ops/sec ±0.54% (92 runs sampled)
 // encodeSequence x 65,991 ops/sec ±0.36% (98 runs sampled)
 
-const suite = new Benchmark.Suite('encode JWK private key to PKCS#1')
+const jwk = RSA_KEY_512_BITS.privateKey
 
-const jwk = {
-  kty: 'RSA',
-  n: 'wfN6Z4hRb0gh_FbSK3-C_L3UW6jPef7np08i9ta12cvuBAK_ZTUtO_-7OqY2BRPq5qkRvu-fqLeUPQKNhUO4jQ',
-  e: 'AQAB',
-  d: 'Ky8LEgJIH37wEj9CjGzXvW6G2eG8UG1xJs93-X3U_6kFGskKOphVjH84ey56vYqPMvgnGHsTvj0Ab0bTBxFgAQ',
-  p: '4LiCZn45NM_xxMs0Ap6PgUEhX3lUaPVxIAK8cueBUDk',
-  q: '3PKNK-0dXxL9CH-azHPl35WuiY8crvU6IFz0GT_tgvU',
-  dp: 'f1iwNQrkukP5G2-YGr_mTPYuxl8Ica5dnClQx8DfrCk',
-  dq: 'rixqyzjlkYA3hg6JqiinCsVFTN1LYESiqMZ-CrWRd00',
-  qi: 'HNMToc4-GzmNns1TsqRRVTMbyxMY2cEqc025dXstRoQ'
-}
+const suite = new Benchmark.Suite('encode JWK private key to PKCS#1')
 
 suite.add('asn1js', async () => {
   const root = new asn1js.Sequence({

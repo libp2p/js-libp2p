@@ -4,19 +4,16 @@ import Benchmark from 'benchmark'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encodeBitString, encodeSequence, encodeInteger } from '../../dist/src/keys/rsa/der.js'
+import { RSA_KEY_512_BITS } from '../../dist/test/fixtures/rsa.js'
 
 // results
 // % node ./benchmark/der/encode-jwk-to-pkix.js
 // asn1js x 41,774 ops/sec ±0.67% (91 runs sampled)
 // encodeDer x 244,387 ops/sec ±0.36% (95 runs sampled)
 
-const suite = new Benchmark.Suite('encode JWK public key to PKIX')
+const jwk = RSA_KEY_512_BITS.publicKey
 
-const jwk = {
-  kty: 'RSA',
-  n: '1g2wr6nW8HPcS_b7uxpOl9gHIij2s7phxhOBrCWFVhTULDVPYOYvruyxpqpO4i_xq9klURb_Ze5ZTkd0PzZo7w',
-  e: 'AQAB'
-}
+const suite = new Benchmark.Suite('encode JWK public key to PKIX')
 
 const algorithmIdentifierSequence = Uint8Array.from([
   0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00
