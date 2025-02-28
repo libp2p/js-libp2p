@@ -27,7 +27,31 @@ export interface AddressFilter {
 }
 
 export interface PersistentPeerStoreInit {
+  /**
+   * Used to remove multiaddrs of peers before storing them. The default is to
+   * store all addresses
+   */
   addressFilter?: AddressFilter
+
+  /**
+   * The multiaddrs for a given peer will expire after this number of ms after
+   * which they must be re-fetched using the peer routing.
+   *
+   * Defaults to one hour.
+   *
+   * @default 3_600_000
+   */
+  maxAddressAge?: number
+
+  /**
+   * Any peer without multiaddrs that has not been updated after this number of
+   * ms will be evicted from the peer store.
+   *
+   * Defaults to six hours.
+   *
+   * @default 21_600_000
+   */
+  maxPeerAge?: number
 }
 
 /**

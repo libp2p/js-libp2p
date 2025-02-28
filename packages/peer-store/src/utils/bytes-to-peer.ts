@@ -23,8 +23,13 @@ function populatePublicKey (peerId: PeerId, protobuf: PeerPB): PeerId {
   return peerIdFromPublicKey(publicKey)
 }
 
-export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
+export function bytesToPeer (peerId: PeerId, buf: Uint8Array, maxAddressAge: number): Peer {
   const peer = PeerPB.decode(buf)
+
+  return pbToPeer(peerId, peer, maxAddressAge)
+}
+
+export function pbToPeer (peerId: PeerId, peer: PeerPB, maxAddressAge: number): Peer {
   const tags = new Map<string, Tag>()
 
   // remove any expired tags
@@ -41,12 +46,15 @@ export function bytesToPeer (peerId: PeerId, buf: Uint8Array): Peer {
   return {
     ...peer,
     id: populatePublicKey(peerId, peer),
-    addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
-      return {
-        multiaddr: multiaddr(ma),
-        isCertified: isCertified ?? false
-      }
-    }),
+    addresses: peer.addresses
+      // remove any expired multiaddrs
+      .filter(({ observed }) => observed != null && observed > (Date.now() - maxAddressAge))
+      .map(({ multiaddr: ma, isCertified }) => {
+        return {
+          multiaddr: multiaddr(ma),
+          isCertified: isCertified ?? false
+        }
+      }),
     metadata: peer.metadata,
     peerRecordEnvelope: peer.peerRecordEnvelope ?? undefined,
     tags
