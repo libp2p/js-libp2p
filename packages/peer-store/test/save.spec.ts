@@ -165,7 +165,7 @@ describe('save', () => {
 
   it('should not store a public key if already stored', async () => {
     // @ts-expect-error private fields
-    const spy = sinon.spy(peerStore.store.datastore, 'put')
+    const spy = sinon.spy(peerStore.store, 'save')
 
     if (otherPeerId.publicKey == null) {
       throw new Error('Public key was missing')
@@ -179,7 +179,9 @@ describe('save', () => {
       publicKey: otherPeerId.publicKey
     })
 
-    expect(spy).to.have.property('callCount', 1)
+    expect(spy.callCount).to.equal(2)
+    await expect(spy.getCall(0).returnValue).to.eventually.have.property('updated', true)
+    await expect(spy.getCall(1).returnValue).to.eventually.have.property('updated', false)
   })
 
   it('should not store a public key if part of peer id', async () => {

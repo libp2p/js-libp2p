@@ -4,7 +4,7 @@ import type { AddressFilter } from '../index.js'
 import type { Address as AddressPB } from '../pb/peer.js'
 import type { PeerId, Address } from '@libp2p/interface'
 
-export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>): Promise<AddressPB[]> {
+export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[]): Promise<AddressPB[]> {
   const addressMap = new Map<string, Address>()
 
   for (const addr of addresses) {

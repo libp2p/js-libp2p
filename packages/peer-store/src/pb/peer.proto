@@ -18,6 +18,9 @@ message Peer {
 
   // Any tags the peer has
   map<string, Tag> tags = 7;
+
+  // timestamp in ms of when this peer was last updated
+  optional uint64 updated = 8 [jstype = JS_NUMBER];
 }
 
 // Address represents a single multiaddr
@@ -26,6 +29,9 @@ message Address {
 
   // Flag to indicate if the address comes from a certified source
   optional bool isCertified = 2;
+
+  // timestamp in ms of when this address was observed
+  optional uint64 observed = 3 [jstype = JS_NUMBER];
 }
 
 message Tag {

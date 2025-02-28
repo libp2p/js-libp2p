@@ -1,13 +1,16 @@
+/* eslint-disable complexity */
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
-import type { PeerId, Address, Peer, PeerData, TagOptions } from '@libp2p/interface'
+import type { ExistingPeer } from '../store.js'
+import type { PeerId, Address, PeerData, TagOptions } from '@libp2p/interface'
 
 export interface ToPBPeerOptions {
   addressFilter?: AddressFilter
-  existingPeer?: Peer
+  existingPeer?: ExistingPeer
 }
 
 export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strategy: 'merge' | 'patch', options: ToPBPeerOptions): Promise<PeerPB> {
@@ -19,7 +22,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
   }
 
-  const existingPeer = options.existingPeer
+  const existingPeer = options.existingPeer?.peer
 
   if (existingPeer != null && !peerId.equals(existingPeer.id)) {
     throw new InvalidParametersError('peer id did not match existing peer id')
@@ -141,7 +144,12 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   }
 
   const output: PeerPB = {
-    addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addresses),
+    addresses: await dedupeFilterAndSortAddresses(
+      peerId,
+      options.addressFilter ?? (async () => true),
+      addresses,
+      options.existingPeer?.peerPB.addresses
+    ),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b)
     }),
@@ -150,6 +158,11 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     publicKey,
     peerRecordEnvelope
   }
+
+  // add observed addresses to multiaddrs
+  output.addresses.forEach(addr => {
+    addr.observed = options.existingPeer?.peerPB.addresses?.find(addr => uint8ArrayEquals(addr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
+  })
 
   // Ed25519 and secp256k1 have their public key embedded in them so no need to duplicate it
   if (peerId.type !== 'RSA') {

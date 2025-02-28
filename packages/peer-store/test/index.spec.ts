@@ -10,7 +10,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import { persistentPeerStore } from '../src/index.js'
+import { persistentPeerStore, type PersistentPeerStoreComponents } from '../src/index.js'
 import type { TypedEventTarget, Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
@@ -21,18 +21,20 @@ describe('PersistentPeerStore', () => {
   let otherPeerId: PeerId
   let peerStore: PeerStore
   let events: TypedEventTarget<Libp2pEvents>
+  let components: PersistentPeerStoreComponents
 
   beforeEach(async () => {
     key = await generateKeyPair('Ed25519')
     peerId = peerIdFromPrivateKey(key)
     otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     events = new TypedEventEmitter()
-    peerStore = persistentPeerStore({
+    components = {
       peerId,
       events,
       datastore: new MemoryDatastore(),
       logger: defaultLogger()
-    })
+    }
+    peerStore = persistentPeerStore(components)
   })
 
   it('has an empty map of peers', async () => {
@@ -72,9 +74,8 @@ describe('PersistentPeerStore', () => {
           addr1
         ]
       })
-
-      await expect(peerStore.delete(peerId)).to.eventually.be.rejected()
-        .with.property('name', 'InvalidParametersError')
+      await peerStore.delete(peerId)
+      await expect(peerStore.has(peerId)).to.eventually.be.true()
     })
   })
 
@@ -290,6 +291,188 @@ describe('PersistentPeerStore', () => {
       })
 
       expect(noPeers).to.be.empty()
+    })
+  })
+
+  describe('expiry', () => {
+    it('should expire multiaddrs', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.have.property('addresses')
+        .with.lengthOf(1)
+
+      await delay(500)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.have.property('addresses')
+        .with.lengthOf(0, 'did not expire multiaddrs')
+    })
+
+    it('should evict expired peers from .has', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.true()
+
+      await delay(500)
+
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.false('did not evict expired peer')
+    })
+
+    it('should evict expired peers from .get', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.ok()
+
+      await delay(500)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.rejected()
+        .with.property('name', 'NotFoundError')
+    })
+
+    it('should evict expired peers from .all', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      expect((await peerStore.all()).map(peer => peer.id))
+        .to.deep.include(otherPeerId)
+
+      await delay(500)
+
+      expect((await peerStore.all()).map(peer => peer.id))
+        .to.not.deep.include(otherPeerId)
+    })
+
+    it('should evict before merging', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ],
+        tags: {
+          tagA: {
+            value: 100
+          }
+        }
+      })
+
+      const peer1 = await peerStore.get(otherPeerId)
+      expect(peer1.tags.has('tagA')).to.be.true()
+
+      await delay(500)
+
+      await peerStore.merge(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ],
+        tags: {
+          tagB: {
+            value: 100
+          }
+        }
+      })
+
+      const peer2 = await peerStore.get(otherPeerId)
+      expect(peer2.tags.has('tagA')).to.be.false('did not evict before merge')
+      expect(peer2.tags.has('tagB')).to.be.true()
+    })
+
+    it('should evict before patching', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ],
+        tags: {
+          tagA: {
+            value: 100
+          }
+        }
+      })
+
+      const peer1 = await peerStore.get(otherPeerId)
+      expect(peer1.tags.has('tagA')).to.be.true()
+
+      await delay(500)
+
+      await peerStore.patch(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      const peer2 = await peerStore.get(otherPeerId)
+      expect(peer2.tags.has('tagA')).to.be.false('did not evict before patch')
+    })
+
+    it('should keep peer data if it is updated', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 200
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.true()
+
+      // update peer beyond `maxPeerAge and it should still be present
+      for (let i = 0; i < 10; i++) {
+        // enough to expire multiaddrs but not peers
+        await delay(50)
+
+        await expect(peerStore.has(otherPeerId)).to.eventually.be.true(`did not have peer after ${i * 100}ms`)
+
+        // update peer
+        await peerStore.merge(otherPeerId, {
+          multiaddrs: [
+            multiaddr('/ip4/123.123.123.123/tcp/1234')
+          ]
+        })
+      }
     })
   })
 })
