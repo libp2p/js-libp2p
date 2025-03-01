@@ -26,6 +26,7 @@
     "@libp2p/mplex": "^11.0.13",
     "@libp2p/ping": "^2.0.12",
     "@libp2p/tcp": "^10.0.13",
+    "@libp2p/tls": "^2.0.17",
     "@libp2p/webrtc": "^5.0.19",
     "@libp2p/websockets": "^9.0.13",
     "@libp2p/webtransport": "^5.0.18",
@@ -34,8 +35,5 @@
     "libp2p": "^2.3.1",
     "p-event": "^6.0.1",
     "redis": "^4.7.0"
-  },
-  "dependencies": {
-    "@libp2p/tls": "^2.0.17"
   }
 }
