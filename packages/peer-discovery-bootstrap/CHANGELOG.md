@@ -83,6 +83,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.29](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.28...bootstrap-v11.0.29) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.5 to ^2.3.6
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.6 to ^6.3.7
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+
 ## [11.0.28](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.27...bootstrap-v11.0.28) (2025-02-26)
 
 
