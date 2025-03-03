@@ -24,7 +24,9 @@ import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, Stream } from '@libp2p/interface'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup } from '@libp2p/interface'
+import type { Duplex } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
@@ -87,7 +89,7 @@ export class TLS implements ConnectionEncrypter {
    */
   async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     const opts: TLSSocketOptions = {
-      ...await generateCertificate(this.privateKey),
+      ...await generateCertificate(this.components.privateKey),
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',
