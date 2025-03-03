@@ -5,7 +5,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
 import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
-import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
@@ -98,8 +97,8 @@ export namespace KeyType {
   }
 }
 export interface PublicKey {
-  Type: KeyType
-  Data: Uint8Array
+  Type?: KeyType
+  Data?: Uint8Array
 }
 
 export namespace PublicKey {
@@ -112,12 +111,12 @@ export namespace PublicKey {
           w.fork()
         }
 
-        if (obj.Type != null && __KeyTypeValues[obj.Type] !== 0) {
+        if (obj.Type != null) {
           w.uint32(8)
           KeyType.codec().encode(obj.Type, w)
         }
 
-        if ((obj.Data != null && obj.Data.byteLength > 0)) {
+        if (obj.Data != null) {
           w.uint32(18)
           w.bytes(obj.Data)
         }
@@ -126,10 +125,7 @@ export namespace PublicKey {
           w.ldelim()
         }
       }, (reader, length, opts = {}) => {
-        const obj: any = {
-          Type: KeyType.RSA,
-          Data: uint8ArrayAlloc(0)
-        }
+        const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
 
