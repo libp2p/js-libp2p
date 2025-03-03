@@ -1,6 +1,6 @@
 import type { Connection, ConnectionLimits, MultiaddrConnection } from './connection.js'
 import type { TypedEventTarget } from './event-target.js'
-import type { AbortOptions, ClearableSignal } from './index.js'
+import type { AbortOptions, ClearableSignal, ConnectionEncrypter } from './index.js'
 import type { StreamMuxerFactory } from './stream-muxer.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
