@@ -75,6 +75,31 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.4.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.3.7...interface-compliance-tests-v6.4.0) (2025-03-03)
+
+
+### Features
+
+* allow early muxer selection by connection encrypters ([#3022](https://github.com/libp2p/js-libp2p/issues/3022)) ([dd71d8a](https://github.com/libp2p/js-libp2p/commit/dd71d8a86841acbccdca8f3e930bda0eced6d1d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/echo bumped from ^2.1.15 to ^2.1.16
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/interface-internal bumped from ^2.3.6 to ^2.3.7
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/memory bumped from ^1.1.2 to ^1.1.3
+    * @libp2p/multistream-select bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+    * @libp2p/plaintext bumped from ^2.0.18 to ^2.0.19
+    * @libp2p/utils bumped from ^6.5.6 to ^6.5.7
+    * libp2p bumped from ^2.7.5 to ^2.8.0
+
 ## [6.3.7](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.3.6...interface-compliance-tests-v6.3.7) (2025-03-03)
 
 
