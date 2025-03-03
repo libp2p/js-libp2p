@@ -484,4 +484,40 @@ describe('Routing Table', () => {
 
     await expect(table.find(peer.id)).to.eventually.be.ok()
   })
+
+  describe('max size', () => {
+    it('should constrain size to 10', async () => {
+      const prefixLength = 8
+      const kBucketSize = 20
+      const maxSize = Math.pow(2, prefixLength) * kBucketSize
+
+      table = new RoutingTable(components, {
+        logPrefix: '',
+        metricsPrefix: '',
+        protocol: PROTOCOL,
+        network,
+        prefixLength,
+        kBucketSize
+      })
+      await start(table)
+
+      // reset network stub so we can have specific behavior
+      table.network = network = stubInterface()
+
+      // all old peers answer pings, no peers should be evicted
+      network.sendRequest.callsFake(async function * (from: PeerId) {
+        yield peerResponseEvent({
+          from,
+          messageType: MessageType.PING
+        })
+      })
+
+      for (let i = 0; i < 2 * maxSize; i++) {
+        const remotePeer = await createPeerId()
+        await table.add(remotePeer)
+      }
+
+      expect(table.size).to.be.lessThanOrEqual(maxSize)
+    })
+  })
 })

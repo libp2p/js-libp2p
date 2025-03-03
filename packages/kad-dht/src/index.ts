@@ -428,15 +428,36 @@ export interface KadDHTInit {
    * can be stored.
    *
    * Storing more peers means fewer lookups (and network operations) are needed
-   * to locate a certain peer, but also that more memory is consumed.
+   * to locate a certain peer, but also that more memory is consumed and more
+   * CPU while responding to queries (e.g. with more peers in the table sorting
+   * the closest peers becomes more expensive) and CPU/network during table
+   * maintenance (e.g. checking peers are still online).
    *
-   * @default 32
+   * The larger this value, the more prefix bits must be the same for a peer to
+   * be stored in a KAD bucket, so the fewer nodes that bucket is likely to
+   * contain.
+   *
+   * The total number of peers in the table is a factor of `prefixLength` and
+   * `kBucketSize`:
+   *
+   * ```
+   * (2 ^ prefixLength) * kBucketSize
+   * ```
+   *
+   * @default 6
    */
   prefixLength?: number
 
   /**
    * If true, only ever be a DHT client. If false, be a DHT client until told
    * to be a DHT server via `setMode`.
+   *
+   * In general this should be left as the default because server mode will be
+   * selected automatically when libp2p establishes that the current node has
+   * a publicly dialable address.
+   *
+   * The exception to this is LAN-only DHT (e.g. for testing purposes) where it
+   * is safe to assume that the current node is dialable.
    *
    * @default false
    */

@@ -14,7 +14,7 @@ import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metri
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 8
+export const PREFIX_LENGTH = 6
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
