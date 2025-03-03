@@ -183,6 +183,11 @@ export class TLS implements ConnectionEncrypter {
         }
 
         socket.destroy(err)
+
+        if (isAbortable(conn)) {
+          conn.abort(err)
+        }
+
         reject(err)
       })
       socket.once('secure', () => {
@@ -204,4 +209,12 @@ export class TLS implements ConnectionEncrypter {
       })
     })
   }
+}
+
+interface Abortable {
+  abort (err: Error): void
+}
+
+function isAbortable <T> (obj: T & Partial<Abortable>): obj is T & Abortable {
+  return typeof obj?.abort === 'function'
 }
