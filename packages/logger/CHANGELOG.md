@@ -21,6 +21,20 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.1.11](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.10...logger-v5.1.11) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+
 ## [5.1.10](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.9...logger-v5.1.10) (2025-02-25)
 
 

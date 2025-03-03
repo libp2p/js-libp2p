@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.8](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.7...opentelemetry-metrics-v1.0.8) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+
 ## [1.0.7](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.6...opentelemetry-metrics-v1.0.7) (2025-02-25)
 
 
