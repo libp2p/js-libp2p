@@ -98,7 +98,7 @@ export namespace KeyType {
   }
 }
 export interface PublicKey {
-  Type: KeyType
+  Type?: KeyType
   Data: Uint8Array
 }
 
@@ -112,7 +112,7 @@ export namespace PublicKey {
           w.fork()
         }
 
-        if (obj.Type != null && __KeyTypeValues[obj.Type] !== 0) {
+        if (obj.Type != null) {
           w.uint32(8)
           KeyType.codec().encode(obj.Type, w)
         }
@@ -127,7 +127,6 @@ export namespace PublicKey {
         }
       }, (reader, length, opts = {}) => {
         const obj: any = {
-          Type: KeyType.RSA,
           Data: uint8ArrayAlloc(0)
         }
 
