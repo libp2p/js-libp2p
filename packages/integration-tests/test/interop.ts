@@ -138,7 +138,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       webRTCDirect()
     ],
     streamMuxers: [],
-    connectionEncrypters: [noise()]
+    connectionEncrypters: []
   }
 
   if (options.noListen !== true) {
