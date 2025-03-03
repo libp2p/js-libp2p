@@ -100,7 +100,7 @@ function countStreams (protocol: string, direction: 'inbound' | 'outbound', conn
   return streamCount
 }
 
-export interface DefaultUpgraderComponents {
+export interface UpgraderComponents {
   peerId: PeerId
   metrics?: Metrics
   connectionManager: ConnectionManager
@@ -115,7 +115,7 @@ export interface DefaultUpgraderComponents {
 type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection' | 'denyInboundEncryptedConnection' | 'denyOutboundEncryptedConnection' | 'denyInboundUpgradedConnection' | 'denyOutboundUpgradedConnection'>
 
 export class Upgrader implements UpgraderInterface {
-  private readonly components: DefaultUpgraderComponents
+  private readonly components: UpgraderComponents
   private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
   private readonly streamMuxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
@@ -127,7 +127,7 @@ export class Upgrader implements UpgraderInterface {
     errors?: CounterGroup<'inbound' | 'outbound'>
   }
 
-  constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
+  constructor (components: UpgraderComponents, init: UpgraderInit) {
     this.components = components
     this.connectionEncrypters = new Map()
 
