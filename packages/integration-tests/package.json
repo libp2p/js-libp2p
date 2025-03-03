@@ -83,6 +83,7 @@
     "p-retry": "^6.2.1",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",
+    "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0",
     "wherearewe": "^2.0.1"
