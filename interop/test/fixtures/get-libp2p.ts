@@ -3,15 +3,19 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { type Identify, identify } from '@libp2p/identify'
+import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
-import { type PingService, ping } from '@libp2p/ping'
+import { ping } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
+import { tls } from '@libp2p/tls'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { webTransport } from '@libp2p/webtransport'
-import { type Libp2pOptions, createLibp2p } from 'libp2p'
+import { createLibp2p } from 'libp2p'
+import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
+import type { PingService } from '@libp2p/ping'
+import type { Libp2pOptions } from 'libp2p'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
 
@@ -105,6 +109,9 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     switch (SECURE_CHANNEL) {
       case 'noise':
         options.connectionEncrypters = [noise()]
+        break
+      case 'tls':
+        options.connectionEncrypters = [tls()]
         break
       default:
         throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)

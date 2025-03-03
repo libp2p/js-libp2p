@@ -11,6 +11,6 @@
     "webrtc",
     "webrtc-direct"
   ],
-  "secureChannels": ["noise"],
+  "secureChannels": ["noise", "tls"],
   "muxers": ["yamux", "mplex"]
 }
