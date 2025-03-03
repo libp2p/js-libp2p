@@ -286,7 +286,8 @@ export class Upgrader implements UpgraderInterface {
         ({
           conn: encryptedConn,
           remotePeer,
-          protocol: cryptoProtocol
+          protocol: cryptoProtocol,
+          streamMuxer: muxerFactory
         } = await (direction === 'inbound'
           ? this._encryptInbound(protectedConn, opts)
           : this._encryptOutbound(protectedConn, opts)
@@ -322,7 +323,7 @@ export class Upgrader implements UpgraderInterface {
       upgradedConn = encryptedConn
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
-      } else if (this.streamMuxers.size > 0) {
+      } else if (muxerFactory == null && this.streamMuxers.size > 0) {
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:multiplex-${direction}-connection`))
 
         // Multiplex the connection
@@ -745,5 +746,13 @@ export class Upgrader implements UpgraderInterface {
       connection.log.error('error multiplexing inbound connection', err)
       throw new MuxerUnavailableError(String(err))
     }
+  }
+
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter<unknown>> {
+    return this.connectionEncrypters
+  }
+
+  getStreamMuxers (): Map<string, StreamMuxerFactory> {
+    return this.streamMuxers
   }
 }

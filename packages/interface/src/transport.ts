@@ -159,4 +159,14 @@ export interface Upgrader {
    * controller to `upgradeInbound`.
    */
   createInboundAbortSignal (signal: AbortSignal): ClearableSignal
+
+  /**
+   * Returns configured stream muxers
+   */
+  getStreamMuxers (): Map<string, StreamMuxerFactory>
+
+  /**
+   * Returns configured connection encrypters
+   */
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter>
 }
