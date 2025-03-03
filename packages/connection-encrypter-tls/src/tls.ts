@@ -89,6 +89,7 @@ export class TLS implements ConnectionEncrypter {
    */
   async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     let streamMuxer: StreamMuxerFactory | undefined
+
     const opts: TLSSocketOptions = {
       ...await generateCertificate(this.components.privateKey),
       isServer,
@@ -103,16 +104,24 @@ export class TLS implements ConnectionEncrypter {
         ...this.components.upgrader.getStreamMuxers().keys(),
         'libp2p'
       ],
-      ALPNCallback: ({ servername, protocols }) => {
-        this.log.trace('received server name %s and protocols %s', servername, protocols)
+      ALPNCallback: ({ protocols }) => {
+        this.log.trace('received protocols %s', protocols)
+        let chosenProtocol: string | undefined
 
         for (const protocol of protocols) {
+          if (protocol === 'libp2p') {
+            chosenProtocol = 'libp2p'
+          }
+
           streamMuxer = this.components.upgrader.getStreamMuxers().get(protocol)
 
           if (streamMuxer != null) {
-            return protocol
+            chosenProtocol = protocol
+            break
           }
         }
+
+        return chosenProtocol
       }
     }
 
