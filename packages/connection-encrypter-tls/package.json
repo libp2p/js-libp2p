@@ -67,7 +67,8 @@
     "aegir": "^45.1.1",
     "it-pair": "^2.0.6",
     "protons": "^7.6.0",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.2",
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/tls.js": "./dist/src/tls.browser.js"
