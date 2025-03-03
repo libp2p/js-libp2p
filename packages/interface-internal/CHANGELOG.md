@@ -32,6 +32,16 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.7](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.6...interface-internal-v2.3.7) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+
 ## [2.3.6](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.5...interface-internal-v2.3.6) (2025-03-03)
 
 

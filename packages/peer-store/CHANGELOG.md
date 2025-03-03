@@ -68,6 +68,25 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.1.0](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.22...peer-store-v11.1.0) (2025-03-03)
+
+
+### Features
+
+* expire peerstore data ([#3019](https://github.com/libp2p/js-libp2p/issues/3019)) ([80fe31a](https://github.com/libp2p/js-libp2p/commit/80fe31aa1c5c7938644a7e45b53740579297f804)), closes [#3017](https://github.com/libp2p/js-libp2p/issues/3017)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+    * @libp2p/peer-record bumped from ^8.0.22 to ^8.0.23
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+
 ## [11.0.22](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.21...peer-store-v11.0.22) (2025-03-03)
 
 
