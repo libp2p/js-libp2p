@@ -19,14 +19,13 @@
  */
 
 import { TLS } from './tls.js'
-import type { ComponentLogger, ConnectionEncrypter, Metrics, PrivateKey, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, ConnectionEncrypter, Metrics, PrivateKey } from '@libp2p/interface'
 
 export const PROTOCOL = '/tls/1.0.0'
 
 export interface TLSComponents {
   privateKey: PrivateKey
   logger: ComponentLogger
-  upgrader: Upgrader
   metrics?: Metrics
 }
 
