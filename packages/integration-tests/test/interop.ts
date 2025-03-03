@@ -138,7 +138,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       webRTCDirect()
     ],
     streamMuxers: [],
-    connectionEncrypters: [noise()]
+    connectionEncrypters: []
   }
 
   if (options.noListen !== true) {
@@ -159,12 +159,12 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     identify: identify()
   }
 
-  if (options.encryption === 'noise') {
-    opts.connectionEncrypters?.push(noise())
-  } else if (options.encryption === 'tls') {
+  if (options.encryption === 'tls') {
     opts.connectionEncrypters?.push(tls())
   } else if (options.encryption === 'plaintext') {
     opts.connectionEncrypters?.push(plaintext())
+  } else {
+    opts.connectionEncrypters?.push(noise())
   }
 
   if (options.muxer === 'mplex') {

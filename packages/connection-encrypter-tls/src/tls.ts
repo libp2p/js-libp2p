@@ -19,12 +19,12 @@
  */
 
 import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
-import { serviceCapabilities } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup } from '@libp2p/interface'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -88,6 +88,8 @@ export class TLS implements ConnectionEncrypter {
    * Encrypt connection
    */
   async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    let streamMuxer: StreamMuxerFactory | undefined
+
     const opts: TLSSocketOptions = {
       ...await generateCertificate(this.components.privateKey),
       isServer,
@@ -95,7 +97,32 @@ export class TLS implements ConnectionEncrypter {
       minVersion: 'TLSv1.3',
       maxVersion: 'TLSv1.3',
       // accept self-signed certificates
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
+
+      // early negotiation of muxer via ALPN protocols
+      ALPNProtocols: [
+        ...this.components.upgrader.getStreamMuxers().keys(),
+        'libp2p'
+      ],
+      ALPNCallback: ({ protocols }) => {
+        this.log.trace('received protocols %s', protocols)
+        let chosenProtocol: string | undefined
+
+        for (const protocol of protocols) {
+          if (protocol === 'libp2p') {
+            chosenProtocol = 'libp2p'
+          }
+
+          streamMuxer = this.components.upgrader.getStreamMuxers().get(protocol)
+
+          if (streamMuxer != null) {
+            chosenProtocol = protocol
+            break
+          }
+        }
+
+        return chosenProtocol
+      }
     }
 
     let socket: TLSSocket
@@ -131,12 +158,38 @@ export class TLS implements ConnectionEncrypter {
           .then(remotePeer => {
             this.log('remote certificate ok, remote peer %p', remotePeer)
 
+            if (!isServer && typeof socket.alpnProtocol === 'string') {
+              streamMuxer = this.components.upgrader.getStreamMuxers().get(socket.alpnProtocol)
+
+              if (streamMuxer == null) {
+                this.log.error('selected muxer that did not exist')
+              }
+            }
+
+            // 'libp2p' is a special protocol - if it's sent the remote does not
+            // support early muxer negotiation
+            if (!isServer && typeof socket.alpnProtocol === 'string' && socket.alpnProtocol !== 'libp2p') {
+              this.log.trace('got early muxer', socket.alpnProtocol)
+              streamMuxer = this.components.upgrader.getStreamMuxers().get(socket.alpnProtocol)
+
+              if (streamMuxer == null) {
+                const err = new InvalidCryptoExchangeError(`Selected muxer ${socket.alpnProtocol} did not exist`)
+                this.log.error(`Selected muxer ${socket.alpnProtocol} did not exist - %e`, err)
+
+                if (isAbortable(conn)) {
+                  conn.abort(err)
+                  reject(err)
+                }
+              }
+            }
+
             resolve({
               remotePeer,
               conn: {
                 ...conn,
                 ...streamToIt(socket)
-              }
+              },
+              streamMuxer
             })
           })
           .catch((err: Error) => {
