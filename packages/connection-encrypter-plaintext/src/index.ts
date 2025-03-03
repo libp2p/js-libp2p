@@ -88,7 +88,7 @@ class Plaintext implements ConnectionEncrypter {
 
     let peerId
     try {
-      if (response.pubkey?.Data == null) {
+      if (response.pubkey == null) {
         throw new ProtocolError('Public key missing')
       }
 
