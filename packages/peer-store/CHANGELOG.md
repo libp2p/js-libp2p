@@ -68,6 +68,25 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.0.22](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.21...peer-store-v11.0.22) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+* pass digest to publicKeyFromProtobuf ([#3014](https://github.com/libp2p/js-libp2p/issues/3014)) ([3d9b07c](https://github.com/libp2p/js-libp2p/commit/3d9b07c34857376adc6942aaba19bc8a208f58df))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/peer-record bumped from ^8.0.21 to ^8.0.22
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+
 ## [11.0.21](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.0.20...peer-store-v11.0.21) (2025-02-25)
 
 

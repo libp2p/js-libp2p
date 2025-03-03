@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/simple-metrics",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Simple in-memory metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-simple#readme",
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.6.1",
-    "@libp2p/logger": "^5.1.10",
+    "@libp2p/logger": "^5.1.11",
     "it-foreach": "^2.1.1",
     "it-stream-types": "^2.0.2",
     "tdigest": "^0.1.2"

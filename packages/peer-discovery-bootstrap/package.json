@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/bootstrap",
-  "version": "11.0.28",
+  "version": "11.0.29",
   "description": "Peer discovery via a list of bootstrap peers",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap#readme",
@@ -55,14 +55,14 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.6.1",
-    "@libp2p/interface-internal": "^2.3.5",
-    "@libp2p/peer-id": "^5.0.14",
+    "@libp2p/interface-internal": "^2.3.6",
+    "@libp2p/peer-id": "^5.0.15",
     "@multiformats/mafmt": "^12.1.6",
     "@multiformats/multiaddr": "^12.3.3"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^6.3.6",
-    "@libp2p/logger": "^5.1.10",
+    "@libp2p/interface-compliance-tests": "^6.3.7",
+    "@libp2p/logger": "^5.1.11",
     "aegir": "^45.1.1",
     "sinon-ts": "^2.0.0"
   },

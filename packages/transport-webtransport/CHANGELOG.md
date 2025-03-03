@@ -96,6 +96,26 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.34](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.33...webtransport-v5.0.34) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/ping bumped from ^2.0.23 to ^2.0.24
+    * libp2p bumped from ^2.7.4 to ^2.7.5
+
 ## [5.0.33](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.32...webtransport-v5.0.33) (2025-02-26)
 
 
