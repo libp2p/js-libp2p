@@ -444,7 +444,7 @@ export interface KadDHTInit {
    * (2 ^ prefixLength) * kBucketSize
    * ```
    *
-   * @default 8
+   * @default 6
    */
   prefixLength?: number
 
