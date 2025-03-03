@@ -150,6 +150,10 @@ export class TLS implements ConnectionEncrypter {
 
             if (!isServer && typeof socket.alpnProtocol === 'string') {
               streamMuxer = this.components.upgrader.getStreamMuxers().get(socket.alpnProtocol)
+
+              if (streamMuxer == null) {
+                this.log.error('selected muxer that did not exist')
+              }
             }
 
             resolve({
@@ -179,7 +183,6 @@ export class TLS implements ConnectionEncrypter {
         }
 
         socket.destroy(err)
-        // conn.abort(err)
         reject(err)
       })
       socket.once('secure', () => {
