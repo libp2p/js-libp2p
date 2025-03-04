@@ -60,7 +60,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
@@ -78,7 +78,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
@@ -96,7 +96,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -114,7 +114,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
@@ -132,7 +132,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -155,7 +155,7 @@ jobs:
           sudo apt-get update
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
@@ -173,7 +173,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
@@ -191,7 +191,7 @@ jobs:
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
