@@ -1,7 +1,7 @@
 import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import { mockConnection } from './connection.js'
-import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions, ClearableSignal } from '@libp2p/interface'
+import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions, ClearableSignal, ConnectionEncrypter, StreamMuxerFactory } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export interface MockUpgraderInit {
@@ -48,6 +48,14 @@ class MockUpgrader implements Upgrader {
     setMaxListeners(Infinity, output)
 
     return output
+  }
+
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter<unknown>> {
+    return new Map()
+  }
+
+  getStreamMuxers (): Map<string, StreamMuxerFactory> {
+    return new Map()
   }
 }
 

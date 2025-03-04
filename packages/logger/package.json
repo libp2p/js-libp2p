@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/logger",
-  "version": "5.1.10",
+  "version": "5.1.11",
   "description": "A logging component for use in js-libp2p modules",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/logger#readme",
@@ -28,7 +28,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     }
   },
@@ -61,7 +61,7 @@
     "weald": "^1.0.4"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^5.0.14",
+    "@libp2p/peer-id": "^5.0.15",
     "aegir": "^45.1.1",
     "sinon": "^19.0.2",
     "uint8arrays": "^5.1.0"
