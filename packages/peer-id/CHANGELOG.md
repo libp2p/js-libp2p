@@ -11,6 +11,16 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [5.0.16](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.15...peer-id-v5.0.16) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+
 ## [5.0.15](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.14...peer-id-v5.0.15) (2025-03-03)
 
 
