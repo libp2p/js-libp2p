@@ -22,6 +22,11 @@ webkit-image.json: image.json
 	docker image inspect webkit-${image_name} -f "{{.Id}}" | \
 		xargs -I {} echo "{\"imageID\": \"{}\"}" > $@
 
+electron-image.json: image.json
+	cd .. && docker build -f interop/ElectronDockerfile --build-arg=BASE_IMAGE=node-${image_name} -t electron-${image_name} .
+	docker image inspect electron-${image_name} -f "{{.Id}}" | \
+		xargs -I {} echo "{\"imageID\": \"{}\"}" > $@
+
 .PHONY: clean
 
 clean:
