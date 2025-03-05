@@ -431,6 +431,7 @@ export type TransportManagerDialProgressEvents =
  * Progress events for the open connection process.
  */
 export type OpenConnectionProgressEvents =
+  TransportManagerDialProgressEvents |
   /**
    * Emitted when the connection is already connected.
    */
