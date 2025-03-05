@@ -1,2 +1,5 @@
-# Examples are meant for documentation and may include console.logs and simplified types
-examples/
+# Ignore markdown files
+*.md
+
+# But don't ignore example code - we want these to be properly linted
+# examples/

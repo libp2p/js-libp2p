@@ -10,13 +10,10 @@
 - [Overview](#overview)
 - [Install](#install)
 - [Usage](#usage)
-  - [HTTP Server](#http-server)
-  - [HTTP Client](#http-client)
+  - [Basic HTTP Server](#basic-http-server)
+  - [Making HTTP Requests](#making-http-requests)
   - [WebSocket Support](#websocket-support)
-- [Architecture](#architecture)
-  - [WebSocket Implementation](#websocket-implementation)
-  - [Performance Optimizations](#performance-optimizations)
-  - [Cross-Environment Compatibility](#cross-environment-compatibility)
+  - [Complete RESTful API Example](#complete-restful-api-example)
 - [API](#api)
 - [License](#license)
 
@@ -35,59 +32,106 @@ npm install @libp2p/protocol-http
 
 ## Usage
 
-### HTTP Server
+### Basic HTTP Server
 
-See [server.ts](./examples/server.ts) for a complete example of creating an HTTP server.
+Here's a simple HTTP server that responds with "Hello World":
 
-### HTTP Client
+```typescript
+import { createLibp2p } from 'libp2p'
+import { http } from '@libp2p/protocol-http'
 
-See [client.ts](./examples/client.ts) for a complete example of making HTTP requests.
+const node = await createLibp2p({
+  services: {
+    http: http()
+  }
+})
+
+const server = node.services.http.createServer()
+
+server.on('request', (request, response) => {
+  response.writeHead(200, { 'Content-Type': 'text/plain' })
+  response.end('Hello from libp2p HTTP server!')
+})
+```
+
+### Making HTTP Requests
+
+To make HTTP requests to other libp2p nodes:
+
+```typescript
+// Make HTTP requests to other libp2p nodes
+const response = await node.services.http.fetch('libp2p://QmPeerID/resource')
+const text = await response.text()
+console.log('Response:', text)
+```
 
 ### WebSocket Support
 
-See [websocket.ts](./examples/websocket.ts) for complete examples of both WebSocket server and client usage.
+Create a WebSocket server:
 
-For more examples, check out the [examples](./examples) directory.
+```typescript
+server.on('request', async (request, response) => {
+  if (node.services.http.isWebSocketRequest(request)) {
+    const ws = await node.services.http.upgradeWebSocket(request, response)
+    
+    ws.addEventListener('message', async event => {
+      const text = event.data.toString()
+      await ws.send(`Echo: ${text}`)
+    })
+  }
+})
+```
 
-## Architecture
+Connect to a WebSocket server:
 
-### WebSocket Implementation
+```typescript
+const ws = await node.services.http.connect('libp2p://QmPeerID/ws', {
+  keepAliveIntervalMs: 30000,
+  fragmentationThreshold: 16384
+})
 
-This package implements a complete WebSocket client according to RFC 6455, with support for:
+ws.addEventListener('message', event => {
+  console.log('Received:', event.data)
+})
 
-- Standard WebSocket events (open, message, error, close)
-- Text and binary message types
-- Message fragmentation for large payloads
-- Keep-alive with ping/pong frames
-- Proper connection lifecycle management
-- Graceful closure with status codes and reasons
+await ws.send('Hello WebSocket!')
+```
 
-The WebSocket implementation is structured with a modular design that separates concerns:
+### Complete RESTful API Example
 
-- `WebSocketImpl` - Core implementation of the WebSocket interface
-- `WebSocketFrameHandler` - Handles creating and processing WebSocket frames
-- `WebSocketStreamHandler` - Manages reading frames from the underlying stream
-- `WebSocketEventHandler` - Manages event dispatching with performance optimizations
-- `WebSocketConfigManager` - Centralizes configuration options
-- `WebSocketSignalHandler` - Handles abort signal lifecycle and cleanup
+A complete example demonstrating a RESTful API server with CRUD operations is available in the [examples/api](./examples/api) directory. It includes:
 
-### Performance Optimizations
+- Status endpoint returning node information
+- Notes API with full CRUD operations
+- Memory-based storage that works in both Node.js and browser
+- TypeScript interfaces and error handling
+- Client implementation with clean API
 
-Performance is optimized in several ways:
+For example, using the Notes API:
 
-1. **Event Listener Checks**: Events are only created and dispatched when listeners exist
-2. **Fragmentation Threshold**: Large messages are automatically fragmented to prevent blocking
-3. **Keep-Alive Mechanism**: Optional ping/pong frames maintain connection health
-4. **Code Size**: All files are kept under 200 lines to improve maintainability
-5. **Modular Design**: Single-responsibility components improve testability and reuse
+```typescript
+import { NotesClient } from './examples/api/client'
 
-### Cross-Environment Compatibility
+// Create a client
+const notes = new NotesClient(node, serverPeerId)
 
-The implementation works consistently across both Node.js and browser environments:
+// Create a note
+const note = await notes.createNote({
+  title: 'Hello libp2p',
+  content: 'This is a test note'
+})
 
-- Environment-agnostic event classes created via factory functions
-- Browser polyfills provided for Node.js testing environment
-- Consistent behavior regardless of runtime environment
+// Update the note
+await notes.updateNote(note.id, {
+  content: 'Updated content'
+})
+
+// List all notes
+const allNotes = await notes.listNotes()
+console.log('Notes:', allNotes)
+```
+
+See the [examples/api](./examples/api) directory for the complete implementation.
 
 ## API
 
