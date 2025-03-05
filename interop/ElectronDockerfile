@@ -1,0 +1,6 @@
+ARG BASE_IMAGE=node-js-libp2p-head
+FROM ${BASE_IMAGE}
+
+WORKDIR /app/interop
+
+ENTRYPOINT npm test -- -t electron-main
