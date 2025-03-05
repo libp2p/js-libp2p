@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+enum OpCode {
+  // Continuation frame
+  CONTINUATION = 0;
+  // Text frame  
+  TEXT = 1;
+  // Binary frame
+  BINARY = 2;
+  // Connection close frame
+  CLOSE = 8;
+  // Ping frame
+  PING = 9;
+  // Pong frame
+  PONG = 10;
+}
+
+message WebSocketFrame {
+  optional bool fin = 1;          // Final fragment flag (FIN bit)
+  optional OpCode op_code = 2;    // Operation code
+  optional bool mask = 3;         // Masking flag
+  optional bytes payload = 4;     // Frame payload
+}
+
+message Request {
+  optional string method = 1;     // HTTP method (GET, POST, etc.)
+  optional string path = 2;       // Request path
+  map<string, string> headers = 3;// HTTP headers
+  optional bytes body = 4;        // Request body
+}
+
+message Response {
+  optional uint32 status_code = 1;// HTTP status code
+  map<string, string> headers = 2;// HTTP headers
+  optional bytes body = 3;        // Response body
+}
