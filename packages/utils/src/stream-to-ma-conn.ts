@@ -32,21 +32,21 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
   let closedRead = false
   let closedWrite = false
 
-  // piggyback on `stream.close` invocations to close maconn
+  // piggyback on `stream.close` invocations to close multiaddr connection
   const streamClose = stream.close.bind(stream)
   stream.close = async (options) => {
     await streamClose(options)
     close(true)
   }
 
-  // piggyback on `stream.abort` invocations to close maconn
+  // piggyback on `stream.abort` invocations to close multiaddr connection
   const streamAbort = stream.abort.bind(stream)
   stream.abort = (err) => {
     streamAbort(err)
     close(true)
   }
 
-  // piggyback on `stream.sink` invocations to close maconn
+  // piggyback on `stream.sink` invocations to close multiaddr connection
   const streamSink = stream.sink.bind(stream)
   stream.sink = async (source) => {
     try {

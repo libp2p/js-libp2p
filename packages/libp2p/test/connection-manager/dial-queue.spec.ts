@@ -5,7 +5,7 @@ import { NotFoundError } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, resolvers } from '@multiformats/multiaddr'
-import { WebRTC } from '@multiformats/multiaddr-matcher'
+import { TCP, WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
@@ -376,5 +376,48 @@ describe('dial queue', () => {
     expect(all[0].status).to.equal('rejected', 'did not respect default dial timeout')
     expect(all[1].status).to.equal('fulfilled', 'did not respect user dial timeout')
     expect(components.transportManager.dial.callCount).to.equal(1, 'should have coalesced multiple dials to same dial')
+  })
+
+  it('should continue dial when new addresses are discovered', async () => {
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const ma1 = multiaddr(`/ip6/2001:db8:1:2:3:4:5:6/tcp/123/p2p/${remotePeer}`)
+    const ma2 = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`)
+
+    components.transportManager.dialTransportForMultiaddr.callsFake(ma => {
+      if (TCP.exactMatch(ma)) {
+        return stubInterface<Transport>()
+      }
+    })
+
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => {
+      if (ma.equals(ma2)) {
+        await delay(100)
+        return connection
+      }
+
+      // second dial should take place while this dial is in progress but has
+      // not yet failed
+      await delay(500)
+      throw new Error('Could not dial address')
+    })
+
+    dialer = new DialQueue(components)
+
+    // dial peer with address that fails
+    const dial1 = dialer.dial(ma1)
+
+    // let dial begin
+    await delay(50)
+
+    // dial same peer again with address that succeeds
+    const dial2 = dialer.dial(ma2)
+
+    // both dials should coalesce to the same connection
+    await expect(dial1).to.eventually.equal(connection)
+    await expect(dial2).to.eventually.equal(connection)
   })
 })

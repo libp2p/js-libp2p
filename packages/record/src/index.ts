@@ -79,7 +79,7 @@ export class Libp2pRecord {
    * Create a record from the raw object returned from the protobuf library
    */
   static fromDeserialized (obj: Record): Libp2pRecord {
-    const recvtime = utils.parseRFC3339(obj.timeReceived)
+    const receivedTime = utils.parseRFC3339(obj.timeReceived)
 
     if (obj.key == null) {
       throw new Error('key missing from deserialized object')
@@ -90,7 +90,7 @@ export class Libp2pRecord {
     }
 
     const rec = new Libp2pRecord(
-      obj.key, obj.value, recvtime
+      obj.key, obj.value, receivedTime
     )
 
     return rec

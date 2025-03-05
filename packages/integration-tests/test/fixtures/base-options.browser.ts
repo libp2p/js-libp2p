@@ -5,7 +5,6 @@ import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import mergeOptions from 'merge-options'
 import { isWebWorker } from 'wherearewe'
 import type { ServiceMap } from '@libp2p/interface'
@@ -19,9 +18,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       ]
     },
     transports: [
-      webSockets({
-        filter: filters.all
-      }),
+      webSockets(),
       circuitRelayTransport()
     ],
     streamMuxers: [

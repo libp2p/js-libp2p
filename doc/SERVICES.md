@@ -156,7 +156,7 @@ const node = await createLibp2p({
 console.info(node.services.myService.saySomething()) // 'The queue is 0 dials long'
 ```
 
-## Service lifecycle
+## Service life cycle
 
 Services that need to do async work during startup/shutdown can implement the [Startable](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Startable.html) interface.
 

@@ -1,5 +1,5 @@
 /**
- * Implemented by components that have a lifecycle
+ * Implemented by components that have a life cycle
  */
 export interface Startable {
   /**

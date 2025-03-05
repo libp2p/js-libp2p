@@ -67,8 +67,8 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
 
   // @ts-expect-error deep chain
   const remotePeerIdPb = libp2pKeySequence.valueBlock.value[0].valueBlock.valueHex
-  const marshalledPeerId = new Uint8Array(remotePeerIdPb, 0, remotePeerIdPb.byteLength)
-  const remoteLibp2pPublicKey: Libp2pPublicKey = publicKeyFromProtobuf(marshalledPeerId)
+  const marshaledPeerId = new Uint8Array(remotePeerIdPb, 0, remotePeerIdPb.byteLength)
+  const remoteLibp2pPublicKey: Libp2pPublicKey = publicKeyFromProtobuf(marshaledPeerId)
 
   // @ts-expect-error deep chain
   const remoteSignature = libp2pKeySequence.valueBlock.value[1].valueBlock.valueHex

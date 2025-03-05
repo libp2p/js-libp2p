@@ -44,7 +44,7 @@ describe('scalable-cuckoo-filter', () => {
     expect(cuckoo.count).to.equal(0)
   })
 
-  it('optimises input', () => {
+  it('optimizes input', () => {
     const filter = createScalableCuckooFilter(100000, 0.001)
     const key = randomBytes(32)
 

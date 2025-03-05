@@ -109,7 +109,7 @@ export class TCP implements Transport<TCPDialEvents> {
   }
 
   async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
-    options.signal?.throwIfAborted()
+    options.signal.throwIfAborted()
     options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
     let rawSocket: Socket
@@ -173,9 +173,7 @@ export class TCP implements Transport<TCPDialEvents> {
       rawSocket.on('timeout', onTimeout)
       rawSocket.on('connect', onConnect)
 
-      if (options.signal != null) {
-        options.signal.addEventListener('abort', onAbort)
-      }
+      options.signal.addEventListener('abort', onAbort)
     })
       .catch(err => {
         rawSocket?.destroy()

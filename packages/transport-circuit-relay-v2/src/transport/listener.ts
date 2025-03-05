@@ -20,7 +20,6 @@ export interface CircuitRelayTransportListenerInit {
 }
 
 class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
   private readonly addressManager: AddressManager
   private readonly reservationStore: ReservationStore
@@ -34,7 +33,6 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:listener')
-    this.peerId = components.peerId
     this.connectionManager = components.connectionManager
     this.addressManager = components.addressManager
     this.reservationStore = components.reservationStore
@@ -83,12 +81,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
   }
 
   async listen (addr: Multiaddr): Promise<void> {
-    this.log('listen on %a', addr)
-
     if (CircuitSearch.exactMatch(addr)) {
+      this.log('searching for circuit relay servers')
+
       // start relay discovery
       this.reservationId = this.reservationStore.reserveRelay()
     } else if (CircuitListen.exactMatch(addr)) {
+      this.log('listen on specific relay server %a', addr)
+
       const signal = AbortSignal.timeout(this.listenTimeout)
       setMaxListeners(Infinity, signal)
 
@@ -111,6 +111,10 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
 
   getAddrs (): Multiaddr[] {
     return [...this.listeningAddrs.values()].flat()
+  }
+
+  updateAnnounceAddrs (): void {
+
   }
 
   async close (): Promise<void> {

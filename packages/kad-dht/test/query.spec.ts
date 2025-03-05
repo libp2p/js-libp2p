@@ -775,7 +775,7 @@ describe('QueryManager', () => {
       2: { closerPeers: [1] },
       3: { value: uint8ArrayFromString('false') },
       // Return an error at this point
-      4: { closerPeers: [3], error: new Error('Nooo!') },
+      4: { closerPeers: [3], error: new Error('Nope!') },
       5: { closerPeers: [4] }
     })
 

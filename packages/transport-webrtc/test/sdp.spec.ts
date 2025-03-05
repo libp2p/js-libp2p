@@ -1,9 +1,10 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { MAX_MESSAGE_SIZE } from '../src/constants.js'
 import * as underTest from '../src/private-to-public/utils/sdp.js'
-import { MAX_MESSAGE_SIZE } from '../src/stream.js'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
+/* spell-checker:disable-next-line */
 const sampleCerthash = 'uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ'
 const sampleSdp = `v=0
 o=- 0 0 IN IP4 0.0.0.0
@@ -47,8 +48,8 @@ describe('SDP', () => {
   })
 
   it('converts a multiaddr into a fingerprint', () => {
-    const fingerpint = underTest.ma2Fingerprint(sampleMultiAddr)
-    expect(fingerpint).to.equal('sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1')
+    const fingerprint = underTest.ma2Fingerprint(sampleMultiAddr)
+    expect(fingerprint).to.equal('sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1')
   })
 
   it('extracts a fingerprint from sdp', () => {
@@ -57,7 +58,7 @@ describe('SDP', () => {
   })
 
   it('munges the ufrag and pwd in a SDP', () => {
-    const result = underTest.munge({ type: 'answer', sdp: sampleSdp }, 'someotheruserfragmentstring')
+    const result = underTest.munge({ type: 'answer', sdp: sampleSdp }, 'someOtherUserFragmentString')
     const expected = `v=0
 o=- 0 0 IN IP4 0.0.0.0
 s=-
@@ -67,8 +68,8 @@ a=ice-lite
 m=application 56093 UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:passive
-a=ice-ufrag:someotheruserfragmentstring
-a=ice-pwd:someotheruserfragmentstring
+a=ice-ufrag:someOtherUserFragmentString
+a=ice-pwd:someOtherUserFragmentString
 a=fingerprint:sha-256 72:68:47:CD:48:B0:5E:C5:60:4D:15:9C:BF:40:1D:6F:00:A1:23:EC:90:17:0E:2C:D1:B3:8F:D2:9D:37:E5:B1
 a=sctp-port:5000
 a=max-message-size:${MAX_MESSAGE_SIZE}

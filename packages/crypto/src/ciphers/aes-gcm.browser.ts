@@ -13,7 +13,14 @@ import type { CreateOptions, AESCipher } from './interface.js'
 //     await crypto.subtle.importKey('raw', new Uint8Array(0), { name: 'PBKDF2' }, false, ['deriveKey']),
 //     { name: 'AES-GCM', length: 128 }, true, ['encrypt', 'decrypt'])
 // )
-export const derivedEmptyPasswordKey = { alg: 'A128GCM', ext: true, k: 'scm9jmO_4BJAgdwWGVulLg', key_ops: ['encrypt', 'decrypt'], kty: 'oct' }
+export const derivedEmptyPasswordKey = {
+  alg: 'A128GCM',
+  ext: true,
+  /* spell-checker:disable-next-line */
+  k: 'scm9jmO_4BJAgdwWGVulLg',
+  key_ops: ['encrypt', 'decrypt'],
+  kty: 'oct'
+}
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 

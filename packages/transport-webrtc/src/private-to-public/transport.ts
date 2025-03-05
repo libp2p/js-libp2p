@@ -1,6 +1,5 @@
 import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { raceSignal } from 'race-signal'
 import { genUfrag } from '../util.js'
@@ -9,28 +8,9 @@ import { connect } from './utils/connect.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { WebRTCDialEvents } from '../private-to-private/transport.js'
-import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey } from '@libp2p/interface'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-/**
- * The time to wait, in milliseconds, for the data channel handshake to complete
- */
-const HANDSHAKE_TIMEOUT_MS = 10_000
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const WEBRTC_CODE: number = protocols('webrtc-direct').code
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const CERTHASH_CODE: number = protocols('certhash').code
 
 /**
  * The peer for this transport
@@ -41,6 +21,7 @@ export interface WebRTCDirectTransportComponents {
   metrics?: Metrics
   logger: ComponentLogger
   transportManager: TransportManager
+  upgrader: Upgrader
 }
 
 export interface WebRTCMetrics {
@@ -51,6 +32,10 @@ export interface WebRTCTransportDirectInit {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   dataChannel?: DataChannelOptions
   certificates?: TransportCertificate[]
+
+  /**
+   * @deprecated this setting is ignored and will be removed in a future release
+   */
   useLibjuice?: boolean
 }
 
@@ -87,7 +72,6 @@ export class WebRTCDirectTransport implements Transport {
    * Dial a given multiaddr
    */
   async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
-    options?.signal?.throwIfAborted()
     const rawConn = await this._connect(ma, options)
     this.log('dialing address: %a', ma)
     return rawConn
@@ -121,6 +105,9 @@ export class WebRTCDirectTransport implements Transport {
    * Connect to a peer using a multiaddr
    */
   async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
+    // do not create RTCPeerConnection if the signal has already been aborted
+    options.signal.throwIfAborted()
+
     let theirPeerId: PeerId | undefined
     const remotePeerString = ma.getPeerId()
     if (remotePeerString != null) {
@@ -139,7 +126,7 @@ export class WebRTCDirectTransport implements Transport {
         logger: this.components.logger,
         metrics: this.components.metrics,
         events: this.metrics?.dialerEvents,
-        signal: options.signal ?? AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
+        signal: options.signal,
         remoteAddr: ma,
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,

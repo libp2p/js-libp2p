@@ -21,8 +21,10 @@ export default {
       const { echo } = await import('@libp2p/echo')
       const { mockMuxer } = await import('@libp2p/interface-compliance-tests/mocks')
       const { ping } = await import('@libp2p/ping')
+      const { prefixLogger } = await import('@libp2p/logger')
 
       const libp2p = await createLibp2p({
+        logger: prefixLogger('relay'),
         connectionManager: {
           inboundConnectionThreshold: Infinity
         },

@@ -7,7 +7,6 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
-import * as Filter from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
@@ -70,7 +69,7 @@ describe('bootstrap', () => {
   it('bootstrap should discover all peers in the list', async () => {
     const deferred = defer()
 
-    const bootstrappers = [
+    const list = [
       `${listenAddr.toString()}/p2p/${remotePeerId1.toString()}`,
       `${listenAddr.toString()}/p2p/${remotePeerId2.toString()}`
     ]
@@ -81,7 +80,7 @@ describe('bootstrap', () => {
       ],
       peerDiscovery: [
         bootstrap({
-          list: bootstrappers
+          list
         })
       ]
     })
@@ -109,7 +108,7 @@ describe('bootstrap', () => {
   it('bootstrap should dial all peers in the list', async () => {
     const deferred = defer()
 
-    const bootstrappers = [
+    const list = [
       `${process.env.RELAY_MULTIADDR}`
     ]
 
@@ -118,16 +117,14 @@ describe('bootstrap', () => {
         plaintext()
       ],
       transports: [
-        webSockets({
-          filter: Filter.all
-        })
+        webSockets()
       ],
       streamMuxers: [
         mplex()
       ],
       peerDiscovery: [
         bootstrap({
-          list: bootstrappers
+          list
         })
       ],
       connectionGater: {
@@ -136,7 +133,7 @@ describe('bootstrap', () => {
     })
 
     const expectedPeers = new Set(
-      bootstrappers.map(ma => multiaddr(ma).getPeerId())
+      list.map(ma => multiaddr(ma).getPeerId())
     )
 
     libp2p.addEventListener('connection:open', (evt) => {

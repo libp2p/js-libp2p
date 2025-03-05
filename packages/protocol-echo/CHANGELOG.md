@@ -1,5 +1,84 @@
 # Changelog
 
+## [2.1.16](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.15...echo-v2.1.16) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/interface-internal bumped from ^2.3.6 to ^2.3.7
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+
+## [2.1.15](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.14...echo-v2.1.15) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.5 to ^2.3.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+
+## [2.1.14](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.13...echo-v2.1.14) (2025-02-25)
+
+
+### Documentation
+
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+
+## [2.1.13](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.12...echo-v2.1.13) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.3 to ^2.3.4
+
+## [2.1.12](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.11...echo-v2.1.12) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+
+## [2.1.11](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.10...echo-v2.1.11) (2025-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/interface-internal bumped from ^2.3.1 to ^2.3.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+
+## [2.1.10](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.9...echo-v2.1.10) (2025-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.0 to ^2.3.1
+
 ## [2.1.9](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.8...echo-v2.1.9) (2025-02-10)
 
 

@@ -851,10 +851,17 @@ export interface TraceOptions {
 }
 
 /**
+ * A signal that needs to be cleared when no longer in use
+ */
+export interface ClearableSignal extends AbortSignal {
+  clear(): void
+}
+
+/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,
- * these options allow tuning that behaviour.
+ * these options allow tuning that behavior.
  */
 export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**

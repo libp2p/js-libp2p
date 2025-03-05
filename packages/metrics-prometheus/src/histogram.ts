@@ -1,5 +1,5 @@
 import { type CollectFunction, Histogram as PromHistogram } from 'prom-client'
-import { normaliseString } from './utils.js'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedHistogramOptions } from './index.js'
 import type { StopTimer, CalculateMetric, Histogram } from '@libp2p/interface'
 
@@ -8,9 +8,9 @@ export class PrometheusHistogram implements Histogram {
   private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedHistogramOptions) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const labels = opts.label != null ? [normaliseString(opts.label)] : []
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<PromHistogram<any>> | undefined
     this.calculators = []
 

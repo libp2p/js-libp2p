@@ -1,5 +1,5 @@
 import { type CollectFunction, Summary as PromSummary } from 'prom-client'
-import { normaliseString, type CalculatedMetric } from './utils.js'
+import { normalizeString, type CalculatedMetric } from './utils.js'
 import type { PrometheusCalculatedSummaryOptions } from './index.js'
 import type { CalculateMetric, SummaryGroup, StopTimer } from '@libp2p/interface'
 
@@ -9,9 +9,9 @@ export class PrometheusSummaryGroup implements SummaryGroup, CalculatedMetric<Re
   private readonly calculators: Array<CalculateMetric<Record<string, number>>>
 
   constructor (name: string, opts: PrometheusCalculatedSummaryOptions<Record<string, number>>) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const label = this.label = normaliseString(opts.label ?? name)
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const label = this.label = normalizeString(opts.label ?? name)
     let collect: CollectFunction<PromSummary<any>> | undefined
     this.calculators = []
 

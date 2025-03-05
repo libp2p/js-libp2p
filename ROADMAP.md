@@ -8,7 +8,7 @@ js-libp2p is deployed in many production environments so to take adoption to the
 
 ### js-libp2p amino DHT bootstrapper
 
-Deploying a public bootstrapper is a great test of the capacity of js-libp2p since it will need to maintain several thousand simultaneous connections and service many DHT RPC requests.  Comprehensive metrics and logging will also give us insight into real world usage patterns that can further direct performance optimisations.
+Deploying a public bootstrapper is a great test of the capacity of js-libp2p since it will need to maintain several thousand simultaneous connections and service many DHT RPC requests.  Comprehensive metrics and logging will also give us insight into real world usage patterns that can further direct performance optimizations.
 
   - Deploy a bootstrap server that acts as an entry point to the network for DHT clients
   - Ship it in the default config of majority libp2p/IPFS implementations
@@ -74,7 +74,7 @@ The specification is [in progress](https://github.com/libp2p/specs/pull/625) the
 
 ### QUIC in Node.js
 
-There's a decent chance the Node.js QUIC implementation is [not going to be exposed to userland](https://github.com/nodejs/node/pull/52628#issuecomment-2143475066), but we need this to have compatibility with other libp2p implementations.
+There's a decent chance the Node.js QUIC implementation is [not going to be exposed to user land](https://github.com/nodejs/node/pull/52628#issuecomment-2143475066), but we need this to have compatibility with other libp2p implementations.
 
 https://github.com/ChainSafe/js-libp2p-quic is in-progress to add QUIC support via a native module that uses the Rust implementation.
 

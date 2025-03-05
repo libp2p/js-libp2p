@@ -109,7 +109,7 @@ describe('private network', () => {
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
-  describe('invalid psks', () => {
+  describe('invalid pre-shared keys', () => {
     it('should not accept a bad psk', () => {
       expect(() => {
         return preSharedKey({
