@@ -15,7 +15,7 @@
  *     http: http()
  *   }
  * })
- * 
+ *
  * // Now you can use HTTP over libp2p
  * const response = await libp2p.services.http.fetch('libp2p://QmPeer/resource')
  * ```
@@ -27,17 +27,17 @@
  *
  * // Use the WebSocket implementation
  * const ws = webSocketHttp(stream, abortSignal, logger)
- * 
+ *
  * // Send a message
  * await ws.send('Hello world')
- * 
+ *
  * // Close the connection
  * await ws.close()
  * ```
  */
 
-import { WebSocketImpl } from './websocket-impl.js'
 import { http } from './http-service.js'
+import { WebSocketImpl } from './websocket-impl.js'
 import type { WebSocket, WebSocketOptions } from './interfaces.js'
 import type { Logger } from '@libp2p/interface'
 
@@ -46,7 +46,7 @@ import type { Logger } from '@libp2p/interface'
  */
 export function webSocketHttp (
   stream: any,
-  signal: AbortSignal, 
+  signal: AbortSignal,
   logger: Logger,
   url?: string,
   options?: WebSocketOptions

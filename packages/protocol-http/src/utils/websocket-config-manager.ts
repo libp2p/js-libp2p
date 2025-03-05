@@ -25,7 +25,7 @@ export class WebSocketConfigManager {
   /**
    * Create a new WebSocketConfigManager with the given options
    */
-  constructor(options: WebSocketOptions = {}) {
+  constructor (options: WebSocketOptions = {}) {
     // Initialize with defaults or provided values
     this.keepAliveInterval = options.keepAliveIntervalMs ?? DEFAULT_WEBSOCKET_KEEP_ALIVE_INTERVAL
     this.pingTimeout = options.pingTimeoutMs ?? DEFAULT_WEBSOCKET_PING_TIMEOUT
@@ -35,28 +35,28 @@ export class WebSocketConfigManager {
   /**
    * Get the keep-alive interval in milliseconds
    */
-  getKeepAliveInterval(): number {
+  getKeepAliveInterval (): number {
     return this.keepAliveInterval
   }
 
   /**
    * Get the ping timeout in milliseconds
    */
-  getPingTimeout(): number {
+  getPingTimeout (): number {
     return this.pingTimeout
   }
 
   /**
    * Get the fragmentation threshold in bytes
    */
-  getFragmentationThreshold(): number {
+  getFragmentationThreshold (): number {
     return this.fragmentationThreshold
   }
 
   /**
    * Return a configuration object for WebSocketKeepAlive
    */
-  getKeepAliveConfig(): { keepAliveInterval: number, pingTimeout: number } {
+  getKeepAliveConfig (): { keepAliveInterval: number, pingTimeout: number } {
     return {
       keepAliveInterval: this.keepAliveInterval,
       pingTimeout: this.pingTimeout
@@ -66,7 +66,7 @@ export class WebSocketConfigManager {
   /**
    * Check if keep-alive is enabled
    */
-  isKeepAliveEnabled(): boolean {
+  isKeepAliveEnabled (): boolean {
     return this.keepAliveInterval > 0
   }
 }

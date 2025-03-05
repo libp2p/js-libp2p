@@ -13,28 +13,28 @@ export class WebSocketSignalHandler {
 
   /**
    * Create a new WebSocketSignalHandler
-   * 
+   *
    * @param signal - The abort signal to monitor
    * @param log - Logger instance
    * @param onAbort - Callback to execute when abort is triggered
    */
-  constructor(signal: AbortSignal, log: Logger, onAbort: () => void) {
+  constructor (signal: AbortSignal, log: Logger, onAbort: () => void) {
     this.signal = signal
     this.log = log
     this.onAbort = onAbort
-    
+
     // Initialize abort state
     this.aborted = signal.aborted
-    
+
     // Define abort handler
     const abortHandler = () => {
       if (!this.aborted) {
         this.aborted = true
-        
+
         if (typeof this.log.trace === 'function') {
           this.log.trace('abort signal received')
         }
-        
+
         try {
           // Execute the provided callback immediately
           this.onAbort()
@@ -45,7 +45,7 @@ export class WebSocketSignalHandler {
         }
       }
     }
-    
+
     // If already aborted, call handler immediately
     if (this.aborted) {
       // Use setTimeout to make sure this happens asynchronously
@@ -54,7 +54,7 @@ export class WebSocketSignalHandler {
     } else {
       // Listen for abort signal
       signal.addEventListener('abort', abortHandler)
-      
+
       // Store cleanup function to remove listener later
       this.cleanupFunction = () => {
         try {
@@ -70,7 +70,7 @@ export class WebSocketSignalHandler {
   /**
    * Check if the signal has been aborted
    */
-  isAborted(): boolean {
+  isAborted (): boolean {
     return this.aborted || this.signal.aborted
   }
 
@@ -78,7 +78,7 @@ export class WebSocketSignalHandler {
    * Manually trigger the abort handler
    * Useful for testing or manual cleanup
    */
-  triggerAbort(): void {
+  triggerAbort (): void {
     if (!this.aborted) {
       this.aborted = true
       this.onAbort()
@@ -89,7 +89,7 @@ export class WebSocketSignalHandler {
    * Clean up event listeners
    * Should be called when the WebSocket is closed
    */
-  cleanup(): void {
+  cleanup (): void {
     if (this.cleanupFunction != null) {
       this.cleanupFunction()
       this.cleanupFunction = null

@@ -50,7 +50,7 @@ class EventPolyfill {
   path: any[]
   immediatePropagationStopped?: boolean
 
-  constructor(type: string, options: EventPolyfillOptions = {}) {
+  constructor (type: string, options: EventPolyfillOptions = {}) {
     this.type = type
     this.bubbles = options.bubbles ?? false
     this.cancelable = options.cancelable ?? false
@@ -65,17 +65,17 @@ class EventPolyfill {
     this.path = []
   }
 
-  preventDefault(): void {
+  preventDefault (): void {
     if (this.cancelable) {
       this.defaultPrevented = true
     }
   }
 
-  stopPropagation(): void {
+  stopPropagation (): void {
     this.cancelBubble = true
   }
 
-  stopImmediatePropagation(): void {
+  stopImmediatePropagation (): void {
     this.cancelBubble = true
     this.immediatePropagationStopped = true
   }
@@ -91,7 +91,7 @@ class MessageEventPolyfill extends EventPolyfill {
   source: any
   ports: any[]
 
-  constructor(type: string, options: MessageEventPolyfillOptions = {}) {
+  constructor (type: string, options: MessageEventPolyfillOptions = {}) {
     super(type, options)
     this.data = options.data ?? null
     this.origin = options.origin ?? ''
@@ -109,7 +109,7 @@ class CloseEventPolyfill extends EventPolyfill {
   reason: string
   wasClean: boolean
 
-  constructor(type: string, options: CloseEventPolyfillOptions = {}) {
+  constructor (type: string, options: CloseEventPolyfillOptions = {}) {
     super(type, options)
     this.code = options.code ?? 1000
     this.reason = options.reason ?? ''
@@ -127,7 +127,7 @@ class ErrorEventPolyfill extends EventPolyfill {
   lineno: number
   colno: number
 
-  constructor(type: string, options: ErrorEventPolyfillOptions = {}) {
+  constructor (type: string, options: ErrorEventPolyfillOptions = {}) {
     super(type, options)
     this.message = options.message ?? ''
     this.error = options.error ?? new Error(this.message)

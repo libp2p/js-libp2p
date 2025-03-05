@@ -1,5 +1,5 @@
-import { WebSocketFrame, OpCode } from './pb/http.js'
-import { OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
+import { type WebSocketFrame, OpCode } from './pb/http.js'
+import { type OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
 import type { WebSocket } from './interfaces.js'
 import type { Logger } from '@libp2p/interface'
 
@@ -9,24 +9,24 @@ import type { Logger } from '@libp2p/interface'
 export class WebSocketFrameHandler {
   private readonly log: Logger
   private readonly eventHandlers: Record<string, OptimizedWebSocketEventHandler> = {}
-  
+
   constructor (log: Logger) {
     this.log = log
   }
-  
+
   /**
    * Register an event handler for a WebSocket
    */
-  registerEventHandler(target: EventTarget, eventHandler: OptimizedWebSocketEventHandler): void {
+  registerEventHandler (target: EventTarget, eventHandler: OptimizedWebSocketEventHandler): void {
     // Use a unique ID to associate the target with its handler
     const targetId = (target as any)._id || ((target as any)._id = Math.random().toString(36).substring(2))
     this.eventHandlers[targetId] = eventHandler
   }
-  
+
   /**
    * Get the event handler for a WebSocket target
    */
-  private getEventHandler(target: EventTarget): OptimizedWebSocketEventHandler | undefined {
+  private getEventHandler (target: EventTarget): OptimizedWebSocketEventHandler | undefined {
     const targetId = (target as any)._id
     return targetId ? this.eventHandlers[targetId] : undefined
   }
@@ -34,11 +34,11 @@ export class WebSocketFrameHandler {
   /**
    * Create a text frame
    */
-  createTextFrame(text: string, fragmentationThreshold: number): WebSocketFrame[] {
+  createTextFrame (text: string, fragmentationThreshold: number): WebSocketFrame[] {
     const textBytes = new TextEncoder().encode(text)
     return this.createFragmentedFrames(
-      textBytes, 
-      OpCode.TEXT, 
+      textBytes,
+      OpCode.TEXT,
       fragmentationThreshold
     )
   }
@@ -46,10 +46,10 @@ export class WebSocketFrameHandler {
   /**
    * Create a binary frame
    */
-  createBinaryFrame(data: Uint8Array, fragmentationThreshold: number): WebSocketFrame[] {
+  createBinaryFrame (data: Uint8Array, fragmentationThreshold: number): WebSocketFrame[] {
     return this.createFragmentedFrames(
-      data, 
-      OpCode.BINARY, 
+      data,
+      OpCode.BINARY,
       fragmentationThreshold
     )
   }
@@ -57,19 +57,19 @@ export class WebSocketFrameHandler {
   /**
    * Create a close frame
    */
-  createCloseFrame(code: number, reason: string): WebSocketFrame {
+  createCloseFrame (code: number, reason: string): WebSocketFrame {
     const payload = new Uint8Array(2 + (reason ? new TextEncoder().encode(reason).length : 0))
-    
+
     // Status code (2 bytes)
     payload[0] = (code >> 8) & 0xFF
     payload[1] = code & 0xFF
-    
+
     // Reason text (UTF-8 encoded)
     if (reason) {
       const reasonBytes = new TextEncoder().encode(reason)
       payload.set(reasonBytes, 2)
     }
-    
+
     return {
       fin: true,
       opCode: OpCode.CLOSE,
@@ -81,7 +81,7 @@ export class WebSocketFrameHandler {
   /**
    * Create a ping frame
    */
-  createPingFrame(data: Uint8Array = new Uint8Array(0)): WebSocketFrame {
+  createPingFrame (data: Uint8Array = new Uint8Array(0)): WebSocketFrame {
     return {
       fin: true,
       opCode: OpCode.PING,
@@ -93,7 +93,7 @@ export class WebSocketFrameHandler {
   /**
    * Create a pong frame
    */
-  createPongFrame(data: Uint8Array = new Uint8Array(0)): WebSocketFrame {
+  createPongFrame (data: Uint8Array = new Uint8Array(0)): WebSocketFrame {
     return {
       fin: true,
       opCode: OpCode.PONG,
@@ -105,10 +105,10 @@ export class WebSocketFrameHandler {
   /**
    * Handle a text frame
    */
-  handleTextFrame(frame: WebSocketFrame, target: EventTarget, url: string): void {
+  handleTextFrame (frame: WebSocketFrame, target: EventTarget, url: string): void {
     try {
       const text = new TextDecoder().decode(frame.payload ?? new Uint8Array(0))
-      
+
       const eventHandler = this.getEventHandler(target)
       if (eventHandler) {
         eventHandler.dispatchTextMessageEvent(text)
@@ -128,7 +128,7 @@ export class WebSocketFrameHandler {
   /**
    * Handle a binary frame
    */
-  handleBinaryFrame(frame: WebSocketFrame, target: EventTarget, url: string): void {
+  handleBinaryFrame (frame: WebSocketFrame, target: EventTarget, url: string): void {
     try {
       const eventHandler = this.getEventHandler(target)
       if (eventHandler) {
@@ -149,15 +149,15 @@ export class WebSocketFrameHandler {
   /**
    * Handle a close frame
    */
-  handleCloseFrame(frame: WebSocketFrame, target: EventTarget): { code: number, reason: string } {
+  handleCloseFrame (frame: WebSocketFrame, target: EventTarget): { code: number, reason: string } {
     let code = 1005 // Default: No Status Received
     let reason = ''
-    
+
     const payload = frame.payload ?? new Uint8Array(0)
-    
+
     if (payload.length >= 2) {
       code = (payload[0] << 8) | payload[1]
-      
+
       if (payload.length > 2) {
         try {
           reason = new TextDecoder().decode(payload.subarray(2))
@@ -166,16 +166,16 @@ export class WebSocketFrameHandler {
         }
       }
     }
-    
+
     return { code, reason }
   }
 
   /**
    * Create fragmented frames if the data exceeds the fragmentation threshold
    */
-  private createFragmentedFrames(
-    data: Uint8Array, 
-    opCode: OpCode, 
+  private createFragmentedFrames (
+    data: Uint8Array,
+    opCode: OpCode,
     fragmentationThreshold: number
   ): WebSocketFrame[] {
     // If data is small enough, send as a single frame
@@ -187,11 +187,11 @@ export class WebSocketFrameHandler {
         payload: data
       }]
     }
-    
+
     // Otherwise, fragment the message
     const frames: WebSocketFrame[] = []
     let offset = 0
-    
+
     // Add the first frame with the actual opCode
     const firstChunk = data.subarray(0, fragmentationThreshold)
     frames.push({
@@ -200,26 +200,26 @@ export class WebSocketFrameHandler {
       mask: false,
       payload: firstChunk
     })
-    
+
     offset += fragmentationThreshold
-    
+
     // Add continuation frames
     while (offset < data.length) {
       const remaining = data.length - offset
       const chunkSize = Math.min(remaining, fragmentationThreshold)
       const chunk = data.subarray(offset, offset + chunkSize)
       const isLastChunk = offset + chunkSize >= data.length
-      
+
       frames.push({
         fin: isLastChunk,
         opCode: OpCode.CONTINUATION,
         mask: false,
         payload: chunk
       })
-      
+
       offset += chunkSize
     }
-    
+
     return frames
   }
 }

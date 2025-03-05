@@ -1,9 +1,9 @@
 import { AbortError } from '@libp2p/interface'
-import { WebSocketFrame, OpCode } from '../pb/http.js'
-import { WebSocketFrameHandler } from '../websocket-frame-handler.js'
-import { WebSocketKeepAlive } from './websocket-keep-alive.js'
-import { OptimizedWebSocketEventHandler } from './websocket-event-handler-optimized.js'
 import { WEBSOCKET_OPEN, WEBSOCKET_CONNECTING } from '../constants.js'
+import { WebSocketFrame, OpCode } from '../pb/http.js'
+import { type WebSocketFrameHandler } from '../websocket-frame-handler.js'
+import { type OptimizedWebSocketEventHandler } from './websocket-event-handler-optimized.js'
+import { type WebSocketKeepAlive } from './websocket-keep-alive.js'
 import type { WebSocket } from '../interfaces.js'
 import type { Logger } from '@libp2p/interface'
 
@@ -46,13 +46,13 @@ export class WebSocketStreamHandler {
   async startReading (isClosed: () => boolean): Promise<void> {
     // Start keep-alive if enabled
     this.keepAlive.startKeepAlive() // This method checks internally if keep-alive should be started
-    
+
     // Required handshake and state transition from CONNECTING to OPEN
     if ((this.webSocket as any)._readyState === WEBSOCKET_CONNECTING) {
       if (typeof this.log.trace === 'function') {
         this.log.trace('WebSocket in CONNECTING state, performing handshake')
       }
-      
+
       try {
         // Transition to OPEN state immediately to fix test reliability issues
         if (!isClosed() && !this.signal.aborted) {
@@ -60,11 +60,11 @@ export class WebSocketStreamHandler {
             this.log.trace('Transitioning WebSocket from CONNECTING to OPEN state')
           }
           (this.webSocket as any)._readyState = WEBSOCKET_OPEN
-          
+
           if (typeof this.log.trace === 'function') {
             this.log.trace('Dispatching open event')
           }
-          
+
           // Dispatch the open event in the next event loop tick
           // This provides better compatibility with standard WebSocket behavior
           // while ensuring tests receive the event quickly
@@ -85,7 +85,7 @@ export class WebSocketStreamHandler {
         if (typeof this.log.error === 'function') {
           this.log.error('Error during WebSocket state transition', err)
         }
-        
+
         // Attempt to handle the error gracefully
         if (!isClosed()) {
           this.handleClose(1006, 'Error during connection setup').catch(e => {
@@ -96,12 +96,12 @@ export class WebSocketStreamHandler {
         }
       }
     }
-    
+
     try {
       // Keep reading frames until the connection is closed
       while (!isClosed() && !this.signal.aborted) {
         const frame = await this.pb.read(WebSocketFrame, { signal: this.signal })
-        
+
         switch (frame.opCode) {
           case OpCode.TEXT:
             this.frameHandler.handleTextFrame(frame, this.webSocket, this.url)
@@ -137,7 +137,7 @@ export class WebSocketStreamHandler {
           this.log.error('error reading websocket frame - %e', err)
         }
       }
-      
+
       if (!isClosed()) {
         await this.handleClose(1006, 'Abnormal closure')
       }

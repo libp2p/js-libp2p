@@ -13,8 +13,8 @@ export class WebSocketKeepAlive {
   private interval: NodeJS.Timeout | null = null
   private lastPingTime: number = 0
   private awaitingPong: boolean = false
-  
-  constructor(
+
+  constructor (
     pb: any,
     signal: AbortSignal,
     log: Logger,
@@ -26,40 +26,40 @@ export class WebSocketKeepAlive {
     this.keepAliveIntervalMs = options.keepAliveInterval
     this.pingTimeoutMs = options.pingTimeout
   }
-  
+
   /**
    * Start the keep-alive mechanism
    */
-  startKeepAlive(): void {
+  startKeepAlive (): void {
     if (this.keepAliveIntervalMs <= 0 || this.interval != null) {
       return
     }
-    
+
     this.interval = setInterval(() => {
       this.sendPing().catch(err => {
         this.log.error('Error sending ping: %e', err)
       })
     }, this.keepAliveIntervalMs)
   }
-  
+
   /**
    * Send a ping frame
    */
-  async sendPing(): Promise<void> {
+  async sendPing (): Promise<void> {
     if (this.signal.aborted) {
       return
     }
-    
+
     if (this.awaitingPong) {
       const timeSinceLastPing = Date.now() - this.lastPingTime
-      
+
       if (timeSinceLastPing > this.pingTimeoutMs) {
         this.log.error('Ping timeout after %d ms', timeSinceLastPing)
         // Close connection would be handled by stream handler
         return
       }
     }
-    
+
     try {
       // Create a ping frame with current timestamp as payload
       const pingFrame: WebSocketFrame = {
@@ -68,32 +68,32 @@ export class WebSocketKeepAlive {
         mask: false,
         payload: new Uint8Array(0)
       }
-      
+
       await this.pb.write(pingFrame, WebSocketFrame, { signal: this.signal })
-      
+
       this.lastPingTime = Date.now()
       this.awaitingPong = true
-      
+
       this.log.trace('ping sent')
     } catch (err) {
       this.log.error('Error sending ping: %e', err)
     }
   }
-  
+
   /**
    * Handle a pong frame
    */
-  handlePongFrame(frame: WebSocketFrame): void {
+  handlePongFrame (frame: WebSocketFrame): void {
     this.awaitingPong = false
-    
+
     const roundTripTime = Date.now() - this.lastPingTime
     this.log.trace('pong received (rtt: %dms)', roundTripTime)
   }
-  
+
   /**
    * Clean up resources
    */
-  cleanup(): void {
+  cleanup (): void {
     if (this.interval != null) {
       clearInterval(this.interval)
       this.interval = null

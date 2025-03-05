@@ -41,6 +41,7 @@
     "build": "aegir build",
     "test": "aegir test",
     "clean": "aegir clean",
+    "prebuild": "aegir lint --fix",
     "generate": "protons ./src/pb/http.proto",
     "lint": "aegir lint",
     "test:chrome": "aegir test -t browser --cov",

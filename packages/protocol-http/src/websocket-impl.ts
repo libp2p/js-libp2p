@@ -1,17 +1,17 @@
 import { AbortError } from '@libp2p/interface'
-import { Request, Response, WebSocketFrame } from './pb/http.js'
-import { WebSocketFrameHandler } from './websocket-frame-handler.js'
-import { WebSocketKeepAlive } from './utils/websocket-keep-alive.js'
-import { OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
-import { WebSocketStreamHandler } from './utils/websocket-stream-handler.js'
-import { WebSocketConfigManager, type WebSocketOptions } from './utils/websocket-config-manager.js'
-import { WebSocketSignalHandler } from './utils/websocket-signal-handler.js'
 import {
   WEBSOCKET_CONNECTING,
   WEBSOCKET_OPEN,
   WEBSOCKET_CLOSING,
   WEBSOCKET_CLOSED
 } from './constants.js'
+import { Request, Response, WebSocketFrame } from './pb/http.js'
+import { WebSocketConfigManager, type WebSocketOptions } from './utils/websocket-config-manager.js'
+import { OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
+import { WebSocketKeepAlive } from './utils/websocket-keep-alive.js'
+import { WebSocketSignalHandler } from './utils/websocket-signal-handler.js'
+import { WebSocketStreamHandler } from './utils/websocket-stream-handler.js'
+import { WebSocketFrameHandler } from './websocket-frame-handler.js'
 import type { WebSocket } from './interfaces.js'
 import type { Logger } from '@libp2p/interface'
 
@@ -25,23 +25,23 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
   private _readyState: number
   private readonly _url: string
   private closed: boolean
-  
+
   private readonly frameHandler: WebSocketFrameHandler
   private readonly keepAlive: WebSocketKeepAlive
   private readonly eventHandler: OptimizedWebSocketEventHandler
   private readonly streamHandler: WebSocketStreamHandler
   private readonly configManager: WebSocketConfigManager
   private readonly signalHandler: WebSocketSignalHandler
-  
+
   // Callback used by WebSocketStreamHandler to initiate closure
   readonly handleCloseCallback: (code: number, reason: string) => Promise<void>
-  
+
   // WebSocket ready states (copied from WebSocket standard)
   static readonly CONNECTING = WEBSOCKET_CONNECTING
   static readonly OPEN = WEBSOCKET_OPEN
   static readonly CLOSING = WEBSOCKET_CLOSING
   static readonly CLOSED = WEBSOCKET_CLOSED
-  
+
   /**
    * Create a new WebSocket instance
    */
@@ -58,21 +58,21 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
     this._readyState = WebSocketImpl.CONNECTING
     this._url = url
     this.closed = false
-    
+
     // Initialize configuration management
     this.configManager = new WebSocketConfigManager(options)
-    
+
     // Create helper instances
     this.frameHandler = new WebSocketFrameHandler(log)
     this.keepAlive = new WebSocketKeepAlive(pb, signal, log, this.configManager.getKeepAliveConfig())
     this.eventHandler = new OptimizedWebSocketEventHandler(this, url)
-    
+
     // Register the event handler with the frame handler for optimized event dispatching
     this.frameHandler.registerEventHandler(this, this.eventHandler)
-    
+
     // Create a bound method for the stream handler to call back into this instance
     this.handleCloseCallback = this.handleClose.bind(this)
-    
+
     // Initialize signal handler
     this.signalHandler = new WebSocketSignalHandler(signal, log, () => {
       this.cleanup()
@@ -82,7 +82,7 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
         })
       }
     })
-    
+
     // Create the stream handler
     this.streamHandler = new WebSocketStreamHandler(
       pb,
@@ -94,7 +94,7 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
       this.eventHandler,
       url
     )
-    
+
     // Start reading frames in the next microtask to ensure the constructor completes
     // with the WebSocket in CONNECTING state
     setTimeout(() => {
@@ -128,13 +128,13 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
     if (this.closed) {
       return
     }
-    
+
     this._readyState = WebSocketImpl.CLOSED
     this.closed = true
-    
+
     // Clean up resources
     this.cleanup()
-    
+
     // Send close frame if we initiated the close and connection is still open
     if (this._readyState !== WebSocketImpl.CONNECTING && !this.signalHandler.isAborted()) {
       try {
@@ -144,17 +144,17 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
         this.log.error('failed to send close frame - %e', err)
       }
     }
-    
+
     this.eventHandler.dispatchCloseEvent(code, reason)
   }
 
   /**
    * Clean up resources
    */
-  private cleanup(): void {
+  private cleanup (): void {
     // Stop keep-alive mechanism
     this.keepAlive.cleanup()
-    
+
     // Clean up signal handler
     this.signalHandler.cleanup()
   }
@@ -166,14 +166,14 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
     if (this._readyState !== WebSocketImpl.OPEN) {
       throw new Error('WebSocket is not open')
     }
-    
+
     if (this.signalHandler.isAborted()) {
       throw new AbortError()
     }
-    
+
     try {
       let frames: WebSocketFrame[]
-      
+
       if (typeof data === 'string') {
         // Send as text frame(s)
         frames = this.frameHandler.createTextFrame(data, this.configManager.getFragmentationThreshold())
@@ -181,18 +181,18 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
         // Send as binary frame(s)
         frames = this.frameHandler.createBinaryFrame(data, this.configManager.getFragmentationThreshold())
       }
-      
+
       // Send all frames sequentially
       for (const frame of frames) {
         await this.pb.write(frame, WebSocketFrame)
       }
     } catch (err: any) {
       this.log.error('error sending websocket message - %e', err)
-      
+
       if (!this.closed) {
         await this.handleClose(1006, 'Abnormal closure')
       }
-      
+
       throw err
     }
   }
@@ -204,9 +204,9 @@ export class WebSocketImpl extends EventTarget implements WebSocket {
     if (this._readyState === WebSocketImpl.CLOSED || this._readyState === WebSocketImpl.CLOSING) {
       return
     }
-    
+
     this._readyState = WebSocketImpl.CLOSING
-    
+
     try {
       await this.handleClose(code, reason)
     } catch (err: any) {

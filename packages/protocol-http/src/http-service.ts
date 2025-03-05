@@ -1,28 +1,28 @@
 import { type AbortOptions, type ComponentLogger, type PeerId, setMaxListeners } from '@libp2p/interface'
-import { 
-  PROTOCOL_NAME, 
-  PROTOCOL_VERSION, 
-  DEFAULT_MAX_INBOUND_STREAMS, 
-  DEFAULT_MAX_OUTBOUND_STREAMS, 
+import { peerIdFromString } from '@libp2p/peer-id'
+import { pbStream } from 'it-protobuf-stream'
+import {
+  PROTOCOL_NAME,
+  PROTOCOL_VERSION,
+  DEFAULT_MAX_INBOUND_STREAMS,
+  DEFAULT_MAX_OUTBOUND_STREAMS,
   DEFAULT_TIMEOUT,
   WEBSOCKET_OPEN
 } from './constants.js'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import { pbStream } from 'it-protobuf-stream'
 import { Request, Response, WebSocketFrame, OpCode } from './pb/http.js'
-import { peerIdFromString } from '@libp2p/peer-id'
 
 // Import the WebSocketImpl for creating actual WebSocket instances
 import { WebSocketImpl } from './websocket-impl.js'
-import type { 
+import type {
   HttpService as HttpServiceInterface,
-  HttpResponse, 
-  HttpServerOptions, 
-  HttpServiceInit, 
+  HttpResponse,
+  HttpServerOptions,
+  HttpServiceInit,
   WebSocket,
   HttpServer,
   Libp2pResponse
 } from './interfaces.js'
+import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 /**
  * HTTP Service Components
@@ -37,10 +37,10 @@ export interface HttpServiceComponents {
  * HTTP Service implementation for libp2p
  */
 export class HttpService implements HttpServiceInterface {
-  private readonly protocol: string;
-  private readonly components: HttpServiceComponents;
-  private started: boolean;
-  private servers: Map<string, HttpServer> = new Map();
+  private readonly protocol: string
+  private readonly components: HttpServiceComponents
+  private started: boolean
+  private readonly servers = new Map<string, HttpServer>()
 
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
@@ -48,7 +48,7 @@ export class HttpService implements HttpServiceInterface {
   private readonly responseTimeout: number
   private readonly runOnLimitedConnection: boolean
 
-  constructor(components: HttpServiceComponents, init: HttpServiceInit = {}) {
+  constructor (components: HttpServiceComponents, init: HttpServiceInit = {}) {
     this.components = components
     this.started = false
     this.protocol = `/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -65,7 +65,7 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Start the HTTP service
    */
-  async start(): Promise<void> {
+  async start (): Promise<void> {
     if (this.started) {
       return
     }
@@ -84,7 +84,7 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Stop the HTTP service
    */
-  async stop(): Promise<void> {
+  async stop (): Promise<void> {
     if (!this.started) {
       return
     }
@@ -96,27 +96,27 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Check if the service is started
    */
-  isStarted(): boolean {
+  isStarted (): boolean {
     return this.started
   }
 
   // Track server count for auto-naming
   private static serverCount: number = 0
-  
+
   /**
    * Create an HTTP server
    */
-  createServer(options: HttpServerOptions = {}): HttpServer {
+  createServer (options: HttpServerOptions = {}): HttpServer {
     // Increment server count for unique naming
     HttpService.serverCount = HttpService.serverCount === 0 ? 1 : HttpService.serverCount + 1
-    
+
     // Generate unique server name if not provided
-    const name = options.name ?? `server-${HttpService.serverCount}`;
+    const name = options.name ?? `server-${HttpService.serverCount}`
 
     if (this.servers.has(name)) {
-      throw new Error(`Server with name '${name}' already exists`);
+      throw new Error(`Server with name '${name}' already exists`)
     }
-    
+
     const server: HttpServer = {
       address: name,
       on: (event, listener) => { return {} as HttpServer },
@@ -125,19 +125,19 @@ export class HttpService implements HttpServiceInterface {
       addEventListener: () => {},
       removeEventListener: () => {},
       dispatchEvent: () => false
-    };
+    }
 
-    this.servers.set(name, server);
+    this.servers.set(name, server)
 
-    return server;
+    return server
   }
 
   /**
    * Convert headers from various formats to Map
    */
-  private headersToMap(headers: HeadersInit | undefined): Map<string, string> {
+  private headersToMap (headers: HeadersInit | undefined): Map<string, string> {
     const result = new Map<string, string>()
-    
+
     if (headers != null) {
       if (headers instanceof Headers) {
         headers.forEach((value, key) => {
@@ -160,7 +160,7 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Convert Map headers to Record for response
    */
-  private mapToRecord(headers: Map<string, string>): Record<string, string> {
+  private mapToRecord (headers: Map<string, string>): Record<string, string> {
     const result: Record<string, string> = {}
     headers.forEach((value, key) => {
       result[key] = value
@@ -171,59 +171,59 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Make an HTTP request to a peer
    */
-  async fetch(url: string | URL, init?: RequestInit): Promise<Libp2pResponse> {
+  async fetch (url: string | URL, init?: RequestInit): Promise<Libp2pResponse> {
     if (!this.started) {
       throw new Error('HTTP service is not started')
     }
 
     const urlObj = url instanceof URL ? url : new URL(url)
-    
+
     // Extract peer ID from hostname (libp2p URLs use peer ID as hostname)
     const peerIdStr = urlObj.hostname
     if (!peerIdStr) {
       throw new Error('Missing peer ID in URL hostname')
     }
-    
+
     // Convert the string to a proper PeerId object
     const peerId = peerIdFromString(peerIdStr)
-    
+
     // Create AbortController for timeout handling
     const controller = new AbortController()
     const signal = init?.signal || controller.signal
-    
+
     // Setup timeout if not provided in init
     const timeoutId = setTimeout(() => {
       controller.abort(new Error(`Request timed out after ${this.requestTimeout}ms`))
     }, this.requestTimeout)
-    
+
     try {
       // Open connection to peer
       const connection = await this.components.connectionManager.openConnection(peerId)
-      
+
       // Create stream for HTTP communication
       const stream = await connection.newStream(this.protocol, {
         signal
       })
-      
+
       // Create a protobuf stream for encoding/decoding messages
       const pb = pbStream(stream)
-      
+
       // Create request message with Map headers
       const requestMsg: Request = {
         method: init?.method || 'GET',
         path: urlObj.pathname + urlObj.search,
         headers: this.headersToMap(init?.headers),
-        body: init?.body instanceof Uint8Array 
-          ? init.body 
+        body: init?.body instanceof Uint8Array
+          ? init.body
           : new TextEncoder().encode(String(init?.body ?? ''))
       }
-      
+
       // Send request
       await pb.write(requestMsg, Request, { signal })
-      
+
       // Receive response
-      const responseMsg = await pb.read(Response, { signal }) as Response
-      
+      const responseMsg = await pb.read(Response, { signal })
+
       // Create a response object that matches our Libp2pResponse interface
       const response: Libp2pResponse = {
         status: responseMsg.statusCode ?? 0,
@@ -243,7 +243,7 @@ export class HttpService implements HttpServiceInterface {
           return responseMsg.body?.buffer ?? new ArrayBuffer(0)
         }
       }
-      
+
       return response
     } catch (err: any) {
       // Wrap error with request details
@@ -256,17 +256,17 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Check if a request is a WebSocket upgrade request
    */
-  isWebSocketRequest(request: globalThis.Request): boolean {
+  isWebSocketRequest (request: globalThis.Request): boolean {
     // Check for WebSocket upgrade headers per RFC 6455
     const upgradeHeader = request.headers.get('Upgrade')?.toLowerCase()
     const connectionHeader = request.headers.get('Connection')?.toLowerCase()
     const secWebSocketKey = request.headers.get('Sec-WebSocket-Key')
     const secWebSocketVersion = request.headers.get('Sec-WebSocket-Version')
-    
+
     return (
       upgradeHeader === 'websocket' &&
-      !!connectionHeader?.includes('upgrade') &&
-      !!secWebSocketKey &&
+      Boolean(connectionHeader?.includes('upgrade')) &&
+      Boolean(secWebSocketKey) &&
       secWebSocketVersion === '13' // RFC 6455 version
     )
   }
@@ -274,7 +274,7 @@ export class HttpService implements HttpServiceInterface {
   /**
    * Upgrade an HTTP connection to WebSocket
    */
-  upgradeWebSocket(request: globalThis.Request, response: HttpResponse): WebSocket {
+  upgradeWebSocket (request: globalThis.Request, response: HttpResponse): WebSocket {
     if (!this.started) {
       throw new Error('HTTP service is not started')
     }
@@ -282,27 +282,27 @@ export class HttpService implements HttpServiceInterface {
     if (!this.isWebSocketRequest(request)) {
       throw new Error('Not a valid WebSocket upgrade request')
     }
-    
+
     // We need to send 101 Switching Protocols response
     const secWebSocketKey = request.headers.get('Sec-WebSocket-Key')
-    
+
     if (!secWebSocketKey) {
       throw new Error('Missing Sec-WebSocket-Key header')
     }
-    
+
     // Compute the Sec-WebSocket-Accept header value based on RFC 6455
     // In a real implementation, we'd use crypto to generate:
     // base64(sha1(secWebSocketKey + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'))
     const secWebSocketAccept = 'placeholder-accept-value'
-    
+
     // Send the WebSocket handshake response
     response.writeHead(101, {
-      'Upgrade': 'websocket',
-      'Connection': 'Upgrade',
+      Upgrade: 'websocket',
+      Connection: 'Upgrade',
       'Sec-WebSocket-Accept': secWebSocketAccept
     })
-    
-    // Set up response and stream 
+
+    // Set up response and stream
     // In a real implementation, this would use the WebSocketImpl class
     const ws: WebSocket = {
       send: async (data: string | Uint8Array) => {
@@ -317,14 +317,14 @@ export class HttpService implements HttpServiceInterface {
       removeEventListener: () => {},
       dispatchEvent: () => false
     }
-    
+
     return ws
   }
 
   /**
    * Connect to a WebSocket server
    */
-  async connect(url: string | URL): Promise<WebSocket> {
+  async connect (url: string | URL): Promise<WebSocket> {
     if (!this.started) {
       throw new Error('HTTP service is not started')
     }
@@ -345,6 +345,6 @@ export class HttpService implements HttpServiceInterface {
 /**
  * Create an HTTP service
  */
-export function http(init: HttpServiceInit = {}): (components: HttpServiceComponents) => HttpServiceInterface {
+export function http (init: HttpServiceInit = {}): (components: HttpServiceComponents) => HttpServiceInterface {
   return (components) => new HttpService(components, init)
 }
