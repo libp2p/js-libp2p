@@ -37,70 +37,17 @@ npm install @libp2p/protocol-http
 
 ### HTTP Server
 
-```typescript
-import { createLibp2p } from 'libp2p'
-import { http } from '@libp2p/protocol-http'
-
-const node = await createLibp2p({
-  services: {
-    http: http()
-  }
-})
-
-// Create an HTTP server
-const server = node.services.http.createServer()
-
-server.on('request', (request, response) => {
-  response.writeHead(200, { 'Content-Type': 'text/plain' })
-  response.end('Hello from libp2p HTTP server!')
-})
-```
+See [server.ts](./examples/server.ts) for a complete example of creating an HTTP server.
 
 ### HTTP Client
 
-```typescript
-// Make HTTP requests to other libp2p nodes
-const response = await node.services.http.fetch('libp2p://QmPeerID/path')
-const data = await response.text()
-```
+See [client.ts](./examples/client.ts) for a complete example of making HTTP requests.
 
 ### WebSocket Support
 
-```typescript
-// Server-side WebSocket
-server.on('request', (request, response) => {
-  if (WebSocket.isWebSocketRequest(request)) {
-    const ws = await service.upgradeWebSocket(request, response)
-    ws.addEventListener('message', async event => {
-      const data = event.data
-      await ws.send(`Echo: ${data}`)
-    })
-    
-    // Handle closure
-    ws.addEventListener('close', event => {
-      console.log(`WebSocket closed: ${event.code} ${event.reason}`)
-    })
-  }
-})
+See [websocket.ts](./examples/websocket.ts) for complete examples of both WebSocket server and client usage.
 
-// Client-side WebSocket
-const ws = await node.services.http.connect('libp2p://QmPeerID/ws', {
-  // Optional WebSocket configuration
-  keepAliveIntervalMs: 30000, // Send ping frames every 30 seconds
-  fragmentationThreshold: 16384 // Fragment messages larger than 16KB
-})
-
-ws.addEventListener('message', event => {
-  console.log('Received:', event.data)
-})
-
-// Can send both text and binary data
-await ws.send('Hello WebSocket!')
-await ws.send(new Uint8Array([1, 2, 3, 4]))
-
-// Proper closure when done
-await ws.close(1000, 'Normal closure')
-```
+For more examples, check out the [examples](./examples) directory.
 
 ## Architecture
 
