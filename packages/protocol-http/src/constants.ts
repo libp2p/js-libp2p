@@ -2,7 +2,7 @@
  * Protocol Constants
  */
 export const PROTOCOL_NAME = 'http'
-export const PROTOCOL_VERSION = '1.0.0'
+export const PROTOCOL_VERSION = '1.1' //Compliance with spec requires http version number not package version
 export const DEFAULT_MAX_INBOUND_STREAMS = 100
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 100
 export const DEFAULT_TIMEOUT = 30000 // 30 seconds
