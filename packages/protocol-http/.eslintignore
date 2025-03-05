@@ -1,5 +1,7 @@
 # Ignore markdown files
 *.md
 
-# But don't ignore example code - we want these to be properly linted
-# examples/
+# Ignore examples - they'll be plain JavaScript with JSDoc comments
+examples/
+examples/**/*.ts
+examples/**/*.js

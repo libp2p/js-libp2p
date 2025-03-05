@@ -1,27 +1,76 @@
 /**
  * @packageDocumentation
  *
- * An implementation of the HTTP protocol over WebSockets for libp2p
+ * An implementation of the HTTP/1.1 protocol for libp2p. It allows you to:
+ * - Create HTTP servers that handle requests over libp2p connections
+ * - Make HTTP requests to other libp2p nodes
+ * - Use WebSocket connections over libp2p streams with full RFC 6455 compliance
  *
  * @example
  *
  * ```typescript
- * // HTTP Service example
  * import { createLibp2p } from 'libp2p'
  * import { http } from '@libp2p/http'
  *
- * const libp2p = await createLibp2p({
+ * const node = await createLibp2p({
  *   services: {
  *     http: http()
  *   }
  * })
  *
- * // Now you can use HTTP over libp2p
- * const response = await libp2p.services.http.fetch('libp2p://QmPeer/resource')
+ * const server = node.services.http.createServer()
+ *
+ * server.on('request', (request, response) => {
+ *   response.writeHead(200, { 'Content-Type': 'text/plain' })
+ *   response.end('Hello from libp2p HTTP server!')
+ * })
  * ```
  *
+ * @example
+ *
  * ```typescript
- * // WebSocket implementation example
+ * // Make HTTP requests to other libp2p nodes
+ * const response = await node.services.http.fetch('libp2p://QmPeerID/resource')
+ * const text = await response.text()
+ * console.log('Response:', text)
+ * ```
+ *
+ * @example
+ *
+ * ```typescript
+ * // WebSocket server implementation
+ * server.on('request', async (request, response) => {
+ *   if (node.services.http.isWebSocketRequest(request)) {
+ *     const ws = await node.services.http.upgradeWebSocket(request, response)
+ *
+ *     ws.addEventListener('message', async event => {
+ *       const text = event.data.toString()
+ *       await ws.send(`Echo: ${text}`)
+ *     })
+ *   }
+ * })
+ * ```
+ *
+ * @example
+ *
+ * ```typescript
+ * // WebSocket client implementation
+ * const ws = await node.services.http.connect('libp2p://QmPeerID/ws', {
+ *   keepAliveIntervalMs: 30000,
+ *   fragmentationThreshold: 16384
+ * })
+ *
+ * ws.addEventListener('message', event => {
+ *   console.log('Received:', event.data)
+ * })
+ *
+ * await ws.send('Hello WebSocket!')
+ * ```
+ *
+ * @example
+ *
+ * ```typescript
+ * // Lower-level WebSocket API example
  * import { createLibp2p } from 'libp2p'
  * import { webSocketHttp } from '@libp2p/http'
  *
