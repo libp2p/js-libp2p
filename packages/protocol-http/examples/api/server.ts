@@ -1,12 +1,12 @@
-import type { Libp2p } from 'libp2p'
-import type { Logger } from '@libp2p/interface'
-import type { HttpServiceComponents } from '@libp2p/protocol-http'
-import { createLibp2p } from 'libp2p'
 import { http } from '@libp2p/protocol-http'
-import type { HttpRequest, HttpResponse, ErrorResponse } from './transport-types.js'
+import { createLibp2p } from 'libp2p'
+import { readRequestBody } from './request-reader.js'
 import { NoteStore } from './store.js'
 import { isNonEmptyString, handleAsyncEvent } from './utils.js'
-import { readRequestBody } from './request-reader.js'
+import type { HttpRequest, HttpResponse, ErrorResponse } from './transport-types.js'
+import type { Logger } from '@libp2p/interface'
+import type { HttpServiceComponents } from '@libp2p/protocol-http'
+import type { Libp2p } from 'libp2p'
 
 const startTime = Date.now()
 
@@ -37,8 +37,8 @@ export async function createApiServer (
       await handleRequest(node, store, request, response)
     } catch (error: unknown) {
       const errorResponse: ErrorResponse = {
-        error: error instanceof Error && isNonEmptyString(error.message) 
-          ? error.message 
+        error: error instanceof Error && isNonEmptyString(error.message)
+          ? error.message
           : 'Internal Server Error',
         code: 'INTERNAL_ERROR',
         statusCode: 500

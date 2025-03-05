@@ -1,11 +1,11 @@
-import type { Note, CreateNoteInput, UpdateNoteInput } from './types.js'
 import { isPresent } from './utils.js'
+import type { Note, CreateNoteInput, UpdateNoteInput } from './types.js'
 
 /**
  * In-memory storage for notes that works in both Node.js and browser environments
  */
 export class NoteStore {
-  private notes: Map<string, Note>
+  private readonly notes: Map<string, Note>
   private nextId: number
 
   constructor () {

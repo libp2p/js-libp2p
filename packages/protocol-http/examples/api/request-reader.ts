@@ -9,6 +9,6 @@ export async function readRequestBody (request: HttpRequest): Promise<string> {
     const decoder = new TextDecoder()
     return decoder.decode(request.body)
   }
-  
+
   return ''
 }
