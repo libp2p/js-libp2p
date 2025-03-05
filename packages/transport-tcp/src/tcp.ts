@@ -109,7 +109,7 @@ export class TCP implements Transport<TCPDialEvents> {
   }
 
   async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
-    options.signal.throwIfAborted()
+    options.signal?.throwIfAborted()
     options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
     let rawSocket: Socket
@@ -120,6 +120,10 @@ export class TCP implements Transport<TCPDialEvents> {
         ...(this.opts.dialOpts ?? {}),
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
+
+      // Set TCP_NODELAY to true to disable Nagle's algorithm
+      // This reduces latency by sending data immediately without buffering
+      cOpts.noDelay = true
 
       this.log('dialing %a', ma)
       rawSocket = net.connect(cOpts)

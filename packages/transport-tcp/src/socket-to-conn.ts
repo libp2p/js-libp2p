@@ -80,6 +80,10 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   // by default there is no timeout
   // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#socketsettimeouttimeout-callback
   socket.setTimeout(inactivityTimeout)
+  
+  // Ensure TCP_NODELAY is set to true to disable Nagle's algorithm
+  // This reduces latency by sending data immediately without buffering
+  socket.setNoDelay(true)
 
   socket.once('timeout', () => {
     timedOut = true
