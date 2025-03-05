@@ -2,16 +2,12 @@
 
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
-
-// Register event polyfills globally before tests
-
 import { expect } from 'aegir/chai'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import sinon from 'sinon'
 import { HttpService } from '../src/http-service.js'
 import { webSocketHttp, WEBSOCKET_CONNECTING, WEBSOCKET_OPEN } from '../src/index.js'
-import { WebSocketFrame } from '../src/pb/http.js'
 import { WebSocketSignalHandler } from '../src/utils/websocket-signal-handler.js'
 import { Event, MessageEvent, CloseEvent, ErrorEvent } from './event-polyfills.js'
 import type { Logger, Connection, PendingDial } from '@libp2p/interface'
@@ -71,11 +67,11 @@ describe('http', () => {
       })
 
       ws.addEventListener('error', (err) => {
-        console.error('Received error event:', err)
+        done(err)
       })
 
       ws.addEventListener('close', () => {
-        console.log('Received close event')
+        done(new Error('Websocket closed unexpectedly'))
       })
     })
 

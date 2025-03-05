@@ -5,7 +5,7 @@ import {
   WEBSOCKET_CLOSING,
   WEBSOCKET_CLOSED
 } from './constants.js'
-import { Request, Response, WebSocketFrame } from './pb/http.js'
+import { WebSocketFrame } from './pb/http.js'
 import { WebSocketConfigManager, type WebSocketOptions } from './utils/websocket-config-manager.js'
 import { OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
 import { WebSocketKeepAlive } from './utils/websocket-keep-alive.js'

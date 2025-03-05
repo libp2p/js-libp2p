@@ -1,6 +1,5 @@
 import { type WebSocketFrame, OpCode } from './pb/http.js'
 import { type OptimizedWebSocketEventHandler } from './utils/websocket-event-handler-optimized.js'
-import type { WebSocket } from './interfaces.js'
 import type { Logger } from '@libp2p/interface'
 
 /**
@@ -19,7 +18,8 @@ export class WebSocketFrameHandler {
    */
   registerEventHandler (target: EventTarget, eventHandler: OptimizedWebSocketEventHandler): void {
     // Use a unique ID to associate the target with its handler
-    const targetId = (target as any)._id || ((target as any)._id = Math.random().toString(36).substring(2))
+    const id = Math.random().toString(36).substring(2)
+    const targetId = typeof (target as any)._id === 'string' ? (target as any)._id : ((target as any)._id = id)
     this.eventHandlers[targetId] = eventHandler
   }
 
@@ -28,7 +28,7 @@ export class WebSocketFrameHandler {
    */
   private getEventHandler (target: EventTarget): OptimizedWebSocketEventHandler | undefined {
     const targetId = (target as any)._id
-    return targetId ? this.eventHandlers[targetId] : undefined
+    return typeof targetId === 'string' ? this.eventHandlers[targetId] : undefined
   }
 
   /**
@@ -58,14 +58,15 @@ export class WebSocketFrameHandler {
    * Create a close frame
    */
   createCloseFrame (code: number, reason: string): WebSocketFrame {
-    const payload = new Uint8Array(2 + (reason ? new TextEncoder().encode(reason).length : 0))
+    const reasonLength = reason === '' ? 0 : new TextEncoder().encode(reason).length
+    const payload = new Uint8Array(2 + reasonLength)
 
     // Status code (2 bytes)
     payload[0] = (code >> 8) & 0xFF
     payload[1] = code & 0xFF
 
     // Reason text (UTF-8 encoded)
-    if (reason) {
+    if (reason !== '') {
       const reasonBytes = new TextEncoder().encode(reason)
       payload.set(reasonBytes, 2)
     }
@@ -110,7 +111,7 @@ export class WebSocketFrameHandler {
       const text = new TextDecoder().decode(frame.payload ?? new Uint8Array(0))
 
       const eventHandler = this.getEventHandler(target)
-      if (eventHandler) {
+      if (eventHandler != null) {
         eventHandler.dispatchTextMessageEvent(text)
       } else {
         // Fallback if no event handler is registered
@@ -131,7 +132,7 @@ export class WebSocketFrameHandler {
   handleBinaryFrame (frame: WebSocketFrame, target: EventTarget, url: string): void {
     try {
       const eventHandler = this.getEventHandler(target)
-      if (eventHandler) {
+      if (eventHandler != null) {
         eventHandler.dispatchBinaryMessageEvent(frame.payload ?? new Uint8Array(0))
       } else {
         // Fallback if no event handler is registered

@@ -36,7 +36,6 @@
  * ```
  */
 
-import { http } from './http-service.js'
 import { WebSocketImpl } from './websocket-impl.js'
 import type { WebSocket, WebSocketOptions } from './interfaces.js'
 import type { Logger } from '@libp2p/interface'

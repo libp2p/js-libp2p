@@ -41,66 +41,59 @@ export class WebSocketStreamHandler {
   }
 
   /**
+   * Handle WebSocket state transition from CONNECTING to OPEN
+   */
+  private async handleStateTransition (isClosed: () => boolean): Promise<void> {
+    if ((this.webSocket as any)._readyState !== WEBSOCKET_CONNECTING) {
+      return
+    }
+
+    if (typeof this.log.trace === 'function') {
+      this.log.trace('WebSocket in CONNECTING state, performing handshake')
+    }
+
+    // Transition to OPEN state immediately to fix test reliability issues
+    if (!isClosed() && !this.signal.aborted) {
+      if (typeof this.log.trace === 'function') {
+        this.log.trace('Transitioning WebSocket from CONNECTING to OPEN state')
+      }
+      (this.webSocket as any)._readyState = WEBSOCKET_OPEN
+
+      // Schedule open event dispatch
+      setTimeout(() => {
+        if (!isClosed() && !this.signal.aborted) {
+          this.eventHandler.dispatchOpenEvent()
+          if (typeof this.log.trace === 'function') {
+            this.log.trace('Open event dispatched successfully')
+          }
+        }
+      }, 0)
+    }
+  }
+
+  /**
    * Start reading WebSocket frames from the stream
    */
   async startReading (isClosed: () => boolean): Promise<void> {
     // Start keep-alive if enabled
     this.keepAlive.startKeepAlive() // This method checks internally if keep-alive should be started
 
-    // Required handshake and state transition from CONNECTING to OPEN
-    if ((this.webSocket as any)._readyState === WEBSOCKET_CONNECTING) {
-      if (typeof this.log.trace === 'function') {
-        this.log.trace('WebSocket in CONNECTING state, performing handshake')
+    try {
+      await this.handleStateTransition(isClosed)
+    } catch (err) {
+      if (!isClosed()) {
+        await this.handleClose(1006, 'Error during connection setup')
       }
-
-      try {
-        // Transition to OPEN state immediately to fix test reliability issues
-        if (!isClosed() && !this.signal.aborted) {
-          if (typeof this.log.trace === 'function') {
-            this.log.trace('Transitioning WebSocket from CONNECTING to OPEN state')
-          }
-          (this.webSocket as any)._readyState = WEBSOCKET_OPEN
-
-          if (typeof this.log.trace === 'function') {
-            this.log.trace('Dispatching open event')
-          }
-
-          // Dispatch the open event in the next event loop tick
-          // This provides better compatibility with standard WebSocket behavior
-          // while ensuring tests receive the event quickly
-          setTimeout(() => {
-            if (!isClosed() && !this.signal.aborted) {
-              this.eventHandler.dispatchOpenEvent()
-              if (typeof this.log.trace === 'function') {
-                this.log.trace('Open event dispatched successfully')
-              }
-            }
-          }, 0)
-        } else {
-          if (typeof this.log.trace === 'function') {
-            this.log.trace('WebSocket closed or aborted before transition to OPEN state')
-          }
-        }
-      } catch (err) {
-        if (typeof this.log.error === 'function') {
-          this.log.error('Error during WebSocket state transition', err)
-        }
-
-        // Attempt to handle the error gracefully
-        if (!isClosed()) {
-          this.handleClose(1006, 'Error during connection setup').catch(e => {
-            if (typeof this.log.error === 'function') {
-              this.log.error('Failed to close WebSocket after transition error', e)
-            }
-          })
-        }
-      }
+      throw err
     }
 
     try {
       // Keep reading frames until the connection is closed
       while (!isClosed() && !this.signal.aborted) {
         const frame = await this.pb.read(WebSocketFrame, { signal: this.signal })
+
+        let code: number
+        let reason: string
 
         switch (frame.opCode) {
           case OpCode.TEXT:
@@ -110,7 +103,7 @@ export class WebSocketStreamHandler {
             this.frameHandler.handleBinaryFrame(frame, this.webSocket, this.url)
             break
           case OpCode.CLOSE:
-            const { code, reason } = this.frameHandler.handleCloseFrame(frame, this.webSocket)
+            ({ code, reason } = this.frameHandler.handleCloseFrame(frame, this.webSocket))
             await this.handleClose(code, reason)
             return
           case OpCode.PING:
@@ -125,6 +118,13 @@ export class WebSocketStreamHandler {
               this.log.error('Received unexpected continuation frame')
             }
             break
+          default:
+            if (typeof this.log.error === 'function') {
+              this.log.error(`Received unknown opcode: ${frame.opCode}`)
+            }
+            // Close the connection on unknown opcode
+            await this.handleClose(1002, 'Protocol error: unknown opcode')
+            return
         }
       }
     } catch (err: any) {

@@ -1,6 +1,5 @@
-import type { AbortOptions, ComponentLogger, PeerId, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Startable } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Libp2p HTTP Request representation
@@ -150,7 +149,7 @@ export interface WebSocket extends EventTarget {
 /**
  * HTTP Service Interface
  */
-export interface HttpService extends Startable {
+export interface HttpServiceInterface extends Startable {
   /**
    * Make an HTTP request to a libp2p peer
    */

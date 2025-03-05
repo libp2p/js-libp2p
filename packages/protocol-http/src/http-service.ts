@@ -1,4 +1,4 @@
-import { type AbortOptions, type ComponentLogger, type PeerId, setMaxListeners } from '@libp2p/interface'
+import { type ComponentLogger } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
 import {
@@ -9,12 +9,9 @@ import {
   DEFAULT_TIMEOUT,
   WEBSOCKET_OPEN
 } from './constants.js'
-import { Request, Response, WebSocketFrame, OpCode } from './pb/http.js'
-
-// Import the WebSocketImpl for creating actual WebSocket instances
-import { WebSocketImpl } from './websocket-impl.js'
+import { Request, Response } from './pb/http.js'
 import type {
-  HttpService as HttpServiceInterface,
+  HttpServiceInterface,
   HttpResponse,
   HttpServerOptions,
   HttpServiceInit,
@@ -70,7 +67,7 @@ export class HttpService implements HttpServiceInterface {
       return
     }
 
-    await this.components.registrar.handle(this.protocol, async () => {
+    await this.components.registrar.handle(this.protocol, () => {
       // Placeholder implementation
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -119,7 +116,7 @@ export class HttpService implements HttpServiceInterface {
 
     const server: HttpServer = {
       address: name,
-      on: (event, listener) => { return {} as HttpServer },
+      on: (event, listener) => { return server },
       handleRequest: () => {},
       stop: async () => {},
       addEventListener: () => {},
@@ -180,7 +177,7 @@ export class HttpService implements HttpServiceInterface {
 
     // Extract peer ID from hostname (libp2p URLs use peer ID as hostname)
     const peerIdStr = urlObj.hostname
-    if (!peerIdStr) {
+    if (peerIdStr === '') {
       throw new Error('Missing peer ID in URL hostname')
     }
 
@@ -189,7 +186,7 @@ export class HttpService implements HttpServiceInterface {
 
     // Create AbortController for timeout handling
     const controller = new AbortController()
-    const signal = init?.signal || controller.signal
+    const signal = init?.signal ?? controller.signal
 
     // Setup timeout if not provided in init
     const timeoutId = setTimeout(() => {
@@ -210,7 +207,7 @@ export class HttpService implements HttpServiceInterface {
 
       // Create request message with Map headers
       const requestMsg: Request = {
-        method: init?.method || 'GET',
+        method: init?.method ?? 'GET',
         path: urlObj.pathname + urlObj.search,
         headers: this.headersToMap(init?.headers),
         body: init?.body instanceof Uint8Array
@@ -286,7 +283,7 @@ export class HttpService implements HttpServiceInterface {
     // We need to send 101 Switching Protocols response
     const secWebSocketKey = request.headers.get('Sec-WebSocket-Key')
 
-    if (!secWebSocketKey) {
+    if (secWebSocketKey === null || secWebSocketKey === '') {
       throw new Error('Missing Sec-WebSocket-Key header')
     }
 
@@ -345,6 +342,11 @@ export class HttpService implements HttpServiceInterface {
 /**
  * Create an HTTP service
  */
-export function http (init: HttpServiceInit = {}): (components: HttpServiceComponents) => HttpServiceInterface {
+function createHttpService (init: HttpServiceInit = {}): (components: HttpServiceComponents) => HttpServiceInterface {
   return (components) => new HttpService(components, init)
 }
+
+/**
+ * Exported as http for backward compatibility
+ */
+export const http = createHttpService

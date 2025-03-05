@@ -27,7 +27,7 @@ export class WebSocketSignalHandler {
     this.aborted = signal.aborted
 
     // Define abort handler
-    const abortHandler = () => {
+    const abortHandler = (): void => {
       if (!this.aborted) {
         this.aborted = true
 
