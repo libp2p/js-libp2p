@@ -121,10 +121,6 @@ export class TCP implements Transport<TCPDialEvents> {
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-      // Set TCP_NODELAY to true to disable Nagle's algorithm
-      // This reduces latency by sending data immediately without buffering
-      cOpts.noDelay = true
-
       this.log('dialing %a', ma)
       rawSocket = net.connect(cOpts)
 
