@@ -162,4 +162,16 @@ describe('identify (push)', () => {
     expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
     expect(stream.abort.callCount).to.equal(1, 'did not abort stream')
   })
+
+  it('should limit the number of concurrent identify-push requests', async () => {
+    identify = new IdentifyPush(components, { concurrency: 2 })
+
+    await start(identify)
+
+    const pushSpy = sinon.spy(identify, 'push')
+
+    await identify.push()
+
+    expect(pushSpy.callCount).to.be.at.most(2)
+  })
 })
