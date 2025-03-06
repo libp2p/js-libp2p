@@ -1,0 +1,16 @@
+{
+    "id": "electron-js-libp2p-head",
+    "containerImageID": "electron-js-libp2p-head",
+    "transports": [
+      "tcp",
+      "ws",
+      {
+        "name": "wss",
+        "onlyDial": true
+      },
+      "webrtc",
+      "webrtc-direct"
+    ],
+    "secureChannels": ["noise"],
+    "muxers": ["yamux", "mplex"]
+}
