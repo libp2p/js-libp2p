@@ -24,24 +24,23 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
   private readonly concurrency: number
   private readonly limit: pLimit.Limit
 
-  constructor (components: IdentifyPushComponents, init: IdentifyPushInit = {}) {
+  constructor(components: IdentifyPushComponents, init: IdentifyPushInit = {}) {
     super(components, {
-      ...init,
-      protocol: `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
-      log: components.logger.forComponent('libp2p:identify-push')
+        ...init,
+        protocol: `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
+        log: components.logger.forComponent('libp2p:identify-push')
     })
 
     this.connectionManager = components.connectionManager
     this.concurrency = init.concurrency ?? defaultValues.concurrency
-    this.limit = pLimit(this.concurrency)
 
     if ((init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate)) {
-      // When self peer record changes, trigger identify-push
-      components.events.addEventListener('self:peer:update', (evt) => {
-        void this.push().catch(err => { this.log.error(err) })
-      })
+        // When self peer record changes, trigger identify-push
+        components.events.addEventListener('self:peer:update', (evt) => {
+            void this.push().catch(err => { this.log.error(err) })
+        })
     }
-  }
+}
 
   [serviceCapabilities]: string[] = [
     '@libp2p/identify-push'
