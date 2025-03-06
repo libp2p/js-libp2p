@@ -76,7 +76,8 @@
     "it-to-buffer": "^4.0.7",
     "libp2p": "^2.8.0",
     "p-defer": "^4.0.1",
-    "p-wait-for": "^5.0.2"
+    "p-wait-for": "^5.0.2",
+    "sinon-ts": "^2.0.0"
   },
   "browser": {
     "./dist/src/listener.js": "./dist/src/listener.browser.js",

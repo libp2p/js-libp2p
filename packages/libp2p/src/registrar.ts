@@ -1,8 +1,8 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import merge from 'merge-options'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandlerRecord, StreamHandlerOptions } from '@libp2p/interface'
-import type { Registrar as RegistrarInterface, StreamHandler } from '@libp2p/interface-internal'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions } from '@libp2p/interface'
+import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
