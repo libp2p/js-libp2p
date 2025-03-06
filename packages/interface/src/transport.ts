@@ -1,6 +1,6 @@
 import type { Connection, ConnectionLimits, MultiaddrConnection } from './connection.js'
 import type { TypedEventTarget } from './event-target.js'
-import type { AbortOptions } from './index.js'
+import type { AbortOptions, ClearableSignal, ConnectionEncrypter } from './index.js'
 import type { StreamMuxerFactory } from './stream-muxer.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
@@ -39,6 +39,11 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
    * @returns {Promise<void>}
    */
   close(): Promise<void>
+  /**
+   * Allows transports to amend announce addresses - to add certificate hashes
+   * or other metadata that cannot be known before runtime
+   */
+  updateAnnounceAddrs(addrs: Multiaddr[]): void
 }
 
 export const transportSymbol = Symbol.for('@libp2p/transport')
@@ -53,7 +58,7 @@ export interface CreateListenerOptions {
   upgrader: Upgrader
 }
 
-export interface DialTransportOptions<DialEvents extends ProgressEvent = ProgressEvent> extends AbortOptions, ProgressOptions<DialEvents> {
+export interface DialTransportOptions<DialEvents extends ProgressEvent = ProgressEvent> extends Required<AbortOptions>, ProgressOptions<DialEvents> {
   /**
    * The upgrader turns a MultiaddrConnection into a Connection which should be
    * returned by the transport's dial method
@@ -92,7 +97,7 @@ export interface Transport<DialEvents extends ProgressEvent = ProgressEvent> {
   listenFilter: MultiaddrFilter
 
   /**
-   * Takes a list of `Multiaddr`s and returns only addresses that are vali for
+   * Takes a list of `Multiaddr`s and returns only addresses that are valid for
    * the transport to dial
    */
   dialFilter: MultiaddrFilter
@@ -117,7 +122,7 @@ export enum FaultTolerance {
   NO_FATAL
 }
 
-export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents>, AbortOptions {
+export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents>, Required<AbortOptions> {
   skipEncryption?: boolean
   skipProtection?: boolean
   muxerFactory?: StreamMuxerFactory
@@ -144,4 +149,24 @@ export interface Upgrader {
    * notifies other libp2p components about the new connection
    */
   upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<void>
+
+  /**
+   * Used by transports that perform part of the upgrade process themselves and
+   * do some async work. This allows configuring inbound upgrade timeouts from a
+   * single location.
+   *
+   * Regular transports should just pass the signal from their shutdown
+   * controller to `upgradeInbound`.
+   */
+  createInboundAbortSignal (signal: AbortSignal): ClearableSignal
+
+  /**
+   * Returns configured stream muxers
+   */
+  getStreamMuxers (): Map<string, StreamMuxerFactory>
+
+  /**
+   * Returns configured connection encrypters
+   */
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter>
 }

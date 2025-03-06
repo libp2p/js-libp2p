@@ -1,5 +1,96 @@
 # Changelog
 
+## [1.2.10](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.9...devtools-metrics-v1.2.10) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/interface-internal bumped from ^2.3.6 to ^2.3.7
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+    * @libp2p/simple-metrics bumped from ^1.3.5 to ^1.3.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+
+## [1.2.9](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.8...devtools-metrics-v1.2.9) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.5 to ^2.3.6
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/simple-metrics bumped from ^1.3.4 to ^1.3.5
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+
+## [1.2.8](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.7...devtools-metrics-v1.2.8) (2025-02-25)
+
+
+### Documentation
+
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/simple-metrics bumped from ^1.3.3 to ^1.3.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+
+## [1.2.7](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.6...devtools-metrics-v1.2.7) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.3 to ^2.3.4
+
+## [1.2.6](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.5...devtools-metrics-v1.2.6) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+
+## [1.2.5](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.4...devtools-metrics-v1.2.5) (2025-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/interface-internal bumped from ^2.3.1 to ^2.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/simple-metrics bumped from ^1.3.2 to ^1.3.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+
+## [1.2.4](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.3...devtools-metrics-v1.2.4) (2025-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.0 to ^2.3.1
+
 ## [1.2.3](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.2...devtools-metrics-v1.2.3) (2025-02-10)
 
 

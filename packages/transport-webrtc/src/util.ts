@@ -1,7 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
-import { DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
+import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
 import type { RTCDataChannel } from './webrtc/index.js'
 import type { PeerConnection } from '@ipshipyard/node-datachannel'
 import type { LoggerOptions } from '@libp2p/interface'
@@ -12,8 +12,6 @@ export const isFirefox = ((browser != null) && browser.name === 'firefox')
 export const nopSource = async function * nop (): AsyncGenerator<Uint8Array, any, unknown> {}
 
 export const nopSink = async (_: any): Promise<void> => {}
-
-export const DATA_CHANNEL_DRAIN_TIMEOUT = 30 * 1000
 
 export function drainAndClose (channel: RTCDataChannel, direction: string, drainTimeout: number = DATA_CHANNEL_DRAIN_TIMEOUT, options: LoggerOptions): void {
   if (channel.readyState !== 'open') {

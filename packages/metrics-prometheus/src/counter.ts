@@ -1,5 +1,5 @@
 import { type CollectFunction, Counter as PromCounter } from 'prom-client'
-import { normaliseString, type CalculatedMetric } from './utils.js'
+import { normalizeString, type CalculatedMetric } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
 import type { CalculateMetric, Counter } from '@libp2p/interface'
 
@@ -8,9 +8,9 @@ export class PrometheusCounter implements Counter, CalculatedMetric {
   private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const labels = opts.label != null ? [normaliseString(opts.label)] : []
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<PromCounter<any>> | undefined
     this.calculators = []
 

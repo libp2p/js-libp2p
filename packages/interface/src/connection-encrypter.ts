@@ -1,5 +1,5 @@
 import type { MultiaddrConnection } from './connection.js'
-import type { AbortOptions } from './index.js'
+import type { AbortOptions, StreamMuxerFactory } from './index.js'
 import type { PeerId } from './peer-id.js'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -39,4 +39,11 @@ export interface SecuredConnection<Stream = any, Extension = unknown> {
   conn: Stream
   remoteExtensions?: Extension
   remotePeer: PeerId
+
+  /**
+   * Some encryption protocols allow negotiating application protocols as part
+   * of the initial handshake. Where we are able to negotiated a stream muxer
+   * for the connection it will be returned here.
+   */
+  streamMuxer?: StreamMuxerFactory
 }

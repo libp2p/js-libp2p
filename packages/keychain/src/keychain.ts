@@ -82,7 +82,7 @@ export async function keyId (key: PrivateKey): Promise<string> {
 }
 
 /**
- * Manages the lifecycle of a key. Keys are encrypted at rest using PKCS #8.
+ * Manages the life cycle of a key. Keys are encrypted at rest using PKCS #8.
  *
  * A key in the store has two entries
  * - '/info/*key-name*', contains the KeyInfo for the key
@@ -93,6 +93,7 @@ export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
   private readonly log: Logger
+  private readonly self: string
 
   /**
    * Creates a new instance of a key chain
@@ -101,6 +102,7 @@ export class Keychain implements KeychainInterface {
     this.components = components
     this.log = components.logger.forComponent('libp2p:keychain')
     this.init = mergeOptions(defaultOptions, init)
+    this.self = init.selfKey ?? 'self'
 
     // Enforce NIST SP 800-132
     if (this.init.pass != null && this.init.pass?.length < 20) {
@@ -162,10 +164,10 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const dsname = DsInfoName(name)
+    const datastoreName = DsInfoName(name)
 
     try {
-      const res = await this.components.datastore.get(dsname)
+      const res = await this.components.datastore.get(datastoreName)
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
@@ -204,8 +206,8 @@ export class Keychain implements KeychainInterface {
       await randomDelay()
       throw new InvalidParametersError('Key is required')
     }
-    const dsname = DsName(name)
-    const exists = await this.components.datastore.has(dsname)
+    const datastoreName = DsName(name)
+    const exists = await this.components.datastore.has(datastoreName)
     if (exists) {
       await randomDelay()
       throw new InvalidParametersError(`Key '${name}' already exists`)
@@ -233,7 +235,7 @@ export class Keychain implements KeychainInterface {
       id: kid
     }
     const batch = this.components.datastore.batch()
-    batch.put(dsname, uint8ArrayFromString(pem))
+    batch.put(datastoreName, uint8ArrayFromString(pem))
     batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
     await batch.commit()
 
@@ -246,9 +248,9 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const dsname = DsName(name)
+    const datastoreName = DsName(name)
     try {
-      const res = await this.components.datastore.get(dsname)
+      const res = await this.components.datastore.get(datastoreName)
       const pem = uint8ArrayToString(res)
       const cached = privates.get(this)
 
@@ -266,15 +268,15 @@ export class Keychain implements KeychainInterface {
   }
 
   async removeKey (name: string): Promise<KeyInfo> {
-    if (!validateKeyName(name) || name === 'self') {
+    if (!validateKeyName(name) || name === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const dsname = DsName(name)
+    const datastoreName = DsName(name)
     const keyInfo = await this.findKeyByName(name)
     const batch = this.components.datastore.batch()
-    batch.delete(dsname)
+    batch.delete(datastoreName)
     batch.delete(DsInfoName(name))
     await batch.commit()
 
@@ -307,35 +309,35 @@ export class Keychain implements KeychainInterface {
    * @returns {Promise<KeyInfo>}
    */
   async renameKey (oldName: string, newName: string): Promise<KeyInfo> {
-    if (!validateKeyName(oldName) || oldName === 'self') {
+    if (!validateKeyName(oldName) || oldName === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid old key name '${oldName}'`)
     }
-    if (!validateKeyName(newName) || newName === 'self') {
+    if (!validateKeyName(newName) || newName === this.self) {
       await randomDelay()
       throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }
-    const oldDsname = DsName(oldName)
-    const newDsname = DsName(newName)
+    const oldDatastoreName = DsName(oldName)
+    const newDatastoreName = DsName(newName)
     const oldInfoName = DsInfoName(oldName)
     const newInfoName = DsInfoName(newName)
 
-    const exists = await this.components.datastore.has(newDsname)
+    const exists = await this.components.datastore.has(newDatastoreName)
     if (exists) {
       await randomDelay()
       throw new InvalidParametersError(`Key '${newName}' already exists`)
     }
 
     try {
-      const pem = await this.components.datastore.get(oldDsname)
+      const pem = await this.components.datastore.get(oldDatastoreName)
       const res = await this.components.datastore.get(oldInfoName)
 
       const keyInfo = JSON.parse(uint8ArrayToString(res))
       keyInfo.name = newName
       const batch = this.components.datastore.batch()
-      batch.put(newDsname, pem)
+      batch.put(newDatastoreName, pem)
       batch.put(newInfoName, uint8ArrayFromString(JSON.stringify(keyInfo)))
-      batch.delete(oldDsname)
+      batch.delete(oldDatastoreName)
       batch.delete(oldInfoName)
       await batch.commit()
       return keyInfo

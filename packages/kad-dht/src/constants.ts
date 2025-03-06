@@ -24,7 +24,7 @@ export const REPROVIDE_CONCURRENCY = 10
 // How long to let the reprovide queue grow before we wait for capacity
 export const REPROVIDE_MAX_QUEUE_SIZE = 16_384
 
-// How often to check if records need reproviding
+// How often to check if records need re-providing
 export const REPROVIDE_INTERVAL = hour
 
 export const READ_MESSAGE_TIMEOUT = 10 * second
@@ -38,13 +38,13 @@ export const K = 20
 // Alpha is the concurrency for asynchronous requests
 export const ALPHA = 3
 
-// How often we look for our closest DHT neighbours
+// How often we look for our closest DHT neighbors
 export const QUERY_SELF_INTERVAL = 5 * minute
 
-// How often we look for the first set of our closest DHT neighbours
+// How often we look for the first set of our closest DHT neighbors
 export const QUERY_SELF_INITIAL_INTERVAL = second
 
-// How long to look for our closest DHT neighbours for
+// How long to look for our closest DHT neighbors for
 export const QUERY_SELF_TIMEOUT = 5 * second
 
 // How often we try to find new peers

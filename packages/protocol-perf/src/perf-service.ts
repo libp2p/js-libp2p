@@ -9,7 +9,7 @@ export class Perf implements Startable, PerfInterface {
   public readonly protocol: string
   private readonly components: PerfComponents
   private started: boolean
-  private readonly databuf: ArrayBuffer
+  private readonly buf: ArrayBuffer
   private readonly writeBlockSize: number
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
@@ -21,7 +21,7 @@ export class Perf implements Startable, PerfInterface {
     this.started = false
     this.protocol = init.protocolName ?? PROTOCOL_NAME
     this.writeBlockSize = init.writeBlockSize ?? WRITE_BLOCK_SIZE
-    this.databuf = new ArrayBuffer(this.writeBlockSize)
+    this.buf = new ArrayBuffer(this.writeBlockSize)
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.runOnLimitedConnection = init.runOnLimitedConnection ?? RUN_ON_LIMITED_CONNECTION
@@ -65,14 +65,14 @@ export class Perf implements Startable, PerfInterface {
           bytesToSendBack = Number(buf.getBigUint64(0, false))
         }
 
-        // Ingest all the bufs and wait for the read side to close
+        // Ingest all the data and wait for the read side to close
       }
 
       if (bytesToSendBack == null) {
         throw new Error('bytesToSendBack was not set')
       }
 
-      const uint8Buf = new Uint8Array(this.databuf, 0, this.databuf.byteLength)
+      const uint8Buf = new Uint8Array(this.buf, 0, this.buf.byteLength)
 
       await stream.sink(async function * () {
         while (bytesToSendBack > 0) {
@@ -93,7 +93,7 @@ export class Perf implements Startable, PerfInterface {
   async * measurePerformance (ma: Multiaddr, sendBytes: number, receiveBytes: number, options: PerfOptions = {}): AsyncGenerator<PerfOutput> {
     this.log('opening stream on protocol %s to %a', this.protocol, ma)
 
-    const uint8Buf = new Uint8Array(this.databuf)
+    const uint8Buf = new Uint8Array(this.buf)
     const writeBlockSize = this.writeBlockSize
 
     const initialStartTime = Date.now()
@@ -117,7 +117,7 @@ export class Perf implements Startable, PerfInterface {
 
     // tell the remote how many bytes we will send. Up cast to 64 bit number
     // as if we send as ui32 we limit total transfer size to 4GB
-    const view = new DataView(this.databuf)
+    const view = new DataView(this.buf)
     view.setBigUint64(0, BigInt(receiveBytes), false)
 
     this.log('sending %i bytes to %p', sendBytes, connection.remotePeer)

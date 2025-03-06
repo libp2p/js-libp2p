@@ -1,6 +1,6 @@
 # Libp2p Architecture
 
-js-libp2p is comprised of a number of components that work together to provide functionality such as dailling peers, managing connections, registering protocols, storing information about peers and much more. This document aims to provide a high level overview of the components and how they interact with each other.
+js-libp2p is comprised of a number of components that work together to provide functionality such as dialing peers, managing connections, registering protocols, storing information about peers and much more. This document aims to provide a high level overview of the components and how they interact with each other.
 
 - [Libp2p Architecture](#libp2p-architecture)
   - [Component Diagram](#component-diagram)

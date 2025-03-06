@@ -1,11 +1,11 @@
 /**
  * @packageDocumentation
  *
- * - Manages the lifecycle of a key
+ * - Manages the life cycle of a key
  * - Keys are encrypted at rest
  * - Enforces the use of safe key names
  * - Uses encrypted PKCS 8 for key storage
- * - Uses PBKDF2 for a "stetched" key encryption key
+ * - Uses PBKDF2 for a "stretched" key encryption key
  * - Enforces NIST SP 800-131A and NIST SP 800-132
  * - Delays reporting errors to slow down brute force attacks
  *
@@ -26,9 +26,9 @@
  *
  * ## Private key storage
  *
- * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *passPhrase* using **PBKDF2**.
+ * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *pass phrase* using **PBKDF2**.
  *
- * The default options for generating the derived encryption key are in the `dek` object.  This, along with the passPhrase, is the input to a `PBKDF2` function.
+ * The default options for generating the derived encryption key are in the `dek` object.  This, along with the pass phrase, is the input to a `PBKDF2` function.
  *
  * ```TypeScript
  * const defaultOptions = {
@@ -63,8 +63,29 @@ export interface DEKConfig {
 }
 
 export interface KeychainInit {
+  /**
+   * The password is used to derive a key which encrypts the keychain at rest
+   */
   pass?: string
+
+  /**
+   * This key configures how the keychain encryption key is derived from the
+   * configured password
+   */
   dek?: DEKConfig
+
+  /**
+   * The 'self' key is the private key of the node from which the peer id is
+   * derived.
+   *
+   * It cannot be renamed or removed.
+   *
+   * By default it is stored under the 'self' key, to use a different name, pass
+   * this option.
+   *
+   * @default 'self'
+   */
+  selfKey?: string
 }
 
 export interface KeychainComponents {
@@ -164,7 +185,7 @@ export interface Keychain {
    *
    * ```TypeScript
    * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewNtest')
+   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewTest')
    * ```
    */
   renameKey(oldName: string, newName: string): Promise<KeyInfo>

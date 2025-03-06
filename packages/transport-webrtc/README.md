@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC datachannels](https://webrtc.org/).
+A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
 
 [WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
 
@@ -56,7 +56,6 @@ import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay
 import { identify } from '@libp2p/identify'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
@@ -70,10 +69,13 @@ const relay = await createLibp2p({
   listen: ['/ip4/127.0.0.1/tcp/0/ws']
   },
   transports: [
-    webSockets({filter: filters.all})
+    webSockets()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     relay: circuitRelayServer()
@@ -91,12 +93,15 @@ const listener = await createLibp2p({
     ]
   },
   transports: [
-    webSockets({filter: filters.all}),
+    webSockets(),
     webRTC(),
     circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     echo: echo()
@@ -128,12 +133,15 @@ while (true) {
 // direct WebRTC connection
 const dialer = await createLibp2p({
   transports: [
-    webSockets({filter: filters.all}),
+    webSockets(),
     webRTC(),
     circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     echo: echo()
@@ -162,9 +170,22 @@ await pipe(
 
 ## Example - WebRTC Direct
 
-At the time of writing WebRTC Direct is dial-only in browsers and unsupported in Node.js.
+WebRTC Direct allows a client to establish a WebRTC connection to a server
+without using a relay to first exchange SDP messages.
 
-The only implementation that supports a WebRTC Direct listener is go-libp2p and it's not yet enabled by default.
+Instead the server listens on a public UDP port and embeds its certificate
+hash in the published multiaddr. It derives the client's SDP offer based on
+the incoming IP/port of STUN messages sent to this public port.
+
+The client derives the server's SDP answer based on the information in the
+multiaddr so no SDP handshake via a third party is required.
+
+Full details of the connection protocol can be found in the [WebRTC Direct spec](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
+
+Browsers cannot listen on WebRTC Direct addresses since they cannot open
+ports, but they can dial all spec-compliant servers.
+
+Node.js/go and rust-libp2p can listen on and dial WebRTC Direct addresses.
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'

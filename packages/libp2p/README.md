@@ -56,7 +56,7 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
-To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
 # Roadmap
 
@@ -98,7 +98,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 ## Run unit tests
 
 ```sh
-# run all the unit tsts
+# run all the unit tests
 > npm test
 
 # run just Node.js tests
@@ -171,7 +171,7 @@ And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
 The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
 
 - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
-- **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+- **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
 - **Add tests**. There can never be enough tests.
 
 # API Docs

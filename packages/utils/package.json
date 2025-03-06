@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "6.5.1",
+  "version": "6.5.7",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -41,7 +41,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
     "./abort-options": {
@@ -108,6 +108,10 @@
       "types": "./dist/src/multiaddr/is-global-unicast.d.ts",
       "import": "./dist/src/multiaddr/is-global-unicast.js"
     },
+    "./multiaddr/is-ip-based": {
+      "types": "./dist/src/multiaddr/is-ip-based.d.ts",
+      "import": "./dist/src/multiaddr/is-ip-based.js"
+    },
     "./multiaddr/is-link-local": {
       "types": "./dist/src/multiaddr/is-link-local.d.ts",
       "import": "./dist/src/multiaddr/is-link-local.js"
@@ -115,6 +119,10 @@
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
       "import": "./dist/src/multiaddr/is-loopback.js"
+    },
+    "./multiaddr/is-network-address": {
+      "types": "./dist/src/multiaddr/is-network-address.d.ts",
+      "import": "./dist/src/multiaddr/is-network-address.js"
     },
     "./multiaddr/is-private": {
       "types": "./dist/src/multiaddr/is-private.d.ts",
@@ -181,9 +189,9 @@
   "dependencies": {
     "@chainsafe/is-ip": "^2.0.2",
     "@chainsafe/netmask": "^2.0.0",
-    "@libp2p/crypto": "^5.0.11",
-    "@libp2p/interface": "^2.5.0",
-    "@libp2p/logger": "^5.1.8",
+    "@libp2p/crypto": "^5.0.15",
+    "@libp2p/interface": "^2.7.0",
+    "@libp2p/logger": "^5.1.12",
     "@multiformats/multiaddr": "^12.3.3",
     "@sindresorhus/fnv1a": "^3.1.0",
     "any-signal": "^4.1.1",
@@ -197,14 +205,14 @@
     "netmask": "^2.0.2",
     "p-defer": "^4.0.1",
     "race-event": "^1.3.0",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.2",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^5.0.12",
+    "@libp2p/peer-id": "^5.0.16",
     "@types/netmask": "^2.0.5",
-    "aegir": "^45.0.5",
+    "aegir": "^45.1.1",
     "benchmark": "^2.1.4",
     "delay": "^6.0.0",
     "it-all": "^3.0.6",

@@ -298,7 +298,7 @@ export class KBucket {
     const list = new PeerDistanceList(id, n)
 
     for (const peer of this.toIterable()) {
-      list.addWitKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
+      list.addWithKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
     }
 
     yield * map(list.peers, info => info.id)

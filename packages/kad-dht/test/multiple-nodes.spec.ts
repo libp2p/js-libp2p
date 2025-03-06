@@ -12,14 +12,14 @@ import type { KadDHT } from '../src/kad-dht.js'
 describe('multiple nodes', function () {
   this.timeout(60 * 1000)
   const n = 8
-  let tdht: TestDHT
+  let testDHT: TestDHT
   let dhts: KadDHT[]
 
   // spawn nodes
   beforeEach(async function () {
-    tdht = new TestDHT()
+    testDHT = new TestDHT()
     dhts = await Promise.all(
-      new Array(n).fill(0).map(async () => tdht.spawn({
+      new Array(n).fill(0).map(async () => testDHT.spawn({
         clientMode: false
       }))
     )
@@ -28,11 +28,11 @@ describe('multiple nodes', function () {
     const range = Array.from(Array(n - 1).keys())
 
     // connect the last one with the others one by one
-    return Promise.all(range.map(async (i) => { await tdht.connect(dhts[n - 1], dhts[i]) }))
+    return Promise.all(range.map(async (i) => { await testDHT.connect(dhts[n - 1], dhts[i]) }))
   })
 
   afterEach(async function () {
-    await tdht.teardown()
+    await testDHT.teardown()
   })
 
   it('put to "bootstrap" node and get with the others', async function () {

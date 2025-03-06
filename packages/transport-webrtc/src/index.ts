@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC datachannels](https://webrtc.org/).
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
  *
  * [WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
  *
@@ -33,7 +33,6 @@
  * import { identify } from '@libp2p/identify'
  * import { webRTC } from '@libp2p/webrtc'
  * import { webSockets } from '@libp2p/websockets'
- * import * as filters from '@libp2p/websockets/filters'
  * import { WebRTC } from '@multiformats/multiaddr-matcher'
  * import delay from 'delay'
  * import { pipe } from 'it-pipe'
@@ -47,10 +46,13 @@
  *   listen: ['/ip4/127.0.0.1/tcp/0/ws']
  *   },
  *   transports: [
- *     webSockets({filter: filters.all})
+ *     webSockets()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     relay: circuitRelayServer()
@@ -68,12 +70,15 @@
  *     ]
  *   },
  *   transports: [
- *     webSockets({filter: filters.all}),
+ *     webSockets(),
  *     webRTC(),
  *     circuitRelayTransport()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     echo: echo()
@@ -105,12 +110,15 @@
  * // direct WebRTC connection
  * const dialer = await createLibp2p({
  *   transports: [
- *     webSockets({filter: filters.all}),
+ *     webSockets(),
  *     webRTC(),
  *     circuitRelayTransport()
  *   ],
  *   connectionEncrypters: [noise()],
  *   streamMuxers: [yamux()],
+ *   connectionGater: {
+ *     denyDialMultiaddr: () => false
+ *   },
  *   services: {
  *     identify: identify(),
  *     echo: echo()
@@ -139,9 +147,22 @@
  *
  * @example WebRTC Direct
  *
- * At the time of writing WebRTC Direct is dial-only in browsers and unsupported in Node.js.
+ * WebRTC Direct allows a client to establish a WebRTC connection to a server
+ * without using a relay to first exchange SDP messages.
  *
- * The only implementation that supports a WebRTC Direct listener is go-libp2p and it's not yet enabled by default.
+ * Instead the server listens on a public UDP port and embeds its certificate
+ * hash in the published multiaddr. It derives the client's SDP offer based on
+ * the incoming IP/port of STUN messages sent to this public port.
+ *
+ * The client derives the server's SDP answer based on the information in the
+ * multiaddr so no SDP handshake via a third party is required.
+ *
+ * Full details of the connection protocol can be found in the [WebRTC Direct spec](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
+ *
+ * Browsers cannot listen on WebRTC Direct addresses since they cannot open
+ * ports, but they can dial all spec-compliant servers.
+ *
+ * Node.js/go and rust-libp2p can listen on and dial WebRTC Direct addresses.
  *
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
@@ -194,9 +215,9 @@ import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {
   /**
-   * The maximum message size sendable over the channel in bytes
+   * The maximum message size to be sent over the channel in bytes
    *
-   * @default 16384
+   * @default 16_384
    */
   maxMessageSize?: number
 
@@ -204,7 +225,7 @@ export interface DataChannelOptions {
    * If the channel's `bufferedAmount` grows over this amount in bytes, wait
    * for it to drain before sending more data
    *
-   * @default 16777216
+   * @default 16_777_216
    */
   maxBufferedAmount?: number
 
@@ -213,7 +234,7 @@ export interface DataChannelOptions {
    * the `bufferedAmountLow` event fires - this controls how long we wait for
    * that event in ms
    *
-   * @default 30000
+   * @default 30_000
    */
   bufferedAmountLowEventTimeout?: number
 
@@ -222,7 +243,7 @@ export interface DataChannelOptions {
    * closing the underlying RTCDataChannel - this controls how long we wait
    * in ms
    *
-   * @default 30000
+   * @default 30_000
    */
   drainTimeout?: number
 
@@ -231,13 +252,15 @@ export interface DataChannelOptions {
    * for a FIN_ACK reply before closing the underlying RTCDataChannel - this
    * controls how long we wait for the acknowledgement in ms
    *
-   * @default 5000
+   * @default 5_000
    */
   closeTimeout?: number
 
   /**
    * When sending the first data message, if the channel is not in the "open"
    * state, wait this long for the "open" event to fire.
+   *
+   * @default 5_000
    */
   openTimeout?: number
 }
@@ -250,6 +273,7 @@ export interface TransportCertificate {
    * The private key for the certificate in PEM format
    */
   privateKey: string
+
   /**
    * PEM format certificate
    */

@@ -131,7 +131,7 @@ describe('rpc - handlers - GetValue', () => {
   })
 
   describe('public key', () => {
-    it('peer in peerstore', async () => {
+    it('peer in peer store', async () => {
       const key = utils.keyForPublicKey(targetPeer)
       const msg: Message = {
         type: T,
@@ -163,7 +163,7 @@ describe('rpc - handlers - GetValue', () => {
       expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.publicKey))
     })
 
-    it('peer not in peerstore', async () => {
+    it('peer not in peer store', async () => {
       const key = utils.keyForPublicKey(targetPeer)
       const msg: Message = {
         type: T,

@@ -46,7 +46,8 @@ describe('multiaddr isGlobalUnicast', () => {
   it('identifies other multiaddrs as not global unicast addresses', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443')
+      multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
+      multiaddr('/memory/addr-1')
     ].forEach(ma => {
       expect(isGlobalUnicast(ma)).to.be.false(`"${ma}" was identified as global unicast`)
     })

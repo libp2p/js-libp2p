@@ -16,7 +16,9 @@ import type { Datastore } from 'interface-datastore'
 
 describe('keychain', () => {
   const passPhrase = 'this is not a secure phrase'
+  /* spell-checker:disable-next-line */
   const rsaKeyName = 'tajné jméno'
+  /* spell-checker:disable-next-line */
   const renamedRsaKeyName = 'ชื่อลับ'
   const logger = defaultLogger()
   let rsaKeyInfo: KeyInfo
@@ -41,6 +43,23 @@ describe('keychain', () => {
     }()).to.eventually.be.ok()
   })
 
+  it('can override the self key name', async () => {
+    const selfKey = 'other-key'
+    const kc = new KeychainClass({
+      datastore: new MemoryDatastore(),
+      logger
+    }, {
+      selfKey
+    })
+
+    const privateKey = await generateKeyPair('Ed25519')
+    await kc.importKey(selfKey, privateKey)
+    await expect(kc.removeKey(selfKey)).to.eventually.be.rejected()
+
+    await kc.importKey('self', privateKey)
+    await expect(kc.removeKey('self')).to.eventually.be.ok()
+  })
+
   it('needs a NIST SP 800-132 non-weak pass phrase', async () => {
     await expect(async function () {
       return new KeychainClass({
@@ -54,7 +73,7 @@ describe('keychain', () => {
     expect(KeychainClass.options).to.exist()
   })
 
-  it('supports supported hashing alorithms', async () => {
+  it('supports supported hashing algorithms', async () => {
     const ok = new KeychainClass({
       datastore: datastore2,
       logger
@@ -62,7 +81,7 @@ describe('keychain', () => {
     expect(ok).to.exist()
   })
 
-  it('does not support unsupported hashing alorithms', async () => {
+  it('does not support unsupported hashing algorithms', async () => {
     await expect(async function () {
       return new KeychainClass({
         datastore: datastore2,
@@ -187,8 +206,8 @@ describe('keychain', () => {
     it('finds all existing keys', async () => {
       const keys = await ks.listKeys()
       expect(keys).to.exist()
-      const mykey = keys.find((k) => k.name.normalize() === rsaKeyName.normalize())
-      expect(mykey).to.exist()
+      const myKey = keys.find((k) => k.name.normalize() === rsaKeyName.normalize())
+      expect(myKey).to.exist()
     })
 
     it('finds a key by name', async () => {
@@ -320,6 +339,7 @@ describe('keychain', () => {
       options = {
         pass: oldPass,
         dek: {
+          /* spell-checker:disable-next-line */
           salt: '3Nd/Ya4ENB3bcByNKptb4IR',
           iterationCount: 10000,
           keyLength: 64,
@@ -357,8 +377,8 @@ describe('keychain', () => {
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       // Get Key PEM from datastore
-      const dsname = new Key('/pkcs8/' + 'keyCreatedWithOldPassword')
-      const res = await ds.get(dsname)
+      const datastoreName = new Key('/pkcs8/keyCreatedWithOldPassword')
+      const res = await ds.get(datastoreName)
       const pem = uint8ArrayToString(res)
 
       const oldDek = options.pass != null

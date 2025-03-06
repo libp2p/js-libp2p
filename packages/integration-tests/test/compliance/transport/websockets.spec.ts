@@ -4,7 +4,6 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets } from '@multiformats/multiaddr-matcher'
 import { isElectronMain, isNode } from 'wherearewe'
@@ -16,9 +15,7 @@ describe('websocket transport interface compliance', () => {
 
       const dialer = {
         transports: [
-          webSockets({
-            filter: all
-          })
+          webSockets()
         ],
         connectionEncrypters: [
           noise()

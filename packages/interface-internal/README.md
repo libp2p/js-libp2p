@@ -7,6 +7,29 @@
 
 > Interfaces implemented by internal libp2p components
 
+# About
+
+<!--
+
+!IMPORTANT!
+
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
+
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
+
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
+
+-->
+
+This module serves as the entry point for `@libp2p/interface-internal`,
+exporting key components such as `AddressManager`, `ConnectionManager`,
+`RandomWalk`, `Registrar`, and `TransportManager`.
+
+These interfaces and classes define the core internal behaviors of libp2p.
+
 # Install
 
 ```console

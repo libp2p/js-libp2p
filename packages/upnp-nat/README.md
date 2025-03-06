@@ -59,7 +59,7 @@ const node = await createLibp2p({
 
 ## Example - Manually specifying gateways and external ports
 
-Some ISP-provided routers are underpowered and may require rebooting before
+Some ISP-provided routers are under powered and may require rebooting before
 they will respond to SSDP M-SEARCH messages.
 
 You can manually specify your external address and/or gateways, though note

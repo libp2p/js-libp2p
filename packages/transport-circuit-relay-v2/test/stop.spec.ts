@@ -7,6 +7,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { anySignal } from 'any-signal'
 import delay from 'delay'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream, type MessageStream } from 'it-protobuf-stream'
@@ -35,7 +36,7 @@ describe('circuit-relay stop protocol', function () {
   let transport: CircuitRelayTransport
   let components: StubbedCircuitRelayTransportComponents
   let handler: StreamHandler
-  let pbstr: MessageStream<StopMessage>
+  let pbStr: MessageStream<StopMessage>
   let sourcePeer: PeerId
   const stopTimeout = 100
   let localStream: Stream
@@ -52,15 +53,20 @@ describe('circuit-relay stop protocol', function () {
       randomWalk: stubInterface<RandomWalk>(),
       registrar: stubInterface<Registrar>(),
       transportManager: stubInterface<TransportManager>(),
-      upgrader: stubInterface<Upgrader>(),
+      upgrader: stubInterface<Upgrader>({
+        createInboundAbortSignal (signal) {
+          return anySignal([
+            signal,
+            AbortSignal.timeout(stopTimeout)
+          ])
+        }
+      }),
       connectionGater: stubInterface<ConnectionGater>(),
       events: new TypedEventEmitter(),
       logger: defaultLogger()
     }
 
-    transport = new CircuitRelayTransport(components, {
-      stopTimeout
-    })
+    transport = new CircuitRelayTransport(components)
 
     if (isStartable(transport)) {
       await transport.start()
@@ -81,7 +87,7 @@ describe('circuit-relay stop protocol', function () {
       connection: stubInterface<Connection>()
     })
 
-    pbstr = pbStream(localStream).pb(StopMessage)
+    pbStr = pbStream(localStream).pb(StopMessage)
   })
 
   this.afterEach(async function () {
@@ -91,7 +97,7 @@ describe('circuit-relay stop protocol', function () {
   })
 
   it('handle stop - success', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -99,19 +105,19 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.OK)
   })
 
   it('handle stop error - invalid request - missing type', async function () {
-    await pbstr.write({})
+    await pbStr.write({})
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - wrong type', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.STATUS,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -119,21 +125,21 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.UNEXPECTED_MESSAGE)
   })
 
   it('handle stop error - invalid request - missing peer', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - invalid request - invalid peer addr', async function () {
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -143,14 +149,14 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
   it('handle stop error - timeout', async function () {
     const abortSpy = Sinon.spy(remoteStream, 'abort')
 
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -180,9 +186,9 @@ describe('circuit-relay stop protocol', function () {
     void transport.onStop({
       connection,
       stream: remoteStream
-    })
+    }, AbortSignal.timeout(5_000))
 
-    await pbstr.write({
+    await pbStr.write({
       type: StopMessage.Type.CONNECT,
       peer: {
         id: sourcePeer.toMultihash().bytes,
@@ -190,7 +196,7 @@ describe('circuit-relay stop protocol', function () {
       }
     })
 
-    const response = await pbstr.read()
+    const response = await pbStr.read()
     expect(response.status).to.be.equal(Status.OK)
 
     expect(components.transportManager.listen.called).to.be.true()

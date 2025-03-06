@@ -282,7 +282,7 @@ export interface Connection {
   streams: Stream[]
 
   /**
-   * Outbound conections are opened by the local node, inbound streams are opened by the remote
+   * Outbound connections are opened by the local node, inbound streams are opened by the remote
    */
   direction: Direction
 
@@ -398,7 +398,7 @@ export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | 
   remoteAddr: Multiaddr
 
   /**
-   * When connection lifecycle events occurred
+   * When connection life cycle events occurred
    */
   timeline: MultiaddrConnectionTimeline
 
