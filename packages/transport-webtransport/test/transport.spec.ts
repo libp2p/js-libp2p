@@ -6,7 +6,9 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { stubInterface } from 'sinon-ts'
 import { webTransport, type WebTransportComponents } from '../src/index.js'
+import type { Upgrader } from '@libp2p/interface'
 
 describe('WebTransport Transport', () => {
   let components: WebTransportComponents
@@ -17,7 +19,8 @@ describe('WebTransport Transport', () => {
     components = {
       peerId: peerIdFromPrivateKey(privateKey),
       privateKey,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      upgrader: stubInterface<Upgrader>()
     }
   })
 
