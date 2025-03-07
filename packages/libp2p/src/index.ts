@@ -24,6 +24,7 @@ import type { ConnectionManagerInit } from './connection-manager/index.js'
 import type { ConnectionMonitorInit } from './connection-monitor.js'
 import type { TransportManagerInit } from './transport-manager.js'
 import type { Libp2p, ServiceMap, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -131,6 +132,11 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
   connectionProtector?(components: Components): ConnectionProtector
+
+  /**
+   * A registrar implementation that can be used to modify protocol handling
+   */
+  registrar?(components: Components): Registrar
 
   /**
    * Arbitrary libp2p modules
