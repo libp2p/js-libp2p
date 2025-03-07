@@ -1,6 +1,6 @@
 image_name := js-libp2p-head
 
-all: image.json firefox-image.json chromium-image.json webkit-image.json
+all: image.json firefox-image.json chromium-image.json webkit-image.json electron-image.json
 
 image.json:
 	cd .. && docker build -f interop/Dockerfile -t node-${image_name} .
