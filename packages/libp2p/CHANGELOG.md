@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.0...libp2p-v2.8.1) (2025-03-07)
+
+
+### Bug Fixes
+
+* import StreamHandler from interface ([#3037](https://github.com/libp2p/js-libp2p/issues/3037)) ([88b5c29](https://github.com/libp2p/js-libp2p/commit/88b5c29ed78b54e51c2a69094c8d9f2d41f2287c))
+
 ## [2.8.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.5...libp2p-v2.8.0) (2025-03-03)
 
 
