@@ -19,6 +19,7 @@ $ npm i @libp2p/multidim-interop
   - [Build js-libp2p](#build-js-libp2p)
     - [node.js](#nodejs)
     - [Browsers](#browsers)
+    - [Electron](#electron)
   - [Build another libp2p implementation](#build-another-libp2p-implementation)
   - [Running Redis](#running-redis)
   - [Start libp2p](#start-libp2p)
@@ -48,6 +49,13 @@ $ docker build . -f ./interop/Dockerfile -t js-libp2p-node
 ```console
 $ npm run build
 $ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
+```
+
+#### Electron
+
+```console
+$ npm run build
+$ docker build . -f ./interop/ElectronDockerfile -t js-libp2p-electron
 ```
 
 ### Build another libp2p implementation
