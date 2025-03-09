@@ -162,4 +162,32 @@ describe('identify (push)', () => {
     expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
     expect(stream.abort.callCount).to.equal(1, 'did not abort stream')
   })
+
+  it('should limit the number of concurrent identify-push requests', async () => {
+    const components = {
+        peerStore: {
+            patch: sinon.stub()
+        },
+        connectionManager: {
+            getConnections: sinon.stub().returns([
+                { remotePeer: 'peer1', newStream: sinon.stub().resolves({ abort: sinon.stub() }) },
+                { remotePeer: 'peer2', newStream: sinon.stub().resolves({ abort: sinon.stub() }) },
+                { remotePeer: 'peer3', newStream: sinon.stub().resolves({ abort: sinon.stub() }) }
+            ])
+        },
+        events: new EventEmitter()
+    }
+
+    identify = new IdentifyPush(components, { concurrency: 2 })
+
+    await identify.push()
+
+    expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
+    components.connectionManager.getConnections().forEach((conn, index) => {
+        if (index < 2) {
+            expect(conn.newStream.calledOnce).to.be.true
+        } else {
+            expect(conn.newStream.called).to.be.false
+        }
+    })
 })

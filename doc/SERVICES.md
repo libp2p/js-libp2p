@@ -256,6 +256,48 @@ const node = await createLibp2p({
 console.info(node.services.myOtherService.speakToMyService()) // 'Hello from myService'
 ```
 
+### Identify Push Service
+
+The Identify Push service now includes batching and rate limiting to handle multiple identify-push requests more efficiently. This prevents connection drops due to rate limiter violations.
+
+#### Configuration
+
+To configure the Identify Push service, include it in your libp2p configuration:
+
+```ts
+import { createLibp2p } from 'libp2p';
+import { identifyPush } from '@libp2p/identify';
+
+const node = await createLibp2p({
+  services: {
+    identifyPush: identifyPush({
+      concurrency: 5 // Adjust the concurrency limit as needed
+    })
+  }
+});
+```
+
+
+#### 4. `packages/protocol-identify/src/index.ts`
+Ensure the correct initialization of the Identify Push service with the new concurrency option.
+```ts
+export interface IdentifyPushInit extends Omit<IdentifyInit, 'runOnConnectionOpen'> {
+  /**
+   * Whether to automatically dial identify-push on self updates
+   *
+   * @default true
+   */
+  runOnSelfUpdate?: boolean;
+
+  /**
+   * Push to this many connections in parallel
+   *
+   * @default 32
+   */
+  concurrency?: number;
+}
+```
+
 ## Expressing service capabilities and dependencies
 
 If you have a dependency on the capabilities provided by another service without needing to directly invoke methods on it, you can inform libp2p by using symbol properties.
