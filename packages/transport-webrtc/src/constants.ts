@@ -99,7 +99,7 @@ export const OPEN_TIMEOUT = 5_000
  * When closing a stream, we wait for `bufferedAmount` to become 0 before
  * closing the underlying RTCDataChannel - this controls how long we wait in ms
  */
-export const DATA_CHANNEL_DRAIN_TIMEOUT = 30_1000
+export const DATA_CHANNEL_DRAIN_TIMEOUT = 30_000
 
 /**
  * Set as the 'negotiated' muxer protocol name
