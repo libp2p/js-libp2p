@@ -17,7 +17,7 @@
 import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
-import { type CID, type MultibaseDecoder } from 'multiformats/cid'
+import { CID, type MultibaseDecoder } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -124,4 +124,21 @@ function isIdentityMultihash (multihash: MultihashDigest): multihash is Multihas
 
 function isSha256Multihash (multihash: MultihashDigest): multihash is MultihashDigest<0x12> {
   return multihash.code === sha256.code
+}
+
+
+/**
+ * Get a PeerId from a string
+ *
+ * @param peerIdString - The string to get the PeerId from, can be a base58btc encoded multihash or a CID
+ * @returns PeerId
+ */
+export function getPeerId(peerIdString: string): PeerId {
+  // It's either base58btc encoded multihash (identity or sha256)
+  if (peerIdString.charAt(0) === '1' || peerIdString.charAt(0) === 'Q') {
+    return peerIdFromString(peerIdString)
+  }
+
+  // or base36 encoded CID
+  return peerIdFromCID(CID.parse(peerIdString))
 }
