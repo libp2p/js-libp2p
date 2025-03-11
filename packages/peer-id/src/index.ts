@@ -126,14 +126,13 @@ function isSha256Multihash (multihash: MultihashDigest): multihash is MultihashD
   return multihash.code === sha256.code
 }
 
-
 /**
  * Get a PeerId from a string
  *
  * @param peerIdString - The string to get the PeerId from, can be a base58btc encoded multihash or a CID
  * @returns PeerId
  */
-export function getPeerId(peerIdString: string): PeerId {
+export function getPeerId (peerIdString: string): PeerId {
   // It's either base58btc encoded multihash (identity or sha256)
   if (peerIdString.charAt(0) === '1' || peerIdString.charAt(0) === 'Q') {
     return peerIdFromString(peerIdString)
