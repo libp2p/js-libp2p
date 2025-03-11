@@ -2,11 +2,13 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
+import { base36 } from 'multiformats/bases/base36'
+import { base32 } from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { getPeerId, peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.js'
+import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.js'
 import type { KeyType, PeerId } from '@libp2p/interface'
 
 // these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
@@ -56,13 +58,12 @@ describe('PeerId', () => {
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
-      it('should create a peer id from a string that can be either a base58btc encoded multihash or a CID', async () => {
-        let id = getPeerId(peerId.toString())
+      it('should return the correct peer id from cid encoded peer id in base36 and base32', async () => {
+        let id = peerIdFromString(peerId.toCID().toString(base36))
         expect(id.type).to.equal(type)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
-
-        id = getPeerId(peerId.toCID().toString())
+        id = peerIdFromString(peerId.toCID().toString(base32))
         expect(id.type).to.equal(type)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())

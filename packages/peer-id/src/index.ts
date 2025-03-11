@@ -37,6 +37,9 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
     // identity hash ed25519/secp256k1 key or sha2-256 hash of
     // rsa public key - base58btc encoded either way
     multihash = Digest.decode(base58btc.decode(`z${str}`))
+  } else if (str.startsWith('k51qzi5uqu5') || str.startsWith('kzwfwjn5ji4') || str.startsWith('k2k4r8') || str.startsWith('bafz')) {
+    // base36 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa) or base32 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa)
+    return peerIdFromCID(CID.parse(str))
   } else {
     if (decoder == null) {
       throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"')
@@ -124,20 +127,4 @@ function isIdentityMultihash (multihash: MultihashDigest): multihash is Multihas
 
 function isSha256Multihash (multihash: MultihashDigest): multihash is MultihashDigest<0x12> {
   return multihash.code === sha256.code
-}
-
-/**
- * Get a PeerId from a string
- *
- * @param peerIdString - The string to get the PeerId from, can be a base58btc encoded multihash or a CID
- * @returns PeerId
- */
-export function getPeerId (peerIdString: string): PeerId {
-  // It's either base58btc encoded multihash (identity or sha256)
-  if (peerIdString.charAt(0) === '1' || peerIdString.charAt(0) === 'Q') {
-    return peerIdFromString(peerIdString)
-  }
-
-  // or base36 encoded CID
-  return peerIdFromCID(CID.parse(peerIdString))
 }
