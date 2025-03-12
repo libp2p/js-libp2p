@@ -96,6 +96,25 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.36](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.35...webtransport-v5.0.36) (2025-03-12)
+
+
+### Bug Fixes
+
+* pass upgrader to noise ([#3035](https://github.com/libp2p/js-libp2p/issues/3035)) ([a6c9aee](https://github.com/libp2p/js-libp2p/commit/a6c9aee5a8a4c3507702d2f63ac02a36316ef13f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/ping bumped from ^2.0.25 to ^2.0.26
+    * libp2p bumped from ^2.8.0 to ^2.8.1
+
 ## [5.0.35](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.34...webtransport-v5.0.35) (2025-03-03)
 
 

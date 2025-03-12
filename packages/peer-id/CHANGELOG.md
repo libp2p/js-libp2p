@@ -11,6 +11,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.16...peer-id-v5.1.0) (2025-03-12)
+
+
+### Features
+
+* support parsing base32 and base36 libp2p-key CIDs in peerIdFromString ([#3042](https://github.com/libp2p/js-libp2p/issues/3042)) ([0699fb7](https://github.com/libp2p/js-libp2p/commit/0699fb7470b1173a6a3cdb33fe8deee627b1e651))
+
 ## [5.0.16](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.15...peer-id-v5.0.16) (2025-03-03)
 
 

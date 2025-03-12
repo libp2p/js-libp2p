@@ -110,6 +110,26 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.0...libp2p-v2.8.1) (2025-03-12)
+
+
+### Bug Fixes
+
+* import StreamHandler from interface ([#3037](https://github.com/libp2p/js-libp2p/issues/3037)) ([88b5c29](https://github.com/libp2p/js-libp2p/commit/88b5c29ed78b54e51c2a69094c8d9f2d41f2287c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.7 to ^2.3.8
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/multistream-select bumped from ^6.0.19 to ^6.0.20
+    * @libp2p/peer-collections bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+    * @libp2p/peer-store bumped from ^11.1.0 to ^11.1.1
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+
 ## [2.8.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.5...libp2p-v2.8.0) (2025-03-03)
 
 

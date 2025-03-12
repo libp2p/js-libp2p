@@ -81,6 +81,17 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.3.14](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.3.13...prometheus-metrics-v4.3.14) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.0 to ^6.4.1
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+
 ## [4.3.13](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.3.12...prometheus-metrics-v4.3.13) (2025-03-03)
 
 
