@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
-import { base58btc } from 'multiformats/bases/base58'
-import { base36 } from 'multiformats/bases/base36'
 import { base32 } from 'multiformats/bases/base32'
+import { base36 } from 'multiformats/bases/base36'
+import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
