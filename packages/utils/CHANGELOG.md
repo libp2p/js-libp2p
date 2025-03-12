@@ -36,6 +36,17 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.5.8](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.7...utils-v6.5.8) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+
 ## [6.5.7](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.6...utils-v6.5.7) (2025-03-03)
 
 
