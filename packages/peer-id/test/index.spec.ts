@@ -58,12 +58,15 @@ describe('PeerId', () => {
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
-      it('should return the correct peer id from cid encoded peer id in base36 and base32', async () => {
-        let id = peerIdFromString(peerId.toCID().toString(base36))
+      it('should return the correct peer id from cid encoded peer id in base36', async () => {
+        const id = peerIdFromString(peerId.toCID().toString(base36))
         expect(id.type).to.equal(type)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
-        id = peerIdFromString(peerId.toCID().toString(base32))
+      })
+
+      it('should return the correct peer id from cid encoded peer id in base32', async () => {
+        const id = peerIdFromString(peerId.toCID().toString(base32))
         expect(id.type).to.equal(type)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
