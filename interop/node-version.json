@@ -10,7 +10,7 @@
     },
     "webrtc",
     "webrtc-direct",
-    "quic"
+    "quic-v1"
   ],
   "secureChannels": ["noise", "tls"],
   "muxers": ["yamux", "mplex"]
