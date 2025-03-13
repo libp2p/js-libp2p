@@ -76,6 +76,11 @@
       "types": "./dist/src/filters/index.d.ts",
       "import": "./dist/src/filters/index.js"
     },
+    "./get-thin-waist-addresses": {
+      "types": "./dist/src/get-thin-waist-addresses.d.ts",
+      "browser": "./dist/src/get-thin-waist-addresses.browser.js",
+      "import": "./dist/src/get-thin-waist-addresses.js"
+    },
     "./global-unicast-ip": {
       "types": "./dist/src/global-unicast-ip.d.ts",
       "import": "./dist/src/global-unicast-ip.js"
@@ -219,7 +224,14 @@
     "it-drain": "^3.0.7",
     "it-pair": "^2.0.6",
     "sinon": "^19.0.2",
-    "sinon-ts": "^2.0.0"
+    "sinon-ts": "^2.0.0",
+    "wherearewe": "^2.0.1"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "browser": {
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js"
+  },
+  "react-native": {
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js"
+  }
 }
