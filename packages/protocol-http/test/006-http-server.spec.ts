@@ -24,7 +24,7 @@ describe('006-HTTP Server Implementation', () => {
     try {
       // Use the existing node config utility which properly handles different environments
       const nodeConfig = getNodeConfig()
-      
+
       node = await createLibp2p({
         ...nodeConfig,
         streamMuxers: [yamux()],
