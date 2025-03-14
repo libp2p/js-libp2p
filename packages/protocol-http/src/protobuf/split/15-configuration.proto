@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package http;
+
+// Proxy configuration
+message ProxyConfiguration {
+  string host = 1;
+  int32 port = 2;
+  repeated string bypass_hosts = 3;  // Hosts to bypass proxy
+  repeated string direct_connect_schemes = 4;  // Schemes to connect directly
+  
+  // Proxy authentication
+  string username = 5;
+  string password = 6;
+  
+  // Proxy configuration source
+  enum ConfigSource {
+    MANUAL = 0;
+    AUTO_DETECT = 1;
+    PAC_SCRIPT = 2;
+    SYSTEM = 3;
+    ENVIRONMENT = 4;
+  }
+  ConfigSource config_source = 7;
+  
+  // PAC script URL if applicable
+  string pac_url = 8;
+}
+
+// Gateway origin mapping
+message OriginMapping {
+  string incoming_host = 1;
+  string target_host = 2;
+  int32 target_port = 3;
+  string target_scheme = 4;  // http or https
+  bool preserve_host = 5;  // Preserve Host header
+}
+
+// Request transformation rule
+message RequestTransformation {
+  string header_name = 1;
+  
+  enum Action {
+    ADD = 0;
+    REMOVE = 1;
+    REPLACE = 2;
+  }
+  Action action = 2;
+  
+  string value = 3;  // New value for ADD or REPLACE
+}
+
+// Gateway configuration
+message GatewayConfiguration {
+  // Origin server mapping
+  repeated OriginMapping origin_mappings = 1;
+  
+  // Request transformation rules
+  repeated RequestTransformation request_transformations = 2;
+  
+  // Response transformation rules
+  repeated RequestTransformation response_transformations = 3;
+}
+
+// TLS configuration
+message TlsConfiguration {
+  repeated string protocols = 1;  // TLS/SSL protocols (e.g., "TLSv1.2", "TLSv1.3")
+  repeated string cipher_suites = 2;  // Enabled cipher suites
+  
+  // Certificate verification
+  bool verify_peer = 3;
+  bool verify_hostname = 4;
+  string ca_file = 5;  // CA certificate file path
+  string cert_file = 6;  // Client certificate file path
+  string key_file = 7;  // Client key file path
+  
+  // ALPN protocols (for HTTP/2, HTTP/3)
+  repeated string alpn_protocols = 8;
+}
+
+// Transport security settings
+message TransportSecurity {
+  // TLS configuration
+  TlsConfiguration tls_config = 1;
+  
+  // Connection security requirements
+  bool require_secure_transport = 2;  // Require TLS for all connections
+  bool hsts_enabled = 3;  // HTTP Strict Transport Security
+  int32 hsts_max_age = 4;  // HSTS max-age in seconds
+  bool hsts_include_subdomains = 5;  // Include subdomains in HSTS
+}
+
+// Via header processing
+message ViaConfiguration {
+  string pseudonym = 1;  // Pseudonym to use in Via header
+  bool add_version = 2;  // Add protocol version to Via
+  bool obfuscate_hosts = 3;  // Replace host names with pseudonyms
+  
+  // Forwarding behavior
+  enum ForwardingBehavior {
+    APPEND = 0;  // Append entry to existing Via header
+    COMBINE = 1;  // Combine with existing entries if possible
+    OMIT = 2;  // Do not add Via header
+  }
+  ForwardingBehavior forwarding_behavior = 4;
+}
+
+// Connection pool configuration
+message ConnectionPool {
+  int32 max_connections_per_host = 1;  // Maximum connections per host
+  int32 max_connections_total = 2;  // Maximum total connections
+  int32 connection_timeout_ms = 3;  // Connection timeout in milliseconds
+  int32 idle_timeout_ms = 4;  // Idle connection timeout in milliseconds
+  bool keep_alive = 5;  // Use persistent connections
+}
+
+// Connection management
+message ConnectionManagement {
+  // Connection pooling
+  ConnectionPool connection_pool = 1;
+  
+  // Connection options
+  bool tcp_nodelay = 2;  // Disable Nagle's algorithm
+  int32 send_buffer_size = 3;  // TCP send buffer size
+  int32 receive_buffer_size = 4;  // TCP receive buffer size
+  int32 connect_timeout_ms = 5;  // Connection timeout
+  bool tcp_keepalive = 6;  // Enable TCP keepalive
+  
+  // HTTP-specific connection settings
+  int32 max_request_header_size = 7;  // Maximum request header size
+  int32 max_response_header_size = 8;  // Maximum response header size
+  int32 max_header_count = 9;  // Maximum number of headers
+  int32 max_concurrent_streams = 10;  // HTTP/2 max concurrent streams
+  
+  // Connection closure detection
+  enum ConnectionClosePolicy {
+    NORMAL = 0;  // Normal closure after response
+    AGGRESSIVE = 1;  // Close after any error
+    KEEP_OPEN = 2;  // Try to keep open even after errors
+  }
+  ConnectionClosePolicy close_policy = 11;
+}
+
+// Hop-by-hop header processing
+message HopByHopHeadersConfig {
+  repeated string additional_hop_by_hop_headers = 1;  // Beyond the standard ones
+  bool strip_connection_header = 2;  // Remove Connection header when forwarding
+  bool strip_hop_by_hop_headers = 3;  // Remove hop-by-hop headers when forwarding
+}
+
+// Retry configuration
+message RetryConfig {
+  int32 max_retries = 1;  // Maximum number of retries
+  repeated int32 retry_status_codes = 2;  // Status codes to retry on
+  repeated string retry_methods = 3;  // Methods to retry
+  int32 retry_delay_ms = 4;  // Delay between retries
+  bool retry_on_network_errors = 5;  // Retry on network errors
+  bool retry_on_timeout = 6;  // Retry on timeout
+  bool only_retry_idempotent = 7;  // Only retry idempotent methods
+}
+
+// Timeout configuration
+message TimeoutConfig {
+  int32 connect_timeout_ms = 1;  // Connection timeout
+  int32 read_timeout_ms = 2;  // Socket read timeout
+  int32 write_timeout_ms = 3;  // Socket write timeout
+  int32 idle_timeout_ms = 4;  // Idle connection timeout
+  int32 response_timeout_ms = 5;  // Total response timeout
+  int32 keep_alive_timeout_ms = 6;  // Keep-alive timeout
+}
