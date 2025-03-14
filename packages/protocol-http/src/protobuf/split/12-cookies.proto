@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package http;
+
+// Needed from basic-types.proto
+message NameValuePair {
+  string name = 1;
+  string value = 2;
+}
+
+// Cookie handling (based on RFC 6265)
+message Cookie {
+  string name = 1;
+  string value = 2;
+  
+  // Attributes
+  string domain = 3;
+  string path = 4;
+  int64 expires = 5;  // Unix timestamp
+  int32 max_age = 6;  // Seconds
+  bool secure = 7;
+  bool http_only = 8;
+  
+  enum SameSitePolicy {
+    NONE = 0;
+    LAX = 1;
+    STRICT = 2;
+  }
+  SameSitePolicy same_site = 9;
+  
+  // Extensions
+  message CookieExtension {
+    string name = 1;
+    string value = 2;
+  }
+  repeated CookieExtension extensions = 10;  // Changed from map to message
+}
+
+// Set-Cookie header field representation
+message SetCookie {
+  Cookie cookie = 1;
+}
+
+// Cookie header field representation
+message CookieHeader {
+  repeated NameValuePair cookies = 1;
+}
+
+// Cookie jar (collection of cookies)
+message CookieJar {
+  repeated Cookie cookies = 1;
+}

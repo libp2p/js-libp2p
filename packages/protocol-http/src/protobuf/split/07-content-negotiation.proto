@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package http;
+
+// Media range (Accept header components)
+message MediaTypeParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// Media range (Accept header components)
+message MediaRangeWithQValue {
+  string type = 1;       // Media type or "*"
+  string subtype = 2;    // Subtype or "*"
+  repeated MediaTypeParameter parameters = 3; // Media type parameters
+  float qvalue = 4;      // Quality value (0.0-1.0, default 1.0)
+}
+
+// Language range (Accept-Language header components)
+message LanguageRangeWithQValue {
+  string language_range = 1; // Language tag or "*"
+  float qvalue = 2;         // Quality value (0.0-1.0, default 1.0)
+}
+
+// Content coding (Accept-Encoding header components)
+message CodingWithQValue {
+  string coding = 1;     // Content coding, "identity", or "*"
+  float qvalue = 2;      // Quality value (0.0-1.0, default 1.0)
+}
+
+// Character set (Accept-Charset header components)
+message CharsetWithQValue {
+  string charset = 1;    // Charset token or "*"
+  float qvalue = 2;      // Quality value (0.0-1.0, default 1.0)
+}
+
+// Content negotiation fields
+message ContentNegotiation {
+  repeated MediaRangeWithQValue accept = 1;         // Accept
+  repeated LanguageRangeWithQValue accept_language = 2; // Accept-Language
+  repeated CodingWithQValue accept_encoding = 3;     // Accept-Encoding
+  repeated CharsetWithQValue accept_charset = 4;     // Accept-Charset (deprecated)
+  repeated string vary = 5;                         // Vary response header
+}

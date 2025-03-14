@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package http;
+
+// Field definition (duplicated from basic-types.proto)
+message Field {
+  string name = 1;   // Field name (case-insensitive)
+  string value = 2;  // Field value
+}
+
+// Control data for messages
+message ControlData {
+  // Combined field for protocol version (e.g., "HTTP/1.1")
+  string protocol_version = 1;
+  
+  // Request-specific control data
+  oneof request_control {
+    string method = 2;
+    string request_target = 3;
+  }
+  
+  // Response-specific control data
+  oneof response_control {
+    int32 status_code = 4;
+    string reason_phrase = 5;
+  }
+}
+
+// HTTP Message - The fundamental unit of HTTP communication
+message HttpMessage {
+  // Control data (for requests: method, target URI, protocol version
+  // for responses: status code, reason phrase, protocol version)
+  ControlData control_data = 1;
+  
+  // Header fields section
+  repeated Field headers = 2;
+  
+  // Content (body)
+  bytes content = 3;
+  
+  // Trailer fields section
+  repeated Field trailers = 4;
+}
+
+// Request-specific message properties
+message HttpRequest {
+  HttpMessage base_message = 1;
+  string method = 2;          // GET, POST, etc.
+  string target_uri = 3;      // The target URI (after normalization)
+  string protocol_version = 4; // HTTP/1.1, HTTP/2, etc.
+}
+
+// Response-specific message properties
+message HttpResponse {
+  HttpMessage base_message = 1;
+  int32 status_code = 2;     // 200, 404, etc.
+  string reason_phrase = 3;  // OK, Not Found, etc. (optional)
+  string protocol_version = 4; // HTTP/1.1, HTTP/2, etc.
+}

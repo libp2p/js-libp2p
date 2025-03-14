@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package http;
+
+// Byte range specification (first-pos "-" [last-pos])
+message ByteRangeSpec {
+  int64 first_pos = 1;         // Start position (inclusive)
+  int64 last_pos = 2;          // End position (inclusive, optional)
+}
+
+// Suffix range specification ("-" suffix-length)
+message SuffixRangeSpec {
+  int64 suffix_length = 1;     // Length from end
+}
+
+// Range specification
+message RangeSpec {
+  oneof range_type {
+    ByteRangeSpec byte_range = 1;  // Byte range
+    SuffixRangeSpec suffix_range = 2; // Suffix range
+    string other_range = 3;     // Other range format
+  }
+}
+
+// Range request fields
+message RangeRequest {
+  string range_unit = 1;        // Range unit (e.g., "bytes")
+  repeated RangeSpec ranges = 2; // Range specifications
+  
+  // If-Range field (conditional range request)
+  oneof if_range {
+    string etag = 3;           // Entity tag
+    string http_date = 4;      // HTTP-date
+  }
+}
+
+// Content range response
+message ContentRange {
+  string unit = 1;             // Range unit (e.g., "bytes")
+  int64 first_pos = 2;         // Start position (inclusive)
+  int64 last_pos = 3;          // End position (inclusive)
+  
+  // Complete representation length (or -1 if unknown)
+  int64 complete_length = 4;
+}
+
+// Accept-Ranges response field
+message AcceptRanges {
+  repeated string range_units = 1; // Acceptable range units
+}

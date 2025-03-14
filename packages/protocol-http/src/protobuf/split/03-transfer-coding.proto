@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package http;
+
+// Import needed types from basic-types.proto
+// Since protons doesn't support imports, we need to include Field definition here
+message Field {
+  string name = 1;   // Field name (case-insensitive)
+  string value = 2;  // Field value
+}
+
+// Parameter for transfer coding
+message TransferCodingParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// Transfer coding with optional parameters
+message TransferCoding {
+  string coding = 1;  // Transfer coding name (chunked, gzip, etc.)
+  repeated TransferCodingParameter parameters = 2;  // Optional parameters
+}
+
+// Transfer encodings (for HTTP/1.1)
+message TransferEncodings {
+  repeated TransferCoding encodings = 1;  // Applied in order
+  bool chunked = 2;  // Convenience flag for the common chunked encoding
+}
+
+// Individual chunk in chunked transfer
+message Chunk {
+  uint32 size = 1;    // Size of this chunk in octets
+  bytes data = 2;     // Chunk data
+  repeated Field chunk_extensions = 3;  // Optional chunk extensions
+}
+
+// Chunked data representation
+message ChunkedData {
+  repeated Chunk chunks = 1;
+  repeated Field trailers = 2;  // Trailer fields
+}

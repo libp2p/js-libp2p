@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package http;
+
+// HTTP Methods enum
+enum Method {
+  // Method names as defined in RFC 9110
+  METHOD_UNKNOWN = 0;
+  METHOD_GET = 1;
+  METHOD_HEAD = 2;
+  METHOD_POST = 3;
+  METHOD_PUT = 4;
+  METHOD_DELETE = 5;
+  METHOD_CONNECT = 6;
+  METHOD_OPTIONS = 7;
+  METHOD_TRACE = 8;
+  // Note: New methods can be added through extension
+  // For non-standard methods, use string in the request message
+}
+
+// Method properties
+message MethodProperties {
+  Method method = 1;  // Changed from string to Method enum
+  bool is_safe = 2;
+  bool is_idempotent = 3;
+  bool is_cacheable = 4;
+}
+
+// HTTP Status Codes (partial list, all defined in RFC 9110)
+enum StatusCode {
+  // Default value (required for proto3)
+  STATUS_UNKNOWN = 0;
+  // Informational 1xx
+  STATUS_CONTINUE = 100;
+  STATUS_SWITCHING_PROTOCOLS = 101;
+  
+  // Successful 2xx
+  STATUS_OK = 200;
+  STATUS_CREATED = 201;
+  STATUS_ACCEPTED = 202;
+  STATUS_NON_AUTHORITATIVE_INFORMATION = 203;
+  STATUS_NO_CONTENT = 204;
+  STATUS_RESET_CONTENT = 205;
+  STATUS_PARTIAL_CONTENT = 206;
+  
+  // Redirection 3xx
+  STATUS_MULTIPLE_CHOICES = 300;
+  STATUS_MOVED_PERMANENTLY = 301;
+  STATUS_FOUND = 302;
+  STATUS_SEE_OTHER = 303;
+  STATUS_NOT_MODIFIED = 304;
+  STATUS_USE_PROXY = 305;
+  STATUS_TEMPORARY_REDIRECT = 307;
+  STATUS_PERMANENT_REDIRECT = 308;
+  
+  // Client Error 4xx
+  STATUS_BAD_REQUEST = 400;
+  STATUS_UNAUTHORIZED = 401;
+  STATUS_PAYMENT_REQUIRED = 402;
+  STATUS_FORBIDDEN = 403;
+  STATUS_NOT_FOUND = 404;
+  STATUS_METHOD_NOT_ALLOWED = 405;
+  STATUS_NOT_ACCEPTABLE = 406;
+  STATUS_PROXY_AUTHENTICATION_REQUIRED = 407;
+  STATUS_REQUEST_TIMEOUT = 408;
+  STATUS_CONFLICT = 409;
+  STATUS_GONE = 410;
+  STATUS_LENGTH_REQUIRED = 411;
+  STATUS_PRECONDITION_FAILED = 412;
+  STATUS_CONTENT_TOO_LARGE = 413;
+  STATUS_URI_TOO_LONG = 414;
+  STATUS_UNSUPPORTED_MEDIA_TYPE = 415;
+  STATUS_RANGE_NOT_SATISFIABLE = 416;
+  STATUS_EXPECTATION_FAILED = 417;
+  STATUS_MISDIRECTED_REQUEST = 421;
+  STATUS_UNPROCESSABLE_CONTENT = 422;
+  STATUS_UPGRADE_REQUIRED = 426;
+  
+  // Server Error 5xx
+  STATUS_INTERNAL_SERVER_ERROR = 500;
+  STATUS_NOT_IMPLEMENTED = 501;
+  STATUS_BAD_GATEWAY = 502;
+  STATUS_SERVICE_UNAVAILABLE = 503;
+  STATUS_GATEWAY_TIMEOUT = 504;
+  STATUS_HTTP_VERSION_NOT_SUPPORTED = 505;
+}
+
+// Intermediary types
+enum IntermediaryType {
+  PROXY = 0;
+  GATEWAY = 1;
+  TUNNEL = 2;
+  CACHE = 3;
+}

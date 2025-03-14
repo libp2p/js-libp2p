@@ -1,0 +1,94 @@
+{
+  "name": "@libp2p/http",
+  "version": "1.0.0",
+  "description": "Implementation of the Http Protocol",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-http#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./src/common/message": {
+      "types": "./dist/src/common/message.d.ts",
+      "import": "./dist/src/common/message.js"
+    }
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "parserOptions": {
+      "project": true,
+      "sourceType": "module"
+    },
+    "rules": {
+      "@typescript-eslint/no-extraneous-class": "off"
+    }
+  },
+  "scripts": {
+    "start": "node dist/src/main.js",
+    "build": "aegir build",
+    "build:bundle": "aegir build --target browser",
+    "test": "npm run test:node && npm run test:chrome",
+    "clean": "aegir clean",
+    "generate": "./build-protos.sh",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov -- --exclude '**/*.node.spec.{js,cjs,mjs,ts}'",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
+  },
+  "dependencies": {
+    "@libp2p/interface": "file:../interface",
+    "@libp2p/interface-internal": "file:../interface-internal",
+    "@libp2p/logger": "file:../logger",
+    "@libp2p/peer-id": "file:../peer-id",
+    "it-protobuf-stream": "latest",
+    "protons-runtime": "latest",
+    "uint8arraylist": "latest",
+    "uint8arrays": "latest"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-noise": "latest",
+    "@chainsafe/libp2p-yamux": "latest",
+    "@libp2p/crypto": "file:../crypto",
+    "@libp2p/webrtc": "file:../transport-webrtc",
+    "@libp2p/websockets": "file:../transport-websockets",
+    "@libp2p/identify": "file:../identify",
+    "aegir": "latest",
+    "it-pair": "latest",
+    "playwright": "latest",
+    "protons": "latest",
+    "sinon": "latest",
+    "sinon-chai": "latest",
+    "sinon-ts": "latest"
+  },
+  "peerDependencies": {
+    "@libp2p/crypto": "file:../crypto",
+    "@libp2p/webrtc": "file:../transport-webrtc",
+    "@libp2p/websockets": "file:../transport-websockets",
+    "@libp2p/circuit-relay-v2": "file:../transport-circuit-relay-v2"
+  },
+  "sideEffects": false
+}

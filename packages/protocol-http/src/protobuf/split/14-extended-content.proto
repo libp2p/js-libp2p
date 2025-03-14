@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package http;
+
+// Field definition needed from basic-types.proto
+message Field {
+  string name = 1;   // Field name (case-insensitive)
+  string value = 2;  // Field value
+}
+
+// Parameter for transfer coding
+message TransferCodingParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// From transfer-coding.proto
+message TransferCoding {
+  string coding = 1;  // Transfer coding name (chunked, gzip, etc.)
+  repeated TransferCodingParameter parameters = 2;  // Optional parameters
+}
+
+// Multipart content for extended content types
+message MultipartContent {
+  string boundary = 1;  // Boundary delimiter
+  repeated BodyPart parts = 2;  // Individual parts
+}
+
+message BodyPart {
+  repeated Field headers = 1;  // Part headers
+  bytes content = 2;  // Part content
+}
+
+// Byte range content for range responses
+message ByteRange {
+  int64 first_pos = 1;  // Start position (inclusive)
+  int64 last_pos = 2;  // End position (inclusive)
+  bytes content = 3;  // Range content
+  string content_type = 4;  // Content-Type for this range
+}
+
+message ByteRangeContent {
+  repeated ByteRange ranges = 1;  // Byte ranges included
+  int64 complete_length = 2;  // Complete resource length
+  bool multipart = 3;  // Whether response uses multipart/byteranges
+}
+
+// Extended content type parameter
+message ContentTypeParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// Extended content types and encodings
+message ExtendedContent {
+  // Basic content data
+  bytes data = 1;
+  
+  // Content type components
+  string media_type = 2;  // Primary media type/subtype
+  repeated ContentTypeParameter parameters = 3;  // Media type parameters
+  
+  // Content encodings
+  repeated string content_encodings = 4;  // Content-Encoding values
+  
+  // Transfer encodings
+  repeated TransferCoding transfer_encodings = 5;  // Transfer-Encoding values
+  
+  // For multipart types
+  MultipartContent multipart = 6;
+  
+  // For range responses
+  ByteRangeContent byte_ranges = 7;
+}
+
+// Transformation parameter
+message TransformationParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// Content transformation - compression, encoding, etc.
+message ContentTransformation {
+  enum TransformationType {
+    IDENTITY = 0;  // No transformation
+    COMPRESSION = 1;  // Content compression
+    CHARACTER_ENCODING = 2;  // Character encoding conversion
+    FORMAT_CONVERSION = 3;  // Media type conversion
+  }
+  
+  TransformationType type = 1;
+  string source_format = 2;  // Source format/encoding
+  string target_format = 3;  // Target format/encoding
+  
+  // Additional parameters for the transformation
+  repeated TransformationParameter parameters = 4;  // Changed from map to message
+  
+  // Whether the transformation is reversible
+  bool reversible = 5;
+}

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package http;
+
+// Protocol upgrade parameter
+message ProtocolParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// Protocol upgrade mechanism
+message ProtocolUpgrade {
+  repeated string protocols = 1;  // Protocols in preference order
+  repeated ProtocolParameter parameters = 2;  // Protocol-specific parameters
+  bool connection_upgrade = 3;  // Connection header includes "upgrade"
+}
+
+// WebSocket specific extensions
+message WebSocketUpgrade {
+  string key = 1;  // Sec-WebSocket-Key
+  repeated string protocols = 2;  // Sec-WebSocket-Protocol values
+  repeated string extensions = 3;  // Sec-WebSocket-Extensions values
+  string version = 4;  // Sec-WebSocket-Version
+}
+
+// WebSocket response
+message WebSocketResponse {
+  string accept = 1;  // Sec-WebSocket-Accept
+  string protocol = 2;  // Selected Sec-WebSocket-Protocol
+  repeated string extensions = 3;  // Accepted Sec-WebSocket-Extensions
+}
+
+// WebTransport upgrades
+message WebTransportUpgrade {
+  string path = 1;  // Path component for the WebTransport session
+  repeated string protocols = 2;  // Supported protocols
+  repeated ProtocolParameter parameters = 3;  // Protocol-specific parameters
+}
+
+// Other protocol parameters for upgrade response
+message OtherProtocolParameters {
+  repeated ProtocolParameter parameters = 1;  // Parameters for other protocols
+}
+
+// Upgrade response (for both WebSocket and WebTransport)
+message UpgradeResponse {
+  int32 status_code = 1;  // 101 for successful upgrade
+  string protocol = 2;  // Negotiated protocol
+  
+  oneof protocol_specific {
+    WebSocketResponse websocket = 3;
+    OtherProtocolParameters other_parameters = 4;  // For other protocols
+  }
+}
+
+// WebSocket message (after upgrade)
+message WebSocketMessage {
+  enum OpCode {
+    CONTINUATION = 0;
+    TEXT = 1;
+    BINARY = 2;
+    CLOSE = 8;
+    PING = 9;
+    PONG = 10;
+  }
+  
+  OpCode op_code = 1;
+  bool final = 2;  // Final fragment in message
+  bytes payload = 3;  // Message payload
+  
+  // Extensions-related fields
+  bool rsv1 = 4;  // Reserved bit 1 (for extensions)
+  bool rsv2 = 5;  // Reserved bit 2 (for extensions)
+  bool rsv3 = 6;  // Reserved bit 3 (for extensions)
+}
+
+// WebTransport session
+message WebTransportSession {
+  string session_id = 1;
+  
+  // Streams within the session
+  message Stream {
+    uint64 stream_id = 1;
+    bool unidirectional = 2;  // True for unidirectional streams
+    bytes data = 3;  // Stream data
+  }
+  
+  repeated Stream streams = 2;
+  
+  // Datagrams (unreliable messages)
+  repeated bytes datagrams = 3;
+}

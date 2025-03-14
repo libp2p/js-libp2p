@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package http;
+
+// Cache Extension Directive
+message CacheExtensionDirective {
+  string name = 1;
+  string value = 2;
+}
+
+// Cache control directives
+message CacheControl {
+  // Request directives
+  bool no_cache = 1;
+  bool no_store = 2;
+  bool max_age_set = 3;
+  int32 max_age = 4;
+  bool max_stale_set = 5;
+  int32 max_stale = 6;
+  bool min_fresh_set = 7;
+  int32 min_fresh = 8;
+  bool no_transform = 9;
+  bool only_if_cached = 10;
+  
+  // Response directives
+  bool must_revalidate = 11;
+  bool must_understand = 12;
+  bool proxy_revalidate = 13;
+  bool s_maxage_set = 14;
+  int32 s_maxage = 15;
+  bool immutable = 16;
+  
+  // Extension directives
+  repeated CacheExtensionDirective extensions = 17;  // Changed from map to message
+  
+  // Private and no-cache field names
+  repeated string private_fields = 18;
+  repeated string no_cache_fields = 19;
+}
+
+// Freshness information
+message CacheFreshness {
+  oneof freshness_lifetime {
+    int32 max_age_seconds = 1;
+    int32 s_maxage_seconds = 2;
+    int64 expires_time = 3;  // Unix timestamp
+  }
+  
+  int64 date_time = 4;  // Response Date as Unix timestamp
+  int64 last_modified_time = 5;  // Last-Modified as Unix timestamp
+  
+  // Calculated freshness lifetime and age
+  int32 freshness_lifetime_seconds = 6;
+  int32 age_seconds = 7;
+}

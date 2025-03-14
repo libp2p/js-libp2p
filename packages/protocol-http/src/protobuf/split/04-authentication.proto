@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package http;
+
+// Authentication parameters
+message AuthParamValue {
+  string key = 1;
+  string value = 2;
+}
+
+// Authentication challenge params
+message AuthParams {
+  repeated AuthParamValue params = 1;  // Replaced map with repeated message
+}
+
+// Authentication challenge
+message Challenge {
+  string auth_scheme = 1;      // Authentication scheme
+  
+  oneof challenge_data {
+    string token68 = 2;        // token68 format data
+    AuthParams auth_params = 3; // auth-param format
+  }
+  
+  // Optional realm parameter (common to most auth schemes)
+  string realm = 4;
+}
+
+// Authentication params for credentials
+message CredentialParams {
+  repeated AuthParamValue params = 1;  // Replaced map with repeated message
+}
+
+// Authentication credentials
+message Credentials {
+  string auth_scheme = 1;      // Authentication scheme
+  
+  oneof credential_data {
+    string token68 = 2;        // token68 format data
+    CredentialParams auth_params = 3; // auth-param format
+  }
+}
+
+// Authentication info params
+message AuthInfoParams {
+  repeated AuthParamValue params = 1;  // Replaced map with repeated message
+}
+
+// Proxy authentication info params
+message ProxyAuthInfoParams {
+  repeated AuthParamValue params = 1;  // Replaced map with repeated message
+}
+
+// Authentication fields
+message AuthenticationInfo {
+  // WWW-Authenticate (from server)
+  repeated Challenge www_authenticate = 1;
+  
+  // Authorization (from client)
+  Credentials authorization = 2;
+  
+  // Authentication-Info (from server)
+  AuthInfoParams authentication_info = 3;  // Changed from map to message
+  
+  // Proxy authentication fields
+  repeated Challenge proxy_authenticate = 4;
+  Credentials proxy_authorization = 5;
+  ProxyAuthInfoParams proxy_authentication_info = 6;  // Changed from map to message
+}
