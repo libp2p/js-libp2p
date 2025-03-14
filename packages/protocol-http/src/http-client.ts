@@ -3,6 +3,7 @@
  */
 import { AbortError, setMaxListeners } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
+import { URL } from './common/url.js'
 import { HttpConstants } from './constants.js'
 import { type HttpComponents } from './http-components-interface.js'
 import { http } from './http-proto-api.js'
@@ -97,29 +98,66 @@ export class HttpClient implements Startable {
         const result = JSON.parse(contentString) as ProtocolDiscoveryResult
         this.log.trace('discovered %d protocols from %p', result.protocols.length, peer)
         return result
-      } catch (err) {
-        throw new Error('Invalid protocol discovery response: ' + err.message)
+      } catch (err: unknown) {
+        const errMessage = err instanceof Error ? err.message : String(err)
+        throw new Error('Invalid protocol discovery response: ' + errMessage)
       }
-    } catch (err) {
-      this.log.error('protocol discovery failed - %e', err)
+    } catch (err: any) {
+      this.log.error('protocol discovery failed - %e', err?.message)
       throw err
     }
   }
 
-  async fetch (peer: PeerId, request: http.HttpRequest, options: AbortOptions = {}): Promise<http.HttpResponse> {
+  /**
+   * Send an HTTP request to a peer or URL
+   */
+  async fetch (peerOrUrl: PeerId | string | URL, request: http.HttpRequest, options: AbortOptions = {}): Promise<http.HttpResponse> {
     if (!this.isStarted()) {
       // Auto-start the client if it hasn't been started
       await this.start()
     }
 
-    this.log.trace('sending %s request to %p for %s', request.method, peer, request.targetUri)
+    // Handle URL version of the overload
+    if (typeof peerOrUrl === 'string' || peerOrUrl instanceof URL) {
+      const urlString = typeof peerOrUrl === 'string' ? peerOrUrl : peerOrUrl.toString()
+      const url = typeof peerOrUrl === 'string' ? new URL(peerOrUrl) : peerOrUrl
+      const hostname = url.hostname
+
+      if (hostname === undefined || hostname === null || hostname === '') {
+        throw new Error(`Invalid URL: ${urlString}, missing hostname`)
+      }
+
+      try {
+        // Import PeerId dynamically to avoid circular dependencies
+        const { peerIdFromString } = await import('@libp2p/peer-id')
+        const peer = peerIdFromString(hostname)
+
+        // Set the target URI to the path and query of the URL
+        const targetUri = url.pathname + (url.search !== '' ? url.search : '')
+        const modifiedRequest = {
+          ...request,
+          targetUri
+        }
+
+        this.log.trace('sending %s request to peer %s for %s', modifiedRequest.method, hostname, modifiedRequest.targetUri)
+        return await this.fetch(peer, modifiedRequest, options)
+      } catch (err) {
+        // If we can't create a peer ID from the hostname, this is likely a regular web URL
+        // In this case, we should handle it as a clear web request or throw an appropriate error
+        this.log.error('not a valid peer ID in URL hostname: %s', hostname)
+        throw new Error(`Cannot route to ${urlString}: hostname is not a valid peer ID`)
+      }
+    }
+
+    // Original implementation for PeerId
+    this.log.trace('sending %s request to %p for %s', request.method, peerOrUrl, request.targetUri)
     let connection
     let stream: Stream | undefined
     let signal = options.signal
     let onAbort = (): void => {}
 
     try {
-      connection = await this.components.connectionManager.openConnection(peer, options)
+      connection = await this.components.connectionManager.openConnection(peerOrUrl, options)
 
       if (signal == null) {
         const timeout = this.init.timeout ?? DEFAULT_TIMEOUT
@@ -143,10 +181,10 @@ export class HttpClient implements Startable {
       const response = await pb.read(http.HttpResponse, options)
       await pb.unwrap().close(options)
 
-      this.log.trace('received response with status %d from %p', response.statusCode, peer)
+      this.log.trace('received response with status %d from %p', response.statusCode, peerOrUrl)
       return response
     } catch (err: any) {
-      this.log.error('error fetching from %p - %e', peer, err)
+      this.log.error('error fetching from %p - %e', peerOrUrl, err)
       if (stream != null) {
         stream.abort(err)
       }

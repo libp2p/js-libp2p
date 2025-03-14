@@ -8,6 +8,7 @@ import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { createSandbox } from 'sinon'
+import { URL } from '../src/common/url.js'
 import { HttpClientFactory } from '../src/http-client-factory.js'
 import { getNodeConfig } from './common/node-config.js'
 import type { http } from '../src/http-proto-api.js'
@@ -82,8 +83,8 @@ describe('007-HTTP Client Implementation', () => {
         trailers: []
       }
     }
-    await expect(client.fetch(new URL('libp2p://test'), request))
-      .to.be.rejectedWith('Invalid URL: could not extract peer ID from libp2p://test')
+    await expect(client.fetch(new URL('https://test'), request))
+      .to.be.rejectedWith('Invalid URL: could not extract peer ID from https://test')
   })
 
   it('should handle invalid address', async () => {
@@ -98,7 +99,7 @@ describe('007-HTTP Client Implementation', () => {
       }
     }
     const validPeerId = '12D3KooWGC6nRXh5ZXvpeqscJCEiYkGYvXZr5RfKJ6iBXqE3Xa7X'
-    await expect(client.fetch(new URL(`libp2p://${validPeerId}`), request))
+    await expect(client.fetch(new URL(`https://${validPeerId}`), request))
       .to.be.rejectedWith('The dial request has no valid addresses')
   })
 })

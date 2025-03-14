@@ -10,9 +10,14 @@ import type { AbortOptions, PeerId } from '@libp2p/interface'
  */
 export interface HttpClientInterface {
   /**
-   * Sends an HTTP request to a remote peer
+   * Sends an HTTP request to a remote peer or URL
+   * 
+   * @param peerOrUrl - The peer ID or URL to send the request to
+   * @param request - The HTTP request to send
+   * @param options - Optional abort options
+   * @returns A promise that resolves to the HTTP response
    */
-  fetch(peer: PeerId, request: http.HttpRequest, options?: AbortOptions): Promise<http.HttpResponse>
+  fetch(peerOrUrl: PeerId | string | URL, request: http.HttpRequest, options?: AbortOptions): Promise<http.HttpResponse>
 
   /**
    * Discover protocols supported by a remote peer
