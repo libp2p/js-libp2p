@@ -17,7 +17,7 @@
 import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
-import { type CID, type MultibaseDecoder } from 'multiformats/cid'
+import { CID, type MultibaseDecoder } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -37,6 +37,9 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
     // identity hash ed25519/secp256k1 key or sha2-256 hash of
     // rsa public key - base58btc encoded either way
     multihash = Digest.decode(base58btc.decode(`z${str}`))
+  } else if (str.startsWith('k51qzi5uqu5') || str.startsWith('kzwfwjn5ji4') || str.startsWith('k2k4r8') || str.startsWith('bafz')) {
+    // base36 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa) or base32 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa)
+    return peerIdFromCID(CID.parse(str))
   } else {
     if (decoder == null) {
       throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"')

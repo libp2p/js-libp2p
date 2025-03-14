@@ -111,6 +111,25 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.8](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.7...webrtc-v5.2.8) (2025-03-12)
+
+
+### Bug Fixes
+
+* drain timeout is 30s no 301s ([#3041](https://github.com/libp2p/js-libp2p/issues/3041)) ([600d0a5](https://github.com/libp2p/js-libp2p/commit/600d0a561ad88df3a5bf6d56851728c899d86429))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.7 to ^2.3.8
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.0 to ^6.4.1
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+
 ## [5.2.7](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.6...webrtc-v5.2.7) (2025-03-03)
 
 

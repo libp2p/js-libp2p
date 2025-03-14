@@ -29,9 +29,8 @@
 
 import net from 'net'
 import { AbortError, TimeoutError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import * as mafmt from '@multiformats/mafmt'
+import { TCP as TCPMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import { CODE_CIRCUIT, CODE_P2P, CODE_UNIX } from './constants.js'
 import { TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
@@ -204,19 +203,7 @@ export class TCP implements Transport<TCPDialEvents> {
    * Takes a list of `Multiaddr`s and returns only valid TCP addresses
    */
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
-
-    return multiaddrs.filter(ma => {
-      if (ma.protoCodes().includes(CODE_CIRCUIT)) {
-        return false
-      }
-
-      if (ma.protoCodes().includes(CODE_UNIX)) {
-        return true
-      }
-
-      return mafmt.TCP.matches(ma.decapsulateCode(CODE_P2P))
-    })
+    return multiaddrs.filter(ma => TCPMatcher.exactMatch(ma) || ma.toString().startsWith('/unix/'))
   }
 
   /**
