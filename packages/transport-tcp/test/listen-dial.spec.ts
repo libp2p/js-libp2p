@@ -150,18 +150,6 @@ describe('listen', () => {
     expect(multiaddrs.length > 0).to.equal(true)
     expect(multiaddrs[0].toOptions().host).to.not.equal('::')
   })
-
-  it('getAddrs preserves IPFS Id', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    listener = transport.createListener({
-      upgrader
-    })
-    await listener.listen(mh)
-
-    const multiaddrs = listener.getAddrs()
-    expect(multiaddrs.length).to.equal(1)
-    expect(multiaddrs[0]).to.deep.equal(mh)
-  })
 })
 
 describe('dial', () => {

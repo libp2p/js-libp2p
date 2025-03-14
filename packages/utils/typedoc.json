@@ -9,6 +9,7 @@
     "./src/close-source.ts",
     "./src/debounce.ts",
     "./src/filters/index.ts",
+    "./src/get-thin-waist-addresses.ts",
     "./src/global-unicast-ip.ts",
     "./src/ip-port-to-multiaddr.ts",
     "./src/is-async-generator.ts",

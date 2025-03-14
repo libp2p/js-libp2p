@@ -32,6 +32,8 @@ describe('filter addrs', () => {
     expect(valid.length).to.equal(5)
     expect(valid[0]).to.deep.equal(ma1)
     expect(valid[1]).to.deep.equal(ma4)
+    expect(valid[2]).to.deep.equal(ma7)
+    expect(valid[3]).to.deep.equal(ma8)
     expect(valid[4]).to.deep.equal(ma9)
   })
 

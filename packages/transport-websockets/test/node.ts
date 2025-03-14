@@ -82,13 +82,6 @@ describe('listen', () => {
       expect(listener.getAddrs()).to.be.empty()
     })
 
-    it('should throw when `.getAddrs` called before `.listen`', async () => {
-      listener = ws.createListener({ upgrader })
-
-      // call getAddrs before sockets have opened
-      expect(() => listener.getAddrs()).to.throw(/not ready/)
-    })
-
     it('should error on starting two listeners on same address', async () => {
       listener = ws.createListener({ upgrader })
       const dumbServer = http.createServer()
