@@ -75,7 +75,7 @@
     "sinon-ts": "latest"
   },
   "peerDependencies": {
-    "@libp2p/interface": "latest",
+    "@libp2p/interface": "^2.7.0",
     "@libp2p/interface-internal": "latest",
     "@libp2p/logger": "latest",
     "@libp2p/peer-id": "latest",
