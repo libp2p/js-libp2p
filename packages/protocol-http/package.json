@@ -84,7 +84,7 @@
     "@libp2p/identify": "^3.0.26",
     "@libp2p/crypto": "^5.0.15",
     "@libp2p/webrtc": "^5.2.8",
-    "@libp2p/websockets": "latest",
+    "@libp2p/websockets": "^9.2.7",
     "@libp2p/circuit-relay-v2": "^3.2.7"
   },
   "sideEffects": false
