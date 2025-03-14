@@ -11,7 +11,7 @@ import type { AbortOptions, PeerId } from '@libp2p/interface'
 export interface HttpClientInterface {
   /**
    * Sends an HTTP request to a remote peer or URL
-   * 
+   *
    * @param peerOrUrl - The peer ID or URL to send the request to
    * @param request - The HTTP request to send
    * @param options - Optional abort options
