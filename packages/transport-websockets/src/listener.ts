@@ -1,10 +1,9 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import os from 'node:os'
 import { TypedEventEmitter } from '@libp2p/interface'
+import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { isLinkLocalIp } from '@libp2p/utils/link-local-ip'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import duplex from 'it-ws/duplex'
@@ -248,7 +247,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
     }
 
-    this.listeningMultiaddr = ma
     const options = ma.toOptions()
     this.addr = `${options.host}:${options.port}`
 
@@ -281,6 +279,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       this.server.addListener('drop', onDrop)
     })
 
+    this.listeningMultiaddr = ma
     this.safeDispatchEvent('listening')
   }
 
@@ -344,10 +343,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   }
 
   getAddrs (): Multiaddr[] {
-    if (this.listeningMultiaddr == null) {
-      throw new Error('Listener is not ready yet')
-    }
-
     const address = this.server.address()
 
     if (address == null) {
@@ -355,52 +350,11 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     if (typeof address === 'string') {
-      throw new Error('Wrong address type received - expected AddressInfo, got string - are you trying to listen on a unix socket?')
+      // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
+      return [multiaddr(`/unix/${address}/ws`)]
     }
 
-    const options = this.listeningMultiaddr.toOptions()
-    const multiaddrs: Multiaddr[] = []
-
-    if (options.family === 4) {
-      if (options.host === '0.0.0.0') {
-        Object.values(os.networkInterfaces()).forEach(niInfos => {
-          if (niInfos == null) {
-            return
-          }
-
-          niInfos.forEach(ni => {
-            if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
-            }
-          })
-        })
-      } else {
-        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
-      }
-    } else if (options.family === 6) {
-      if (options.host === '::') {
-        Object.values(os.networkInterfaces()).forEach(niInfos => {
-          if (niInfos == null) {
-            return
-          }
-
-          for (const ni of niInfos) {
-            if (ni.family !== 'IPv6') {
-              continue
-            }
-
-            if (isLinkLocalIp(ni.address)) {
-              continue
-            }
-
-            multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
-          }
-        })
-      } else {
-        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
-      }
-    }
-
+    const multiaddrs: Multiaddr[] = getThinWaistAddresses(this.listeningMultiaddr, address.port)
     const insecureMultiaddrs: Multiaddr[] = []
 
     if (this.http != null) {

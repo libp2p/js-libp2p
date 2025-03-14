@@ -1,14 +1,12 @@
 import net from 'net'
 import { AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pEvent } from 'p-event'
-import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
-import {
-  getMultiaddrs,
-  multiaddrToNetConfig,
-  type NetConfig
-} from './utils.js'
+import { multiaddrToNetConfig } from './utils.js'
 import type { TCPCreateListenerOptions } from './index.js'
+import type { NetConfig } from './utils.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -61,7 +59,6 @@ enum TCPListenerStatusCode {
 type Status = { code: TCPListenerStatusCode.INACTIVE } | {
   code: Exclude<TCPListenerStatusCode, TCPListenerStatusCode.INACTIVE>
   listeningAddr: Multiaddr
-  peerId: string | null
   netConfig: NetConfig
 }
 
@@ -247,31 +244,20 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       return []
     }
 
-    let addrs: Multiaddr[] = []
     const address = this.server.address()
-    const { listeningAddr, peerId } = this.status
 
     if (address == null) {
       return []
     }
 
     if (typeof address === 'string') {
-      addrs = [listeningAddr]
-    } else {
-      try {
-        // Because TCP will only return the IPv6 version
-        // we need to capture from the passed multiaddr
-        if (listeningAddr.toString().startsWith('/ip4')) {
-          addrs = addrs.concat(getMultiaddrs('ip4', address.address, address.port))
-        } else if (address.family === 'IPv6') {
-          addrs = addrs.concat(getMultiaddrs('ip6', address.address, address.port))
-        }
-      } catch (err) {
-        this.log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
-      }
+      return [
+        // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
+        multiaddr(`/unix/${address}`)
+      ]
     }
 
-    return addrs.map(ma => peerId != null ? ma.encapsulate(`/p2p/${peerId}`) : ma)
+    return getThinWaistAddresses(this.status.listeningAddr, address.port)
   }
 
   updateAnnounceAddrs (): void {
@@ -283,16 +269,11 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       throw new AlreadyStartedError('server is already listening')
     }
 
-    const peerId = ma.getPeerId()
-    const listeningAddr = peerId == null ? ma.decapsulateCode(CODE_P2P) : ma
-    const { backlog } = this.context
-
     try {
       this.status = {
         code: TCPListenerStatusCode.ACTIVE,
-        listeningAddr,
-        peerId,
-        netConfig: multiaddrToNetConfig(listeningAddr, { backlog })
+        listeningAddr: ma,
+        netConfig: multiaddrToNetConfig(ma, this.context)
       }
 
       await this.resume()
