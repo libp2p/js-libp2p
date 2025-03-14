@@ -3,60 +3,17 @@
 
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
-import { tcp } from '@libp2p/tcp'
-import { webRTC } from '@libp2p/webrtc'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { createSandbox } from 'sinon'
 import { HttpServerFactory } from '../src/http-server-factory.js'
 import { Router } from '../src/router.js'
+import { getNodeConfig } from './common/node-config.js'
 import type { http } from '../src/http-proto-api.js'
 import type { HttpServerInterface } from '../src/interfaces/http-server-interface.js'
 import type { RequestHandler } from '../src/interfaces/request-handler-interface.js'
 import type { Libp2p, ServiceMap } from '@libp2p/interface'
-
-// Configure node based on environment
-interface NodeConfig {
-  addresses: {
-    listen: string[]
-  }
-  transports: any[]
-  connectionGater?: {
-    denyDialMultiaddr(): Promise<boolean>
-  }
-}
-
-const getNodeConfig = (): NodeConfig => {
-  if (typeof window === 'undefined') {
-    // Node.js configuration
-    return {
-      addresses: {
-        listen: ['/ip4/127.0.0.1/tcp/0']
-      },
-      transports: [tcp()]
-    }
-  }
-
-  // Browser configuration
-  return {
-    addresses: {
-      listen: ['/webrtc']
-    },
-    transports: [
-      webRTC({
-        rtcConfiguration: {
-          iceServers: [{ urls: ['stun:stun.l.google.com:19302'] }]
-        }
-      }),
-      circuitRelayTransport()
-    ],
-    connectionGater: {
-      denyDialMultiaddr: async () => false
-    }
-  }
-}
 
 describe('006-HTTP Server Implementation', () => {
   const sandbox = createSandbox()
@@ -64,32 +21,40 @@ describe('006-HTTP Server Implementation', () => {
   let server: HttpServerInterface
 
   beforeEach(async () => {
-    // Create a libp2p node with appropriate configuration
-    const config = getNodeConfig()
-    node = await createLibp2p({
-      ...config,
-      streamMuxers: [yamux()],
-      connectionEncrypters: [noise()],
-      services: {
-        identify: identify()
-      }
-    })
+    try {
+      // Use the existing node config utility which properly handles different environments
+      const nodeConfig = getNodeConfig()
+      
+      node = await createLibp2p({
+        ...nodeConfig,
+        streamMuxers: [yamux()],
+        connectionEncrypters: [noise()],
+        services: {
+          identify: identify()
+        }
+      })
 
-    // Create an HTTP server using real components from the node
-    const createServer = HttpServerFactory.createServer()
-    server = createServer({
-      logger: node.logger,
-      connectionManager: (node as any).components.connectionManager,
-      registrar: (node as any).components.registrar
-    })
+      // Create an HTTP server using real components from the node
+      const createServer = HttpServerFactory.createServer()
+      server = createServer({
+        logger: node.logger,
+        connectionManager: (node as any).components.connectionManager,
+        registrar: (node as any).components.registrar
+      })
 
-    // Start the node
-    await node.start()
+      // Start the node
+      await node.start()
+    } catch (err) {
+      console.error('Error in beforeEach:', err)
+      throw err
+    }
   })
 
   afterEach(async () => {
     sandbox.restore()
-    await node.stop()
+    if (node != null) {
+      await node.stop()
+    }
   })
 
   it('should create server instance', () => {
