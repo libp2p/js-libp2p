@@ -2,8 +2,8 @@
  * HTTP client interface for libp2p
  */
 
-import type { http } from '../http-proto-api.js'
 import type { Response } from '../client/response.js'
+import type { http } from '../http-proto-api.js'
 import type { PeerId, AbortOptions } from '@libp2p/interface'
 
 /**

@@ -16,7 +16,7 @@ describe('008-HTTP Router', () => {
       enabled: true
     }
   ) as Logger
-  
+
   describe('Route Registration', () => {
     it('should register and find handlers', async () => {
       const router = new Router(mockLogger)
@@ -33,9 +33,9 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       })
-      
+
       router.route('/test', handler)
-      
+
       // Test functionality through the public API
       const request: http.HttpRequest = {
         method: 'GET',
@@ -47,11 +47,11 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       }
-      
+
       const response = await router.handle(request)
       expect(response.statusCode).to.equal(200)
     })
-    
+
     it('should handle exact path matches', async () => {
       const router = new Router(mockLogger)
       const handler: RequestHandler = async () => ({
@@ -67,9 +67,9 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       })
-      
+
       router.route('/exact', handler)
-      
+
       const request: http.HttpRequest = {
         method: 'GET',
         targetUri: '/exact',
@@ -80,12 +80,12 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       }
-      
+
       const response = await router.handle(request)
       expect(response.statusCode).to.equal(200)
       expect(new TextDecoder().decode(response.baseMessage?.content)).to.equal('exact match')
     })
-    
+
     it('should return 404 for non-existent routes', async () => {
       const router = new Router(mockLogger)
       const request: http.HttpRequest = {
@@ -98,27 +98,27 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       }
-      
+
       const response = await router.handle(request)
       expect(response.statusCode).to.equal(404)
     })
   })
-  
+
   describe('Middleware', () => {
     it('should execute middleware in order', async () => {
       const router = new Router(mockLogger)
       const order: number[] = []
-      
+
       const middleware1: Middleware = async (req, next) => {
         order.push(1)
-        return await next()
+        return next()
       }
-      
+
       const middleware2: Middleware = async (req, next) => {
         order.push(2)
-        return await next()
+        return next()
       }
-      
+
       const handler: RequestHandler = async () => {
         order.push(3)
         return {
@@ -135,11 +135,11 @@ describe('008-HTTP Router', () => {
           }
         }
       }
-      
+
       router.use(middleware1)
       router.use(middleware2)
       router.route('/test', handler)
-      
+
       const request: http.HttpRequest = {
         method: 'GET',
         targetUri: '/test',
@@ -150,23 +150,23 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       }
-      
+
       await router.handle(request)
       expect(order).to.deep.equal([1, 2, 3])
     })
-    
+
     it('should allow middleware to modify request', async () => {
       const router = new Router(mockLogger)
-      
+
       const middleware: Middleware = async (req, next) => {
-        if (req.baseMessage != null) {
+        if (req.baseMessage !== null && req.baseMessage !== undefined) {
           req.baseMessage.headers.push({ name: 'X-Modified', value: 'true' })
         }
-        return await next()
+        return next()
       }
-      
+
       const handler: RequestHandler = async (req) => {
-        const isModified = req.baseMessage?.headers.some(h => h.name === 'X-Modified')
+        const isModified = req.baseMessage?.headers.some(h => h.name === 'X-Modified') ?? false
         return {
           statusCode: isModified ? 200 : 400,
           reasonPhrase: isModified ? 'OK' : 'Bad Request',
@@ -181,10 +181,10 @@ describe('008-HTTP Router', () => {
           }
         }
       }
-      
+
       router.use(middleware)
       router.route('/test', handler)
-      
+
       const request: http.HttpRequest = {
         method: 'GET',
         targetUri: '/test',
@@ -195,7 +195,7 @@ describe('008-HTTP Router', () => {
           trailers: []
         }
       }
-      
+
       const response = await router.handle(request)
       expect(response.statusCode).to.equal(200)
     })

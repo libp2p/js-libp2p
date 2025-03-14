@@ -22,7 +22,7 @@ import * as filters from '@libp2p/websockets/filters'
 export function getNodeConfig (options = { isServer: false }) {
   const isBrowser = typeof process === 'undefined' || process.versions == null || process.versions.node == null
   const { isServer } = options
-  
+
   const baseConfig = {
     services: {
       identify: identify()
@@ -50,13 +50,13 @@ export function getNodeConfig (options = { isServer: false }) {
       ]
     }
   }
-  
+
   // Node.js configuration
   const addresses = [
     '/ip4/127.0.0.1/tcp/0',
     '/ip4/127.0.0.1/tcp/0/ws'
   ]
-  
+
   return {
     ...baseConfig,
     addresses: {

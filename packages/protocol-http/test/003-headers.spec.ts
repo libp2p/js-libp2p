@@ -19,7 +19,7 @@ describe('003-Header Utilities', () => {
 
     it('should return undefined for non-existent header', () => {
       const header = HeaderUtils.findHeader(headers, 'not-exist')
-      expect(header).to.be.undefined
+      expect(header).to.equal(undefined)
     })
   })
 
@@ -60,7 +60,7 @@ describe('003-Header Utilities', () => {
       const result = HeaderUtils.fieldsToHeaders(fields)
       expect(result).to.deep.equal({
         'content-type': 'text/plain',
-        'accept': 'application/json'
+        accept: 'application/json'
       })
     })
 
@@ -70,7 +70,7 @@ describe('003-Header Utilities', () => {
         { name: 'Accept', value: 'application/json' }
       ]
       const result = HeaderUtils.fieldsToHeaders(fields)
-      expect(result['accept']).to.equal('text/plain, application/json')
+      expect(result.accept).to.equal('text/plain, application/json')
     })
   })
 })

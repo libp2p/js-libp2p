@@ -42,17 +42,17 @@ describe('004-Content Utilities', () => {
 
   describe('Content Type Detection', () => {
     it('should detect JSON content types', () => {
-      expect(ContentUtils.isJson('application/json')).to.be.true
-      expect(ContentUtils.isJson('application/some+json')).to.be.true
-      expect(ContentUtils.isJson('text/plain')).to.be.false
+      expect(ContentUtils.isJson('application/json')).to.equal(true)
+      expect(ContentUtils.isJson('application/some+json')).to.equal(true)
+      expect(ContentUtils.isJson('text/plain')).to.equal(false)
     })
 
     it('should detect text content types', () => {
-      expect(ContentUtils.isText('text/plain')).to.be.true
-      expect(ContentUtils.isText('text/html')).to.be.true
-      expect(ContentUtils.isText('application/json')).to.be.true
-      expect(ContentUtils.isText('application/xml')).to.be.true
-      expect(ContentUtils.isText('image/png')).to.be.false
+      expect(ContentUtils.isText('text/plain')).to.equal(true)
+      expect(ContentUtils.isText('text/html')).to.equal(true)
+      expect(ContentUtils.isText('application/json')).to.equal(true)
+      expect(ContentUtils.isText('application/xml')).to.equal(true)
+      expect(ContentUtils.isText('image/png')).to.equal(false)
     })
   })
 

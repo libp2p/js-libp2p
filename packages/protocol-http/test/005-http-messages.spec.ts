@@ -20,11 +20,11 @@ describe('005-HTTP Message Utilities', () => {
     })
 
     it('should identify error status codes', () => {
-      expect(HttpMessageUtils.isErrorStatus(400)).to.be.true
-      expect(HttpMessageUtils.isErrorStatus(404)).to.be.true
-      expect(HttpMessageUtils.isErrorStatus(500)).to.be.true
-      expect(HttpMessageUtils.isErrorStatus(200)).to.be.false
-      expect(HttpMessageUtils.isErrorStatus(302)).to.be.false
+      expect(HttpMessageUtils.isErrorStatus(400)).to.equal(true)
+      expect(HttpMessageUtils.isErrorStatus(404)).to.equal(true)
+      expect(HttpMessageUtils.isErrorStatus(500)).to.equal(true)
+      expect(HttpMessageUtils.isErrorStatus(200)).to.equal(false)
+      expect(HttpMessageUtils.isErrorStatus(302)).to.equal(false)
     })
   })
 
@@ -38,7 +38,7 @@ describe('005-HTTP Message Utilities', () => {
       expect(message.headers).to.have.lengthOf(1)
       expect(message.headers[0].name).to.equal('Content-Type')
       expect(message.content).to.be.instanceOf(Uint8Array)
-      expect(message.trailers).to.be.an('array').that.is.empty
+      expect(message.trailers).to.deep.equal([])
     })
 
     it('should create HTTP request', () => {

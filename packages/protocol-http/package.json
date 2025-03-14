@@ -60,22 +60,12 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "file:../interface",
-    "@libp2p/interface-internal": "file:../interface-internal",
-    "@libp2p/logger": "file:../logger",
-    "@libp2p/peer-id": "file:../peer-id",
     "it-protobuf-stream": "latest",
     "protons-runtime": "latest",
     "uint8arraylist": "latest",
     "uint8arrays": "latest"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-noise": "latest",
-    "@chainsafe/libp2p-yamux": "latest",
-    "@libp2p/crypto": "file:../crypto",
-    "@libp2p/webrtc": "file:../transport-webrtc",
-    "@libp2p/websockets": "file:../transport-websockets",
-    "@libp2p/identify": "file:../identify",
     "aegir": "latest",
     "it-pair": "latest",
     "playwright": "latest",
@@ -85,10 +75,17 @@
     "sinon-ts": "latest"
   },
   "peerDependencies": {
-    "@libp2p/crypto": "file:../crypto",
-    "@libp2p/webrtc": "file:../transport-webrtc",
-    "@libp2p/websockets": "file:../transport-websockets",
-    "@libp2p/circuit-relay-v2": "file:../transport-circuit-relay-v2"
+    "@libp2p/interface": "latest",
+    "@libp2p/interface-internal": "latest",
+    "@libp2p/logger": "latest",
+    "@libp2p/peer-id": "latest",
+    "@chainsafe/libp2p-noise": "latest",
+    "@chainsafe/libp2p-yamux": "latest",
+    "@libp2p/identify": "^3.0.26",
+    "@libp2p/crypto": "^5.0.15",
+    "@libp2p/webrtc": "latest",
+    "@libp2p/websockets": "latest",
+    "@libp2p/circuit-relay-v2": "^3.2.7"
   },
   "sideEffects": false
 }
