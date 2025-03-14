@@ -1,22 +1,22 @@
 /**
  * HTTP client interface for libp2p
  */
-
-import type { Response } from '../client/response.js'
+import type { ProtocolDiscoveryResult } from '../http-client.js'
 import type { http } from '../http-proto-api.js'
-import type { PeerId, AbortOptions } from '@libp2p/interface'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 
 /**
- * Interface for the HTTP client implementation
+ * HTTP client interface
  */
 export interface HttpClientInterface {
   /**
-   * Sends an HTTP request to a peer and gets the response
+   * Sends an HTTP request to a remote peer
    */
-  fetch(peer: PeerId | URL, request: http.HttpRequest, options?: AbortOptions): Promise<http.HttpResponse>
+  fetch(peer: PeerId, request: http.HttpRequest, options?: AbortOptions): Promise<http.HttpResponse>
 
   /**
-   * WHATWG Fetch API implementation
+   * Discover protocols supported by a remote peer
+   * Uses the .well-known/libp2p/protocols endpoint to query available protocols
    */
-  fetch(url: string | URL, init?: RequestInit): Promise<Response>
+  discoverProtocols(peer: PeerId, options?: AbortOptions): Promise<ProtocolDiscoveryResult>
 }
