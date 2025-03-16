@@ -11,6 +11,48 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.16...peer-id-v5.1.0) (2025-03-12)
+
+
+### Features
+
+* support parsing base32 and base36 libp2p-key CIDs in peerIdFromString ([#3042](https://github.com/libp2p/js-libp2p/issues/3042)) ([0699fb7](https://github.com/libp2p/js-libp2p/commit/0699fb7470b1173a6a3cdb33fe8deee627b1e651))
+
+## [5.0.16](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.15...peer-id-v5.0.16) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+
+## [5.0.15](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.14...peer-id-v5.0.15) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+
+## [5.0.14](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.13...peer-id-v5.0.14) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+
 ## [5.0.13](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.0.12...peer-id-v5.0.13) (2025-02-20)
 
 

@@ -16,17 +16,17 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('Network', () => {
   let dht: KadDHT
-  let tdht: TestDHT
+  let testDHT: TestDHT
 
   before(async function () {
     this.timeout(10 * 1000)
-    tdht = new TestDHT()
-    dht = await tdht.spawn({
+    testDHT = new TestDHT()
+    dht = await testDHT.spawn({
       clientMode: false
     })
   })
 
-  after(async () => { await tdht.teardown() })
+  after(async () => { await testDHT.teardown() })
 
   describe('sendRequest', () => {
     it('send and response echo', async () => {

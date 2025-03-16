@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/websockets",
-  "version": "9.2.2",
+  "version": "9.2.7",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets#readme",
@@ -74,8 +74,8 @@
     "test:electron-main": "aegir test -t electron-main -f ./dist/test/node.js --cov"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.6.0",
-    "@libp2p/utils": "^6.5.4",
+    "@libp2p/interface": "^2.7.0",
+    "@libp2p/utils": "^6.5.8",
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
@@ -88,8 +88,8 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.9",
-    "aegir": "^45.0.5",
+    "@libp2p/logger": "^5.1.13",
+    "aegir": "^45.1.1",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",

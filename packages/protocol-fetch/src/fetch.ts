@@ -117,8 +117,8 @@ export class Fetch implements Startable, FetchInterface {
         }
         case (FetchResponse.StatusCode.ERROR): {
           this.log('received status ERROR for %m', key)
-          const errmsg = uint8arrayToString(response.data)
-          throw new ProtocolError('Error in fetch protocol response: ' + errmsg)
+          const errMsg = uint8arrayToString(response.data)
+          throw new ProtocolError('Error in fetch protocol response: ' + errMsg)
         }
         default: {
           this.log('received status unknown for %m', key)
@@ -158,8 +158,8 @@ export class Fetch implements Startable, FetchInterface {
 
       if (lookup == null) {
         this.log.trace('sending status ERROR for %m', request.identifier)
-        const errmsg = uint8arrayFromString('No lookup function registered for key')
-        response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
+        const errMsg = uint8arrayFromString('No lookup function registered for key')
+        response = { status: FetchResponse.StatusCode.ERROR, data: errMsg }
       } else {
         this.log.trace('lookup data with identifier %s', lookup.prefix)
 
@@ -175,8 +175,8 @@ export class Fetch implements Startable, FetchInterface {
           }
         } catch (err: any) {
           this.log.error('error during lookup of %m - %e', request.identifier, err)
-          const errmsg = uint8arrayFromString(err.message)
-          response = { status: FetchResponse.StatusCode.ERROR, data: errmsg }
+          const errMsg = uint8arrayFromString(err.message)
+          response = { status: FetchResponse.StatusCode.ERROR, data: errMsg }
         }
       }
 

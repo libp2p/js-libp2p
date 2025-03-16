@@ -7,6 +7,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
+import { anySignal } from 'any-signal'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
 import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
@@ -40,7 +41,15 @@ describe('WebRTCDirect Transport', () => {
       peerId: peerIdFromPrivateKey(privateKey),
       logger: defaultLogger(),
       transportManager: stubInterface<TransportManager>(),
-      privateKey
+      privateKey,
+      upgrader: stubInterface<Upgrader>({
+        createInboundAbortSignal: (signal) => {
+          return anySignal([
+            AbortSignal.timeout(5_000),
+            signal
+          ])
+        }
+      })
     }
 
     upgrader = stubInterface<Upgrader>()
@@ -118,23 +127,17 @@ describe('WebRTCDirect Transport', () => {
     await listener.close()
   })
 
-  it('can listen on wildcard hosts', async function () {
+  it('can listen on wildcard IPv4 hosts', async function () {
     if ((!isNode && !isElectronMain) || !supportsIpV6()) {
       return this.skip()
     }
 
     const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
-    const ipv6 = multiaddr('/ip6/::/udp/0')
-
-    await Promise.all([
-      listener.listen(ipv4),
-      listener.listen(ipv6)
-    ])
+    await listener.listen(ipv4)
 
     assertAllMultiaddrsHaveSamePort(listener.getAddrs())
 
     let foundIpv4Loopback = false
-    let foundIpv6Loopback = false
 
     for (const addr of listener.getAddrs()) {
       const options = addr.toOptions()
@@ -142,34 +145,36 @@ describe('WebRTCDirect Transport', () => {
       if (options.host === '127.0.0.1') {
         foundIpv4Loopback = true
       }
+    }
+
+    expect(foundIpv4Loopback).to.be.true('did not listen on ipv4 loopback')
+
+    await listener.close()
+  })
+
+  it('can listen on wildcard IPv6 hosts', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const ipv6 = multiaddr('/ip6/::/udp/0')
+    await listener.listen(ipv6)
+
+    assertAllMultiaddrsHaveSamePort(listener.getAddrs())
+
+    let foundIpv6Loopback = false
+
+    for (const addr of listener.getAddrs()) {
+      const options = addr.toOptions()
 
       if (options.host === '::1') {
         foundIpv6Loopback = true
       }
     }
 
-    expect(foundIpv4Loopback).to.be.true('did not listen on ipv4 loopback')
     expect(foundIpv6Loopback).to.be.true('did not listen on ipv6 loopback')
 
     await listener.close()
-  })
-
-  it('can listen on multiple wildcard ports', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
-      return this.skip()
-    }
-
-    const ipv4a = multiaddr('/ip4/127.0.0.1/udp/0')
-    const ipv4b = multiaddr('/ip4/127.0.0.1/udp/0')
-
-    await Promise.all([
-      listener.listen(ipv4a),
-      listener.listen(ipv4b)
-    ])
-
-    const addrs = listener.getAddrs()
-    expect(addrs).to.have.lengthOf(2)
-    expect(addrs[0].toOptions().port).to.not.equal(addrs[1].toOptions().port, 'wildcard port listeners with the same ip family should not share ports')
   })
 
   it('should add certificate to announce addresses', async function () {

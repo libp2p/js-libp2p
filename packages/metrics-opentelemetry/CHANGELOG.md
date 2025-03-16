@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.0.10](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.9...opentelemetry-metrics-v1.0.10) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+
+## [1.0.9](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.8...opentelemetry-metrics-v1.0.9) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/utils bumped from ^6.5.6 to ^6.5.7
+
+## [1.0.8](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.7...opentelemetry-metrics-v1.0.8) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+
+## [1.0.7](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.6...opentelemetry-metrics-v1.0.7) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/utils bumped from ^6.5.4 to ^6.5.5
+
 ## [1.0.6](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.5...opentelemetry-metrics-v1.0.6) (2025-02-21)
 
 

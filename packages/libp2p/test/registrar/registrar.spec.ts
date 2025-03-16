@@ -220,10 +220,10 @@ describe('registrar topologies', () => {
 
     const topology: Topology = {
       onConnect: () => {
-        onConnectDefer.reject(new Error('Topolgy onConnect called for limited connection'))
+        onConnectDefer.reject(new Error('Topology onConnect called for limited connection'))
       },
       onDisconnect: () => {
-        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for limited connection'))
+        onDisconnectDefer.reject(new Error('Topology onDisconnect called for limited connection'))
       }
     }
 
@@ -394,7 +394,7 @@ describe('registrar topologies', () => {
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    // peer exists in peer store with the regsitered protocol
+    // peer exists in peer store with the registered protocol
     peerStore.get.withArgs(remotePeerId).resolves(stubInterface<Peer>({
       protocols: [protocol]
     }))

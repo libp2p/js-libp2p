@@ -36,6 +36,66 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.5.8](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.7...utils-v6.5.8) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+
+## [6.5.7](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.6...utils-v6.5.7) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+
+## [6.5.6](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.5...utils-v6.5.6) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+
+## [6.5.5](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.4...utils-v6.5.5) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+
 ## [6.5.4](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.3...utils-v6.5.4) (2025-02-21)
 
 

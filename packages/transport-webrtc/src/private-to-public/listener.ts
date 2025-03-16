@@ -1,12 +1,12 @@
-import { networkInterfaces } from 'node:os'
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { InvalidPeerIdError, TypedEventEmitter } from '@libp2p/interface'
-import { multiaddr, protocols, fromStringTuples } from '@multiformats/multiaddr'
-import { IP4, WebRTCDirect } from '@multiformats/multiaddr-matcher'
+import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
+import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
-import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT, HANDSHAKE_TIMEOUT_MS } from '../constants.js'
+import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT } from '../constants.js'
 import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
@@ -23,6 +23,7 @@ export interface WebRTCDirectListenerComponents {
   peerId: PeerId
   privateKey: PrivateKey
   logger: ComponentLogger
+  upgrader: Upgrader
   metrics?: Metrics
 }
 
@@ -41,10 +42,6 @@ export interface WebRTCListenerMetrics {
   listenerEvents: CounterGroup
 }
 
-const UDP_PROTOCOL = protocols('udp')
-const IP4_PROTOCOL = protocols('ip4')
-const IP6_PROTOCOL = protocols('ip6')
-
 interface UDPMuxServer {
   server: Promise<StunServer>
   isIPv4: boolean
@@ -57,23 +54,25 @@ interface UDPMuxServer {
 let UDP_MUX_LISTENERS: UDPMuxServer[] = []
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
-  private readonly multiaddrs: Multiaddr[]
+  private listeningMultiaddr?: Multiaddr
   private certificate?: TransportCertificate
+  private stunServer?: StunServer
   private readonly connections: Map<string, DirectRTCPeerConnection>
   private readonly log: Logger
   private readonly init: WebRTCDirectListenerInit
   private readonly components: WebRTCDirectListenerComponents
   private readonly metrics?: WebRTCListenerMetrics
+  private readonly shutdownController: AbortController
 
   constructor (components: WebRTCDirectListenerComponents, init: WebRTCDirectListenerInit) {
     super()
 
     this.init = init
     this.components = components
-    this.multiaddrs = []
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
     this.certificate = init.certificates?.[0]
+    this.shutdownController = new AbortController()
 
     if (components.metrics != null) {
       this.metrics = {
@@ -95,24 +94,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    const parts = ma.stringTuples()
-    const ipVersion = IP4.matches(ma) ? 4 : 6
-    const host = parts
-      .filter(([code]) => code === IP4_PROTOCOL.code)
-      .pop()?.[1] ?? parts
-      .filter(([code]) => code === IP6_PROTOCOL.code)
-      .pop()?.[1]
-
-    if (host == null) {
-      throw new Error('IP4/6 host must be specified in webrtc-direct mulitaddr')
-    }
-    const port = parseInt(parts
-      .filter(([code, value]) => code === UDP_PROTOCOL.code)
-      .pop()?.[1] ?? '')
-
-    if (isNaN(port)) {
-      throw new Error('UDP port must be specified in webrtc-direct mulitaddr')
-    }
+    const { host, port } = ma.toOptions()
 
     // have to do this before any async work happens so starting two listeners
     // for the same port concurrently (e.g. ipv4/ipv6 both port 0) results in a
@@ -141,17 +123,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       throw new InvalidPeerIdError(`Another peer is already performing UDP mux on ${host}:${existingServer.port}`)
     }
 
-    const server = await existingServer.server
-    const address = server.address()
+    this.stunServer = await existingServer.server
+    const address = this.stunServer.address()
 
     if (!createdMuxServer) {
       this.log('reused existing UDP mux server on %s:%p', host, address.port)
     }
 
-    getNetworkAddresses(host, address.port, ipVersion).forEach((ma) => {
-      this.multiaddrs.push(multiaddr(`${ma}/webrtc-direct/certhash/${this.certificate?.certhash}`))
-    })
-
+    this.listeningMultiaddr = ma
     this.safeDispatchEvent('listening')
   }
 
@@ -178,9 +157,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
           }
 
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
-            this.incomingConnection(ufrag, remoteHost, remotePort)
+            const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+
+            this.incomingConnection(ufrag, remoteHost, remotePort, signal)
               .catch(err => {
                 this.log.error('error processing incoming STUN request', err)
+              })
+              .finally(() => {
+                signal.clear()
               })
           })
         })
@@ -218,7 +202,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     }, timeoutDuration)
   }
 
-  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number): Promise<void> {
+  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
     const key = `${remoteHost}:${remotePort}:${ufrag}`
     let peerConnection = this.connections.get(key)
 
@@ -228,6 +212,9 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     }
 
     this.log('create peer connection for %s', key)
+
+    // do not create RTCPeerConnection objects if the signal has aborted already
+    signal.throwIfAborted()
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
     peerConnection = await createDialerRTCPeerConnection('server', ufrag, this.init.rtcConfiguration, this.certificate)
@@ -253,7 +240,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         logger: this.components.logger,
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
-        signal: AbortSignal.timeout(HANDSHAKE_TIMEOUT_MS),
+        signal,
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
@@ -267,7 +254,15 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   getAddrs (): Multiaddr[] {
-    return this.multiaddrs
+    if (this.stunServer == null) {
+      return []
+    }
+
+    const address = this.stunServer.address()
+
+    return getThinWaistAddresses(this.listeningMultiaddr, address.port).map(ma => {
+      return ma.encapsulate(`/webrtc-direct/certhash/${this.certificate?.certhash}`)
+    })
   }
 
   updateAnnounceAddrs (multiaddrs: Multiaddr[]): void {
@@ -299,10 +294,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async close (): Promise<void> {
-    for (const connection of this.connections.values()) {
-      connection.close()
-    }
-
     // stop our UDP mux listeners
     await Promise.all(
       UDP_MUX_LISTENERS
@@ -316,6 +307,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // remove our stopped UDP mux listeners
     UDP_MUX_LISTENERS = UDP_MUX_LISTENERS.filter(listener => listener.owner !== this)
 
+    // close existing connections
+    for (const connection of this.connections.values()) {
+      connection.close()
+    }
+
+    // stop any in-progress incoming dials
+    this.shutdownController.abort()
+
     // RTCPeerConnections will be removed from the connections map when their
     // connection state changes to 'closed'/'disconnected'/'failed
     await pWaitFor(() => {
@@ -324,33 +323,4 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     this.safeDispatchEvent('close')
   }
-}
-
-function getNetworkAddresses (host: string, port: number, version: 4 | 6): string[] {
-  if (host === '0.0.0.0' || host === '::') {
-    // return all ip4 interfaces
-    return Object.entries(networkInterfaces())
-      .flatMap(([_, addresses]) => addresses)
-      .map(address => address?.address)
-      .filter(address => {
-        if (address == null) {
-          return false
-        }
-
-        if (version === 4) {
-          return isIPv4(address)
-        }
-
-        if (version === 6) {
-          return isIPv6(address)
-        }
-
-        return false
-      })
-      .map(address => `/ip${version}/${address}/udp/${port}`)
-  }
-
-  return [
-    `/ip${version}/${host}/udp/${port}`
-  ]
 }

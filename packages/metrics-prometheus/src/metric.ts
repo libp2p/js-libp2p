@@ -1,5 +1,5 @@
 import { type CollectFunction, Gauge } from 'prom-client'
-import { normaliseString } from './utils.js'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
 import type { Metric, StopTimer, CalculateMetric } from '@libp2p/interface'
 
@@ -8,9 +8,9 @@ export class PrometheusMetric implements Metric {
   private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const labels = opts.label != null ? [normaliseString(opts.label)] : []
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<Gauge<any>> | undefined
     this.calculators = []
 

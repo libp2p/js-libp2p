@@ -11,7 +11,7 @@ const CODEC_IP6 = 0x29
  * insecure websockets by default.
  *
  * Browsers are severely limited in their resource usage so don't waste time
- * trying to dial undiallable addresses, and they also print verbose error
+ * trying to dial undialable addresses, and they also print verbose error
  * messages when making connections over insecure transports which causes
  * confusion.
  */

@@ -5,6 +5,26 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.7.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.6.1...interface-v2.7.0) (2025-03-03)
+
+
+### Features
+
+* allow early muxer selection by connection encrypters ([#3022](https://github.com/libp2p/js-libp2p/issues/3022)) ([dd71d8a](https://github.com/libp2p/js-libp2p/commit/dd71d8a86841acbccdca8f3e930bda0eced6d1d0))
+
+## [2.6.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.6.0...interface-v2.6.1) (2025-02-25)
+
+
+### Bug Fixes
+
+* ensure that the upgrader applies timeouts to incoming dials ([#3000](https://github.com/libp2p/js-libp2p/issues/3000)) ([90cca82](https://github.com/libp2p/js-libp2p/commit/90cca822b4cb112fc71bf9ad954023de685a9040))
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
 ## [2.6.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.5.0...interface-v2.6.0) (2025-02-20)
 
 

@@ -12,13 +12,13 @@ export default {
   // )
 
   // func main() {
-  //   priv, pub, _ := crypto.GenerateEd25519Key(rand.Reader)
-  //   pubkeyBytes, _ := pub.Bytes()
-  //   privkeyBytes, _ := priv.Bytes()
+  //   privateKey, publicKey, _ := crypto.GenerateEd25519Key(rand.Reader)
+  //   publicKeyBytes, _ := publicKey.Bytes()
+  //   privateKeyBytes, _ := privateKey.Bytes()
   //   data := []byte("hello! and welcome to some awesome crypto primitives")
-  //   sig, _ := priv.Sign(data)
-  //   fmt.Println("{\n  publicKey: Uint8Array.from(", strings.Replace(fmt.Sprint(pubkeyBytes), " ", ",", -1), "),")
-  //   fmt.Println("  privateKey: Uint8Array.from(", strings.Replace(fmt.Sprint(privkeyBytes), " ", ",", -1), "),")
+  //   sig, _ := privateKey.Sign(data)
+  //   fmt.Println("{\n  publicKey: Uint8Array.from(", strings.Replace(fmt.Sprint(publicKeyBytes), " ", ",", -1), "),")
+  //   fmt.Println("  privateKey: Uint8Array.from(", strings.Replace(fmt.Sprint(privateKeyBytes), " ", ",", -1), "),")
   //   fmt.Println("  data: Uint8Array.from(", strings.Replace(fmt.Sprint(data), " ", ",", -1), "),")
   //   fmt.Println("  signature: Uint8Array.from(", strings.Replace(fmt.Sprint(sig), " ", ",", -1), ")\n}")
   // }

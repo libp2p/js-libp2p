@@ -1,3 +1,4 @@
+import { MUXER_PROTOCOL } from './constants.js'
 import { createStream } from './stream.js'
 import { drainAndClose, nopSink, nopSource } from './util.js'
 import type { DataChannelOptions } from './index.js'
@@ -6,8 +7,6 @@ import type { ComponentLogger, Logger, Stream, CounterGroup, StreamMuxer, Stream
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const PROTOCOL = '/webrtc'
 
 export interface DataChannelMuxerFactoryInit {
   /**
@@ -55,11 +54,11 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.components = components
     this.peerConnection = init.peerConnection
     this.metrics = init.metrics
-    this.protocol = init.protocol ?? PROTOCOL
+    this.protocol = init.protocol ?? MUXER_PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
     this.log = components.logger.forComponent('libp2p:webrtc:muxerfactory')
 
-    // store any datachannels opened before upgrade has been completed
+    // store any data channels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming early datachannel with channel id %d and label "%s"', channel.id)
 
@@ -135,7 +134,7 @@ export class DataChannelMuxer implements StreamMuxer {
     this.logger = components.logger
     this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
-    this.protocol = init.protocol ?? PROTOCOL
+    this.protocol = init.protocol ?? MUXER_PROTOCOL
     this.metrics = init.metrics
     this.dataChannelOptions = init.dataChannelOptions ?? {}
 

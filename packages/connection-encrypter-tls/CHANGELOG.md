@@ -6,6 +6,72 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.1.1](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.0...tls-v2.1.1) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.18...tls-v2.1.0) (2025-03-03)
+
+
+### Features
+
+* add metrics to tls encrypter ([#3025](https://github.com/libp2p/js-libp2p/issues/3025)) ([3f127b6](https://github.com/libp2p/js-libp2p/commit/3f127b6104339b95d947c7c741e73508a90f0352))
+* select muxer early ([#3026](https://github.com/libp2p/js-libp2p/issues/3026)) ([c4b6a37](https://github.com/libp2p/js-libp2p/commit/c4b6a37173bbf4bfd127bdc524c2c00a1a9749e6))
+
+
+### Bug Fixes
+
+* abort connection on TLS error ([#3027](https://github.com/libp2p/js-libp2p/issues/3027)) ([2c8ecb4](https://github.com/libp2p/js-libp2p/commit/2c8ecb455833074300953270a9d9386386275699))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+
+## [2.0.18](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.17...tls-v2.0.18) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.16...tls-v2.0.17) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+
 ## [2.0.16](https://github.com/libp2p/js-libp2p/compare/tls-v2.0.15...tls-v2.0.16) (2025-02-20)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.5](https://github.com/libp2p/js-libp2p/compare/record-v4.0.4...record-v4.0.5) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
 ## [4.0.4](https://github.com/libp2p/js-libp2p/compare/record-v4.0.3...record-v4.0.4) (2024-08-02)
 
 

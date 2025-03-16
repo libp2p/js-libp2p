@@ -110,6 +110,101 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.0...libp2p-v2.8.1) (2025-03-12)
+
+
+### Bug Fixes
+
+* import StreamHandler from interface ([#3037](https://github.com/libp2p/js-libp2p/issues/3037)) ([88b5c29](https://github.com/libp2p/js-libp2p/commit/88b5c29ed78b54e51c2a69094c8d9f2d41f2287c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.7 to ^2.3.8
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/multistream-select bumped from ^6.0.19 to ^6.0.20
+    * @libp2p/peer-collections bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+    * @libp2p/peer-store bumped from ^11.1.0 to ^11.1.1
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+
+## [2.8.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.5...libp2p-v2.8.0) (2025-03-03)
+
+
+### Features
+
+* allow early muxer selection by connection encrypters ([#3022](https://github.com/libp2p/js-libp2p/issues/3022)) ([dd71d8a](https://github.com/libp2p/js-libp2p/commit/dd71d8a86841acbccdca8f3e930bda0eced6d1d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/interface-internal bumped from ^2.3.6 to ^2.3.7
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/multistream-select bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+    * @libp2p/peer-store bumped from ^11.0.22 to ^11.1.0
+    * @libp2p/utils bumped from ^6.5.6 to ^6.5.7
+
+## [2.7.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.4...libp2p-v2.7.5) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/interface-internal bumped from ^2.3.5 to ^2.3.6
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/multistream-select bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-collections bumped from ^6.0.21 to ^6.0.22
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/peer-store bumped from ^11.0.21 to ^11.0.22
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+
+## [2.7.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.3...libp2p-v2.7.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* check for new addresses during dialing ([#3003](https://github.com/libp2p/js-libp2p/issues/3003)) ([be9b6a0](https://github.com/libp2p/js-libp2p/commit/be9b6a0708b82f97da00d1e94d74f38314cf1f4f))
+* ignore failures to listen on IPv6 addresses when IPv4 succeeds ([#3001](https://github.com/libp2p/js-libp2p/issues/3001)) ([e2f4943](https://github.com/libp2p/js-libp2p/commit/e2f49432b58fe3f8484c8f7f0237f996b4d211fa)), closes [#2977](https://github.com/libp2p/js-libp2p/issues/2977)
+* improve error message when starting server ([#3008](https://github.com/libp2p/js-libp2p/issues/3008)) ([ab1bb86](https://github.com/libp2p/js-libp2p/commit/ab1bb862f3c22059c8d3c7f750ceab0755a0a0f2))
+
+## [2.7.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.2...libp2p-v2.7.3) (2025-02-25)
+
+
+### Bug Fixes
+
+* ensure that the upgrader applies timeouts to incoming dials ([#3000](https://github.com/libp2p/js-libp2p/issues/3000)) ([90cca82](https://github.com/libp2p/js-libp2p/commit/90cca822b4cb112fc71bf9ad954023de685a9040))
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/multistream-select bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/peer-collections bumped from ^6.0.20 to ^6.0.21
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/peer-store bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/utils bumped from ^6.5.4 to ^6.5.5
+
 ## [2.7.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.1...libp2p-v2.7.2) (2025-02-21)
 
 
@@ -2334,7 +2429,7 @@
 ### Bug Fixes
 
 * encapsulate /p2p-circuit multiaddrs when dialing a known peerid ([#1680](https://www.github.com/libp2p/js-libp2p/issues/1680)) ([4078082](https://www.github.com/libp2p/js-libp2p/commit/4078082dac944c6feb64e9e45e5275d7f0bf6ae4))
-* refactor connection manager to use a prioritised queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
+* refactor connection manager to use a prioritized queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
 
 ### [0.43.4](https://www.github.com/libp2p/js-libp2p/compare/v0.43.3...v0.43.4) (2023-04-05)
 
@@ -2476,7 +2571,7 @@
 ### ⚠ BREAKING CHANGES
 
 * modules no longer implement `Initializable` instead switching to constructor injection
-* the old behaviour was to dial any peer we discover, now we just add them to the peer store instead
+* the old behavior was to dial any peer we discover, now we just add them to the peer store instead
 
 ### Features
 

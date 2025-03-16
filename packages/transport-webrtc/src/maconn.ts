@@ -45,7 +45,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   remoteAddr: Multiaddr
 
   /**
-   * Holds the lifecycle times of the connection
+   * Holds the life cycle times of the connection
    */
   timeline: MultiaddrConnectionTimeline
 

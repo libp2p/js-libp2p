@@ -9,8 +9,9 @@
       "onlyDial": true
     },
     "webrtc",
-    "webrtc-direct"
+    "webrtc-direct",
+    "quic-v1"
   ],
-  "secureChannels": ["noise"],
+  "secureChannels": ["noise", "tls"],
   "muxers": ["yamux", "mplex"]
 }

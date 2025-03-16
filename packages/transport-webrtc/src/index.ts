@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC datachannels](https://webrtc.org/).
+ * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
  *
  * [WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
  *
@@ -215,9 +215,9 @@ import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {
   /**
-   * The maximum message size sendable over the channel in bytes
+   * The maximum message size to be sent over the channel in bytes
    *
-   * @default 16384
+   * @default 16_384
    */
   maxMessageSize?: number
 
@@ -225,7 +225,7 @@ export interface DataChannelOptions {
    * If the channel's `bufferedAmount` grows over this amount in bytes, wait
    * for it to drain before sending more data
    *
-   * @default 16777216
+   * @default 16_777_216
    */
   maxBufferedAmount?: number
 
@@ -234,7 +234,7 @@ export interface DataChannelOptions {
    * the `bufferedAmountLow` event fires - this controls how long we wait for
    * that event in ms
    *
-   * @default 30000
+   * @default 30_000
    */
   bufferedAmountLowEventTimeout?: number
 
@@ -243,7 +243,7 @@ export interface DataChannelOptions {
    * closing the underlying RTCDataChannel - this controls how long we wait
    * in ms
    *
-   * @default 30000
+   * @default 30_000
    */
   drainTimeout?: number
 
@@ -252,13 +252,15 @@ export interface DataChannelOptions {
    * for a FIN_ACK reply before closing the underlying RTCDataChannel - this
    * controls how long we wait for the acknowledgement in ms
    *
-   * @default 5000
+   * @default 5_000
    */
   closeTimeout?: number
 
   /**
    * When sending the first data message, if the channel is not in the "open"
    * state, wait this long for the "open" event to fire.
+   *
+   * @default 5_000
    */
   openTimeout?: number
 }
@@ -271,6 +273,7 @@ export interface TransportCertificate {
    * The private key for the certificate in PEM format
    */
   privateKey: string
+
   /**
    * PEM format certificate
    */

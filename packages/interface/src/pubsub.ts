@@ -18,7 +18,7 @@ export const StrictSign = 'StrictSign'
 /**
  * On the producing side:
  * * Build messages without the signature, key, from and seqno fields.
- * * The corresponding protobuf key-value pairs are absent from the marshalled message, not just empty.
+ * * The corresponding protobuf key-value pairs are absent from the marshaled message, not just empty.
  *
  * On the consuming side:
  * * Enforce the fields to be absent, reject otherwise.

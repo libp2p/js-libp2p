@@ -11,14 +11,14 @@ import type { Address } from '@libp2p/interface'
  */
 // eslint-disable-next-line complexity
 export function reliableTransportsFirst (a: Address, b: Address): -1 | 0 | 1 {
-  const isATCP = TCP.exactMatch(a.multiaddr)
-  const isBTCP = TCP.exactMatch(b.multiaddr)
+  const isATcp = TCP.exactMatch(a.multiaddr)
+  const isBTcp = TCP.exactMatch(b.multiaddr)
 
-  if (isATCP && !isBTCP) {
+  if (isATcp && !isBTcp) {
     return -1
   }
 
-  if (!isATCP && isBTCP) {
+  if (!isATcp && isBTcp) {
     return 1
   }
 

@@ -102,7 +102,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('do not block key second time until block expires no matter how many points consumed', async () => {
-    const testKey = 'donotblocktwice'
+    const testKey = 'doNotBlockTwice'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
     await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected()
@@ -114,7 +114,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('block expires in blockDuration seconds', async () => {
-    const testKey = 'blockexpires'
+    const testKey = 'blockExpires'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
     await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected()
@@ -127,7 +127,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('block custom key', async () => {
-    const testKey = 'blockcustom'
+    const testKey = 'blockCustom'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1 })
     rateLimiterMemory.block(testKey, 2)
 
@@ -147,14 +147,14 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('get resolves null if key is not set', () => {
-    const testKey = 'getbynotexistingkey'
+    const testKey = 'getByNotExistingKey'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
 
     expect(rateLimiterMemory.get(testKey)).to.be.undefined()
   })
 
   it('delete resolves true if key is set', async () => {
-    const testKey = 'deletekey'
+    const testKey = 'deleteKey'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
     await rateLimiterMemory.consume(testKey)
 
@@ -164,7 +164,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('delete resolves false if key is not set', () => {
-    const testKey = 'deletekey2'
+    const testKey = 'deleteKey2'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
     rateLimiterMemory.delete(testKey)
 
@@ -204,7 +204,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('does not expire key if duration set to 0', async () => {
-    const testKey = 'neverexpire'
+    const testKey = 'neverExpire'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 0 })
     await rateLimiterMemory.consume(testKey, 1)
     await rateLimiterMemory.consume(testKey, 1)
@@ -215,7 +215,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('block key forever, if secDuration is 0', async () => {
-    const testKey = 'neverexpire'
+    const testKey = 'neverExpire'
     const rateLimiter = new RateLimiter({ points: 1, duration: 1 })
     rateLimiter.block(testKey, 0)
 
@@ -237,7 +237,7 @@ describe('RateLimiter with fixed window', function () {
   })
 
   it('set points by key forever', async () => {
-    const testKey = 'setforever'
+    const testKey = 'setForever'
     const rateLimiter = new RateLimiter({ points: 10, duration: 1 })
     rateLimiter.set(testKey, 12, 0)
 

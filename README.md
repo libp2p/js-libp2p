@@ -13,7 +13,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > [!NOTE]
-> Are you tring to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
+> Are you trying to upgrade libp2p to the latest version?  Check out the [migration guides](https://github.com/libp2p/js-libp2p/tree/main/doc/migrations) for any changes you need to make.
 
 ### Project status
 
@@ -24,7 +24,7 @@ The documentation in the main branch may contain changes from a pre-release.
 If you are looking for the documentation of the latest release, you can view the latest release on [npm](https://www.npmjs.com/package/libp2p), or select the tag in github that matches the version you are looking for.
 
 > [!TIP]
-> Just tring to figure out what this is all about? Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
+> Just trying to figure out what this is all about? Check our [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide and [examples](https://github.com/libp2p/js-libp2p-examples).
 
 ## Background
 
@@ -41,7 +41,7 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
-To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
 ## Roadmap
 
@@ -76,7 +76,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 ## Structure
 
 - [`/doc`](https://github.com/libp2p/js-libp2p/blob/main/doc) Docs for libp2p
-- [`/interop`](https://github.com/libp2p/js-libp2p/tree/main/interop) Multidimension Interop Test
+- [`/interop`](https://github.com/libp2p/js-libp2p/tree/main/interop) Multidimensional Interop Test
 - [`/packages/crypto`](https://github.com/libp2p/js-libp2p/tree/main/packages/crypto) Crypto primitives for libp2p
 - [`/packages/interface`](https://github.com/libp2p/js-libp2p/tree/main/packages/interface) The interface implemented by a libp2p node
 - [`/packages/interface-compliance-tests`](https://github.com/libp2p/js-libp2p/tree/main/packages/interface-compliance-tests) Compliance tests for JS libp2p interfaces
@@ -121,7 +121,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 #### Run unit tests
 
 ```sh
-# run all the unit tsts
+# run all the unit tests
 > npm test
 
 # run just Node.js tests
