@@ -34,6 +34,7 @@ export interface WebRTCDirectListenerInit {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   useLibjuice?: boolean
   certificateDuration?: number
+  certificateExpiryThreshold?: number
 }
 
 export interface WebRTCListenerMetrics {
@@ -86,10 +87,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
   private isCertificateExpiring (): boolean {
     if (this.certificate == null) return true
-    const expiryDate = new Date(this.certificate.notAfter)
+    const expiryDate = this.certificate.notAfter
     const now = new Date()
-    const timeToExpiry = expiryDate.getTime() - now.getTime()
-    const threshold = 30 * 24 * 60 * 60 * 1000
+    const timeToExpiry = expiryDate - now.getTime()
+    const threshold = this.init.certificateExpiryThreshold ?? 7 * 86400000
     return timeToExpiry < threshold
   }
 
@@ -166,17 +167,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
           // ensure we have a certificate
           if (this.certificate == null || this.isCertificateExpiring()) {
             this.log.trace('creating TLS certificate')
-            const keyPair = await crypto.subtle.generateKey({
-              name: 'ECDSA',
-              namedCurve: 'P-256'
-            }, true, ['sign', 'verify'])
-
-            const certificate = await generateTransportCertificate(keyPair, {
-              days: this.init.certificateDuration ?? 365 * 10
-            })
-            this.safeDispatchEvent('listening')
-
-            this.certificate = certificate
+            await this.createAndSetCertificate()
           }
 
           if (port === 0) {
@@ -194,6 +185,37 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
           })
         })
     }
+  }
+
+  private async createAndSetCertificate (): Promise<void> {
+    const keyPair = await crypto.subtle.generateKey({
+      name: 'ECDSA',
+      namedCurve: 'P-256'
+    }, true, ['sign', 'verify'])
+
+    const certificate = await generateTransportCertificate(keyPair, {
+      days: this.init.certificateDuration ?? 365 * 10
+    })
+
+    this.certificate = certificate
+    this.setCertificateExpiryTimeout()
+  }
+
+  private setCertificateExpiryTimeout (): void {
+    if (this.certificate == null) {
+      return
+    }
+
+    const expiryDate = new Date(this.certificate.notAfter)
+    const now = new Date()
+    const timeToExpiry = expiryDate.getTime() - now.getTime()
+    const timeoutDuration = timeToExpiry - 7 * 86400000
+
+    setTimeout(async () => {
+      this.log.trace('renewing TLS certificate')
+      await this.createAndSetCertificate()
+      this.safeDispatchEvent('listening')
+    }, timeoutDuration)
   }
 
   private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number): Promise<void> {

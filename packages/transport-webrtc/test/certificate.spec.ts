@@ -1,10 +1,13 @@
+import { defaultLogger } from '@libp2p/logger'
 import { Crypto } from '@peculiar/webcrypto'
 import { expect } from 'aegir/utils/chai.js'
 import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { WebRTCDirectListener, type WebRTCDirectListenerInit } from '../src/private-to-public/listener.js'
 import { type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import { generateTransportCertificate } from '../src/private-to-public/utils/generate-certificates.js'
 import type { TransportCertificate } from '../src/index.js'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 const crypto = new Crypto()
 
@@ -17,13 +20,8 @@ describe('WebRTCDirectListener', () => {
     components = {
       peerId: { toB58String: () => 'QmPeerId' } as any,
       privateKey: {} as any,
-      logger: {
-        forComponent: () => ({
-          trace: () => {},
-          error: () => {}
-        })
-      } as any,
-      transportManager: {} as any
+      logger: defaultLogger(),
+      transportManager: stubInterface<TransportManager>()
     }
 
     init = {
@@ -64,13 +62,29 @@ describe('WebRTCDirectListener', () => {
     expect(emitSpy.calledWith('listening')).to.be.true
   })
 
-  it('should generate a new certificate before expiry', async () => {
-    (listener as any).certificate = {
-      notAfter: new Date(Date.now() + 5 * 86400000).toISOString()
+  it('should generate a new certificate before expiry with default threshold', async () => {
+    init.certificateExpiryThreshold = undefined
+    listener = new WebRTCDirectListener(components, init)
+    ;(listener as any).certificate = {
+      notAfter: new Date(Date.now() + 5 * 86400000).getTime()
     }
 
     const isCertificateExpiringSpy = sinon.spy(listener as any, 'isCertificateExpiring')
-    const generateCertificateSpy = sinon.spy(generateTransportCertificate) 
+    const generateCertificateSpy = sinon.spy(listener as any, 'createAndSetCertificate')
+
+    await (listener as any).startUDPMuxServer('127.0.0.1', 0)
+
+    expect(isCertificateExpiringSpy.returned(true)).to.be.true
+    expect(generateCertificateSpy.called).to.be.true
+  })
+
+  it('should generate a new certificate before expiry with custom threshold', async () => {
+    (listener as any).certificate = {
+      notAfter: new Date(Date.now() + 4 * 86400000).getTime()
+    }
+
+    const isCertificateExpiringSpy = sinon.spy(listener as any, 'isCertificateExpiring')
+    const generateCertificateSpy = sinon.spy(listener as any, 'createAndSetCertificate')
 
     await (listener as any).startUDPMuxServer('127.0.0.1', 0)
 
