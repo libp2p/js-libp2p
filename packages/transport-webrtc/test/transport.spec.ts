@@ -114,8 +114,8 @@ describe('WebRTCDirect Transport', () => {
       return this.skip()
     }
 
-    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/0')
-    const ipv6 = multiaddr('/ip6/::1/udp/0')
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37287')
+    const ipv6 = multiaddr('/ip6/::1/udp/37287')
 
     await Promise.all([
       listener.listen(ipv4),
@@ -207,5 +207,71 @@ describe('WebRTCDirect Transport', () => {
     for (const ma of webRTCDirectAddrs) {
       expect(ma.toString()).to.include('/udp/12346/webrtc-direct/certhash/u', 'did not add certhash to all WebRTC Direct addresses')
     }
+  })
+
+  it('can start listeners for two nodes on wildcard socket addresses', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const otherTransport = new WebRTCDirectTransport({
+      ...components,
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    })
+    const otherTransportIp4Listener = otherTransport.createListener({
+      upgrader
+    })
+    const otherTransportIp6Listener = otherTransport.createListener({
+      upgrader
+    })
+
+    const ip6Listener = transport.createListener({
+      upgrader
+    })
+
+    const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
+    const ipv6 = multiaddr('/ip6/::/udp/0')
+
+    await Promise.all([
+      listener.listen(ipv4),
+      otherTransportIp4Listener.listen(ipv4),
+      ip6Listener.listen(ipv6),
+      otherTransportIp6Listener.listen(ipv6)
+    ])
+
+    assertAllMultiaddrsHaveSamePort(listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherTransportIp4Listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherTransportIp6Listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(ip6Listener.getAddrs())
+
+    await listener.close()
+    await otherTransportIp4Listener.close()
+    await otherTransportIp6Listener.close()
+    await ip6Listener.close()
+  })
+
+  it('can start multiple wildcard listeners', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const otherListener = transport.createListener({
+      upgrader
+    })
+
+    const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
+
+    await Promise.all([
+      listener.listen(ipv4),
+      otherListener.listen(ipv4)
+    ])
+
+    assertAllMultiaddrsHaveSamePort(listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherListener.getAddrs())
+
+    expect(listener.getAddrs()[0].toOptions().port).to.not.equal(otherListener.getAddrs()[0].toOptions().port, 'wildcard listeners did not listen on different ports')
+
+    await listener.close()
+    await otherListener.close()
   })
 })
