@@ -1,5 +1,5 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { InvalidParametersError, InvalidPeerIdError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -101,7 +101,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
       // check that we own the mux server
       if (udpMuxServer != null && !udpMuxServer.peerId.equals(this.components.peerId)) {
-        throw new InvalidPeerIdError(`Another peer is already performing UDP mux on ${host}:${port}`)
+        throw new InvalidParametersError(`Another peer is already performing UDP mux on ${host}:${port}`)
       }
     }
 
