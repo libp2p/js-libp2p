@@ -36,6 +36,18 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.6.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.8...utils-v6.6.0) (2025-03-18)
+
+
+### Features
+
+* add util to get thin waist addresses ([#3043](https://github.com/libp2p/js-libp2p/issues/3043)) ([757577d](https://github.com/libp2p/js-libp2p/commit/757577dd2802935616933553a800e5e0050b09a1))
+
+
+### Bug Fixes
+
+* use getThinWaistAddresss function ([#3047](https://github.com/libp2p/js-libp2p/issues/3047)) ([a7ab9a4](https://github.com/libp2p/js-libp2p/commit/a7ab9a41b97504695d10045c1d50b2a610d69c24))
+
 ## [6.5.8](https://github.com/libp2p/js-libp2p/compare/utils-v6.5.7...utils-v6.5.8) (2025-03-12)
 
 

@@ -70,6 +70,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.8](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.7...websockets-v9.2.8) (2025-03-18)
+
+
+### Bug Fixes
+
+* use getThinWaistAddresss function ([#3047](https://github.com/libp2p/js-libp2p/issues/3047)) ([a7ab9a4](https://github.com/libp2p/js-libp2p/commit/a7ab9a41b97504695d10045c1d50b2a610d69c24))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+
 ## [9.2.7](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.6...websockets-v9.2.7) (2025-03-12)
 
 

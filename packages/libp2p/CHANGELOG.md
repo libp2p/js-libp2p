@@ -110,6 +110,18 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.1...libp2p-v2.8.2) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.8 to ^2.3.9
+    * @libp2p/peer-collections bumped from ^6.0.24 to ^6.0.25
+    * @libp2p/peer-store bumped from ^11.1.1 to ^11.1.2
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+
 ## [2.8.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.0...libp2p-v2.8.1) (2025-03-12)
 
 
