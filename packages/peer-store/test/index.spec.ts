@@ -315,6 +315,26 @@ describe('PersistentPeerStore', () => {
         .with.lengthOf(0, 'did not expire multiaddrs')
     })
 
+    it('should not expire self peer multiaddrs', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 100
+      })
+
+      await peerStore.patch(components.peerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      await expect(peerStore.get(components.peerId)).to.eventually.have.property('addresses')
+        .with.lengthOf(1)
+
+      await delay(500)
+
+      await expect(peerStore.get(components.peerId)).to.eventually.have.property('addresses')
+        .with.lengthOf(1, 'deleted own multiaddrs')
+    })
+
     it('should evict expired peers from .has', async () => {
       const peerStore = persistentPeerStore(components, {
         maxAddressAge: 50,
