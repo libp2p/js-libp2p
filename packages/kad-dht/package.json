@@ -75,7 +75,7 @@
     "it-merge": "^3.0.5",
     "it-parallel": "^3.0.8",
     "it-pipe": "^3.0.1",
-    "it-protobuf-stream": "^1.1.5",
+    "it-protobuf-stream": "^2.0.1",
     "it-take": "^3.0.6",
     "mortice": "^3.0.6",
     "multiformats": "^13.3.1",

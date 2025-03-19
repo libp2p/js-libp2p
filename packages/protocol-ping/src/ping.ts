@@ -69,7 +69,8 @@ export class PingService implements Startable, PingServiceInterface {
           stream?.abort(new TimeoutError('ping timeout'))
         })
 
-        const buf = await bytes.read(PING_LENGTH, {
+        const buf = await bytes.read({
+          bytes: PING_LENGTH,
           signal
         })
         await bytes.write(buf, {
@@ -136,7 +137,10 @@ export class PingService implements Startable, PingServiceInterface {
 
       const [, result] = await Promise.all([
         bytes.write(data, options),
-        bytes.read(PING_LENGTH, options)
+        bytes.read({
+          ...options,
+          bytes: PING_LENGTH
+        })
       ])
 
       const ms = Date.now() - start
