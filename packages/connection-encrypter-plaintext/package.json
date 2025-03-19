@@ -55,7 +55,7 @@
     "@libp2p/crypto": "^5.0.15",
     "@libp2p/interface": "^2.7.0",
     "@libp2p/peer-id": "^5.1.0",
-    "it-protobuf-stream": "^1.1.5",
+    "it-protobuf-stream": "^2.0.1",
     "it-stream-types": "^2.0.2",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",

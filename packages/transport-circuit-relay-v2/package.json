@@ -62,7 +62,7 @@
     "@multiformats/multiaddr": "^12.3.3",
     "@multiformats/multiaddr-matcher": "^1.6.0",
     "any-signal": "^4.1.1",
-    "it-protobuf-stream": "^1.1.5",
+    "it-protobuf-stream": "^2.0.1",
     "it-stream-types": "^2.0.2",
     "multiformats": "^13.3.1",
     "nanoid": "^5.0.9",
