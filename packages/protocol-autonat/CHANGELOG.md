@@ -55,6 +55,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.29](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.28...autonat-v2.0.29) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
 ## [2.0.28](https://github.com/libp2p/js-libp2p/compare/autonat-v2.0.27...autonat-v2.0.28) (2025-03-18)
 
 

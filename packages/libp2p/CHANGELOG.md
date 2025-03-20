@@ -110,6 +110,20 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.2...libp2p-v2.8.3) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/multistream-select bumped from ^6.0.20 to ^6.0.21
+
 ## [2.8.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.1...libp2p-v2.8.2) (2025-03-18)
 
 

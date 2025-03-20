@@ -50,6 +50,13 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.28](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.27...ping-v2.0.28) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
 ## [2.0.27](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.26...ping-v2.0.27) (2025-03-18)
 
 

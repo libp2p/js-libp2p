@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.19](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.18...echo-v2.1.19) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
 ## [2.1.18](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.17...echo-v2.1.18) (2025-03-18)
 
 

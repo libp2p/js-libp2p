@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.0.33](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.32...pnet-v2.0.33) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+
 ## [2.0.32](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.31...pnet-v2.0.32) (2025-03-18)
 
 
