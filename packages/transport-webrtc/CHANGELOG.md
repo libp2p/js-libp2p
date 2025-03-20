@@ -111,6 +111,20 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.10](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.9...webrtc-v5.2.10) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+
 ## [5.2.9](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.8...webrtc-v5.2.9) (2025-03-18)
 
 

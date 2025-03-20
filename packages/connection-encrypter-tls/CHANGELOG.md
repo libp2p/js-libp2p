@@ -6,6 +6,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.1.2](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.1...tls-v2.1.2) (2025-03-20)
+
+
+### Bug Fixes
+
+* add backpressure to tls encryption ([#3054](https://github.com/libp2p/js-libp2p/issues/3054)) ([0712672](https://github.com/libp2p/js-libp2p/commit/071267286c2adc79e03ba47a199bd4c0943f1ae3))
+
 ## [2.1.1](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.0...tls-v2.1.1) (2025-03-12)
 
 

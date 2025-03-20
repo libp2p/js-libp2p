@@ -76,6 +76,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.28](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.27...identify-v3.0.28) (2025-03-20)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
 ## [3.0.27](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.26...identify-v3.0.27) (2025-03-18)
 
 
