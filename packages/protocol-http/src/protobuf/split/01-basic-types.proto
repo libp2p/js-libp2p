@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package http;
+
+// Basic field representation (for both headers and trailers)
+message Field {
+  string name = 1;   // Field name (case-insensitive)
+  string value = 2;  // Field value
+}
+
+// Simple name-value pair
+message NameValuePair {
+  string name = 1;
+  string value = 2;
+}
