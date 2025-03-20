@@ -7,14 +7,15 @@ import * as asn1X509 from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import * as asn1js from 'asn1js'
-import { pushable } from 'it-pushable'
+import { queuelessPushable } from 'it-queueless-pushable'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey } from '@libp2p/interface'
-import type { Duplex } from 'it-stream-types'
+import type { Pushable } from 'it-queueless-pushable'
+import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const crypto = new Crypto()
@@ -185,15 +186,19 @@ function formatAsPem (str: string): string {
 }
 
 export function itToStream (conn: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>): DuplexStream {
-  const output = pushable()
+  const output = queuelessPushable<Uint8Array>()
   const iterator = conn.source[Symbol.asyncIterator]() as AsyncGenerator<Uint8Array>
 
   const stream = new DuplexStream({
     autoDestroy: false,
     allowHalfOpen: true,
     write (chunk, encoding, callback) {
-      output.push(chunk)
-      callback()
+      void output.push(chunk)
+        .then(() => {
+          callback()
+        }, err => {
+          callback(err)
+        })
     },
     read () {
       iterator.next()
@@ -218,53 +223,64 @@ export function itToStream (conn: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayL
   return stream
 }
 
-export function streamToIt (stream: DuplexStream): Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  const output: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = {
-    source: (async function * () {
-      const output = pushable<Uint8Array>()
+class DuplexIterable implements Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+  source: Pushable<Uint8Array>
+  private readonly stream: DuplexStream
 
-      stream.addListener('data', (buf) => {
-        output.push(buf.subarray())
-      })
-      // both ends closed
-      stream.addListener('close', () => {
-        output.end()
-      })
-      stream.addListener('error', (err) => {
-        output.end(err)
-      })
-      // just writable end closed
-      stream.addListener('finish', () => {
-        output.end()
-      })
+  constructor (stream: DuplexStream) {
+    this.stream = stream
+    this.source = queuelessPushable<Uint8Array>()
 
-      try {
-        yield * output
-      } catch (err: any) {
-        stream.destroy(err)
-        throw err
-      }
-    })(),
-    sink: async (source) => {
-      try {
-        for await (const buf of source) {
-          const sendMore = stream.write(buf.subarray())
+    stream.addListener('data', (buf) => {
+      stream.pause()
+      this.source.push(buf.subarray())
+        .then(() => {
+          stream.resume()
+        }, (err) => {
+          stream.emit('error', err)
+        })
+    })
+    // both ends closed
+    stream.addListener('close', () => {
+      this.source.end()
+        .catch(err => {
+          stream.emit('error', err)
+        })
+    })
+    stream.addListener('error', (err) => {
+      this.source.end(err)
+        .catch(() => {})
+    })
+    // just writable end closed
+    stream.addListener('finish', () => {
+      this.source.end()
+        .catch(() => {})
+    })
 
-          if (!sendMore) {
-            await waitForBackpressure(stream)
-          }
-        }
-
-        // close writable end
-        stream.end()
-      } catch (err: any) {
-        stream.destroy(err)
-        throw err
-      }
-    }
+    this.sink = this.sink.bind(this)
   }
 
-  return output
+  async sink (source: Source<Uint8Array | Uint8ArrayList>): Promise<void> {
+    try {
+      for await (const buf of source) {
+        const sendMore = this.stream.write(buf.subarray())
+
+        if (!sendMore) {
+          await waitForBackpressure(this.stream)
+        }
+      }
+
+      // close writable end
+      this.stream.end()
+    } catch (err: any) {
+      this.stream.destroy(err)
+      throw err
+    }
+  }
+}
+
+export function streamToIt (stream: DuplexStream): Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+  return new DuplexIterable(stream)
 }
 
 async function waitForBackpressure (stream: DuplexStream): Promise<void> {
