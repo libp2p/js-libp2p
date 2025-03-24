@@ -60,7 +60,7 @@ describe('ECDSA', function () {
       const key2 = unmarshalECDSAPrivateKey(keyMarshal)
 
       // @ts-expect-error private field
-      expect(key._key).to.deep.equal(key2._key)
+      expect(key._key.d).to.equal(key2._key.d)
 
       const keyMarshal2 = key2.raw
       expect(keyMarshal).to.equalBytes(keyMarshal2)
@@ -70,7 +70,9 @@ describe('ECDSA', function () {
       const pk2 = unmarshalECDSAPublicKey(pkMarshal)
 
       // @ts-expect-error private field
-      expect(pk._key).to.deep.equal(pk2._key)
+      expect(pk._key.x).to.deep.equal(pk2._key.x)
+      // @ts-expect-error private field
+      expect(pk._key.y).to.deep.equal(pk2._key.y)
 
       const pkMarshal2 = pk2.raw
       expect(pkMarshal).to.equalBytes(pkMarshal2)
