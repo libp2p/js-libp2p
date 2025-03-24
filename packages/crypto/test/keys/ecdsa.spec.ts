@@ -11,6 +11,8 @@ import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Curve } from '../../src/keys/index.js'
 import type { ECDSAPrivateKey } from '@libp2p/interface'
+import pbKeys from '../fixtures/ecdsa.js'
+import { PrivateKey, PublicKey } from '../../src/keys/keys.js'
 
 const CURVES: Curve[] = ['P-256', 'P-384', 'P-521']
 
@@ -147,6 +149,18 @@ describe('ECDSA', function () {
 
     expect(isPrivateKey(key.publicKey)).to.be.false()
     expect(isPublicKey(key.publicKey)).to.be.true()
+  })
+
+  it('should round trip examples from libp2p spec', async () => {
+    const pbPrivKey = PrivateKey.decode(pbKeys.pbmPrivateKey)
+    expect(pbPrivKey).to.have.property('Type', 'ECDSA')
+    const priv = unmarshalECDSAPrivateKey(pbPrivKey.Data ?? Uint8Array.from([]))
+    expect(priv.raw).to.equalBytes(pbPrivKey.Data)
+
+    const pbPubKey = PublicKey.decode(pbKeys.pbmPrivateKey)
+    expect(pbPubKey).to.have.property('Type', 'ECDSA')
+    const pub = unmarshalECDSAPrivateKey(pbPubKey.Data ?? Uint8Array.from([]))
+    expect(pub.raw).to.equalBytes(pbPubKey.Data)
   })
 
   it('should round trip examples from rfc9500', async () => {
