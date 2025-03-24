@@ -13,8 +13,11 @@ interface Decoder {
 }
 
 const decoders: Record<number, Decoder> = {
+  0x0: readSequence,
+  0x1: readSequence,
   0x2: readInteger,
   0x3: readBitString,
+  0x4: readOctetString,
   0x5: readNull,
   0x6: readObjectIdentifier,
   0x10: readSequence,
@@ -115,7 +118,7 @@ function readBitString (buf: Uint8Array, context: Context): any {
   const length = readLength(buf, context)
   const unusedBits = buf[context.offset]
   context.offset++
-  const bytes = buf.subarray(context.offset, context.offset + length)
+  const bytes = buf.subarray(context.offset, context.offset + length - 1)
   context.offset += length
 
   if (unusedBits !== 0) {
@@ -123,9 +126,15 @@ function readBitString (buf: Uint8Array, context: Context): any {
     throw new Error('Unused bits in bit string is unimplemented')
   }
 
-  return decodeDer(bytes, {
-    offset: 0
-  })
+  return bytes
+}
+
+function readOctetString (buf: Uint8Array, context: Context): any {
+  const length = readLength(buf, context)
+  const bytes = buf.subarray(context.offset, context.offset + length)
+  context.offset += length
+
+  return bytes
 }
 
 function encodeNumber (value: number): Uint8ArrayList {
@@ -195,7 +204,15 @@ export function encodeBitString (value: Uint8Array | Uint8ArrayList): Uint8Array
   )
 }
 
-export function encodeSequence (values: Array<Uint8Array | Uint8ArrayList>): Uint8ArrayList {
+export function encodeOctetString (value: Uint8Array | Uint8ArrayList): Uint8ArrayList {
+  return new Uint8ArrayList(
+    Uint8Array.from([0x04]),
+    encodeLength(value),
+    value
+  )
+}
+
+export function encodeSequence (values: Array<Uint8Array | Uint8ArrayList>, tag = 0x30): Uint8ArrayList {
   const output = new Uint8ArrayList()
 
   for (const buf of values) {
@@ -205,7 +222,7 @@ export function encodeSequence (values: Array<Uint8Array | Uint8ArrayList>): Uin
   }
 
   return new Uint8ArrayList(
-    Uint8Array.from([0x30]),
+    Uint8Array.from([tag]),
     encodeLength(output),
     output
   )

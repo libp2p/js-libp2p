@@ -8,12 +8,14 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import { UnsupportedKeyTypeError } from '@libp2p/interface'
+import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
+import { generateECDSAKeyPair, unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from './ecdsa/utils.js'
 import { generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
 import * as pb from './keys.js'
 import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair } from './rsa/utils.js'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
-import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey } from '@libp2p/interface'
+import type { Curve } from './ecdsa/index.js'
+import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 import type { Digest } from 'multiformats/hashes/digest'
 
@@ -27,9 +29,10 @@ export { keyStretcher } from './key-stretcher.js'
  */
 export async function generateKeyPair (type: 'Ed25519'): Promise<Ed25519PrivateKey>
 export async function generateKeyPair (type: 'secp256k1'): Promise<Secp256k1PrivateKey>
+export async function generateKeyPair (type: 'ECDSA', curve?: Curve): Promise<ECDSAPrivateKey>
 export async function generateKeyPair (type: 'RSA', bits?: number): Promise<RSAPrivateKey>
 export async function generateKeyPair (type: KeyType, bits?: number): Promise<PrivateKey>
-export async function generateKeyPair (type: KeyType, bits?: number): Promise<unknown> {
+export async function generateKeyPair (type: KeyType, bits?: number | string): Promise<unknown> {
   if (type === 'Ed25519') {
     return generateEd25519KeyPair()
   }
@@ -39,7 +42,11 @@ export async function generateKeyPair (type: KeyType, bits?: number): Promise<un
   }
 
   if (type === 'RSA') {
-    return generateRSAKeyPair(bits ?? 2048)
+    return generateRSAKeyPair(toBits(bits))
+  }
+
+  if (type === 'ECDSA') {
+    return generateECDSAKeyPair(toCurve(bits))
   }
 
   throw new UnsupportedKeyTypeError()
@@ -81,6 +88,8 @@ export function publicKeyFromProtobuf (buf: Uint8Array, digest?: Digest<18, numb
       return unmarshalEd25519PublicKey(data)
     case pb.KeyType.secp256k1:
       return unmarshalSecp256k1PublicKey(data)
+    case pb.KeyType.ECDSA:
+      return unmarshalECDSAPublicKey(data)
     default:
       throw new UnsupportedKeyTypeError()
   }
@@ -94,6 +103,8 @@ export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
     return unmarshalEd25519PublicKey(buf)
   } else if (buf.byteLength === 33) {
     return unmarshalSecp256k1PublicKey(buf)
+  } else if (buf.byteLength === 87 || buf.byteLength === 116 || buf.byteLength === 155) {
+    return unmarshalECDSAPublicKey(buf)
   } else {
     return pkixToRSAPublicKey(buf)
   }
@@ -106,7 +117,7 @@ export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
  * RSA keys are not supported as in practice we they are not stored in identity
  * multihash since the hash would be very large.
  */
-export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519PublicKey | Secp256k1PublicKey {
+export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519PublicKey | Secp256k1PublicKey | ECDSAPublicKey {
   const { Type, Data } = pb.PublicKey.decode(digest.digest)
   const data = Data ?? new Uint8Array()
 
@@ -115,6 +126,8 @@ export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519Pu
       return unmarshalEd25519PublicKey(data)
     case pb.KeyType.secp256k1:
       return unmarshalSecp256k1PublicKey(data)
+    case pb.KeyType.ECDSA:
+      return unmarshalECDSAPublicKey(data)
     default:
       throw new UnsupportedKeyTypeError()
   }
@@ -133,7 +146,7 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey {
+export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey | ECDSAPrivateKey {
   const decoded = pb.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -144,6 +157,8 @@ export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Se
       return unmarshalEd25519PrivateKey(data)
     case pb.KeyType.secp256k1:
       return unmarshalSecp256k1PrivateKey(data)
+    case pb.KeyType.ECDSA:
+      return unmarshalECDSAPrivateKey(data)
     default:
       throw new UnsupportedKeyTypeError()
   }
@@ -159,6 +174,8 @@ export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
     return unmarshalEd25519PrivateKey(buf)
   } else if (buf.byteLength === 32) {
     return unmarshalSecp256k1PrivateKey(buf)
+  } else if (buf.byteLength === 121 || buf.byteLength === 167 || buf.byteLength === 223) {
+    return unmarshalECDSAPrivateKey(buf)
   } else {
     return pkcs1ToRSAPrivateKey(buf)
   }
@@ -172,4 +189,28 @@ export function privateKeyToProtobuf (key: PrivateKey): Uint8Array {
     Type: pb.KeyType[key.type],
     Data: key.raw
   })
+}
+
+function toBits (bits: any): number {
+  if (bits == null) {
+    return 2048
+  }
+
+  return parseInt(bits, 10)
+}
+
+function toCurve (curve: any): Curve {
+  if (curve === 'P-256' || curve == null) {
+    return 'P-256'
+  }
+
+  if (curve === 'P-384') {
+    return 'P-384'
+  }
+
+  if (curve === 'P-521') {
+    return 'P-521'
+  }
+
+  throw new InvalidParametersError('Unsupported curve, should be P-256, P-384 or P-521')
 }

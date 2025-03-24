@@ -66,17 +66,20 @@ export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
   const decoded = decodeDer(bytes, {
     offset: 0
   })
+  const keys = decodeDer(decoded[1], {
+    offset: 0
+  })
 
   // this looks fragile but DER is a canonical format so we are safe to have
   // deeply property chains like this
   return {
     kty: 'RSA',
     n: uint8ArrayToString(
-      decoded[1][0],
+      keys[0],
       'base64url'
     ),
     e: uint8ArrayToString(
-      decoded[1][1],
+      keys[1],
       'base64url'
     )
   }
