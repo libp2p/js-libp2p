@@ -16,6 +16,11 @@ export interface RSAPublicKey {
   readonly raw: Uint8Array
 
   /**
+   * The public key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
+
+  /**
    * Returns `true` if the passed object matches this key
    */
   equals(key?: any): boolean
@@ -138,9 +143,14 @@ export interface ECDSAPublicKey {
   readonly type: 'ECDSA'
 
   /**
-   * The raw public key bytes
+   * The public key as a DER-encoded PKIMessage
    */
   readonly raw: Uint8Array
+
+  /**
+   * The public key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
 
   /**
    * Returns `true` if the passed object matches this key
@@ -210,6 +220,11 @@ export interface RSAPrivateKey {
    * PKIX in ASN1 DER format
    */
   readonly raw: Uint8Array
+
+  /**
+   * The private key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
 
   /**
    * Returns `true` if the passed object matches this key
@@ -291,9 +306,14 @@ export interface ECDSAPrivateKey {
   readonly publicKey: ECDSAPublicKey
 
   /**
-   * The raw private key bytes
+   * The private key as a DER-encoded PKIMessage
    */
   readonly raw: Uint8Array
+
+  /**
+   * The private key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
 
   /**
    * Returns `true` if the passed object matches this key
