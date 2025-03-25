@@ -11,12 +11,19 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class ECDSAPublicKey implements ECDSAPublicKeyInterface {
   public readonly type = 'ECDSA'
-  public readonly raw: Uint8Array
-  private readonly _key: JsonWebKey
+  public readonly jwk: JsonWebKey
+  private _raw?: Uint8Array
 
-  constructor (publicKey: JsonWebKey) {
-    this._key = publicKey
-    this.raw = publicKeyToPKIMessage(publicKey)
+  constructor (jwk: JsonWebKey) {
+    this.jwk = jwk
+  }
+
+  get raw (): Uint8Array {
+    if (this._raw == null) {
+      this._raw = publicKeyToPKIMessage(this.jwk)
+    }
+
+    return this._raw
   }
 
   toMultihash (): Digest<0x0, number> {
@@ -40,20 +47,27 @@ export class ECDSAPublicKey implements ECDSAPublicKeyInterface {
   }
 
   async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): Promise<boolean> {
-    return hashAndVerify(this._key, sig, data)
+    return hashAndVerify(this.jwk, sig, data)
   }
 }
 
 export class ECDSAPrivateKey implements ECDSAPrivateKeyInterface {
   public readonly type = 'ECDSA'
-  public readonly raw: Uint8Array
-  private readonly _key: JsonWebKey
+  public readonly jwk: JsonWebKey
   public readonly publicKey: ECDSAPublicKey
+  private _raw?: Uint8Array
 
-  constructor (privateKey: JsonWebKey, publicKey: JsonWebKey) {
-    this._key = privateKey
-    this.raw = privateKeyToPKIMessage(privateKey)
+  constructor (jwk: JsonWebKey, publicKey: JsonWebKey) {
+    this.jwk = jwk
     this.publicKey = new ECDSAPublicKey(publicKey)
+  }
+
+  get raw (): Uint8Array {
+    if (this._raw == null) {
+      this._raw = privateKeyToPKIMessage(this.jwk)
+    }
+
+    return this._raw
   }
 
   equals (key?: any): boolean {
@@ -65,6 +79,6 @@ export class ECDSAPrivateKey implements ECDSAPrivateKeyInterface {
   }
 
   async sign (message: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
-    return hashAndSign(this._key, message)
+    return hashAndSign(this.jwk, message)
   }
 }
