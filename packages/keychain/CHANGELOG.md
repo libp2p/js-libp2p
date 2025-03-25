@@ -47,6 +47,24 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/keychain-v5.1.4...keychain-v5.2.0) (2025-03-25)
+
+
+### Features
+
+* store x509 certs in the keychain ([#3062](https://github.com/libp2p/js-libp2p/issues/3062)) ([d53ef17](https://github.com/libp2p/js-libp2p/commit/d53ef170cb171f5301758d5b2fc9e782950b4204))
+* support ECDSA private keys ([#3059](https://github.com/libp2p/js-libp2p/issues/3059)) ([fc51221](https://github.com/libp2p/js-libp2p/commit/fc512211024778d4aefb04411e815d977e91e03a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
 ## [5.1.4](https://github.com/libp2p/js-libp2p/compare/keychain-v5.1.3...keychain-v5.1.4) (2025-03-12)
 
 
