@@ -3,6 +3,10 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export type Curve = 'P-256' | 'P-384' | 'P-521'
 
+export const ECDSA_P_256_OID = '1.2.840.10045.3.1.7'
+export const ECDSA_P_384_OID = '1.3.132.0.34'
+export const ECDSA_P_521_OID = '1.3.132.0.35'
+
 export async function generateECDSAKey (curve: Curve = 'P-256'): Promise<JWKKeyPair> {
   const keyPair = await crypto.subtle.generateKey({
     name: 'ECDSA',

@@ -9,10 +9,15 @@
  */
 
 import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
-import { generateECDSAKeyPair, unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from './ecdsa/utils.js'
+import { ECDSA_P_256_OID, ECDSA_P_384_OID, ECDSA_P_521_OID } from './ecdsa/index.js'
+import { generateECDSAKeyPair, pkiMessageToECDSAPrivateKey, pkiMessageToECDSAPublicKey, unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from './ecdsa/utils.js'
+import { privateKeyLength as ed25519PrivateKeyLength, publicKeyLength as ed25519PublicKeyLength } from './ed25519/index.js'
 import { generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
 import * as pb from './keys.js'
-import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair } from './rsa/utils.js'
+import { decodeDer } from './rsa/der.js'
+import { RSAES_PKCS1_V1_5_OID } from './rsa/index.js'
+import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1MessageToRSAPrivateKey, pkixMessageToRSAPublicKey } from './rsa/utils.js'
+import { privateKeyLength as secp256k1PrivateKeyLength, publicKeyLength as secp256k1PublicKeyLength } from './secp256k1/index.js'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { Curve } from './ecdsa/index.js'
 import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey } from '@libp2p/interface'
@@ -99,15 +104,24 @@ export function publicKeyFromProtobuf (buf: Uint8Array, digest?: Digest<18, numb
  * Creates a public key from the raw key bytes
  */
 export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
-  if (buf.byteLength === 32) {
+  if (buf.byteLength === ed25519PublicKeyLength) {
     return unmarshalEd25519PublicKey(buf)
-  } else if (buf.byteLength === 33) {
+  } else if (buf.byteLength === secp256k1PublicKeyLength) {
     return unmarshalSecp256k1PublicKey(buf)
-  } else if (buf.byteLength === 87 || buf.byteLength === 116 || buf.byteLength === 155) {
-    return unmarshalECDSAPublicKey(buf)
-  } else {
-    return pkixToRSAPublicKey(buf)
   }
+
+  const message = decodeDer(buf)
+  const ecdsaOid = message[1]?.[0]
+
+  if (ecdsaOid === ECDSA_P_256_OID || ecdsaOid === ECDSA_P_384_OID || ecdsaOid === ECDSA_P_521_OID) {
+    return pkiMessageToECDSAPublicKey(message)
+  }
+
+  if (message[0]?.[0] === RSAES_PKCS1_V1_5_OID) {
+    return pkixMessageToRSAPublicKey(message, buf)
+  }
+
+  throw new InvalidParametersError('Could not extract public key from raw bytes')
 }
 
 /**
@@ -170,15 +184,24 @@ export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Se
  * differentiate between Ed25519 and secp256k1 keys as they are the same length.
  */
 export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
-  if (buf.byteLength === 64) {
+  if (buf.byteLength === ed25519PrivateKeyLength) {
     return unmarshalEd25519PrivateKey(buf)
-  } else if (buf.byteLength === 32) {
+  } else if (buf.byteLength === secp256k1PrivateKeyLength) {
     return unmarshalSecp256k1PrivateKey(buf)
-  } else if (buf.byteLength === 121 || buf.byteLength === 167 || buf.byteLength === 223) {
-    return unmarshalECDSAPrivateKey(buf)
-  } else {
-    return pkcs1ToRSAPrivateKey(buf)
   }
+
+  const message = decodeDer(buf)
+  const ecdsaOid = message[2]?.[0]
+
+  if (ecdsaOid === ECDSA_P_256_OID || ecdsaOid === ECDSA_P_384_OID || ecdsaOid === ECDSA_P_521_OID) {
+    return pkiMessageToECDSAPrivateKey(message)
+  }
+
+  if (message.length > 8) {
+    return pkcs1MessageToRSAPrivateKey(message)
+  }
+
+  throw new InvalidParametersError('Could not extract private key from raw bytes')
 }
 
 /**

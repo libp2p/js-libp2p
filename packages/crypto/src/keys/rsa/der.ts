@@ -99,13 +99,53 @@ function readInteger (buf: Uint8Array, context: Context): Uint8Array {
   return Uint8Array.from(vals)
 }
 
-function readObjectIdentifier (buf: Uint8Array, context: Context): string[] {
+function readObjectIdentifier (buf: Uint8Array, context: Context): string {
   const count = readLength(buf, context)
+  const finalOffset = context.offset + count
 
-  // skip OID
-  context.offset += count
+  const byte = buf[context.offset]
+  context.offset++
 
-  return ['oid-unimplemented']
+  let val1 = 0
+  let val2 = 0
+
+  if (byte < 40) {
+    val1 = 0
+    val2 = byte
+  } else if (byte < 80) {
+    val1 = 1
+    val2 = byte - 40
+  } else {
+    val1 = 2
+    val2 = byte - 80
+  }
+
+  let oid = `${val1}.${val2}`
+  let num: number[] = []
+
+  while (context.offset < finalOffset) {
+    const byte = buf[context.offset]
+    context.offset++
+
+    // remove msb
+    num.push(byte & 0b01111111)
+
+    if (byte < 128) {
+      num.reverse()
+
+      // reached the end of the encoding
+      let val = 0
+
+      for (let i = 0; i < num.length; i++) {
+        val += num[i] << (i * 7)
+      }
+
+      oid += `.${val}`
+      num = []
+    }
+  }
+
+  return oid
 }
 
 function readNull (buf: Uint8Array, context: Context): null {
@@ -172,7 +212,7 @@ function encodeLength (bytes: { byteLength: number }): Uint8Array | Uint8ArrayLi
 export function encodeInteger (value: Uint8Array | Uint8ArrayList): Uint8ArrayList {
   const contents = new Uint8ArrayList()
 
-  const mask = parseInt('10000000', 2)
+  const mask = 0b10000000
   const positive = (value.subarray()[0] & mask) === mask
 
   if (positive) {

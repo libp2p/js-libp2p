@@ -33,17 +33,27 @@ const P_521_KEY_JWK = {
   crv: 'P-521'
 }
 
+const P_256_KEY_LENGTH = 32
+const P_384_KEY_LENGTH = 48
+const P_521_KEY_LENGTH = 66
+
 export function unmarshalECDSAPrivateKey (bytes: Uint8Array): ECDSAPrivateKey {
   const message = decodeDer(bytes)
+
+  return pkiMessageToECDSAPrivateKey(message)
+}
+
+export function pkiMessageToECDSAPrivateKey (message: any): ECDSAPrivateKey {
   const privateKey = message[1]
   const d = uint8ArrayToString(privateKey, 'base64url')
   const coordinates: Uint8Array = message[2][1][0]
+  const offset = 1
   let x: string
   let y: string
 
-  if (privateKey.byteLength === 32) {
-    x = uint8ArrayToString(coordinates.subarray(1, 33), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(33), 'base64url')
+  if (privateKey.byteLength === P_256_KEY_LENGTH) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_256_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_256_KEY_LENGTH), 'base64url')
 
     return new ECDSAPrivateKeyClass({
       ...P_256_KEY_JWK,
@@ -59,9 +69,9 @@ export function unmarshalECDSAPrivateKey (bytes: Uint8Array): ECDSAPrivateKey {
     })
   }
 
-  if (privateKey.byteLength === 48) {
-    x = uint8ArrayToString(coordinates.subarray(1, 49), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(49), 'base64url')
+  if (privateKey.byteLength === P_384_KEY_LENGTH) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_384_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_384_KEY_LENGTH), 'base64url')
 
     return new ECDSAPrivateKeyClass({
       ...P_384_KEY_JWK,
@@ -77,9 +87,9 @@ export function unmarshalECDSAPrivateKey (bytes: Uint8Array): ECDSAPrivateKey {
     })
   }
 
-  if (privateKey.byteLength === 66) {
-    x = uint8ArrayToString(coordinates.subarray(1, 67), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(67), 'base64url')
+  if (privateKey.byteLength === P_521_KEY_LENGTH) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_521_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_521_KEY_LENGTH), 'base64url')
 
     return new ECDSAPrivateKeyClass({
       ...P_521_KEY_JWK,
@@ -95,18 +105,24 @@ export function unmarshalECDSAPrivateKey (bytes: Uint8Array): ECDSAPrivateKey {
     })
   }
 
-  throw new InvalidParametersError(`Private key length was wrong length, got ${privateKey.byteLength}, expected 32`)
+  throw new InvalidParametersError(`Private key length was wrong length, got ${privateKey.byteLength}, expected 32, 48 or 66`)
 }
 
 export function unmarshalECDSAPublicKey (bytes: Uint8Array): ECDSAPublicKey {
   const message = decodeDer(bytes)
+
+  return pkiMessageToECDSAPublicKey(message)
+}
+
+export function pkiMessageToECDSAPublicKey (message: any): ECDSAPublicKey {
   const coordinates = message[1][1][0]
+  const offset = 1
   let x: string
   let y: string
 
-  if (coordinates.byteLength === 65) {
-    x = uint8ArrayToString(coordinates.subarray(1, 33), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(33), 'base64url')
+  if (coordinates.byteLength === ((P_256_KEY_LENGTH * 2) + 1)) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_256_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_256_KEY_LENGTH), 'base64url')
 
     return new ECDSAPublicKeyClass({
       ...P_256_KEY_JWK,
@@ -116,9 +132,9 @@ export function unmarshalECDSAPublicKey (bytes: Uint8Array): ECDSAPublicKey {
     })
   }
 
-  if (coordinates.byteLength === 97) {
-    x = uint8ArrayToString(coordinates.subarray(1, 49), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(49), 'base64url')
+  if (coordinates.byteLength === ((P_384_KEY_LENGTH * 2) + 1)) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_384_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_384_KEY_LENGTH), 'base64url')
 
     return new ECDSAPublicKeyClass({
       ...P_384_KEY_JWK,
@@ -128,9 +144,9 @@ export function unmarshalECDSAPublicKey (bytes: Uint8Array): ECDSAPublicKey {
     })
   }
 
-  if (coordinates.byteLength === 133) {
-    x = uint8ArrayToString(coordinates.subarray(1, 67), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(67), 'base64url')
+  if (coordinates.byteLength === ((P_521_KEY_LENGTH * 2) + 1)) {
+    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_521_KEY_LENGTH), 'base64url')
+    y = uint8ArrayToString(coordinates.subarray(offset + P_521_KEY_LENGTH), 'base64url')
 
     return new ECDSAPublicKeyClass({
       ...P_521_KEY_JWK,
@@ -140,7 +156,7 @@ export function unmarshalECDSAPublicKey (bytes: Uint8Array): ECDSAPublicKey {
     })
   }
 
-  throw new InvalidParametersError(`coordinates were wrong length, got ${coordinates.byteLength}, expected 32`)
+  throw new InvalidParametersError(`coordinates were wrong length, got ${coordinates.byteLength}, expected 65, 97 or 133`)
 }
 
 export function privateKeyToPKIMessage (privateKey: JsonWebKey): Uint8Array {

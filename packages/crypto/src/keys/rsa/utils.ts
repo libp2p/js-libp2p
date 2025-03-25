@@ -23,17 +23,24 @@ const RSA_ALGORITHM_IDENTIFIER = Uint8Array.from([
  * Convert a PKCS#1 in ASN1 DER format to a JWK private key
  */
 export function pkcs1ToJwk (bytes: Uint8Array): JsonWebKey {
-  const values = decodeDer(bytes)
+  const message = decodeDer(bytes)
 
+  return pkcs1MessageToJwk(message)
+}
+
+/**
+ * Convert a PKCS#1 in ASN1 DER format to a JWK private key
+ */
+export function pkcs1MessageToJwk (message: any): JsonWebKey {
   return {
-    n: uint8ArrayToString(values[1], 'base64url'),
-    e: uint8ArrayToString(values[2], 'base64url'),
-    d: uint8ArrayToString(values[3], 'base64url'),
-    p: uint8ArrayToString(values[4], 'base64url'),
-    q: uint8ArrayToString(values[5], 'base64url'),
-    dp: uint8ArrayToString(values[6], 'base64url'),
-    dq: uint8ArrayToString(values[7], 'base64url'),
-    qi: uint8ArrayToString(values[8], 'base64url'),
+    n: uint8ArrayToString(message[1], 'base64url'),
+    e: uint8ArrayToString(message[2], 'base64url'),
+    d: uint8ArrayToString(message[3], 'base64url'),
+    p: uint8ArrayToString(message[4], 'base64url'),
+    q: uint8ArrayToString(message[5], 'base64url'),
+    dp: uint8ArrayToString(message[6], 'base64url'),
+    dq: uint8ArrayToString(message[7], 'base64url'),
+    qi: uint8ArrayToString(message[8], 'base64url'),
     kty: 'RSA'
   }
 }
@@ -63,10 +70,15 @@ export function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array {
  * Convert a PKIX in ASN1 DER format to a JWK public key
  */
 export function pkixToJwk (bytes: Uint8Array): JsonWebKey {
-  const decoded = decodeDer(bytes, {
+  const message = decodeDer(bytes, {
     offset: 0
   })
-  const keys = decodeDer(decoded[1], {
+
+  return pkixMessageToJwk(message)
+}
+
+export function pkixMessageToJwk (message: any): JsonWebKey {
+  const keys = decodeDer(message[1], {
     offset: 0
   })
 
@@ -107,23 +119,40 @@ export function jwkToPkix (jwk: JsonWebKey): Uint8Array {
 }
 
 /**
- * Turn PKCS#1 DER bytes to a PrivateKey
+ * Turn PKCS#1 DER bytes into a PrivateKey
  */
 export function pkcs1ToRSAPrivateKey (bytes: Uint8Array): RSAPrivateKey {
-  const jwk = pkcs1ToJwk(bytes)
+  const message = decodeDer(bytes)
+
+  return pkcs1MessageToRSAPrivateKey(message)
+}
+
+/**
+ * Turn PKCS#1 DER bytes into a PrivateKey
+ */
+export function pkcs1MessageToRSAPrivateKey (message: any): RSAPrivateKey {
+  const jwk = pkcs1MessageToJwk(message)
 
   return jwkToRSAPrivateKey(jwk)
 }
 
 /**
- * Turn PKIX bytes to a PublicKey
+ * Turn a PKIX message into a PublicKey
  */
 export function pkixToRSAPublicKey (bytes: Uint8Array, digest?: Digest<18, number>): RSAPublicKey {
   if (bytes.byteLength >= MAX_RSA_JWK_SIZE) {
     throw new InvalidPublicKeyError('Key size is too large')
   }
 
-  const jwk = pkixToJwk(bytes)
+  const message = decodeDer(bytes, {
+    offset: 0
+  })
+
+  return pkixMessageToRSAPublicKey(message, bytes, digest)
+}
+
+export function pkixMessageToRSAPublicKey (message: any, bytes: Uint8Array, digest?: Digest<18, number>): RSAPublicKey {
+  const jwk = pkixMessageToJwk(message)
 
   if (digest == null) {
     const hash = sha256(pb.PublicKey.encode({

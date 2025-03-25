@@ -7,12 +7,12 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { randomBytes } from '../../src/index.js'
 import { unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from '../../src/keys/ecdsa/utils.js'
 import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
+import { PrivateKey, PublicKey } from '../../src/keys/keys.js'
+import pbKeys from '../fixtures/ecdsa.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Curve } from '../../src/keys/index.js'
 import type { ECDSAPrivateKey } from '@libp2p/interface'
-import pbKeys from '../fixtures/ecdsa.js'
-import { PrivateKey, PublicKey } from '../../src/keys/keys.js'
 
 const CURVES: Curve[] = ['P-256', 'P-384', 'P-521']
 

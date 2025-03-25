@@ -9,6 +9,8 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = promisify(crypto.generateKeyPair)
 
+export const RSAES_PKCS1_V1_5_OID = '1.2.840.113549.1.1.1'
+
 export { utils }
 
 export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
