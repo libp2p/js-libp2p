@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package http;
+
+// Entity validators
+message EntityValidator {
+  oneof validator {
+    string etag = 1;          // Entity tag (with or without W/ prefix)
+    string last_modified = 2; // Last-Modified date
+  }
+  bool is_weak = 3;          // Whether validator is weak
+}
+
+// Entity tag lists for conditional requests
+message ETagList {
+  repeated string etags = 1;
+}
+
+// Conditional request fields
+message ConditionalRequest {
+  // If-Match
+  oneof if_match {
+    bool if_match_any = 1;    // "*"
+    ETagList if_match_tags = 2; // List of entity tags
+  }
+  
+  // If-None-Match
+  oneof if_none_match {
+    bool if_none_match_any = 3; // "*"
+    ETagList if_none_match_tags = 4; // List of entity tags
+  }
+  
+  // Date-based conditions
+  string if_modified_since = 5;   // HTTP-date
+  string if_unmodified_since = 6; // HTTP-date
+  
+  // If-Range
+  oneof if_range {
+    string if_range_etag = 7;    // Entity tag
+    string if_range_date = 8;    // HTTP-date
+  }
+}
