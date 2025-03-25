@@ -6,7 +6,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { randomBytes } from '../../src/index.js'
 import { unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from '../../src/keys/ecdsa/utils.js'
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
+import { privateKeyToCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyFromCryptoKeyPair } from '../../src/keys/index.js'
 import { PrivateKey, PublicKey } from '../../src/keys/keys.js'
 import pbKeys from '../fixtures/ecdsa.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
@@ -39,19 +39,22 @@ describe('ECDSA', function () {
     expect(res).to.be.be.true()
   })
 
-  it.skip('signs a list', async () => {
+  it('signs a list', async () => {
     const text = new Uint8ArrayList(
       randomBytes(512),
       randomBytes(512)
     )
     const sig = await key.sign(text)
-
-    await expect(key.sign(text.subarray()))
-      .to.eventually.deep.equal(sig, 'list did not have same signature as a single buffer')
+    const sig2 = await key.sign(text.subarray())
 
     await expect(key.publicKey.verify(text, sig))
       .to.eventually.be.true('did not verify message as list')
     await expect(key.publicKey.verify(text.subarray(), sig))
+      .to.eventually.be.true('did not verify message as single buffer')
+
+    await expect(key.publicKey.verify(text, sig2))
+      .to.eventually.be.true('did not verify message as list')
+    await expect(key.publicKey.verify(text.subarray(), sig2))
       .to.eventually.be.true('did not verify message as single buffer')
   })
 
@@ -209,5 +212,13 @@ describe('ECDSA', function () {
       const sig = await key.sign(fixtures.redundantPubKey.data)
       expect(sig).to.eql(fixtures.redundantPubKey.signature)
     })
+  })
+
+  it('exports to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('ECDSA')
+    const keyPair = await privateKeyToCryptoKeyPair(key)
+    const key2 = await privateKeyFromCryptoKeyPair(keyPair)
+
+    expect(key.publicKey.toCID()).to.deep.equal(key2.publicKey.toCID())
   })
 })

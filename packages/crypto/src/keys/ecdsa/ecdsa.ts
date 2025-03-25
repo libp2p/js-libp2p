@@ -57,9 +57,16 @@ export class ECDSAPrivateKey implements ECDSAPrivateKeyInterface {
   public readonly publicKey: ECDSAPublicKey
   private _raw?: Uint8Array
 
-  constructor (jwk: JsonWebKey, publicKey: JsonWebKey) {
+  constructor (jwk: JsonWebKey) {
     this.jwk = jwk
-    this.publicKey = new ECDSAPublicKey(publicKey)
+    this.publicKey = new ECDSAPublicKey({
+      crv: jwk.crv,
+      ext: jwk.ext,
+      key_ops: ['verify'],
+      kty: 'EC',
+      x: jwk.x,
+      y: jwk.y
+    })
   }
 
   get raw (): Uint8Array {

@@ -5,7 +5,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
-import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
+import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Ed25519PrivateKey } from '@libp2p/interface'
@@ -169,6 +169,13 @@ describe('ed25519', function () {
 
     expect(isPrivateKey(key.publicKey)).to.be.false()
     expect(isPublicKey(key.publicKey)).to.be.true()
+  })
+
+  it('fails to export to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    await expect(privateKeyToCryptoKeyPair(key)).to.eventually.be.rejected
+      .with.property('message', 'Only RSA and ECDSA keys are supported')
   })
 
   describe('go interop', () => {
