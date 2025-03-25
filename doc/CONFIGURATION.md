@@ -134,9 +134,6 @@ Some available peer discovery modules are:
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
 
-If you want to know more about libp2p peer discovery, you should read the following content:
-
-- https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 
 ### Content Routing
 
@@ -268,7 +265,7 @@ const node = await createLibp2p({
   ],
   streamMuxers: [yamux()],
   connectionEncrypters: [noise()],
-  peerDiscovery: [MulticastDNS],
+  peerDiscovery: [mdns()],
   services: {
     dht: kadDHT(),
     pubsub: gossipsub()
@@ -303,7 +300,16 @@ const node = await createLibp2p({
     })
   ]
 })
+
+node.addEventListener('peer:discovery', (event) => {
+  console.log('Discovered new peer:', event.detail.id.toString())
+  node.dial(event.detail.multiaddrs)
+})
 ```
+
+Note the `bootstrap` peer discovery module will automatically dial the bootstrap peers when the node starts up, while `mdns` will only trigger the `peer:discovery` event when a new peer is discovered.
+
+
 
 #### Customizing Pubsub
 
