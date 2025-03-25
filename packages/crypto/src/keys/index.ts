@@ -9,6 +9,7 @@
  */
 
 import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
+import { ECDSAPrivateKey as ECDSAPrivateKeyClass } from './ecdsa/ecdsa.js'
 import { ECDSA_P_256_OID, ECDSA_P_384_OID, ECDSA_P_521_OID } from './ecdsa/index.js'
 import { generateECDSAKeyPair, pkiMessageToECDSAPrivateKey, pkiMessageToECDSAPublicKey, unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from './ecdsa/utils.js'
 import { privateKeyLength as ed25519PrivateKeyLength, publicKeyLength as ed25519PublicKeyLength } from './ed25519/index.js'
@@ -16,7 +17,7 @@ import { generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd2551
 import * as pb from './keys.js'
 import { decodeDer } from './rsa/der.js'
 import { RSAES_PKCS1_V1_5_OID } from './rsa/index.js'
-import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1MessageToRSAPrivateKey, pkixMessageToRSAPublicKey } from './rsa/utils.js'
+import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1MessageToRSAPrivateKey, pkixMessageToRSAPublicKey, jwkToRSAPrivateKey } from './rsa/utils.js'
 import { privateKeyLength as secp256k1PrivateKeyLength, publicKeyLength as secp256k1PublicKeyLength } from './secp256k1/index.js'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { Curve } from './ecdsa/index.js'
@@ -236,4 +237,56 @@ function toCurve (curve: any): Curve {
   }
 
   throw new InvalidParametersError('Unsupported curve, should be P-256, P-384 or P-521')
+}
+
+/**
+ * Convert a libp2p RSA or ECDSA private key to a WebCrypto CryptoKeyPair
+ */
+export async function privateKeyToCryptoKeyPair (privateKey: PrivateKey): Promise<CryptoKeyPair> {
+  if (privateKey.type === 'RSA') {
+    return {
+      privateKey: await crypto.subtle.importKey('jwk', privateKey.jwk, {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: { name: 'SHA-256' }
+      }, true, ['sign']),
+      publicKey: await crypto.subtle.importKey('jwk', privateKey.publicKey.jwk, {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: { name: 'SHA-256' }
+      }, true, ['verify'])
+    }
+  }
+
+  if (privateKey.type === 'ECDSA') {
+    return {
+      privateKey: await crypto.subtle.importKey('jwk', privateKey.jwk, {
+        name: 'ECDSA',
+        namedCurve: privateKey.jwk.crv ?? 'P-256'
+      }, true, ['sign']),
+      publicKey: await crypto.subtle.importKey('jwk', privateKey.publicKey.jwk, {
+        name: 'ECDSA',
+        namedCurve: privateKey.publicKey.jwk.crv ?? 'P-256'
+      }, true, ['verify'])
+    }
+  }
+
+  throw new InvalidParametersError('Only RSA and ECDSA keys are supported')
+}
+
+/**
+ * Convert a RSA or ECDSA WebCrypto CryptoKeyPair to a libp2p private key
+ */
+export async function privateKeyFromCryptoKeyPair (keyPair: CryptoKeyPair): Promise<PrivateKey> {
+  if (keyPair.privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
+    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey)
+
+    return jwkToRSAPrivateKey(jwk)
+  }
+
+  if (keyPair.privateKey.algorithm.name === 'ECDSA') {
+    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey)
+
+    return new ECDSAPrivateKeyClass(jwk)
+  }
+
+  throw new InvalidParametersError('Only RSA and ECDSA keys are supported')
 }

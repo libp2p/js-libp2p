@@ -61,11 +61,6 @@ export function pkiMessageToECDSAPrivateKey (message: any): ECDSAPrivateKey {
       d,
       x,
       y
-    }, {
-      ...P_256_KEY_JWK,
-      key_ops: ['verify'],
-      x,
-      y
     })
   }
 
@@ -79,11 +74,6 @@ export function pkiMessageToECDSAPrivateKey (message: any): ECDSAPrivateKey {
       d,
       x,
       y
-    }, {
-      ...P_384_KEY_JWK,
-      key_ops: ['verify'],
-      x,
-      y
     })
   }
 
@@ -95,11 +85,6 @@ export function pkiMessageToECDSAPrivateKey (message: any): ECDSAPrivateKey {
       ...P_521_KEY_JWK,
       key_ops: ['sign'],
       d,
-      x,
-      y
-    }, {
-      ...P_521_KEY_JWK,
-      key_ops: ['verify'],
       x,
       y
     })
@@ -215,7 +200,7 @@ function getOID (curve?: string): Uint8Array {
 export async function generateECDSAKeyPair (curve: Curve = 'P-256'): Promise<ECDSAPrivateKey> {
   const key = await generateECDSAKey(curve)
 
-  return new ECDSAPrivateKeyClass(key.privateKey, key.publicKey)
+  return new ECDSAPrivateKeyClass(key.privateKey)
 }
 
 export function ensureECDSAKey (key: Uint8Array, length: number): Uint8Array {
