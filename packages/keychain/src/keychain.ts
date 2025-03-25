@@ -10,12 +10,13 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { exportPrivateKey } from './utils/export.js'
-import { importPrivateKey } from './utils/import.js'
-import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.js'
+import { exportPrivateKey, exporter } from './utils/export.js'
+import { importPrivateKey, importer } from './utils/import.js'
+import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo, X509Info } from './index.js'
 import type { Logger, PrivateKey } from '@libp2p/interface'
 
 const keyPrefix = '/pkcs8/'
+const certPrefix = '/x509/'
 const infoPrefix = '/info/'
 const privates = new WeakMap<object, { dek: string }>()
 
@@ -63,8 +64,8 @@ async function randomDelay (): Promise<void> {
 /**
  * Converts a key name into a datastore name
  */
-function DsName (name: string): Key {
-  return new Key(keyPrefix + name)
+function DsName (prefix: string, name: string): Key {
+  return new Key(prefix + name)
 }
 
 /**
@@ -206,7 +207,7 @@ export class Keychain implements KeychainInterface {
       await randomDelay()
       throw new InvalidParametersError('Key is required')
     }
-    const datastoreName = DsName(name)
+    const datastoreName = DsName(keyPrefix, name)
     const exists = await this.components.datastore.has(datastoreName)
     if (exists) {
       await randomDelay()
@@ -248,7 +249,7 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const datastoreName = DsName(name)
+    const datastoreName = DsName(keyPrefix, name)
     try {
       const res = await this.components.datastore.get(datastoreName)
       const pem = uint8ArrayToString(res)
@@ -273,7 +274,7 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const datastoreName = DsName(name)
+    const datastoreName = DsName(keyPrefix, name)
     const keyInfo = await this.findKeyByName(name)
     const batch = this.components.datastore.batch()
     batch.delete(datastoreName)
@@ -317,8 +318,8 @@ export class Keychain implements KeychainInterface {
       await randomDelay()
       throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }
-    const oldDatastoreName = DsName(oldName)
-    const newDatastoreName = DsName(newName)
+    const oldDatastoreName = DsName(keyPrefix, oldName)
+    const newDatastoreName = DsName(keyPrefix, newName)
     const oldInfoName = DsInfoName(oldName)
     const newInfoName = DsInfoName(newName)
 
@@ -342,6 +343,99 @@ export class Keychain implements KeychainInterface {
       await batch.commit()
       return keyInfo
     } catch (err: any) {
+      await randomDelay()
+      throw err
+    }
+  }
+
+  /**
+   * List all the certificates
+   */
+  async listX509 (): Promise<X509Info[]> {
+    const query = {
+      prefix: certPrefix
+    }
+
+    const info = []
+    for await (const value of this.components.datastore.query(query)) {
+      info.push({
+        name: value.key.toString().replace(certPrefix, '')
+      })
+    }
+
+    return info
+  }
+
+  async importX509 (name: string, pem: string): Promise<void> {
+    try {
+      if (!validateKeyName(name)) {
+        throw new InvalidParametersError(`Invalid certificate name '${name}'`)
+      }
+
+      if (pem == null) {
+        throw new InvalidParametersError('PEM is required')
+      }
+
+      if (!pem.includes('-----BEGIN CERTIFICATE-----') && !pem.includes('-----END CERTIFICATE-----')) {
+        throw new InvalidParametersError('PEM was invalid')
+      }
+
+      const datastoreName = DsName(certPrefix, name)
+
+      const exists = await this.components.datastore.has(datastoreName)
+      if (exists) {
+        throw new InvalidParametersError(`Certificate '${name}' already exists`)
+      }
+
+      const cached = privates.get(this)
+
+      if (cached == null) {
+        throw new InvalidParametersError('dek missing')
+      }
+
+      const dek = cached.dek
+      const dsPem = await exporter(uint8ArrayFromString(pem), dek)
+      await this.components.datastore.put(datastoreName, uint8ArrayFromString(dsPem))
+    } catch (err) {
+      await randomDelay()
+      throw err
+    }
+  }
+
+  async exportX509 (name: string): Promise<string> {
+    try {
+      if (!validateKeyName(name)) {
+        throw new InvalidParametersError(`Invalid key name '${name}'`)
+      }
+
+      const datastoreName = DsName(certPrefix, name)
+      const res = await this.components.datastore.get(datastoreName)
+      const encryptedPem = uint8ArrayToString(res)
+      const cached = privates.get(this)
+
+      if (cached == null) {
+        throw new InvalidParametersError('dek missing')
+      }
+
+      const dek = cached.dek
+      const buf = await importer(encryptedPem, dek)
+
+      return uint8ArrayToString(buf)
+    } catch (err: any) {
+      await randomDelay()
+      throw err
+    }
+  }
+
+  async removeX509 (name: string): Promise<void> {
+    try {
+      if (!validateKeyName(name) || name === this.self) {
+        throw new InvalidParametersError(`Invalid key name '${name}'`)
+      }
+
+      const datastoreName = DsName(certPrefix, name)
+      await this.components.datastore.delete(datastoreName)
+    } catch (err) {
       await randomDelay()
       throw err
     }
@@ -381,24 +475,33 @@ export class Keychain implements KeychainInterface {
         this.init.dek?.hash)
       : ''
     privates.set(this, { dek: newDek })
-    const keys = await this.listKeys()
-    for (const key of keys) {
-      const res = await this.components.datastore.get(DsName(key.name))
+
+    const batch = this.components.datastore.batch()
+
+    for (const key of await this.listKeys()) {
+      const res = await this.components.datastore.get(DsName(keyPrefix, key.name))
       const pem = uint8ArrayToString(res)
       const privateKey = await importPrivateKey(pem, oldDek)
       const password = newDek.toString()
       const keyAsPEM = await exportPrivateKey(privateKey, password, privateKey.type === 'RSA' ? 'pkcs-8' : 'libp2p-key')
 
-      // Update stored key
-      const batch = this.components.datastore.batch()
-      const keyInfo = {
-        name: key.name,
-        id: key.id
-      }
-      batch.put(DsName(key.name), uint8ArrayFromString(keyAsPEM))
-      batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-      await batch.commit()
+      // add to batch
+      batch.put(DsName(keyPrefix, key.name), uint8ArrayFromString(keyAsPEM))
     }
+
+    for (const key of await this.listX509()) {
+      // decrypt using old password and encrypt using new
+      const res = await this.components.datastore.get(DsName(certPrefix, key.name))
+      const pem = uint8ArrayToString(res)
+      const decrypted = await importer(pem, oldDek)
+      const encrypted = await exporter(decrypted, newDek)
+
+      // add to batch
+      batch.put(DsName(certPrefix, key.name), uint8ArrayFromString(encrypted))
+    }
+
+    await batch.commit()
+
     this.log('keychain reconstructed')
   }
 }
