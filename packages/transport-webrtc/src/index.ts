@@ -283,6 +283,7 @@ export interface TransportCertificate {
    * The hash of the certificate
    */
   certhash: string
+  notAfter: number
 }
 
 export type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents }
