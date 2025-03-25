@@ -174,7 +174,7 @@ describe('RSA', function () {
     expect(valid).to.be.eql(false)
   })
 
-  describe('throws error instead of crashing', () => {
+  it('throws error instead of crashing', () => {
     const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
     testGarbage('key.verify', key.verify.bind(key), 2, true)
     testGarbage(
