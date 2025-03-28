@@ -16,7 +16,7 @@ import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
-describe.only('dial queue', () => {
+describe('dial queue', () => {
   let components: {
     peerId: PeerId
     peerStore: StubbedInstance<PeerStore>
