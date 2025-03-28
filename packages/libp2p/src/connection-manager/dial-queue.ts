@@ -4,7 +4,7 @@ import { PeerMap } from '@libp2p/peer-collections'
 import { PriorityQueue } from '@libp2p/utils/priority-queue'
 import { resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import { Circuit } from '@multiformats/multiaddr-matcher'
+import { Circuit, PEER_ID } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -385,8 +385,9 @@ export class DialQueue {
         }
       }
 
-      // if we still don't have any addresses for this peer, try a lookup
-      // using the peer routing
+      // if we still don't have any addresses for this peer, or the only
+      // addresses we have are without any routing information (e.g.
+      // `/p2p/Qmfoo`), try a lookup using the peer routing
       if (addrs.length === 0) {
         this.log('looking up multiaddrs for %p in the peer routing', peerId)
 

@@ -16,7 +16,7 @@ import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
-describe('dial queue', () => {
+describe.only('dial queue', () => {
   let components: {
     peerId: PeerId
     peerStore: StubbedInstance<PeerStore>
@@ -82,6 +82,33 @@ describe('dial queue', () => {
     await expect(deferredConn.promise).to.eventually.be.undefined()
   })
 
+  it('should load addresses from the peer store when dialing a multiaddr that only contains a peer id', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
+    const foundAddress = multiaddr('/ip4/127.0.0.1/tcp/4001')
+    const ma = multiaddr(`/p2p/${peerId}`)
+
+    components.peerStore.get.withArgs(peerId).resolves({
+      id: peerId,
+      addresses: [{
+        multiaddr: foundAddress,
+        isCertified: false
+      }],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.withArgs(foundAddress.encapsulate(`/p2p/${peerId}`)).resolves(connection)
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(ma)).to.eventually.equal(connection)
+
+    expect(components.peerRouting.findPeer).to.have.property('called', false)
+  })
+
   it('should load addresses from the peer routing when peer id is not in the peer store', async () => {
     const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const connection = stubInterface<Connection>()
@@ -101,6 +128,28 @@ describe('dial queue', () => {
     dialer = new DialQueue(components)
 
     await expect(dialer.dial(peerId)).to.eventually.equal(connection)
+  })
+
+  it('should load addresses from the peer routing when dialing a multiaddr that only contains a peer id', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
+    const foundAddress = multiaddr('/ip4/127.0.0.1/tcp/4001')
+    const ma = multiaddr(`/p2p/${peerId}`)
+
+    components.peerStore.get.withArgs(peerId).rejects(new NotFoundError('Not found'))
+    components.peerRouting.findPeer.withArgs(peerId).resolves({
+      id: peerId,
+      multiaddrs: [
+        foundAddress
+      ]
+    })
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.withArgs(foundAddress.encapsulate(`/p2p/${peerId}`)).resolves(connection)
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(ma)).to.eventually.equal(connection)
   })
 
   it('should load addresses from the peer routing when none are present in the peer store', async () => {
