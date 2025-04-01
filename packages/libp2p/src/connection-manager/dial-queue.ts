@@ -385,8 +385,9 @@ export class DialQueue {
         }
       }
 
-      // if we still don't have any addresses for this peer, try a lookup
-      // using the peer routing
+      // if we still don't have any addresses for this peer, or the only
+      // addresses we have are without any routing information (e.g.
+      // `/p2p/Qmfoo`), try a lookup using the peer routing
       if (addrs.length === 0) {
         this.log('looking up multiaddrs for %p in the peer routing', peerId)
 
