@@ -111,6 +111,24 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.9](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.8...webrtc-v5.2.9) (2025-03-18)
+
+
+### Bug Fixes
+
+* only check for non-wildcard ports ([#3050](https://github.com/libp2p/js-libp2p/issues/3050)) ([a71c7c3](https://github.com/libp2p/js-libp2p/commit/a71c7c32b4615da731a1750964ee1be8ce63e4b8)), closes [#3049](https://github.com/libp2p/js-libp2p/issues/3049)
+* use getThinWaistAddresss function ([#3047](https://github.com/libp2p/js-libp2p/issues/3047)) ([a7ab9a4](https://github.com/libp2p/js-libp2p/commit/a7ab9a41b97504695d10045c1d50b2a610d69c24))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.8 to ^2.3.9
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.1 to ^6.4.2
+
 ## [5.2.8](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.7...webrtc-v5.2.8) (2025-03-12)
 
 

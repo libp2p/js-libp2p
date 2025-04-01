@@ -8,18 +8,18 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class RSAPublicKey implements RSAPublicKeyInterface {
   public readonly type = 'RSA'
-  private readonly _key: JsonWebKey
+  public readonly jwk: JsonWebKey
   private _raw?: Uint8Array
   private readonly _multihash: Digest<18, number>
 
-  constructor (key: JsonWebKey, digest: Digest<18, number>) {
-    this._key = key
+  constructor (jwk: JsonWebKey, digest: Digest<18, number>) {
+    this.jwk = jwk
     this._multihash = digest
   }
 
   get raw (): Uint8Array {
     if (this._raw == null) {
-      this._raw = utils.jwkToPkix(this._key)
+      this._raw = utils.jwkToPkix(this.jwk)
     }
 
     return this._raw
@@ -46,24 +46,24 @@ export class RSAPublicKey implements RSAPublicKeyInterface {
   }
 
   verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
-    return hashAndVerify(this._key, sig, data)
+    return hashAndVerify(this.jwk, sig, data)
   }
 }
 
 export class RSAPrivateKey implements RSAPrivateKeyInterface {
   public readonly type = 'RSA'
-  private readonly _key: JsonWebKey
+  public readonly jwk: JsonWebKey
   private _raw?: Uint8Array
   public readonly publicKey: RSAPublicKey
 
-  constructor (key: JsonWebKey, publicKey: RSAPublicKey) {
-    this._key = key
+  constructor (jwk: JsonWebKey, publicKey: RSAPublicKey) {
+    this.jwk = jwk
     this.publicKey = publicKey
   }
 
   get raw (): Uint8Array {
     if (this._raw == null) {
-      this._raw = utils.jwkToPkcs1(this._key)
+      this._raw = utils.jwkToPkcs1(this.jwk)
     }
 
     return this._raw
@@ -78,6 +78,6 @@ export class RSAPrivateKey implements RSAPrivateKeyInterface {
   }
 
   sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
-    return hashAndSign(this._key, message)
+    return hashAndSign(this.jwk, message)
   }
 }

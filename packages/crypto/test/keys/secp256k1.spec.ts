@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
 import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
 import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
@@ -199,6 +199,13 @@ describe('crypto functions', () => {
     expect(decompressed).to.have.lengthOf(65)
     const recompressed = compressSecp256k1PublicKey(decompressed)
     expect(recompressed).to.equalBytes(pubKey)
+  })
+
+  it('fails to export to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('secp256k1')
+
+    await expect(privateKeyToCryptoKeyPair(key)).to.eventually.be.rejected
+      .with.property('message', 'Only RSA and ECDSA keys are supported')
   })
 })
 

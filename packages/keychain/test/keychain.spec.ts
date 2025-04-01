@@ -10,6 +10,7 @@ import { Key } from 'interface-datastore/key'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Keychain as KeychainClass } from '../src/keychain.js'
 import { importPrivateKey } from '../src/utils/import.js'
+import { createSelfSigned } from './fixtures/create-certificate.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
 import type { PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -165,7 +166,7 @@ describe('keychain', () => {
   })
 
   describe('Ed25519 keys', () => {
-    const keyName = 'my custom key'
+    const keyName = 'my custom Ed25519 key'
 
     it('can be an Ed25519 key', async () => {
       const key = await generateKeyPair('Ed25519')
@@ -184,8 +185,39 @@ describe('keychain', () => {
     })
 
     it('can export/import a key', async () => {
-      const keyName = 'a new key'
+      const keyName = 'a new Ed25519 key'
       const key = await generateKeyPair('Ed25519')
+      const keyInfo = await ks.importKey(keyName, key)
+      const exportedKey = await ks.exportKey(keyName)
+      // remove it so we can re-import it
+      await ks.removeKey(keyName)
+      const importedKey = await ks.importKey(keyName, exportedKey)
+      expect(importedKey.id).to.eql(keyInfo.id)
+    })
+  })
+
+  describe('ECDSA keys', () => {
+    const keyName = 'my custom ECDSA key'
+
+    it('can be an ECDSA key', async () => {
+      const key = await generateKeyPair('ECDSA')
+      const keyInfo = await ks.importKey(keyName, key)
+
+      expect(keyInfo).to.exist()
+      expect(keyInfo).to.have.property('name', keyName)
+      expect(keyInfo).to.have.property('id')
+    })
+
+    it('does not overwrite existing key', async () => {
+      const key = await generateKeyPair('ECDSA')
+
+      await expect(ks.importKey(keyName, key)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
+    })
+
+    it('can export/import a key', async () => {
+      const keyName = 'a new ECDSA key'
+      const key = await generateKeyPair('ECDSA')
       const keyInfo = await ks.importKey(keyName, key)
       const exportedKey = await ks.exportKey(keyName)
       // remove it so we can re-import it
@@ -374,6 +406,10 @@ describe('keychain', () => {
       const key = await generateKeyPair('RSA', 2048)
       await kc.importKey('keyCreatedWithOldPassword', key)
 
+      const certKey = await generateKeyPair('ECDSA')
+      const cert = await createSelfSigned(certKey)
+      await kc.importX509('certCreatedWithOldPassword', cert.toString('pem'))
+
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       // Get Key PEM from datastore
@@ -406,6 +442,10 @@ describe('keychain', () => {
       // Dek with new password should work:
       await expect(importPrivateKey(pem, newDek))
         .to.eventually.have.property('type', 'RSA')
+
+      // Cert with new password should work:
+      await expect(kc.exportX509('certCreatedWithOldPassword'))
+        .to.eventually.equal(cert.toString('pem'))
     }).timeout(10000)
   })
 
