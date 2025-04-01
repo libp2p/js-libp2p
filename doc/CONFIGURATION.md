@@ -127,13 +127,12 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
-- [@chainsafe/discv5](https://github.com/chainsafe/discv5)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) ([spec](https://github.com/libp2p/specs/blob/master/discovery/mdns.md))
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht) ([spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md))
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) (typically used together with @libp2p/kad-dht)
+- [@chainsafe/discv5](https://github.com/chainsafe/discv5) ([spec](https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md))
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
-
 
 ### Content Routing
 
