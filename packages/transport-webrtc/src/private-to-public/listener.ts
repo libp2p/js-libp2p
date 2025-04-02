@@ -11,6 +11,8 @@ import { connect } from './utils/connect.js'
 import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
+import { getStoredCertificate, generateAndStoreCertificate, DEFAULT_CERTIFICATE_VALIDITY_DAYS, DEFAULT_MIN_REMAINING_VALIDITY_DAYS } from './utils/certificate-store.js'
+import type { Keychain } from '@libp2p/keychain'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
@@ -25,6 +27,7 @@ export interface WebRTCDirectListenerComponents {
   logger: ComponentLogger
   upgrader: Upgrader
   metrics?: Metrics
+  keychain?: Keychain
 }
 
 export interface WebRTCDirectListenerInit {
@@ -34,6 +37,25 @@ export interface WebRTCDirectListenerInit {
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   useLibjuice?: boolean
+  certificate?: {
+    /**
+     * Number of days a certificate should be valid for
+     * @default 365
+     */
+    validityDays?: number
+    
+    /**
+     * Minimum number of days remaining before certificate regeneration
+     * @default 30
+     */
+    minRemainingValidityDays?: number
+    
+    /**
+     * Whether to store certificates in the keychain
+     * @default true
+     */
+    persistInKeychain?: boolean
+  }
 }
 
 export interface WebRTCListenerMetrics {
@@ -134,31 +156,70 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         .then(async (): Promise<StunServer> => {
           // ensure we have a certificate
           if (this.certificate == null) {
-            this.log.trace('creating TLS certificate')
-            const keyPair = await crypto.subtle.generateKey({
-              name: 'ECDSA',
-              namedCurve: 'P-256'
-            }, true, ['sign', 'verify'])
-
-            const certificate = await generateTransportCertificate(keyPair, {
-              days: 365 * 10
-            })
-
-            if (this.certificate == null) {
-              this.certificate = certificate
+            // If certificates were provided in init, use the first one
+            if (this.init.certificates?.length ?? 0 > 0) {
+              this.log.trace('using provided TLS certificate')
+              this.certificate = this.init.certificates![0]
+            } else {
+              this.log.trace('checking for stored TLS certificate')
+              const certOptions = {
+                validityDays: this.init.certificate?.validityDays ?? DEFAULT_CERTIFICATE_VALIDITY_DAYS,
+                minRemainingValidityDays: this.init.certificate?.minRemainingValidityDays ?? DEFAULT_MIN_REMAINING_VALIDITY_DAYS
+              }
+              
+              const useKeychain = this.init.certificate?.persistInKeychain !== false
+              
+              // Only try to use the keychain if it's available and not disabled
+              if (useKeychain && this.components.keychain != null) {
+                try {
+                  // Try to retrieve stored certificate
+                  const storedCertificate = await getStoredCertificate(
+                    this.components.keychain,
+                    certOptions,
+                    this.log
+                  )
+                  
+                  if (storedCertificate != null) {
+                    this.log.trace('using stored TLS certificate')
+                    this.certificate = storedCertificate
+                  } else {
+                    this.log.trace('generating new TLS certificate')
+                    this.certificate = await generateAndStoreCertificate(
+                      this.components.keychain,
+                      certOptions,
+                      this.log
+                    )
+                  }
+                } catch (err) {
+                  this.log.error('error retrieving certificate from keychain, creating new one', err)
+                  this.certificate = await generateAndStoreCertificate(
+                    useKeychain ? this.components.keychain : undefined,
+                    certOptions,
+                    this.log
+                  )
+                }
+              } else {
+                // No keychain available or disabled, create a new certificate
+                this.log.trace('creating new TLS certificate (keychain disabled or unavailable)')
+                this.certificate = await generateAndStoreCertificate(
+                  undefined,
+                  certOptions,
+                  this.log
+                )
+              }
             }
           }
-
+  
           if (port === 0) {
             // libjuice doesn't map 0 to a random free port so we have to do it
             // ourselves
             this.log.trace('searching for free port')
             port = await getPort()
           }
-
+  
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
             const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
-
+  
             this.incomingConnection(ufrag, remoteHost, remotePort, signal)
               .catch(err => {
                 this.log.error('error processing incoming STUN request', err)
