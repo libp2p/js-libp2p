@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package http;
+
+// Need to include some types from previous files
+// These would typically be imported but since protons doesn't support imports
+// we need to include them directly
+
+// Parameter for transfer coding
+message TransferCodingParameter {
+  string name = 1;
+  string value = 2;
+}
+
+// From transfer-coding.proto
+message TransferCoding {
+  string coding = 1;  // Transfer coding name (chunked, gzip, etc.)
+  repeated TransferCodingParameter parameters = 2;  // Optional parameters
+}
+
+message TransferEncodings {
+  repeated TransferCoding encodings = 1;  // Applied in order
+  bool chunked = 2;  // Convenience flag for the common chunked encoding
+}
+
+// Representation metadata
+message RepresentationMetadata {
+  string content_type = 1;           // Media type and parameters
+  repeated string content_encoding = 2; // Applied encodings
+  repeated string content_language = 3; // Languages
+  string content_location = 4;      // URI for the representation
+  int64 content_length = 5;         // Length in octets
+  
+  // Validators
+  string etag = 6;                 // Entity tag
+  string last_modified = 7;        // Last-Modified timestamp
+}
+
+// Content representation
+message Content {
+  bytes data = 1;                  // Raw content data
+  string media_type = 2;           // Content-Type value
+  repeated string encodings = 3;   // Content-Encoding values
+  repeated string languages = 4;   // Content-Language values
+  string location = 5;             // Content-Location value
+  int64 length = 6;                // Content-Length value
+}
+
+// Binary content handling
+message BinaryContent {
+  bytes data = 1;  // Raw binary data
+  
+  // Source information
+  enum ContentSource {
+    UNKNOWN = 0;
+    LITERAL = 1;    // Literal data in the message
+    FILE = 2;       // External file reference
+    STREAM = 3;     // Streaming source
+  }
+  ContentSource source = 2;
+  
+  // Optional metadata for external sources
+  string source_reference = 3;  // File path, stream ID, etc.
+  int64 offset = 4;  // Byte offset in the source
+  int64 length = 5;  // Total content length if known
+}
+
+// Message framing information
+message MessageFraming {
+  oneof framing_method {
+    int64 content_length = 1;  // Content-Length value if present
+    TransferEncodings transfer_encoding = 2;  // Transfer-Encoding if present
+    bool connection_close = 3;  // Message ends when connection closes
+  }
+  
+  // Message completeness status
+  bool is_complete = 4;
+}

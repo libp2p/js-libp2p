@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package http;
+
+// URI components message
+message Uri {
+  string scheme = 1;         // http, https, etc.
+  string authority = 2;      // host[:port]
+  string path = 3;           // /path/to/resource
+  string query = 4;          // ?param=value
+  string fragment = 5;       // #fragment (not sent in requests)
+}
+
+// Origin server identification
+message Origin {
+  string scheme = 1;     // http or https
+  string host = 2;       // Normalized to lowercase
+  int32 port = 3;        // Default: 80 for http, 443 for https
+}
