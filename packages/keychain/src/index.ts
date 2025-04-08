@@ -105,13 +105,6 @@ export interface KeyInfo {
   name: string
 }
 
-export interface X509Info {
-  /**
-   * The local key name
-   */
-  name: string
-}
-
 export interface Keychain {
   /**
    * Find a key by name
@@ -207,32 +200,6 @@ export interface Keychain {
    * ```
    */
   listKeys(): Promise<KeyInfo[]>
-
-  /**
-   * Import an X509 certificate in PEM format
-   */
-  importX509 (name: string, pem: string): Promise<void>
-
-  /**
-   * Export an X509 certificate in PEM format
-   */
-  exportX509 (name: string): Promise<string>
-
-  /**
-   * Removes an X509 certificate from the keychain
-   */
-  removeX509 (name: string): Promise<void>
-
-  /**
-   * List all certificates.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const certs = await libp2p.keychain.listX509()
-   * ```
-   */
-  listX509(): Promise<X509Info[]>
 
   /**
    * Rotate keychain password and re-encrypt all associated keys
