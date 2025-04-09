@@ -1,15 +1,15 @@
 import { randomBytes } from '@libp2p/crypto'
-import { ProtocolError, TimeoutError, setMaxListeners } from '@libp2p/interface'
+import { ProtocolError, TimeoutError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { byteStream } from 'it-byte-stream'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
-import type { PingServiceComponents, PingServiceInit, PingService as PingServiceInterface } from './index.js'
+import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, Startable, IncomingStreamData } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export class PingService implements Startable, PingServiceInterface {
+export class Ping implements Startable, PingInterface {
   public readonly protocol: string
-  private readonly components: PingServiceComponents
+  private readonly components: PingComponents
   private started: boolean
   private readonly timeout: number
   private readonly maxInboundStreams: number
@@ -17,7 +17,7 @@ export class PingService implements Startable, PingServiceInterface {
   private readonly runOnLimitedConnection: boolean
   private readonly log: Logger
 
-  constructor (components: PingServiceComponents, init: PingServiceInit = {}) {
+  constructor (components: PingComponents, init: PingInit = {}) {
     this.components = components
     this.log = components.logger.forComponent('libp2p:ping')
     this.started = false
@@ -31,6 +31,10 @@ export class PingService implements Startable, PingServiceInterface {
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/ping'
+
+  readonly [serviceCapabilities]: string[] = [
+    '@libp2p/ping'
+  ]
 
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, this.handleMessage, {

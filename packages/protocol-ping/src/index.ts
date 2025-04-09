@@ -22,16 +22,21 @@
  * ```
  */
 
-import { PingService as PingServiceClass } from './ping.js'
+import { Ping as PingClass } from './ping.js'
 import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export interface PingService {
+export interface Ping {
   ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
 }
 
-export interface PingServiceInit {
+/**
+ * @deprecated Use the `Ping` export instead
+ */
+export type PingService = Ping
+
+export interface PingInit {
   protocolPrefix?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
@@ -43,14 +48,19 @@ export interface PingServiceInit {
   timeout?: number
 }
 
-export interface PingServiceComponents {
+/**
+ * @deprecated Use the `PingInit` export instead
+ */
+export type PingServiceInit = PingInit
+
+export interface PingComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
   logger: ComponentLogger
 }
 
-export function ping (init: PingServiceInit = {}): (components: PingServiceComponents) => PingService {
-  return (components) => new PingServiceClass(components, init)
+export function ping (init: PingInit = {}): (components: PingComponents) => Ping {
+  return (components) => new PingClass(components, init)
 }
 
 export { PING_PROTOCOL } from './constants.js'
