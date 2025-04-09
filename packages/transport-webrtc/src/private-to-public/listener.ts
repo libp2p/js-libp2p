@@ -84,6 +84,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
     // inform the transport manager our addresses have changed
     init.emitter.addEventListener('certificate:renew', evt => {
+      this.log('received new TLS certificate', evt.detail.certhash)
       this.certificate = evt.detail
       this.safeDispatchEvent('listening')
     })
