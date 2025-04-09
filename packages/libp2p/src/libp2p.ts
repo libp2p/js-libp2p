@@ -109,6 +109,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     // Set up connection protector if configured
     if (init.connectionProtector != null) {
+      // @ts-expect-error defaultComponents is missing service component types added later
       this.configureComponent('connectionProtector', init.connectionProtector(components))
     }
 
