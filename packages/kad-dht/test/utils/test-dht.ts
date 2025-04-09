@@ -14,7 +14,7 @@ import { type KadDHT, type KadDHTComponents, type KadDHTInit } from '../../src/i
 import { KadDHT as KadDHTClass } from '../../src/kad-dht.js'
 import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 
 export class TestDHT {
   private readonly peers: Map<string, { dht: KadDHT, registrar: Registrar }>
@@ -39,7 +39,7 @@ export class TestDHT {
       connectionManager: stubInterface<ConnectionManager>(),
       events,
       logger: defaultLogger(),
-      ping: stubInterface<PingService>()
+      ping: stubInterface<Ping>()
     }
     components.connectionManager = mockConnectionManager({
       ...components,

@@ -22,13 +22,13 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import type { Network } from '../src/network.js'
 import type { Bucket } from '../src/routing-table/k-bucket.js'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 
 describe('Routing Table', () => {
   let table: RoutingTable
   let components: RoutingTableComponents
   let network: StubbedInstance<Network>
-  let ping: StubbedInstance<PingService>
+  let ping: StubbedInstance<Ping>
 
   beforeEach(async function () {
     this.timeout(20 * 1000)

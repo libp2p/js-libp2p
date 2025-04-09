@@ -19,7 +19,7 @@ import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
 import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Datastore } from 'interface-datastore'
 
 interface StubbedKadDHTComponents {
@@ -32,7 +32,7 @@ interface StubbedKadDHTComponents {
   datastore: Datastore
   events: TypedEventTarget<any>
   logger: ComponentLogger
-  ping: PingService
+  ping: Ping
 }
 
 const PROTOCOL = '/test/dht/1.0.0'
@@ -109,7 +109,7 @@ describe('content routing', () => {
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger(),
-      ping: stubInterface<PingService>()
+      ping: stubInterface<Ping>()
     }
 
     dht = kadDHT({
@@ -243,7 +243,7 @@ describe('peer routing', () => {
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
       logger: defaultLogger(),
-      ping: stubInterface<PingService>()
+      ping: stubInterface<Ping>()
     }
 
     dht = kadDHT({

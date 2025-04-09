@@ -9,7 +9,7 @@ import { KBucket, isLeafBucket } from './k-bucket.js'
 import type { Bucket, LeafBucket, Peer } from './k-bucket.js'
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 export const KBUCKET_SIZE = 20
@@ -58,7 +58,7 @@ export interface RoutingTableComponents {
   peerStore: PeerStore
   metrics?: Metrics
   logger: ComponentLogger
-  ping: PingService
+  ping: Ping
 }
 
 export interface RoutingTableEvents {
