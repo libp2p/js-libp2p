@@ -3,14 +3,13 @@ import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { anySignal } from 'any-signal'
 import parallel from 'it-parallel'
-import { EventTypes } from '../index.js'
-import { MessageType } from '../message/dht.js'
 import * as utils from '../utils.js'
 import { ClosestPeers } from './closest-peers.js'
 import { KBucket, isLeafBucket } from './k-bucket.js'
 import type { Bucket, LeafBucket, Peer } from './k-bucket.js'
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
+import type { PingService } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 export const KBUCKET_SIZE = 20
@@ -59,6 +58,7 @@ export interface RoutingTableComponents {
   peerStore: PeerStore
   metrics?: Metrics
   logger: ComponentLogger
+  ping: PingService
 }
 
 export interface RoutingTableEvents {
@@ -379,24 +379,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     try {
       this.log('pinging contact %p', contact.peerId)
+      await this.components.ping.ping(contact.peerId, options)
+      this.log('contact %p ping ok', contact.peerId)
 
-      for await (const event of this.network.sendRequest(contact.peerId, { type: MessageType.PING }, options)) {
-        if (event.type === EventTypes.PEER_RESPONSE) {
-          if (event.messageType === MessageType.PING) {
-            this.log('contact %p ping ok', contact.peerId)
+      this.safeDispatchEvent('peer:ping', {
+        detail: contact.peerId
+      })
 
-            this.safeDispatchEvent('peer:ping', {
-              detail: contact.peerId
-            })
-
-            return true
-          }
-
-          return false
-        }
-      }
-
-      return false
+      return true
     } catch (err: any) {
       this.log('error pinging old contact %p - %e', contact.peerId, err)
       stream?.abort(err)
