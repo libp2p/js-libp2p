@@ -1,17 +1,22 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { transportSymbol, type Upgrader, type Listener, type Transport } from '@libp2p/interface'
+import { transportSymbol, start, stop } from '@libp2p/interface'
+import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
+import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
-import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import { CODEC_CERTHASH } from '../src/constants.js'
+import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.js'
+import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import type { Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
@@ -36,10 +41,12 @@ describe('WebRTCDirect Transport', () => {
 
   beforeEach(async () => {
     const privateKey = await generateKeyPair('Ed25519')
+    const datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
     components = {
       peerId: peerIdFromPrivateKey(privateKey),
-      logger: defaultLogger(),
+      logger,
       transportManager: stubInterface<TransportManager>(),
       privateKey,
       upgrader: stubInterface<Upgrader>({
@@ -49,11 +56,19 @@ describe('WebRTCDirect Transport', () => {
             signal
           ])
         }
+      }),
+      datastore,
+      keychain: keychain()({
+        datastore,
+        logger
       })
     }
 
     upgrader = stubInterface<Upgrader>()
     transport = new WebRTCDirectTransport(components)
+
+    await start(transport)
+
     listener = transport.createListener({
       upgrader
     })
@@ -218,6 +233,7 @@ describe('WebRTCDirect Transport', () => {
       ...components,
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
+    await start(otherTransport)
     const otherTransportIp4Listener = otherTransport.createListener({
       upgrader
     })
@@ -274,4 +290,56 @@ describe('WebRTCDirect Transport', () => {
     await listener.close()
     await otherListener.close()
   })
+
+  it('should reuse the same certificate after a restart', async function () {
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
+    await stop(transport)
+
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/0')
+
+    const transport1 = new WebRTCDirectTransport(components)
+    await start(transport1)
+    const listener1 = transport1.createListener({
+      upgrader
+    })
+    await listener1.listen(ipv4)
+
+    const certHashes1 = getCerthashes(listener1.getAddrs())
+    await listener1.close()
+    await stop(transport1)
+
+    const transport2 = new WebRTCDirectTransport(components)
+    await start(transport2)
+    const listener2 = transport2.createListener({
+      upgrader
+    })
+    await listener2.listen(ipv4)
+
+    const certHashes2 = getCerthashes(listener2.getAddrs())
+    await listener2.close()
+    await stop(transport2)
+
+    expect(certHashes1).to.have.lengthOf(1)
+    expect(certHashes1).to.have.nested.property('[0]').that.is.a('string')
+    expect(certHashes1).to.deep.equal(certHashes2)
+  })
 })
+
+function getCerthashes (addrs: Multiaddr[]): string[] {
+  const output: string[] = []
+
+  addrs
+    .forEach(ma => {
+      ma.stringTuples()
+        .forEach(([key, value]) => {
+          if (key === CODEC_CERTHASH && value != null) {
+            output.push(value)
+          }
+        })
+    })
+
+  return output
+}
