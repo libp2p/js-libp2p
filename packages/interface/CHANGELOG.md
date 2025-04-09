@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.8.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.7.0...interface-v2.8.0) (2025-04-09)
+
+
+### Features
+
+* expose jwk prop on ECDSA and RSA keys ([#3060](https://github.com/libp2p/js-libp2p/issues/3060)) ([78cd7d5](https://github.com/libp2p/js-libp2p/commit/78cd7d53ec18a1495843d5de013f5b26cf232b00))
+* support ECDSA private keys ([#3059](https://github.com/libp2p/js-libp2p/issues/3059)) ([fc51221](https://github.com/libp2p/js-libp2p/commit/fc512211024778d4aefb04411e815d977e91e03a))
+
 ## [2.7.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.6.1...interface-v2.7.0) (2025-03-03)
 
 

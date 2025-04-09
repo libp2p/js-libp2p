@@ -50,6 +50,26 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [2.0.28](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.27...ping-v2.0.28) (2025-04-09)
+
+
+### Bug Fixes
+
+* export ping service capabilities ([#3075](https://github.com/libp2p/js-libp2p/issues/3075)) ([53a9be5](https://github.com/libp2p/js-libp2p/commit/53a9be54e5b8bbf64ee851e918a73d26a429fe22))
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/interface-internal bumped from ^2.3.9 to ^2.3.10
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+
 ## [2.0.27](https://github.com/libp2p/js-libp2p/compare/ping-v2.0.26...ping-v2.0.27) (2025-03-18)
 
 

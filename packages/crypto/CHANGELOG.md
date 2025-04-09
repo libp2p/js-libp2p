@@ -17,6 +17,22 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.0](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.15...crypto-v5.1.0) (2025-04-09)
+
+
+### Features
+
+* add functions to convert PrivateKey to CryptoKeyPair ([#3061](https://github.com/libp2p/js-libp2p/issues/3061)) ([0b9090a](https://github.com/libp2p/js-libp2p/commit/0b9090aea0ef0c9d5abca96f5295d6fe08a08aef))
+* expose jwk prop on ECDSA and RSA keys ([#3060](https://github.com/libp2p/js-libp2p/issues/3060)) ([78cd7d5](https://github.com/libp2p/js-libp2p/commit/78cd7d53ec18a1495843d5de013f5b26cf232b00))
+* support ECDSA private keys ([#3059](https://github.com/libp2p/js-libp2p/issues/3059)) ([fc51221](https://github.com/libp2p/js-libp2p/commit/fc512211024778d4aefb04411e815d977e91e03a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+
 ## [5.0.15](https://github.com/libp2p/js-libp2p/compare/crypto-v5.0.14...crypto-v5.0.15) (2025-03-03)
 
 

@@ -106,6 +106,35 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [15.0.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.15...kad-dht-v15.0.0) (2025-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* `@libp2p/kad-dht` now depends on `@libp2p/ping` - please configure this in your service map
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+* use libp2p ping instad of kad ping ([#3074](https://github.com/libp2p/js-libp2p/issues/3074)) ([4f37aff](https://github.com/libp2p/js-libp2p/commit/4f37aff532282db1b9a544161e3becc4533ae402))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/interface-internal bumped from ^2.3.9 to ^2.3.10
+    * @libp2p/peer-collections bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/ping bumped from ^2.0.27 to ^2.0.28
+    * @libp2p/utils bumped from ^6.6.0 to ^6.6.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-store bumped from ^11.1.2 to ^11.1.3
+
 ## [14.2.15](https://github.com/libp2p/js-libp2p/compare/kad-dht-v14.2.14...kad-dht-v14.2.15) (2025-03-18)
 
 
