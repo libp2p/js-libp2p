@@ -3,37 +3,38 @@ import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
 import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT } from '../constants.js'
 import { connect } from './utils/connect.js'
-import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
+import type { WebRTCDirectTransportCertificateEvents } from './transport.js'
 import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
-import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
+import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey, TypedEventTarget } from '@libp2p/interface'
+import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const crypto = new Crypto()
+import type { Datastore } from 'interface-datastore'
 
 export interface WebRTCDirectListenerComponents {
   peerId: PeerId
   privateKey: PrivateKey
   logger: ComponentLogger
   upgrader: Upgrader
+  keychain?: Keychain
+  datastore: Datastore
   metrics?: Metrics
 }
 
 export interface WebRTCDirectListenerInit {
   upgrader: Upgrader
-  certificates?: TransportCertificate[]
+  certificate: TransportCertificate
   maxInboundStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
-  useLibjuice?: boolean
+  emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
 }
 
 export interface WebRTCListenerMetrics {
@@ -53,7 +54,7 @@ let UDP_MUX_LISTENERS: UDPMuxServer[] = []
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private listeningMultiaddr?: Multiaddr
-  private certificate?: TransportCertificate
+  private certificate: TransportCertificate
   private stunServer?: StunServer
   private readonly connections: Map<string, DirectRTCPeerConnection>
   private readonly log: Logger
@@ -69,8 +70,8 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.components = components
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
-    this.certificate = init.certificates?.[0]
     this.shutdownController = new AbortController()
+    this.certificate = init.certificate
 
     if (components.metrics != null) {
       this.metrics = {
@@ -80,6 +81,12 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         })
       }
     }
+
+    // inform the transport manager our addresses have changed
+    init.emitter.addEventListener('certificate:renew', evt => {
+      this.certificate = evt.detail
+      this.safeDispatchEvent('listening')
+    })
   }
 
   async listen (ma: Multiaddr): Promise<void> {
@@ -132,23 +139,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       isIPv6: family === 6,
       server: Promise.resolve()
         .then(async (): Promise<StunServer> => {
-          // ensure we have a certificate
-          if (this.certificate == null) {
-            this.log.trace('creating TLS certificate')
-            const keyPair = await crypto.subtle.generateKey({
-              name: 'ECDSA',
-              namedCurve: 'P-256'
-            }, true, ['sign', 'verify'])
-
-            const certificate = await generateTransportCertificate(keyPair, {
-              days: 365 * 10
-            })
-
-            if (this.certificate == null) {
-              this.certificate = certificate
-            }
-          }
-
           if (port === 0) {
             // libjuice doesn't map 0 to a random free port so we have to do it
             // ourselves

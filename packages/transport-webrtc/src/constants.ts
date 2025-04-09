@@ -110,3 +110,23 @@ export const MUXER_PROTOCOL = '/webrtc'
  * The protocol used for the signalling stream protocol
  */
 export const SIGNALING_PROTOCOL = '/webrtc-signaling/0.0.1'
+
+/**
+ * Used to store generated certificates in the datastore
+ */
+export const DEFAULT_CERTIFICATE_DATASTORE_KEY = '/libp2p/webrtc-direct/certificate'
+
+/**
+ * Used to store the certificate private key in the keychain
+ */
+export const DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME = 'webrtc-direct-certificate-private-key'
+
+/**
+ * The default type of certificate private key
+ */
+export const DEFAULT_CERTIFICATE_PRIVATE_KEY_TYPE = 'ECDSA'
+
+/**
+ * How long the certificate is valid for
+ */
+export const DEFAULT_CERTIFICATE_LIFESPAN = 365
