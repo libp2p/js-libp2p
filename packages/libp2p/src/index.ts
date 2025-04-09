@@ -92,45 +92,45 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
   /**
    * Transports are low-level communication channels
    */
-  transports?: Array<(components: Components) => Transport>
+  transports?: Array<(components: Components & T) => Transport>
 
   /**
    * Stream muxers allow the creation of many data streams over a single
    * connection.
    */
-  streamMuxers?: Array<(components: Components) => StreamMuxerFactory>
+  streamMuxers?: Array<(components: Components & T) => StreamMuxerFactory>
 
   /**
    * Connection encrypters ensure that data sent over connections cannot be
    * eavesdropped on, and that the remote peer possesses the private key that
    * corresponds to the public key that it's Peer ID is derived from.
    */
-  connectionEncrypters?: Array<(components: Components) => ConnectionEncrypter>
+  connectionEncrypters?: Array<(components: Components & T) => ConnectionEncrypter>
 
   /**
    * Peer discovery mechanisms allow finding peers on the network
    */
-  peerDiscovery?: Array<(components: Components) => PeerDiscovery>
+  peerDiscovery?: Array<(components: Components & T) => PeerDiscovery>
 
   /**
    * Peer routers provide implementations for peer routing queries
    */
-  peerRouters?: Array<(components: Components) => PeerRouting>
+  peerRouters?: Array<(components: Components & T) => PeerRouting>
 
   /**
    * Content routers provide implementations for content routing queries
    */
-  contentRouters?: Array<(components: Components) => ContentRouting>
+  contentRouters?: Array<(components: Components & T) => ContentRouting>
 
   /**
    * A Metrics implementation can be supplied to collect metrics on this node
    */
-  metrics?(components: Components): Metrics
+  metrics?(components: Components & T): Metrics
 
   /**
    * A ConnectionProtector can be used to create a secure overlay on top of the network using pre-shared keys
    */
-  connectionProtector?(components: Components): ConnectionProtector
+  connectionProtector?(components: Components & T): ConnectionProtector
 
   /**
    * Arbitrary libp2p modules
