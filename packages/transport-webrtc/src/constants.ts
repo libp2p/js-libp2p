@@ -129,4 +129,9 @@ export const DEFAULT_CERTIFICATE_PRIVATE_KEY_TYPE = 'ECDSA'
 /**
  * How long the certificate is valid for
  */
-export const DEFAULT_CERTIFICATE_LIFESPAN = 365
+export const DEFAULT_CERTIFICATE_LIFESPAN = 1_209_600_000
+
+/**
+ * Renew the certificate this long before it expires
+ */
+export const DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD = 86_400_000
