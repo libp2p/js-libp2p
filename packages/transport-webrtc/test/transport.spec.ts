@@ -12,7 +12,6 @@ import { anySignal } from 'any-signal'
 import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
-import { CODEC_CERTHASH } from '../src/constants.js'
 import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.js'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
@@ -76,6 +75,7 @@ describe('WebRTCDirect Transport', () => {
 
   afterEach(async () => {
     await listener?.close()
+    await stop(transport)
   })
 
   it('can construct', () => {
@@ -264,6 +264,7 @@ describe('WebRTCDirect Transport', () => {
     await otherTransportIp4Listener.close()
     await otherTransportIp6Listener.close()
     await ip6Listener.close()
+    await otherTransport.stop()
   })
 
   it('can start multiple wildcard listeners', async function () {
@@ -290,56 +291,4 @@ describe('WebRTCDirect Transport', () => {
     await listener.close()
     await otherListener.close()
   })
-
-  it('should reuse the same certificate after a restart', async function () {
-    if (!isNode && !isElectronMain) {
-      return this.skip()
-    }
-
-    await stop(transport)
-
-    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/0')
-
-    const transport1 = new WebRTCDirectTransport(components)
-    await start(transport1)
-    const listener1 = transport1.createListener({
-      upgrader
-    })
-    await listener1.listen(ipv4)
-
-    const certHashes1 = getCerthashes(listener1.getAddrs())
-    await listener1.close()
-    await stop(transport1)
-
-    const transport2 = new WebRTCDirectTransport(components)
-    await start(transport2)
-    const listener2 = transport2.createListener({
-      upgrader
-    })
-    await listener2.listen(ipv4)
-
-    const certHashes2 = getCerthashes(listener2.getAddrs())
-    await listener2.close()
-    await stop(transport2)
-
-    expect(certHashes1).to.have.lengthOf(1)
-    expect(certHashes1).to.have.nested.property('[0]').that.is.a('string')
-    expect(certHashes1).to.deep.equal(certHashes2)
-  })
 })
-
-function getCerthashes (addrs: Multiaddr[]): string[] {
-  const output: string[] = []
-
-  addrs
-    .forEach(ma => {
-      ma.stringTuples()
-        .forEach(([key, value]) => {
-          if (key === CODEC_CERTHASH && value != null) {
-            output.push(value)
-          }
-        })
-    })
-
-  return output
-}

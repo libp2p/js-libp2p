@@ -1,5 +1,5 @@
 import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
-import { NotFoundError, NotStartedError, TypedEventEmitter, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { InvalidParametersError, NotFoundError, NotStartedError, TypedEventEmitter, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } from '@peculiar/x509'
@@ -9,7 +9,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME } from '../constants.js'
+import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
 import { genUfrag } from '../util.js'
 import { WebRTCDirectListener } from './listener.js'
 import { connect } from './utils/connect.js'
@@ -22,8 +22,6 @@ import type { TransportManager } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
-
-const ONE_DAY_MS = 86_400_000
 
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
@@ -88,16 +86,16 @@ export interface WebRTCTransportDirectInit {
   certificateKeychainName?: string
 
   /**
-   * Number of days a certificate should be valid for
+   * Number of ms a certificate should be valid for (defaults to 14 days)
    *
-   * @default 365
+   * @default 2_592_000_000
    */
   certificateLifespan?: number
 
   /**
-   * Certificates will be renewed this many days before their expiry
+   * Certificates will be renewed this many ms before expiry (defaults to 1 day)
    *
-   * @default 5
+   * @default 86_400_000
    */
   certificateRenewalThreshold?: number
 }
@@ -114,12 +112,17 @@ export class WebRTCDirectTransport implements Transport, Startable {
   private certificate?: TransportCertificate
   private privateKey?: PrivateKey
   private readonly emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
+  private renewCertificateTask?: ReturnType<typeof setTimeout>
 
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
     this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
     this.emitter = new TypedEventEmitter()
+
+    if (init.certificateLifespan != null && init.certificateRenewalThreshold != null && init.certificateRenewalThreshold >= init.certificateLifespan) {
+      throw new InvalidParametersError('Certificate renewal threshold must be less than certificate lifespan')
+    }
 
     if (components.metrics != null) {
       this.metrics = {
@@ -144,7 +147,11 @@ export class WebRTCDirectTransport implements Transport, Startable {
   }
 
   async stop (): Promise<void> {
+    if (this.renewCertificateTask != null) {
+      clearTimeout(this.renewCertificateTask)
+    }
 
+    this.certificate = undefined
   }
 
   /**
@@ -225,14 +232,14 @@ export class WebRTCDirectTransport implements Transport, Startable {
     }
   }
 
-  private async getCertificate (): Promise<TransportCertificate> {
+  private async getCertificate (forceRenew?: boolean): Promise<TransportCertificate> {
     if (isTransportCertificate(this.init.certificate)) {
-      this.log.trace('using provided TLS certificate')
+      this.log('using provided TLS certificate')
       return this.init.certificate
     }
 
     const privateKey = await this.loadOrCreatePrivateKey()
-    const { pem, certhash } = await this.loadOrCreateCertificate(privateKey)
+    const { pem, certhash } = await this.loadOrCreateCertificate(privateKey, forceRenew)
 
     return {
       privateKey: await formatAsPem(privateKey),
@@ -276,8 +283,8 @@ export class WebRTCDirectTransport implements Transport, Startable {
     return this.privateKey
   }
 
-  private async loadOrCreateCertificate (privateKey: PrivateKey): Promise<{ pem: string, certhash: string }> {
-    if (this.certificate != null) {
+  private async loadOrCreateCertificate (privateKey: PrivateKey, forceRenew?: boolean): Promise<{ pem: string, certhash: string }> {
+    if (this.certificate != null && forceRenew !== true) {
       return this.certificate
     }
 
@@ -286,6 +293,11 @@ export class WebRTCDirectTransport implements Transport, Startable {
     const keyPair = await privateKeyToCryptoKeyPair(privateKey)
 
     try {
+      if (forceRenew === true) {
+        this.log.trace('forcing renewal of TLS certificate')
+        throw new NotFoundError()
+      }
+
       this.log.trace('checking for stored TLS certificate')
       cert = await this.loadCertificate(dsKey, keyPair)
     } catch (err: any) {
@@ -293,9 +305,32 @@ export class WebRTCDirectTransport implements Transport, Startable {
         throw err
       }
 
-      this.log('generating TLS certificate using private key')
+      this.log.trace('generating new TLS certificate')
       cert = await this.createCertificate(dsKey, keyPair)
     }
+
+    // set timeout to renew certificate
+    let renewTime = (cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)) - Date.now()
+
+    if (renewTime < 0) {
+      renewTime = 100
+    }
+
+    this.log('will renew TLS certificate after %d ms', renewTime)
+
+    this.renewCertificateTask = setTimeout(() => {
+      this.log('renewing TLS certificate')
+      this.getCertificate(true)
+        .then(cert => {
+          this.certificate = cert
+          this.emitter.safeDispatchEvent('certificate:renew', {
+            detail: cert
+          })
+        })
+        .catch(err => {
+          this.log.error('could not renew certificate - %e', err)
+        })
+    }, renewTime)
 
     return {
       pem: cert.toString('pem'),
@@ -308,13 +343,15 @@ export class WebRTCDirectTransport implements Transport, Startable {
     const cert = new X509Certificate(buf)
 
     // check expiry date
-    const threshold = Date.now() - ((this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN) * ONE_DAY_MS)
+    const expiryTime = cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)
 
-    if (cert.notAfter.getTime() < threshold) {
+    if (Date.now() > expiryTime) {
       this.log('stored TLS certificate has expired')
       // act as if no certificate was present
       throw new NotFoundError()
     }
+
+    this.log('loaded certificate, expires in %d ms', expiryTime)
 
     // check public keys match
     const exportedCertKey = await cert.publicKey.export(crypto)
@@ -329,12 +366,14 @@ export class WebRTCDirectTransport implements Transport, Startable {
       throw new NotFoundError()
     }
 
+    this.log('loaded certificate, expiry time is %o', expiryTime)
+
     return cert
   }
 
   async createCertificate (dsKey: Key, keyPair: CryptoKeyPair): Promise<X509Certificate> {
     const notBefore = new Date()
-    const notAfter = new Date(notBefore.getTime() + ((this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN) * ONE_DAY_MS))
+    const notAfter = new Date(Date.now() + (this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN))
 
     // have to set ms to 0 to work around https://github.com/PeculiarVentures/x509/issues/73
     notBefore.setMilliseconds(0)
