@@ -7,11 +7,12 @@ import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
-import { identify } from '@libp2p/identify'
+import { identify, type Identify } from '@libp2p/identify'
 import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
+import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
@@ -23,6 +24,7 @@ import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from 'libp2p
 import pDefer from 'p-defer'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
+import type { PingService } from '@libp2p/ping'
 
 /**
  * @packageDocumentation
@@ -155,8 +157,9 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     throw new UnsupportedError()
   }
 
-  const services: ServiceFactoryMap = {
-    identify: identify()
+  const services: ServiceFactoryMap<{ identify: Identify, ping: PingService } & Record<string, any>> = {
+    identify: identify(),
+    ping: ping()
   }
 
   if (options.encryption === 'tls') {

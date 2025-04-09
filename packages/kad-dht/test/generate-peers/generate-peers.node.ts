@@ -17,6 +17,7 @@ import {
 import type { Network } from '../../src/network.js'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { Ping } from '@libp2p/ping'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -60,7 +61,8 @@ describe.skip('generate peers', function () {
       peerId: id,
       connectionManager: stubInterface<ConnectionManager>(),
       peerStore: stubInterface<PeerStore>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping: stubInterface<Ping>()
     }
     const table = new RoutingTable(components, {
       kBucketSize: 20,
