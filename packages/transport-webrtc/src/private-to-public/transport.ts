@@ -6,7 +6,6 @@ import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } 
 import { Key } from 'interface-datastore'
 import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
@@ -212,7 +211,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
     const peerConnection = await createDialerRTCPeerConnection('client', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
 
     try {
-      return await raceSignal(connect(peerConnection, ufrag, {
+      return await connect(peerConnection, ufrag, {
         role: 'client',
         log: this.log,
         logger: this.components.logger,
@@ -225,7 +224,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
         peerId: this.components.peerId,
         remotePeerId: theirPeerId,
         privateKey: this.components.privateKey
-      }), options.signal)
+      })
     } catch (err) {
       peerConnection.close()
       throw err
