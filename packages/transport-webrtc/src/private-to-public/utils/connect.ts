@@ -41,7 +41,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ServerOptions): Promise<void>
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<any> {
   // create data channel for running the noise handshake. Once the data
-  // channel is opened, the remote will initiate the noise handshake. This
+  // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
   const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
 
@@ -81,8 +81,10 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       await peerConnection.setLocalDescription(mungedAnswerSdp)
     }
 
-    options.log.trace('%s wait for handshake channel to open', options.role)
-    await raceEvent(handshakeDataChannel, 'open', options.signal)
+    if (handshakeDataChannel.readyState !== 'open') {
+      options.log.trace('%s wait for handshake channel to open, starting status %s', options.role, handshakeDataChannel.readyState)
+      await raceEvent(handshakeDataChannel, 'open', options.signal)
+    }
 
     options.log.trace('%s handshake channel opened', options.role)
 
@@ -117,17 +119,6 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       logger: options.logger,
       ...(options.dataChannel ?? {})
     })
-    const wrappedDuplex = {
-      ...wrappedChannel,
-      sink: wrappedChannel.sink.bind(wrappedChannel),
-      source: (async function * () {
-        for await (const list of wrappedChannel.source) {
-          for (const buf of list) {
-            yield buf
-          }
-        }
-      }())
-    }
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
@@ -165,10 +156,11 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     })
 
     if (options.role === 'client') {
-      // For outbound connections, the remote is expected to start the noise handshake.
-      // Therefore, we need to secure an inbound noise connection from the remote.
+      // For outbound connections, the remote is expected to start the noise
+      // handshake. Therefore, we need to secure an inbound noise connection
+      // from the server.
       options.log.trace('%s secure inbound', options.role)
-      await connectionEncrypter.secureInbound(wrappedDuplex, {
+      await connectionEncrypter.secureInbound(wrappedChannel, {
         remotePeer: options.remotePeerId,
         signal: options.signal
       })
@@ -182,10 +174,11 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       })
     }
 
-    // For inbound connections, we are expected to start the noise handshake.
-    // Therefore, we need to secure an outbound noise connection from the remote.
+    // For inbound connections, the server is are expected to start the noise
+    // handshake. Therefore, we need to secure an outbound noise connection from
+    // the client.
     options.log.trace('%s secure outbound', options.role)
-    const result = await connectionEncrypter.secureOutbound(wrappedDuplex, {
+    const result = await connectionEncrypter.secureOutbound(wrappedChannel, {
       remotePeer: options.remotePeerId,
       signal: options.signal
     })
@@ -204,9 +197,12 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     throw err
   } finally {
-    // if we are the client, we are the noise responder, so if the channel is
-    // secure it means both ends have completed the handshake so we are safe to
-    // close the handshake datachannel
+    if (peerConnection.signalingState === 'closed') {
+      handshakeDataChannel.close()
+    }
+
+    // the client (noise responder) is the last participant to read a message so
+    // the datachannel can be closed once it has finished authentication
     if (options.role === 'client') {
       handshakeDataChannel.close()
     }
