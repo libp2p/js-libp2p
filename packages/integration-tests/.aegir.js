@@ -1,3 +1,6 @@
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { WebSockets, WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 
@@ -11,9 +14,6 @@ export default {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
       const { webSockets } = await import('@libp2p/websockets')
       const { mplex } = await import('@libp2p/mplex')
-      const { noise } = await import('@chainsafe/libp2p-noise')
-      const { yamux } = await import('@chainsafe/libp2p-yamux')
-      const { WebSockets } = await import('@multiformats/multiaddr-matcher')
       const { createLibp2p } = await import('libp2p')
       const { plaintext } = await import('@libp2p/plaintext')
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
@@ -22,6 +22,7 @@ export default {
       const { mockMuxer } = await import('@libp2p/interface-compliance-tests/mocks')
       const { ping } = await import('@libp2p/ping')
       const { prefixLogger } = await import('@libp2p/logger')
+      const { webRTCDirect } = await import('@libp2p/webrtc')
 
       const libp2p = await createLibp2p({
         logger: prefixLogger('relay'),
@@ -31,12 +32,15 @@ export default {
         addresses: {
           listen: [
             '/ip4/127.0.0.1/tcp/0/ws',
-            '/ip4/127.0.0.1/tcp/0/ws'
+            '/ip4/127.0.0.1/tcp/0/ws',
+            '/ip4/0.0.0.0/udp/0/webrtc-direct',
+            '/ip4/0.0.0.0/udp/0/webrtc-direct'
           ]
         },
         transports: [
           circuitRelayTransport(),
-          webSockets()
+          webSockets(),
+          webRTCDirect()
         ],
         streamMuxers: [
           yamux(),
@@ -67,6 +71,23 @@ export default {
 
       const goLibp2pRelay = await createGoLibp2pRelay()
       const wsAddresses = libp2p.getMultiaddrs().filter(ma => WebSockets.exactMatch(ma))
+      const webRTCDirectPorts = new Set()
+      const webRTCDirectAddresses = libp2p.getMultiaddrs()
+        .filter(ma => {
+          const options = ma.toOptions()
+          // firefox can't seem to dial loopback :shrug:
+          if (options.host !== '127.0.0.1') {
+            return false
+          }
+
+          // only return one addr per port
+          if (webRTCDirectPorts.has(options.port)) {
+            return false
+          }
+          webRTCDirectPorts.add(options.port)
+
+          return WebRTCDirect.exactMatch(ma)
+        })
 
       return {
         libp2p,
@@ -75,6 +96,8 @@ export default {
           RELAY_MULTIADDR: wsAddresses[0],
           RELAY_WS_MULTIADDR_0: wsAddresses[0],
           RELAY_WS_MULTIADDR_1: wsAddresses[1],
+          RELAY_WEBRTC_DIRECT_MULTIADDR_0: webRTCDirectAddresses[0],
+          RELAY_WEBRTC_DIRECT_MULTIADDR_1: webRTCDirectAddresses[1],
           GO_RELAY_PEER: goLibp2pRelay.peerId,
           GO_RELAY_MULTIADDRS: goLibp2pRelay.multiaddrs,
           GO_RELAY_APIADDR: goLibp2pRelay.apiAddr
