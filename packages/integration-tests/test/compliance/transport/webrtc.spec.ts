@@ -10,9 +10,15 @@ import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { isWebWorker } from 'wherearewe'
+import { isFirefox } from '../../fixtures/utils.js'
 
 describe('WebRTC transport interface compliance', () => {
   if (isWebWorker) {
+    return
+  }
+
+  if (process?.env?.CI != null && isFirefox) {
+    // FireFox cannot dial loopback addresses and CI doesn't always have others
     return
   }
 
