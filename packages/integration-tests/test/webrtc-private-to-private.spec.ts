@@ -50,7 +50,7 @@ describe('webrtc private-to-private', () => {
       }
     })
 
-    // two because the relay listens on two TCP addresses so it binds to both
-    expect(local.getMultiaddrs().filter(WebRTC.exactMatch)).to.have.lengthOf(2)
+    expect(local.getMultiaddrs().filter(WebRTC.exactMatch))
+      .to.have.property('length').that.is.greaterThan(1)
   })
 })

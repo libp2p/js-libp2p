@@ -6,7 +6,6 @@ import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } 
 import { Key } from 'interface-datastore'
 import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { raceSignal } from 'race-signal'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
@@ -158,13 +157,44 @@ export class WebRTCDirectTransport implements Transport, Startable {
    * Dial a given multiaddr
    */
   async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
-    const rawConn = await this._connect(ma, options)
-    this.log('dialing address: %a', ma)
-    return rawConn
+    this.log('dial %a', ma)
+    // do not create RTCPeerConnection if the signal has already been aborted
+    options.signal.throwIfAborted()
+
+    let theirPeerId: PeerId | undefined
+    const remotePeerString = ma.getPeerId()
+    if (remotePeerString != null) {
+      theirPeerId = peerIdFromString(remotePeerString)
+    }
+
+    const ufrag = genUfrag()
+
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
+    const peerConnection = await createDialerRTCPeerConnection('client', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
+
+    try {
+      return await connect(peerConnection, ufrag, {
+        role: 'client',
+        log: this.log,
+        logger: this.components.logger,
+        metrics: this.components.metrics,
+        events: this.metrics?.dialerEvents,
+        signal: options.signal,
+        remoteAddr: ma,
+        dataChannel: this.init.dataChannel,
+        upgrader: options.upgrader,
+        peerId: this.components.peerId,
+        remotePeerId: theirPeerId,
+        privateKey: this.components.privateKey
+      })
+    } catch (err) {
+      peerConnection.close()
+      throw err
+    }
   }
 
   /**
-   * Create transport listeners no supported by browsers
+   * Create a transport listener - this will throw in browsers
    */
   createListener (options: CreateListenerOptions): Listener {
     if (this.certificate == null) {
@@ -191,45 +221,6 @@ export class WebRTCDirectTransport implements Transport, Startable {
    */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return this.listenFilter(multiaddrs)
-  }
-
-  /**
-   * Connect to a peer using a multiaddr
-   */
-  async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
-    // do not create RTCPeerConnection if the signal has already been aborted
-    options.signal.throwIfAborted()
-
-    let theirPeerId: PeerId | undefined
-    const remotePeerString = ma.getPeerId()
-    if (remotePeerString != null) {
-      theirPeerId = peerIdFromString(remotePeerString)
-    }
-
-    const ufrag = genUfrag()
-
-    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    const peerConnection = await createDialerRTCPeerConnection('client', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
-
-    try {
-      return await raceSignal(connect(peerConnection, ufrag, {
-        role: 'client',
-        log: this.log,
-        logger: this.components.logger,
-        metrics: this.components.metrics,
-        events: this.metrics?.dialerEvents,
-        signal: options.signal,
-        remoteAddr: ma,
-        dataChannel: this.init.dataChannel,
-        upgrader: options.upgrader,
-        peerId: this.components.peerId,
-        remotePeerId: theirPeerId,
-        privateKey: this.components.privateKey
-      }), options.signal)
-    } catch (err) {
-      peerConnection.close()
-      throw err
-    }
   }
 
   private async getCertificate (forceRenew?: boolean): Promise<TransportCertificate> {

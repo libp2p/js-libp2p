@@ -145,6 +145,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
             // ourselves
             this.log.trace('searching for free port')
             port = await getPort()
+            this.log.trace('listening on free port %d', port)
           }
 
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
