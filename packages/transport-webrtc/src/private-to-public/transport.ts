@@ -157,45 +157,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
    * Dial a given multiaddr
    */
   async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
-    const rawConn = await this._connect(ma, options)
-    this.log('dialing address: %a', ma)
-    return rawConn
-  }
-
-  /**
-   * Create transport listeners no supported by browsers
-   */
-  createListener (options: CreateListenerOptions): Listener {
-    if (this.certificate == null) {
-      throw new NotStartedError()
-    }
-
-    return new WebRTCDirectListener(this.components, {
-      ...this.init,
-      ...options,
-      certificate: this.certificate,
-      emitter: this.emitter
-    })
-  }
-
-  /**
-   * Filter check for all Multiaddrs that this transport can listen on
-   */
-  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(WebRTCDirect.exactMatch)
-  }
-
-  /**
-   * Filter check for all Multiaddrs that this transport can dial
-   */
-  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return this.listenFilter(multiaddrs)
-  }
-
-  /**
-   * Connect to a peer using a multiaddr
-   */
-  async _connect (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
+    this.log('dial %a', ma)
     // do not create RTCPeerConnection if the signal has already been aborted
     options.signal.throwIfAborted()
 
@@ -229,6 +191,36 @@ export class WebRTCDirectTransport implements Transport, Startable {
       peerConnection.close()
       throw err
     }
+  }
+
+  /**
+   * Create a transport listener - this will throw in browsers
+   */
+  createListener (options: CreateListenerOptions): Listener {
+    if (this.certificate == null) {
+      throw new NotStartedError()
+    }
+
+    return new WebRTCDirectListener(this.components, {
+      ...this.init,
+      ...options,
+      certificate: this.certificate,
+      emitter: this.emitter
+    })
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can listen on
+   */
+  listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return multiaddrs.filter(WebRTCDirect.exactMatch)
+  }
+
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
+    return this.listenFilter(multiaddrs)
   }
 
   private async getCertificate (forceRenew?: boolean): Promise<TransportCertificate> {
