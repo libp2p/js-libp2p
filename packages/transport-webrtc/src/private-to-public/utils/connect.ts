@@ -199,7 +199,16 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       muxerFactory,
       signal: options.signal
     })
-  } finally {
+  } catch (err) {
     handshakeDataChannel.close()
+
+    throw err
+  } finally {
+    // if we are the server, we are the noise initiator, so if the channel is
+    // secure it means both ends have completed the handshake so we are safe to
+    // close the handshake datachannel
+    if (options.role === 'server') {
+      handshakeDataChannel.close()
+    }
   }
 }
