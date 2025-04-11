@@ -3,9 +3,15 @@ import { webRTCDirect } from '@libp2p/webrtc'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { isNode, isElectronMain, isWebWorker } from 'wherearewe'
+import { isFirefox } from '../../fixtures/utils.js'
 
 describe('WebRTC-Direct interface-transport compliance', () => {
   if (isWebWorker) {
+    return
+  }
+
+  if (isFirefox) {
+    // FireFox cannot dial loopback addresses and CI doesn't always have others
     return
   }
 
