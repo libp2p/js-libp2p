@@ -2,7 +2,7 @@ import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1'
+export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
 
 export interface RSAPublicKey {
   /**
@@ -14,6 +14,11 @@ export interface RSAPublicKey {
    * PKIX in ASN1 DER format
    */
   readonly raw: Uint8Array
+
+  /**
+   * The public key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
 
   /**
    * Returns `true` if the passed object matches this key
@@ -131,7 +136,54 @@ export interface Secp256k1PublicKey {
   toString(): string
 }
 
-export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey
+export interface ECDSAPublicKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'ECDSA'
+
+  /**
+   * The public key as a DER-encoded PKIMessage
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * The public key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Returns this public key as an identity hash containing the protobuf wrapped
+   * public key
+   */
+  toMultihash(): MultihashDigest<0x0>
+
+  /**
+   * Return this public key as a CID encoded with the `libp2p-key` codec
+   *
+   * The digest contains an identity hash containing the protobuf wrapped
+   * version of the public key.
+   */
+  toCID(): CID<unknown, 0x72, 0x0, 1>
+
+  /**
+   * Verify the passed data was signed by the private key corresponding to this
+   * public key
+   */
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+
+  /**
+   * Returns this key as a multihash with base58btc encoding
+   */
+  toString(): string
+}
+
+export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey | ECDSAPublicKey
 
 /**
  * Returns true if the passed argument has type overlap with the `PublicKey`
@@ -142,7 +194,7 @@ export function isPublicKey (key?: any): key is PublicKey {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1') &&
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
     key.raw instanceof Uint8Array &&
     typeof key.equals === 'function' &&
     typeof key.toMultihash === 'function' &&
@@ -168,6 +220,11 @@ export interface RSAPrivateKey {
    * PKIX in ASN1 DER format
    */
   readonly raw: Uint8Array
+
+  /**
+   * The private key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
 
   /**
    * Returns `true` if the passed object matches this key
@@ -237,7 +294,40 @@ export interface Secp256k1PrivateKey {
   sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
 }
 
-export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey
+export interface ECDSAPrivateKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'ECDSA'
+
+  /**
+   * The public key that corresponds to this private key
+   */
+  readonly publicKey: ECDSAPublicKey
+
+  /**
+   * The private key as a DER-encoded PKIMessage
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * The private key as a JSON web key
+   */
+  readonly jwk: JsonWebKey
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Sign the passed data with this private key and return the signature for
+   * later verification
+   */
+  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+}
+
+export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey
 
 /**
  * Returns true if the passed argument has type overlap with the `PrivateKey`
@@ -248,7 +338,7 @@ export function isPrivateKey (key?: any): key is PrivateKey {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1') &&
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
     isPublicKey(key.publicKey) &&
     key.raw instanceof Uint8Array &&
     typeof key.equals === 'function' &&

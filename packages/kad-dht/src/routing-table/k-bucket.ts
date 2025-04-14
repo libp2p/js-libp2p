@@ -6,8 +6,7 @@ import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
 import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.js'
-import type { PeerId } from '@libp2p/interface'
-import type { AbortOptions } from 'it-protobuf-stream'
+import type { PeerId, AbortOptions } from '@libp2p/interface'
 
 export interface PingFunction {
   /**

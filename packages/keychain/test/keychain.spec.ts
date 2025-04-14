@@ -165,7 +165,7 @@ describe('keychain', () => {
   })
 
   describe('Ed25519 keys', () => {
-    const keyName = 'my custom key'
+    const keyName = 'my custom Ed25519 key'
 
     it('can be an Ed25519 key', async () => {
       const key = await generateKeyPair('Ed25519')
@@ -184,8 +184,39 @@ describe('keychain', () => {
     })
 
     it('can export/import a key', async () => {
-      const keyName = 'a new key'
+      const keyName = 'a new Ed25519 key'
       const key = await generateKeyPair('Ed25519')
+      const keyInfo = await ks.importKey(keyName, key)
+      const exportedKey = await ks.exportKey(keyName)
+      // remove it so we can re-import it
+      await ks.removeKey(keyName)
+      const importedKey = await ks.importKey(keyName, exportedKey)
+      expect(importedKey.id).to.eql(keyInfo.id)
+    })
+  })
+
+  describe('ECDSA keys', () => {
+    const keyName = 'my custom ECDSA key'
+
+    it('can be an ECDSA key', async () => {
+      const key = await generateKeyPair('ECDSA')
+      const keyInfo = await ks.importKey(keyName, key)
+
+      expect(keyInfo).to.exist()
+      expect(keyInfo).to.have.property('name', keyName)
+      expect(keyInfo).to.have.property('id')
+    })
+
+    it('does not overwrite existing key', async () => {
+      const key = await generateKeyPair('ECDSA')
+
+      await expect(ks.importKey(keyName, key)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
+    })
+
+    it('can export/import a key', async () => {
+      const keyName = 'a new ECDSA key'
+      const key = await generateKeyPair('ECDSA')
       const keyInfo = await ks.importKey(keyName, key)
       const exportedKey = await ks.exportKey(keyName)
       // remove it so we can re-import it

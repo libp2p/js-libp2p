@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.1.19](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.18...echo-v2.1.19) (2025-04-09)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/interface-internal bumped from ^2.3.9 to ^2.3.10
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
+## [2.1.18](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.17...echo-v2.1.18) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.8 to ^2.3.9
+
 ## [2.1.17](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.16...echo-v2.1.17) (2025-03-12)
 
 

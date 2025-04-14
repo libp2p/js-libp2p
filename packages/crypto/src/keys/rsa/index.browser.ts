@@ -6,6 +6,7 @@ import * as utils from './utils.js'
 import type { JWKKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
+export const RSAES_PKCS1_V1_5_OID = '1.2.840.113549.1.1.1'
 export { utils }
 
 export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {

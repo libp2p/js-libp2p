@@ -100,12 +100,12 @@ export class PersistentStore {
     const buf = await this.datastore.get(key)
     const peer = PeerPB.decode(buf)
 
-    if (this.#peerIsExpired(peer)) {
+    if (this.#peerIsExpired(peerId, peer)) {
       await this.datastore.delete(key)
       throw new NotFoundError()
     }
 
-    return pbToPeer(peerId, peer, this.maxAddressAge)
+    return pbToPeer(peerId, peer, this.peerId.equals(peerId) ? Infinity : this.maxAddressAge)
   }
 
   async save (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
@@ -152,12 +152,12 @@ export class PersistentStore {
       const peer = PeerPB.decode(value)
 
       // remove expired peer
-      if (this.#peerIsExpired(peer)) {
+      if (this.#peerIsExpired(peerId, peer)) {
         await this.datastore.delete(key)
         continue
       }
 
-      yield pbToPeer(peerId, peer, this.maxAddressAge)
+      yield pbToPeer(peerId, peer, this.peerId.equals(peerId) ? Infinity : this.maxAddressAge)
     }
   }
 
@@ -168,7 +168,7 @@ export class PersistentStore {
       const peerPB = PeerPB.decode(buf)
 
       // remove expired peer
-      if (this.#peerIsExpired(peerPB)) {
+      if (this.#peerIsExpired(peerId, peerPB)) {
         await this.datastore.delete(key)
         throw new NotFoundError()
       }
@@ -198,9 +198,13 @@ export class PersistentStore {
     }
   }
 
-  #peerIsExpired (peer: PeerPB): boolean {
+  #peerIsExpired (peerId: PeerId, peer: PeerPB): boolean {
     if (peer.updated == null) {
       return true
+    }
+
+    if (this.peerId.equals(peerId)) {
+      return false
     }
 
     const expired = peer.updated < (Date.now() - this.maxPeerAge)

@@ -74,6 +74,7 @@ jobs:
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/kad-dht@$PWD/packages/kad-dht'
               - '@libp2p/mdns@$PWD/packages/peer-discovery-mdns'
+              - '@libp2p/ping@$PWD/packages/protocol-ping'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-peer-and-content-routing
@@ -81,6 +82,7 @@ jobs:
             deps:
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/kad-dht@$PWD/packages/kad-dht'
+              - '@libp2p/ping@$PWD/packages/protocol-ping'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-pnet

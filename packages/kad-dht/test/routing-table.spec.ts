@@ -22,22 +22,26 @@ import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
 import type { Network } from '../src/network.js'
 import type { Bucket } from '../src/routing-table/k-bucket.js'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
+import type { Ping } from '@libp2p/ping'
 
 describe('Routing Table', () => {
   let table: RoutingTable
   let components: RoutingTableComponents
   let network: StubbedInstance<Network>
+  let ping: StubbedInstance<Ping>
 
   beforeEach(async function () {
     this.timeout(20 * 1000)
 
     const events = new TypedEventEmitter<Libp2pEvents>()
     network = stubInterface()
+    ping = stubInterface()
 
     components = {
       peerId: await createPeerId(),
       peerStore: stubInterface<PeerStore>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping
     }
     components.peerStore = persistentPeerStore({
       ...components,
@@ -340,8 +344,8 @@ describe('Routing Table', () => {
 
     await drain(table.pingOldContacts([oldPeer]))
 
-    expect(network.sendRequest.calledTwice).to.be.true()
-    expect(network.sendRequest.calledWith(oldPeer.peerId)).to.be.true()
+    expect(ping.ping.calledTwice).to.be.true()
+    expect(ping.ping.calledWith(oldPeer.peerId)).to.be.true()
 
     // did not add the new peer
     expect(table.kb.get(newPeer.kadId)).to.be.undefined()
@@ -395,15 +399,7 @@ describe('Routing Table', () => {
     table.network = network = stubInterface()
 
     // libp2p fails to dial the old peer
-    network.sendRequest.withArgs(oldPeer.peerId).rejects(new Error('Could not dial peer'))
-
-    // the new peer answers the ping
-    network.sendRequest.withArgs(newPeer.peerId).callsFake(async function * (from: PeerId) {
-      yield peerResponseEvent({
-        from,
-        messageType: MessageType.PING
-      })
-    })
+    ping.ping.withArgs(oldPeer.peerId).rejects(new Error('Could not dial peer'))
 
     // add the old peer
     await table.kb.add(oldPeer.peerId)
@@ -491,6 +487,7 @@ describe('Routing Table', () => {
       const kBucketSize = 20
       const maxSize = Math.pow(2, prefixLength) * kBucketSize
 
+      await stop(table)
       table = new RoutingTable(components, {
         logPrefix: '',
         metricsPrefix: '',
@@ -500,17 +497,6 @@ describe('Routing Table', () => {
         kBucketSize
       })
       await start(table)
-
-      // reset network stub so we can have specific behavior
-      table.network = network = stubInterface()
-
-      // all old peers answer pings, no peers should be evicted
-      network.sendRequest.callsFake(async function * (from: PeerId) {
-        yield peerResponseEvent({
-          from,
-          messageType: MessageType.PING
-        })
-      })
 
       for (let i = 0; i < 2 * maxSize; i++) {
         const remotePeer = await createPeerId()

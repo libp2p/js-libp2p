@@ -366,7 +366,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   ]
 
   readonly [serviceDependencies]: string[] = [
-    '@libp2p/identify'
+    '@libp2p/identify',
+    '@libp2p/ping'
   ]
 
   get [contentRoutingSymbol] (): ContentRouting {

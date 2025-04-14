@@ -68,6 +68,34 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.1.3](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.1.2...peer-store-v11.1.3) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-record bumped from ^8.0.25 to ^8.0.26
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
+## [11.1.2](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.1.1...peer-store-v11.1.2) (2025-03-18)
+
+
+### Bug Fixes
+
+* do not expire self multiaddrs ([#3053](https://github.com/libp2p/js-libp2p/issues/3053)) ([2f2322a](https://github.com/libp2p/js-libp2p/commit/2f2322a250414175b78a8fdcd2c416fcf10d2574)), closes [#3051](https://github.com/libp2p/js-libp2p/issues/3051)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-record bumped from ^8.0.24 to ^8.0.25
+
 ## [11.1.1](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.1.0...peer-store-v11.1.1) (2025-03-12)
 
 

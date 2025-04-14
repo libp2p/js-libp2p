@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { transportSymbol, type Upgrader, type Listener, type Transport } from '@libp2p/interface'
+import { transportSymbol, start, stop } from '@libp2p/interface'
+import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
+import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
-import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.js'
+import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import type { Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 
 function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
@@ -36,10 +40,12 @@ describe('WebRTCDirect Transport', () => {
 
   beforeEach(async () => {
     const privateKey = await generateKeyPair('Ed25519')
+    const datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
     components = {
       peerId: peerIdFromPrivateKey(privateKey),
-      logger: defaultLogger(),
+      logger,
       transportManager: stubInterface<TransportManager>(),
       privateKey,
       upgrader: stubInterface<Upgrader>({
@@ -49,11 +55,19 @@ describe('WebRTCDirect Transport', () => {
             signal
           ])
         }
+      }),
+      datastore,
+      keychain: keychain()({
+        datastore,
+        logger
       })
     }
 
     upgrader = stubInterface<Upgrader>()
     transport = new WebRTCDirectTransport(components)
+
+    await start(transport)
+
     listener = transport.createListener({
       upgrader
     })
@@ -61,6 +75,7 @@ describe('WebRTCDirect Transport', () => {
 
   afterEach(async () => {
     await listener?.close()
+    await stop(transport)
   })
 
   it('can construct', () => {
@@ -114,8 +129,8 @@ describe('WebRTCDirect Transport', () => {
       return this.skip()
     }
 
-    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/0')
-    const ipv6 = multiaddr('/ip6/::1/udp/0')
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37287')
+    const ipv6 = multiaddr('/ip6/::1/udp/37287')
 
     await Promise.all([
       listener.listen(ipv4),
@@ -207,5 +222,73 @@ describe('WebRTCDirect Transport', () => {
     for (const ma of webRTCDirectAddrs) {
       expect(ma.toString()).to.include('/udp/12346/webrtc-direct/certhash/u', 'did not add certhash to all WebRTC Direct addresses')
     }
+  })
+
+  it('can start listeners for two nodes on wildcard socket addresses', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const otherTransport = new WebRTCDirectTransport({
+      ...components,
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    })
+    await start(otherTransport)
+    const otherTransportIp4Listener = otherTransport.createListener({
+      upgrader
+    })
+    const otherTransportIp6Listener = otherTransport.createListener({
+      upgrader
+    })
+
+    const ip6Listener = transport.createListener({
+      upgrader
+    })
+
+    const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
+    const ipv6 = multiaddr('/ip6/::/udp/0')
+
+    await Promise.all([
+      listener.listen(ipv4),
+      otherTransportIp4Listener.listen(ipv4),
+      ip6Listener.listen(ipv6),
+      otherTransportIp6Listener.listen(ipv6)
+    ])
+
+    assertAllMultiaddrsHaveSamePort(listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherTransportIp4Listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherTransportIp6Listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(ip6Listener.getAddrs())
+
+    await listener.close()
+    await otherTransportIp4Listener.close()
+    await otherTransportIp6Listener.close()
+    await ip6Listener.close()
+    await otherTransport.stop()
+  })
+
+  it('can start multiple wildcard listeners', async function () {
+    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+      return this.skip()
+    }
+
+    const otherListener = transport.createListener({
+      upgrader
+    })
+
+    const ipv4 = multiaddr('/ip4/0.0.0.0/udp/0')
+
+    await Promise.all([
+      listener.listen(ipv4),
+      otherListener.listen(ipv4)
+    ])
+
+    assertAllMultiaddrsHaveSamePort(listener.getAddrs())
+    assertAllMultiaddrsHaveSamePort(otherListener.getAddrs())
+
+    expect(listener.getAddrs()[0].toOptions().port).to.not.equal(otherListener.getAddrs()[0].toOptions().port, 'wildcard listeners did not listen on different ports')
+
+    await listener.close()
+    await otherListener.close()
   })
 })

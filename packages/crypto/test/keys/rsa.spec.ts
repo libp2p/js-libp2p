@@ -8,7 +8,7 @@ import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { privateKeyFromCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import * as pb from '../../src/keys/keys.js'
 import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.js'
 import { MAX_RSA_KEY_SIZE, jwkToPkcs1, jwkToPkix, jwkToRSAPrivateKey, pkcs1ToJwk, pkcs1ToRSAPrivateKey, pkixToJwk, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
@@ -174,7 +174,7 @@ describe('RSA', function () {
     expect(valid).to.be.eql(false)
   })
 
-  describe('throws error instead of crashing', () => {
+  it('throws error instead of crashing', () => {
     const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
     testGarbage('key.verify', key.verify.bind(key), 2, true)
     testGarbage(
@@ -278,6 +278,14 @@ describe('RSA', function () {
     it('should round trip 8192 bit private key as pkix', () => {
       roundTrip(RSA_KEY_8192_BITS)
     })
+  })
+
+  it('exports to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('RSA')
+    const keyPair = await privateKeyToCryptoKeyPair(key)
+    const key2 = await privateKeyFromCryptoKeyPair(keyPair)
+
+    expect(key.publicKey.toCID()).to.deep.equal(key2.publicKey.toCID())
   })
 })
 

@@ -9,7 +9,7 @@ import * as asn1js from 'asn1js'
 import { base64 } from 'multiformats/bases/base64'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { ITERATIONS, KEY_SIZE, SALT_LENGTH } from './constants.js'
-import type { Ed25519PrivateKey, PrivateKey, RSAPrivateKey, Secp256k1PrivateKey } from '@libp2p/interface'
+import type { ECDSAPrivateKey, Ed25519PrivateKey, PrivateKey, RSAPrivateKey, Secp256k1PrivateKey } from '@libp2p/interface'
 import type { Multibase } from 'multiformats/bases/interface'
 
 /**
@@ -43,6 +43,10 @@ export async function exportPrivateKey (key: PrivateKey, password: string, forma
     return exportSecp256k1PrivateKey(key, password, format)
   }
 
+  if (key.type === 'ECDSA') {
+    return exportECDSAPrivateKey(key, password, format)
+  }
+
   throw new UnsupportedKeyTypeError()
 }
 
@@ -65,6 +69,17 @@ export async function exportSecp256k1PrivateKey (key: Secp256k1PrivateKey, passw
     return exporter(privateKeyToProtobuf(key), password)
   } else {
     throw new InvalidParametersError('Export format is not supported')
+  }
+}
+
+/**
+ * Exports the key into a password protected `format`
+ */
+export async function exportECDSAPrivateKey (key: ECDSAPrivateKey, password: string, format: ExportFormat = 'libp2p-key'): Promise<Multibase<'m'>> {
+  if (format === 'libp2p-key') {
+    return exporter(privateKeyToProtobuf(key), password)
+  } else {
+    throw new InvalidParametersError(`export format '${format}' is not supported`)
   }
 }
 

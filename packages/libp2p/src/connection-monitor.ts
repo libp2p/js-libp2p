@@ -111,7 +111,8 @@ export class ConnectionMonitor implements Startable {
               bs.write(randomBytes(PING_LENGTH), {
                 signal
               }),
-              bs.read(PING_LENGTH, {
+              bs.read({
+                bytes: PING_LENGTH,
                 signal
               })
             ])

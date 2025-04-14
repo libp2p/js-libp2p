@@ -1,39 +1,40 @@
-import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { InvalidPeerIdError, TypedEventEmitter } from '@libp2p/interface'
+import { isIPv4 } from '@chainsafe/is-ip'
+import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import { Crypto } from '@peculiar/webcrypto'
 import getPort from 'get-port'
 import pWaitFor from 'p-wait-for'
 import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT } from '../constants.js'
 import { connect } from './utils/connect.js'
-import { generateTransportCertificate } from './utils/generate-certificates.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
+import type { WebRTCDirectTransportCertificateEvents } from './transport.js'
 import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
-import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
+import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey, TypedEventTarget } from '@libp2p/interface'
+import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const crypto = new Crypto()
+import type { Datastore } from 'interface-datastore'
 
 export interface WebRTCDirectListenerComponents {
   peerId: PeerId
   privateKey: PrivateKey
   logger: ComponentLogger
   upgrader: Upgrader
+  keychain?: Keychain
+  datastore: Datastore
   metrics?: Metrics
 }
 
 export interface WebRTCDirectListenerInit {
   upgrader: Upgrader
-  certificates?: TransportCertificate[]
+  certificate: TransportCertificate
   maxInboundStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
-  useLibjuice?: boolean
+  emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
 }
 
 export interface WebRTCListenerMetrics {
@@ -53,7 +54,7 @@ let UDP_MUX_LISTENERS: UDPMuxServer[] = []
 
 export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> implements Listener {
   private listeningMultiaddr?: Multiaddr
-  private certificate?: TransportCertificate
+  private certificate: TransportCertificate
   private stunServer?: StunServer
   private readonly connections: Map<string, DirectRTCPeerConnection>
   private readonly log: Logger
@@ -69,8 +70,8 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.components = components
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
-    this.certificate = init.certificates?.[0]
     this.shutdownController = new AbortController()
+    this.certificate = init.certificate
 
     if (components.metrics != null) {
       this.metrics = {
@@ -80,75 +81,65 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         })
       }
     }
+
+    // inform the transport manager our addresses have changed
+    init.emitter.addEventListener('certificate:renew', evt => {
+      this.log('received new TLS certificate', evt.detail.certhash)
+      this.certificate = evt.detail
+      this.safeDispatchEvent('listening')
+    })
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    const { host, port } = ma.toOptions()
+    const { host, port, family } = ma.toOptions()
 
-    // have to do this before any async work happens so starting two listeners
-    // for the same port concurrently (e.g. ipv4/ipv6 both port 0) results in a
-    // single mux listener. This is necessary because libjuice binds to all
-    // interfaces for a given port so we we need to key on just the port number
-    // not the host + the port number
-    let existingServer = UDP_MUX_LISTENERS.find(s => s.port === port)
+    let udpMuxServer: UDPMuxServer | undefined
 
-    // if the server has not been started yet, or the port is a wildcard port
-    // and there is already a wildcard port for this address family, start a new
-    // UDP mux server
-    const wildcardPorts = port === 0 && existingServer?.port === 0
-    const sameAddressFamily = (existingServer?.isIPv4 === true && isIPv4(host)) || (existingServer?.isIPv6 === true && isIPv6(host))
-    let createdMuxServer = false
+    if (port !== 0) {
+      // libjuice binds to all interfaces (IPv4/IPv6) for a given port so if we
+      // want to listen on a specific port, and there's already a mux listener
+      // for that port for the other family started by this node, we should
+      // reuse it
+      udpMuxServer = UDP_MUX_LISTENERS.find(s => s.port === port)
 
-    if (existingServer == null || (wildcardPorts && sameAddressFamily)) {
+      // make sure the port is free for the given family
+      if (udpMuxServer != null && ((udpMuxServer.isIPv4 && family === 4) || (udpMuxServer.isIPv6 && family === 6))) {
+        throw new InvalidParametersError(`There is already a listener for ${host}:${port}`)
+      }
+
+      // check that we own the mux server
+      if (udpMuxServer != null && !udpMuxServer.peerId.equals(this.components.peerId)) {
+        throw new InvalidParametersError(`Another peer is already performing UDP mux on ${host}:${port}`)
+      }
+    }
+
+    // start the mux server if we don't have one already
+    if (udpMuxServer == null) {
       this.log('starting UDP mux server on %s:%p', host, port)
-      existingServer = this.startUDPMuxServer(host, port)
-      UDP_MUX_LISTENERS.push(existingServer)
-      createdMuxServer = true
+      udpMuxServer = this.startUDPMuxServer(host, port, family)
+      UDP_MUX_LISTENERS.push(udpMuxServer)
     }
 
-    if (!existingServer.peerId.equals(this.components.peerId)) {
-      // this would have to be another in-process peer so we are likely in a
-      // testing environment
-      throw new InvalidPeerIdError(`Another peer is already performing UDP mux on ${host}:${existingServer.port}`)
+    if (family === 4) {
+      udpMuxServer.isIPv4 = true
+    } else if (family === 6) {
+      udpMuxServer.isIPv6 = true
     }
 
-    this.stunServer = await existingServer.server
-    const address = this.stunServer.address()
-
-    if (!createdMuxServer) {
-      this.log('reused existing UDP mux server on %s:%p', host, address.port)
-    }
-
+    this.stunServer = await udpMuxServer.server
     this.listeningMultiaddr = ma
     this.safeDispatchEvent('listening')
   }
 
-  private startUDPMuxServer (host: string, port: number): UDPMuxServer {
+  private startUDPMuxServer (host: string, port: number, family: 4 | 6): UDPMuxServer {
     return {
       peerId: this.components.peerId,
       owner: this,
       port,
-      isIPv4: isIPv4(host),
-      isIPv6: isIPv6(host),
+      isIPv4: family === 4,
+      isIPv6: family === 6,
       server: Promise.resolve()
         .then(async (): Promise<StunServer> => {
-          // ensure we have a certificate
-          if (this.certificate == null) {
-            this.log.trace('creating TLS certificate')
-            const keyPair = await crypto.subtle.generateKey({
-              name: 'ECDSA',
-              namedCurve: 'P-256'
-            }, true, ['sign', 'verify'])
-
-            const certificate = await generateTransportCertificate(keyPair, {
-              days: 365 * 10
-            })
-
-            if (this.certificate == null) {
-              this.certificate = certificate
-            }
-          }
-
           if (port === 0) {
             // libjuice doesn't map 0 to a random free port so we have to do it
             // ourselves

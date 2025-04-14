@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.5](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.4...memory-v1.1.5) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+
 ## [1.1.4](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.3...memory-v1.1.4) (2025-03-12)
 
 

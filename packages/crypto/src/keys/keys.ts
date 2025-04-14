@@ -10,13 +10,15 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
-  secp256k1 = 'secp256k1'
+  secp256k1 = 'secp256k1',
+  ECDSA = 'ECDSA'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
-  secp256k1 = 2
+  secp256k1 = 2,
+  ECDSA = 3
 }
 
 export namespace KeyType {

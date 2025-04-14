@@ -111,6 +111,48 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.10](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.9...webrtc-v5.2.10) (2025-04-09)
+
+
+### Bug Fixes
+
+* reuse WebRTC certificates between restarts ([#3071](https://github.com/libp2p/js-libp2p/issues/3071)) ([4c64bd0](https://github.com/libp2p/js-libp2p/commit/4c64bd06dc77c38992e3da7fd33210056f01c0c7))
+* rotate webrtc direct certificates ([#3073](https://github.com/libp2p/js-libp2p/issues/3073)) ([da7353a](https://github.com/libp2p/js-libp2p/commit/da7353a0b7882649fdd1aa87b9d6997cbd6daf50))
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/interface-internal bumped from ^2.3.9 to ^2.3.10
+    * @libp2p/keychain bumped from ^5.1.4 to ^5.2.0
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/utils bumped from ^6.6.0 to ^6.6.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
+## [5.2.9](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.8...webrtc-v5.2.9) (2025-03-18)
+
+
+### Bug Fixes
+
+* only check for non-wildcard ports ([#3050](https://github.com/libp2p/js-libp2p/issues/3050)) ([a71c7c3](https://github.com/libp2p/js-libp2p/commit/a71c7c32b4615da731a1750964ee1be8ce63e4b8)), closes [#3049](https://github.com/libp2p/js-libp2p/issues/3049)
+* use getThinWaistAddresss function ([#3047](https://github.com/libp2p/js-libp2p/issues/3047)) ([a7ab9a4](https://github.com/libp2p/js-libp2p/commit/a7ab9a41b97504695d10045c1d50b2a610d69c24))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.8 to ^2.3.9
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.1 to ^6.4.2
+
 ## [5.2.8](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.7...webrtc-v5.2.8) (2025-03-12)
 
 
