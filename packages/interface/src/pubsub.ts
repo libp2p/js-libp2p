@@ -66,7 +66,7 @@ export interface PubSubRPC {
   messages: PubSubRPCMessage[]
 }
 
-export interface PeerStreams extends TypedEventTarget<PeerStreamEvents> {
+export interface PeerStreams<PeerEvents extends PeerStreamEvents = PeerStreamEvents> extends TypedEventTarget<PeerEvents> {
   id: PeerId
   protocol: string
   outboundStream?: Pushable<Uint8ArrayList>
