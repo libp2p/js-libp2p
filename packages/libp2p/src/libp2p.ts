@@ -132,7 +132,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       this.configureComponent('connectionMonitor', new ConnectionMonitor(this.components, init.connectionMonitor))
     }
 
-    // Set up a custom registar if configured or use default
+    // Set up a custom registrar if configured or use default
     if (init.registrar != null) {
       this.configureComponent('registrar', init.registrar(this.components))
     } else {
