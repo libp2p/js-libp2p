@@ -167,7 +167,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       })
 
       options.log.trace('%s closing handshake datachannel', options.role)
-      handshakeDataChannel.close()
+      await closeDatachannel(handshakeDataChannel, options.signal)
 
       options.log.trace('%s upgrade outbound', options.role)
       return await options.upgrader.upgradeOutbound(maConn, {
@@ -188,7 +188,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     })
 
     options.log.trace('%s closing handshake datachannel', options.role)
-    handshakeDataChannel.close()
+    await closeDatachannel(handshakeDataChannel, options.signal)
 
     maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
@@ -202,5 +202,15 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     })
   } finally {
     handshakeDataChannel.close()
+  }
+}
+
+// needs https://github.com/murat-dogan/node-datachannel/pull/346 before the
+// `any` can be removed
+async function closeDatachannel (dc: any, signal?: AbortSignal): Promise<void> {
+  dc.close()
+
+  if (dc.readyState !== 'closed') {
+    await raceEvent(dc, 'close', signal)
   }
 }
