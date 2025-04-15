@@ -166,9 +166,6 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
         signal: options.signal
       })
 
-      options.log.trace('%s closing handshake datachannel', options.role)
-      handshakeDataChannel.close()
-
       options.log.trace('%s upgrade outbound', options.role)
       return await options.upgrader.upgradeOutbound(maConn, {
         skipProtection: true,
@@ -186,9 +183,6 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       remotePeer: options.remotePeerId,
       signal: options.signal
     })
-
-    options.log.trace('%s closing handshake datachannel', options.role)
-    handshakeDataChannel.close()
 
     maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
