@@ -201,6 +201,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       signal: options.signal
     })
   } finally {
-    handshakeDataChannel.close()
+    if (options.role === 'client') {
+      handshakeDataChannel.close()
+    }
   }
 }
