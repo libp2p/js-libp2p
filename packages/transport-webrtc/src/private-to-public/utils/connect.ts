@@ -113,9 +113,10 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // or early data, we pass in undefined for these parameters.
     const connectionEncrypter = noise({ prologueBytes: noisePrologue })(options)
 
-    const wrappedChannel = createStream({
+    const handshakeStream = createStream({
       channel: handshakeDataChannel,
-      direction: 'inbound',
+      direction: 'outbound',
+      handshake: true,
       logger: options.logger,
       ...(options.dataChannel ?? {})
     })
@@ -160,10 +161,13 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       // handshake. Therefore, we need to secure an inbound noise connection
       // from the server.
       options.log.trace('%s secure inbound', options.role)
-      await connectionEncrypter.secureInbound(wrappedChannel, {
+      await connectionEncrypter.secureInbound(handshakeStream, {
         remotePeer: options.remotePeerId,
         signal: options.signal
       })
+
+      options.log.trace('%s closing handshake datachannel', options.role)
+      handshakeDataChannel.close()
 
       options.log.trace('%s upgrade outbound', options.role)
       return await options.upgrader.upgradeOutbound(maConn, {
@@ -178,10 +182,14 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // handshake. Therefore, we need to secure an outbound noise connection from
     // the client.
     options.log.trace('%s secure outbound', options.role)
-    const result = await connectionEncrypter.secureOutbound(wrappedChannel, {
+    const result = await connectionEncrypter.secureOutbound(handshakeStream, {
       remotePeer: options.remotePeerId,
       signal: options.signal
     })
+
+    options.log.trace('%s closing handshake datachannel', options.role)
+    handshakeDataChannel.close()
+
     maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
 
     options.log.trace('%s upgrade inbound', options.role)
@@ -192,19 +200,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       muxerFactory,
       signal: options.signal
     })
-  } catch (err) {
-    handshakeDataChannel.close()
-
-    throw err
   } finally {
-    if (peerConnection.signalingState === 'closed') {
-      handshakeDataChannel.close()
-    }
-
-    // the client (noise responder) is the last participant to read a message so
-    // the datachannel can be closed once it has finished authentication
-    if (options.role === 'client') {
-      handshakeDataChannel.close()
-    }
+    handshakeDataChannel.close()
   }
 }
