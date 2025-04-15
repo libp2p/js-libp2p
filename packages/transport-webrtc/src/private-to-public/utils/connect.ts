@@ -200,6 +200,10 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       muxerFactory,
       signal: options.signal
     })
+  } catch (err) {
+    handshakeDataChannel.close()
+
+    throw err
   } finally {
     if (options.role === 'client') {
       handshakeDataChannel.close()
