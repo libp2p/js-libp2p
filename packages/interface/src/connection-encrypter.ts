@@ -11,6 +11,14 @@ import type { Uint8ArrayList } from 'uint8arraylist'
  */
 export interface SecureConnectionOptions extends AbortOptions {
   remotePeer?: PeerId
+
+  /**
+   * Some encryption protocols allow negotiating application protocols as part
+   * of the initial handshake. The negotiated stream muxer protocol will be
+   * included as part of the from the `secureOutbound`/`secureInbound` methods
+   * unless `false` is passed here.
+   */
+  skipStreamMuxerNegotiation?: boolean
 }
 
 /**
