@@ -163,7 +163,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       options.log.trace('%s secure inbound', options.role)
       await connectionEncrypter.secureInbound(handshakeStream, {
         remotePeer: options.remotePeerId,
-        signal: options.signal
+        signal: options.signal,
+        skipStreamMuxerNegotiation: true
       })
 
       options.log.trace('%s upgrade outbound', options.role)
@@ -181,7 +182,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     options.log.trace('%s secure outbound', options.role)
     const result = await connectionEncrypter.secureOutbound(handshakeStream, {
       remotePeer: options.remotePeerId,
-      signal: options.signal
+      signal: options.signal,
+      skipStreamMuxerNegotiation: true
     })
 
     maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`)
