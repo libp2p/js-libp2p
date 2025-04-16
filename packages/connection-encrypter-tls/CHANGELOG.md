@@ -6,6 +6,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.2...tls-v2.2.0) (2025-04-16)
+
+
+### Features
+
+* add skip muxer negotiation ([#3081](https://github.com/libp2p/js-libp2p/issues/3081)) ([3833353](https://github.com/libp2p/js-libp2p/commit/3833353bdc936695b17cc836515763ead2137756))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+
 ## [2.1.2](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.1...tls-v2.1.2) (2025-04-09)
 
 

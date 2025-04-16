@@ -60,7 +60,7 @@ export class WebRTCStream extends AbstractStream {
     // override onEnd to send/receive FIN_ACK before closing the stream
     const originalOnEnd = init.onEnd
     init.onEnd = (err?: Error): void => {
-      this.log.trace('readable and writeable ends closed', this.status)
+      this.log.trace('readable and writeable ends closed with status "%s"', this.status)
 
       void Promise.resolve(async () => {
         if (this.timeline.abort != null || this.timeline.reset !== null) {
@@ -77,15 +77,17 @@ export class WebRTCStream extends AbstractStream {
         }
       })
         .then(() => {
-        // stop processing incoming messages
+          // stop processing incoming messages
           this.incomingData.end()
-          this.channel.close()
 
           // final cleanup
           originalOnEnd?.(err)
         })
         .catch(err => {
           this.log.error('error ending stream', err)
+        })
+        .finally(() => {
+          this.channel.close()
         })
     }
 
@@ -229,6 +231,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     try {
+      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
       // send message without copying data
       this.channel.send(data.subarray())
     } catch (err: any) {
@@ -237,8 +240,7 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
-    this.log.trace('-> will send %d bytes', data.byteLength)
-
+    const bytesTotal = data.byteLength
     // sending messages is an async operation so use a copy of the list as it
     // may be changed beneath us
     data = data.sublist()
@@ -248,14 +250,13 @@ export class WebRTCStream extends AbstractStream {
       const buf = data.subarray(0, toSend)
       const messageBuf = Message.encode({ message: buf })
       const sendBuf = lengthPrefixed.encode.single(messageBuf)
-      this.log.trace('-> sending message %s', this.channel.readyState)
+      this.log.trace('sending %d/%d bytes on channel', buf.byteLength, bytesTotal)
       await this._sendMessage(sendBuf)
-      this.log.trace('-> sent message %s', this.channel.readyState)
 
       data.consume(toSend)
     }
 
-    this.log.trace('-> sent data %s', this.channel.readyState)
+    this.log.trace('finished sending data, channel state "%s"', this.channel.readyState)
   }
 
   async sendReset (): Promise<void> {
@@ -263,6 +264,8 @@ export class WebRTCStream extends AbstractStream {
       await this._sendFlag(Message.Flag.RESET)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
+    } finally {
+      this.channel.close()
     }
   }
 
@@ -347,7 +350,7 @@ export class WebRTCStream extends AbstractStream {
       // flags can be sent while we or the remote are closing the datachannel so
       // if the channel isn't open, don't try to send it but return false to let
       // the caller know and act if they need to
-      this.log.trace('not sending flag %s because channel is "%s" and not "open"', this.channel.readyState, flag.toString())
+      this.log.trace('not sending flag %s because channel is "%s" and not "open"', flag.toString(), this.channel.readyState)
       return false
     }
 
@@ -387,14 +390,20 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
   onEnd?(err?: Error | undefined): void
 
   logger: ComponentLogger
+
+  /**
+   * If true the underlying datachannel is being used to perform the noise
+   * handshake during connection establishment
+   */
+  handshake?: boolean
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
-  const { channel, direction } = options
+  const { channel, direction, handshake } = options
 
   return new WebRTCStream({
-    id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
-    log: options.logger.forComponent(`libp2p:webrtc:stream:${direction}:${channel.id}`),
+    id: `${channel.id}`,
+    log: options.logger.forComponent(`libp2p:webrtc:stream:${handshake === true ? 'handshake' : direction}:${channel.id}`),
     ...options
   })
 }

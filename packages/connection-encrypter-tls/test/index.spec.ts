@@ -113,4 +113,26 @@ describe('tls', () => {
     expect(result).to.have.nested.property('[0].streamMuxer.protocol', '/test/muxer')
     expect(result).to.have.nested.property('[1].streamMuxer.protocol', '/test/muxer')
   })
+
+  it('should not select an early muxer when it is skipped', async () => {
+    const [inbound, outbound] = duplexPair<any>()
+
+    const result = await Promise.all([
+      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
+        ...inbound
+      }), {
+        remotePeer: localPeer,
+        skipStreamMuxerNegotiation: true
+      }),
+      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
+        ...outbound
+      }), {
+        remotePeer: localPeer,
+        skipStreamMuxerNegotiation: true
+      })
+    ])
+
+    expect(result).to.have.nested.property('[0].streamMuxer', undefined)
+    expect(result).to.have.nested.property('[1].streamMuxer', undefined)
+  })
 })

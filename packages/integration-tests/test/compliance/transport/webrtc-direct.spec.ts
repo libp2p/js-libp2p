@@ -1,15 +1,24 @@
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { webRTCDirect } from '@libp2p/webrtc'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import { isNode, isElectron } from 'wherearewe'
+import { isNode, isElectronMain, isWebWorker } from 'wherearewe'
+import { isFirefox } from '../../fixtures/utils.js'
 
 describe('WebRTC-Direct interface-transport compliance', () => {
-  if (!isNode && !isElectron) {
+  if (isWebWorker) {
+    return
+  }
+
+  if (isFirefox) {
+    // FireFox cannot dial loopback addresses and CI doesn't always have others
     return
   }
 
   tests({
     async setup () {
+      const canListen = isNode || isElectronMain
+
       const dialer = {
         transports: [
           webRTCDirect()
@@ -21,15 +30,23 @@ describe('WebRTC-Direct interface-transport compliance', () => {
 
       return {
         dialer,
-        listener: {
-          addresses: {
-            listen: [
-              '/ip4/127.0.0.1/udp/0/webrtc-direct',
-              '/ip4/127.0.0.1/udp/0/webrtc-direct'
-            ]
-          },
-          ...dialer
-        },
+        listener: canListen
+          ? {
+              addresses: {
+                listen: [
+                  '/ip4/127.0.0.1/udp/0/webrtc-direct',
+                  '/ip4/127.0.0.1/udp/0/webrtc-direct'
+                ]
+              },
+              ...dialer
+            }
+          : undefined,
+        dialAddrs: canListen
+          ? undefined
+          : [
+              multiaddr(process.env.RELAY_WEBRTC_DIRECT_MULTIADDR_0 ?? ''),
+              multiaddr(process.env.RELAY_WEBRTC_DIRECT_MULTIADDR_1 ?? '')
+            ],
         dialMultiaddrMatcher: WebRTCDirect,
         listenMultiaddrMatcher: WebRTCDirect
       }

@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.9.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.8.0...interface-v2.9.0) (2025-04-16)
+
+
+### Features
+
+* add skip muxer negotiation ([#3081](https://github.com/libp2p/js-libp2p/issues/3081)) ([3833353](https://github.com/libp2p/js-libp2p/commit/3833353bdc936695b17cc836515763ead2137756))
+
 ## [2.8.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.7.0...interface-v2.8.0) (2025-04-09)
 
 

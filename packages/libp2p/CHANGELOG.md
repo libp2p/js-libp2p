@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.3...libp2p-v2.8.4) (2025-04-16)
+
+
+### Bug Fixes
+
+* allow empty error events ([#3082](https://github.com/libp2p/js-libp2p/issues/3082)) ([ae7d867](https://github.com/libp2p/js-libp2p/commit/ae7d867f25a7a730bbd551eb1167a6c148975d86))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/interface-internal bumped from ^2.3.10 to ^2.3.11
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/multistream-select bumped from ^6.0.21 to ^6.0.22
+    * @libp2p/peer-collections bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-store bumped from ^11.1.3 to ^11.1.4
+    * @libp2p/utils bumped from ^6.6.1 to ^6.6.2
+
 ## [2.8.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.2...libp2p-v2.8.3) (2025-04-09)
 
 
