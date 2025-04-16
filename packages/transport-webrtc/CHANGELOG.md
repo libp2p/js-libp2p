@@ -111,6 +111,29 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.11](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.10...webrtc-v5.2.11) (2025-04-16)
+
+
+### Bug Fixes
+
+* close handshake datachannel after use ([#3076](https://github.com/libp2p/js-libp2p/issues/3076)) ([b9e32cc](https://github.com/libp2p/js-libp2p/commit/b9e32cc37b3f45efc512e0f868cd7df1dbf1aef3))
+* partial revert of [#3076](https://github.com/libp2p/js-libp2p/issues/3076) - do not close handshake channel ([#3083](https://github.com/libp2p/js-libp2p/issues/3083)) ([f09bef8](https://github.com/libp2p/js-libp2p/commit/f09bef8438b57e3c918881d1acb2931b14cefd47))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/interface-internal bumped from ^2.3.10 to ^2.3.11
+    * @libp2p/keychain bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/utils bumped from ^6.6.1 to ^6.6.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.3 to ^6.4.4
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+
 ## [5.2.10](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.9...webrtc-v5.2.10) (2025-04-09)
 
 
