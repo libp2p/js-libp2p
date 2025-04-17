@@ -24,7 +24,7 @@ export interface DecoderOptions extends LpDecoderOptions {
 /**
  * Thin wrapper around a peer's inbound / outbound pubsub streams
  */
-export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
+export class PeerStreams<PeerEvents extends PeerStreamEvents = PeerStreamEvents> extends TypedEventEmitter<PeerEvents> {
   public readonly id: PeerId
   public readonly protocol: string
   /**
