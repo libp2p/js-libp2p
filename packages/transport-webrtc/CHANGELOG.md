@@ -111,6 +111,20 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.12](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.11...webrtc-v5.2.12) (2025-04-17)
+
+
+### Bug Fixes
+
+* skip muxer negotiation ([#3084](https://github.com/libp2p/js-libp2p/issues/3084)) ([6f96de8](https://github.com/libp2p/js-libp2p/commit/6f96de86cc951910211e21393117a1ffe96ee588))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.4 to ^6.4.5
+
 ## [5.2.11](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.10...webrtc-v5.2.11) (2025-04-16)
 
 
