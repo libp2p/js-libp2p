@@ -404,16 +404,25 @@ export class AddressManager implements AddressManagerInterface {
         .map(multiaddr => this.transportAddresses.get(multiaddr, this.addressVerificationTTL))
     )
 
+    const appendAnnounceMultiaddrs = this.getAppendAnnounceAddrs()
+
     // add append announce addresses
-    addresses = addresses.concat(
-      this.getAppendAnnounceAddrs().map(multiaddr => ({
-        multiaddr,
-        verified: true,
-        type: 'announce',
-        expires: Date.now() + this.addressVerificationTTL,
-        lastVerified: Date.now()
-      }))
-    )
+    if (appendAnnounceMultiaddrs.length > 0) {
+      // allow transports to add certhashes and other runtime information
+      this.components.transportManager.getListeners().forEach(listener => {
+        listener.updateAnnounceAddrs(appendAnnounceMultiaddrs)
+      })
+
+      addresses = addresses.concat(
+        appendAnnounceMultiaddrs.map(multiaddr => ({
+          multiaddr,
+          verified: true,
+          type: 'announce',
+          expires: Date.now() + this.addressVerificationTTL,
+          lastVerified: Date.now()
+        }))
+      )
+    }
 
     // add observed addresses
     addresses = addresses.concat(
