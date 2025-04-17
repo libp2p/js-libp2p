@@ -86,7 +86,9 @@ describe('Address Manager', () => {
   })
 
   it('should add appendAnnounce multiaddrs on get', () => {
-    const transportManager = stubInterface<TransportManager>()
+    const transportManager = stubInterface<TransportManager>({
+      getListeners: Sinon.stub().returns([])
+    })
     const am = new AddressManager({
       peerId,
       transportManager,
@@ -809,6 +811,60 @@ describe('Address Manager', () => {
       verified: true,
       type: 'observed'
     }])
+  })
+
+  it('should allow updating announce addresses', async () => {
+    const listener = stubInterface<Listener>({
+      updateAnnounceAddrs: Sinon.stub().returnsArg(0)
+    })
+
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getListeners: Sinon.stub().returns([
+          listener
+        ])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      announce: [
+        '/ip4/123.123.123.123/tcp/1234'
+      ]
+    })
+
+    expect(am.getAddresses()).to.have.lengthOf(1)
+    expect(listener.updateAnnounceAddrs.called).to.be.true()
+  })
+
+  it('should allow updating appendAnnounce addresses', async () => {
+    const listener = stubInterface<Listener>({
+      updateAnnounceAddrs: Sinon.stub().returnsArg(0)
+    })
+
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([
+          multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          multiaddr('/ip4/192.168.1.123/tcp/1234')
+        ]),
+        getListeners: Sinon.stub().returns([
+          listener
+        ])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      appendAnnounce: [
+        '/ip4/123.123.123.123/tcp/1234'
+      ]
+    })
+
+    expect(am.getAddresses()).to.have.lengthOf(3)
+    expect(listener.updateAnnounceAddrs.called).to.be.true()
   })
 })
 
