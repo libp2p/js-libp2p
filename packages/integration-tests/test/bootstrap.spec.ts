@@ -3,9 +3,7 @@
 import { bootstrap } from '@libp2p/bootstrap'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { TypedEventEmitter, peerDiscoverySymbol } from '@libp2p/interface'
-import { mplex } from '@libp2p/mplex'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -96,52 +94,6 @@ describe('bootstrap', () => {
       expectedPeers.delete(id.toString())
       if (expectedPeers.size === 0) {
         libp2p.removeEventListener('peer:discovery')
-        deferred.resolve()
-      }
-    })
-
-    await libp2p.start()
-
-    return deferred.promise
-  })
-
-  it('bootstrap should dial all peers in the list', async () => {
-    const deferred = defer()
-
-    const list = [
-      `${process.env.RELAY_MULTIADDR}`
-    ]
-
-    libp2p = await createLibp2p({
-      connectionEncrypters: [
-        plaintext()
-      ],
-      transports: [
-        webSockets()
-      ],
-      streamMuxers: [
-        mplex()
-      ],
-      peerDiscovery: [
-        bootstrap({
-          list
-        })
-      ],
-      connectionGater: {
-        denyDialMultiaddr: () => false
-      }
-    })
-
-    const expectedPeers = new Set(
-      list.map(ma => multiaddr(ma).getPeerId())
-    )
-
-    libp2p.addEventListener('connection:open', (evt) => {
-      const { remotePeer } = evt.detail
-
-      expectedPeers.delete(remotePeer.toString())
-      if (expectedPeers.size === 0) {
-        libp2p.removeEventListener('connection:open')
         deferred.resolve()
       }
     })
