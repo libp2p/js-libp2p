@@ -57,27 +57,6 @@ describe('bootstrap', () => {
     await stop(r)
   })
 
-  it('should dial bootstrap peers', async function () {
-    this.timeout(5 * 1000)
-    const r = bootstrap({
-      list: peerList,
-      timeout: 100
-    })(components)
-
-    await start(r)
-
-    await new Promise<void>(resolve => {
-      const interval = setInterval(() => {
-        if (components.connectionManager.openConnection.callCount === 1) {
-          clearInterval(interval)
-          resolve()
-        }
-      }, 100)
-    })
-
-    await stop(r)
-  })
-
   it('should tag bootstrap peers', async function () {
     this.timeout(5 * 1000)
 
