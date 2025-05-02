@@ -459,4 +459,48 @@ describe('peer-routing', () => {
       expect(peers).to.be.an('array').with.a.lengthOf(1).that.deep.equals(results)
     })
   })
+
+  describe('partial implementation', () => {
+    let node: Libp2p
+    let router: StubbedInstance<Partial<PeerRouting>>
+
+    beforeEach(async () => {
+      router = {
+        findPeer: sinon.stub()
+      }
+
+      node = await createLibp2p({
+        services: {
+          router: () => ({
+            [peerRoutingSymbol]: router
+          })
+        }
+      })
+    })
+
+    afterEach(async () => {
+      await node?.stop()
+    })
+
+    it('should invoke a method defined on the service', async () => {
+      const peerInfo = {
+        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/4001')
+        ]
+      }
+
+      router.findPeer?.callsFake(async function () {
+        return peerInfo
+      })
+
+      await expect(node.peerRouting.findPeer(peerInfo.id)).to.eventually.deep.equal(peerInfo)
+    })
+
+    it('should not invoke a method not defined on the service', async () => {
+      const result = await all(node.peerRouting.getClosestPeers(Uint8Array.from([0, 1, 2, 3, 4])))
+
+      expect(result).to.be.empty()
+    })
+  })
 })
