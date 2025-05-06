@@ -96,6 +96,20 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.40](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.39...webtransport-v5.0.40) (2025-04-17)
+
+
+### Bug Fixes
+
+* skip muxer negotiation ([#3084](https://github.com/libp2p/js-libp2p/issues/3084)) ([6f96de8](https://github.com/libp2p/js-libp2p/commit/6f96de86cc951910211e21393117a1ffe96ee588))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.8.4 to ^2.8.5
+
 ## [5.0.39](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.38...webtransport-v5.0.39) (2025-04-16)
 
 

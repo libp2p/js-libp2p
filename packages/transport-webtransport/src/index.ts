@@ -293,7 +293,8 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
     const { remoteExtensions } = await n.secureOutbound(duplex, {
       signal,
-      remotePeer
+      remotePeer,
+      skipStreamMuxerNegotiation: true
     })
 
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))

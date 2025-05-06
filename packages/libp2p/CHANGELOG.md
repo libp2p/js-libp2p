@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.4...libp2p-v2.8.5) (2025-04-17)
+
+
+### Bug Fixes
+
+* update append announce addresses ([#3085](https://github.com/libp2p/js-libp2p/issues/3085)) ([afa5c9f](https://github.com/libp2p/js-libp2p/commit/afa5c9f598297fef9a5dd50d856868f190629837)), closes [#3080](https://github.com/libp2p/js-libp2p/issues/3080)
+
 ## [2.8.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.3...libp2p-v2.8.4) (2025-04-16)
 
 

@@ -75,6 +75,15 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.4.5](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.4...interface-compliance-tests-v6.4.5) (2025-04-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * libp2p bumped from ^2.8.4 to ^2.8.5
+
 ## [6.4.4](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.3...interface-compliance-tests-v6.4.4) (2025-04-16)
 
 
