@@ -253,4 +253,86 @@ describe('content routing', () => {
     }, {}))
     expect(provs).to.have.length(1)
   })
+
+  it('aborts provide operation when abort signal is triggered before starting', async function () {
+    this.timeout(20 * 1000)
+
+    const dhts = await sortDHTs(await Promise.all([
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
+
+    // Spy on network.sendMessage to verify it's not called after abort
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+
+    // Connect peers
+    await Promise.all([
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
+    ])
+
+    const controller = new AbortController()
+    controller.abort()
+
+    const generator = dhts[3].provide(cid, { signal: controller.signal })
+    
+    expect(all(generator)).to.be.rejectedWith('Operation aborted')
+
+    expect(sendMessageSpy.called).to.be.false('sendMessage should not be called when aborted')
+  })
+
+  it('aborts provide operation during execution', async function () {
+    this.timeout(20 * 1000)
+
+    const dhts = await sortDHTs(await Promise.all([
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
+
+    // Connect peers
+    await Promise.all([
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
+    ])
+
+    // Create a delay in the getClosestPeers operation to give us time to abort
+    const originalGetClosestPeers = dhts[3].peerRouting.getClosestPeers
+    const delayedGetClosestPeers = async function* (...args: any[]) {
+      // Yield one result then delay
+      // @ts-expect-error args is not typed
+      const generator = originalGetClosestPeers.apply(dhts[3].peerRouting, args)
+      let first = true
+      
+      for await (const result of generator) {
+        yield result
+        
+        if (first) {
+          first = false
+          await delay(100) // Give time to abort
+        }
+      }
+    }
+    
+    // Replace getClosestPeers with our delayed version
+    sinon.stub(dhts[3].peerRouting, 'getClosestPeers').callsFake(delayedGetClosestPeers)
+    
+    
+    const signal = AbortSignal.timeout(50)
+
+    // Start the provide operation
+    const generator = dhts[3].provide(cid, { signal })
+    
+    const eventsPromise = all(generator)
+    
+    // Wait for events to be collected
+    const events = await eventsPromise
+    
+    expect(events.length).to.be.lessThan(10, 'should have limited events due to abortion')
+  })
 })
