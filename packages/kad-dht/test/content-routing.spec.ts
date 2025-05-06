@@ -278,13 +278,13 @@ describe('content routing', () => {
     controller.abort()
 
     const generator = dhts[3].provide(cid, { signal: controller.signal })
-    
     expect(all(generator)).to.be.rejectedWith('Operation aborted')
+
 
     expect(sendMessageSpy.called).to.be.false('sendMessage should not be called when aborted')
   })
 
-  it('aborts provide operation during execution', async function () {
+  it('properly terminates generator when a non-immediate abort signal is triggered', async function () {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
@@ -301,38 +301,59 @@ describe('content routing', () => {
       testDHT.connect(dhts[2], dhts[3])
     ])
 
-    // Create a delay in the getClosestPeers operation to give us time to abort
-    const originalGetClosestPeers = dhts[3].peerRouting.getClosestPeers
-    const delayedGetClosestPeers = async function* (...args: any[]) {
-      // Yield one result then delay
-      // @ts-expect-error args is not typed
-      const generator = originalGetClosestPeers.apply(dhts[3].peerRouting, args)
-      let first = true
-      
-      for await (const result of generator) {
-        yield result
-        
-        if (first) {
-          first = false
-          await delay(100) // Give time to abort
-        }
-      }
-    }
-    
-    // Replace getClosestPeers with our delayed version
-    sinon.stub(dhts[3].peerRouting, 'getClosestPeers').callsFake(delayedGetClosestPeers)
-    
-    
-    const signal = AbortSignal.timeout(50)
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
 
+    const controller = new AbortController()
+    
     // Start the provide operation
-    const generator = dhts[3].provide(cid, { signal })
+    const generator = dhts[3].provide(cid, { signal: controller.signal })
     
-    const eventsPromise = all(generator)
+    // We want to push the generator manually to control timing
+    const reader = async () => {
+      const results = []
+      try {
+        for await (const event of generator) {
+          results.push(event)
+          // After we get the first few results, abort the operation
+          if (results.length === 2) {
+            controller.abort()
+            // TODO: If this delay is removed, the generator terminates fine
+            // This delay causes the generator to not terminate for some reason
+            await delay(50) 
+          }
+        }
+      } catch (err) {
+        // We expect an abort error here
+        // @ts-expect-error error is not typed
+        expect(err.message).to.include('abort')
+        return { results, aborted: true }
+      }
+      return { results, aborted: false }
+    }
+
+    console.log('reader before')
+    const { results, aborted } = await reader()
+    console.log('reader after')
     
-    // Wait for events to be collected
-    const events = await eventsPromise
+    // We should have aborted
+    expect(aborted).to.be.true('Generator should have thrown an abort error')
     
-    expect(events.length).to.be.lessThan(10, 'should have limited events due to abortion')
+    // We should have received some events before the abort
+    expect(results.length).to.be.greaterThan(0, 'Should have received some events before abort')
+    
+    // After aborting, if we try to get more from the generator, it should be done
+    // Testing this requires using the original generator reference, but we've already
+    // drained it. So instead we check side effects to confirm the operation stopped.
+    
+    // Wait a reasonable time for any pending operations to complete
+    await delay(500)
+    
+    // Check that no new network calls were made after the abort
+    const initialMessageCalls = sendMessageSpy.callCount
+    await delay(200)
+    
+    // The number of calls should not have increased
+    expect(sendMessageSpy.callCount).to.equal(initialMessageCalls, 
+      'No new network calls should be made after abort')
   })
 })
