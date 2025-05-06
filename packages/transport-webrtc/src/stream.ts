@@ -11,7 +11,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { BUFFERED_AMOUNT_LOW_TIMEOUT, FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, OPEN_TIMEOUT, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { RTCDataChannel } from './webrtc/index.js'
 import type { AbortOptions, ComponentLogger, Direction } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
@@ -377,7 +376,7 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    *
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
-  channel: RTCDataChannel
+  channel: globalThis.RTCDataChannel
 
   /**
    * The stream direction
