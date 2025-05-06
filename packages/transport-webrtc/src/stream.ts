@@ -376,7 +376,7 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    *
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
-  channel: globalThis.RTCDataChannel
+  channel: RTCDataChannel
 
   /**
    * The stream direction
