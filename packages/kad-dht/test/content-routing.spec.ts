@@ -12,6 +12,7 @@ import { createValues } from './utils/create-values.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { PeerId } from '@libp2p/interface'
+import { enable } from '@libp2p/logger'
 import type { CID } from 'multiformats/cid'
 
 describe('content routing', () => {
@@ -305,6 +306,7 @@ describe('content routing', () => {
 
     const controller = new AbortController()
     
+    enable('*')
     // Start the provide operation
     const generator = dhts[3].provide(cid, { signal: controller.signal })
     
@@ -317,7 +319,6 @@ describe('content routing', () => {
           // After we get the first few results, abort the operation
           if (results.length === 2) {
             controller.abort()
-            // TODO: If this delay is removed, the generator terminates fine
             // This delay causes the generator to not terminate for some reason
             await delay(50) 
           }
