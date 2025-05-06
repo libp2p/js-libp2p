@@ -15,7 +15,6 @@ import { createStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { mockDataChannel, receiveFinAck } from './util.js'
 import type { WebRTCStream } from '../src/stream.js'
-import type { RTCDataChannel } from '../src/webrtc/index.js'
 import type { Stream } from '@libp2p/interface'
 
 describe('Max message size', () => {
