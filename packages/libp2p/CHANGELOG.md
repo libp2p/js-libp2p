@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.5...libp2p-v2.8.6) (2025-05-07)
+
+
+### Bug Fixes
+
+* allow partial routing implementations ([#3093](https://github.com/libp2p/js-libp2p/issues/3093)) ([772b401](https://github.com/libp2p/js-libp2p/commit/772b4011e18ab7bbfc5aeeefd9e13e168d5d9579))
+
 ## [2.8.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.4...libp2p-v2.8.5) (2025-04-17)
 
 
