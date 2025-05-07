@@ -5,7 +5,6 @@ import { expect } from 'aegir/chai'
 import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
 import { DataChannelMuxerFactory } from '../src/muxer.js'
-import type { RTCPeerConnection, RTCDataChannelEvent, RTCDataChannel } from '../src/webrtc/index.js'
 
 describe('muxer', () => {
   it('should delay notification of early streams', async () => {
