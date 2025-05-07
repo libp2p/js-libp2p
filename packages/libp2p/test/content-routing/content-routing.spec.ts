@@ -9,6 +9,7 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
+import sinon from 'sinon'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { createLibp2p, type Libp2p } from '../../src/index.js'
 import type { ContentRouting, PeerInfo } from '@libp2p/interface'
@@ -390,6 +391,47 @@ describe('content-routing', () => {
 
       expect(providers).to.have.length.above(0)
       expect(providers).to.eql(results)
+    })
+  })
+
+  describe('partial implementation', () => {
+    let node: Libp2p
+    let router: StubbedInstance<Partial<ContentRouting>>
+
+    beforeEach(async () => {
+      router = {
+        provide: sinon.stub()
+      }
+
+      node = await createLibp2p({
+        services: {
+          router: () => ({
+            [contentRoutingSymbol]: router
+          })
+        }
+      })
+    })
+
+    afterEach(async () => {
+      await node?.stop()
+    })
+
+    it('should invoke a method defined on the service', async () => {
+      const deferred = pDefer()
+
+      router.provide?.callsFake(async function () {
+        deferred.resolve()
+      })
+
+      void node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
+
+      await deferred.promise
+    })
+
+    it('should not invoke a method not defined on the service', async () => {
+      const result = await all(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
+
+      expect(result).to.be.empty()
     })
   })
 })
