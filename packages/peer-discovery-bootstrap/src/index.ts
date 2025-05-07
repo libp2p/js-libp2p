@@ -37,7 +37,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
 
 const DEFAULT_BOOTSTRAP_TAG_NAME = 'bootstrap'
 const DEFAULT_BOOTSTRAP_TAG_VALUE = 50
@@ -77,7 +76,6 @@ export interface BootstrapInit {
 export interface BootstrapComponents {
   peerStore: PeerStore
   logger: ComponentLogger
-  connectionManager: ConnectionManager
 }
 
 /**
@@ -183,10 +181,6 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       }
 
       this.safeDispatchEvent('peer', { detail: peerData })
-      this.components.connectionManager.openConnection(peerData.id)
-        .catch(err => {
-          this.log.error('could not dial bootstrap peer %p', peerData.id, err)
-        })
     }
   }
 
