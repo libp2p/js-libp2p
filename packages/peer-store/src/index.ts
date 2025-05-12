@@ -8,7 +8,7 @@ import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore, type PeerUpdate } from './store.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 
@@ -136,6 +136,15 @@ class PersistentPeerStore implements PeerStore {
     } finally {
       this.log.trace('get release read lock')
       release()
+    }
+  }
+
+  async getInfo (peerId: PeerId): Promise<PeerInfo> {
+    const peer = await this.get(peerId)
+
+    return {
+      id: peer.id,
+      multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
     }
   }
 

@@ -495,4 +495,64 @@ describe('PersistentPeerStore', () => {
       }
     })
   })
+
+  it('should return peerInfo', async () => {
+    const peerStore = persistentPeerStore(components, {
+      maxAddressAge: 50,
+      maxPeerAge: 200
+    })
+
+    await peerStore.save(otherPeerId, {
+      multiaddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/1234')
+      ]
+    })
+
+    await expect(peerStore.getInfo(otherPeerId)).to.eventually.deep.equal({
+      id: otherPeerId,
+      multiaddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/1234')
+      ]
+    })
+  })
+
+  it('should not include peer id in multiaddrs in returned peerInfo', async () => {
+    const peerStore = persistentPeerStore(components, {
+      maxAddressAge: 50,
+      maxPeerAge: 200
+    })
+
+    await peerStore.save(otherPeerId, {
+      multiaddrs: [
+        multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${otherPeerId}`)
+      ]
+    })
+
+    await expect(peerStore.getInfo(otherPeerId)).to.eventually.deep.equal({
+      id: otherPeerId,
+      multiaddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/1234')
+      ]
+    })
+  })
+
+  it('should serialize peerInfo', async () => {
+    const peerStore = persistentPeerStore(components, {
+      maxAddressAge: 50,
+      maxPeerAge: 200
+    })
+
+    await peerStore.save(otherPeerId, {
+      multiaddrs: [
+        multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${otherPeerId}`)
+      ]
+    })
+
+    expect(JSON.parse(JSON.stringify(await peerStore.getInfo(otherPeerId)))).to.deep.equal({
+      id: otherPeerId.toString(),
+      multiaddrs: [
+        '/ip4/123.123.123.123/tcp/1234'
+      ]
+    })
+  })
 })
