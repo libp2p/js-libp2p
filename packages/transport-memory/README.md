@@ -1,5 +1,3 @@
-# @libp2p/tcp
-
 # @libp2p/memory
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
