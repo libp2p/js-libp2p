@@ -1,4 +1,7 @@
 import { ed25519 as ed } from '@noble/curves/ed25519'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import crypto from '../../webcrypto/index.js'
 import type { Uint8ArrayKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -9,7 +12,44 @@ const KEYS_BYTE_LENGTH = 32
 export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
-export function generateKey (): Uint8ArrayKeyPair {
+const webCryptoEd25519SupportedPromise = (async () => {
+  try {
+    await crypto.get().subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify'])
+    return true
+  } catch {
+    return false
+  }
+})()
+
+async function generateKeyWebCrypto (): Promise<Uint8ArrayKeyPair> {
+  const key = await crypto.get().subtle.generateKey(
+    {
+      name: 'Ed25519'
+    },
+    true,
+    ['sign', 'verify']
+  ) as CryptoKeyPair
+
+  const exportedJwk = await crypto.get().subtle.exportKey('jwk', key.privateKey)
+
+  if (exportedJwk.d === undefined || exportedJwk.d === '') {
+    throw new Error('Could not export JWK private key')
+  }
+
+  if (exportedJwk.x === undefined || exportedJwk.x === '') {
+    throw new Error('Could not export JWK public key')
+  }
+
+  const privateKeyRaw = uint8arrayFromString(exportedJwk.d, 'base64url')
+  const publicKey = uint8arrayFromString(exportedJwk.x, 'base64url')
+
+  return {
+    privateKey: concatKeys(privateKeyRaw, publicKey),
+    publicKey
+  }
+}
+
+function generateKeyNoble (): Uint8ArrayKeyPair {
   // the actual private key (32 bytes)
   const privateKeyRaw = ed.utils.randomPrivateKey()
   const publicKey = ed.getPublicKey(privateKeyRaw)
@@ -23,9 +63,13 @@ export function generateKey (): Uint8ArrayKeyPair {
   }
 }
 
-/**
- * Generate keypair from a 32 byte uint8array
- */
+export async function generateKey (): Promise<Uint8ArrayKeyPair> {
+  if (await webCryptoEd25519SupportedPromise) {
+    return generateKeyWebCrypto()
+  }
+  return generateKeyNoble()
+}
+
 export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   if (seed.length !== KEYS_BYTE_LENGTH) {
     throw new TypeError('"seed" must be 32 bytes in length.')
@@ -45,14 +89,57 @@ export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   }
 }
 
-export function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
+async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+  let privateKeyRaw: Uint8Array
+  if (privateKey.length === PRIVATE_KEY_BYTE_LENGTH) {
+    privateKeyRaw = privateKey.subarray(0, 32)
+  } else {
+    privateKeyRaw = privateKey
+  }
+
+  const jwk: JsonWebKey = {
+    crv: 'Ed25519',
+    kty: 'OKP',
+    x: uint8arrayToString(privateKey.subarray(32), 'base64url'),
+    d: uint8arrayToString(privateKeyRaw, 'base64url'),
+    ext: true,
+    key_ops: ['sign']
+  }
+
+  const key = await crypto.get().subtle.importKey('jwk', jwk, { name: 'Ed25519' }, true, ['sign'])
+
+  const buffer = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, msg instanceof Uint8Array ? msg : msg.subarray())
+  return new Uint8Array(buffer)
+}
+
+function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
   return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
 }
 
-export function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
+export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+  if (await webCryptoEd25519SupportedPromise) {
+    return hashAndSignWebCrypto(privateKey, msg)
+  }
+  return hashAndSignNoble(privateKey, msg)
+}
+
+async function hashAndVerifyWebCrypto (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+  const key = await crypto.get().subtle.importKey('raw', publicKey.buffer, { name: 'Ed25519' }, false, ['verify'])
+  const isValid = await crypto.get().subtle.verify({ name: 'Ed25519' }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray())
+  return isValid
+}
+
+function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
   return ed.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey)
+}
+
+export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+  if (await webCryptoEd25519SupportedPromise) {
+    return hashAndVerifyWebCrypto(publicKey, sig, msg)
+  }
+  return hashAndVerifyNoble(publicKey, sig, msg)
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {
