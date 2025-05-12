@@ -65,7 +65,7 @@
     "build": "aegir build",
     "test": "aegir test -t browser",
     "test:chrome": "aegir test -t browser --cov",
-    "test:firefox": "aegir test -t browser --browser firefox"
+    "test:firefox": "aegir test -t browser -- --browser firefox"
   },
   "dependencies": {
     "@libp2p/interface": "^2.9.0",
