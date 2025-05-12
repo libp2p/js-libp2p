@@ -42,8 +42,17 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     .sort((a, b) => {
       return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
     })
-    .map(({ isCertified, multiaddr }) => ({
-      isCertified,
-      multiaddr: multiaddr.bytes
-    }))
+    .map(({ isCertified, multiaddr: ma }) => {
+      // strip the trailing peerId if it is present
+      const addrPeer = ma.getPeerId()
+
+      if (peerId.equals(addrPeer)) {
+        ma = ma.decapsulate(multiaddr(`/p2p/${peerId}`))
+      }
+
+      return {
+        isCertified,
+        multiaddr: ma.bytes
+      }
+    })
 }

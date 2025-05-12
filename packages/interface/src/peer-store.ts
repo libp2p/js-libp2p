@@ -1,6 +1,7 @@
 import type { PublicKey } from './keys.js'
 import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { PeerInfo } from './peer-info.js'
 
 /**
  * When a peer that is tagged with this prefix disconnects, we will attempt to
@@ -228,6 +229,33 @@ export interface PeerStore {
    * ```
    */
   get(peerId: PeerId): Promise<Peer>
+
+  /**
+   * Returns a PeerInfo object for the passed peer id. This is similar to `get`
+   * except the returned value contains fewer fields and the multiaddrs do not
+   * include the id of the peer so cannot be treated as opaque since depending
+   * on the transport the peer id may be required to dial a given address.
+   *
+   * The returned object can be passed to `JSON.stringify` without any
+   * additional processing.
+   *
+   * @see https://docs.libp2p.io/concepts/fundamentals/peers/#peer-info
+   *
+   * @example
+   *
+   * ```TypeScript
+   * const peerInfo = await peerStore.getInfo(peerId)
+   *
+   * console.info(JSON.stringify(peerInfo))
+   * // {
+   * //    id: 'peerId'
+   * //    multiaddrs: [
+   * //      '...'
+   * //    ]
+   * // }
+   * ```
+   */
+  getInfo (peerId: PeerId): Promise<PeerInfo>
 
   /**
    * Adds a peer to the peer store, overwriting any existing data
