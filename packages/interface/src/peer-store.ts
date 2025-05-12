@@ -232,9 +232,8 @@ export interface PeerStore {
 
   /**
    * Returns a PeerInfo object for the passed peer id. This is similar to `get`
-   * except the returned value contains fewer fields and the multiaddrs do not
-   * include the id of the peer so cannot be treated as opaque since depending
-   * on the transport the peer id may be required to dial a given address.
+   * except the returned value contains fewer fields and is often used to
+   * exchange peer information with other systems.
    *
    * The returned object can be passed to `JSON.stringify` without any
    * additional processing.
