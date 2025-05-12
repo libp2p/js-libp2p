@@ -1,7 +1,7 @@
 import type { PublicKey } from './keys.js'
 import type { PeerId } from './peer-id.js'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerInfo } from './peer-info.js'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * When a peer that is tagged with this prefix disconnects, we will attempt to
