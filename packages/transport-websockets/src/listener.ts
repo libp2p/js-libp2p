@@ -1,7 +1,7 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -64,6 +64,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.httpsOptions = init.https ?? init.http
     this.sockets = new Set()
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.wsServer = new ws.WebSocketServer({
       noServer: true
