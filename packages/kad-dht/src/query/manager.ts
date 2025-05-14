@@ -2,6 +2,7 @@ import { setMaxListeners } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
+import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
@@ -26,6 +27,7 @@ export interface QueryManagerInit {
   disjointPaths?: number
   alpha?: number
   initialQuerySelfHasRun: DeferredPromise<void>
+  allowQueryWithZeroPeers?: boolean
   routingTable: RoutingTable
 }
 
@@ -59,6 +61,7 @@ export class QueryManager implements Startable {
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
+  private readonly allowQueryWithZeroPeers: boolean
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     this.logPrefix = init.logPrefix
@@ -69,6 +72,7 @@ export class QueryManager implements Startable {
     this.logger = components.logger
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
+    this.allowQueryWithZeroPeers = init.allowQueryWithZeroPeers ?? false
 
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
@@ -146,6 +150,16 @@ export class QueryManager implements Startable {
     let queryFinished = false
 
     try {
+      if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
+        log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
+        // wait to discover at least one DHT peer that isn't us
+        await pEvent(this.routingTable, 'peer:add', {
+          signal,
+          filter: (event) => !this.peerId.equals(event.detail)
+        })
+        log('routing table has peers, continuing with%s query', options.isSelfQuery === true ? ' self' : '')
+      }
+
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
         log('waiting for initial query-self query before continuing')
 
@@ -161,7 +175,7 @@ export class QueryManager implements Startable {
       const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length))
 
       if (peers.length === 0) {
-        log.error('Running query with no peers')
+        log.error('running query with no peers')
         return
       }
 
@@ -177,7 +191,7 @@ export class QueryManager implements Startable {
           ourPeerId: this.peerId,
           signal,
           query: queryFunc,
-          pathIndex: index,
+          path: index,
           numPaths: peersToQuery.length,
           alpha: this.alpha,
           queryFuncTimeout: options.queryFuncTimeout,
@@ -197,22 +211,26 @@ export class QueryManager implements Startable {
         if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
             // eslint-disable-next-line max-depth
-            if (!(await this.connectionManager.isDialable(peer.multiaddrs))) {
+            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+              signal
+            }))) {
               continue
             }
 
-            await this.routingTable.add(peer.id)
+            await this.routingTable.add(peer.id, {
+              signal
+            })
           }
         }
 
         yield event
+        signal.throwIfAborted()
       }
 
       queryFinished = true
-    } catch (err: any) {
-      if (!this.running && err.name === 'QueryAbortedError') {
-        // ignore query aborted errors that were thrown during query manager shutdown
-      } else {
+    } catch (err) {
+      if (this.running) {
+        // ignore errors thrown during shut down
         throw err
       }
     } finally {

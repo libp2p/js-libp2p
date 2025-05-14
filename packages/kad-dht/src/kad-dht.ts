@@ -223,7 +223,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       logPrefix,
       metricsPrefix,
       initialQuerySelfHasRun,
-      routingTable: this.routingTable
+      routingTable: this.routingTable,
+      allowQueryWithZeroPeers: init.allowQueryWithZeroPeers
     })
 
     // DHT components
@@ -276,7 +277,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       initialInterval: init.initialQuerySelfInterval,
       logPrefix,
       initialQuerySelfHasRun,
-      routingTable: this.routingTable,
       operationMetrics
     })
     this.reprovider = new Reprovider(components, {

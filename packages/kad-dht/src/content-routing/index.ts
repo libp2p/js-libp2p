@@ -112,7 +112,10 @@ export class ContentRouting {
         try {
           this.log('sending provider record for %s to %p', key, event.peer.id)
 
-          for await (const sendEvent of this.network.sendMessage(event.peer.id, msg, options)) {
+          for await (const sendEvent of this.network.sendMessage(event.peer.id, msg, {
+            ...options,
+            path: event.path ?? -1
+          })) {
             if (sendEvent.name === 'PEER_RESPONSE') {
               this.log('sent provider record for %s to %p', key, event.peer.id)
               sent++
@@ -181,7 +184,7 @@ export class ContentRouting {
         }
       }
 
-      yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers }, options)
+      yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers, path: -1 }, options)
       yield providerEvent({ from: this.components.peerId, providers }, options)
 
       found += providers.length
@@ -194,7 +197,7 @@ export class ContentRouting {
     /**
      * The query function to use on this particular disjoint path
      */
-    const findProvidersQuery: QueryFunc = async function * ({ peer, signal }) {
+    const findProvidersQuery: QueryFunc = async function * ({ peer, signal, path }) {
       const request = {
         type: MessageType.GET_PROVIDERS,
         key: target
@@ -202,7 +205,8 @@ export class ContentRouting {
 
       yield * self.network.sendRequest(peer, request, {
         ...options,
-        signal
+        signal,
+        path
       })
     }
 

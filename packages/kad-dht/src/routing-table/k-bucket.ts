@@ -300,7 +300,7 @@ export class KBucket {
       list.addWithKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
     }
 
-    yield * map(list.peers, info => info.id)
+    yield * map(list.peers, ({ peer }) => peer.id)
   }
 
   /**

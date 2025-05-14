@@ -192,6 +192,7 @@ export interface SendQueryEvent {
   name: 'SEND_QUERY'
   messageName: keyof typeof MessageType
   messageType: MessageType
+  path: number
 }
 
 /**
@@ -207,6 +208,7 @@ export interface PeerResponseEvent {
   closer: PeerInfo[]
   providers: PeerInfo[]
   record?: DHTRecord
+  path: number
 }
 
 /**
@@ -217,6 +219,7 @@ export interface FinalPeerEvent {
   peer: PeerInfo
   type: EventTypes.FINAL_PEER
   name: 'FINAL_PEER'
+  path: number
 }
 
 /**
@@ -227,6 +230,7 @@ export interface QueryErrorEvent {
   type: EventTypes.QUERY_ERROR
   name: 'QUERY_ERROR'
   error: Error
+  path?: number
 }
 
 /**
@@ -256,10 +260,13 @@ export interface AddPeerEvent {
   type: EventTypes.ADD_PEER
   name: 'ADD_PEER'
   peer: PeerId
+  path: number
 }
 
 /**
  * Emitted when peers are dialled as part of a query
+ *
+ * @deprecated No longer emitted as sometimes connections are reused so it's not possible to say with certainty that a peer has been dialled
  */
 export interface DialPeerEvent {
   peer: PeerId
@@ -506,8 +513,8 @@ export interface KadDHTInit {
   initialQuerySelfInterval?: number
 
   /**
-   * After startup by default all queries will be paused until the initial
-   * self-query has run and there are some peers in the routing table.
+   * After startup by default all queries will be paused until there is at least
+   * one peer in the routing table.
    *
    * Pass true here to disable this behavior.
    *

@@ -17,7 +17,7 @@ import {
 } from '../src/query/events.js'
 import { QueryManager, type QueryManagerInit } from '../src/query/manager.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey, type PeerAndKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { QueryContext, QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
@@ -36,7 +36,7 @@ type Topology = Record<string, TopologyEntry>
 
 describe('QueryManager', () => {
   let ourPeerId: PeerId
-  let peers: PeerId[]
+  let peers: PeerAndKey[]
   let key: Uint8Array
   let routingTable: StubbedInstance<RoutingTable>
 
@@ -58,7 +58,7 @@ describe('QueryManager', () => {
 
     Object.keys(opts).forEach(key => {
       const id = parseInt(key)
-      const from = peers[id]
+      const from = peers[id].peerId
       const config = opts[id]
 
       let event: QueryEvent
@@ -72,10 +72,11 @@ describe('QueryManager', () => {
           from,
           messageType: MessageType.GET_VALUE,
           closer: (config.closerPeers ?? []).map((id) => ({
-            id: peers[id],
+            id: peers[id].peerId,
             multiaddrs: [],
             protocols: []
-          }))
+          })),
+          path: -1
         })
       }
 
@@ -113,16 +114,16 @@ describe('QueryManager', () => {
   before(async () => {
     routingTable = stubInterface<RoutingTable>()
 
-    const unsortedPeers = await createPeerIds(39)
-    ourPeerId = await createPeerId()
-    key = (await createPeerId()).toMultihash().bytes
+    const unsortedPeers = await createPeerIdsWithPrivateKey(39)
+    ourPeerId = (await createPeerIdWithPrivateKey()).peerId
+    key = (await createPeerIdWithPrivateKey()).peerId.toMultihash().bytes
 
     // sort remaining peers by XOR distance to the key, low -> high
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key))
   })
 
   beforeEach(async () => {
-    routingTable.closestPeers.returns(peers)
+    routingTable.closestPeers.returns(peers.map(p => p.peerId))
   })
 
   it('does not run queries before start', async () => {
@@ -175,9 +176,9 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * (context) { // eslint-disable-line require-await
       expect(context).to.have.property('key').that.equalBytes(key)
-      expect(context).to.have.property('peer').that.deep.equals(peers[0])
+      expect(context).to.have.property('peer').that.deep.equals(peers[0].peerId)
       expect(context).to.have.property('signal').that.is.an.instanceOf(AbortSignal)
-      expect(context).to.have.property('pathIndex').that.equals(0)
+      expect(context).to.have.property('path').that.equals(0)
       expect(context).to.have.property('numPaths').that.equals(1)
 
       yield valueEvent({
@@ -213,7 +214,7 @@ describe('QueryManager', () => {
 
     const peersQueried: PeerId[] = []
 
-    const queryFunc: QueryFunc = async function * ({ peer, signal }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, signal, path }) { // eslint-disable-line require-await
       expect(signal).to.be.an.instanceOf(AbortSignal)
       peersQueried.push(peer)
 
@@ -222,7 +223,8 @@ describe('QueryManager', () => {
         yield peerResponseEvent({
           from: peer,
           messageType: MessageType.GET_VALUE,
-          closer: peers.slice(0, 5).map(id => ({ id, multiaddrs: [], protocols: [] }))
+          closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
+          path
         })
       } else if (peersQueried.length === 6) {
         // all peers queried, return result
@@ -234,12 +236,13 @@ describe('QueryManager', () => {
         // a peer that cannot help in our query
         yield peerResponseEvent({
           from: peer,
-          messageType: MessageType.GET_VALUE
+          messageType: MessageType.GET_VALUE,
+          path
         })
       }
     }
 
-    routingTable.closestPeers.returns([peers[7]])
+    routingTable.closestPeers.returns([peers[7].peerId])
     const results = await all(manager.run(key, queryFunc))
 
     // e.g. our starting peer plus the 5x closerPeers returned n the first iteration
@@ -269,7 +272,7 @@ describe('QueryManager', () => {
 
     const peersQueried: PeerId[] = []
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
       peersQueried.push(peer)
 
       if (peersQueried.length === 1) {
@@ -277,18 +280,20 @@ describe('QueryManager', () => {
         yield peerResponseEvent({
           from: peer,
           messageType: MessageType.GET_VALUE,
-          closer: peers.slice(0, 5).map(id => ({ id, multiaddrs: [], protocols: [] }))
+          closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
+          path
         })
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
           from: peer,
-          messageType: MessageType.GET_VALUE
+          messageType: MessageType.GET_VALUE,
+          path
         })
       }
     }
 
-    routingTable.closestPeers.returns([peers[7]])
+    routingTable.closestPeers.returns([peers[7].peerId])
     const results = await all(manager.run(key, queryFunc))
 
     // e.g. our starting peer plus the 5x closerPeers returned n the first iteration
@@ -351,7 +356,7 @@ describe('QueryManager', () => {
 
     // the should have been aborted
     await expect(queryPromise).to.eventually.be.rejected()
-      .with.property('name', 'QueryAbortedError')
+      .with.property('name', 'AbortError')
 
     expect(aborted).to.be.true()
 
@@ -402,7 +407,7 @@ describe('QueryManager', () => {
       yield res.event
     }
 
-    routingTable.closestPeers.returns([peers[2], peers[4]])
+    routingTable.closestPeers.returns([peers[2].peerId, peers[4].peerId])
     const result = await all(manager.run(key, queryFunc, { queryFuncTimeout: 500 }))
 
     // should have traversed through the three nodes to the value and the one that timed out
@@ -426,14 +431,19 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer, pathIndex }) { // eslint-disable-line require-await
-      if (pathIndex % 2 === 0) {
+    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
+      if (path % 2 === 0) {
         yield queryErrorEvent({
           from: peer,
-          error: new Error('Urk!')
+          error: new Error('Urk!'),
+          path
         })
       } else {
-        yield peerResponseEvent({ from: peer, messageType: MessageType.GET_VALUE })
+        yield peerResponseEvent({
+          from: peer,
+          messageType: MessageType.GET_VALUE,
+          path
+        })
       }
     }
 
@@ -509,7 +519,7 @@ describe('QueryManager', () => {
       0: { value: uint8ArrayFromString('hello world') }
     })
 
-    routingTable.closestPeers.returns([peers[9]])
+    routingTable.closestPeers.returns([peers[9].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
     const traversedPeers = results
       .map(event => {
@@ -521,16 +531,16 @@ describe('QueryManager', () => {
       })
 
     expect(traversedPeers).to.deep.equal([
-      peers[9],
-      peers[4],
-      peers[3],
-      peers[2],
-      peers[1],
-      peers[0],
-      peers[8],
-      peers[7],
-      peers[6],
-      peers[5]
+      peers[9].peerId,
+      peers[4].peerId,
+      peers[3].peerId,
+      peers[2].peerId,
+      peers[1].peerId,
+      peers[0].peerId,
+      peers[8].peerId,
+      peers[7].peerId,
+      peers[6].peerId,
+      peers[5].peerId
     ])
 
     await manager.stop()
@@ -560,7 +570,7 @@ describe('QueryManager', () => {
       0: { value: uint8ArrayFromString('hello world') }
     })
 
-    routingTable.closestPeers.returns([peers[6], peers[5]])
+    routingTable.closestPeers.returns([peers[6].peerId, peers[5].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
     const traversedPeers = results
       .map(event => {
@@ -590,23 +600,24 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
       yield peerResponseEvent({
         from: peer,
         messageType: MessageType.GET_VALUE,
         closer: [{
-          id: peers[2],
+          id: peers[2].peerId,
           multiaddrs: []
-        }]
+        }],
+        path
       })
     }
 
-    routingTable.closestPeers.returns([peers[3]])
+    routingTable.closestPeers.returns([peers[3].peerId])
     const results = await all(manager.run(key, queryFunc))
 
     expect(results).to.have.lengthOf(2)
-    expect(results).to.have.deep.nested.property('[0].closer[0].id', peers[2])
-    expect(results).to.have.deep.nested.property('[1].closer[0].id', peers[2])
+    expect(results).to.have.deep.nested.property('[0].closer[0].id', peers[2].peerId)
+    expect(results).to.have.deep.nested.property('[1].closer[0].id', peers[2].peerId)
 
     await manager.stop()
   })
@@ -641,7 +652,7 @@ describe('QueryManager', () => {
       9: { closerPeers: [2] }
     })
 
-    routingTable.closestPeers.returns([peers[9], peers[8], peers[7]])
+    routingTable.closestPeers.returns([peers[9].peerId, peers[8].peerId, peers[7].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // Should visit all peers
@@ -688,7 +699,7 @@ describe('QueryManager', () => {
       }
 
       // Shut down after visiting peers[2]
-      if (peer === peers[2]) {
+      if (peer.equals(peers[2].peerId)) {
         await manager.stop()
 
         yield getResult()
@@ -698,13 +709,13 @@ describe('QueryManager', () => {
     }
 
     // shutdown will cause the query to stop early but without an error
-    routingTable.closestPeers.returns([peers[3]])
+    routingTable.closestPeers.returns([peers[3].peerId])
     await drain(manager.run(key, queryFunc))
 
     // Should only visit peers up to the point where we shut down
     expect(visited).to.have.lengthOf(2)
-    expect(visited).to.deep.include(peers[3])
-    expect(visited).to.deep.include(peers[2])
+    expect(visited).to.deep.include(peers[3].peerId)
+    expect(visited).to.deep.include(peers[2].peerId)
   })
 
   it('disjoint path values', async () => {
@@ -733,7 +744,7 @@ describe('QueryManager', () => {
       4: { closerPeers: [3] }
     })
 
-    routingTable.closestPeers.returns([peers[2], peers[4]])
+    routingTable.closestPeers.returns([peers[2].peerId, peers[4].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // visited all the nodes
@@ -779,7 +790,7 @@ describe('QueryManager', () => {
       5: { closerPeers: [4] }
     })
 
-    routingTable.closestPeers.returns([peers[2], peers[5]])
+    routingTable.closestPeers.returns([peers[2].peerId, peers[5].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // @ts-expect-error types are wrong
@@ -817,7 +828,7 @@ describe('QueryManager', () => {
       })
     }
 
-    routingTable.closestPeers.returns([peers[7]])
+    routingTable.closestPeers.returns([peers[7].peerId])
     const results = await all(manager.run(key, queryFunc, {
       // this bypasses awaiting on the initialQuerySelfHasRun deferred promise
       isSelfQuery: true
@@ -827,66 +838,6 @@ describe('QueryManager', () => {
     expect(results).to.containSubset([{
       value: uint8ArrayFromString('cool')
     }])
-
-    await manager.stop()
-  })
-
-  it('should wait for the self-query query to run before running other queries', async () => {
-    const initialQuerySelfHasRun = pDefer<any>()
-
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      initialQuerySelfHasRun,
-      alpha: 2,
-      routingTable,
-      logPrefix: '',
-      metricsPrefix: ''
-    })
-    await manager.start()
-
-    let regularQueryTimeStarted: number = 0
-    let selfQueryTimeStarted: number = Infinity
-
-    routingTable.closestPeers.returns([peers[7]])
-
-    // run a regular query and the self query together
-    await Promise.all([
-      all(manager.run(key, async function * ({ peer }) { // eslint-disable-line require-await
-        regularQueryTimeStarted = Date.now()
-
-        // yield query result
-        yield valueEvent({
-          from: peer,
-          value: uint8ArrayFromString('cool')
-        })
-      })),
-      all(manager.run(key, async function * ({ peer }) { // eslint-disable-line require-await
-        selfQueryTimeStarted = Date.now()
-
-        // make sure we take enough time so that the `regularQuery` time diff is big enough to measure
-        await delay(100)
-
-        // yield query result
-        yield valueEvent({
-          from: peer,
-          value: uint8ArrayFromString('it me')
-        })
-
-        // normally done by the QuerySelf component
-        initialQuerySelfHasRun.resolve()
-      }, {
-        // this bypasses awaiting on the initialQuerySelfHasRun deferred promise
-        isSelfQuery: true
-      }))
-    ])
-
-    // should have started the regular query after the self query finished
-    expect(regularQueryTimeStarted).to.be.greaterThan(selfQueryTimeStarted)
 
     await manager.stop()
   })
@@ -915,7 +866,7 @@ describe('QueryManager', () => {
       6: {}
     })
 
-    routingTable.closestPeers.returns([peers[3]])
+    routingTable.closestPeers.returns([peers[3].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // should not have a value
@@ -923,20 +874,20 @@ describe('QueryManager', () => {
 
     // should have traversed peers 3, 2 & 1
     expect(results).to.containSubset([{
-      from: peers[3]
+      from: peers[3].peerId
     }, {
-      from: peers[2]
+      from: peers[2].peerId
     }, {
-      from: peers[1]
+      from: peers[1].peerId
     }])
 
     // should not have traversed peers 4, 5 & 6
     expect(results).to.not.containSubset([{
-      from: peers[4]
+      from: peers[4].peerId
     }, {
-      from: peers[5]
+      from: peers[5].peerId
     }, {
-      from: peers[6]
+      from: peers[6].peerId
     }])
 
     await manager.stop()
@@ -967,11 +918,11 @@ describe('QueryManager', () => {
       4: { closerPeers: [3] }
     })
 
-    routingTable.closestPeers.returns([peers[1], peers[4]])
+    routingTable.closestPeers.returns([peers[1].peerId, peers[4].peerId])
 
     for await (const event of manager.run(key, createQueryFunction(topology))) {
       if (event.name === 'VALUE') {
-        expect(event.from.toString()).to.equal(peers[0].toString())
+        expect(event.from.toString()).to.equal(peers[0].peerId.toString())
 
         // break out of loop early
         break
@@ -979,10 +930,10 @@ describe('QueryManager', () => {
     }
 
     // should have aborted query on slow path
-    expect(topology[peers[3].toString()]).to.have.nested.property('context.signal.aborted', true)
+    expect(topology[peers[3].peerId.toString()]).to.have.nested.property('context.signal.aborted', true)
 
     // should not have visited the next peer on the slow path
-    expect(topology[peers[4].toString()]).to.not.have.property('context', true)
+    expect(topology[peers[4].peerId.toString()]).to.not.have.property('context', true)
 
     await manager.stop()
   })

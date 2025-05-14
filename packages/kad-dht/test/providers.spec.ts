@@ -7,15 +7,14 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import createMortice from 'mortice'
 import { CID } from 'multiformats/cid'
 import { Providers } from '../src/providers.js'
-import { createPeerIds } from './utils/create-peer-id.js'
-import type { PeerId } from '@libp2p/interface'
+import { createPeerIdsWithPrivateKey, type PeerAndKey } from './utils/create-peer-id.js'
 
 describe('providers', () => {
-  let peers: PeerId[]
+  let peers: PeerAndKey[]
   let providers: Providers
 
   before(async function () {
-    peers = await createPeerIds(3)
+    peers = await createPeerIdsWithPrivateKey(3)
   })
 
   it('should add and get providers', async () => {
@@ -31,13 +30,13 @@ describe('providers', () => {
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
     await Promise.all([
-      providers.addProvider(cid, peers[0]),
-      providers.addProvider(cid, peers[1])
+      providers.addProvider(cid, peers[0].peerId),
+      providers.addProvider(cid, peers[1].peerId)
     ])
 
     const provs = await providers.getProviders(cid)
     const ids = new Set(provs.map((peerId) => peerId.toString()))
-    expect(ids.has(peers[0].toString())).to.equal(true)
+    expect(ids.has(peers[0].peerId.toString())).to.equal(true)
   })
 
   it('should deduplicate multiple adds of same provider', async () => {
@@ -53,17 +52,17 @@ describe('providers', () => {
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
 
     await Promise.all([
-      providers.addProvider(cid, peers[0]),
-      providers.addProvider(cid, peers[0]),
-      providers.addProvider(cid, peers[1]),
-      providers.addProvider(cid, peers[1]),
-      providers.addProvider(cid, peers[1])
+      providers.addProvider(cid, peers[0].peerId),
+      providers.addProvider(cid, peers[0].peerId),
+      providers.addProvider(cid, peers[1].peerId),
+      providers.addProvider(cid, peers[1].peerId),
+      providers.addProvider(cid, peers[1].peerId)
     ])
 
     const provs = await providers.getProviders(cid)
     expect(provs).to.have.length(2)
     const ids = new Set(provs.map((peerId) => peerId.toString()))
-    expect(ids.has(peers[0].toString())).to.equal(true)
+    expect(ids.has(peers[0].peerId.toString())).to.equal(true)
   })
 
   it('should deduplicate CIDs by multihash', async () => {
@@ -81,17 +80,17 @@ describe('providers', () => {
     const cidB = CID.createV1(6, cid.multihash)
 
     await Promise.all([
-      providers.addProvider(cidA, peers[0]),
-      providers.addProvider(cidB, peers[1]),
-      providers.addProvider(cid, peers[2])
+      providers.addProvider(cidA, peers[0].peerId),
+      providers.addProvider(cidB, peers[1].peerId),
+      providers.addProvider(cid, peers[2].peerId)
     ])
 
     const provs = await providers.getProviders(cid)
     expect(provs).to.have.length(3)
     expect(provs).to.include.deep.members([
-      peers[0],
-      peers[1],
-      peers[2]
+      peers[0].peerId,
+      peers[1].peerId,
+      peers[2].peerId
     ])
   })
 

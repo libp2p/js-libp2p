@@ -18,7 +18,7 @@ import { verifyRecord } from '../record/validators.js'
 import { convertBuffer, convertPeerId, keyForPublicKey } from '../utils.js'
 import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Message } from '../message/dht.js'
-import type { Network } from '../network.js'
+import type { Network, SendMessageOptions } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
@@ -110,7 +110,7 @@ export class PeerRouting {
   /**
    * Get a value via rpc call for the given parameters
    */
-  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+  async * _getValueSingle (peer: PeerId, key: Uint8Array, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     const msg: Partial<Message> = {
       type: MessageType.GET_VALUE,
       key
@@ -125,7 +125,10 @@ export class PeerRouting {
   async * getPublicKeyFromNode (peer: PeerId, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     const pkKey = keyForPublicKey(peer)
 
-    for await (const event of this._getValueSingle(peer, pkKey, options)) {
+    for await (const event of this._getValueSingle(peer, pkKey, {
+      ...options,
+      path: -1
+    })) {
       yield event
 
       if (event.name === 'PEER_RESPONSE' && event.record != null) {
@@ -166,7 +169,8 @@ export class PeerRouting {
         this.log('found local')
         yield finalPeerEvent({
           from: this.peerId,
-          peer: pi
+          peer: pi,
+          path: -1
         }, options)
         return
       }
@@ -177,7 +181,7 @@ export class PeerRouting {
     if (options.useNetwork !== false) {
       const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-      const findPeerQuery: QueryFunc = async function * ({ peer, signal }) {
+      const findPeerQuery: QueryFunc = async function * ({ peer, signal, path }) {
         const request: Partial<Message> = {
           type: MessageType.FIND_NODE,
           key: id.toMultihash().bytes
@@ -185,7 +189,8 @@ export class PeerRouting {
 
         for await (const event of self.network.sendRequest(peer, request, {
           ...options,
-          signal
+          signal,
+          path
         })) {
           yield event
 
@@ -194,7 +199,11 @@ export class PeerRouting {
 
             // found the peer
             if (match != null) {
-              yield finalPeerEvent({ from: event.from, peer: match }, options)
+              yield finalPeerEvent({
+                from: event.from,
+                peer: match,
+                path: event.path
+              }, options)
             }
           }
         }
@@ -210,7 +219,10 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({ from: this.peerId, error: new NotFoundError('Not found') }, options)
+      yield queryErrorEvent({
+        from: this.peerId,
+        error: new NotFoundError('Not found')
+      }, options)
     }
   }
 
@@ -225,9 +237,9 @@ export class PeerRouting {
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
-    await Promise.all(tablePeers.map(async peer => { await peers.add({ id: peer, multiaddrs: [] }) }))
+    await Promise.all(tablePeers.map(async peer => { await peers.add({ id: peer, multiaddrs: [] }, -1) }))
 
-    const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal }) {
+    const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal, path }) {
       self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
       const request: Partial<Message> = {
         type: MessageType.FIND_NODE,
@@ -236,14 +248,15 @@ export class PeerRouting {
 
       yield * self.network.sendRequest(peer, request, {
         ...options,
-        signal
+        signal,
+        path
       })
     }
 
     for await (const event of this.queryManager.run(key, getCloserPeersQuery, options)) {
       if (event.name === 'PEER_RESPONSE') {
         await Promise.all(event.closer.map(async peerData => {
-          await peers.add(peerData)
+          await peers.add(peerData, event.path)
         }))
       }
 
@@ -252,10 +265,11 @@ export class PeerRouting {
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (const peer of peers.peers) {
+    for (const { peer, path } of peers.peers) {
       yield finalPeerEvent({
         from: this.peerId,
-        peer
+        peer,
+        path
       }, options)
     }
   }
@@ -266,7 +280,7 @@ export class PeerRouting {
    *
    * Note: The peerStore is updated with new addresses found for the given peer.
    */
-  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+  async * getValueOrPeers (peer: PeerId, key: Uint8Array, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     for await (const event of this._getValueSingle(peer, key, options)) {
       if (event.name === 'PEER_RESPONSE') {
         if (event.record != null) {
@@ -277,7 +291,11 @@ export class PeerRouting {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
 
-            yield queryErrorEvent({ from: event.from, error: new QueryError(errMsg) }, options)
+            yield queryErrorEvent({
+              from: event.from,
+              error: new QueryError(errMsg),
+              path: options.path
+            }, options)
             continue
           }
         }

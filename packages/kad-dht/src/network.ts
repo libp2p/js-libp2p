@@ -5,7 +5,6 @@ import { pbStream } from 'it-protobuf-stream'
 import { Message } from './message/dht.js'
 import { fromPbPeerInfo } from './message/utils.js'
 import {
-  dialPeerEvent,
   sendQueryEvent,
   peerResponseEvent,
   queryErrorEvent
@@ -22,6 +21,15 @@ export interface NetworkInit {
 
 interface NetworkEvents {
   'peer': CustomEvent<PeerInfo>
+}
+
+export interface SendMessageOptions extends RoutingOptions {
+  /**
+   * Queries involve following up to `k` disjoint paths through the network -
+   * this option is which index within `k` this message is for, and it
+   * allows observers to collate events together on a per-path basis
+   */
+  path: number
 }
 
 /**
@@ -142,7 +150,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   /**
    * Send a request and read a response
    */
-  async * sendRequest (to: PeerId, msg: Partial<Message>, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendRequest (to: PeerId, msg: Partial<Message>, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
@@ -154,8 +162,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     this.log('sending %s to %p', msg.type, to)
-    yield dialPeerEvent({ peer: to }, options)
-    yield sendQueryEvent({ to, type }, options)
+    yield sendQueryEvent({ to, type, path: options.path }, options)
 
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
@@ -183,7 +190,8 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         messageType: response.type,
         closer: response.closer.map(fromPbPeerInfo),
         providers: response.providers.map(fromPbPeerInfo),
-        record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record)
+        record: response.record == null ? undefined : Libp2pRecord.deserialize(response.record),
+        path: options.path
       }, options)
     } catch (err: any) {
       this.metrics.errors?.increment({ [type]: true })
@@ -196,7 +204,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
         this.log.error('could not send %s to %p - %e', msg.type, to, err)
       }
 
-      yield queryErrorEvent({ from: to, error: err }, options)
+      yield queryErrorEvent({ from: to, error: err, path: options.path }, options)
     } finally {
       this.timeout.cleanUp(signal)
     }
@@ -205,7 +213,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   /**
    * Sends a message without expecting an answer
    */
-  async * sendMessage (to: PeerId, msg: Partial<Message>, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendMessage (to: PeerId, msg: Partial<Message>, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
@@ -217,8 +225,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     }
 
     this.log('sending %s to %p', msg.type, to)
-    yield dialPeerEvent({ peer: to }, options)
-    yield sendQueryEvent({ to, type }, options)
+    yield sendQueryEvent({ to, type, path: options.path }, options)
 
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
@@ -242,12 +249,12 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
           stream?.abort(err)
         })
 
-      yield peerResponseEvent({ from: to, messageType: type }, options)
+      yield peerResponseEvent({ from: to, messageType: type, path: options.path }, options)
     } catch (err: any) {
       this.metrics.errors?.increment({ [type]: true })
 
       stream?.abort(err)
-      yield queryErrorEvent({ from: to, error: err }, options)
+      yield queryErrorEvent({ from: to, error: err, path: options.path }, options)
     } finally {
       this.timeout.cleanUp(signal)
     }

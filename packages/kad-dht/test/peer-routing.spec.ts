@@ -6,6 +6,7 @@ import { expect } from 'aegir/chai'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PeerRouting } from '../src/peer-routing/index.js'
 import { convertBuffer } from '../src/utils.js'
+import { createPeerIdsWithPrivateKey, type PeerAndKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { Validators } from '../src/index.js'
 import type { Network } from '../src/network.js'
@@ -62,14 +63,14 @@ describe('peer-routing', () => {
       ] = await getSortedPeers(key)
 
       const clientPeer: Peer = stubInterface<Peer>({
-        id: clientPeerId,
+        id: clientPeerId.peerId,
         addresses: [{
           isCertified: true,
           multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
         }]
       })
       const serverPeer: Peer = stubInterface<Peer>({
-        id: serverPeerId,
+        id: serverPeerId.peerId,
         addresses: [{
           isCertified: true,
           multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002')
@@ -83,7 +84,7 @@ describe('peer-routing', () => {
       components.peerStore.get.withArgs(serverPeer.id).resolves(serverPeer)
       components.peerStore.get.withArgs(clientPeer.id).resolves(clientPeer)
 
-      const closer = await peerRouting.getCloserPeersOffline(key, requester)
+      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
 
       expect(closer).to.have.lengthOf(1)
       expect(closer[0].id).to.equal(serverPeer.id)
@@ -105,7 +106,7 @@ describe('peer-routing', () => {
         }]
       })
       const serverPeer: Peer = stubInterface<Peer>({
-        id: serverPeerId,
+        id: serverPeerId.peerId,
         addresses: [{
           isCertified: true,
           multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002')
@@ -119,7 +120,7 @@ describe('peer-routing', () => {
       components.peerStore.get.withArgs(serverPeer.id).resolves(serverPeer)
       components.peerStore.get.withArgs(clientPeer.id).resolves(clientPeer)
 
-      const closer = await peerRouting.getCloserPeersOffline(key, requester)
+      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
 
       expect(closer).to.have.lengthOf(2)
       expect(closer[0].id).to.equal(clientPeer.id)
@@ -135,14 +136,14 @@ describe('peer-routing', () => {
       ] = await getSortedPeers(key)
 
       const closerPeer: Peer = stubInterface<Peer>({
-        id: closerPeerId,
+        id: closerPeerId.peerId,
         addresses: [{
           isCertified: true,
           multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
         }]
       })
       const furtherPeer: Peer = stubInterface<Peer>({
-        id: furtherPeerId,
+        id: furtherPeerId.peerId,
         addresses: [{
           isCertified: true,
           multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002')
@@ -157,7 +158,7 @@ describe('peer-routing', () => {
       components.peerStore.get.withArgs(closerPeer.id).resolves(closerPeer)
       components.peerStore.get.withArgs(furtherPeer.id).resolves(furtherPeer)
 
-      const closer = await peerRouting.getCloserPeersOffline(key, requester)
+      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
 
       expect(closer).to.have.lengthOf(1)
       expect(closer[0].id).to.equal(closerPeer.id)
@@ -165,12 +166,10 @@ describe('peer-routing', () => {
   })
 })
 
-async function getSortedPeers (key: Uint8Array, count = 3): Promise<PeerId[]> {
+async function getSortedPeers (key: Uint8Array, count = 3): Promise<PeerAndKey[]> {
   const keyKadId = await convertBuffer(key)
 
-  const peers = await Promise.all(
-    new Array(count).fill(0).map(async () => peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
-  )
+  const peers = await createPeerIdsWithPrivateKey(count)
 
   return sortClosestPeers(peers, keyKadId)
 }

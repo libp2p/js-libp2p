@@ -9,7 +9,7 @@ export interface QueryContext {
   // if this signal emits an 'abort' event, any long-lived processes or requests started as part of this query should be terminated
   signal: AbortSignal
   // which disjoint path we are following
-  pathIndex: number
+  path: number
   // the total number of disjoint paths being executed
   numPaths: number
 }
