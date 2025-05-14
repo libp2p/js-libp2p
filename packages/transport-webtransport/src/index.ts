@@ -59,7 +59,7 @@ export interface WebTransportCertificate {
 }
 
 interface WebTransportSessionCleanup {
-  (metric: string): void
+  (metric: string, close: boolean): void
 }
 
 export interface WebTransportInit {
@@ -150,7 +150,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         }))
       })
 
-      cleanUpWTSession = (metric: string) => {
+      cleanUpWTSession = (metric: string, close: boolean) => {
         if (closed) {
           // already closed session
           return
@@ -158,7 +158,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
         try {
           this.metrics?.dialerEvents.increment({ [metric]: true })
-          wt.close()
+
+          if (close) {
+            wt.close()
+          }
         } catch (err) {
           this.log.error('error closing wt session', err)
         } finally {
@@ -174,9 +177,9 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       // if the dial is aborted before we are ready, close the WebTransport session
       abortListener = () => {
         if (ready) {
-          cleanUpWTSession('noise_timeout')
+          cleanUpWTSession('noise_timeout', false)
         } else {
-          cleanUpWTSession('ready_timeout')
+          cleanUpWTSession('ready_timeout', false)
         }
       }
       options.signal.addEventListener('abort', abortListener, {
@@ -199,7 +202,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         this.log.error('error on remote wt session close', err)
       })
         .finally(() => {
-          cleanUpWTSession('remote_close')
+          cleanUpWTSession('remote_close', false)
         })
 
       authenticated = await raceSignal(this.authenticateWebTransport({ wt, remotePeer, certhashes, ...options }), options.signal)
@@ -213,11 +216,11 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       maConn = {
         close: async () => {
           this.log('closing webtransport')
-          cleanUpWTSession('close')
+          cleanUpWTSession('close', true)
         },
         abort: (err: Error) => {
           this.log('aborting webtransport due to passed err', err)
-          cleanUpWTSession('abort')
+          cleanUpWTSession('abort', true)
         },
         remoteAddr: ma,
         timeline: {
@@ -238,11 +241,11 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       this.log.error('caught wt session err', err)
 
       if (authenticated) {
-        cleanUpWTSession('upgrade_error')
+        cleanUpWTSession('upgrade_error', true)
       } else if (ready) {
-        cleanUpWTSession('noise_error')
+        cleanUpWTSession('noise_error', true)
       } else {
-        cleanUpWTSession('ready_error')
+        cleanUpWTSession('ready_error', false)
       }
 
       throw err

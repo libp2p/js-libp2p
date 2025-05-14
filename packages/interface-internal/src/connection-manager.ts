@@ -1,4 +1,4 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents, Stream, NewStreamOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
@@ -74,6 +74,18 @@ export interface ConnectionManager {
    * @returns A promise that resolves to a `Connection` object.
    */
   openConnection(peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions): Promise<Connection>
+
+  /**
+   * Open a protocol stream with a remote peer. If a connection to this peer is
+   * already open, the stream will be opened on that connection, otherwise a new
+   * connection will first be established.
+   *
+   * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.
+   * @param protocol - The protocol stream identifier
+   * @param options - Optional parameters for connection handling.
+   * @returns A promise that resolves to a `Stream` object.
+   */
+  openStream (peer: PeerId | Multiaddr | Multiaddr[], protocol: string, options?: NewStreamOptions): Promise<Stream>
 
   /**
    * Close our connections to a peer

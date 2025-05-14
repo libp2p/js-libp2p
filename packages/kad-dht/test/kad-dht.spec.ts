@@ -15,7 +15,7 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
@@ -38,7 +38,7 @@ async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Prom
 }
 
 describe('KadDHT', () => {
-  let peerIds: PeerIdWithPrivateKey[]
+  let peerIds: PeerAndKey[]
   let testDHT: TestDHT
 
   beforeEach(() => {
@@ -379,13 +379,14 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn()
 
       // Simulate returning a peer id to query
-      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1]])
+      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1].peerId])
       // Simulate going out to the network and returning the record
       sinon.stub(dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
         yield peerResponseEvent({
           messageType: MessageType.GET_VALUE,
           from: peer,
-          record: rec
+          record: rec,
+          path: -1
         })
       }) // eslint-disable-line require-await
 

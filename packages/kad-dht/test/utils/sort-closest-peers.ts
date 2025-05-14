@@ -3,16 +3,16 @@ import map from 'it-map'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId } from '../../src/utils.js'
+import type { PeerAndKey } from './create-peer-id.js'
 import type { KadDHT } from '../../src/kad-dht.js'
-import type { PeerId } from '@libp2p/interface'
 
 /**
  * Sort peers by distance to the given `kadId`
  */
-export async function sortClosestPeers <T extends PeerId = PeerId> (peers: T[], kadId: Uint8Array): Promise<T[]> {
+export async function sortClosestPeers (peers: PeerAndKey[], kadId: Uint8Array): Promise<PeerAndKey[]> {
   const distances = await all(
     map(peers, async (peer) => {
-      const id = await convertPeerId(peer)
+      const id = await convertPeerId(peer.peerId)
 
       return {
         peer,

@@ -3,7 +3,6 @@ import { Queue } from '@libp2p/utils/queue'
 import { anySignal } from 'any-signal'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
-import { QueryAbortedError } from '../errors.js'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
@@ -44,12 +43,12 @@ export interface QueryPathOptions extends RoutingOptions {
   alpha: number
 
   /**
-   * How many concurrent node/value lookups to run
+   * The index within `k` this path represents
    */
-  pathIndex: number
+  path: number
 
   /**
-   * How many concurrent node/value lookups to run
+   * How many disjoint paths are in this query
    */
   numPaths: number
 
@@ -83,7 +82,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, queryFuncTimeout, log, peersSeen, connectionManager } = options
+  const { key, startingPeer, ourPeerId, signal, query, alpha, path, numPaths, queryFuncTimeout, log, peersSeen, connectionManager } = options
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
   const queue = new Queue<QueryEvent | undefined, QueryQueueOptions>({
@@ -125,7 +124,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           key,
           peer,
           signal: compoundSignal,
-          pathIndex,
+          path,
           numPaths
         })) {
           if (compoundSignal.aborted) {
@@ -172,7 +171,8 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
         if (!signal.aborted) {
           return queryErrorEvent({
             from: peer,
-            error: err
+            error: err,
+            path
           }, options)
         }
       } finally {
@@ -188,18 +188,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   // begin the query with the starting peer
   queryPeer(startingPeer, await convertPeerId(startingPeer))
 
-  try {
-    // yield results as they come in
-    for await (const event of queue.toGenerator({ signal })) {
-      if (event != null) {
-        yield event
-      }
+  // yield results as they come in
+  for await (const event of queue.toGenerator({ signal })) {
+    if (event != null) {
+      yield event
     }
-  } catch (err) {
-    if (signal.aborted) {
-      throw new QueryAbortedError('Query aborted')
-    }
-
-    throw err
   }
 }

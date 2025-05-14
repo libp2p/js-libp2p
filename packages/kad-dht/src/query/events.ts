@@ -1,4 +1,4 @@
-import type { MessageType, SendQueryEvent, PeerResponseEvent, DialPeerEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
+import type { MessageType, SendQueryEvent, PeerResponseEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Libp2pRecord } from '@libp2p/record'
 import type { ProgressOptions } from 'progress-events'
@@ -6,6 +6,7 @@ import type { ProgressOptions } from 'progress-events'
 export interface QueryEventFields {
   to: PeerId
   type: MessageType
+  path: number
 }
 
 export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptions = {}): SendQueryEvent {
@@ -25,6 +26,7 @@ export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptio
 export interface PeerResponseEventFields {
   from: PeerId
   messageType: MessageType
+  path: number
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
@@ -48,6 +50,7 @@ export function peerResponseEvent (fields: PeerResponseEventFields, options: Pro
 export interface FinalPeerEventFields {
   from: PeerId
   peer: PeerInfo
+  path: number
 }
 
 export function finalPeerEvent (fields: FinalPeerEventFields, options: ProgressOptions = {}): FinalPeerEvent {
@@ -65,6 +68,7 @@ export function finalPeerEvent (fields: FinalPeerEventFields, options: ProgressO
 export interface ErrorEventFields {
   from: PeerId
   error: Error
+  path?: number
 }
 
 export function queryErrorEvent (fields: ErrorEventFields, options: ProgressOptions = {}): QueryErrorEvent {
@@ -113,11 +117,12 @@ export function valueEvent (fields: ValueEventFields, options: ProgressOptions =
   return event
 }
 
-export interface PeerEventFields {
+export interface AddPeerEventFields {
   peer: PeerId
+  path: number
 }
 
-export function addPeerEvent (fields: PeerEventFields, options: ProgressOptions = {}): AddPeerEvent {
+export function addPeerEvent (fields: AddPeerEventFields, options: ProgressOptions = {}): AddPeerEvent {
   const event: AddPeerEvent = {
     ...fields,
     name: 'ADD_PEER',
@@ -125,22 +130,6 @@ export function addPeerEvent (fields: PeerEventFields, options: ProgressOptions 
   }
 
   options.onProgress?.(new CustomEvent('kad-dht:query:add-peer', { detail: event }))
-
-  return event
-}
-
-export interface DialPeerEventFields {
-  peer: PeerId
-}
-
-export function dialPeerEvent (fields: DialPeerEventFields, options: ProgressOptions = {}): DialPeerEvent {
-  const event: DialPeerEvent = {
-    ...fields,
-    name: 'DIAL_PEER',
-    type: 7
-  }
-
-  options.onProgress?.(new CustomEvent('kad-dht:query:dial-peer', { detail: event }))
 
   return event
 }

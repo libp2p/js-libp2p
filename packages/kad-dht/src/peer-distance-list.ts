@@ -6,6 +6,7 @@ import type { PeerId, PeerInfo } from '@libp2p/interface'
 interface PeerDistance {
   peer: PeerInfo
   distance: Uint8Array
+  path: number
 }
 
 /**
@@ -40,30 +41,31 @@ export class PeerDistanceList {
   /**
    * The peers in the list, in order of distance from the origin key
    */
-  get peers (): PeerInfo[] {
-    return this.peerDistances.map(pd => pd.peer)
+  get peers (): PeerDistance[] {
+    return [...this.peerDistances]
   }
 
   /**
    * Add a peerId to the list.
    */
-  async add (peer: PeerInfo): Promise<void> {
+  async add (peer: PeerInfo, path: number = -1): Promise<void> {
     const dhtKey = await convertPeerId(peer.id)
 
-    this.addWithKadId(peer, dhtKey)
+    this.addWithKadId(peer, dhtKey, path)
   }
 
   /**
    * Add a peerId to the list.
    */
-  addWithKadId (peer: PeerInfo, kadId: Uint8Array): void {
+  addWithKadId (peer: PeerInfo, kadId: Uint8Array, path: number = -1): void {
     if (this.peerDistances.find(pd => pd.peer.id.equals(peer.id)) != null) {
       return
     }
 
-    const el = {
+    const el: PeerDistance = {
       peer,
-      distance: uint8ArrayXor(this.originDhtKey, kadId)
+      distance: uint8ArrayXor(this.originDhtKey, kadId),
+      path
     }
 
     let added = false

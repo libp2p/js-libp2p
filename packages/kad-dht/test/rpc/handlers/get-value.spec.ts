@@ -13,32 +13,32 @@ import { type Message, MessageType } from '../../../src/message/dht.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { GetValueHandler, type GetValueHandlerComponents } from '../../../src/rpc/handlers/get-value.js'
 import * as utils from '../../../src/utils.js'
-import { createPeerId } from '../../utils/create-peer-id.js'
-import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
+import { createPeerIdWithPrivateKey, type PeerAndKey } from '../../utils/create-peer-id.js'
+import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { SinonStubbedInstance } from 'sinon'
 
 const T = MessageType.GET_VALUE
 
 describe('rpc - handlers - GetValue', () => {
-  let peerId: PeerId
-  let sourcePeer: PeerId
-  let closerPeer: PeerId
-  let targetPeer: PeerId
+  let peerId: PeerAndKey
+  let sourcePeer: PeerAndKey
+  let closerPeer: PeerAndKey
+  let targetPeer: PeerAndKey
   let handler: GetValueHandler
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let peerStore: PeerStore
   let datastore: Datastore
 
   beforeEach(async () => {
-    peerId = await createPeerId()
-    sourcePeer = await createPeerId()
-    closerPeer = await createPeerId()
-    targetPeer = await createPeerId()
+    peerId = await createPeerIdWithPrivateKey()
+    sourcePeer = await createPeerIdWithPrivateKey()
+    closerPeer = await createPeerIdWithPrivateKey()
+    targetPeer = await createPeerIdWithPrivateKey()
     peerRouting = Sinon.createStubInstance(PeerRouting)
     datastore = new MemoryDatastore()
     peerStore = persistentPeerStore({
-      peerId,
+      peerId: peerId.peerId,
       datastore,
       events: new TypedEventEmitter<Libp2pEvents>(),
       logger: defaultLogger()
@@ -66,7 +66,7 @@ describe('rpc - handlers - GetValue', () => {
     }
 
     try {
-      await handler.handle(sourcePeer, msg)
+      await handler.handle(sourcePeer.peerId, msg)
     } catch (err: any) {
       expect(err.name).to.equal('InvalidMessageError')
       return
@@ -89,9 +89,9 @@ describe('rpc - handlers - GetValue', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer).resolves([])
+    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer.peerId).resolves([])
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -109,9 +109,9 @@ describe('rpc - handlers - GetValue', () => {
   it('responds with closer peers returned from the dht', async () => {
     const key = uint8ArrayFromString('hello')
 
-    peerRouting.getCloserPeersOffline.withArgs(key, sourcePeer)
+    peerRouting.getCloserPeersOffline.withArgs(key, sourcePeer.peerId)
       .resolves([{
-        id: closerPeer,
+        id: closerPeer.peerId,
         multiaddrs: []
       }])
 
@@ -121,18 +121,18 @@ describe('rpc - handlers - GetValue', () => {
       closer: [],
       providers: []
     }
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
     }
 
-    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.toMultihash().bytes)
+    expect(response).to.have.nested.property('closer[0].id').that.deep.equals(closerPeer.peerId.toMultihash().bytes)
   })
 
   describe('public key', () => {
     it('peer in peer store', async () => {
-      const key = utils.keyForPublicKey(targetPeer)
+      const key = utils.keyForPublicKey(targetPeer.peerId)
       const msg: Message = {
         type: T,
         key,
@@ -140,15 +140,15 @@ describe('rpc - handlers - GetValue', () => {
         providers: []
       }
 
-      if (targetPeer.publicKey == null) {
+      if (targetPeer.peerId.publicKey == null) {
         throw new Error('targetPeer had no public key')
       }
 
-      await peerStore.merge(targetPeer, {
-        publicKey: targetPeer.publicKey
+      await peerStore.merge(targetPeer.peerId, {
+        publicKey: targetPeer.peerId.publicKey
       })
 
-      const response = await handler.handle(sourcePeer, msg)
+      const response = await handler.handle(sourcePeer.peerId, msg)
 
       if (response == null) {
         throw new Error('No response received from handler')
@@ -160,11 +160,11 @@ describe('rpc - handlers - GetValue', () => {
 
       const responseRecord = Libp2pRecord.deserialize(response.record)
 
-      expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.publicKey))
+      expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.peerId.publicKey))
     })
 
     it('peer not in peer store', async () => {
-      const key = utils.keyForPublicKey(targetPeer)
+      const key = utils.keyForPublicKey(targetPeer.peerId)
       const msg: Message = {
         type: T,
         key,
@@ -174,7 +174,7 @@ describe('rpc - handlers - GetValue', () => {
 
       peerRouting.getCloserPeersOffline.resolves([])
 
-      const response = await handler.handle(sourcePeer, msg)
+      const response = await handler.handle(sourcePeer.peerId, msg)
 
       if (response == null) {
         throw new Error('No response received from handler')

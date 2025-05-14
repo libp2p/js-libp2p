@@ -21,15 +21,15 @@ import { Providers } from '../../src/providers.js'
 import { RoutingTable } from '../../src/routing-table/index.js'
 import { RPC, type RPCComponents } from '../../src/rpc/index.js'
 import { passthroughMapper } from '../../src/utils.js'
-import { createPeerId } from '../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey, type PeerAndKey } from '../utils/create-peer-id.js'
 import type { Validators } from '../../src/index.js'
-import type { Libp2pEvents, Connection, PeerId, PeerStore } from '@libp2p/interface'
+import type { Libp2pEvents, Connection, PeerStore } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 import type { Duplex, Source } from 'it-stream-types'
 
 describe('rpc', () => {
-  let peerId: PeerId
+  let peerId: PeerAndKey
   let rpc: RPC
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
@@ -38,11 +38,11 @@ describe('rpc', () => {
   let routingTable: RoutingTable
 
   beforeEach(async () => {
-    peerId = await createPeerId()
+    peerId = await createPeerIdWithPrivateKey()
     datastore = new MemoryDatastore()
 
     const components: RPCComponents = {
-      peerId,
+      peerId: peerId.peerId,
       datastore,
       peerStore: stubInterface<PeerStore>(),
       addressManager: stubInterface<AddressManager>(),

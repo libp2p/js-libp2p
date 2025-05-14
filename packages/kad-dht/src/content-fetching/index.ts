@@ -18,7 +18,7 @@ import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
 import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
 import type { Message } from '../message/dht.js'
-import type { Network } from '../network.js'
+import type { Network, SendMessageOptions } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
@@ -88,7 +88,7 @@ export class ContentFetching {
   /**
    * Send the best record found to any peers that have an out of date record
    */
-  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
+  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     this.log('sendCorrection for %b', key)
     const fixupRec = createPutRecord(key, best)
 
@@ -139,7 +139,7 @@ export class ContentFetching {
   /**
    * Store the given key/value pair in the DHT
    */
-  async * put (key: Uint8Array, value: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<unknown, void, undefined> {
+  async * put (key: Uint8Array, value: Uint8Array, options: RoutingOptions): AsyncGenerator<unknown, void, undefined> {
     this.log('put key %b value %b', key, value)
 
     // create record in the dht format
@@ -171,7 +171,10 @@ export class ContentFetching {
           }
 
           this.log('send put to %p', event.peer.id)
-          for await (const putEvent of this.network.sendRequest(event.peer.id, msg, options)) {
+          for await (const putEvent of this.network.sendRequest(event.peer.id, msg, {
+            ...options,
+            path: event.path
+          })) {
             events.push(putEvent)
 
             if (putEvent.name !== 'PEER_RESPONSE') {
@@ -201,7 +204,7 @@ export class ContentFetching {
   /**
    * Get the value to the given key
    */
-  async * get (key: Uint8Array, options: RoutingOptions = {}): AsyncGenerator<QueryEvent | ValueEvent> {
+  async * get (key: Uint8Array, options: RoutingOptions): AsyncGenerator<QueryEvent | ValueEvent> {
     this.log('get %b', key)
 
     const vals: ValueEvent[] = []
@@ -237,7 +240,10 @@ export class ContentFetching {
       throw new NotFoundError('Best value was not found')
     }
 
-    yield * this.sendCorrectionRecord(key, vals, best, options)
+    yield * this.sendCorrectionRecord(key, vals, best, {
+      ...options,
+      path: -1
+    })
 
     yield vals[i]
   }
@@ -261,10 +267,11 @@ export class ContentFetching {
 
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-    const getValueQuery: QueryFunc = async function * ({ peer, signal }) {
+    const getValueQuery: QueryFunc = async function * ({ peer, signal, path }) {
       for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
         ...options,
-        signal
+        signal,
+        path
       })) {
         yield event
 
