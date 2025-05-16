@@ -247,7 +247,7 @@ export class PeerRouting {
     const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-    const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId }) {
+    const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
       self.log('getClosestPeers asking %p', peer)
       const request: Partial<Message> = {
         type: MessageType.FIND_NODE,
@@ -256,6 +256,7 @@ export class PeerRouting {
 
       yield * self.network.sendRequest(peer, request, {
         ...options,
+        signal,
         path
       })
 

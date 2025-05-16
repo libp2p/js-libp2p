@@ -166,7 +166,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
     this.log('sending %s to %p', msg.type, to)
     yield sendQueryEvent({ to, type, path: options.path }, options)
-    signal.throwIfAborted()
 
     options = {
       ...options,

@@ -9,6 +9,7 @@ import type { QueryFunc } from '../query/types.js'
 import type { Logger, PeerId, RoutingOptions, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
+import { QueryAbortedError } from '../errors.js'
 
 export interface QueryPathOptions extends RoutingOptions {
   /**
@@ -71,7 +72,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
   const events = pushable<QueryEvent>({
     objectMode: true
   })
@@ -96,6 +97,11 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   })
   queue.addEventListener('error', (evt) => {
     log.error('error during query - %e', evt.detail)
+  })
+
+  signal?.addEventListener('abort', () => {
+    queue.abort()
+    events.end(new QueryAbortedError())
   })
 
   // perform lookups on kadId, not the actual value
@@ -127,7 +133,8 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
             total: queue.size
           },
           numPaths,
-          peerKadId
+          peerKadId,
+          signal
         })) {
           // if there are closer peers and the query has not completed, continue the query
           if (event.name === 'PEER_RESPONSE') {

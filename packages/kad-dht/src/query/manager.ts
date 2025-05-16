@@ -233,7 +233,6 @@ export class QueryManager implements Startable {
         }
 
         yield event
-        signal.throwIfAborted()
       }
 
       queryFinished = true
