@@ -114,7 +114,7 @@ export class ContentRouting {
 
           for await (const sendEvent of this.network.sendMessage(event.peer.id, msg, {
             ...options,
-            path: event.path ?? -1
+            path: event.path
           })) {
             if (sendEvent.name === 'PEER_RESPONSE') {
               this.log('sent provider record for %s to %p', key, event.peer.id)
@@ -184,8 +184,21 @@ export class ContentRouting {
         }
       }
 
-      yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers, path: -1 }, options)
-      yield providerEvent({ from: this.components.peerId, providers }, options)
+      yield peerResponseEvent({
+        from: this.components.peerId,
+        messageType: MessageType.GET_PROVIDERS,
+        providers,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options)
+      yield providerEvent({
+        from: this.components.peerId,
+        providers
+      }, options)
 
       found += providers.length
 

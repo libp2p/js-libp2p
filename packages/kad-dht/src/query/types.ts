@@ -1,4 +1,4 @@
-import type { QueryEvent } from '../index.js'
+import type { DisjointPath, QueryEvent } from '../index.js'
 import type { PeerId } from '@libp2p/interface'
 
 export interface QueryContext {
@@ -6,10 +6,12 @@ export interface QueryContext {
   key: Uint8Array
   // the current peer being queried
   peer: PeerId
+  // the KADID of the peer being queried
+  peerKadId: Uint8Array
   // if this signal emits an 'abort' event, any long-lived processes or requests started as part of this query should be terminated
-  signal: AbortSignal
+  signal?: AbortSignal
   // which disjoint path we are following
-  path: number
+  path: DisjointPath
   // the total number of disjoint paths being executed
   numPaths: number
 }

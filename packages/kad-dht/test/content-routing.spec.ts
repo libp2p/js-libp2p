@@ -46,7 +46,7 @@ describe('content routing', () => {
       testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
-    sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
 
     // connect peers
     await Promise.all([
@@ -59,8 +59,7 @@ describe('content routing', () => {
     await drain(dhts[3].provide(cid))
 
     // check network messages
-    // @ts-expect-error fn is a spy
-    const calls = dhts[3].network.sendMessage.getCalls().map(c => c.args)
+    const calls = sendMessageSpy.getCalls().map(c => c.args)
 
     const peersSentMessage = new Set<string>()
 
@@ -69,8 +68,8 @@ describe('content routing', () => {
 
       expect(msg.type).equals(MessageType.ADD_PROVIDER)
       expect(msg.key).equalBytes(cid.multihash.bytes)
-      expect(msg.providers.length).equals(1)
-      expect(msg.providers[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
+      expect(msg.providers?.length).equals(1)
+      expect(msg.providers?.[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
     }
 
     // expect an ADD_PROVIDER message to be sent to each peer for each value

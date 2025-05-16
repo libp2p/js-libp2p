@@ -10,6 +10,7 @@ import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import drain from 'it-drain'
 import random from 'lodash.random'
+import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import { stubInterface, type StubbedInstance } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
@@ -62,7 +63,12 @@ describe('Routing Table', () => {
       yield peerResponseEvent({
         from,
         messageType: MessageType.PING,
-        path: -1
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       })
     })
   })
@@ -480,6 +486,65 @@ describe('Routing Table', () => {
     await pEvent(table, 'peer:add')
 
     await expect(table.find(peer.id)).to.eventually.be.ok()
+  })
+
+  it('should sort peers correctly', async () => {
+    const cid = CID.parse('bafybeidv5nzzpefllre7gesxqo6rh4hbp2jsxf4ihe6jpsyqf373qpmygm')
+    const kadId = await kadUtils.convertBuffer(cid.multihash.bytes)
+
+    const startingPeers = [
+      peerIdFromString('12D3KooWADCTVyvSiH7omgJHT83NwQndEL37gfSjw64eMShmXyz6'),
+      peerIdFromString('12D3KooWKLMCaNjRLN3vq2fssEVDtuH8sN2dAPf1HC7RDR4g8TYs'),
+      peerIdFromString('12D3KooWCevCTwf71jGiDrTZjo7nnTh5LK8yQDMNLjWtyrQ1dv5r'),
+      peerIdFromString('12D3KooWKjMkxcDxp4ZLC5az3YheCx9Pzqx6a2DxwRjauJgxaPuR'),
+      peerIdFromString('12D3KooWQjfQ2z1qYcVKiNjj33nN3h91Qf8sBC2MWu9AMHiMSJve'),
+      peerIdFromString('12D3KooWQ4dXt48tvyJ5NQMaisHDhviUNGEw6BPHGwv6zgmfeJH2'),
+      peerIdFromString('12D3KooWDezcWqNJWUkvodu4DBobpZ9qzVWsDPJxbegcvPUxSfiH'),
+      peerIdFromString('12D3KooWJTKWQFau3qsxi73zQZkxo4HbFcBEscgHfbHQxmRMEPbS'),
+      peerIdFromString('12D3KooWGsZrTA1mk2g4wgaPQAWjaVLKsBv33rAVDYeyLhvuddmL'),
+      peerIdFromString('12D3KooWADemeePA5FCNY8fRtvTfvRnoNtVE7cqyckGH2ug6LLtM'),
+      peerIdFromString('12D3KooWPrMihqdRgjS44NKR3JyTAW5bwprzbzqQf9cNtpvgVh7c'),
+      peerIdFromString('12D3KooWEoTh6u7N8kTvtf75CbH9MAUTNZLW81oQrVcum5a8t6Uu'),
+      peerIdFromString('12D3KooWDRJxarj7e9uGXnWTXJy92826wK74bHY9PAJqMY9cfAJo'),
+      peerIdFromString('12D3KooWPFHatbMFDFPkKr8pXck72gJkLDugnf2LFbqpPcUBsRtN'),
+      peerIdFromString('12D3KooWKxdHSYLR8L2N7wfeJyqPuXdBwH4xcLBFHyLEXxMkHDkW'),
+      peerIdFromString('12D3KooWGGrxvzvwCq4c5uZ6QHy9yX2C8FrqPqQihemLTyNSm28U'),
+      peerIdFromString('12D3KooWEWdWaadzEQ7ENGDPw2UT5BkeCRKsjh2wDZXXHjZjGh3c'),
+      peerIdFromString('12D3KooWSuour1HiUoXvi1Ym3S72C8SS4gxpgrgQmMkt5t7auLZ7'),
+      peerIdFromString('12D3KooWJbcH4DTkcK4iaqz3rR9v6yyVPdGSCiqrdbtc2pd6tgxd'),
+      peerIdFromString('QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb')
+    ]
+
+    for await (const peer of startingPeers) {
+      await table.add(peer)
+    }
+
+    const originalClosest = table.closestPeers(kadId)
+
+    expect(new Set(originalClosest)).to.deep.equal(new Set(startingPeers))
+
+    const closerPeers = [
+      peerIdFromString('12D3KooWSBwKATfxX8MWXrah1mu13QKRwmjjXE2gSrcT51DL5iq8'),
+      peerIdFromString('12D3KooWR3Jy8ttcmmYfKUvKrvsUvh8XXzaP56WEz7hJYv63y8nQ'),
+      peerIdFromString('12D3KooWHHb7zepsFzYiWUdfTppVSA7pGuyXBcPJ7sRso4ZMtE1H'),
+      peerIdFromString('12D3KooWBWVyzx4QQMND1154ds4QBcrm5SUi8xcMLvYTKokWqYtH'),
+      peerIdFromString('12D3KooWCe2FcMf4nbVGiuVS3uUtWziYEmAvTcwyKArqNnHXjUhQ'),
+      peerIdFromString('12D3KooWL831renXKs93QvzXqLS1wmHgjRhkg3X7J6jJQWJ4JcJK'),
+      peerIdFromString('12D3KooWDcfF81PQRr41JMDQihhVj47z5Ds1WJS64zjEQNXhYmfh'),
+      peerIdFromString('12D3KooWF9jcdNVkyHD1ekYxj1VoN7NeVN2YDKWtmFEYqALFNYZz'),
+      peerIdFromString('12D3KooWBZiEMZz8ZkegQ514SdyYydvt2RhPPr2xQjMd68ejNU14')
+    ]
+
+    for await (const peer of closerPeers) {
+      await table.add(peer)
+    }
+
+    const newClosest = table.closestPeers(kadId)
+
+    for await (const peer of closerPeers) {
+      expect(originalClosest).to.not.deep.include(peer)
+      expect(newClosest).to.deep.include(peer)
+    }
   })
 
   describe('max size', () => {

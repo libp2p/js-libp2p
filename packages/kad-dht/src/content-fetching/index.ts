@@ -212,6 +212,7 @@ export class ContentFetching {
     for await (const event of this.getMany(key, options)) {
       if (event.name === 'VALUE') {
         vals.push(event)
+        continue
       }
 
       yield event
@@ -242,7 +243,12 @@ export class ContentFetching {
 
     yield * this.sendCorrectionRecord(key, vals, best, {
       ...options,
-      path: -1
+      path: {
+        index: -1,
+        queued: 0,
+        running: 0,
+        total: 0
+      }
     })
 
     yield vals[i]
@@ -259,7 +265,13 @@ export class ContentFetching {
 
       yield valueEvent({
         value: localRec.value,
-        from: this.components.peerId
+        from: this.components.peerId,
+        path: {
+          index: -1,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
       }, options)
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)
@@ -276,7 +288,11 @@ export class ContentFetching {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {
-          yield valueEvent({ from: peer, value: event.record.value }, options)
+          yield valueEvent({
+            from: peer,
+            value: event.record.value,
+            path
+          }, options)
         }
       }
     }

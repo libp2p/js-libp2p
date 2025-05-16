@@ -157,7 +157,8 @@ export enum EventTypes {
   PROVIDER,
   VALUE,
   ADD_PEER,
-  DIAL_PEER
+  DIAL_PEER,
+  PATH_ENDED
 }
 
 /**
@@ -183,6 +184,13 @@ export type DHTProgressEvents =
   ProgressEvent<'kad-dht:query:add-peer', AddPeerEvent> |
   ProgressEvent<'kad-dht:query:dial-peer', DialPeerEvent>
 
+export interface DisjointPath {
+  index: number
+  queued: number
+  running: number
+  total: number
+}
+
 /**
  * Emitted when sending queries to remote peers
  */
@@ -192,7 +200,7 @@ export interface SendQueryEvent {
   name: 'SEND_QUERY'
   messageName: keyof typeof MessageType
   messageType: MessageType
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -208,7 +216,7 @@ export interface PeerResponseEvent {
   closer: PeerInfo[]
   providers: PeerInfo[]
   record?: DHTRecord
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -219,7 +227,7 @@ export interface FinalPeerEvent {
   peer: PeerInfo
   type: EventTypes.FINAL_PEER
   name: 'FINAL_PEER'
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -230,7 +238,7 @@ export interface QueryErrorEvent {
   type: EventTypes.QUERY_ERROR
   name: 'QUERY_ERROR'
   error: Error
-  path?: number
+  path?: DisjointPath
 }
 
 /**
@@ -251,6 +259,7 @@ export interface ValueEvent {
   type: EventTypes.VALUE
   name: 'VALUE'
   value: Uint8Array
+  path: DisjointPath
 }
 
 /**
@@ -260,7 +269,7 @@ export interface AddPeerEvent {
   type: EventTypes.ADD_PEER
   name: 'ADD_PEER'
   peer: PeerId
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -274,7 +283,16 @@ export interface DialPeerEvent {
   name: 'DIAL_PEER'
 }
 
-export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent
+/**
+ * Emitted when sending queries to remote peers
+ */
+export interface PathEndedEvent {
+  type: EventTypes.PATH_ENDED
+  name: 'PATH_ENDED'
+  path: DisjointPath
+}
+
+export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent | PathEndedEvent
 
 export interface RoutingTable {
   size: number
@@ -285,6 +303,24 @@ export interface PeerInfoMapper {
 }
 
 export interface KadDHT {
+  /**
+   * This is the maximum size of the k-buckets and how many peers are looked up
+   * when searching for peers close to a key.
+   */
+  readonly k: number
+
+  /**
+   * Query concurrency factor - this controls how many peers we contact in
+   * parallel during a query.
+   */
+  readonly a: number
+
+  /**
+   * From section 4.4 of the S/Kademlia paper - this is how many disjoint paths
+   * are used during a query.
+   */
+  readonly d: number
+
   /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
@@ -442,6 +478,22 @@ export interface KadDHTInit {
    * @default kBucketSize
    */
   kBucketSplitThreshold?: number
+
+  /**
+   * How many peers are queried in parallel during a query.
+   *
+   * @default 3
+   */
+  alpha?: number
+
+  /**
+   * How many disjoint paths are used during a query
+   *
+   * @see https://telematics.tm.kit.edu/publications/Files/267/SKademlia_2007.pdf - section 4.4
+   *
+   * @default alpha
+   */
+  disjointPaths?: number
 
   /**
    * How many bits of the KAD-ID of peers to use when creating the routing

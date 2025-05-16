@@ -36,7 +36,12 @@ describe('Network', () => {
       }
 
       const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
-        path: -1
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
@@ -93,7 +98,12 @@ describe('Network', () => {
       }
 
       const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
-        path: -1
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')

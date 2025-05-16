@@ -140,6 +140,15 @@ export function fromPublicKeyKey (key: Uint8Array): PeerId {
   return peerIdFromMultihash(multihash)
 }
 
+export function uint8ArrayToBigInt (buf: Uint8Array): bigint {
+  return BigInt(
+    `0x${
+      Array.from(buf)
+        .map(val => val.toString(16).padStart(2, '0')).join('')
+    }`
+  )
+}
+
 /**
  * Create a new put record, encodes and signs it if enabled
  */
