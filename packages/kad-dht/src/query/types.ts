@@ -6,7 +6,7 @@ export interface QueryContext {
   key: Uint8Array
   // the current peer being queried
   peer: PeerId
-  // the KADID of the peer being queried
+  // the KAD ID of the peer being queried
   peerKadId: Uint8Array
   // if this signal emits an 'abort' event, any long-lived processes or requests started as part of this query should be terminated
   signal?: AbortSignal
