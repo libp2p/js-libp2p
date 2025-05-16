@@ -1,5 +1,4 @@
 import { ed25519 as ed } from '@noble/curves/ed25519'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import crypto from '../../webcrypto/index.js'
 import type { Uint8ArrayKeyPair } from '../interface.js'
@@ -21,35 +20,7 @@ const webCryptoEd25519SupportedPromise = (async () => {
   }
 })()
 
-async function generateKeyWebCrypto (): Promise<Uint8ArrayKeyPair> {
-  const key = await crypto.get().subtle.generateKey(
-    {
-      name: 'Ed25519'
-    },
-    true,
-    ['sign', 'verify']
-  ) as CryptoKeyPair
-
-  const exportedJwk = await crypto.get().subtle.exportKey('jwk', key.privateKey)
-
-  if (exportedJwk.d === undefined || exportedJwk.d === '') {
-    throw new Error('Could not export JWK private key')
-  }
-
-  if (exportedJwk.x === undefined || exportedJwk.x === '') {
-    throw new Error('Could not export JWK public key')
-  }
-
-  const privateKeyRaw = uint8arrayFromString(exportedJwk.d, 'base64url')
-  const publicKey = uint8arrayFromString(exportedJwk.x, 'base64url')
-
-  return {
-    privateKey: concatKeys(privateKeyRaw, publicKey),
-    publicKey
-  }
-}
-
-function generateKeyNoble (): Uint8ArrayKeyPair {
+export function generateKey (): Uint8ArrayKeyPair {
   // the actual private key (32 bytes)
   const privateKeyRaw = ed.utils.randomPrivateKey()
   const publicKey = ed.getPublicKey(privateKeyRaw)
@@ -61,13 +32,6 @@ function generateKeyNoble (): Uint8ArrayKeyPair {
     privateKey,
     publicKey
   }
-}
-
-export async function generateKey (): Promise<Uint8ArrayKeyPair> {
-  if (await webCryptoEd25519SupportedPromise) {
-    return generateKeyWebCrypto()
-  }
-  return generateKeyNoble()
 }
 
 export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
