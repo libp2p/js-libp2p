@@ -5,7 +5,7 @@ import type { MetricGroup, Metrics } from '@libp2p/interface'
 
 export const DEFAULT_TIMEOUT_MULTIPLIER = 1.2
 export const DEFAULT_FAILURE_MULTIPLIER = 2
-export const DEFAULT_MIN_TIMEOUT = 2000
+export const DEFAULT_MIN_TIMEOUT = 5000
 
 export interface AdaptiveTimeoutSignal extends ClearableSignal {
   start: number
@@ -16,7 +16,6 @@ export interface AdaptiveTimeoutInit {
   metricName?: string
   metrics?: Metrics
   interval?: number
-  initialValue?: number
   timeoutMultiplier?: number
   failureMultiplier?: number
   minTimeout?: number
