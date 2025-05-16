@@ -230,10 +230,7 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({
-        from: this.components.peerId,
-        error: new NotFoundError('Not found')
-      }, options)
+      throw new NotFoundError('Not found')
     }
   }
 

@@ -2,6 +2,7 @@ import { Queue } from '@libp2p/utils/queue'
 import { pushable } from 'it-pushable'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { QueryAbortedError } from '../errors.js'
 import { convertPeerId, convertBuffer } from '../utils.js'
 import { pathEndedEvent, queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
@@ -9,7 +10,6 @@ import type { QueryFunc } from '../query/types.js'
 import type { Logger, PeerId, RoutingOptions, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
-import { QueryAbortedError } from '../errors.js'
 
 export interface QueryPathOptions extends RoutingOptions {
   /**
@@ -61,6 +61,11 @@ export interface QueryPathOptions extends RoutingOptions {
    * The libp2p connection manager
    */
   connectionManager: ConnectionManager
+
+  /**
+   * The overall query abort signal
+   */
+  signal: AbortSignal
 }
 
 interface QueryQueueOptions extends AbortOptions {
@@ -99,7 +104,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     log.error('error during query - %e', evt.detail)
   })
 
-  signal?.addEventListener('abort', () => {
+  signal.addEventListener('abort', () => {
     queue.abort()
     events.end(new QueryAbortedError())
   })
@@ -170,7 +175,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
           events.push({
             ...event,
-            // @ts-expect-error wat
             path: {
               index: path,
               queued: queue.queued,

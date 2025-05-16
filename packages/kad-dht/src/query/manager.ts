@@ -232,6 +232,7 @@ export class QueryManager implements Startable {
           }
         }
 
+        signal.throwIfAborted()
         yield event
       }
 

@@ -76,7 +76,16 @@ describe('QueryManager', () => {
           }
         })
       } else if (config.error != null) {
-        event = queryErrorEvent({ from, error: config.error })
+        event = queryErrorEvent({
+          from,
+          error: config.error,
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        })
       } else {
         event = peerResponseEvent({
           from,

@@ -7,7 +7,8 @@ import { fromPbPeerInfo } from './message/utils.js'
 import {
   sendQueryEvent,
   peerResponseEvent,
-  queryErrorEvent
+  queryErrorEvent,
+  dialPeerEvent
 } from './query/events.js'
 import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
@@ -164,9 +165,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
 
-    this.log('sending %s to %p', msg.type, to)
-    yield sendQueryEvent({ to, type, path: options.path }, options)
-
     options = {
       ...options,
       signal
@@ -175,8 +173,15 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     try {
       this.metrics.operations?.increment({ [type]: true })
 
+      this.log('dialling %p', to)
+      yield dialPeerEvent({ peer: to, path: options.path }, options)
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
+
+      this.log('sending %s to %p', msg.type, to)
+      yield sendQueryEvent({ to, type, path: options.path }, options)
+
       const response = await this._writeReadMessage(stream, msg, options)
 
       stream.close(options)

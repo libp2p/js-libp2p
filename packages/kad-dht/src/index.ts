@@ -238,7 +238,7 @@ export interface QueryErrorEvent {
   type: EventTypes.QUERY_ERROR
   name: 'QUERY_ERROR'
   error: Error
-  path?: DisjointPath
+  path: DisjointPath
 }
 
 /**
@@ -249,6 +249,7 @@ export interface ProviderEvent {
   type: EventTypes.PROVIDER
   name: 'PROVIDER'
   providers: PeerInfo[]
+  path: DisjointPath
 }
 
 /**
@@ -273,14 +274,13 @@ export interface AddPeerEvent {
 }
 
 /**
- * Emitted when peers are dialled as part of a query
- *
- * @deprecated No longer emitted as sometimes connections are reused so it's not possible to say with certainty that a peer has been dialled
+ * Emitted when peers are dialled and a new stream is opened as part of a query
  */
 export interface DialPeerEvent {
   peer: PeerId
   type: EventTypes.DIAL_PEER
   name: 'DIAL_PEER'
+  path: DisjointPath
 }
 
 /**

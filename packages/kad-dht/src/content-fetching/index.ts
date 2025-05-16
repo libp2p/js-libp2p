@@ -129,7 +129,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new QueryError('Value not put correctly') }, options)
+        throw new QueryError('Could not send correction')
       }
 
       this.log.error('Failed error correcting entry')
@@ -182,7 +182,11 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new QueryError('Value not put correctly') }, options))
+              events.push(queryErrorEvent({
+                from: event.peer.id,
+                error: new QueryError('Value not put correctly'),
+                path: putEvent.path
+              }, options))
             }
           }
 

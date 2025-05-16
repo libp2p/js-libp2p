@@ -125,7 +125,11 @@ export class ContentRouting {
           }
         } catch (err: any) {
           this.log.error('error sending provide record to peer %p', event.peer.id, err)
-          events.push(queryErrorEvent({ from: event.peer.id, error: err }, options))
+          events.push(queryErrorEvent({
+            from: event.peer.id,
+            error: err,
+            path: event.path
+          }, options))
         }
 
         return events
@@ -197,7 +201,13 @@ export class ContentRouting {
       }, options)
       yield providerEvent({
         from: this.components.peerId,
-        providers
+        providers,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       }, options)
 
       found += providers.length
@@ -243,7 +253,11 @@ export class ContentRouting {
         }
 
         if (newProviders.length > 0) {
-          yield providerEvent({ from: event.from, providers: newProviders }, options)
+          yield providerEvent({
+            from: event.from,
+            providers: newProviders,
+            path: event.path
+          }, options)
 
           found += newProviders.length
 
