@@ -122,7 +122,7 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * (context) {
       const { peer } = context
 
-      const res = topology[peer.toString()]
+      const res = topology[peer.id.toString()]
       res.context = context
 
       if (res.delay != null) {
@@ -207,9 +207,9 @@ describe('QueryManager', () => {
       expect(context).to.have.property('path').that.includes({ index: 0 })
       expect(context).to.have.property('numPaths').that.equals(1)
 
-      if (peers[0].peerId.equals(context.peer)) {
+      if (peers[0].peerId.equals(context.peer.id)) {
         yield valueEvent({
-          from: context.peer,
+          from: context.peer.id,
           value: uint8ArrayFromString('cool'),
           path: {
             index: 0,
@@ -250,12 +250,12 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * ({ peer, signal, path }) { // eslint-disable-line require-await
       expect(signal).to.be.an.instanceOf(AbortSignal)
-      peersQueried.push(peer)
+      peersQueried.push(peer.id)
 
       if (peersQueried.length === 1) {
         // query more peers
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
           path
@@ -263,7 +263,7 @@ describe('QueryManager', () => {
       } else if (peersQueried.length === 6) {
         // all peers queried, return result
         yield valueEvent({
-          from: peer,
+          from: peer.id,
           value: uint8ArrayFromString('cool'),
           path: {
             index: 0,
@@ -275,7 +275,7 @@ describe('QueryManager', () => {
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -314,12 +314,12 @@ describe('QueryManager', () => {
     const peersQueried: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
-      peersQueried.push(peer)
+      peersQueried.push(peer.id)
 
       if (peersQueried.length === 1) {
         // query more peers
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
           path
@@ -327,7 +327,7 @@ describe('QueryManager', () => {
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -384,7 +384,7 @@ describe('QueryManager', () => {
 
       await delay(1000)
 
-      yield topology[peer.toString()].event
+      yield topology[peer.id.toString()].event
     }
 
     // start the query
@@ -433,7 +433,7 @@ describe('QueryManager', () => {
       // simulate network timeout rather than using query signal passed in
       // context which would abort the whole query
       const signal = AbortSignal.timeout(100)
-      const res = topology[peer.toString()]
+      const res = topology[peer.id.toString()]
 
       if (res.delay != null) {
         await delay(res.delay)
@@ -476,7 +476,7 @@ describe('QueryManager', () => {
         throw new Error('Urk!')
       } else {
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -522,7 +522,7 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       yield valueEvent({
-        from: peer,
+        from: peer.id,
         value: uint8ArrayFromString('cool'),
         path: {
           index: 0,
@@ -655,7 +655,7 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
       yield peerResponseEvent({
-        from: peer,
+        from: peer.id,
         messageType: MessageType.GET_VALUE,
         closer: [{
           id: peers[2].peerId,
@@ -740,10 +740,10 @@ describe('QueryManager', () => {
     const visited: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
-      visited.push(peer)
+      visited.push(peer.id)
 
       const getResult = async (): Promise<QueryEvent> => {
-        const res = topology[peer.toString()]
+        const res = topology[peer.id.toString()]
         // this delay is necessary so `dhtA.stop` has time to stop the
         // requests before they all complete
         await delay(100)
@@ -752,7 +752,7 @@ describe('QueryManager', () => {
       }
 
       // Shut down after visiting peers[2]
-      if (peer.equals(peers[2].peerId)) {
+      if (peer.id.equals(peers[2].peerId)) {
         await manager.stop()
 
         yield getResult()
@@ -876,7 +876,7 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       // yield query result
       yield valueEvent({
-        from: peer,
+        from: peer.id,
         value: uint8ArrayFromString('cool'),
         path: {
           index: 0,

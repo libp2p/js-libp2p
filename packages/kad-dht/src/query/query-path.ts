@@ -7,7 +7,7 @@ import { convertPeerId, convertBuffer } from '../utils.js'
 import { pathEndedEvent, queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, PeerId, RoutingOptions, AbortOptions } from '@libp2p/interface'
+import type { Logger, PeerId, RoutingOptions, AbortOptions, PeerInfo } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 
@@ -116,12 +116,12 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
    * Adds the passed peer to the query queue if it's not us and no other path
    * has passed through this peer
    */
-  function queryPeer (peer: PeerId, peerKadId: Uint8Array): void {
+  function queryPeer (peer: PeerInfo, peerKadId: Uint8Array): void {
     if (peer == null) {
       return
     }
 
-    peersSeen.add(peer.toMultihash().bytes)
+    peersSeen.add(peer.id.toMultihash().bytes)
 
     const peerXor = uint8ArrayXor(peerKadId, kadId)
 
@@ -169,7 +169,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
               }
 
               log('querying closer peer %p', closerPeer.id)
-              queryPeer(closerPeer.id, closerPeerKadId)
+              queryPeer(closerPeer, closerPeerKadId)
             }
           }
 
@@ -186,7 +186,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       } catch (err: any) {
         // yield error event if query is continuing
         events.push(queryErrorEvent({
-          from: peer,
+          from: peer.id,
           error: err,
           path: {
             index: path,
@@ -206,7 +206,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
   // begin the query with the starting peers
   await Promise.all(
     startingPeers.map(async startingPeer => {
-      queryPeer(startingPeer, await convertPeerId(startingPeer))
+      queryPeer({ id: startingPeer, multiaddrs: [] }, await convertPeerId(startingPeer))
     })
   )
 

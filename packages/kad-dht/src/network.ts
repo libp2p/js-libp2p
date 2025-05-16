@@ -229,9 +229,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       throw new InvalidParametersError('Message type was missing')
     }
 
-    this.log('sending %s to %p', msg.type, to)
-    yield sendQueryEvent({ to, type, path: options.path }, options)
-
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
 
@@ -243,8 +240,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     try {
       this.metrics.operations?.increment({ [type]: true })
 
+      this.log('dialling %p', to)
+      yield dialPeerEvent({ peer: to, path: options.path }, options)
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
+
+      this.log('sending %s to %p', msg.type, to)
+      yield sendQueryEvent({ to, type, path: options.path }, options)
 
       await this._writeMessage(stream, msg, options)
 

@@ -198,7 +198,7 @@ export class PeerRouting {
           key: id.toMultihash().bytes
         }
 
-        for await (const event of self.network.sendRequest(peer, request, {
+        for await (const event of self.network.sendRequest(peer.id, request, {
           ...options,
           signal,
           path
@@ -251,31 +251,43 @@ export class PeerRouting {
         key
       }
 
-      yield * self.network.sendRequest(peer, request, {
+      yield * self.network.sendRequest(peer.id, request, {
         ...options,
         signal,
         path
       })
 
       // add the peer to the list if we've managed to contact it successfully
-      peers.addWithKadId({ id: peer, multiaddrs: [] }, peerKadId, path)
+      peers.addWithKadId(peer, peerKadId, path)
     }
 
     yield * this.queryManager.run(key, getCloserPeersQuery, options)
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (const { peer, path } of peers.peers) {
-      yield finalPeerEvent({
-        from: this.components.peerId,
-        peer: await self.components.peerStore.getInfo(peer.id),
-        path: {
-          index: path.index,
-          queued: 0,
-          running: 0,
-          total: 0
+    for (let { peer, path } of peers.peers) {
+      try {
+        if (peer.multiaddrs.length === 0) {
+          peer = await self.components.peerStore.getInfo(peer.id)
         }
-      }, options)
+
+        if (peer.multiaddrs.length === 0) {
+          continue
+        }
+
+        yield finalPeerEvent({
+          from: this.components.peerId,
+          peer: await self.components.peerStore.getInfo(peer.id),
+          path: {
+            index: path.index,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        }, options)
+      } catch {
+        continue
+      }
     }
   }
 

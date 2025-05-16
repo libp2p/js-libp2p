@@ -284,7 +284,7 @@ export class ContentFetching {
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal, path }) {
-      for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
+      for await (const event of self.peerRouting.getValueOrPeers(peer.id, key, {
         ...options,
         signal,
         path
@@ -293,7 +293,7 @@ export class ContentFetching {
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {
           yield valueEvent({
-            from: peer,
+            from: peer.id,
             value: event.record.value,
             path
           }, options)
