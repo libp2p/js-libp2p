@@ -5,6 +5,7 @@ import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { connectionPair } from './connection.js'
 import type { PrivateKey, PeerId, ComponentLogger, Libp2pEvents, PendingDial, Connection, TypedEventTarget, PubSub, Startable } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { AbortOptions } from 'it-pushable'
 
 export interface MockNetworkComponents {
   peerId: PeerId
@@ -101,10 +102,12 @@ class MockConnectionManager implements ConnectionManager, Startable {
     return 10_000
   }
 
-  async openConnection (peerId: PeerId | Multiaddr | Multiaddr[]): Promise<Connection> {
+  async openConnection (peerId: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection> {
     if (isMultiaddr(peerId)) {
       throw new UnsupportedOperationError('Dialing multiaddrs not supported')
     }
+
+    options?.signal?.throwIfAborted()
 
     let existingConnections: Connection[] = []
 
