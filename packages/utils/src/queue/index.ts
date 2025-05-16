@@ -1,6 +1,7 @@
 import { AbortError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
+import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
@@ -149,22 +150,33 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     this.sort = init.sort
     this.queue = []
+
+    this.emitEmpty = debounce(this.emitEmpty.bind(this), 1)
+    this.emitIdle = debounce(this.emitIdle.bind(this), 1)
+  }
+
+  emitEmpty (): void {
+    if (this.size !== 0) {
+      return
+    }
+
+    this.safeDispatchEvent('empty')
+  }
+
+  emitIdle (): void {
+    if (this.running !== 0) {
+      return
+    }
+
+    this.safeDispatchEvent('idle')
   }
 
   private tryToStartAnother (): boolean {
     if (this.size === 0) {
-      // do this in the microtask queue so all job recipients receive the
-      // result before the "empty" event fires
-      queueMicrotask(() => {
-        this.safeDispatchEvent('empty')
-      })
+      this.emitEmpty()
 
       if (this.running === 0) {
-        // do this in the microtask queue so all job recipients receive the
-        // result before the "idle" event fires
-        queueMicrotask(() => {
-          this.safeDispatchEvent('idle')
-        })
+        this.emitIdle()
       }
 
       return false
