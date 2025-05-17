@@ -45,10 +45,37 @@ export interface Startable {
   afterStop?(): void | Promise<void>
 }
 
-export function isStartable (obj: any): obj is Startable {
+/**
+ * Returns `true` if the object has type overlap with `Startable`
+ */
+export function isStartable (obj?: any): obj is Startable {
   return obj != null && typeof obj.start === 'function' && typeof obj.stop === 'function'
 }
 
+/**
+ * A function that can be used to start and objects passed to it. This checks
+ * that an object is startable before invoking its lifecycle methods so it is
+ * safe to pass non-`Startable`s in.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { start } from '@libp2p/interface'
+ * import type { Startable } from '@libp2p/interface'
+ *
+ * const startable: Startable = {
+ *   start: () => {},
+ *   stop: () => {}
+ * }
+ *
+ * const notStartable = 5
+ *
+ * await start(
+ *   startable,
+ *   notStartable
+ * )
+ * ```
+ */
 export async function start (...objs: any[]): Promise<void> {
   const startables: Startable[] = []
 
@@ -81,6 +108,30 @@ export async function start (...objs: any[]): Promise<void> {
   )
 }
 
+/**
+ * A function that can be used to stop and objects passed to it. This checks
+ * that an object is startable before invoking its lifecycle methods so it is
+ * safe to pass non-`Startable`s in.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { stop } from '@libp2p/interface'
+ * import type { Startable } from '@libp2p/interface'
+ *
+ * const startable: Startable = {
+ *   start: () => {},
+ *   stop: () => {}
+ * }
+ *
+ * const notStartable = 5
+ *
+ * await stop(
+ *   startable,
+ *   notStartable
+ * )
+ * ```
+ */
 export async function stop (...objs: any[]): Promise<void> {
   const startables: Startable[] = []
 

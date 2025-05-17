@@ -144,11 +144,19 @@ export interface IdentifyPushComponents extends IdentifyComponents {
 
 export interface Identify {
   /**
-   * due to the default limits on inbound/outbound streams for this protocol,
-   * invoking this method when runOnConnectionOpen is true can lead to unpredictable results
-   * as streams may be closed by the local or the remote node.
-   * Please use with caution. If you find yourself needing to call this method to discover other peers that support your protocol,
-   * you may be better off configuring a topology to be notified instead.
+   * Please use with caution.
+   *
+   * Due to the default limits on inbound/outbound streams for this protocol,
+   * invoking this method when runOnConnectionOpen is true can lead to
+   * unpredictable results as streams may be closed by the local or the remote
+   * node.
+   *
+   * If you find yourself needing to call this method to discover other peers
+   * that support your protocol, you may be better off configuring a topology to
+   * be notified instead.
+   *
+   * Alternatively the libp2p node itself will emit `peer:identify` events after
+   * identify has taken place which can be used to passively detect new peers.
    */
   identify(connection: Connection, options?: AbortOptions): Promise<IdentifyResult>
 }

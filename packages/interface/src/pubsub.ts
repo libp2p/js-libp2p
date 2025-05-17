@@ -153,6 +153,9 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
+/**
+ * @deprecated This will be removed from `@libp2p/interface` in a future release, pubsub implementations should declare their own types
+ */
 export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends TypedEventTarget<Events> {
   /**
    * The global signature policy controls whether or not we sill send and receive

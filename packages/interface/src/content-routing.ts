@@ -4,7 +4,7 @@ import type { CID } from 'multiformats/cid'
 
 /**
  * Any object that implements this Symbol as a property should return a
- * ContentRouting instance as the property value, similar to how
+ * Partial<ContentRouting> instance as the property value, similar to how
  * `Symbol.Iterable` can be used to return an `Iterable` from an `Iterator`.
  *
  * @example
@@ -28,7 +28,7 @@ export const contentRoutingSymbol = Symbol.for('@libp2p/content-routing')
  * interested callers.
  */
 export interface ContentRoutingProvider {
-  [contentRoutingSymbol]: ContentRouting
+  [contentRoutingSymbol]: Partial<ContentRouting>
 }
 
 export interface ContentRouting {
