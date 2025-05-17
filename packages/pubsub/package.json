@@ -48,10 +48,6 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
-    "./errors": {
-      "types": "./dist/src/errors.d.ts",
-      "import": "./dist/src/errors.js"
-    },
     "./peer-streams": {
       "types": "./dist/src/peer-streams.d.ts",
       "import": "./dist/src/peer-streams.js"

@@ -53,6 +53,9 @@ export interface SignedPeerRecord {
   seq: bigint
 }
 
+/**
+ * A certificate that can be used to secure connections
+ */
 export interface TLSCertificate {
   /**
    * The private key that corresponds to the certificate in PEM format
@@ -130,9 +133,43 @@ export interface Logger {
 }
 
 /**
- * Peer logger component for libp2p
+ * Peer logger component for libp2p. This can be used to create loggers that are
+ * scoped to individual system components or services.
+ *
+ * To see logs, run your app with `DEBUG` set as an env var or for browsers, in
+ * `localStorage`:
+ *
+ * ```console
+ * $ DEBUG=libp2p* node index.js
+ *  libp2p:my-service hello +0ms
+ * ```
  */
 export interface ComponentLogger {
+  /**
+   * Returns a logger for the specified component.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * import { ComponentLogger, Logger } from '@libp2p/interface'
+   *
+   * interface MyServiceComponents {
+   *   logger: ComponentLogger
+   * }
+   *
+   * class MyService {
+   *   private readonly log: Logger
+   *
+   *   constructor (components) {
+   *     this.log = components.logger.forComponent('libp2p:my-service')
+   *
+   *     this.log('hello')
+   *     // logs:
+   *     // libp2p:my-service hello +0ms
+   *   }
+   * }
+   * ```
+   */
   forComponent(name: string): Logger
 }
 
