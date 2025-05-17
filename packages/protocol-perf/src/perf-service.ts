@@ -106,7 +106,7 @@ export class Perf implements Startable, PerfInterface {
     this.log('opened connection after %d ms', Date.now() - lastReportedTime)
     lastReportedTime = Date.now()
 
-    const stream = await connection.newStream(this.protocol, options)
+    const stream = await connection.newStream(this.protocol, { ...options, negotiateFully: false })
 
     this.log('opened stream after %d ms', Date.now() - lastReportedTime)
     lastReportedTime = Date.now()
