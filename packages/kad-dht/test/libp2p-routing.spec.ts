@@ -115,7 +115,8 @@ describe('content routing', () => {
     dht = kadDHT({
       protocol: PROTOCOL,
       peerInfoMapper: passthroughMapper,
-      clientMode: false
+      clientMode: false,
+      initialQuerySelfInterval: 10_000
     })(components)
 
     // @ts-expect-error not part of public api
@@ -138,6 +139,10 @@ describe('content routing', () => {
     const remotePeer = createPeer(peers[0].peerId)
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -176,6 +181,10 @@ describe('content routing', () => {
     const providerPeer = createPeer(peers[2].peerId)
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -322,7 +331,15 @@ describe('peer routing', () => {
     const closestPeerInteractionsComplete = pDefer()
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
     components.peerStore.get.withArgs(closestPeer.id).resolves(closestPeer)
+    components.peerStore.getInfo.withArgs(closestPeer.id).resolves({
+      id: closestPeer.id,
+      multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -379,10 +396,10 @@ describe('peer routing', () => {
     await expect(all(map(peerRouting.getClosestPeers(key.multihash.bytes), prov => ({
       id: prov.id.toString(),
       multiaddrs: prov.multiaddrs.map(ma => ma.toString())
-    })))).to.eventually.deep.equal([{
+    })))).to.eventually.deep.include({
       id: closestPeer.id.toString(),
       multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr.toString())
-    }])
+    })
 
     await expect(remotePeerInteractionsComplete.promise).to.eventually.be.undefined()
     await expect(closestPeerInteractionsComplete.promise).to.eventually.be.undefined()

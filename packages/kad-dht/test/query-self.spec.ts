@@ -72,7 +72,12 @@ describe('Query Self', () => {
           id: remotePeer,
           multiaddrs: []
         },
-        path: 0
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       })
     }())
 

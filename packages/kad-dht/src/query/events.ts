@@ -1,4 +1,4 @@
-import type { MessageType, SendQueryEvent, PeerResponseEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent } from '../index.js'
+import type { MessageType, SendQueryEvent, PeerResponseEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, DisjointPath, PathEndedEvent, DialPeerEvent } from '../index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Libp2pRecord } from '@libp2p/record'
 import type { ProgressOptions } from 'progress-events'
@@ -6,7 +6,7 @@ import type { ProgressOptions } from 'progress-events'
 export interface QueryEventFields {
   to: PeerId
   type: MessageType
-  path: number
+  path: DisjointPath
 }
 
 export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptions = {}): SendQueryEvent {
@@ -26,7 +26,7 @@ export function sendQueryEvent (fields: QueryEventFields, options: ProgressOptio
 export interface PeerResponseEventFields {
   from: PeerId
   messageType: MessageType
-  path: number
+  path: DisjointPath
   closer?: PeerInfo[]
   providers?: PeerInfo[]
   record?: Libp2pRecord
@@ -50,7 +50,7 @@ export function peerResponseEvent (fields: PeerResponseEventFields, options: Pro
 export interface FinalPeerEventFields {
   from: PeerId
   peer: PeerInfo
-  path: number
+  path: DisjointPath
 }
 
 export function finalPeerEvent (fields: FinalPeerEventFields, options: ProgressOptions = {}): FinalPeerEvent {
@@ -68,7 +68,7 @@ export function finalPeerEvent (fields: FinalPeerEventFields, options: ProgressO
 export interface ErrorEventFields {
   from: PeerId
   error: Error
-  path?: number
+  path: DisjointPath
 }
 
 export function queryErrorEvent (fields: ErrorEventFields, options: ProgressOptions = {}): QueryErrorEvent {
@@ -86,6 +86,7 @@ export function queryErrorEvent (fields: ErrorEventFields, options: ProgressOpti
 export interface ProviderEventFields {
   from: PeerId
   providers: PeerInfo[]
+  path: DisjointPath
 }
 
 export function providerEvent (fields: ProviderEventFields, options: ProgressOptions = {}): ProviderEvent {
@@ -103,6 +104,7 @@ export function providerEvent (fields: ProviderEventFields, options: ProgressOpt
 export interface ValueEventFields {
   from: PeerId
   value: Uint8Array
+  path: DisjointPath
 }
 
 export function valueEvent (fields: ValueEventFields, options: ProgressOptions = {}): ValueEvent {
@@ -119,7 +121,7 @@ export function valueEvent (fields: ValueEventFields, options: ProgressOptions =
 
 export interface AddPeerEventFields {
   peer: PeerId
-  path: number
+  path: DisjointPath
 }
 
 export function addPeerEvent (fields: AddPeerEventFields, options: ProgressOptions = {}): AddPeerEvent {
@@ -130,6 +132,39 @@ export function addPeerEvent (fields: AddPeerEventFields, options: ProgressOptio
   }
 
   options.onProgress?.(new CustomEvent('kad-dht:query:add-peer', { detail: event }))
+
+  return event
+}
+
+export interface DialPeerEventFields {
+  peer: PeerId
+  path: DisjointPath
+}
+
+export function dialPeerEvent (fields: DialPeerEventFields, options: ProgressOptions = {}): DialPeerEvent {
+  const event: DialPeerEvent = {
+    ...fields,
+    name: 'DIAL_PEER',
+    type: 7
+  }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:dial-peer', { detail: event }))
+
+  return event
+}
+
+export interface PathEndedEventFields {
+  path: DisjointPath
+}
+
+export function pathEndedEvent (fields: PathEndedEventFields, options: ProgressOptions = {}): PathEndedEvent {
+  const event: PathEndedEvent = {
+    ...fields,
+    name: 'PATH_ENDED',
+    type: 8
+  }
+
+  options.onProgress?.(new CustomEvent('kad-dht:query:path-ended', { detail: event }))
 
   return event
 }

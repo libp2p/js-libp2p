@@ -36,7 +36,7 @@ export const GET_MANY_RECORD_COUNT = 16
 export const K = 20
 
 // Alpha is the concurrency for asynchronous requests
-export const ALPHA = 3
+export const ALPHA = 10
 
 // How often we look for our closest DHT neighbors
 export const QUERY_SELF_INTERVAL = 5 * minute

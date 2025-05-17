@@ -41,7 +41,7 @@ export class Providers {
     const release = await this.lock.readLock()
 
     try {
-      this.log('%p provides %s', provider, cid)
+      this.log.trace('%p provides %s', provider, cid)
       await this.writeProviderEntry(cid, provider)
     } finally {
       release()
@@ -56,7 +56,7 @@ export class Providers {
 
     try {
       const key = toProviderKey(this.datastorePrefix, cid, provider)
-      this.log('%p no longer provides %s', provider, cid)
+      this.log.trace('%p no longer provides %s', provider, cid)
       await this.datastore.delete(key)
     } finally {
       release()
@@ -70,9 +70,9 @@ export class Providers {
     const release = await this.lock.readLock()
 
     try {
-      this.log('get providers for %c', cid)
+      this.log.trace('get providers for %c', cid)
       const provs = await this.loadProviders(cid, options)
-      this.log('got %d providers for %c', provs.size, cid)
+      this.log.trace('got %d providers for %c', provs.size, cid)
 
       return [...provs.keys()]
     } finally {

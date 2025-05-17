@@ -1,15 +1,15 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { Queue } from '@libp2p/utils/queue'
-import { anySignal } from 'any-signal'
+import { pushable } from 'it-pushable'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { QueryAbortedError } from '../errors.js'
 import { convertPeerId, convertBuffer } from '../utils.js'
-import { queryErrorEvent } from './events.js'
+import { pathEndedEvent, queryErrorEvent } from './events.js'
 import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, PeerId, RoutingOptions, AbortOptions } from '@libp2p/interface'
+import type { Logger, PeerId, RoutingOptions, AbortOptions, PeerInfo } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
-import type { PeerSet } from '@libp2p/peer-collections'
+import type { Filter } from '@libp2p/utils/filters'
 
 export interface QueryPathOptions extends RoutingOptions {
   /**
@@ -20,17 +20,12 @@ export interface QueryPathOptions extends RoutingOptions {
   /**
    * Where we start our query
    */
-  startingPeer: PeerId
+  startingPeers: PeerId[]
 
   /**
    * Who we are
    */
   ourPeerId: PeerId
-
-  /**
-   * When to stop querying
-   */
-  signal: AbortSignal
 
   /**
    * The query function to run with each peer
@@ -53,11 +48,6 @@ export interface QueryPathOptions extends RoutingOptions {
   numPaths: number
 
   /**
-   * A timeout for queryFunc in ms
-   */
-  queryFuncTimeout?: number
-
-  /**
    * Query log
    */
   log: Logger
@@ -65,12 +55,17 @@ export interface QueryPathOptions extends RoutingOptions {
   /**
    * Set of peers seen by this and other paths
    */
-  peersSeen: PeerSet
+  peersSeen: Filter
 
   /**
    * The libp2p connection manager
    */
   connectionManager: ConnectionManager
+
+  /**
+   * The overall query abort signal
+   */
+  signal: AbortSignal
 }
 
 interface QueryQueueOptions extends AbortOptions {
@@ -82,60 +77,75 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeer, ourPeerId, signal, query, alpha, path, numPaths, queryFuncTimeout, log, peersSeen, connectionManager } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
+  const events = pushable<QueryEvent>({
+    objectMode: true
+  })
+
   // Only ALPHA node/value lookups are allowed at any given time for each process
   // https://github.com/libp2p/specs/tree/master/kad-dht#alpha-concurrency-parameter-%CE%B1
-  const queue = new Queue<QueryEvent | undefined, QueryQueueOptions>({
+  const queue = new Queue<undefined, QueryQueueOptions>({
     concurrency: alpha,
     sort: (a, b) => uint8ArrayXorCompare(a.options.distance, b.options.distance)
+  })
+  queue.addEventListener('idle', () => {
+    events.push(pathEndedEvent({
+      path: {
+        index: path,
+        queued: queue.queued,
+        running: queue.running,
+        total: queue.size
+      }
+    }, options))
+
+    events.end()
+  })
+  queue.addEventListener('error', (evt) => {
+    log.error('error during query - %e', evt.detail)
+  })
+
+  signal.addEventListener('abort', () => {
+    queue.abort()
+    events.end(new QueryAbortedError())
   })
 
   // perform lookups on kadId, not the actual value
   const kadId = await convertBuffer(key)
 
   /**
-   * Adds the passed peer to the query queue if it's not us and no
-   * other path has passed through this peer
+   * Adds the passed peer to the query queue if it's not us and no other path
+   * has passed through this peer
    */
-  function queryPeer (peer: PeerId, peerKadId: Uint8Array): void {
+  function queryPeer (peer: PeerInfo, peerKadId: Uint8Array): void {
     if (peer == null) {
       return
     }
 
-    peersSeen.add(peer)
+    peersSeen.add(peer.id.toMultihash().bytes)
 
     const peerXor = uint8ArrayXor(peerKadId, kadId)
 
     queue.add(async () => {
-      const signals = [signal]
-
-      if (queryFuncTimeout != null) {
-        signals.push(AbortSignal.timeout(queryFuncTimeout))
-      }
-
-      const compoundSignal = anySignal(signals)
-
-      // this signal can get listened to a lot
-      setMaxListeners(Infinity, compoundSignal)
-
       try {
         for await (const event of query({
           ...options,
           key,
           peer,
-          signal: compoundSignal,
-          path,
-          numPaths
+          path: {
+            index: path,
+            queued: queue.queued,
+            running: queue.running,
+            total: queue.size
+          },
+          numPaths,
+          peerKadId,
+          signal
         })) {
-          if (compoundSignal.aborted) {
-            return
-          }
-
           // if there are closer peers and the query has not completed, continue the query
           if (event.name === 'PEER_RESPONSE') {
             for (const closerPeer of event.closer) {
-              if (peersSeen.has(closerPeer.id)) { // eslint-disable-line max-depth
-                log.trace('already seen %p in query', closerPeer.id)
+              if (peersSeen.has(closerPeer.id.toMultihash().bytes)) { // eslint-disable-line max-depth
+                log('already seen %p in query', closerPeer.id)
                 continue
               }
 
@@ -154,44 +164,52 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
               // only continue query if closer peer is actually closer
               if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
-                log.trace('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
+                log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
                 continue
               }
 
-              log.trace('querying closer peer %p', closerPeer.id)
-              queryPeer(closerPeer.id, closerPeerKadId)
+              log('querying closer peer %p', closerPeer.id)
+              queryPeer(closerPeer, closerPeerKadId)
             }
           }
 
-          queue.safeDispatchEvent('completed', {
-            detail: event
+          events.push({
+            ...event,
+            path: {
+              index: path,
+              queued: queue.queued,
+              running: queue.running,
+              total: queue.size
+            }
           })
         }
       } catch (err: any) {
-        if (!signal.aborted) {
-          return queryErrorEvent({
-            from: peer,
-            error: err,
-            path
-          }, options)
-        }
-      } finally {
-        compoundSignal.clear()
+        // yield error event if query is continuing
+        events.push(queryErrorEvent({
+          from: peer.id,
+          error: err,
+          path: {
+            index: path,
+            queued: queue.queued,
+            running: queue.running - 1,
+            total: queue.size - 1
+          }
+        }, options))
       }
     }, {
       distance: peerXor
     }).catch(err => {
-      log.error(err)
+      log.error('error during query - %e', err)
     })
   }
 
-  // begin the query with the starting peer
-  queryPeer(startingPeer, await convertPeerId(startingPeer))
+  // begin the query with the starting peers
+  await Promise.all(
+    startingPeers.map(async startingPeer => {
+      queryPeer({ id: startingPeer, multiaddrs: [] }, await convertPeerId(startingPeer))
+    })
+  )
 
   // yield results as they come in
-  for await (const event of queue.toGenerator({ signal })) {
-    if (event != null) {
-      yield event
-    }
-  }
+  yield * events
 }
