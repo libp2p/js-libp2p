@@ -168,11 +168,13 @@ class DevToolsMetrics implements Metrics, Startable {
   private readonly rpcQueue: Pushable<Uint8Array>
   private readonly rpc: RPC
   private readonly devTools: DevToolsRPC
+  private readonly rpcSendTimeout: number
 
   constructor (components: DevToolsMetricsComponents, init: DevToolsMetricsInit = {}) {
     this.log = components.logger.forComponent('libp2p:devtools-metrics')
     this.intervalMs = init?.intervalMs
     this.components = components
+    this.rpcSendTimeout = init.rpcSendTimeout ?? DEVTOOLS_TIMEOUT
 
     // create RPC endpoint
     this.rpcQueue = pushable()
@@ -180,7 +182,7 @@ class DevToolsMetrics implements Metrics, Startable {
       valueCodecs
     })
     this.devTools = this.rpc.createClient('devTools', {
-      timeout: init.rpcSendTimeout ?? DEVTOOLS_TIMEOUT
+      timeout: this.rpcSendTimeout
     })
 
     // collect information on current peers and sent it to the dev tools panel
@@ -199,7 +201,7 @@ class DevToolsMetrics implements Metrics, Startable {
         this.devTools.safeDispatchEvent('metrics', {
           detail: metrics
         }, {
-          signal: AbortSignal.timeout(DEVTOOLS_TIMEOUT)
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         }).catch(err => {
           this.log.error('error sending metrics', err)
         })
@@ -341,7 +343,7 @@ class DevToolsMetrics implements Metrics, Startable {
     this.devTools.safeDispatchEvent('pubsub:message', {
       detail: event.detail
     }, {
-      signal: AbortSignal.timeout(DEVTOOLS_TIMEOUT)
+      signal: AbortSignal.timeout(this.rpcSendTimeout)
     })
       .catch(err => {
         this.log.error('error relaying pubsub message', err)
@@ -352,7 +354,7 @@ class DevToolsMetrics implements Metrics, Startable {
     this.devTools.safeDispatchEvent('pubsub:subscription-change', {
       detail: event.detail
     }, {
-      signal: AbortSignal.timeout(DEVTOOLS_TIMEOUT)
+      signal: AbortSignal.timeout(this.rpcSendTimeout)
     })
       .catch(err => {
         this.log.error('error relaying pubsub subscription change', err)
@@ -365,7 +367,7 @@ class DevToolsMetrics implements Metrics, Startable {
         await this.devTools.safeDispatchEvent('self', {
           detail: await getSelf(this.components)
         }, {
-          signal: AbortSignal.timeout(DEVTOOLS_TIMEOUT)
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         })
       })
       .catch(err => {
@@ -379,7 +381,7 @@ class DevToolsMetrics implements Metrics, Startable {
         await this.devTools.safeDispatchEvent('peers', {
           detail: await getPeers(this.components, this.log)
         }, {
-          signal: AbortSignal.timeout(DEVTOOLS_TIMEOUT)
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         })
       })
       .catch(err => {
