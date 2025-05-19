@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.15](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.14...devtools-metrics-v1.2.15) (2025-05-19)
+
+
+### Bug Fixes
+
+* timeout sending rpc messages after a while ([#3109](https://github.com/libp2p/js-libp2p/issues/3109)) ([3df5bf2](https://github.com/libp2p/js-libp2p/commit/3df5bf2da2d5ccd186db3f3f5012f79ce91c809a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/interface-internal bumped from ^2.3.11 to ^2.3.12
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/simple-metrics bumped from ^1.3.9 to ^1.3.10
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+
 ## [1.2.14](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.13...devtools-metrics-v1.2.14) (2025-04-16)
 
 

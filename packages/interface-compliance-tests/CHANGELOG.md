@@ -75,6 +75,36 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.4.6](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.5...interface-compliance-tests-v6.4.6) (2025-05-19)
+
+
+### Bug Fixes
+
+* abort open connection and new stream ([#3106](https://github.com/libp2p/js-libp2p/issues/3106)) ([213a54a](https://github.com/libp2p/js-libp2p/commit/213a54a1e21fdceb84fd7c92a4f9d42441cfcea0))
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/echo bumped from ^2.1.20 to ^2.1.21
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/interface-internal bumped from ^2.3.11 to ^2.3.12
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/memory bumped from ^1.1.6 to ^1.1.7
+    * @libp2p/multistream-select bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-collections bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/plaintext bumped from ^2.0.22 to ^2.0.23
+    * @libp2p/utils bumped from ^6.6.2 to ^6.6.3
+    * libp2p bumped from ^2.8.5 to ^2.8.6
+
 ## [6.4.5](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.4...interface-compliance-tests-v6.4.5) (2025-04-17)
 
 

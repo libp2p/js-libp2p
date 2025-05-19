@@ -6,6 +6,19 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.0...tls-v2.2.1) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+
 ## [2.2.0](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.2...tls-v2.2.0) (2025-04-16)
 
 
