@@ -41,6 +41,9 @@ export const SOURCE_CONTENT_SCRIPT = '@libp2p/devtools-metrics:content'
 export const SOURCE_METRICS = '@libp2p/devtools-metrics:metrics'
 export const LIBP2P_DEVTOOLS_METRICS_KEY = '________libp2p_devtools_metrics'
 
+// don't wait for devtools RPC forever
+const DEVTOOLS_TIMEOUT = 1_000
+
 // let devtools know we are here
 Object.defineProperty(globalThis, LIBP2P_DEVTOOLS_METRICS_KEY, {
   value: true,
@@ -134,6 +137,13 @@ export interface DevToolsMetricsInit {
    * How often to pass metrics to the DevTools panel
    */
   intervalMs?: number
+
+  /**
+   * Outgoing RPC invocations must return within this timeout in ms
+   *
+   * @default 1_000
+   */
+  rpcSendTimeout?: number
 }
 
 export interface DevToolsMetricsComponents {
@@ -158,18 +168,22 @@ class DevToolsMetrics implements Metrics, Startable {
   private readonly rpcQueue: Pushable<Uint8Array>
   private readonly rpc: RPC
   private readonly devTools: DevToolsRPC
+  private readonly rpcSendTimeout: number
 
-  constructor (components: DevToolsMetricsComponents, init?: Partial<DevToolsMetricsInit>) {
+  constructor (components: DevToolsMetricsComponents, init: DevToolsMetricsInit = {}) {
     this.log = components.logger.forComponent('libp2p:devtools-metrics')
     this.intervalMs = init?.intervalMs
     this.components = components
+    this.rpcSendTimeout = init.rpcSendTimeout ?? DEVTOOLS_TIMEOUT
 
     // create RPC endpoint
     this.rpcQueue = pushable()
     this.rpc = rpc({
       valueCodecs
     })
-    this.devTools = this.rpc.createClient('devTools')
+    this.devTools = this.rpc.createClient('devTools', {
+      timeout: this.rpcSendTimeout
+    })
 
     // collect information on current peers and sent it to the dev tools panel
     this.onPeersUpdate = debounce(this.onPeersUpdate.bind(this), 1000)
@@ -186,6 +200,8 @@ class DevToolsMetrics implements Metrics, Startable {
       onMetrics: (metrics) => {
         this.devTools.safeDispatchEvent('metrics', {
           detail: metrics
+        }, {
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         }).catch(err => {
           this.log.error('error sending metrics', err)
         })
@@ -326,6 +342,8 @@ class DevToolsMetrics implements Metrics, Startable {
   private onPubSubMessage (event: CustomEvent<Message>): void {
     this.devTools.safeDispatchEvent('pubsub:message', {
       detail: event.detail
+    }, {
+      signal: AbortSignal.timeout(this.rpcSendTimeout)
     })
       .catch(err => {
         this.log.error('error relaying pubsub message', err)
@@ -335,6 +353,8 @@ class DevToolsMetrics implements Metrics, Startable {
   private onPubSubSubscriptionChange (event: CustomEvent<SubscriptionChangeData>): void {
     this.devTools.safeDispatchEvent('pubsub:subscription-change', {
       detail: event.detail
+    }, {
+      signal: AbortSignal.timeout(this.rpcSendTimeout)
     })
       .catch(err => {
         this.log.error('error relaying pubsub subscription change', err)
@@ -346,6 +366,8 @@ class DevToolsMetrics implements Metrics, Startable {
       .then(async () => {
         await this.devTools.safeDispatchEvent('self', {
           detail: await getSelf(this.components)
+        }, {
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         })
       })
       .catch(err => {
@@ -358,6 +380,8 @@ class DevToolsMetrics implements Metrics, Startable {
       .then(async () => {
         await this.devTools.safeDispatchEvent('peers', {
           detail: await getPeers(this.components, this.log)
+        }, {
+          signal: AbortSignal.timeout(this.rpcSendTimeout)
         })
       })
       .catch(err => {

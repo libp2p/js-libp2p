@@ -77,7 +77,7 @@
     "cborg": "^4.2.6",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "it-rpc": "^1.0.2",
+    "it-rpc": "^1.1.0",
     "multiformats": "^13.3.1",
     "progress-events": "^1.0.1"
   },
