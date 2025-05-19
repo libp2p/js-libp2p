@@ -68,6 +68,25 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.2.0](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.1.4...peer-store-v11.2.0) (2025-05-19)
+
+
+### Features
+
+* add getInfo function to peerstore ([#3099](https://github.com/libp2p/js-libp2p/issues/3099)) ([a5a33af](https://github.com/libp2p/js-libp2p/commit/a5a33afd9fc7e5cc9060e0ac8d6daa8edb566ea8))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-record bumped from ^8.0.27 to ^8.0.28
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+
 ## [11.1.4](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.1.3...peer-store-v11.1.4) (2025-04-16)
 
 
