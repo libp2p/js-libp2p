@@ -137,6 +137,13 @@ export interface DevToolsMetricsInit {
    * How often to pass metrics to the DevTools panel
    */
   intervalMs?: number
+
+  /**
+   * Outgoing RPC invocations must return within this timeout in ms
+   *
+   * @default 1_000
+   */
+  rpcSendTimeout?: number
 }
 
 export interface DevToolsMetricsComponents {
@@ -162,7 +169,7 @@ class DevToolsMetrics implements Metrics, Startable {
   private readonly rpc: RPC
   private readonly devTools: DevToolsRPC
 
-  constructor (components: DevToolsMetricsComponents, init?: Partial<DevToolsMetricsInit>) {
+  constructor (components: DevToolsMetricsComponents, init: DevToolsMetricsInit = {}) {
     this.log = components.logger.forComponent('libp2p:devtools-metrics')
     this.intervalMs = init?.intervalMs
     this.components = components
@@ -173,7 +180,7 @@ class DevToolsMetrics implements Metrics, Startable {
       valueCodecs
     })
     this.devTools = this.rpc.createClient('devTools', {
-      timeout: 1_000
+      timeout: init.rpcSendTimeout ?? DEVTOOLS_TIMEOUT
     })
 
     // collect information on current peers and sent it to the dev tools panel
