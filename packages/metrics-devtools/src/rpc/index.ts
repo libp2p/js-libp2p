@@ -143,5 +143,5 @@ export interface DevToolsEvents {
  * RPC operations exposed by the DevTools
  */
 export interface DevToolsRPC {
-  safeDispatchEvent<Detail>(type: keyof DevToolsEvents, detail?: CustomEventInit<Detail>): Promise<void>
+  safeDispatchEvent<Detail>(type: keyof DevToolsEvents, detail?: CustomEventInit<Detail>, options?: AbortOptions): Promise<void>
 }
