@@ -60,7 +60,7 @@
     "@libp2p/logger": "^5.1.16",
     "@libp2p/peer-id": "^5.1.3",
     "@multiformats/multiaddr": "^12.3.3",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.2",
     "it-drain": "^3.0.7",
     "it-pipe": "^3.0.1",
     "p-defer": "^4.0.1"

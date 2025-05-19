@@ -7,7 +7,7 @@ import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
  */
 export function ipPortToMultiaddr (ip: string, port: number | string): Multiaddr {
   if (typeof ip !== 'string') {
-    throw new InvalidParametersError(`invalid ip provided: ${ip}`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    throw new InvalidParametersError(`invalid ip provided: ${ip}`)
   }
 
   if (typeof port === 'string') {

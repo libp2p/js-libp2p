@@ -1,9 +1,9 @@
 import { FaultTolerance, InvalidParametersError } from '@libp2p/interface'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
-import mergeOptions from 'merge-options'
 import type { Libp2pInit } from './index.js'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { mergeOptions } from '@libp2p/utils/merge-options'
 
 const DefaultConfig: Libp2pInit = {
   addresses: {

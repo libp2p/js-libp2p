@@ -89,7 +89,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.2",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
     "sinon": "^19.0.2",

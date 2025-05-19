@@ -6,7 +6,7 @@ import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import mergeOptions from 'merge-options'
+import { mergeOptions } from '@libp2p/utils/merge-options'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
 

@@ -262,7 +262,7 @@ class PrometheusMetrics implements Metrics {
   registerMetric (name: string, opts: PrometheusCalculatedMetricOptions): void
   registerMetric (name: string, opts?: MetricOptions): Metric
   registerMetric (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric name is required')
     }
 
@@ -291,7 +291,7 @@ class PrometheusMetrics implements Metrics {
   registerMetricGroup (name: string, opts: PrometheusCalculatedMetricOptions<Record<string, number>>): void
   registerMetricGroup (name: string, opts?: MetricOptions): MetricGroup
   registerMetricGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Metric group name is required')
     }
 
@@ -320,7 +320,7 @@ class PrometheusMetrics implements Metrics {
   registerCounter (name: string, opts: PrometheusCalculatedMetricOptions): void
   registerCounter (name: string, opts?: MetricOptions): Counter
   registerCounter (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Counter name is required')
     }
 
@@ -349,7 +349,7 @@ class PrometheusMetrics implements Metrics {
   registerCounterGroup (name: string, opts: PrometheusCalculatedMetricOptions<Record<string, number>>): void
   registerCounterGroup (name: string, opts?: MetricOptions): CounterGroup
   registerCounterGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Counter group name is required')
     }
 
@@ -378,7 +378,7 @@ class PrometheusMetrics implements Metrics {
   registerHistogram (name: string, opts: PrometheusCalculatedHistogramOptions): void
   registerHistogram (name: string, opts?: HistogramOptions): Histogram
   registerHistogram (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Histogram name is required')
     }
 
@@ -407,7 +407,7 @@ class PrometheusMetrics implements Metrics {
   registerHistogramGroup (name: string, opts: PrometheusCalculatedHistogramOptions<Record<string, number>>): void
   registerHistogramGroup (name: string, opts?: HistogramOptions): HistogramGroup
   registerHistogramGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Histogram group name is required')
     }
 
@@ -436,7 +436,7 @@ class PrometheusMetrics implements Metrics {
   registerSummary (name: string, opts: PrometheusCalculatedSummaryOptions): void
   registerSummary (name: string, opts?: SummaryOptions): Summary
   registerSummary (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Summary name is required')
     }
 
@@ -465,7 +465,7 @@ class PrometheusMetrics implements Metrics {
   registerSummaryGroup (name: string, opts: PrometheusCalculatedSummaryOptions<Record<string, number>>): void
   registerSummaryGroup (name: string, opts?: SummaryOptions): SummaryGroup
   registerSummaryGroup (name: string, opts: any = {}): any {
-    if (name == null ?? name.trim() === '') {
+    if (name == null || name.trim() === '') {
       throw new Error('Summary group name is required')
     }
 

@@ -35,7 +35,7 @@ export interface AbstractStreamInit {
   /**
    * Invoked when the stream ends
    */
-  onEnd?(err?: Error | undefined): void
+  onEnd?(err?: Error): void
 
   /**
    * Invoked when the readable end of the stream is closed
@@ -99,7 +99,7 @@ export abstract class AbstractStream implements Stream {
   private readonly closed: DeferredPromise<void>
   private endErr: Error | undefined
   private readonly streamSource: Pushable<Uint8ArrayList>
-  private readonly onEnd?: (err?: Error | undefined) => void
+  private readonly onEnd?: (err?: Error) => void
   private readonly onCloseRead?: () => void
   private readonly onCloseWrite?: () => void
   private readonly onReset?: () => void
@@ -127,10 +127,10 @@ export abstract class AbstractStream implements Stream {
     this.sendCloseWriteTimeout = init.sendCloseWriteTimeout ?? DEFAULT_SEND_CLOSE_WRITE_TIMEOUT
 
     this.onEnd = init.onEnd
-    this.onCloseRead = init?.onCloseRead
-    this.onCloseWrite = init?.onCloseWrite
-    this.onReset = init?.onReset
-    this.onAbort = init?.onAbort
+    this.onCloseRead = init.onCloseRead
+    this.onCloseWrite = init.onCloseWrite
+    this.onReset = init.onReset
+    this.onAbort = init.onAbort
 
     this.source = this.streamSource = pushable<Uint8ArrayList>({
       onEnd: (err) => {

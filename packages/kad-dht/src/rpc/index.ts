@@ -8,9 +8,9 @@ import { GetValueHandler, type GetValueHandlerComponents } from './handlers/get-
 import { PingHandler } from './handlers/ping.js'
 import { PutValueHandler, type PutValueHandlerComponents } from './handlers/put-value.js'
 import type { PeerInfoMapper, Validators } from '../index.js'
-import type { PeerRouting } from '../peer-routing'
-import type { Providers } from '../providers'
-import type { RoutingTable } from '../routing-table'
+import type { PeerRouting } from '../peer-routing/index.js'
+import type { Providers } from '../providers.js'
+import type { RoutingTable } from '../routing-table/index.js'
 import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData } from '@libp2p/interface'
 
 export interface DHTMessageHandler {

@@ -83,7 +83,7 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
   let started = false
 
   return {
-    setInterval: (ms) => {
+    setInterval: (ms): void => {
       interval = ms
 
       // maybe reschedule
@@ -92,14 +92,11 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
         timeout = setTimeout(runTask, interval)
       }
     },
-    setTimeout: (ms) => {
-      if (options == null) {
-        options = {}
-      }
-
+    setTimeout: (ms): void => {
+      options ??= {}
       options.timeout = ms
     },
-    start: () => {
+    start: (): void => {
       if (started) {
         return
       }
@@ -118,7 +115,7 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
         timeout = setTimeout(runTask, interval)
       }
     },
-    stop: () => {
+    stop: (): void => {
       clearTimeout(timeout)
       shutdownController?.abort()
       started = false

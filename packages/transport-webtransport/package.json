@@ -69,7 +69,7 @@
     "@libp2p/logger": "^5.1.16",
     "@libp2p/ping": "^2.0.30",
     "@noble/hashes": "^1.6.1",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.2",
     "execa": "^9.5.1",
     "go-libp2p": "^1.6.0",
     "it-map": "^3.1.1",

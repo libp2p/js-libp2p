@@ -102,7 +102,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.2",
     "asn1js": "^3.0.5",
     "benchmark": "^2.1.4",
     "protons": "^7.6.0"

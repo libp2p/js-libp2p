@@ -165,10 +165,8 @@ describe('webrtc basic', () => {
 describe('webrtc receiver', () => {
   let initiator: Initiator
   let recipient: Recipient
-  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
@@ -185,10 +183,8 @@ describe('webrtc receiver', () => {
 describe('webrtc dialer', () => {
   let initiator: Initiator
   let recipient: Recipient
-  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
