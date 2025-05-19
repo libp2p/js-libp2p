@@ -1,13 +1,15 @@
 import { expect } from 'aegir/chai'
 import { mergeOptions } from '../src/merge-options.js'
 
-const defineProtoProperty = (options: any, value: any): void => {
+const defineProtoProperty = (options: any, value: any): any => {
   Object.defineProperty(options, '__proto__', {
     value,
     writable: true,
     enumerable: true,
     configurable: true
   })
+
+  return options
 }
 
 describe('merge-options', () => {
@@ -38,7 +40,7 @@ describe('merge-options', () => {
       expect(result.array).to.not.equal(array2);
   });
 
-  it('should support concatenation of sparsed arrays', () => {
+  it('should support concatenation of sparse arrays', () => {
       const sparseArray1 = [];
       const sparseArray2 = [];
       sparseArray1[2] = 42;
@@ -49,7 +51,7 @@ describe('merge-options', () => {
       expect(result.array).to.not.equal(sparseArray2);
   });
 
-  it('should support concatenation of sparsed arrays via apply',() => {
+  it('should support concatenation of sparse arrays via apply',() => {
       const sparseArray1 = [];
       const sparseArray2 = [];
       sparseArray1[2] = 42;
@@ -202,7 +204,7 @@ describe('merge-options', () => {
       expect(pristine).to.not.have.property('oops')
   });
 
-  it('should allow recusive merge', () => {
+  it('should allow recursive merge', () => {
       const a = {}
       const b = defineProtoProperty({a}, {oops: 'It works !'})
       expect(b).to.not.have.nested.property('a.oops')

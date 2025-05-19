@@ -12,19 +12,12 @@
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "type": "module",
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "exports": {},
   "scripts": {
     "doc-check": "aegir doc-check"
   },
   "devDependencies": {
-    "aegir": "^47.0.2"
+    "aegir": "^47.0.3"
   },
   "private": true
 }

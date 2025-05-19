@@ -33,6 +33,9 @@
       "path": "../peer-store"
     },
     {
+      "path": "../protocol-ping"
+    },
+    {
       "path": "../record"
     },
     {

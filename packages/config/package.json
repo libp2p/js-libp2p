@@ -12,7 +12,8 @@
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
@@ -26,13 +27,6 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    }
-  },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
     }
   },
   "scripts": {
@@ -52,7 +46,7 @@
     "interface-datastore": "^8.3.1"
   },
   "devDependencies": {
-    "aegir": "^47.0.2",
+    "aegir": "^47.0.3",
     "datastore-core": "^10.0.2"
   },
   "sideEffects": false

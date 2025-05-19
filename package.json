@@ -41,12 +41,6 @@
     "aegir": "^47.0.2",
     "npm-run-all": "^4.1.5"
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "ignorePatterns": [
-      "!.aegir.js"
-    ]
-  },
   "workspaces": [
     "doc",
     "interop",
