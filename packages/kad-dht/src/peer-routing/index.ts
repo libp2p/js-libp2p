@@ -3,7 +3,6 @@ import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { QueryError, InvalidRecordError } from '../errors.js'
@@ -23,12 +22,14 @@ import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export interface PeerRoutingComponents {
   peerId: PeerId
   peerStore: PeerStore
   logger: ComponentLogger
   metrics?: Metrics
+  connectionManager: ConnectionManager
 }
 
 export interface PeerRoutingInit {
@@ -45,16 +46,14 @@ export class PeerRouting {
   private readonly network: Network
   private readonly validators: Validators
   private readonly queryManager: QueryManager
-  private readonly peerStore: PeerStore
-  private readonly peerId: PeerId
+  private readonly components: PeerRoutingComponents
 
   constructor (components: PeerRoutingComponents, init: PeerRoutingInit) {
     this.routingTable = init.routingTable
     this.network = init.network
     this.validators = init.validators
     this.queryManager = init.queryManager
-    this.peerStore = components.peerStore
-    this.peerId = components.peerId
+    this.components = components
     this.log = components.logger.forComponent(`${init.logPrefix}:peer-routing`)
 
     this.findPeer = components.metrics?.traceFunction('libp2p.kadDHT.findPeer', this.findPeer.bind(this), {
@@ -77,7 +76,7 @@ export class PeerRouting {
       this.log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.peerStore.get(p)
+        peerData = await this.components.peerStore.get(p)
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -87,7 +86,7 @@ export class PeerRouting {
 
     if (peerData == null) {
       try {
-        peerData = await this.peerStore.get(peer)
+        peerData = await this.components.peerStore.get(peer)
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -124,10 +123,16 @@ export class PeerRouting {
    */
   async * getPublicKeyFromNode (peer: PeerId, options: RoutingOptions = {}): AsyncGenerator<QueryEvent> {
     const pkKey = keyForPublicKey(peer)
+    const path = {
+      index: -1,
+      queued: 0,
+      running: 0,
+      total: 0
+    }
 
     for await (const event of this._getValueSingle(peer, pkKey, {
       ...options,
-      path: -1
+      path
     })) {
       yield event
 
@@ -146,7 +151,8 @@ export class PeerRouting {
 
         yield valueEvent({
           from: peer,
-          value: event.record.value
+          value: event.record.value,
+          path
         }, options)
       }
     }
@@ -168,9 +174,14 @@ export class PeerRouting {
       if (pi != null) {
         this.log('found local')
         yield finalPeerEvent({
-          from: this.peerId,
+          from: this.components.peerId,
           peer: pi,
-          path: -1
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
         }, options)
         return
       }
@@ -187,7 +198,7 @@ export class PeerRouting {
           key: id.toMultihash().bytes
         }
 
-        for await (const event of self.network.sendRequest(peer, request, {
+        for await (const event of self.network.sendRequest(peer.id, request, {
           ...options,
           signal,
           path
@@ -219,58 +230,64 @@ export class PeerRouting {
     }
 
     if (!foundPeer) {
-      yield queryErrorEvent({
-        from: this.peerId,
-        error: new NotFoundError('Not found')
-      }, options)
+      throw new NotFoundError('Not found')
     }
   }
 
   /**
-   * Kademlia 'FIND_NODE' operation on a key, which could be the bytes from
-   * a multihash or a peer ID
+   * Kademlia 'FIND_NODE' operation on a key, which could be the bytes from a
+   * multihash or a peer ID
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
     const kadId = await convertBuffer(key)
-    const tablePeers = this.routingTable.closestPeers(kadId)
+    const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
-    const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
-    await Promise.all(tablePeers.map(async peer => { await peers.add({ id: peer, multiaddrs: [] }, -1) }))
-
-    const getCloserPeersQuery: QueryFunc = async function * ({ peer, signal, path }) {
-      self.log('closerPeersSingle %s from %p', uint8ArrayToString(key, 'base32'), peer)
+    const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
+      self.log('getClosestPeers asking %p', peer)
       const request: Partial<Message> = {
         type: MessageType.FIND_NODE,
         key
       }
 
-      yield * self.network.sendRequest(peer, request, {
+      yield * self.network.sendRequest(peer.id, request, {
         ...options,
         signal,
         path
       })
+
+      // add the peer to the list if we've managed to contact it successfully
+      peers.addWithKadId(peer, peerKadId, path)
     }
 
-    for await (const event of this.queryManager.run(key, getCloserPeersQuery, options)) {
-      if (event.name === 'PEER_RESPONSE') {
-        await Promise.all(event.closer.map(async peerData => {
-          await peers.add(peerData, event.path)
-        }))
-      }
-
-      yield event
-    }
+    yield * this.queryManager.run(key, getCloserPeersQuery, options)
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (const { peer, path } of peers.peers) {
-      yield finalPeerEvent({
-        from: this.peerId,
-        peer,
-        path
-      }, options)
+    for (let { peer, path } of peers.peers) {
+      try {
+        if (peer.multiaddrs.length === 0) {
+          peer = await self.components.peerStore.getInfo(peer.id)
+        }
+
+        if (peer.multiaddrs.length === 0) {
+          continue
+        }
+
+        yield finalPeerEvent({
+          from: this.components.peerId,
+          peer: await self.components.peerStore.getInfo(peer.id),
+          path: {
+            index: path.index,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        }, options)
+      } catch {
+        continue
+      }
     }
   }
 
@@ -318,7 +335,8 @@ export class PeerRouting {
   }
 
   /**
-   * Get the nearest peers to the given query, but if closer than self
+   * Get the peers in our routing table that are closer than the passed PeerId
+   * to the passed key
    */
   async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId): Promise<PeerInfo[]> {
     const output: PeerInfo[] = []
@@ -328,7 +346,7 @@ export class PeerRouting {
       const multihash = Digest.decode(key)
       const targetPeerId = peerIdFromMultihash(multihash)
 
-      const peer = await this.peerStore.get(targetPeerId)
+      const peer = await this.components.peerStore.get(targetPeerId)
 
       output.push({
         id: peer.id,
@@ -351,12 +369,7 @@ export class PeerRouting {
       }
 
       try {
-        const peer = await this.peerStore.get(peerId)
-
-        output.push({
-          id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
-        })
+        output.push(await this.components.peerStore.getInfo(peerId))
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err

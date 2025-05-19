@@ -2,7 +2,7 @@ import { NotFoundError, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySy
 import drain from 'it-drain'
 import createMortice from 'mortice'
 import pDefer from 'p-defer'
-import { PROTOCOL } from './constants.js'
+import { ALPHA, PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
 import { ContentRouting as KADDHTContentRouting } from './content-routing/index.js'
 import { Network } from './network.js'
@@ -13,7 +13,7 @@ import { QuerySelf } from './query-self.js'
 import { selectors as recordSelectors } from './record/selectors.js'
 import { validators as recordValidators } from './record/validators.js'
 import { Reprovider } from './reprovider.js'
-import { RoutingTable } from './routing-table/index.js'
+import { KBUCKET_SIZE, RoutingTable } from './routing-table/index.js'
 import { RoutingTableRefresh } from './routing-table/refresh.js'
 import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
@@ -113,6 +113,9 @@ export interface OperationMetrics {
  * Original implementation in go: https://github.com/libp2p/go-libp2p-kad-dht.
  */
 export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements KadDHTInterface, Startable {
+  public readonly k: number
+  public readonly a: number
+  public readonly d: number
   public protocol: string
   public routingTable: RoutingTable
   public providers: Providers
@@ -122,7 +125,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   public readonly components: KadDHTComponents
   private readonly log: Logger
   private running: boolean
-  private readonly kBucketSize: number
   private clientMode: boolean
   private readonly validators: Validators
   private readonly selectors: Selectors
@@ -161,8 +163,10 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.running = false
     this.components = components
     this.log = components.logger.forComponent(logPrefix)
+    this.k = init.kBucketSize ?? KBUCKET_SIZE
+    this.a = init.alpha ?? ALPHA
+    this.d = init.disjointPaths ?? this.a
     this.protocol = init.protocol ?? PROTOCOL
-    this.kBucketSize = init.kBucketSize ?? 20
     this.clientMode = init.clientMode ?? true
     this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
@@ -192,7 +196,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     })
 
     this.routingTable = new RoutingTable(components, {
-      kBucketSize: init.kBucketSize,
+      kBucketSize: this.k,
       pingOldContactTimeout: init.pingOldContactTimeout,
       pingOldContactConcurrency: init.pingOldContactConcurrency,
       pingOldContactMaxQueueSize: init.pingOldContactMaxQueueSize,
@@ -218,8 +222,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     }
 
     this.queryManager = new QueryManager(components, {
-      // Number of disjoint query paths to use - This is set to `kBucketSize/2` per the S/Kademlia paper
-      disjointPaths: Math.ceil(this.kBucketSize / 2),
+      disjointPaths: this.d,
+      alpha: this.a,
       logPrefix,
       metricsPrefix,
       initialQuerySelfHasRun,
@@ -317,7 +321,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
         await this.onPeerConnect(peerData)
       }).catch(err => {
-        this.log.error('could not add %p to routing table - %e', peerId, err)
+        this.log.error('could not add %p to routing table - %e - %e', peerId, err)
       })
     })
 

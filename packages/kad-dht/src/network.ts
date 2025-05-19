@@ -7,9 +7,10 @@ import { fromPbPeerInfo } from './message/utils.js'
 import {
   sendQueryEvent,
   peerResponseEvent,
-  queryErrorEvent
+  queryErrorEvent,
+  dialPeerEvent
 } from './query/events.js'
-import type { KadDHTComponents, QueryEvent } from './index.js'
+import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
 
 export interface NetworkInit {
@@ -29,7 +30,7 @@ export interface SendMessageOptions extends RoutingOptions {
    * this option is which index within `k` this message is for, and it
    * allows observers to collate events together on a per-path basis
    */
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -161,9 +162,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       throw new InvalidParametersError('Message type was missing')
     }
 
-    this.log('sending %s to %p', msg.type, to)
-    yield sendQueryEvent({ to, type, path: options.path }, options)
-
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
 
@@ -175,8 +173,15 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     try {
       this.metrics.operations?.increment({ [type]: true })
 
+      this.log('dialling %p', to)
+      yield dialPeerEvent({ peer: to, path: options.path }, options)
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
+
+      this.log('sending %s to %p', msg.type, to)
+      yield sendQueryEvent({ to, type, path: options.path }, options)
+
       const response = await this._writeReadMessage(stream, msg, options)
 
       stream.close(options)
@@ -224,9 +229,6 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       throw new InvalidParametersError('Message type was missing')
     }
 
-    this.log('sending %s to %p', msg.type, to)
-    yield sendQueryEvent({ to, type, path: options.path }, options)
-
     let stream: Stream | undefined
     const signal = this.timeout.getTimeoutSignal(options)
 
@@ -238,8 +240,14 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     try {
       this.metrics.operations?.increment({ [type]: true })
 
+      this.log('dialling %p', to)
+      yield dialPeerEvent({ peer: to, path: options.path }, options)
+
       const connection = await this.components.connectionManager.openConnection(to, options)
       stream = await connection.newStream(this.protocol, options)
+
+      this.log('sending %s to %p', msg.type, to)
+      yield sendQueryEvent({ to, type, path: options.path }, options)
 
       await this._writeMessage(stream, msg, options)
 
@@ -269,9 +277,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   }
 
   /**
-   * Write a message and read its response.
-   * If no response is received after the specified timeout
-   * this will error out.
+   * Write a message and read a response
    */
   async _writeReadMessage (stream: Stream, msg: Partial<Message>, options: AbortOptions): Promise<Message> {
     const pb = pbStream(stream)

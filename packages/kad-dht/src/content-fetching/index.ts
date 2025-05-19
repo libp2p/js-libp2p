@@ -129,7 +129,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new QueryError('Value not put correctly') }, options)
+        throw new QueryError('Could not send correction')
       }
 
       this.log.error('Failed error correcting entry')
@@ -182,7 +182,11 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new QueryError('Value not put correctly') }, options))
+              events.push(queryErrorEvent({
+                from: event.peer.id,
+                error: new QueryError('Value not put correctly'),
+                path: putEvent.path
+              }, options))
             }
           }
 
@@ -212,6 +216,7 @@ export class ContentFetching {
     for await (const event of this.getMany(key, options)) {
       if (event.name === 'VALUE') {
         vals.push(event)
+        continue
       }
 
       yield event
@@ -242,7 +247,12 @@ export class ContentFetching {
 
     yield * this.sendCorrectionRecord(key, vals, best, {
       ...options,
-      path: -1
+      path: {
+        index: -1,
+        queued: 0,
+        running: 0,
+        total: 0
+      }
     })
 
     yield vals[i]
@@ -259,7 +269,13 @@ export class ContentFetching {
 
       yield valueEvent({
         value: localRec.value,
-        from: this.components.peerId
+        from: this.components.peerId,
+        path: {
+          index: -1,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
       }, options)
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)
@@ -268,7 +284,7 @@ export class ContentFetching {
     const self = this // eslint-disable-line @typescript-eslint/no-this-alias
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal, path }) {
-      for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
+      for await (const event of self.peerRouting.getValueOrPeers(peer.id, key, {
         ...options,
         signal,
         path
@@ -276,7 +292,11 @@ export class ContentFetching {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {
-          yield valueEvent({ from: peer, value: event.record.value }, options)
+          yield valueEvent({
+            from: peer.id,
+            value: event.record.value,
+            path
+          }, options)
         }
       }
     }

@@ -8,6 +8,7 @@ import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { type StubbedInstance, stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { K } from '../src/constants.js'
 import { EventTypes, type QueryEvent } from '../src/index.js'
 import { MessageType } from '../src/message/dht.js'
 import {
@@ -64,9 +65,27 @@ describe('QueryManager', () => {
       let event: QueryEvent
 
       if (config.value !== undefined) {
-        event = valueEvent({ from, value: config.value })
+        event = valueEvent({
+          from,
+          value: config.value,
+          path: {
+            index: 0,
+            running: 0,
+            queued: 0,
+            total: 0
+          }
+        })
       } else if (config.error != null) {
-        event = queryErrorEvent({ from, error: config.error })
+        event = queryErrorEvent({
+          from,
+          error: config.error,
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        })
       } else {
         event = peerResponseEvent({
           from,
@@ -76,7 +95,12 @@ describe('QueryManager', () => {
             multiaddrs: [],
             protocols: []
           })),
-          path: -1
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
         })
       }
 
@@ -98,7 +122,7 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * (context) {
       const { peer } = context
 
-      const res = topology[peer.toString()]
+      const res = topology[peer.id.toString()]
       res.context = context
 
       if (res.delay != null) {
@@ -112,7 +136,9 @@ describe('QueryManager', () => {
   }
 
   before(async () => {
-    routingTable = stubInterface<RoutingTable>()
+    routingTable = stubInterface<RoutingTable>({
+      kBucketSize: K
+    })
 
     const unsortedPeers = await createPeerIdsWithPrivateKey(39)
     ourPeerId = (await createPeerIdWithPrivateKey()).peerId
@@ -123,7 +149,7 @@ describe('QueryManager', () => {
   })
 
   beforeEach(async () => {
-    routingTable.closestPeers.returns(peers.map(p => p.peerId))
+    routingTable.closestPeers.returns(peers.slice(0, K).map(p => p.peerId))
   })
 
   it('does not run queries before start', async () => {
@@ -176,20 +202,28 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * (context) { // eslint-disable-line require-await
       expect(context).to.have.property('key').that.equalBytes(key)
-      expect(context).to.have.property('peer').that.deep.equals(peers[0].peerId)
+      expect(context).to.have.property('peer')
       expect(context).to.have.property('signal').that.is.an.instanceOf(AbortSignal)
-      expect(context).to.have.property('path').that.equals(0)
+      expect(context).to.have.property('path').that.includes({ index: 0 })
       expect(context).to.have.property('numPaths').that.equals(1)
 
-      yield valueEvent({
-        from: context.peer,
-        value: uint8ArrayFromString('cool')
-      })
+      if (peers[0].peerId.equals(context.peer.id)) {
+        yield valueEvent({
+          from: context.peer.id,
+          value: uint8ArrayFromString('cool'),
+          path: {
+            index: 0,
+            running: 0,
+            queued: 0,
+            total: 0
+          }
+        })
+      }
     }
 
     const results = await all(manager.run(key, queryFunc))
 
-    expect(results).to.have.lengthOf(1)
+    expect(results).to.have.lengthOf(2)
     // @ts-expect-error types are wrong
     expect(results).to.deep.containSubset([{
       value: uint8ArrayFromString('cool')
@@ -216,12 +250,12 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * ({ peer, signal, path }) { // eslint-disable-line require-await
       expect(signal).to.be.an.instanceOf(AbortSignal)
-      peersQueried.push(peer)
+      peersQueried.push(peer.id)
 
       if (peersQueried.length === 1) {
         // query more peers
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
           path
@@ -229,13 +263,19 @@ describe('QueryManager', () => {
       } else if (peersQueried.length === 6) {
         // all peers queried, return result
         yield valueEvent({
-          from: peer,
-          value: uint8ArrayFromString('cool')
+          from: peer.id,
+          value: uint8ArrayFromString('cool'),
+          path: {
+            index: 0,
+            running: 0,
+            queued: 0,
+            total: 0
+          }
         })
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -245,8 +285,9 @@ describe('QueryManager', () => {
     routingTable.closestPeers.returns([peers[7].peerId])
     const results = await all(manager.run(key, queryFunc))
 
-    // e.g. our starting peer plus the 5x closerPeers returned n the first iteration
-    expect(results).to.have.lengthOf(6)
+    // e.g. our starting peer plus the 5x closerPeers returned n the first
+    // iteration plus the "path ended" message
+    expect(results).to.have.lengthOf(7)
 
     expect(results).to.containSubset([{
       value: uint8ArrayFromString('cool')
@@ -273,12 +314,12 @@ describe('QueryManager', () => {
     const peersQueried: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
-      peersQueried.push(peer)
+      peersQueried.push(peer.id)
 
       if (peersQueried.length === 1) {
         // query more peers
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           closer: peers.slice(0, 5).map(peer => ({ id: peer.peerId, multiaddrs: [], protocols: [] })),
           path
@@ -286,7 +327,7 @@ describe('QueryManager', () => {
       } else {
         // a peer that cannot help in our query
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -296,8 +337,9 @@ describe('QueryManager', () => {
     routingTable.closestPeers.returns([peers[7].peerId])
     const results = await all(manager.run(key, queryFunc))
 
-    // e.g. our starting peer plus the 5x closerPeers returned n the first iteration
-    expect(results).to.have.lengthOf(6)
+    // e.g. our starting peer plus the 5x closerPeers returned n the first
+    // iteration plus the "path ended" message
+    expect(results).to.have.lengthOf(7)
     // should not be a result in there
     expect(results.find(res => res.name === 'VALUE')).to.not.be.ok()
 
@@ -334,7 +376,7 @@ describe('QueryManager', () => {
     })
 
     const queryFunc: QueryFunc = async function * ({ peer, signal }) { // eslint-disable-line require-await
-      signal.addEventListener('abort', () => {
+      signal?.addEventListener('abort', () => {
         aborted = true
       })
 
@@ -342,7 +384,7 @@ describe('QueryManager', () => {
 
       await delay(1000)
 
-      yield topology[peer.toString()].event
+      yield topology[peer.id.toString()].event
     }
 
     // start the query
@@ -356,7 +398,7 @@ describe('QueryManager', () => {
 
     // the should have been aborted
     await expect(queryPromise).to.eventually.be.rejected()
-      .with.property('name', 'AbortError')
+      .with.property('name', 'QueryAbortedError')
 
     expect(aborted).to.be.true()
 
@@ -387,20 +429,17 @@ describe('QueryManager', () => {
       4: { delay: 10, closerPeers: [3] }
     })
 
-    const queryFunc: QueryFunc = async function * ({ peer, signal }) { // eslint-disable-line require-await
-      let aborted = false
-
-      signal.addEventListener('abort', () => {
-        aborted = true
-      })
-
-      const res = topology[peer.toString()]
+    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+      // simulate network timeout rather than using query signal passed in
+      // context which would abort the whole query
+      const signal = AbortSignal.timeout(100)
+      const res = topology[peer.id.toString()]
 
       if (res.delay != null) {
         await delay(res.delay)
       }
 
-      if (aborted) {
+      if (signal?.aborted) {
         throw new Error('Aborted by signal')
       }
 
@@ -408,17 +447,18 @@ describe('QueryManager', () => {
     }
 
     routingTable.closestPeers.returns([peers[2].peerId, peers[4].peerId])
-    const result = await all(manager.run(key, queryFunc, { queryFuncTimeout: 500 }))
+    const result = await all(manager.run(key, queryFunc))
 
-    // should have traversed through the three nodes to the value and the one that timed out
-    expect(result).to.have.lengthOf(4)
+    // should have traversed through the three nodes to the value and the one
+    // that timed out, plus 2x "path ended" messages
+    expect(result).to.have.lengthOf(6)
     expect(result).to.have.deep.nested.property('[2].value', uint8ArrayFromString('true'))
-    expect(result).to.have.nested.property('[3].error.message', 'Aborted by signal')
+    expect(result).to.have.nested.property('[4].error.message', 'Aborted by signal')
 
     await manager.stop()
   })
 
-  it('does not return an error if only some queries error', async () => {
+  it('does not return an error if only some paths error', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
       logger: defaultLogger(),
@@ -432,15 +472,11 @@ describe('QueryManager', () => {
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
-      if (path % 2 === 0) {
-        yield queryErrorEvent({
-          from: peer,
-          error: new Error('Urk!'),
-          path
-        })
+      if (path.index % 2 === 0) {
+        throw new Error('Urk!')
       } else {
         yield peerResponseEvent({
-          from: peer,
+          from: peer.id,
           messageType: MessageType.GET_VALUE,
           path
         })
@@ -449,8 +485,6 @@ describe('QueryManager', () => {
 
     const results = await all(manager.run(key, queryFunc))
 
-    // didn't add any extra peers during the query
-    expect(results).to.have.lengthOf(manager.disjointPaths)
     // should not be a result in there
     expect(results.find(res => res.name === 'VALUE')).to.not.be.ok()
     // half of the results should have the error property
@@ -460,7 +494,15 @@ describe('QueryManager', () => {
       }
 
       return acc
-    }, 0)).to.equal(5)
+    }, 0)).to.equal(10)
+    // other half of the results should have the value
+    expect(results.reduce((acc, curr) => {
+      if (curr.name === 'PEER_RESPONSE') {
+        return acc + 1
+      }
+
+      return acc
+    }, 0)).to.equal(10)
 
     await manager.stop()
   })
@@ -479,7 +521,16 @@ describe('QueryManager', () => {
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
-      yield valueEvent({ from: peer, value: uint8ArrayFromString('cool') })
+      yield valueEvent({
+        from: peer.id,
+        value: uint8ArrayFromString('cool'),
+        path: {
+          index: 0,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
+      })
     }
 
     routingTable.closestPeers.returns([])
@@ -522,6 +573,7 @@ describe('QueryManager', () => {
     routingTable.closestPeers.returns([peers[9].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
     const traversedPeers = results
+      .filter(evt => evt.type !== EventTypes.PATH_ENDED)
       .map(event => {
         if (event.type !== EventTypes.PEER_RESPONSE && event.type !== EventTypes.VALUE) {
           throw new Error(`Unexpected query event type ${event.type}`)
@@ -573,6 +625,7 @@ describe('QueryManager', () => {
     routingTable.closestPeers.returns([peers[6].peerId, peers[5].peerId])
     const results = await all(manager.run(key, createQueryFunction(topology)))
     const traversedPeers = results
+      .filter(evt => evt.type !== EventTypes.PATH_ENDED)
       .map(event => {
         if (event.type !== EventTypes.PEER_RESPONSE && event.type !== EventTypes.VALUE) {
           throw new Error(`Unexpected query event type ${event.type}`)
@@ -602,7 +655,7 @@ describe('QueryManager', () => {
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
       yield peerResponseEvent({
-        from: peer,
+        from: peer.id,
         messageType: MessageType.GET_VALUE,
         closer: [{
           id: peers[2].peerId,
@@ -615,7 +668,7 @@ describe('QueryManager', () => {
     routingTable.closestPeers.returns([peers[3].peerId])
     const results = await all(manager.run(key, queryFunc))
 
-    expect(results).to.have.lengthOf(2)
+    expect(results).to.have.lengthOf(3)
     expect(results).to.have.deep.nested.property('[0].closer[0].id', peers[2].peerId)
     expect(results).to.have.deep.nested.property('[1].closer[0].id', peers[2].peerId)
 
@@ -656,7 +709,7 @@ describe('QueryManager', () => {
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // Should visit all peers
-    expect(results).to.have.lengthOf(10)
+    expect(results.filter(evt => evt.type !== EventTypes.PATH_ENDED)).to.have.lengthOf(10)
 
     await manager.stop()
   })
@@ -687,10 +740,10 @@ describe('QueryManager', () => {
     const visited: PeerId[] = []
 
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
-      visited.push(peer)
+      visited.push(peer.id)
 
       const getResult = async (): Promise<QueryEvent> => {
-        const res = topology[peer.toString()]
+        const res = topology[peer.id.toString()]
         // this delay is necessary so `dhtA.stop` has time to stop the
         // requests before they all complete
         await delay(100)
@@ -699,7 +752,7 @@ describe('QueryManager', () => {
       }
 
       // Shut down after visiting peers[2]
-      if (peer.equals(peers[2].peerId)) {
+      if (peer.id.equals(peers[2].peerId)) {
         await manager.stop()
 
         yield getResult()
@@ -748,7 +801,7 @@ describe('QueryManager', () => {
     const results = await all(manager.run(key, createQueryFunction(topology)))
 
     // visited all the nodes
-    expect(results).to.have.lengthOf(5)
+    expect(results.filter(evt => evt.type !== EventTypes.PATH_ENDED)).to.have.lengthOf(5)
 
     // found both values
     // @ts-expect-error types are wrong
@@ -823,8 +876,14 @@ describe('QueryManager', () => {
     const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
       // yield query result
       yield valueEvent({
-        from: peer,
-        value: uint8ArrayFromString('cool')
+        from: peer.id,
+        value: uint8ArrayFromString('cool'),
+        path: {
+          index: 0,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
       })
     }
 

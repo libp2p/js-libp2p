@@ -1,5 +1,6 @@
+/* eslint-disable complexity */
 import { setMaxListeners } from '@libp2p/interface'
-import { PeerSet } from '@libp2p/peer-collections'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { pEvent } from 'p-event'
@@ -39,11 +40,6 @@ export interface QueryManagerComponents {
 }
 
 export interface QueryOptions extends RoutingOptions {
-  /**
-   * A timeout for subqueries executed as part of the main query
-   */
-  queryFuncTimeout?: number
-
   isSelfQuery?: boolean
 }
 
@@ -161,7 +157,7 @@ export class QueryManager implements Startable {
       }
 
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
-        log('waiting for initial query-self query before continuing')
+        log('waiting for initial self query before continuing')
 
         await raceSignal(this.initialQuerySelfHasRun.promise, signal)
 
@@ -171,8 +167,22 @@ export class QueryManager implements Startable {
       log('query:start')
 
       const id = await convertBuffer(key)
-      const peers = this.routingTable.closestPeers(id)
-      const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length))
+      const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize)
+
+      // split peers into d buckets evenly(ish)
+      const peersToQuery = peers.sort(() => {
+        if (Math.random() > 0.5) {
+          return 1
+        }
+
+        return -1
+      })
+        .reduce((acc: PeerId[][], curr, index) => {
+          acc[index % this.disjointPaths].push(curr)
+
+          return acc
+        }, new Array(this.disjointPaths).fill(0).map(() => []))
+        .filter(peers => peers.length > 0)
 
       if (peers.length === 0) {
         log.error('running query with no peers')
@@ -180,21 +190,20 @@ export class QueryManager implements Startable {
       }
 
       // make sure we don't get trapped in a loop
-      const peersSeen = new PeerSet()
+      const peersSeen = createScalableCuckooFilter(1024)
 
       // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
         return queryPath({
           ...options,
           key,
-          startingPeer: peer,
+          startingPeers: peer,
           ourPeerId: this.peerId,
           signal,
           query: queryFunc,
           path: index,
           numPaths: peersToQuery.length,
           alpha: this.alpha,
-          queryFuncTimeout: options.queryFuncTimeout,
           log,
           peersSeen,
           onProgress: options.onProgress,
@@ -223,8 +232,8 @@ export class QueryManager implements Startable {
           }
         }
 
-        yield event
         signal.throwIfAborted()
+        yield event
       }
 
       queryFinished = true
@@ -241,7 +250,7 @@ export class QueryManager implements Startable {
 
       signal.clear()
 
-      log('query:done')
+      log('query finished')
     }
   }
 }
