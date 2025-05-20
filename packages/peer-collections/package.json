@@ -56,7 +56,7 @@
     "@libp2p/crypto": "^5.1.2",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.6",
-    "sinon": "^19.0.5",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

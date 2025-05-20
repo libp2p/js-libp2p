@@ -85,7 +85,7 @@
     "aegir": "^47.0.6",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
-    "sinon": "^19.0.5",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {
