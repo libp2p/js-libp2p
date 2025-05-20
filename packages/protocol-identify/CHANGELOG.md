@@ -76,6 +76,23 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.31](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.30...identify-v3.0.31) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/interface-internal bumped from ^2.3.12 to ^2.3.13
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-record bumped from ^8.0.28 to ^8.0.29
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+
 ## [3.0.30](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.29...identify-v3.0.30) (2025-05-19)
 
 

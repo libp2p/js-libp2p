@@ -11,6 +11,18 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [5.1.4](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.1.3...peer-id-v5.1.4) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+
 ## [5.1.3](https://github.com/libp2p/js-libp2p/compare/peer-id-v5.1.2...peer-id-v5.1.3) (2025-05-19)
 
 

@@ -106,6 +106,28 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [15.1.1](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.0...kad-dht-v15.1.1) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/interface-internal bumped from ^2.3.12 to ^2.3.13
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/ping bumped from ^2.0.30 to ^2.0.31
+    * @libp2p/record bumped from ^4.0.5 to ^4.0.6
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.6 to ^6.4.7
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-store bumped from ^11.2.0 to ^11.2.1
+
 ## [15.1.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.0.2...kad-dht-v15.1.0) (2025-05-19)
 
 

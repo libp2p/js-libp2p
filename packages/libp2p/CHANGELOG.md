@@ -110,6 +110,25 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.6...libp2p-v2.8.7) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/interface-internal bumped from ^2.3.12 to ^2.3.13
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/multistream-select bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-store bumped from ^11.2.0 to ^11.2.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+
 ## [2.8.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.5...libp2p-v2.8.6) (2025-05-19)
 
 

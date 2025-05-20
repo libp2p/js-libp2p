@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.16](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.15...devtools-metrics-v1.2.16) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/interface-internal bumped from ^2.3.12 to ^2.3.13
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/simple-metrics bumped from ^1.3.10 to ^1.3.11
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+
 ## [1.2.15](https://github.com/libp2p/js-libp2p/compare/devtools-metrics-v1.2.14...devtools-metrics-v1.2.15) (2025-05-19)
 
 
