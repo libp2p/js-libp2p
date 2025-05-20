@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.15](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.14...opentelemetry-metrics-v1.0.15) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+
 ## [1.0.14](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.13...opentelemetry-metrics-v1.0.14) (2025-05-19)
 
 

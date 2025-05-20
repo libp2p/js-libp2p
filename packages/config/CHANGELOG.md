@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.8](https://github.com/libp2p/js-libp2p/compare/config-v1.1.7...config-v1.1.8) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/keychain bumped from ^5.2.2 to ^5.2.3
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+
 ## [1.1.7](https://github.com/libp2p/js-libp2p/compare/config-v1.1.6...config-v1.1.7) (2025-05-19)
 
 

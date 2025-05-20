@@ -32,6 +32,17 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.13](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.12...interface-internal-v2.3.13) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+
 ## [2.3.12](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.11...interface-internal-v2.3.12) (2025-05-19)
 
 

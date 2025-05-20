@@ -81,6 +81,21 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.3.20](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.3.19...prometheus-metrics-v4.3.20) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface-compliance-tests bumped from ^6.4.6 to ^6.4.7
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+
 ## [4.3.19](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v4.3.18...prometheus-metrics-v4.3.19) (2025-05-19)
 
 

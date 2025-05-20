@@ -17,6 +17,16 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.3](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.2...crypto-v5.1.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+
 ## [5.1.2](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.1...crypto-v5.1.2) (2025-05-19)
 
 

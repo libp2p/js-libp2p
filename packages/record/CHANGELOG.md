@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.6](https://github.com/libp2p/js-libp2p/compare/record-v4.0.5...record-v4.0.6) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+
 ## [4.0.5](https://github.com/libp2p/js-libp2p/compare/record-v4.0.4...record-v4.0.5) (2025-02-25)
 
 
