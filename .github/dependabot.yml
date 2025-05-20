@@ -16,19 +16,12 @@ updates:
     prefix: "deps"
     prefix-development: "chore"
   groups:
-    helia-deps: # group all deps that should be updated when Helia deps need updated
+    libp2p-deps: # group all deps that should be updated when Helia deps need updated
       patterns:
-        - "*helia*"
         - "*libp2p*"
         - "*multiformats*"
-    store-deps: # group all blockstore and datastore updates (interface & impl)
-      patterns:
         - "*blockstore*"
         - "*datastore*"
-    kubo-deps: # group kubo, kubo-rpc-client, and ipfsd-ctl updates
-      patterns:
-        - "*kubo*"
-        - "ipfsd-ctl"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
