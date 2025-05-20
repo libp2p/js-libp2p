@@ -60,7 +60,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.3",
+    "aegir": "^47.0.6",
     "protons": "^7.6.0"
   },
   "sideEffects": false

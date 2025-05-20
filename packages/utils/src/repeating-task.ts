@@ -18,7 +18,7 @@ export interface RepeatingTask {
    * Update the amount of time a task will run before the passed abort signal
    * will fire.
    *
-   * * This only affects the next iteration of the task, if it is currently
+   * This only affects the next iteration of the task, if it is currently
    * running, that run will not be interrupted.
    */
   setTimeout(ms: number): void

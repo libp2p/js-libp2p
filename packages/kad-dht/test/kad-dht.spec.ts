@@ -394,7 +394,7 @@ describe('KadDHT', () => {
             total: 0
           }
         })
-      }) // eslint-disable-line require-await
+      })
 
       const res = await last(dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)

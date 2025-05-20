@@ -336,7 +336,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'start': CustomEvent<Libp2p<T>>
+  start: CustomEvent<Libp2p<T>>
 
   /**
    * This event notifies listeners that the node has stopped
@@ -347,7 +347,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'stop': CustomEvent<Libp2p<T>>
+  stop: CustomEvent<Libp2p<T>>
 }
 
 /**

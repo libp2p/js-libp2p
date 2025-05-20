@@ -7,7 +7,8 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import createMortice from 'mortice'
 import { CID } from 'multiformats/cid'
 import { Providers } from '../src/providers.js'
-import { createPeerIdsWithPrivateKey, type PeerAndKey } from './utils/create-peer-id.js'
+import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
 
 describe('providers', () => {
   let peers: PeerAndKey[]

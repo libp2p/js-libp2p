@@ -71,49 +71,49 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
   /**
    * A job is about to start running
    */
-  'active': CustomEvent
+  active: CustomEvent
 
   /**
    * All jobs have finished and the queue is empty
    */
-  'idle': CustomEvent
+  idle: CustomEvent
 
   /**
    * The queue is empty, jobs may be running
    */
-  'empty': CustomEvent
+  empty: CustomEvent
 
   /**
    * A job was added to the queue
    */
-  'add': CustomEvent
+  add: CustomEvent
 
   /**
    * A job has finished or failed
    */
-  'next': CustomEvent
+  next: CustomEvent
 
   /**
    * A job has finished successfully
    */
-  'completed': CustomEvent<JobReturnType>
+  completed: CustomEvent<JobReturnType>
 
   /**
    * A job has failed
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted just after `"completed", a job has finished successfully - this
    * event gives access to the job and it's result
    */
-  'success': CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
+  success: CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
 
   /**
    * Emitted just after `"error", a job has failed - this event gives access to
    * the job and the thrown error
    */
-  'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
+  failure: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
 /**

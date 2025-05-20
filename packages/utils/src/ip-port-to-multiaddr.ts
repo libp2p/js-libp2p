@@ -1,6 +1,7 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
 import { InvalidParametersError } from '@libp2p/interface'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Transform an IP, Port pair into a multiaddr

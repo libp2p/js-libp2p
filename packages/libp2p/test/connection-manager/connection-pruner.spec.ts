@@ -253,7 +253,7 @@ describe('connection-pruner', () => {
     ]
 
     // Verify that the allow list in the pruner matches the expected IpNet objects
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+
     expect(pruner['allow']).to.deep.equal(expectedAllowList)
   })
 

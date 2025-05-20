@@ -58,7 +58,7 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
     "@libp2p/peer-id": "^5.1.3",
-    "aegir": "^47.0.3",
+    "aegir": "^47.0.6",
     "sinon": "^19.0.5",
     "sinon-ts": "^2.0.0"
   },

@@ -129,7 +129,7 @@ export const toRpcMessage = (message: Message): PubSubRPCMessage => {
       sequenceNumber: bigIntToBytes(message.sequenceNumber),
       topic: message.topic,
       signature: message.signature,
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+
       key: message.key ? publicKeyToProtobuf(message.key) : undefined
     }
   }

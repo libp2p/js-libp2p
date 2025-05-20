@@ -3,7 +3,7 @@ import { TypedEventEmitter } from '@libp2p/interface'
 import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { detect } from 'detect-browser'
@@ -20,6 +20,7 @@ import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport.
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
 import type { Logger, Connection, Stream, ComponentLogger, Upgrader } from '@libp2p/interface'
 import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
 
 const browser = detect()

@@ -1,7 +1,8 @@
-import { type CollectFunction, Summary as PromSummary } from 'prom-client'
+import { Summary as PromSummary } from 'prom-client'
 import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedSummaryOptions } from './index.js'
 import type { StopTimer, CalculateMetric, Summary } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusSummary implements Summary {
   private readonly summary: PromSummary

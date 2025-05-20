@@ -2,14 +2,18 @@ import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
-import { FindNodeHandler, type FindNodeHandlerComponents } from './handlers/find-node.js'
-import { GetProvidersHandler, type GetProvidersHandlerComponents } from './handlers/get-providers.js'
-import { GetValueHandler, type GetValueHandlerComponents } from './handlers/get-value.js'
+import { FindNodeHandler } from './handlers/find-node.js'
+import { GetProvidersHandler } from './handlers/get-providers.js'
+import { GetValueHandler } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
-import { PutValueHandler, type PutValueHandlerComponents } from './handlers/put-value.js'
+import { PutValueHandler } from './handlers/put-value.js'
 import type { PeerInfoMapper, Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { Providers } from '../providers.js'
+import type { FindNodeHandlerComponents } from './handlers/find-node.js'
+import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
+import type { GetValueHandlerComponents } from './handlers/get-value.js'
+import type { PutValueHandlerComponents } from './handlers/put-value.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData } from '@libp2p/interface'
 
@@ -94,7 +98,7 @@ export class RPC {
       const { stream, connection } = data
       const peerId = connection.remotePeer
 
-      const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+      const self = this
 
       await pipe(
         stream,

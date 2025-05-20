@@ -46,7 +46,7 @@
     "interface-datastore": "^8.3.1"
   },
   "devDependencies": {
-    "aegir": "^47.0.3",
+    "aegir": "^47.0.6",
     "datastore-core": "^10.0.2"
   },
   "sideEffects": false

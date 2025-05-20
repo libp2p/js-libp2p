@@ -10,9 +10,11 @@ import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { createLibp2p, type Libp2p } from '../../src/index.js'
+import { stubInterface } from 'sinon-ts'
+import { createLibp2p } from '../../src/index.js'
+import type { Libp2p } from '../../src/index.js'
 import type { ContentRouting, PeerInfo } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -328,7 +330,7 @@ describe('content-routing', () => {
       const serviceDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      router.provide.callsFake(async function () { // eslint-disable-line require-yield
+      router.provide.callsFake(async function () {
         serviceDeferred.resolve()
       })
 
@@ -357,7 +359,7 @@ describe('content-routing', () => {
         yield results[0]
       })
 
-      delegate.findProviders.callsFake(async function * () { // eslint-disable-line require-yield
+      delegate.findProviders.callsFake(async function * () {
       })
 
       const providers = []

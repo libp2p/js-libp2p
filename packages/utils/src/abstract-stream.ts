@@ -1,13 +1,14 @@
 import { StreamResetError, StreamStateError } from '@libp2p/interface'
-import { type Pushable, pushable } from 'it-pushable'
-import defer, { type DeferredPromise } from 'p-defer'
-import pDefer from 'p-defer'
+import { pushable } from 'it-pushable'
+import defer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { closeSource } from './close-source.js'
 import type { AbortOptions, Direction, ReadStatus, Stream, StreamStatus, StreamTimeline, WriteStatus } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
+import type { Pushable } from 'it-pushable'
 import type { Source } from 'it-stream-types'
+import type { DeferredPromise } from 'p-defer'
 
 const DEFAULT_SEND_CLOSE_WRITE_TIMEOUT = 5000
 
@@ -183,7 +184,7 @@ export abstract class AbstractStream implements Stream {
           const res = this.sendData(data, options)
 
           if (isPromise(res)) {
-            this.sendingData = pDefer()
+            this.sendingData = defer()
             await res
             this.sendingData.resolve()
             this.sendingData = undefined

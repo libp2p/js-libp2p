@@ -49,7 +49,7 @@ enum TCPListenerStatusCode {
    * When server object is initialized but we don't know the listening address
    * yet or the server object is stopped manually, can be resumed only by
    * calling listen()
-   **/
+   */
   INACTIVE = 0,
   ACTIVE = 1,
   /* During the connection limits */

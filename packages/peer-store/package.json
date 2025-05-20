@@ -64,7 +64,7 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
     "@types/sinon": "^17.0.4",
-    "aegir": "^47.0.3",
+    "aegir": "^47.0.6",
     "benchmark": "^2.1.4",
     "datastore-core": "^10.0.2",
     "delay": "^6.0.0",

@@ -178,7 +178,7 @@ export class ContentRouting {
     const toFind = this.routingTable.kBucketSize
     let found = 0
     const target = key.multihash.bytes
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+    const self = this
 
     this.log('findProviders %c', key)
 

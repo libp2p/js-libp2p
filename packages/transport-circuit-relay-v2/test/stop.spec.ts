@@ -10,13 +10,15 @@ import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
 import delay from 'delay'
 import { duplexPair } from 'it-pair/duplex'
-import { pbStream, type MessageStream } from 'it-protobuf-stream'
+import { pbStream } from 'it-protobuf-stream'
 import Sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
 import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, StreamHandler } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { MessageStream } from 'it-protobuf-stream'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId

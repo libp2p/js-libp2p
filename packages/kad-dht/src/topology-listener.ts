@@ -8,7 +8,7 @@ export interface TopologyListenerInit {
 }
 
 export interface TopologyListenerEvents {
-  'peer': CustomEvent<PeerId>
+  peer: CustomEvent<PeerId>
 }
 
 /**

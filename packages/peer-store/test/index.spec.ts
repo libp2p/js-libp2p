@@ -10,7 +10,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
-import { persistentPeerStore, type PersistentPeerStoreComponents } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.js'
+import type { PersistentPeerStoreComponents } from '../src/index.js'
 import type { TypedEventTarget, Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')

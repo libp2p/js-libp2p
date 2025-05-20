@@ -116,17 +116,17 @@ export interface DevToolsEvents {
   /**
    * Node metrics have been updated
    */
-  'metrics': CustomEvent<Record<string, any>>
+  metrics: CustomEvent<Record<string, any>>
 
   /**
    * The node's status has changed - new addresses and/or protocols, etc
    */
-  'self': CustomEvent<Peer>
+  self: CustomEvent<Peer>
 
   /**
    * The node's connected peers have changed
    */
-  'peers': CustomEvent<Peer[]>
+  peers: CustomEvent<Peer[]>
 
   /**
    * A pubsub message was received
