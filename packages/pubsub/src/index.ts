@@ -566,7 +566,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    * Validates the given message. The signature will be checked for authenticity.
    * Throws an error on invalid messages
    */
-  async validate (from: PeerId, message: Message): Promise<void> { // eslint-disable-line require-await
+  async validate (from: PeerId, message: Message): Promise<void> {
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':

@@ -190,7 +190,7 @@ export class PeerRouting {
     let foundPeer = false
 
     if (options.useNetwork !== false) {
-      const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+      const self = this
 
       const findPeerQuery: QueryFunc = async function * ({ peer, signal, path }) {
         const request: Partial<Message> = {
@@ -242,7 +242,7 @@ export class PeerRouting {
     this.log('getClosestPeers to %b', key)
     const kadId = await convertBuffer(key)
     const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+    const self = this
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
       self.log('getClosestPeers asking %p', peer)

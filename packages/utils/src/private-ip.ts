@@ -32,7 +32,7 @@ const NETMASK_RANGES = PRIVATE_IP_RANGES.map(ipRange => new Netmask(ipRange))
 
 function ipv4Check (ipAddr: string): boolean {
   for (const r of NETMASK_RANGES) {
-    if (r.contains(ipAddr)) return true
+    if (r.contains(ipAddr)) { return true }
   }
 
   return false
@@ -89,9 +89,5 @@ function ipv6Check (ipAddr: string): boolean {
 }
 
 export function isPrivateIp (ip: string): boolean | undefined {
-  if (isIPv4(ip)) return ipv4Check(ip)
-  else if (isIpv4MappedIpv6(ip)) return ipv4MappedIpv6Check(ip)
-  else if (isIpv4EmbeddedIpv6(ip)) return ipv4EmbeddedIpv6Check(ip)
-  else if (isIPv6(ip)) return ipv6Check(ip)
-  else return undefined
+  if (isIPv4(ip)) { return ipv4Check(ip) } else if (isIpv4MappedIpv6(ip)) { return ipv4MappedIpv6Check(ip) } else if (isIpv4EmbeddedIpv6(ip)) { return ipv4EmbeddedIpv6Check(ip) } else if (isIPv6(ip)) { return ipv6Check(ip) } else { return undefined }
 }

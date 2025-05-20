@@ -1,18 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type PeerId } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { finalPeerEvent } from '../src/query/events.js'
 import { QuerySelf } from '../src/query-self.js'
 import type { PeerRouting } from '../src/peer-routing/index.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
+import type { PeerId } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('Query Self', () => {
   let peerId: PeerId

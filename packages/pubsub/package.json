@@ -57,13 +57,6 @@
       "import": "./dist/src/utils.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -89,22 +82,22 @@
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "multiformats": "^13.3.1",
-    "p-queue": "^8.0.1",
+    "multiformats": "^13.3.4",
+    "p-queue": "^8.1.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
-    "@types/sinon": "^17.0.3",
-    "aegir": "^45.1.1",
+    "@types/sinon": "^17.0.4",
+    "aegir": "^47.0.6",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.0",
     "protons-runtime": "^5.5.0",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.5"
   },
   "sideEffects": false
 }

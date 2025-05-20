@@ -1,5 +1,5 @@
 import { InvalidMessageError, serviceDependencies } from '@libp2p/interface'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
@@ -9,6 +9,7 @@ import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Logger, Connection, Stream, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4

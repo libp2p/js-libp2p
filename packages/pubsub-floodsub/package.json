@@ -37,13 +37,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -72,13 +65,13 @@
     "@libp2p/logger": "^5.1.16",
     "@libp2p/peer-collections": "^6.0.28",
     "@libp2p/peer-id": "^5.1.3",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@types/sinon": "^17.0.3",
-    "aegir": "^45.1.1",
-    "multiformats": "^13.3.1",
+    "@multiformats/multiaddr": "^12.4.0",
+    "@types/sinon": "^17.0.4",
+    "aegir": "^47.0.6",
+    "multiformats": "^13.3.4",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.0",
-    "sinon": "^19.0.2"
+    "sinon": "^19.0.5"
   },
   "sideEffects": false
 }

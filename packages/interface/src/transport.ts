@@ -10,18 +10,18 @@ export interface ListenerEvents {
    * This event signals to the transport manager that the listening addresses
    * have changed and may be emitted at any point and/or multiple times
    */
-  'listening': CustomEvent
+  listening: CustomEvent
 
   /**
    * Emitted if listening on an address failed
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted when the listener has been shut down, has no open connections and
    * will no longer accept new connections
    */
-  'close': CustomEvent
+  close: CustomEvent
 }
 
 export interface Listener extends TypedEventTarget<ListenerEvents> {

@@ -32,16 +32,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    },
-    "ignorePatterns": [
-      "src/message/dht.d.ts"
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -65,8 +55,8 @@
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.4",
-    "aegir": "^45.1.1",
-    "multiformats": "^13.3.1",
+    "aegir": "^47.0.6",
+    "multiformats": "^13.3.4",
     "protons": "^7.6.0"
   },
   "sideEffects": false

@@ -37,13 +37,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -61,17 +54,17 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.2",
     "@libp2p/interface": "^2.10.0",
-    "@noble/hashes": "^1.6.1",
-    "asn1js": "^3.0.5",
+    "@libp2p/utils": "^6.6.3",
+    "@noble/hashes": "^1.8.0",
+    "asn1js": "^3.0.6",
     "interface-datastore": "^8.3.1",
-    "merge-options": "^3.0.4",
-    "multiformats": "^13.3.1",
+    "multiformats": "^13.3.4",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.6",
     "datastore-core": "^10.0.2"
   },
   "sideEffects": false

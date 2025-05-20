@@ -304,7 +304,7 @@ class SimpleMetrics implements Metrics, Startable {
   }
 
   private _emitMetrics (): void {
-    void Promise.resolve().then(async () => {
+    Promise.resolve().then(async () => {
       const output: Record<string, any> = {}
 
       for (const [name, metric] of this.metrics.entries()) {

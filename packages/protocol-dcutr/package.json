@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "start": "node dist/src/main.js",
     "build": "aegir build",
@@ -55,17 +48,17 @@
     "@libp2p/interface": "^2.10.0",
     "@libp2p/interface-internal": "^2.3.12",
     "@libp2p/utils": "^6.6.3",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr-matcher": "^1.7.2",
     "delay": "^6.0.0",
-    "it-protobuf-stream": "^2.0.1",
+    "it-protobuf-stream": "^2.0.2",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.6",
     "protons": "^7.6.0",
-    "sinon": "^19.0.2",
+    "sinon": "^19.0.5",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

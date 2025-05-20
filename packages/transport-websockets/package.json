@@ -52,13 +52,6 @@
       "import": "./dist/src/filters.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -76,23 +69,23 @@
   "dependencies": {
     "@libp2p/interface": "^2.10.0",
     "@libp2p/utils": "^6.6.3",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr-matcher": "^1.7.2",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
-    "@types/ws": "^8.5.13",
+    "@types/ws": "^8.18.1",
     "it-ws": "^6.1.5",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",
-    "race-signal": "^1.1.2",
-    "ws": "^8.18.0"
+    "race-signal": "^1.1.3",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.16",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.6",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^5.0.2",
-    "sinon": "^19.0.2",
+    "sinon": "^19.0.5",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

@@ -12,18 +12,20 @@ import drain from 'it-drain'
 import random from 'lodash.random'
 import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
 import { MessageType } from '../src/message/dht.js'
 import { peerResponseEvent } from '../src/query/events.js'
-import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
+import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable } from '../src/routing-table/index.js'
 import { isLeafBucket } from '../src/routing-table/k-bucket.js'
 import * as kadUtils from '../src/utils.js'
 import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import type { Network } from '../src/network.js'
+import type { RoutingTableComponents } from '../src/routing-table/index.js'
 import type { Bucket } from '../src/routing-table/k-bucket.js'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -515,7 +517,7 @@ describe('Routing Table', () => {
       peerIdFromString('QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb')
     ]
 
-    for await (const peer of startingPeers) {
+    for (const peer of startingPeers) {
       await table.add(peer)
     }
 
@@ -535,13 +537,13 @@ describe('Routing Table', () => {
       peerIdFromString('12D3KooWBZiEMZz8ZkegQ514SdyYydvt2RhPPr2xQjMd68ejNU14')
     ]
 
-    for await (const peer of closerPeers) {
+    for (const peer of closerPeers) {
       await table.add(peer)
     }
 
     const newClosest = table.closestPeers(kadId)
 
-    for await (const peer of closerPeers) {
+    for (const peer of closerPeers) {
       expect(originalClosest).to.not.deep.include(peer)
       expect(newClosest).to.deep.include(peer)
     }

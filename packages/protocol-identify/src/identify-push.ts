@@ -1,5 +1,3 @@
-/* eslint-disable complexity */
-
 import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'

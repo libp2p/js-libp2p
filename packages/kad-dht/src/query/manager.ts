@@ -1,4 +1,3 @@
-/* eslint-disable complexity */
 import { setMaxListeners } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { anySignal } from 'any-signal'
@@ -19,7 +18,7 @@ import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {
-  'cleanup': CustomEvent
+  cleanup: CustomEvent
 }
 
 export interface QueryManagerInit {

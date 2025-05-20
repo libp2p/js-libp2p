@@ -31,7 +31,7 @@ export interface PeerDiscoveryProvider {
 }
 
 export interface PeerDiscoveryEvents {
-  'peer': CustomEvent<PeerInfo>
+  peer: CustomEvent<PeerInfo>
 }
 
 /**

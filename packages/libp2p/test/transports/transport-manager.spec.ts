@@ -6,7 +6,7 @@ import { TypedEventEmitter, start, stop, FaultTolerance } from '@libp2p/interfac
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import { pEvent } from 'p-event'
@@ -17,6 +17,7 @@ import { AddressManager } from '../../src/address-manager/index.js'
 import { DefaultTransportManager } from '../../src/transport-manager.js'
 import type { Components } from '../../src/components.js'
 import type { Connection, Transport, Upgrader, Listener } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 const addrs = [

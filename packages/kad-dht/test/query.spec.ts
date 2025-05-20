@@ -6,24 +6,28 @@ import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { K } from '../src/constants.js'
-import { EventTypes, type QueryEvent } from '../src/index.js'
+import { EventTypes } from '../src/index.js'
 import { MessageType } from '../src/message/dht.js'
 import {
   peerResponseEvent,
   valueEvent,
   queryErrorEvent
 } from '../src/query/events.js'
-import { QueryManager, type QueryManagerInit } from '../src/query/manager.js'
+import { QueryManager } from '../src/query/manager.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey, type PeerAndKey } from './utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
+import type { QueryEvent } from '../src/index.js'
+import type { QueryManagerInit } from '../src/query/manager.js'
 import type { QueryContext, QueryFunc } from '../src/query/types.js'
 import type { RoutingTable } from '../src/routing-table/index.js'
 import type { PeerId } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface TopologyEntry {
   delay?: number
@@ -200,7 +204,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * (context) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * (context) {
       expect(context).to.have.property('key').that.equalBytes(key)
       expect(context).to.have.property('peer')
       expect(context).to.have.property('signal').that.is.an.instanceOf(AbortSignal)
@@ -248,7 +252,7 @@ describe('QueryManager', () => {
 
     const peersQueried: PeerId[] = []
 
-    const queryFunc: QueryFunc = async function * ({ peer, signal, path }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, signal, path }) {
       expect(signal).to.be.an.instanceOf(AbortSignal)
       peersQueried.push(peer.id)
 
@@ -313,7 +317,7 @@ describe('QueryManager', () => {
 
     const peersQueried: PeerId[] = []
 
-    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
       peersQueried.push(peer.id)
 
       if (peersQueried.length === 1) {
@@ -375,7 +379,7 @@ describe('QueryManager', () => {
       21: { closerPeers: [22] }
     })
 
-    const queryFunc: QueryFunc = async function * ({ peer, signal }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, signal }) {
       signal?.addEventListener('abort', () => {
         aborted = true
       })
@@ -429,7 +433,7 @@ describe('QueryManager', () => {
       4: { delay: 10, closerPeers: [3] }
     })
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer }) {
       // simulate network timeout rather than using query signal passed in
       // context which would abort the whole query
       const signal = AbortSignal.timeout(100)
@@ -471,7 +475,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
       if (path.index % 2 === 0) {
         throw new Error('Urk!')
       } else {
@@ -520,7 +524,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer }) {
       yield valueEvent({
         from: peer.id,
         value: uint8ArrayFromString('cool'),
@@ -653,7 +657,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer, path }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
       yield peerResponseEvent({
         from: peer.id,
         messageType: MessageType.GET_VALUE,
@@ -739,7 +743,7 @@ describe('QueryManager', () => {
 
     const visited: PeerId[] = []
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer }) {
       visited.push(peer.id)
 
       const getResult = async (): Promise<QueryEvent> => {
@@ -873,7 +877,7 @@ describe('QueryManager', () => {
     })
     await manager.start()
 
-    const queryFunc: QueryFunc = async function * ({ peer }) { // eslint-disable-line require-await
+    const queryFunc: QueryFunc = async function * ({ peer }) {
       // yield query result
       yield valueEvent({
         from: peer.id,

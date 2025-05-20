@@ -32,13 +32,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -54,21 +47,21 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@achingbrain/nat-port-mapper": "^4.0.0",
-    "@chainsafe/is-ip": "^2.0.2",
+    "@achingbrain/nat-port-mapper": "^4.0.2",
+    "@chainsafe/is-ip": "^2.1.0",
     "@libp2p/interface": "^2.10.0",
     "@libp2p/interface-internal": "^2.3.12",
     "@libp2p/utils": "^6.6.3",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr-matcher": "^1.7.2",
     "p-defer": "^4.0.1",
-    "race-signal": "^1.1.2"
+    "race-signal": "^1.1.3"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.2",
     "@libp2p/logger": "^5.1.16",
     "@libp2p/peer-id": "^5.1.3",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.6",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },

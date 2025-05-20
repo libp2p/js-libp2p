@@ -1,5 +1,5 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import merge from 'merge-options'
+import { mergeOptions } from '@libp2p/utils/merge-options'
 import * as errorsJs from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
@@ -77,7 +77,7 @@ export class Registrar implements RegistrarInterface {
       throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
-    const options = merge.bind({ ignoreUndefined: true })({
+    const options = mergeOptions.bind({ ignoreUndefined: true })({
       maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
       maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
     }, opts)

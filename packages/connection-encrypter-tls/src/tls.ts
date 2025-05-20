@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
+import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
@@ -26,6 +26,7 @@ import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
 import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
+import type { TLSSocketOptions } from 'node:tls'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class TLS implements ConnectionEncrypter {

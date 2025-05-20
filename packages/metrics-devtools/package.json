@@ -50,13 +50,6 @@
       "import": "./dist/src/rpc/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -73,17 +66,17 @@
     "@libp2p/logger": "^5.1.16",
     "@libp2p/peer-id": "^5.1.3",
     "@libp2p/simple-metrics": "^1.3.10",
-    "@multiformats/multiaddr": "^12.3.3",
-    "cborg": "^4.2.6",
+    "@multiformats/multiaddr": "^12.4.0",
+    "cborg": "^4.2.10",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-rpc": "^1.1.0",
-    "multiformats": "^13.3.1",
+    "multiformats": "^13.3.4",
     "progress-events": "^1.0.1"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.2",
-    "aegir": "^45.1.1",
+    "aegir": "^47.0.6",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

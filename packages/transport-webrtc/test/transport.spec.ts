@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { transportSymbol, start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
@@ -17,6 +15,7 @@ import { supportsIpV6 } from './util.js'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import type { Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
   let port: number | undefined

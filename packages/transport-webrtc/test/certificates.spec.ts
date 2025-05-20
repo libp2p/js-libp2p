@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
 import { MemoryDatastore } from 'datastore-core'
@@ -17,6 +15,7 @@ import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import type { Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('WebRTCDirect Transport - certificates', () => {
   let components: WebRTCDirectTransportComponents

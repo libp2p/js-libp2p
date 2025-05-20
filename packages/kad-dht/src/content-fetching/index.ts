@@ -281,7 +281,7 @@ export class ContentFetching {
       this.log('error getting local value for %b', key, err)
     }
 
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+    const self = this
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal, path }) {
       for await (const event of self.peerRouting.getValueOrPeers(peer.id, key, {
