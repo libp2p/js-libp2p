@@ -128,8 +128,8 @@ describe('WebRTCDirect Transport', () => {
       return this.skip()
     }
 
-    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37287')
-    const ipv6 = multiaddr('/ip6/::1/udp/37287')
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37288')
+    const ipv6 = multiaddr('/ip6/::1/udp/37288')
 
     await Promise.all([
       listener.listen(ipv4),
