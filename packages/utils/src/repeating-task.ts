@@ -11,6 +11,8 @@ export interface RepeatingTask {
    *
    * This only affects the next iteration of the task, if it is currently
    * running, that run will not be interrupted.
+   *
+   * Setting the interval to the current value has no effect.
    */
   setInterval(ms: number): void
 
