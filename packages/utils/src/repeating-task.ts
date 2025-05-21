@@ -84,6 +84,11 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
 
   return {
     setInterval: (ms): void => {
+      if (interval === ms) {
+        // already running at this interval, nothing to do
+        return
+      }
+
       interval = ms
 
       // maybe reschedule
