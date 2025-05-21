@@ -53,7 +53,7 @@ enum TCPListenerStatusCode {
   INACTIVE = 0,
   ACTIVE = 1,
   /* During the connection limits */
-  PAUSED = 2,
+  PAUSED = 2
 }
 
 type Status = { code: TCPListenerStatusCode.INACTIVE } | {
