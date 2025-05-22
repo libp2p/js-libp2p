@@ -2,10 +2,9 @@ import { Crypto } from '@peculiar/webcrypto'
 import pkg from '@roamhq/wrtc'
 import sdpTransform from 'sdp-transform'
 import { DEFAULT_ICE_SERVERS } from '../../constants.js'
-import { getRTCFingerprint } from '../../util.js'
+import { getRTCFingerprint, type RTCCertificateFingerprint } from '../../util.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
-import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
 const { RTCPeerConnection } = pkg
 
 const crypto = new Crypto()
@@ -80,7 +79,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
     return this.createAnswer()
   }
 
-  remoteFingerprint (): CertificateFingerprint {
+  remoteFingerprint (): RTCCertificateFingerprint {
     const remoteDescription = this.remoteDescription
 
     if (remoteDescription == null) {

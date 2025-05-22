@@ -3,7 +3,7 @@ import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import sdpTransform from 'sdp-transform'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
-import type { PeerConnection } from '@ipshipyard/node-datachannel'
+import type { RTCPeerConnection } from '@roamhq/wrtc'
 import type { LoggerOptions } from '@libp2p/interface'
 
 const browser = detect()
@@ -66,7 +66,7 @@ export interface AbortPromiseOptions {
   message?: string
 }
 
-export function isPeerConnection (obj: any): obj is PeerConnection {
+export function isPeerConnection (obj: any): obj is RTCPeerConnection {
   return typeof obj.state === 'function'
 }
 
@@ -90,7 +90,7 @@ export const genUfrag = (len: number = 32): string => {
   return UFRAG_PREFIX + [...Array(len)].map(() => UFRAG_ALPHABET.at(Math.floor(Math.random() * UFRAG_ALPHABET.length))).join('')
 }
 
-interface RTCCertificateFingerprint {
+export interface RTCCertificateFingerprint {
   value: string
   algorithm: 'sha-1' | 'sha-224' | 'sha-256' | 'sha-384' | 'sha-512' | 'md5' | 'md2'
 }
