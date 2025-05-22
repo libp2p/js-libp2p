@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.10.2](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.1...interface-v2.10.2) (2025-05-22)
+
+
+### Bug Fixes
+
+* make event detail optional ([#3144](https://github.com/libp2p/js-libp2p/issues/3144)) ([ab014c0](https://github.com/libp2p/js-libp2p/commit/ab014c0c0bf0d7a1e3c63001ddbc42b449b41e5b))
+
 ## [2.10.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.0...interface-v2.10.1) (2025-05-20)
 
 

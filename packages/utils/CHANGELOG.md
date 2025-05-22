@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.6.5](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.4...utils-v6.6.5) (2025-05-22)
+
+
+### Bug Fixes
+
+* allow setting interval repeatedly ([#3141](https://github.com/libp2p/js-libp2p/issues/3141)) ([7788b40](https://github.com/libp2p/js-libp2p/commit/7788b402592aeb4580d90798317826ff997a89ce))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+
 ## [6.6.4](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.3...utils-v6.6.4) (2025-05-20)
 
 
