@@ -1,1 +1,2 @@
-export { RTCSessionDescription, RTCIceCandidate, RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
+import pkg from '@roamhq/wrtc'
+export const { RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } = pkg

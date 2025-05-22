@@ -1,6 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
+import sdpTransform from 'sdp-transform'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
 import type { PeerConnection } from '@ipshipyard/node-datachannel'
 import type { LoggerOptions } from '@libp2p/interface'
@@ -87,4 +88,34 @@ export async function getRtcConfiguration (config?: RTCConfiguration | (() => RT
 
 export const genUfrag = (len: number = 32): string => {
   return UFRAG_PREFIX + [...Array(len)].map(() => UFRAG_ALPHABET.at(Math.floor(Math.random() * UFRAG_ALPHABET.length))).join('')
+}
+
+interface RTCCertificateFingerprint {
+  value: string
+  algorithm: 'sha-1' | 'sha-224' | 'sha-256' | 'sha-384' | 'sha-512' | 'md5' | 'md2'
+}
+
+function isIn<T> (values: readonly T[], x: any): x is T {
+  return values.includes(x)
+}
+
+export function getRTCFingerprint (session: RTCSessionDescription): RTCCertificateFingerprint {
+  const remoteSdp = sdpTransform.parse(session.sdp)
+
+  const fingerprint = remoteSdp.fingerprint
+
+  if (fingerprint === undefined) {
+    throw new Error('Invalid state: unable to parse fingerprint from sdp')
+  }
+
+  /**
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/RTCCertificate/getFingerprints#algorithm
+   */
+  const allowedAlgorithms = ['sha-1', 'sha-224', 'sha-256', 'sha-384', 'sha-512', 'md5', 'md2'] as const
+
+  if (!isIn(allowedAlgorithms, fingerprint.type)) {
+    throw new Error(`Invalid state: alogorithm state invalid in fingerprint, found ${fingerprint.hash}`)
+  }
+
+  return { value: fingerprint.hash, algorithm: fingerprint.type }
 }

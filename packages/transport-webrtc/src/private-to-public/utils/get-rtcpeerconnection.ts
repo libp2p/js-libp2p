@@ -1,76 +1,94 @@
-import { PeerConnection } from '@ipshipyard/node-datachannel'
-import { RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
 import { Crypto } from '@peculiar/webcrypto'
-import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
+import pkg from '@roamhq/wrtc'
+import sdpTransform from 'sdp-transform'
+import { DEFAULT_ICE_SERVERS } from '../../constants.js'
+import { getRTCFingerprint } from '../../util.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
 import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
+const { RTCPeerConnection } = pkg
 
 const crypto = new Crypto()
 
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
   ufrag: string
-  peerConnection: PeerConnection
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
-  private readonly peerConnection: PeerConnection
   private readonly ufrag: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
-    this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
+    // Get current local description
+    let localDescription = this.localDescription
+
+    // Generate an empty local SDP first to modify
+    if (localDescription == null) {
+      localDescription = this.currentLocalDescription
+    }
+
+    if (localDescription == null) {
+      throw new Error('Invalid State Error: Expected local description to be non null')
+    }
+
+    const localSDP = sdpTransform.parse(localDescription.sdp)
+
     // have to set ufrag before creating offer
+    localSDP.iceUfrag = this.ufrag
+    localSDP.icePwd = this.ufrag
+
     if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('offer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
+      await this.setLocalDescription({
+        sdp: sdpTransform.write(localSDP),
+        type: 'offer'
       })
     }
 
-    return super.createOffer()
+    return this.createOffer()
   }
 
   async createAnswer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating answer
+    let localDescription = this.localDescription
+
+    // Generate an empty local SDP first to modify
+    if (localDescription == null) {
+      localDescription = this.currentLocalDescription
+    }
+
+    if (localDescription == null) {
+      throw new Error('Invalid State Error: Expected local description to be non null')
+    }
+
+    const localSDP = sdpTransform.parse(localDescription.sdp)
+
+    // have to set ufrag before creating offer
+    localSDP.iceUfrag = this.ufrag
+    localSDP.icePwd = this.ufrag
+
     if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('answer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
+      await this.setLocalDescription({
+        sdp: sdpTransform.write(localSDP),
+        type: 'answer'
       })
     }
 
-    return super.createAnswer()
+    return this.createAnswer()
   }
 
   remoteFingerprint (): CertificateFingerprint {
-    if (this.peerConnection == null) {
-      throw new Error('Invalid state: peer connection not set')
+    const remoteDescription = this.remoteDescription
+
+    if (remoteDescription == null) {
+      throw new Error('Invalid state: remote sdp not found')
     }
 
-    return this.peerConnection.remoteFingerprint()
+    return getRTCFingerprint(remoteDescription)
   }
-}
-
-function mapIceServers (iceServers?: RTCIceServer[]): string[] {
-  return iceServers
-    ?.map((server) => {
-      const urls = Array.isArray(server.urls) ? server.urls : [server.urls]
-
-      return urls.map((url) => {
-        if (server.username != null && server.credential != null) {
-          const [protocol, rest] = url.split(/:(.*)/)
-          return `${protocol}:${server.username}:${server.credential}@${rest}`
-        }
-        return url
-      })
-    })
-    .flat() ?? []
 }
 
 export async function createDialerRTCPeerConnection (role: 'client' | 'server', ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: TransportCertificate): Promise<DirectRTCPeerConnection> {
@@ -94,14 +112,6 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   return new DirectRTCPeerConnection({
     ...rtcConfig,
     ufrag,
-    peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
-      disableFingerprintVerification: true,
-      disableAutoNegotiation: true,
-      certificatePemFile: certificate.pem,
-      keyPemFile: certificate.privateKey,
-      enableIceUdpMux: role === 'server',
-      maxMessageSize: MAX_MESSAGE_SIZE,
-      iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
-    })
+    iceServers: (rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
   })
 }
