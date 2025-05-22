@@ -27,7 +27,7 @@ export interface TypedEventTarget <EventMap extends Record<string, any>> extends
 
   removeEventListener (type: string, listener?: EventHandler<Event>, options?: boolean | EventListenerOptions): void
 
-  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail>): boolean
+  safeDispatchEvent<Detail>(type: keyof EventMap, detail?: CustomEventInit<Detail>): boolean
 }
 
 /**
