@@ -1,9 +1,10 @@
-import { createServer, Socket, type Server, type ServerOpts, type SocketConstructorOpts } from 'net'
+import { createServer, Socket } from 'net'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
+import type { Server, ServerOpts, SocketConstructorOpts } from 'net'
 
 async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
   const serverListening = defer()

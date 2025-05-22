@@ -8,11 +8,12 @@ import all from 'it-all'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Echo } from '../src/echo.js'
 import type { ComponentLogger, Connection, Stream } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedFetchComponents {
   registrar: StubbedInstance<Registrar>

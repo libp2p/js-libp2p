@@ -82,6 +82,9 @@
     },
     {
       "path": "../transport-webtransport"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

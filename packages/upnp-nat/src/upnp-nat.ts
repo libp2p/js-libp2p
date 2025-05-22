@@ -10,7 +10,7 @@ import type { Logger, Startable, TypedEventTarget } from '@libp2p/interface'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
 
 export interface GatewayFinderEvents {
-  'gateway': CustomEvent<Gateway>
+  gateway: CustomEvent<Gateway>
 }
 
 export interface GatewayFinder extends TypedEventTarget<GatewayFinderEvents> {

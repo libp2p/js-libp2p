@@ -81,6 +81,8 @@ class MockConnection implements Connection {
       throw new ConnectionClosedError('connection must be open to create streams')
     }
 
+    options?.signal?.throwIfAborted()
+
     const id = `${Math.random()}`
     const stream = await this.muxer.newStream(id)
     const result = await mss.select(stream, protocols, {

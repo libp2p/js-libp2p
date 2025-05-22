@@ -6,7 +6,7 @@ import type { Logger } from '@libp2p/interface'
 describe('close source', () => {
   it('should close an async iterable', async () => {
     let count = 0
-    const iterable = (async function * () {
+    const iterable = (async function * (): AsyncGenerator<number> {
       while (true) {
         yield count++
       }

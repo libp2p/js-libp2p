@@ -10,19 +10,22 @@ import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import drain from 'it-drain'
 import random from 'lodash.random'
+import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { PROTOCOL } from '../src/constants.js'
 import { MessageType } from '../src/message/dht.js'
 import { peerResponseEvent } from '../src/query/events.js'
-import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable, type RoutingTableComponents } from '../src/routing-table/index.js'
+import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable } from '../src/routing-table/index.js'
 import { isLeafBucket } from '../src/routing-table/k-bucket.js'
 import * as kadUtils from '../src/utils.js'
-import { createPeerId, createPeerIds } from './utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import type { Network } from '../src/network.js'
+import type { RoutingTableComponents } from '../src/routing-table/index.js'
 import type { Bucket } from '../src/routing-table/k-bucket.js'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('Routing Table', () => {
   let table: RoutingTable
@@ -38,7 +41,7 @@ describe('Routing Table', () => {
     ping = stubInterface()
 
     components = {
-      peerId: await createPeerId(),
+      peerId: (await createPeerIdWithPrivateKey()).peerId,
       peerStore: stubInterface<PeerStore>(),
       logger: defaultLogger(),
       ping
@@ -61,7 +64,13 @@ describe('Routing Table', () => {
     network.sendRequest.callsFake(async function * (from: PeerId) {
       yield peerResponseEvent({
         from,
-        messageType: MessageType.PING
+        messageType: MessageType.PING,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
       })
     })
   })
@@ -189,16 +198,16 @@ describe('Routing Table', () => {
   it('should add a lot of duplicated peers', async function () {
     this.timeout(20 * 1000)
 
-    const ids = await createPeerIds(20)
+    const ids = await createPeerIdsWithPrivateKey(20)
 
     await Promise.all(
-      Array.from({ length: 1000 }).map(async () => { await table.add(ids[random(ids.length - 1)]) })
+      Array.from({ length: 1000 }).map(async () => { await table.add(ids[random(ids.length - 1)].peerId) })
     )
 
     await Promise.all(
       Array.from({ length: 20 }).map(async () => {
         const id = ids[random(ids.length - 1)]
-        const key = await kadUtils.convertPeerId(id)
+        const key = await kadUtils.convertPeerId(id.peerId)
 
         expect(table.closestPeers(key, 5).length)
           .to.be.above(0)
@@ -208,10 +217,10 @@ describe('Routing Table', () => {
 
   it('should tag peers on add', async function () {
     const peerCount = 100
-    const ids = await createPeerIds(peerCount)
+    const ids = await createPeerIdsWithPrivateKey(peerCount)
 
     for (const id of ids) {
-      await table.add(id)
+      await table.add(id.peerId)
     }
 
     expect(table.size).to.equal(peerCount)
@@ -249,16 +258,16 @@ describe('Routing Table', () => {
 
   it('should untag peers on remove', async function () {
     const peerCount = 100
-    const ids = await createPeerIds(peerCount)
+    const ids = await createPeerIdsWithPrivateKey(peerCount)
 
     for (const id of ids) {
-      await table.add(id)
+      await table.add(id.peerId)
     }
 
     const removePeer = ids[0]
-    await table.remove(removePeer)
+    await table.remove(removePeer.peerId)
 
-    const peer = await components.peerStore.get(removePeer)
+    const peer = await components.peerStore.get(removePeer.peerId)
     const tags = [...peer.tags.keys()]
 
     expect(tags).to.not.contain(KAD_PEER_TAG_NAME)
@@ -275,18 +284,18 @@ describe('Routing Table', () => {
   })
 
   it('remove', async function () {
-    const peers = await createPeerIds(10)
+    const peers = await createPeerIdsWithPrivateKey(10)
     await Promise.all(peers.map(async (peer) => {
-      await table.add(peer)
+      await table.add(peer.peerId)
     }))
 
-    const key = await kadUtils.convertPeerId(peers[2])
+    const key = await kadUtils.convertPeerId(peers[2].peerId)
     expect(table.closestPeers(key, 10)).to.have.length(10)
-    await expect(table.find(peers[5])).to.eventually.be.ok()
+    await expect(table.find(peers[5].peerId)).to.eventually.be.ok()
     expect(table.size).to.equal(10)
 
-    await table.remove(peers[5])
-    await expect(table.find(peers[5])).to.eventually.be.undefined()
+    await table.remove(peers[5].peerId)
+    await expect(table.find(peers[5].peerId)).to.eventually.be.undefined()
     expect(table.size).to.equal(9)
   })
 
@@ -304,21 +313,21 @@ describe('Routing Table', () => {
   it('closestPeer', async function () {
     this.timeout(10 * 1000)
 
-    const peers = await createPeerIds(4)
-    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
+    const peers = await createPeerIdsWithPrivateKey(4)
+    await Promise.all(peers.map(async (peer) => { await table.add(peer.peerId) }))
 
     const id = peers[2]
-    const key = await kadUtils.convertPeerId(id)
-    expect(table.closestPeer(key)).to.eql(id)
+    const key = await kadUtils.convertPeerId(id.peerId)
+    expect(table.closestPeer(key)).to.eql(id.peerId)
   })
 
   it('closestPeers', async function () {
     this.timeout(20 * 1000)
 
-    const peers = await createPeerIds(18)
-    await Promise.all(peers.map(async (peer) => { await table.add(peer) }))
+    const peers = await createPeerIdsWithPrivateKey(18)
+    await Promise.all(peers.map(async (peer) => { await table.add(peer.peerId) }))
 
-    const key = await kadUtils.convertPeerId(peers[2])
+    const key = await kadUtils.convertPeerId(peers[2].peerId)
     expect(table.closestPeers(key, 15)).to.have.length(15)
   })
 
@@ -481,6 +490,65 @@ describe('Routing Table', () => {
     await expect(table.find(peer.id)).to.eventually.be.ok()
   })
 
+  it('should sort peers correctly', async () => {
+    const cid = CID.parse('bafybeidv5nzzpefllre7gesxqo6rh4hbp2jsxf4ihe6jpsyqf373qpmygm')
+    const kadId = await kadUtils.convertBuffer(cid.multihash.bytes)
+
+    const startingPeers = [
+      peerIdFromString('12D3KooWADCTVyvSiH7omgJHT83NwQndEL37gfSjw64eMShmXyz6'),
+      peerIdFromString('12D3KooWKLMCaNjRLN3vq2fssEVDtuH8sN2dAPf1HC7RDR4g8TYs'),
+      peerIdFromString('12D3KooWCevCTwf71jGiDrTZjo7nnTh5LK8yQDMNLjWtyrQ1dv5r'),
+      peerIdFromString('12D3KooWKjMkxcDxp4ZLC5az3YheCx9Pzqx6a2DxwRjauJgxaPuR'),
+      peerIdFromString('12D3KooWQjfQ2z1qYcVKiNjj33nN3h91Qf8sBC2MWu9AMHiMSJve'),
+      peerIdFromString('12D3KooWQ4dXt48tvyJ5NQMaisHDhviUNGEw6BPHGwv6zgmfeJH2'),
+      peerIdFromString('12D3KooWDezcWqNJWUkvodu4DBobpZ9qzVWsDPJxbegcvPUxSfiH'),
+      peerIdFromString('12D3KooWJTKWQFau3qsxi73zQZkxo4HbFcBEscgHfbHQxmRMEPbS'),
+      peerIdFromString('12D3KooWGsZrTA1mk2g4wgaPQAWjaVLKsBv33rAVDYeyLhvuddmL'),
+      peerIdFromString('12D3KooWADemeePA5FCNY8fRtvTfvRnoNtVE7cqyckGH2ug6LLtM'),
+      peerIdFromString('12D3KooWPrMihqdRgjS44NKR3JyTAW5bwprzbzqQf9cNtpvgVh7c'),
+      peerIdFromString('12D3KooWEoTh6u7N8kTvtf75CbH9MAUTNZLW81oQrVcum5a8t6Uu'),
+      peerIdFromString('12D3KooWDRJxarj7e9uGXnWTXJy92826wK74bHY9PAJqMY9cfAJo'),
+      peerIdFromString('12D3KooWPFHatbMFDFPkKr8pXck72gJkLDugnf2LFbqpPcUBsRtN'),
+      peerIdFromString('12D3KooWKxdHSYLR8L2N7wfeJyqPuXdBwH4xcLBFHyLEXxMkHDkW'),
+      peerIdFromString('12D3KooWGGrxvzvwCq4c5uZ6QHy9yX2C8FrqPqQihemLTyNSm28U'),
+      peerIdFromString('12D3KooWEWdWaadzEQ7ENGDPw2UT5BkeCRKsjh2wDZXXHjZjGh3c'),
+      peerIdFromString('12D3KooWSuour1HiUoXvi1Ym3S72C8SS4gxpgrgQmMkt5t7auLZ7'),
+      peerIdFromString('12D3KooWJbcH4DTkcK4iaqz3rR9v6yyVPdGSCiqrdbtc2pd6tgxd'),
+      peerIdFromString('QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb')
+    ]
+
+    for (const peer of startingPeers) {
+      await table.add(peer)
+    }
+
+    const originalClosest = table.closestPeers(kadId)
+
+    expect(new Set(originalClosest)).to.deep.equal(new Set(startingPeers))
+
+    const closerPeers = [
+      peerIdFromString('12D3KooWSBwKATfxX8MWXrah1mu13QKRwmjjXE2gSrcT51DL5iq8'),
+      peerIdFromString('12D3KooWR3Jy8ttcmmYfKUvKrvsUvh8XXzaP56WEz7hJYv63y8nQ'),
+      peerIdFromString('12D3KooWHHb7zepsFzYiWUdfTppVSA7pGuyXBcPJ7sRso4ZMtE1H'),
+      peerIdFromString('12D3KooWBWVyzx4QQMND1154ds4QBcrm5SUi8xcMLvYTKokWqYtH'),
+      peerIdFromString('12D3KooWCe2FcMf4nbVGiuVS3uUtWziYEmAvTcwyKArqNnHXjUhQ'),
+      peerIdFromString('12D3KooWL831renXKs93QvzXqLS1wmHgjRhkg3X7J6jJQWJ4JcJK'),
+      peerIdFromString('12D3KooWDcfF81PQRr41JMDQihhVj47z5Ds1WJS64zjEQNXhYmfh'),
+      peerIdFromString('12D3KooWF9jcdNVkyHD1ekYxj1VoN7NeVN2YDKWtmFEYqALFNYZz'),
+      peerIdFromString('12D3KooWBZiEMZz8ZkegQ514SdyYydvt2RhPPr2xQjMd68ejNU14')
+    ]
+
+    for (const peer of closerPeers) {
+      await table.add(peer)
+    }
+
+    const newClosest = table.closestPeers(kadId)
+
+    for (const peer of closerPeers) {
+      expect(originalClosest).to.not.deep.include(peer)
+      expect(newClosest).to.deep.include(peer)
+    }
+  })
+
   describe('max size', () => {
     it('should constrain size to 10', async () => {
       const prefixLength = 8
@@ -499,8 +567,8 @@ describe('Routing Table', () => {
       await start(table)
 
       for (let i = 0; i < 2 * maxSize; i++) {
-        const remotePeer = await createPeerId()
-        await table.add(remotePeer)
+        const remotePeer = await createPeerIdWithPrivateKey()
+        await table.add(remotePeer.peerId)
       }
 
       expect(table.size).to.be.lessThanOrEqual(maxSize)

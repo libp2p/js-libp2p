@@ -13,7 +13,7 @@ describe('is-promise', () => {
   })
 
   it('should detect new Promise', () => {
-    expect(isPromise(new Promise((resolve, reject) => {}))).to.be.true()
+    expect(isPromise(new Promise(() => {}))).to.be.true()
   })
 
   it('should not detect boolean', () => {

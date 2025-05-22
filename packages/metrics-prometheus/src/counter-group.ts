@@ -1,7 +1,9 @@
-import { Counter as PromCounter, type CollectFunction } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Counter as PromCounter } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
+import type { CalculatedMetric } from './utils.js'
 import type { CounterGroup, CalculateMetric } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusCounterGroup implements CounterGroup, CalculatedMetric<Record<string, number>> {
   private readonly counter: PromCounter

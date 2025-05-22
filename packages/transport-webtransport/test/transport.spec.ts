@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
@@ -7,7 +6,8 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { webTransport, type WebTransportComponents } from '../src/index.js'
+import { webTransport } from '../src/index.js'
+import type { WebTransportComponents } from '../src/index.js'
 import type { Upgrader } from '@libp2p/interface'
 
 describe('WebTransport Transport', () => {

@@ -10,9 +10,10 @@ import all from 'it-all'
 import drain from 'it-drain'
 import pDefer from 'p-defer'
 import sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'
 import type { Libp2p, PeerId, PeerInfo, PeerRouting } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('peer-routing', () => {
   let peerId: PeerId

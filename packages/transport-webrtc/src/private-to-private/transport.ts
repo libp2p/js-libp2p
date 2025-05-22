@@ -1,6 +1,6 @@
 import { InvalidParametersError, serviceCapabilities, serviceDependencies, setMaxListeners, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { SIGNALING_PROTOCOL } from '../constants.js'
 import { WebRTCMultiaddrConnection } from '../maconn.js'
@@ -13,6 +13,7 @@ import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
 import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData, Libp2pEvents, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
 export interface WebRTCTransportInit {

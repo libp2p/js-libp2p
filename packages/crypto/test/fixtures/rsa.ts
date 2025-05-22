@@ -1,5 +1,5 @@
 /* spell-checker: disable */
-import type { JWKKeyPair } from '../../src/keys/interface'
+import type { JWKKeyPair } from '../../src/keys/interface.js'
 
 /**
  * A 8200 bit RSA key

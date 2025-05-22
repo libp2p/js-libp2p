@@ -31,7 +31,12 @@ export interface PeerDiscoveryProvider {
 }
 
 export interface PeerDiscoveryEvents {
-  'peer': CustomEvent<PeerInfo>
+  peer: CustomEvent<PeerInfo>
 }
 
+/**
+ * A class that implements the `PeerDiscovery` interface uses an
+ * implementation-specific method to discover peers. These peers are then added
+ * to the peer store for use by other system components and services.
+ */
 export interface PeerDiscovery extends TypedEventTarget<PeerDiscoveryEvents> {}

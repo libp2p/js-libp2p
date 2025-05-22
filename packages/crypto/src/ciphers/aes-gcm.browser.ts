@@ -1,7 +1,7 @@
 import { concat } from 'uint8arrays/concat'
 import { fromString } from 'uint8arrays/from-string'
 import webcrypto from '../webcrypto/index.js'
-import type { CreateOptions, AESCipher } from './interface.js'
+import type { CreateAESCipherOptions, AESCipher } from './interface.js'
 
 // WebKit on Linux does not support deriving a key from an empty PBKDF2 key.
 // So, as a workaround, we provide the generated key as a constant. We test that
@@ -24,7 +24,7 @@ export const derivedEmptyPasswordKey = {
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
-export function create (opts?: CreateOptions): AESCipher {
+export function create (opts?: CreateAESCipherOptions): AESCipher {
   const algorithm = opts?.algorithm ?? 'AES-GCM'
   let keyLength = opts?.keyLength ?? 16
   const nonceLength = opts?.nonceLength ?? 12

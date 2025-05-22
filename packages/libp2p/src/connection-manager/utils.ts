@@ -1,7 +1,8 @@
-import { multiaddr, resolvers, type Multiaddr, type ResolveOptions } from '@multiformats/multiaddr'
+import { multiaddr, resolvers } from '@multiformats/multiaddr'
 import { convertToIpNet } from '@multiformats/multiaddr/convert'
 import type { IpNet } from '@chainsafe/netmask'
 import type { LoggerOptions } from '@libp2p/interface'
+import type { Multiaddr, ResolveOptions } from '@multiformats/multiaddr'
 
 /**
  * Recursively resolve DNSADDR multiaddrs

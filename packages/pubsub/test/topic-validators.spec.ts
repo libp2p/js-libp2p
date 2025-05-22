@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { type PubSubRPC, TopicValidatorResult, type PeerId } from '@libp2p/interface'
+import { TopicValidatorResult } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -12,6 +12,7 @@ import {
   MockRegistrar,
   PubsubImplementation
 } from './utils/index.js'
+import type { PubSubRPC, PeerId } from '@libp2p/interface'
 
 const protocol = '/pubsub/1.0.0'
 

@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import type { Message } from '../../message/dht.js'
-import type { Providers } from '../../providers'
+import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
 import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
 

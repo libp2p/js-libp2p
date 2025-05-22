@@ -10,7 +10,8 @@ interface Listener {
 }
 
 /**
- * Adds types to the EventTarget class. Hopefully this won't be necessary forever.
+ * Adds types to the EventTarget class. Hopefully this won't be necessary
+ * forever.
  *
  * https://github.com/microsoft/TypeScript/issues/28357
  * https://github.com/microsoft/TypeScript/issues/43477
@@ -26,12 +27,11 @@ export interface TypedEventTarget <EventMap extends Record<string, any>> extends
 
   removeEventListener (type: string, listener?: EventHandler<Event>, options?: boolean | EventListenerOptions): void
 
-  safeDispatchEvent<Detail>(type: keyof EventMap, detail: CustomEventInit<Detail>): boolean
+  safeDispatchEvent<Detail>(type: keyof EventMap, detail?: CustomEventInit<Detail>): boolean
 }
 
 /**
  * An implementation of a typed event target
- * etc
  */
 export class TypedEventEmitter<EventMap extends Record<string, any>> extends EventTarget implements TypedEventTarget<EventMap> {
   readonly #listeners = new Map<any, Listener[]>()

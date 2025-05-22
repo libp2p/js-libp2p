@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { identify, type Identify } from '@libp2p/identify'
+import { identify } from '@libp2p/identify'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
@@ -13,6 +13,7 @@ import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { Identify } from '@libp2p/identify'
 import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { PingService } from '@libp2p/ping'

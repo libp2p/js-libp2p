@@ -3,10 +3,11 @@ import { TypedEventEmitter, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { LIBP2P_DEVTOOLS_METRICS_KEY, devToolsMetrics } from '../src/index.js'
 import type { ComponentLogger, ContentRouting, Libp2pEvents, Metrics, PeerId, PeerRouting, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedComponents {
   logger: ComponentLogger

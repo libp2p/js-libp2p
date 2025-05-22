@@ -8,10 +8,11 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { ReconnectQueue } from '../../src/connection-manager/reconnect-queue.js'
 import type { ComponentLogger, Libp2pEvents, PeerStore, TypedEventTarget, Peer } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('reconnect queue', () => {
   let components: {

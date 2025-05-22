@@ -49,7 +49,7 @@ describe('multiaddr isPrivate', () => {
     ].forEach(ma => {
       try {
         expect(isPrivate(ma)).to.be.true(`"${ma}" was not identified as private`)
-      } catch (error) {
+      } catch {
         throw new Error(`Failed for ${ma.toString()}`)
       }
     })

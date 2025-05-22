@@ -21,8 +21,8 @@ export function debounce (func: () => void | Promise<void>, wait: number): Debou
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
   }
-  output.start = () => {}
-  output.stop = () => {
+  output.start = (): void => {}
+  output.stop = (): void => {
     clearTimeout(timeout)
   }
 

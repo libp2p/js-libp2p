@@ -11,10 +11,11 @@ import delay from 'delay'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
 import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('dial queue', () => {
   let components: {

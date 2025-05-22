@@ -1,11 +1,12 @@
 /* eslint-disable no-console */
 /* eslint-env mocha */
 
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { getLibp2p } from './fixtures/get-libp2p.js'
 import { redisProxy } from './fixtures/redis-proxy.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { PingService } from '@libp2p/ping'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
 const timeoutMs: number = parseInt(process.env.test_timeout_secs ?? '180') * 1000

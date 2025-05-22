@@ -1,11 +1,12 @@
 import { setMaxListeners } from '@libp2p/interface'
-import { anySignal, type ClearableSignal } from 'any-signal'
+import { anySignal } from 'any-signal'
 import { MovingAverage } from './moving-average.js'
 import type { MetricGroup, Metrics } from '@libp2p/interface'
+import type { ClearableSignal } from 'any-signal'
 
 export const DEFAULT_TIMEOUT_MULTIPLIER = 1.2
 export const DEFAULT_FAILURE_MULTIPLIER = 2
-export const DEFAULT_MIN_TIMEOUT = 2000
+export const DEFAULT_MIN_TIMEOUT = 5000
 
 export interface AdaptiveTimeoutSignal extends ClearableSignal {
   start: number
@@ -16,7 +17,6 @@ export interface AdaptiveTimeoutInit {
   metricName?: string
   metrics?: Metrics
   interval?: number
-  initialValue?: number
   timeoutMultiplier?: number
   failureMultiplier?: number
   minTimeout?: number

@@ -1,6 +1,6 @@
 import { NotFoundError } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
-import mortice, { type Mortice } from 'mortice'
+import mortice from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
 import { MAX_ADDRESS_AGE, MAX_PEER_AGE } from './constants.js'
@@ -12,6 +12,7 @@ import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
 import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery, Logger } from '@libp2p/interface'
 import type { Datastore, Key, Query } from 'interface-datastore'
+import type { Mortice } from 'mortice'
 
 /**
  * Event detail emitted when peer data changes

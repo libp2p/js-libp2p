@@ -7,10 +7,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { duplexPair } from 'it-pair/duplex'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Perf } from '../src/perf-service.js'
 import type { ComponentLogger, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPerfComponents {
   registrar: StubbedInstance<Registrar>

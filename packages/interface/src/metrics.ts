@@ -510,7 +510,7 @@ export interface Metrics {
 /**
  * Infer the yielded type of an (async)iterable
  */
-type YieldType<T extends AsyncIterator<any> | Iterator<any>> = T extends AsyncIterator<infer Y> ? Y : T extends Iterator<infer Y, any, any> ? Y : never
+export type YieldType<T extends AsyncIterator<any> | Iterator<any>> = T extends AsyncIterator<infer Y> ? Y : T extends Iterator<infer Y, any, any> ? Y : never
 
 export type TraceAttributes = Record<string, number | string | boolean | number[] | string[] | boolean[]>
 

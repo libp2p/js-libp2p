@@ -9,7 +9,7 @@ describe('is-async-generator', () => {
     const asyncGenerator = asyncGen()
     expect(isAsyncGenerator(asyncGenerator)).to.be.true()
 
-    const asyncGenObj = (async function * () {
+    const asyncGenObj = (async function * (): AsyncGenerator<number> {
       yield 1
     })()
     expect(isAsyncGenerator(asyncGenObj)).to.be.true()

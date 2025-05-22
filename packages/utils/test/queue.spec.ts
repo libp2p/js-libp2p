@@ -340,6 +340,9 @@ describe('queue', () => {
     expect(queue).to.have.property('size', 0)
     expect(queue).to.have.property('queued', 0)
     expect(queue).to.have.property('running', 0)
+
+    await delay(10)
+
     expect(timesCalled).to.equal(1)
 
     const job3 = queue.add(async () => delay(100))
@@ -355,6 +358,8 @@ describe('queue', () => {
     expect(queue).to.have.property('size', 0)
     expect(queue).to.have.property('queued', 0)
     expect(queue).to.have.property('running', 0)
+
+    await delay(10)
 
     expect(timesCalled).to.equal(2)
   })
@@ -392,6 +397,9 @@ describe('queue', () => {
     expect(queue).to.have.property('size', 0)
     expect(queue).to.have.property('queued', 0)
     expect(queue).to.have.property('running', 0)
+
+    await delay(10)
+
     expect(timesCalled).to.equal(1)
   })
 

@@ -138,7 +138,7 @@ import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughM
 import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent } from 'progress-events'
@@ -157,7 +157,8 @@ export enum EventTypes {
   PROVIDER,
   VALUE,
   ADD_PEER,
-  DIAL_PEER
+  DIAL_PEER,
+  PATH_ENDED
 }
 
 /**
@@ -183,6 +184,13 @@ export type DHTProgressEvents =
   ProgressEvent<'kad-dht:query:add-peer', AddPeerEvent> |
   ProgressEvent<'kad-dht:query:dial-peer', DialPeerEvent>
 
+export interface DisjointPath {
+  index: number
+  queued: number
+  running: number
+  total: number
+}
+
 /**
  * Emitted when sending queries to remote peers
  */
@@ -192,6 +200,7 @@ export interface SendQueryEvent {
   name: 'SEND_QUERY'
   messageName: keyof typeof MessageType
   messageType: MessageType
+  path: DisjointPath
 }
 
 /**
@@ -207,6 +216,7 @@ export interface PeerResponseEvent {
   closer: PeerInfo[]
   providers: PeerInfo[]
   record?: DHTRecord
+  path: DisjointPath
 }
 
 /**
@@ -217,6 +227,7 @@ export interface FinalPeerEvent {
   peer: PeerInfo
   type: EventTypes.FINAL_PEER
   name: 'FINAL_PEER'
+  path: DisjointPath
 }
 
 /**
@@ -227,6 +238,7 @@ export interface QueryErrorEvent {
   type: EventTypes.QUERY_ERROR
   name: 'QUERY_ERROR'
   error: Error
+  path: DisjointPath
 }
 
 /**
@@ -237,6 +249,7 @@ export interface ProviderEvent {
   type: EventTypes.PROVIDER
   name: 'PROVIDER'
   providers: PeerInfo[]
+  path: DisjointPath
 }
 
 /**
@@ -247,6 +260,7 @@ export interface ValueEvent {
   type: EventTypes.VALUE
   name: 'VALUE'
   value: Uint8Array
+  path: DisjointPath
 }
 
 /**
@@ -256,18 +270,29 @@ export interface AddPeerEvent {
   type: EventTypes.ADD_PEER
   name: 'ADD_PEER'
   peer: PeerId
+  path: DisjointPath
 }
 
 /**
- * Emitted when peers are dialled as part of a query
+ * Emitted when peers are dialled and a new stream is opened as part of a query
  */
 export interface DialPeerEvent {
   peer: PeerId
   type: EventTypes.DIAL_PEER
   name: 'DIAL_PEER'
+  path: DisjointPath
 }
 
-export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent
+/**
+ * Emitted when sending queries to remote peers
+ */
+export interface PathEndedEvent {
+  type: EventTypes.PATH_ENDED
+  name: 'PATH_ENDED'
+  path: DisjointPath
+}
+
+export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent | PathEndedEvent
 
 export interface RoutingTable {
   size: number
@@ -278,6 +303,24 @@ export interface PeerInfoMapper {
 }
 
 export interface KadDHT {
+  /**
+   * This is the maximum size of the k-buckets and how many peers are looked up
+   * when searching for peers close to a key.
+   */
+  readonly k: number
+
+  /**
+   * Query concurrency factor - this controls how many peers we contact in
+   * parallel during a query.
+   */
+  readonly a: number
+
+  /**
+   * From section 4.4 of the S/Kademlia paper - this is how many disjoint paths
+   * are used during a query.
+   */
+  readonly d: number
+
   /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
@@ -437,6 +480,22 @@ export interface KadDHTInit {
   kBucketSplitThreshold?: number
 
   /**
+   * How many peers are queried in parallel during a query.
+   *
+   * @default 3
+   */
+  alpha?: number
+
+  /**
+   * How many disjoint paths are used during a query
+   *
+   * @see https://telematics.tm.kit.edu/publications/Files/267/SKademlia_2007.pdf - section 4.4
+   *
+   * @default alpha
+   */
+  disjointPaths?: number
+
+  /**
    * How many bits of the KAD-ID of peers to use when creating the routing
    * table.
    *
@@ -506,8 +565,8 @@ export interface KadDHTInit {
   initialQuerySelfInterval?: number
 
   /**
-   * After startup by default all queries will be paused until the initial
-   * self-query has run and there are some peers in the routing table.
+   * After startup by default all queries will be paused until there is at least
+   * one peer in the routing table.
    *
    * Pass true here to disable this behavior.
    *

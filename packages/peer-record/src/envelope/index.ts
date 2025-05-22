@@ -106,7 +106,11 @@ export class RecordEnvelope implements Envelope {
   /**
    * Verifies if the other Envelope is identical to this one
    */
-  equals (other: Envelope): boolean {
+  equals (other?: Envelope): boolean {
+    if (other == null) {
+      return false
+    }
+
     return uint8ArrayEquals(this.marshal(), other.marshal())
   }
 

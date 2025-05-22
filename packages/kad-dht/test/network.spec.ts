@@ -35,7 +35,14 @@ describe('Network', () => {
         key: uint8ArrayFromString('hello')
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
@@ -90,7 +97,14 @@ describe('Network', () => {
         return connection
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()

@@ -1,10 +1,11 @@
 /* eslint-env mocha */
 
-import { KEEP_ALIVE, type Libp2p } from '@libp2p/interface'
+import { KEEP_ALIVE } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import pWaitFor from 'p-wait-for'
 import { createBaseOptions } from './fixtures/base-options.js'
+import type { Libp2p } from '@libp2p/interface'
 
 describe('peers', () => {
   let nodes: Libp2p[]

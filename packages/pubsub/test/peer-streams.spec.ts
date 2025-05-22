@@ -1,5 +1,4 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { type PeerId } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -8,6 +7,7 @@ import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PeerStreams } from '../src/peer-streams.js'
 import { ConnectionPair } from './utils/index.js'
+import type { PeerId } from '@libp2p/interface'
 
 describe('peer-streams', () => {
   let otherPeerId: PeerId

@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { type Logger } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -17,6 +16,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { createLimitedRelay, getExpirationMilliseconds, LimitTracker, namespaceToCid } from '../src/utils.js'
 import type { Limit, RelayReservation } from '../src/index.js'
+import type { Logger } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 
 describe('circuit-relay utils', () => {

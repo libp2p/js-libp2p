@@ -3,7 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import drain from 'it-drain'
@@ -18,6 +18,7 @@ import { createDefaultUpgraderComponents } from './utils.js'
 import type { UpgraderComponents, UpgraderInit } from '../../src/upgrader.js'
 import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('upgrader', () => {
   let components: UpgraderComponents

@@ -9,11 +9,12 @@ import { byteStream } from 'it-byte-stream'
 import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { PING_PROTOCOL } from '../src/constants.js'
 import { Ping } from '../src/ping.js'
 import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPingServiceComponents {
   registrar: StubbedInstance<Registrar>

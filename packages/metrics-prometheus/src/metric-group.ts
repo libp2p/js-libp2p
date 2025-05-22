@@ -1,7 +1,9 @@
-import { type CollectFunction, Gauge } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Gauge } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
+import type { CalculatedMetric } from './utils.js'
 import type { CalculateMetric, MetricGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusMetricGroup implements MetricGroup, CalculatedMetric<Record<string, number>> {
   private readonly gauge: Gauge

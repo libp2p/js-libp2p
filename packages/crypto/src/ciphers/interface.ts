@@ -1,4 +1,4 @@
-export interface CreateOptions {
+export interface CreateAESCipherOptions {
   algorithm?: string
   nonceLength?: number
   keyLength?: number

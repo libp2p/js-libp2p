@@ -371,7 +371,7 @@ export class AutoNATService implements Startable {
     let errorMessage = ''
     let lastMultiaddr = multiaddrs[0]
 
-    for await (const multiaddr of multiaddrs) {
+    for (const multiaddr of multiaddrs) {
       let connection: Connection | undefined
       lastMultiaddr = multiaddr
 

@@ -4,8 +4,8 @@ import type { PeerInfo } from './peer-info.js'
 
 /**
  * Any object that implements this Symbol as a property should return a
- * PeerRouting instance as the property value, similar to how
- * `Symbol.Iterable` can be used to return an `Iterable` from an `Iterator`.
+ * PeerRouting instance as the property value, similar to how `Symbol.Iterable`
+ * can be used to return an `Iterable` from an `Iterator`.
  *
  * @example
  *
@@ -28,7 +28,7 @@ export const peerRoutingSymbol = Symbol.for('@libp2p/peer-routing')
  * interested callers.
  */
 export interface PeerRoutingProvider {
-  [peerRoutingSymbol]: PeerRouting
+  [peerRoutingSymbol]: Partial<PeerRouting>
 }
 
 export interface PeerRouting {

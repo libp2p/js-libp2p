@@ -8,8 +8,9 @@ import each from 'it-foreach'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { encode } from '../src/encode.js'
-import { type Message, MessageTypes } from '../src/message-types.js'
+import { MessageTypes } from '../src/message-types.js'
 import { decode } from './fixtures/decode.js'
+import type { Message } from '../src/message-types.js'
 
 describe('restrict size', () => {
   it('should throw when size is too big', async () => {

@@ -2,8 +2,7 @@
 /* eslint max-nested-callbacks: ['error', 6] */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
-import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { RELAY_V2_HOP_CODEC, circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
@@ -14,15 +13,17 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
-import { createLibp2p, type Libp2pOptions } from 'libp2p'
+import { createLibp2p } from 'libp2p'
 import defer from 'p-defer'
 import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './fixtures/utils.js'
+import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p, Connection } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
+import type { Libp2pOptions } from 'libp2p'
 
 const DEFAULT_DATA_LIMIT = BigInt(1 << 17)
 

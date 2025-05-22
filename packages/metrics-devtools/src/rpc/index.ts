@@ -116,17 +116,17 @@ export interface DevToolsEvents {
   /**
    * Node metrics have been updated
    */
-  'metrics': CustomEvent<Record<string, any>>
+  metrics: CustomEvent<Record<string, any>>
 
   /**
    * The node's status has changed - new addresses and/or protocols, etc
    */
-  'self': CustomEvent<Peer>
+  self: CustomEvent<Peer>
 
   /**
    * The node's connected peers have changed
    */
-  'peers': CustomEvent<Peer[]>
+  peers: CustomEvent<Peer[]>
 
   /**
    * A pubsub message was received
@@ -143,5 +143,5 @@ export interface DevToolsEvents {
  * RPC operations exposed by the DevTools
  */
 export interface DevToolsRPC {
-  safeDispatchEvent<Detail>(type: keyof DevToolsEvents, detail?: CustomEventInit<Detail>): Promise<void>
+  safeDispatchEvent<Detail>(type: keyof DevToolsEvents, detail?: CustomEventInit<Detail>, options?: AbortOptions): Promise<void>
 }

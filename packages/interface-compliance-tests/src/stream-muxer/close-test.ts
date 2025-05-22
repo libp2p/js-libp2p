@@ -256,10 +256,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
           })
           await pipe(abortableRand, stream, drain)
         } catch (err: any) {
-          if (err.name !== 'TestAbortError') throw err
+          if (err.name !== 'TestAbortError') { throw err }
         }
 
-        if (!closed) throw new Error('stream should not have ended yet!')
+        if (!closed) { throw new Error('stream should not have ended yet!') }
       })
 
       // Pause, and then send some data and close the first stream

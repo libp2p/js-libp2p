@@ -1,11 +1,13 @@
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId } from './utils.js'
+import type { DisjointPath } from './index.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 
 interface PeerDistance {
   peer: PeerInfo
   distance: Uint8Array
+  path: DisjointPath
 }
 
 /**
@@ -40,30 +42,40 @@ export class PeerDistanceList {
   /**
    * The peers in the list, in order of distance from the origin key
    */
-  get peers (): PeerInfo[] {
-    return this.peerDistances.map(pd => pd.peer)
+  get peers (): PeerDistance[] {
+    return [...this.peerDistances]
   }
 
   /**
    * Add a peerId to the list.
    */
-  async add (peer: PeerInfo): Promise<void> {
+  async add (peer: PeerInfo, path: DisjointPath = { index: -1, queued: 0, running: 0, total: 0 }): Promise<void> {
     const dhtKey = await convertPeerId(peer.id)
 
-    this.addWithKadId(peer, dhtKey)
+    this.addWithKadId(peer, dhtKey, path)
   }
 
   /**
    * Add a peerId to the list.
    */
-  addWithKadId (peer: PeerInfo, kadId: Uint8Array): void {
+  addWithKadId (peer: PeerInfo, kadId: Uint8Array, path: DisjointPath = { index: -1, queued: 0, running: 0, total: 0 }): void {
     if (this.peerDistances.find(pd => pd.peer.id.equals(peer.id)) != null) {
       return
     }
 
-    const el = {
+    const el: PeerDistance = {
       peer,
-      distance: uint8ArrayXor(this.originDhtKey, kadId)
+      distance: uint8ArrayXor(this.originDhtKey, kadId),
+      path
+    }
+
+    if (this.peerDistances.length === this.capacity) {
+      const lastPeer = this.peerDistances[this.peerDistances.length - 1]
+
+      // only add if it's closer than our furthest peer
+      if (lastPeer != null && uint8ArrayXorCompare(el.distance, lastPeer.distance) !== -1) {
+        return
+      }
     }
 
     let added = false

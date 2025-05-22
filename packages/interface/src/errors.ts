@@ -353,7 +353,7 @@ export class TooManyOutboundProtocolStreamsError extends Error {
 }
 
 /**
- * Thrown when and attempt to operate on an unsupported key was made
+ * Thrown when an attempt to operate on an unsupported key was made
  */
 export class UnsupportedKeyTypeError extends Error {
   static name = 'UnsupportedKeyTypeError'
@@ -361,5 +361,17 @@ export class UnsupportedKeyTypeError extends Error {
   constructor (message = 'Unsupported key type') {
     super(message)
     this.name = 'UnsupportedKeyTypeError'
+  }
+}
+
+/**
+ * Thrown when an operation has not been implemented
+ */
+export class NotImplementedError extends Error {
+  static name = 'NotImplementedError'
+
+  constructor (message = 'Not implemented') {
+    super(message)
+    this.name = 'NotImplementedError'
   }
 }

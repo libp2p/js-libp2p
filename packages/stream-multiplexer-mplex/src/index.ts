@@ -32,7 +32,8 @@
  */
 
 import { serviceCapabilities } from '@libp2p/interface'
-import { MplexStreamMuxer, type MplexComponents } from './mplex.js'
+import { MplexStreamMuxer } from './mplex.js'
+import type { MplexComponents } from './mplex.js'
 import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export type { MplexComponents }

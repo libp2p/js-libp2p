@@ -6,7 +6,8 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
-import { PeerQueue, type PeerQueueJobOptions } from '../src/peer-queue.js'
+import { PeerQueue } from '../src/peer-queue.js'
+import type { PeerQueueJobOptions } from '../src/peer-queue.js'
 import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
 
 describe('peer queue', () => {

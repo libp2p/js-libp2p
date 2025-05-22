@@ -1,9 +1,7 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "emitDeclarationOnly": false,
-    "module": "ES2020"
+    "outDir": "dist"
   },
   "include": [
     "src",

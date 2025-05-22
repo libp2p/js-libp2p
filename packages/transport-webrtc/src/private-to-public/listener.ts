@@ -1,5 +1,5 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidParametersError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -71,6 +71,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     this.connections = new Map()
     this.log = components.logger.forComponent('libp2p:webrtc-direct:listener')
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
     this.certificate = init.certificate
 
     if (components.metrics != null) {

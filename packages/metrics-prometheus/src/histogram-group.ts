@@ -1,7 +1,9 @@
-import { type CollectFunction, Histogram as PromHistogram } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Histogram as PromHistogram } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedHistogramOptions } from './index.js'
+import type { CalculatedMetric } from './utils.js'
 import type { CalculateMetric, HistogramGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusHistogramGroup implements HistogramGroup, CalculatedMetric<Record<string, number>> {
   private readonly histogram: PromHistogram

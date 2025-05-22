@@ -47,7 +47,7 @@ describe('pubsub instance', () => {
         privateKey,
         registrar: new MockRegistrar(),
         logger: defaultLogger()
-      }, { // eslint-disable-line no-new
+      }, {
         multicodecs: ['/pubsub/1.0.0']
       })
     }).not.to.throw()

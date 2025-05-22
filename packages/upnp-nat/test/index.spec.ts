@@ -6,12 +6,13 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { UPnPNAT } from '../src/upnp-nat.js'
 import type { UPnPNATInit } from '../src/index.js'
 import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedUPnPNATComponents {
   peerId: PeerId

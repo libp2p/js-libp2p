@@ -193,7 +193,7 @@ export function itToStream (conn: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayL
     autoDestroy: false,
     allowHalfOpen: true,
     write (chunk, encoding, callback) {
-      void output.push(chunk)
+      output.push(chunk)
         .then(() => {
           callback()
         }, err => {

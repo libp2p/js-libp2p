@@ -1,4 +1,4 @@
-import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
+import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, setMaxListeners, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
@@ -129,6 +129,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
   async start (): Promise<void> {
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       const signal = this.upgrader.createInboundAbortSignal(this.shutdownController.signal)

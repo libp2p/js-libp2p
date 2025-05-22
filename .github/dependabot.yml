@@ -2,10 +2,7 @@ version: 2
 updates:
 - package-ecosystem: npm
   directories:
-    - "."
-    - "doc"
-    - "interop"
-    - "packages/*"
+    - "/"
   schedule:
     interval: daily
     time: "10:00"
@@ -13,6 +10,13 @@ updates:
   commit-message:
     prefix: "deps"
     prefix-development: "chore"
+  groups:
+    libp2p-deps: # group all deps that should be updated when Helia deps need updated
+      patterns:
+        - "*libp2p*"
+        - "*multiformats*"
+        - "*blockstore*"
+        - "*datastore*"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:

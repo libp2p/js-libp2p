@@ -151,7 +151,6 @@ export class IPMappings {
 
     for (const mappings of this.mappings.values()) {
       for (const mapping of mappings) {
-        // eslint-disable-next-line max-depth
         if (mapping.externalIp === host) {
           this.log('marking %s to %s IP mapping as verified', mapping.internalIp, mapping.externalIp)
           startingConfidence = mapping.verified

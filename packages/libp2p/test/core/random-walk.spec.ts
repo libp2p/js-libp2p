@@ -10,10 +10,11 @@ import drain from 'it-drain'
 import map from 'it-map'
 import take from 'it-take'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { RandomWalk as RandomWalkClass } from '../../src/random-walk.js'
 import type { PeerRouting, PeerInfo, AbortOptions } from '@libp2p/interface'
 import type { RandomWalk } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 let port = 1234
 

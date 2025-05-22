@@ -1,16 +1,19 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerStore, type Peer, type Listener } from '@libp2p/interface'
+import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { type AddressFilter, AddressManager } from '../../src/address-manager/index.js'
+import { stubInterface } from 'sinon-ts'
+import { AddressManager } from '../../src/address-manager/index.js'
+import type { AddressFilter } from '../../src/address-manager/index.js'
+import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Peer, Listener } from '@libp2p/interface'
 import type { NodeAddress, TransportManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddresses = ['/dns4/peer.io']

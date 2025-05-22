@@ -10,7 +10,7 @@ import { Message } from '../src/private-to-public/pb/message.js'
 export function receiveFinAck (channel: RTCDataChannel): void {
   const msgBuf = Message.encode({ flag: Message.Flag.FIN_ACK })
   const data = lengthPrefixed.encode.single(msgBuf).subarray()
-  channel.onmessage?.(new MessageEvent<ArrayBuffer>('message', { data }))
+  channel.onmessage?.(new MessageEvent<Uint8Array>('message', { data }))
 }
 
 let mockDataChannelId = 0

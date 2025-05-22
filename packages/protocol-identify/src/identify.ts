@@ -1,5 +1,3 @@
-/* eslint-disable complexity */
-
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'

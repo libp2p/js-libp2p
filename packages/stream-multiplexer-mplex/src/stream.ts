@@ -1,10 +1,11 @@
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import type { Message } from './message-types.js'
 import type { ComponentLogger } from '@libp2p/interface'
+import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 
 export interface Options {
   id: number

@@ -21,6 +21,9 @@
       "path": "../logger"
     },
     {
+      "path": "../peer-collections"
+    },
+    {
       "path": "../peer-id"
     },
     {

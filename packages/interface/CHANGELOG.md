@@ -5,6 +5,25 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.10.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.0...interface-v2.10.1) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+
+## [2.10.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.9.0...interface-v2.10.0) (2025-05-19)
+
+
+### Features
+
+* add getInfo function to peerstore ([#3099](https://github.com/libp2p/js-libp2p/issues/3099)) ([a5a33af](https://github.com/libp2p/js-libp2p/commit/a5a33afd9fc7e5cc9060e0ac8d6daa8edb566ea8))
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+
 ## [2.9.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.8.0...interface-v2.9.0) (2025-04-16)
 
 

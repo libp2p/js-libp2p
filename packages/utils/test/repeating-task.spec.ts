@@ -113,4 +113,29 @@ describe('repeating-task', () => {
 
     expect(count).to.equal(1)
   })
+
+  it('should not reschedule the task if the interval is updated to the same value', async () => {
+    let count = 0
+
+    const task = repeatingTask(() => {
+      count++
+    }, 1_000, {
+      runImmediately: true
+    })
+    task.start()
+
+    await delay(100)
+
+    task.setInterval(200)
+
+    await delay(100)
+
+    task.setInterval(200)
+
+    await delay(100)
+
+    task.stop()
+
+    expect(count).to.equal(2)
+  })
 })

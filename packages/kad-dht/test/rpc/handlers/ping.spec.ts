@@ -2,20 +2,21 @@
 
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { PingHandler } from '../../../src/rpc/handlers/ping.js'
-import { createPeerId } from '../../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
+import type { Message } from '../../../src/message/dht.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
 
 const T = MessageType.PING
 
 describe('rpc - handlers - Ping', () => {
-  let sourcePeer: PeerId
+  let sourcePeer: PeerAndKey
   let handler: DHTMessageHandler
 
   beforeEach(async () => {
-    sourcePeer = await createPeerId()
+    sourcePeer = await createPeerIdWithPrivateKey()
   })
 
   beforeEach(async () => {
@@ -32,7 +33,7 @@ describe('rpc - handlers - Ping', () => {
       closer: [],
       providers: []
     }
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     expect(response).to.be.deep.equal(msg)
   })

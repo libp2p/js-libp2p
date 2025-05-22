@@ -6,11 +6,12 @@ import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import sinon from 'sinon'
-import { MessageType, type QueryEvent } from '../src/index.js'
+import { MessageType } from '../src/index.js'
 import * as kadUtils from '../src/utils.js'
 import { createValues } from './utils/create-values.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
+import type { QueryEvent } from '../src/index.js'
 import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -46,7 +47,7 @@ describe('content routing', () => {
       testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
-    sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
 
     // connect peers
     await Promise.all([
@@ -59,8 +60,7 @@ describe('content routing', () => {
     await drain(dhts[3].provide(cid))
 
     // check network messages
-    // @ts-expect-error fn is a spy
-    const calls = dhts[3].network.sendMessage.getCalls().map(c => c.args)
+    const calls = sendMessageSpy.getCalls().map(c => c.args)
 
     const peersSentMessage = new Set<string>()
 
@@ -69,8 +69,8 @@ describe('content routing', () => {
 
       expect(msg.type).equals(MessageType.ADD_PROVIDER)
       expect(msg.key).equalBytes(cid.multihash.bytes)
-      expect(msg.providers.length).equals(1)
-      expect(msg.providers[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
+      expect(msg.providers?.length).equals(1)
+      expect(msg.providers?.[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
     }
 
     // expect an ADD_PROVIDER message to be sent to each peer for each value

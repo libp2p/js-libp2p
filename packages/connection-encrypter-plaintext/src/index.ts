@@ -1,9 +1,10 @@
 /**
  * @packageDocumentation
  *
- * A connection encrypter that does no connection encryption.
+ * A connection encrypter that does no connection encryption and trusts the
+ * remote peer to provide the correct PeerId.
  *
- * This should not be used in production should be used for research purposes only.
+ * This should not be used in production and is for research purposes only.
  *
  * @example
  *

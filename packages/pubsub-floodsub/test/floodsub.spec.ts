@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { type Message, type PubSubRPC, StrictNoSign, start, stop } from '@libp2p/interface'
+import { StrictNoSign, start, stop } from '@libp2p/interface'
 import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -14,6 +14,7 @@ import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { floodsub, multicodec } from '../src/index.js'
+import type { Message, PubSubRPC } from '@libp2p/interface'
 
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')

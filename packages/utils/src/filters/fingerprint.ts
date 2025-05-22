@@ -1,6 +1,6 @@
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { Hash } from './hashes'
+import type { Hash } from './hashes.js'
 
 export const MAX_FINGERPRINT_SIZE = 64
 

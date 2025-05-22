@@ -1,7 +1,9 @@
-import { type CollectFunction, Summary as PromSummary } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Summary as PromSummary } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedSummaryOptions } from './index.js'
+import type { CalculatedMetric } from './utils.js'
 import type { CalculateMetric, SummaryGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusSummaryGroup implements SummaryGroup, CalculatedMetric<Record<string, number>> {
   private readonly summary: PromSummary

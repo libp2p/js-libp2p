@@ -1,12 +1,12 @@
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
-import { type Digest } from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { publicKeyToProtobuf } from '../index.js'
 import { ensureEd25519Key } from './utils.js'
 import * as crypto from './index.js'
 import type { Ed25519PublicKey as Ed25519PublicKeyInterface, Ed25519PrivateKey as Ed25519PrivateKeyInterface } from '@libp2p/interface'
+import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Ed25519PublicKey implements Ed25519PublicKeyInterface {

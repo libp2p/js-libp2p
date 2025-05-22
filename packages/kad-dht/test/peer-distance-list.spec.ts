@@ -32,7 +32,7 @@ describe('PeerDistanceList', () => {
 
       // Note: p1 and p5 are equal
       expect(pdl.length).to.eql(4)
-      expect(pdl.peers).to.be.eql([p1, p4, p3, p2])
+      expect(pdl.peers.map(({ peer }) => peer)).to.be.eql([p1, p4, p3, p2])
     })
 
     it('capacity', async () => {
@@ -50,7 +50,7 @@ describe('PeerDistanceList', () => {
 
       // Closer peers added later should replace further
       // peers added earlier
-      expect(pdl.peers).to.be.eql([p1, p4, p3])
+      expect(pdl.peers.map(({ peer }) => peer)).to.be.eql([p1, p4, p3])
     })
   })
 

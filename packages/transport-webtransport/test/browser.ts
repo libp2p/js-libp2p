@@ -6,10 +6,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import map from 'it-map'
 import toBuffer from 'it-to-buffer'
-import { createLibp2p, type Libp2p } from 'libp2p'
+import { createLibp2p } from 'libp2p'
 import pWaitFor from 'p-wait-for'
 import { webTransport } from '../src/index.js'
 import type { PingService } from '@libp2p/ping'
+import type { Libp2p } from 'libp2p'
 
 describe('libp2p-webtransport', () => {
   let node: Libp2p<{ ping: PingService }>
