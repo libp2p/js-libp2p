@@ -23,27 +23,14 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // Get current local description
-    let localDescription = this.localDescription
-
-    // Generate an empty local SDP first to modify
-    if (localDescription == null) {
-      localDescription = this.currentLocalDescription
-    }
-
-    if (localDescription == null) {
-      throw new Error('Invalid State Error: Expected local description to be non null')
-    }
-
-    const localSDP = sdpTransform.parse(localDescription.sdp)
-
-    // have to set ufrag before creating offer
-    localSDP.iceUfrag = this.ufrag
-    localSDP.icePwd = this.ufrag
-
     if (this.connectionState === 'new') {
+      const localSdp = sdpTransform.write({
+        iceUfrag: this.ufrag, icePwd: this.ufrag,
+        media: []
+      })
+
       await this.setLocalDescription({
-        sdp: sdpTransform.write(localSDP),
+        sdp: localSdp,
         type: 'offer'
       })
     }
