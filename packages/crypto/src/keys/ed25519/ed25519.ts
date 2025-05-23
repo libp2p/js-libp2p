@@ -37,7 +37,7 @@ export class Ed25519PublicKey implements Ed25519PublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
     return crypto.hashAndVerify(this.raw, sig, data)
   }
 }
@@ -62,7 +62,7 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList): Uint8Array {
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
     return crypto.hashAndSign(this.raw, message)
   }
 }
