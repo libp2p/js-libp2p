@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/echo",
-  "version": "2.1.22",
+  "version": "2.1.23",
   "description": "Implementation of an Echo protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo#readme",
@@ -44,14 +44,14 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.1",
-    "@libp2p/interface-internal": "^2.3.13",
+    "@libp2p/interface": "^2.10.2",
+    "@libp2p/interface-internal": "^2.3.14",
     "@multiformats/multiaddr": "^12.4.0",
     "it-byte-stream": "^2.0.2",
     "it-pipe": "^3.0.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.17",
+    "@libp2p/logger": "^5.1.18",
     "aegir": "^47.0.6",
     "it-all": "^3.0.8",
     "it-pair": "^2.0.6",

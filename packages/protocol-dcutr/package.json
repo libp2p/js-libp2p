@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/dcutr",
-  "version": "2.0.31",
+  "version": "2.0.32",
   "description": "Implementation of the DCUtR Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-dcutr#readme",
@@ -45,9 +45,9 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.1",
-    "@libp2p/interface-internal": "^2.3.13",
-    "@libp2p/utils": "^6.6.4",
+    "@libp2p/interface": "^2.10.2",
+    "@libp2p/interface-internal": "^2.3.14",
+    "@libp2p/utils": "^6.6.5",
     "@multiformats/multiaddr": "^12.4.0",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "delay": "^6.0.0",
