@@ -56,7 +56,7 @@
     "interface-datastore": "^8.3.1",
     "it-all": "^3.0.8",
     "mortice": "^3.0.6",
-    "multiformats": "^13.3.4",
+    "multiformats": "^13.3.6",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -64,13 +64,13 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.18",
     "@types/sinon": "^17.0.4",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "benchmark": "^2.1.4",
     "datastore-core": "^10.0.2",
     "delay": "^6.0.0",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
-    "protons": "^7.6.0",
+    "protons": "^7.6.1",
     "sinon": "^20.0.0"
   },
   "sideEffects": false

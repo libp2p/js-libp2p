@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.18",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.8",
     "it-drain": "^3.0.9",

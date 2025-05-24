@@ -215,7 +215,7 @@
   "devDependencies": {
     "@libp2p/peer-id": "^5.1.5",
     "@types/netmask": "^2.0.5",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "benchmark": "^2.1.4",
     "delay": "^6.0.0",
     "it-all": "^3.0.8",

@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@types/tdigest": "^0.1.5",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "p-defer": "^4.0.1"
   },
   "sideEffects": false

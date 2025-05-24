@@ -50,12 +50,12 @@
     "@libp2p/interface": "^2.10.2",
     "@multiformats/multiaddr": "^12.4.0",
     "interface-datastore": "^8.3.1",
-    "multiformats": "^13.3.4",
+    "multiformats": "^13.3.6",
     "weald": "^1.0.4"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^5.1.5",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "sinon": "^20.0.0",
     "uint8arrays": "^5.1.0"
   },
