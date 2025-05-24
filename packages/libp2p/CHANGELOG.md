@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.9](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.8...libp2p-v2.8.9) (2025-05-24)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/interface-internal bumped from ^2.3.14 to ^2.3.15
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/multistream-select bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-store bumped from ^11.2.2 to ^11.2.3
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+
 ## [2.8.8](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.7...libp2p-v2.8.8) (2025-05-22)
 
 
