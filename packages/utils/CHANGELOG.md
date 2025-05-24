@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.6.6](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.5...utils-v6.6.6) (2025-05-24)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+
 ## [6.6.5](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.4...utils-v6.6.5) (2025-05-22)
 
 
