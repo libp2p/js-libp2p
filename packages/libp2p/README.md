@@ -12,35 +12,6 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-# About
-
-<!--
-
-!IMPORTANT!
-
-Everything in this README between "# About" and "# Install" is automatically
-generated and will be overwritten the next time the doc generator is run.
-
-To make changes to this section, please update the @packageDocumentation section
-of src/index.js or src/index.ts
-
-To experiment with formatting, please run "npm run docs" from the root of this
-repo and examine the changes made.
-
--->
-
-Use the `createLibp2p` function to create a libp2p node.
-
-## Example
-
-```typescript
-import { createLibp2p } from 'libp2p'
-
-const node = await createLibp2p({
-  // ...other options
-})
-```
-
 # Background
 
 libp2p is the product of a long and arduous quest to understand the evolution of the Internet networking stack. In order to build P2P applications, devs have long had to make custom ad-hoc solutions to fit their needs, sometimes making some hard assumptions about their runtimes and the state of the network at the time of their development. Today, looking back more than 20 years, we see a clear pattern in the types of mechanisms built around the Internet Protocol, IP, which can be found throughout many layers of the OSI layer system, libp2p distils these mechanisms into flat categories and defines clear interfaces that once exposed, enable other protocols and applications to use and swap them, enabling upgradability and adaptability for the runtime, without breaking the API.

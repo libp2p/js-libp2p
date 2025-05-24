@@ -44,12 +44,12 @@
     "@multiformats/multiaddr": "^12.4.0",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
-    "multiformats": "^13.3.4",
+    "multiformats": "^13.3.6",
     "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^47.0.6"
+    "aegir": "^47.0.14"
   },
   "browser": {
     "./dist/src/events.js": "./dist/src/events.browser.js"

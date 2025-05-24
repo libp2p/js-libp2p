@@ -47,7 +47,7 @@
     "it-stream-types": "^2.0.2"
   },
   "devDependencies": {
-    "aegir": "^47.0.6"
+    "aegir": "^47.0.14"
   },
   "browser": {
     "./dist/src/system-metrics.js": "./dist/src/system-metrics.browser.js"

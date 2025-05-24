@@ -111,7 +111,7 @@
     "@multiformats/multiaddr": "^12.4.0",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "abortable-iterator": "^5.1.0",
-    "aegir": "^47.0.6",
+    "aegir": "^47.0.14",
     "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "it-all": "^3.0.8",
@@ -138,6 +138,6 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "protons": "^7.6.0"
+    "protons": "^7.6.1"
   }
 }
