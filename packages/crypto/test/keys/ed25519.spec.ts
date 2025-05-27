@@ -77,6 +77,32 @@ describe('ed25519', function () {
       .to.be.true('did not verify message as single buffer')
   })
 
+  it('should abort signing', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    await expect((async () => {
+      return key.sign(text, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort verifying', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+
+    await expect((async () => {
+      return key.publicKey.verify(text, sig, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
   it('encoding', () => {
     const keyMarshal = key.raw
     const key2 = unmarshalEd25519PrivateKey(keyMarshal)

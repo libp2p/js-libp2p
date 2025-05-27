@@ -1,3 +1,4 @@
+import type { AbortOptions } from './index.ts'
 import type { PublicKey } from './keys.js'
 import type { PeerId } from './peer-id.js'
 import type { PeerInfo } from './peer-info.js'
@@ -147,11 +148,15 @@ export interface PeerQueryOrder { (a: Peer, b: Peer): -1 | 0 | 1 }
 /**
  * A query for getting lists of peers
  */
-export interface PeerQuery {
+export interface PeerQuery extends AbortOptions {
   filters?: PeerQueryFilter[]
   orders?: PeerQueryOrder[]
   limit?: number
   offset?: number
+}
+
+export interface ConsumePeerRecordOptions extends AbortOptions {
+  expectedPeer?: PeerId
 }
 
 export interface PeerStore {
@@ -201,7 +206,7 @@ export interface PeerStore {
    * // []
    * ```
    */
-  delete(peerId: PeerId): Promise<void>
+  delete(peerId: PeerId, options?: AbortOptions): Promise<void>
 
   /**
    * Returns true if the passed PeerId is in the peer store
@@ -216,7 +221,7 @@ export interface PeerStore {
    * // true
    * ```
    */
-  has(peerId: PeerId): Promise<boolean>
+  has(peerId: PeerId, options?: AbortOptions): Promise<boolean>
 
   /**
    * Returns all data stored for the passed PeerId
@@ -228,7 +233,7 @@ export interface PeerStore {
    * // { .. }
    * ```
    */
-  get(peerId: PeerId): Promise<Peer>
+  get(peerId: PeerId, options?: AbortOptions): Promise<Peer>
 
   /**
    * Returns a PeerInfo object for the passed peer id. This is similar to `get`
@@ -254,7 +259,7 @@ export interface PeerStore {
    * // }
    * ```
    */
-  getInfo (peerId: PeerId): Promise<PeerInfo>
+  getInfo (peerId: PeerId, options?: AbortOptions): Promise<PeerInfo>
 
   /**
    * Adds a peer to the peer store, overwriting any existing data
@@ -267,7 +272,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  save(id: PeerId, data: PeerData): Promise<Peer>
+  save(id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer>
 
   /**
    * Adds a peer to the peer store, overwriting only the passed fields
@@ -280,7 +285,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  patch(id: PeerId, data: PeerData): Promise<Peer>
+  patch(id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer>
 
   /**
    * Adds a peer to the peer store, deeply merging any existing data.
@@ -293,7 +298,7 @@ export interface PeerStore {
    * })
    * ```
    */
-  merge(id: PeerId, data: PeerData): Promise<Peer>
+  merge(id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer>
 
   /**
    * Unmarshal and verify a signed peer record, extract the multiaddrs and
@@ -308,5 +313,10 @@ export interface PeerStore {
    * await peerStore.consumePeerRecord(buf, expectedPeer)
    * ```
    */
-  consumePeerRecord(buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean>
+  consumePeerRecord(buf: Uint8Array, options?: ConsumePeerRecordOptions): Promise<boolean>
+
+  /**
+   * @deprecated Pass `expectedPeer` as a property of `options` instead
+   */
+  consumePeerRecord(buf: Uint8Array, expectedPeer?: PeerId, options?: AbortOptions): Promise<boolean>
 }

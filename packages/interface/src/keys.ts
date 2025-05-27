@@ -1,6 +1,7 @@
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { AbortOptions } from './index.ts'
 
 export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
 
@@ -44,7 +45,7 @@ export interface RSAPublicKey {
    * Verify the passed data was signed by the private key corresponding to this
    * public key
    */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
 
   /**
    * Returns this key as a multihash with base58btc encoding
@@ -86,7 +87,7 @@ export interface Ed25519PublicKey {
    * Verify the passed data was signed by the private key corresponding to this
    * public key
    */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
 
   /**
    * Returns this key as a multihash with base58btc encoding
@@ -128,7 +129,7 @@ export interface Secp256k1PublicKey {
    * Verify the passed data was signed by the private key corresponding to this
    * public key
    */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
 
   /**
    * Returns this key as a multihash with base58btc encoding
@@ -175,7 +176,7 @@ export interface ECDSAPublicKey {
    * Verify the passed data was signed by the private key corresponding to this
    * public key
    */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean>
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
 
   /**
    * Returns this key as a multihash with base58btc encoding
@@ -235,7 +236,7 @@ export interface RSAPrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
 }
 
 export interface Ed25519PrivateKey {
@@ -263,7 +264,7 @@ export interface Ed25519PrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
 }
 
 export interface Secp256k1PrivateKey {
@@ -291,7 +292,7 @@ export interface Secp256k1PrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
 }
 
 export interface ECDSAPrivateKey {
@@ -324,7 +325,7 @@ export interface ECDSAPrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
 }
 
 export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey

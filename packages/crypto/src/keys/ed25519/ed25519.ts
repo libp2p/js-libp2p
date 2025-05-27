@@ -5,7 +5,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { publicKeyToProtobuf } from '../index.js'
 import { ensureEd25519Key } from './utils.js'
 import * as crypto from './index.js'
-import type { Ed25519PublicKey as Ed25519PublicKeyInterface, Ed25519PrivateKey as Ed25519PrivateKeyInterface } from '@libp2p/interface'
+import type { Ed25519PublicKey as Ed25519PublicKeyInterface, Ed25519PrivateKey as Ed25519PrivateKeyInterface, AbortOptions } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -37,7 +37,8 @@ export class Ed25519PublicKey implements Ed25519PublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean {
+    options?.signal?.throwIfAborted()
     return crypto.hashAndVerify(this.raw, sig, data)
   }
 }
@@ -62,7 +63,8 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList): Uint8Array {
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array {
+    options?.signal?.throwIfAborted()
     return crypto.hashAndSign(this.raw, message)
   }
 }

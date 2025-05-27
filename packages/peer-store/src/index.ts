@@ -9,7 +9,7 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore } from './store.js'
 import type { PeerUpdate } from './store.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo } from '@libp2p/interface'
+import { type ComponentLogger, type Libp2pEvents, type Logger, type TypedEventTarget, type PeerId, type PeerStore, type Peer, type PeerData, type PeerQuery, type PeerInfo, type AbortOptions, type ConsumePeerRecordOptions, isPeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 
@@ -24,7 +24,7 @@ export interface PersistentPeerStoreComponents {
  * Return true to allow storing the passed multiaddr for the passed peer
  */
 export interface AddressFilter {
-  (peerId: PeerId, multiaddr: Multiaddr): Promise<boolean> | boolean
+  (peerId: PeerId, multiaddr: Multiaddr, options?: AbortOptions): Promise<boolean> | boolean
 }
 
 export interface PersistentPeerStoreInit {
@@ -74,74 +74,60 @@ class PersistentPeerStore implements PeerStore {
   readonly [Symbol.toStringTag] = '@libp2p/peer-store'
 
   async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
-    this.log.trace('forEach await read lock')
-    const release = await this.store.lock.readLock()
-    this.log.trace('forEach got read lock')
+    const release = await this.store.lock.readLock(query)
 
     try {
       for await (const peer of this.store.all(query)) {
         fn(peer)
       }
     } finally {
-      this.log.trace('forEach release read lock')
       release()
     }
   }
 
   async all (query?: PeerQuery): Promise<Peer[]> {
-    this.log.trace('all await read lock')
-    const release = await this.store.lock.readLock()
-    this.log.trace('all got read lock')
+    const release = await this.store.lock.readLock(query)
 
     try {
       return await all(this.store.all(query))
     } finally {
-      this.log.trace('all release read lock')
       release()
     }
   }
 
-  async delete (peerId: PeerId): Promise<void> {
-    this.log.trace('delete await write lock')
-    const release = await this.store.lock.writeLock()
-    this.log.trace('delete got write lock')
+  async delete (peerId: PeerId, options?: AbortOptions): Promise<void> {
+    const release = await this.store.lock.writeLock(options)
 
     try {
-      await this.store.delete(peerId)
+      await this.store.delete(peerId, options)
     } finally {
-      this.log.trace('delete release write lock')
       release()
     }
   }
 
-  async has (peerId: PeerId): Promise<boolean> {
-    this.log.trace('has await read lock')
-    const release = await this.store.lock.readLock()
-    this.log.trace('has got read lock')
+  async has (peerId: PeerId, options?: AbortOptions): Promise<boolean> {
+    const release = await this.store.lock.readLock(options)
 
     try {
-      return await this.store.has(peerId)
+      return await this.store.has(peerId, options)
     } finally {
       this.log.trace('has release read lock')
       release()
     }
   }
 
-  async get (peerId: PeerId): Promise<Peer> {
-    this.log.trace('get await read lock')
-    const release = await this.store.lock.readLock()
-    this.log.trace('get got read lock')
+  async get (peerId: PeerId, options?: AbortOptions): Promise<Peer> {
+    const release = await this.store.lock.readLock(options)
 
     try {
-      return await this.store.load(peerId)
+      return await this.store.load(peerId, options)
     } finally {
-      this.log.trace('get release read lock')
       release()
     }
   }
 
-  async getInfo (peerId: PeerId): Promise<PeerInfo> {
-    const peer = await this.get(peerId)
+  async getInfo (peerId: PeerId, options?: AbortOptions): Promise<PeerInfo> {
+    const peer = await this.get(peerId, options)
 
     return {
       id: peer.id,
@@ -149,59 +135,55 @@ class PersistentPeerStore implements PeerStore {
     }
   }
 
-  async save (id: PeerId, data: PeerData): Promise<Peer> {
-    this.log.trace('save await write lock')
-    const release = await this.store.lock.writeLock()
-    this.log.trace('save got write lock')
+  async save (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
+    const release = await this.store.lock.writeLock(options)
 
     try {
-      const result = await this.store.save(id, data)
+      const result = await this.store.save(id, data, options)
 
       this.#emitIfUpdated(id, result)
 
       return result.peer
     } finally {
-      this.log.trace('save release write lock')
       release()
     }
   }
 
-  async patch (id: PeerId, data: PeerData): Promise<Peer> {
-    this.log.trace('patch await write lock')
-    const release = await this.store.lock.writeLock()
-    this.log.trace('patch got write lock')
+  async patch (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
+    const release = await this.store.lock.writeLock(options)
 
     try {
-      const result = await this.store.patch(id, data)
+      const result = await this.store.patch(id, data, options)
 
       this.#emitIfUpdated(id, result)
 
       return result.peer
     } finally {
-      this.log.trace('patch release write lock')
       release()
     }
   }
 
-  async merge (id: PeerId, data: PeerData): Promise<Peer> {
-    this.log.trace('merge await write lock')
-    const release = await this.store.lock.writeLock()
-    this.log.trace('merge got write lock')
+  async merge (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
+    const release = await this.store.lock.writeLock(options)
 
     try {
-      const result = await this.store.merge(id, data)
+      const result = await this.store.merge(id, data, options)
 
       this.#emitIfUpdated(id, result)
 
       return result.peer
     } finally {
-      this.log.trace('merge release write lock')
       release()
     }
   }
 
-  async consumePeerRecord (buf: Uint8Array, expectedPeer?: PeerId): Promise<boolean> {
-    const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN)
+  async consumePeerRecord (buf: Uint8Array, options?: ConsumePeerRecordOptions): Promise<boolean>
+  async consumePeerRecord (buf: Uint8Array, expectedPeer?: PeerId, options?: AbortOptions): Promise<boolean>
+  async consumePeerRecord (buf: Uint8Array, arg1?: any, arg2?: any): Promise<boolean> {
+    const expectedPeer: PeerId | undefined = isPeerId(arg1) ? arg1 : isPeerId(arg1?.expectedPeer) ? arg1.expectedPeer : undefined
+    const options: AbortOptions | undefined = isPeerId(arg1) ? arg2 : arg1 === undefined ? arg2 : arg1
+
+    const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN, options)
     const peerId = peerIdFromCID(envelope.publicKey.toCID())
 
     if (expectedPeer?.equals(peerId) === false) {
@@ -213,7 +195,7 @@ class PersistentPeerStore implements PeerStore {
     let peer: Peer | undefined
 
     try {
-      peer = await this.get(peerId)
+      peer = await this.get(peerId, options)
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
         throw err
@@ -222,7 +204,7 @@ class PersistentPeerStore implements PeerStore {
 
     // ensure seq is greater than, or equal to, the last received
     if (peer?.peerRecordEnvelope != null) {
-      const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
+      const storedEnvelope = RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
       const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
       if (storedRecord.seqNumber >= peerRecord.seqNumber) {
@@ -237,7 +219,7 @@ class PersistentPeerStore implements PeerStore {
         isCertified: true,
         multiaddr
       }))
-    })
+    }, options)
 
     return true
   }

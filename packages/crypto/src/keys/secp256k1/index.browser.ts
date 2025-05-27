@@ -3,6 +3,7 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { SigningError, VerificationError } from '../../errors.js'
 import { isPromise } from '../../util.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import type { AbortOptions } from '@libp2p/interface'
 
 const PUBLIC_KEY_BYTE_LENGTH = 33
 const PRIVATE_KEY_BYTE_LENGTH = 32
@@ -13,12 +14,20 @@ export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 /**
  * Hash and sign message with private key
  */
-export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
   const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray())
 
   if (isPromise(p)) {
-    return p.then(({ digest }) => secp.sign(digest, key).toDERRawBytes())
+    return p
+      .then(({ digest }) => {
+        options?.signal?.throwIfAborted()
+        return secp.sign(digest, key).toDERRawBytes()
+      })
       .catch(err => {
+        if (err.name === 'AbortError') {
+          throw err
+        }
+
         throw new SigningError(String(err))
       })
   }
@@ -33,17 +42,26 @@ export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList):
 /**
  * Hash message and verify signature with public key
  */
-export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean | Promise<boolean> {
+export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): boolean | Promise<boolean> {
   const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray())
 
   if (isPromise(p)) {
-    return p.then(({ digest }) => secp.verify(sig, digest, key))
+    return p
+      .then(({ digest }) => {
+        options?.signal?.throwIfAborted()
+        return secp.verify(sig, digest, key)
+      })
       .catch(err => {
+        if (err.name === 'AbortError') {
+          throw err
+        }
+
         throw new VerificationError(String(err))
       })
   }
 
   try {
+    options?.signal?.throwIfAborted()
     return secp.verify(sig, p.digest, key)
   } catch (err) {
     throw new VerificationError(String(err))

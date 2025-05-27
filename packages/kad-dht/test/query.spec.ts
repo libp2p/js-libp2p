@@ -402,7 +402,7 @@ describe('QueryManager', () => {
 
     // the should have been aborted
     await expect(queryPromise).to.eventually.be.rejected()
-      .with.property('name', 'QueryAbortedError')
+      .with.property('name', 'AbortError')
 
     expect(aborted).to.be.true()
 

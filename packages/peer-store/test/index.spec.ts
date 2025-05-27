@@ -266,7 +266,9 @@ describe('PersistentPeerStore', () => {
       }), key)
 
       await expect(peerStore.has(peerId)).to.eventually.be.false()
-      await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), otherPeerId)).to.eventually.equal(false)
+      await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), {
+        expectedPeer: otherPeerId
+      })).to.eventually.equal(false)
       await expect(peerStore.has(peerId)).to.eventually.be.false()
     })
 

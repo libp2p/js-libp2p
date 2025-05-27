@@ -10,6 +10,7 @@ import type { OperationMetrics } from './kad-dht.js'
 import type { PeerRouting } from './peer-routing/index.js'
 import type { ComponentLogger, Logger, Metrics, PeerId, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
+import type { AbortOptions } from 'it-pushable'
 
 export interface QuerySelfInit {
   logPrefix: string
@@ -132,6 +133,8 @@ export class QuerySelf implements Startable {
           (source) => take(source, this.count),
           async (source) => length(source)
         )
+
+        signal?.throwIfAborted()
 
         const duration = Date.now() - start
 

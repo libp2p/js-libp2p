@@ -1,6 +1,6 @@
-import crypto from 'crypto'
-import { promisify } from 'util'
-import { InvalidParametersError } from '@libp2p/interface'
+import crypto from 'node:crypto'
+import { promisify } from 'node:util'
+import { InvalidParametersError, type AbortOptions } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../../random-bytes.js'
 import * as utils from './utils.js'
@@ -13,13 +13,14 @@ export const RSAES_PKCS1_V1_5_OID = '1.2.840.113549.1.1.1'
 
 export { utils }
 
-export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
+export async function generateRSAKey (bits: number, options?: AbortOptions): Promise<JWKKeyPair> {
   // @ts-expect-error node types are missing jwk as a format
   const key = await keypair('rsa', {
     modulusLength: bits,
     publicKeyEncoding: { type: 'pkcs1', format: 'jwk' },
     privateKeyEncoding: { type: 'pkcs1', format: 'jwk' }
   })
+  options?.signal?.throwIfAborted()
 
   return {
     // @ts-expect-error node types are missing jwk as a format
@@ -31,7 +32,9 @@ export async function generateRSAKey (bits: number): Promise<JWKKeyPair> {
 
 export { randomBytes as getRandomValues }
 
-export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
+export function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array {
+  options?.signal?.throwIfAborted()
+
   const hash = crypto.createSign('RSA-SHA256')
 
   if (msg instanceof Uint8Array) {
@@ -46,7 +49,9 @@ export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8Array
   return hash.sign({ format: 'jwk', key })
 }
 
-export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+export function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): boolean {
+  options?.signal?.throwIfAborted()
+
   const hash = crypto.createVerify('RSA-SHA256')
 
   if (msg instanceof Uint8Array) {

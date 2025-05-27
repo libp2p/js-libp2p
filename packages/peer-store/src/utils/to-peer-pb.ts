@@ -7,8 +7,9 @@ import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
 import type { ExistingPeer } from '../store.js'
 import type { PeerId, Address, PeerData, TagOptions } from '@libp2p/interface'
+import type { AbortOptions } from '@multiformats/multiaddr'
 
-export interface ToPBPeerOptions {
+export interface ToPBPeerOptions extends AbortOptions {
   addressFilter?: AddressFilter
   existingPeer?: ExistingPeer
 }
@@ -148,7 +149,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
       peerId,
       options.addressFilter ?? (async () => true),
       addresses,
-      options.existingPeer?.peerPB.addresses
+      options.existingPeer?.peerPB.addresses,
+      options
     ),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b)

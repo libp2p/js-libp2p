@@ -92,7 +92,7 @@ export class DefaultPeerRouting implements PeerRouting {
       if (peer.multiaddrs.length > 0) {
         await this.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       return peer
@@ -148,7 +148,7 @@ export class DefaultPeerRouting implements PeerRouting {
       if (peer.multiaddrs.length > 0) {
         await this.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       // deduplicate peers

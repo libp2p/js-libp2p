@@ -9,7 +9,8 @@ import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constant
 import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import { anySignal } from 'any-signal'
 
 /**
  * Cannot generate random KadIds longer than this + 1
@@ -70,7 +71,7 @@ export class RoutingTableRefresh {
    * that is close to the requested peer ID and query that, then network
    * peers will tell us who they know who is close to the fake ID
    */
-  refreshTable (force: boolean = false): void {
+  refreshTable (force: boolean = false, options?: AbortOptions): void {
     this.log('refreshing routing table')
 
     const prefixLength = this._maxCommonPrefix()
@@ -97,14 +98,14 @@ export class RoutingTableRefresh {
     Promise.all(
       refreshCommonPrefixLengths.map(async (lastRefresh, index) => {
         try {
-          await this._refreshCommonPrefixLength(index, lastRefresh, force)
+          await this._refreshCommonPrefixLength(index, lastRefresh, force, options)
 
           if (this._numPeersForCpl(prefixLength) === 0) {
             const lastCpl = Math.min(2 * (index + 1), refreshCommonPrefixLengths.length - 1)
 
             for (let n = index + 1; n < lastCpl + 1; n++) {
               try {
-                await this._refreshCommonPrefixLength(n, lastRefresh, force)
+                await this._refreshCommonPrefixLength(n, lastRefresh, force, options)
               } catch (err: any) {
                 this.log.error(err)
               }
@@ -127,26 +128,30 @@ export class RoutingTableRefresh {
     })
   }
 
-  async _refreshCommonPrefixLength (cpl: number, lastRefresh: Date, force: boolean): Promise<void> {
+  async _refreshCommonPrefixLength (cpl: number, lastRefresh: Date, force: boolean, options?: AbortOptions): Promise<void> {
     if (!force && lastRefresh.getTime() > (Date.now() - this.refreshInterval)) {
       this.log('not running refresh for cpl %s as time since last refresh not above interval', cpl)
       return
     }
 
     // gen a key for the query to refresh the cpl
-    const peerId = await this._generateRandomPeerId(cpl)
+    const peerId = this._generateRandomPeerId(cpl)
 
     this.log('starting refreshing cpl %s with key %p (routing table size was %s)', cpl, peerId, this.routingTable.size)
 
-    const signal = AbortSignal.timeout(this.refreshQueryTimeout)
+    const signal = anySignal([options?.signal, AbortSignal.timeout(this.refreshQueryTimeout)])
     setMaxListeners(Infinity, signal)
 
-    const peers = await length(this.peerRouting.getClosestPeers(peerId.toMultihash().bytes, {
-      signal
-    }))
+    try {
+      const peers = await length(this.peerRouting.getClosestPeers(peerId.toMultihash().bytes, {
+        signal
+      }))
 
-    this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
-    this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
+      this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
+      this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
+    } finally {
+      signal.clear()
+    }
   }
 
   _getTrackedCommonPrefixLengthsForRefresh (maxCommonPrefix: number): Date[] {
@@ -164,7 +169,7 @@ export class RoutingTableRefresh {
     return dates
   }
 
-  async _generateRandomPeerId (targetCommonPrefixLength: number): Promise<PeerId> {
+  _generateRandomPeerId (targetCommonPrefixLength: number): PeerId {
     if (this.routingTable.kb == null) {
       throw new Error('Routing table not started')
     }
@@ -176,13 +181,13 @@ export class RoutingTableRefresh {
     const randomData = randomBytes(2)
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
-    const key = await this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)
+    const key = this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)
     const multihash = Digest.decode(key)
 
     return peerIdFromMultihash(multihash)
   }
 
-  async _makePeerId (localKadId: Uint8Array, randomPrefix: number, targetCommonPrefixLength: number): Promise<Uint8Array> {
+  _makePeerId (localKadId: Uint8Array, randomPrefix: number, targetCommonPrefixLength: number): Uint8Array {
     if (targetCommonPrefixLength > MAX_COMMON_PREFIX_LENGTH) {
       throw new Error(`Cannot generate peer ID for common prefix length greater than ${MAX_COMMON_PREFIX_LENGTH}`)
     }

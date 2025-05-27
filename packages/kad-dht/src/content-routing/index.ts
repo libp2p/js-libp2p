@@ -83,7 +83,7 @@ export class ContentRouting {
     const target = key.multihash.bytes
 
     // Add peer as provider
-    await this.providers.addProvider(key, this.components.peerId)
+    await this.providers.addProvider(key, this.components.peerId, options)
 
     const msg: Partial<Message> = {
       type: MessageType.ADD_PROVIDER,
@@ -182,7 +182,7 @@ export class ContentRouting {
 
     this.log('findProviders %c', key)
 
-    const provs = await this.providers.getProviders(key)
+    const provs = await this.providers.getProviders(key, options)
 
     // yield values if we have some, also slice because maybe we got lucky and already have too many?
     if (provs.length > 0) {
@@ -190,7 +190,7 @@ export class ContentRouting {
 
       for (const peerId of provs.slice(0, toFind)) {
         try {
-          const peer = await this.components.peerStore.get(peerId)
+          const peer = await this.components.peerStore.get(peerId, options)
 
           providers.push({
             id: peerId,

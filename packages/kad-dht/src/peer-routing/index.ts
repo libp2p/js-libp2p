@@ -23,6 +23,7 @@ import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { AbortOptions } from 'it-pushable'
 
 export interface PeerRoutingComponents {
   peerId: PeerId
@@ -68,15 +69,15 @@ export class PeerRouting {
    * Look if we are connected to a peer with the given id.
    * Returns its id and addresses, if found, otherwise `undefined`.
    */
-  async findPeerLocal (peer: PeerId): Promise<PeerInfo | undefined> {
+  async findPeerLocal (peer: PeerId, options?: AbortOptions): Promise<PeerInfo | undefined> {
     let peerData
-    const p = await this.routingTable.find(peer)
+    const p = await this.routingTable.find(peer, options)
 
     if (p != null) {
       this.log('findPeerLocal found %p in routing table', peer)
 
       try {
-        peerData = await this.components.peerStore.get(p)
+        peerData = await this.components.peerStore.get(p, options)
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -86,7 +87,7 @@ export class PeerRouting {
 
     if (peerData == null) {
       try {
-        peerData = await this.components.peerStore.get(peer)
+        peerData = await this.components.peerStore.get(peer, options)
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
@@ -168,7 +169,7 @@ export class PeerRouting {
 
     if (options.useCache !== false) {
       // Try to find locally
-      const pi = await this.findPeerLocal(id)
+      const pi = await this.findPeerLocal(id, options)
 
       // already got it
       if (pi != null) {
@@ -240,7 +241,7 @@ export class PeerRouting {
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
-    const kadId = await convertBuffer(key)
+    const kadId = await convertBuffer(key, options)
     const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
     const self = this
 
@@ -268,7 +269,7 @@ export class PeerRouting {
     for (let { peer, path } of peers.peers) {
       try {
         if (peer.multiaddrs.length === 0) {
-          peer = await self.components.peerStore.getInfo(peer.id)
+          peer = await self.components.peerStore.getInfo(peer.id, options)
         }
 
         if (peer.multiaddrs.length === 0) {
@@ -277,7 +278,7 @@ export class PeerRouting {
 
         yield finalPeerEvent({
           from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id),
+          peer: await self.components.peerStore.getInfo(peer.id, options),
           path: {
             index: path.index,
             queued: 0,
@@ -303,7 +304,7 @@ export class PeerRouting {
         if (event.record != null) {
           // We have a record
           try {
-            await this._verifyRecordOnline(event.record)
+            await this._verifyRecordOnline(event.record, options)
           } catch (err: any) {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
@@ -326,19 +327,19 @@ export class PeerRouting {
    * Verify a record, fetching missing public keys from the network.
    * Throws an error if the record is invalid.
    */
-  async _verifyRecordOnline (record: DHTRecord): Promise<void> {
+  async _verifyRecordOnline (record: DHTRecord, options?: AbortOptions): Promise<void> {
     if (record.timeReceived == null) {
       throw new InvalidRecordError('invalid record received')
     }
 
-    await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived))
+    await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), options)
   }
 
   /**
    * Get the peers in our routing table that are closer than the passed PeerId
    * to the passed key
    */
-  async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId): Promise<PeerInfo[]> {
+  async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId, options?: AbortOptions): Promise<PeerInfo[]> {
     const output: PeerInfo[] = []
 
     // try getting the peer directly
@@ -346,7 +347,7 @@ export class PeerRouting {
       const multihash = Digest.decode(key)
       const targetPeerId = peerIdFromMultihash(multihash)
 
-      const peer = await this.components.peerStore.get(targetPeerId)
+      const peer = await this.components.peerStore.get(targetPeerId, options)
 
       output.push({
         id: peer.id,
@@ -354,13 +355,13 @@ export class PeerRouting {
       })
     } catch {}
 
-    const keyKadId = await convertBuffer(key)
+    const keyKadId = await convertBuffer(key, options)
     const ids = this.routingTable.closestPeers(keyKadId)
-    const closerThanKadId = await convertPeerId(closerThan)
+    const closerThanKadId = await convertPeerId(closerThan, options)
     const requesterXor = uint8ArrayXor(closerThanKadId, keyKadId)
 
     for (const peerId of ids) {
-      const peerKadId = await convertPeerId(peerId)
+      const peerKadId = await convertPeerId(peerId, options)
       const peerXor = uint8ArrayXor(peerKadId, keyKadId)
 
       // only include if peer is closer than requester
@@ -369,7 +370,7 @@ export class PeerRouting {
       }
 
       try {
-        output.push(await this.components.peerStore.getInfo(peerId))
+        output.push(await this.components.peerStore.getInfo(peerId, options))
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err
