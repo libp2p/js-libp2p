@@ -90,6 +90,10 @@ export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uin
 }
 
 async function hashAndVerifyWebCrypto (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
+  if (publicKey.buffer instanceof SharedArrayBuffer) {
+    throw new TypeError('WebCrypto does not support SharedArrayBuffer for Ed25519 keys')
+  }
+
   const key = await crypto.get().subtle.importKey('raw', publicKey.buffer, { name: 'Ed25519' }, false, ['verify'])
   const isValid = await crypto.get().subtle.verify({ name: 'Ed25519' }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray())
   return isValid
