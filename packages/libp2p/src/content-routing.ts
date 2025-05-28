@@ -118,7 +118,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       if (peer.multiaddrs.length > 0) {
         await this.components.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       // deduplicate peers

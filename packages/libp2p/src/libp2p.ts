@@ -340,7 +340,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     try {
-      const peerInfo = await this.peerStore.get(peer)
+      const peerInfo = await this.peerStore.get(peer, options)
 
       if (peerInfo.id.publicKey != null) {
         return peerInfo.id.publicKey
@@ -364,7 +364,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     await this.peerStore.patch(peer, {
       publicKey
-    })
+    }, options)
 
     return publicKey
   }
@@ -381,20 +381,20 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     )
   }
 
-  async unhandle (protocols: string[] | string): Promise<void> {
+  async unhandle (protocols: string[] | string, options?: AbortOptions): Promise<void> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
     await Promise.all(
       protocols.map(async protocol => {
-        await this.components.registrar.unhandle(protocol)
+        await this.components.registrar.unhandle(protocol, options)
       })
     )
   }
 
-  async register (protocol: string, topology: Topology): Promise<string> {
-    return this.components.registrar.register(protocol, topology)
+  async register (protocol: string, topology: Topology, options?: AbortOptions): Promise<string> {
+    return this.components.registrar.register(protocol, topology, options)
   }
 
   unregister (id: string): void {

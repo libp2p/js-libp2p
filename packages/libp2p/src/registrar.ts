@@ -1,7 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { mergeOptions } from '@libp2p/utils/merge-options'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
@@ -90,14 +90,14 @@ export class Registrar implements RegistrarInterface {
     // Add new protocol to self protocols in the peer store
     await this.components.peerStore.merge(this.components.peerId, {
       protocols: [protocol]
-    })
+    }, opts)
   }
 
   /**
    * Removes the handler for each protocol. The protocol
    * will no longer be supported on streams.
    */
-  async unhandle (protocols: string | string[]): Promise<void> {
+  async unhandle (protocols: string | string[], options?: AbortOptions): Promise<void> {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols]
 
     protocolList.forEach(protocol => {
@@ -107,7 +107,7 @@ export class Registrar implements RegistrarInterface {
     // Update self protocols in the peer store
     await this.components.peerStore.patch(this.components.peerId, {
       protocols: this.getProtocols()
-    })
+    }, options)
   }
 
   /**
@@ -153,8 +153,11 @@ export class Registrar implements RegistrarInterface {
    */
   _onDisconnect (evt: CustomEvent<PeerId>): void {
     const remotePeer = evt.detail
+    const options = {
+      signal: AbortSignal.timeout(5_000)
+    }
 
-    void this.components.peerStore.get(remotePeer)
+    void this.components.peerStore.get(remotePeer, options)
       .then(peer => {
         for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)

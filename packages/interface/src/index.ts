@@ -685,7 +685,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
-  unhandle(protocols: string[] | string): Promise<void>
+  unhandle(protocols: string[] | string, options?: AbortOptions): Promise<void>
 
   /**
    * Register a topology to be informed when peers are encountered that
@@ -704,7 +704,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * })
    * ```
    */
-  register(protocol: string, topology: Topology): Promise<string>
+  register(protocol: string, topology: Topology, options?: AbortOptions): Promise<string>
 
   /**
    * Unregister topology to no longer be informed when peers connect or

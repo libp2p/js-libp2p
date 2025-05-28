@@ -22,7 +22,7 @@ import type { Network, SendMessageOptions } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, RoutingOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, RoutingOptions } from '@libp2p/interface'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -68,19 +68,19 @@ export class ContentFetching {
    * Attempt to retrieve the value for the given key from
    * the local datastore
    */
-  async getLocal (key: Uint8Array): Promise<Libp2pRecord> {
+  async getLocal (key: Uint8Array, options?: AbortOptions): Promise<Libp2pRecord> {
     this.log('getLocal %b', key)
 
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
     this.log('fetching record for key %k', dsKey)
 
-    const raw = await this.components.datastore.get(dsKey)
+    const raw = await this.components.datastore.get(dsKey, options)
     this.log('found %k in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
 
-    await verifyRecord(this.validators, rec)
+    await verifyRecord(this.validators, rec, options)
 
     return rec
   }
@@ -104,7 +104,7 @@ export class ContentFetching {
         try {
           const dsKey = bufferToRecordKey(this.datastorePrefix, key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
-          await this.components.datastore.put(dsKey, fixupRec.subarray())
+          await this.components.datastore.put(dsKey, fixupRec.subarray(), options)
         } catch (err: any) {
           this.log.error('Failed error correcting self', err)
         }
@@ -148,7 +148,7 @@ export class ContentFetching {
     // store the record locally
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
     this.log(`storing record for key ${dsKey.toString()}`)
-    await this.components.datastore.put(dsKey, record.subarray())
+    await this.components.datastore.put(dsKey, record.subarray(), options)
 
     // put record to the closest peers
     yield * pipe(
@@ -265,7 +265,7 @@ export class ContentFetching {
     this.log('getMany values for %b', key)
 
     try {
-      const localRec = await this.getLocal(key)
+      const localRec = await this.getLocal(key, options)
 
       yield valueEvent({
         value: localRec.value,

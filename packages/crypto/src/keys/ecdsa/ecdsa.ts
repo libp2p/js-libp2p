@@ -5,7 +5,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { publicKeyToProtobuf } from '../index.js'
 import { privateKeyToPKIMessage, publicKeyToPKIMessage } from './utils.js'
 import { hashAndVerify, hashAndSign } from './index.js'
-import type { ECDSAPublicKey as ECDSAPublicKeyInterface, ECDSAPrivateKey as ECDSAPrivateKeyInterface } from '@libp2p/interface'
+import type { ECDSAPublicKey as ECDSAPublicKeyInterface, ECDSAPrivateKey as ECDSAPrivateKeyInterface, AbortOptions } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -46,8 +46,8 @@ export class ECDSAPublicKey implements ECDSAPublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): Promise<boolean> {
-    return hashAndVerify(this.jwk, sig, data)
+  async verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): Promise<boolean> {
+    return hashAndVerify(this.jwk, sig, data, options)
   }
 }
 
@@ -85,7 +85,7 @@ export class ECDSAPrivateKey implements ECDSAPrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  async sign (message: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
-    return hashAndSign(this.jwk, message)
+  async sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<Uint8Array> {
+    return hashAndSign(this.jwk, message, options)
   }
 }

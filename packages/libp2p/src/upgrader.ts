@@ -3,6 +3,7 @@ import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { createConnection } from './connection/index.js'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
@@ -193,13 +194,13 @@ export class Upgrader implements UpgraderInterface {
         inbound: true
       })
 
-      accepted = await this.components.connectionManager.acceptIncomingConnection(maConn)
+      accepted = await raceSignal(this.components.connectionManager.acceptIncomingConnection(maConn), signal)
 
       if (!accepted) {
         throw new ConnectionDeniedError('Connection denied')
       }
 
-      await this.shouldBlockConnection('denyInboundConnection', maConn)
+      await raceSignal(this.shouldBlockConnection('denyInboundConnection', maConn), signal)
 
       await this._performUpgrade(maConn, 'inbound', {
         ...opts,
@@ -234,7 +235,7 @@ export class Upgrader implements UpgraderInterface {
 
       if (idStr != null) {
         remotePeerId = peerIdFromString(idStr)
-        await this.shouldBlockConnection('denyOutboundConnection', remotePeerId, maConn)
+        await raceSignal(this.shouldBlockConnection('denyOutboundConnection', remotePeerId, maConn), opts.signal)
       }
 
       let direction: 'inbound' | 'outbound' = 'outbound'
@@ -387,11 +388,12 @@ export class Upgrader implements UpgraderInterface {
             return
           }
 
+          const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
+          setMaxListeners(Infinity, signal)
+
           void Promise.resolve()
             .then(async () => {
               const protocols = this.components.registrar.getProtocols()
-              const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
-              setMaxListeners(Infinity, signal)
 
               const { stream, protocol } = await mss.handle(muxedStream, protocols, {
                 signal,
@@ -440,6 +442,8 @@ export class Upgrader implements UpgraderInterface {
               // the peer store should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
                 protocols: [protocol]
+              }, {
+                signal
               })
 
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
@@ -450,7 +454,10 @@ export class Upgrader implements UpgraderInterface {
               connection.log.error('error handling incoming stream id %s - %e', muxedStream.id, err)
 
               if (muxedStream.timeline.close == null) {
-                await muxedStream.close()
+                await muxedStream.close({
+                  signal
+                })
+                  .catch(err => muxedStream.abort(err))
               }
             })
         }
