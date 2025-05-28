@@ -1,10 +1,11 @@
 import crypto from 'node:crypto'
 import { promisify } from 'node:util'
-import { InvalidParametersError, type AbortOptions } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../../random-bytes.js'
 import * as utils from './utils.js'
 import type { JWKKeyPair } from '../interface.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = promisify(crypto.generateKeyPair)

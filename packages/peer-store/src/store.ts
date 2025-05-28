@@ -11,9 +11,9 @@ import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datas
 import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
 import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery, Logger } from '@libp2p/interface'
+import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Datastore, Key, Query } from 'interface-datastore'
 import type { Mortice } from 'mortice'
-import type { AbortOptions } from '@multiformats/multiaddr'
 
 /**
  * Event detail emitted when peer data changes

@@ -113,7 +113,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
       // if we have previously received a signed record for this peer, compare it to the incoming one
       if (existingPeer.peerRecordEnvelope != null) {
-        const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
+        const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
         const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
         // ensure seq is greater than, or equal to, the last received

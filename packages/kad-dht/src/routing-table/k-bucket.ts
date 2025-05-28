@@ -170,7 +170,7 @@ export class KBucket {
     }
   }
 
-  stop () {
+  stop (): void {
     this.addingPeerMap.clear()
   }
 

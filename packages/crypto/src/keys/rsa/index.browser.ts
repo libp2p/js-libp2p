@@ -1,9 +1,10 @@
-import { InvalidParametersError, type AbortOptions } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import randomBytes from '../../random-bytes.js'
 import webcrypto from '../../webcrypto/index.js'
 import * as utils from './utils.js'
 import type { JWKKeyPair } from '../interface.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const RSAES_PKCS1_V1_5_OID = '1.2.840.113549.1.1.1'

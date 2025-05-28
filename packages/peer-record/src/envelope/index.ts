@@ -19,7 +19,7 @@ export class RecordEnvelope implements Envelope {
   /**
    * Unmarshal a serialized Envelope protobuf message
    */
-  static createFromProtobuf = (data: Uint8Array | Uint8ArrayList) => {
+  static createFromProtobuf = (data: Uint8Array | Uint8ArrayList): RecordEnvelope => {
     const envelopeData = Protobuf.decode(data)
     const publicKey = publicKeyFromProtobuf(envelopeData.publicKey)
 

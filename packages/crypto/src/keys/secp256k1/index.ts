@@ -1,8 +1,8 @@
 import crypto from 'node:crypto'
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { SigningError, VerificationError } from '../../errors.js'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const PUBLIC_KEY_BYTE_LENGTH = 33
 const PRIVATE_KEY_BYTE_LENGTH = 32

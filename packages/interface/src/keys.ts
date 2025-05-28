@@ -1,7 +1,7 @@
+import type { AbortOptions } from './index.ts'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions } from './index.ts'
 
 export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
 

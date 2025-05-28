@@ -1,6 +1,7 @@
 import { randomBytes } from '@libp2p/crypto'
 import { setMaxListeners } from '@libp2p/interface'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
+import { anySignal } from 'any-signal'
 import length from 'it-length'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -10,7 +11,6 @@ import GENERATED_PREFIXES from './generated-prefix-list.js'
 import type { RoutingTable } from './index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
-import { anySignal } from 'any-signal'
 
 /**
  * Cannot generate random KadIds longer than this + 1

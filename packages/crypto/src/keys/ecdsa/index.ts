@@ -1,5 +1,5 @@
-import type { AbortOptions } from '@libp2p/interface'
 import type { JWKKeyPair } from '../interface.js'
+import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export type Curve = 'P-256' | 'P-384' | 'P-521'

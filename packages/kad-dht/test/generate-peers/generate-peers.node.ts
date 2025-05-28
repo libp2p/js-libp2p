@@ -105,7 +105,7 @@ describe.skip('generate peers', function () {
       const localKadId = await convertPeerId(peerId)
 
       const goOutput = await fromGo(targetCpl, randPrefix, uintArrayToString(localKadId, 'base64pad'))
-      const jsOutput = await refresh._makePeerId(localKadId, randPrefix, targetCpl)
+      const jsOutput = refresh._makePeerId(localKadId, randPrefix, targetCpl)
 
       expect(goOutput).to.deep.equal(jsOutput)
     })

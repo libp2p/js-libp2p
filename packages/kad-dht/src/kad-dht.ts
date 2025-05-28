@@ -24,8 +24,8 @@ import {
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper, SetModeOptions } from './index.js'
 import type { ContentRouting, CounterGroup, Logger, MetricGroup, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
-import type { CID } from 'multiformats/cid'
 import type { AbortOptions } from 'it-pushable'
+import type { CID } from 'multiformats/cid'
 
 /**
  * Wrapper class to convert events into returned values
