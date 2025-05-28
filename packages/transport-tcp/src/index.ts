@@ -28,11 +28,25 @@
  */
 
 import { TCP } from './tcp.js'
-import type { CloseServerOnMaxConnectionsOpts } from './listener.js'
 import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 
-export type { CloseServerOnMaxConnectionsOpts }
+export interface CloseServerOnMaxConnectionsOpts {
+  /**
+   * Server listens once connection count is less than `listenBelow`
+   */
+  listenBelow: number
+
+  /**
+   * Close server once connection count is greater than or equal to `closeAbove`
+   */
+  closeAbove: number
+
+  /**
+   * Invoked when there was an error listening on a socket
+   */
+  onListenError?(err: Error): void
+}
 
 export interface TCPOptions {
   /**
