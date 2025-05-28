@@ -5,27 +5,10 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { pEvent } from 'p-event'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
-import type { TCPCreateListenerOptions } from './index.js'
+import type { CloseServerOnMaxConnectionsOpts, TCPCreateListenerOptions } from './index.js'
 import type { NetConfig } from './utils.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-export interface CloseServerOnMaxConnectionsOpts {
-  /**
-   * Server listens once connection count is less than `listenBelow`
-   */
-  listenBelow: number
-
-  /**
-   * Close server once connection count is greater than or equal to `closeAbove`
-   */
-  closeAbove: number
-
-  /**
-   * Invoked when there was an error listening on a socket
-   */
-  onListenError?(err: Error): void
-}
 
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
