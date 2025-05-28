@@ -5,7 +5,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { publicKeyToProtobuf } from '../index.js'
 import { ensureEd25519Key } from './utils.js'
 import * as crypto from './index.js'
-import type { Ed25519PublicKey as Ed25519PublicKeyInterface, Ed25519PrivateKey as Ed25519PrivateKeyInterface } from '@libp2p/interface'
+import type { Ed25519PublicKey as Ed25519PublicKeyInterface, Ed25519PrivateKey as Ed25519PrivateKeyInterface, AbortOptions } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -37,8 +37,11 @@ export class Ed25519PublicKey implements Ed25519PublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
-    return crypto.hashAndVerify(this.raw, sig, data)
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean> {
+    options?.signal?.throwIfAborted()
+    const result = await crypto.hashAndVerify(this.raw, sig, data)
+    options?.signal?.throwIfAborted()
+    return result
   }
 }
 
@@ -62,7 +65,10 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
-    return crypto.hashAndSign(this.raw, message)
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
+    options?.signal?.throwIfAborted()
+    const sig = crypto.hashAndSign(this.raw, message)
+    options?.signal?.throwIfAborted()
+    return sig
   }
 }

@@ -11,6 +11,7 @@ import { NAMESPACE_COMMON, peerIdToDatastoreKey } from './utils/peer-id-to-datas
 import { toPeerPB } from './utils/to-peer-pb.js'
 import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreInit } from './index.js'
 import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery, Logger } from '@libp2p/interface'
+import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Datastore, Key, Query } from 'interface-datastore'
 import type { Mortice } from 'mortice'
 
@@ -74,9 +75,9 @@ export class PersistentStore {
     this.maxPeerAge = init.maxPeerAge ?? MAX_PEER_AGE
   }
 
-  async has (peerId: PeerId): Promise<boolean> {
+  async has (peerId: PeerId, options?: AbortOptions): Promise<boolean> {
     try {
-      await this.load(peerId)
+      await this.load(peerId, options)
 
       return true
     } catch (err: any) {
@@ -88,41 +89,43 @@ export class PersistentStore {
     return false
   }
 
-  async delete (peerId: PeerId): Promise<void> {
+  async delete (peerId: PeerId, options?: AbortOptions): Promise<void> {
     if (this.peerId.equals(peerId)) {
       return
     }
 
-    await this.datastore.delete(peerIdToDatastoreKey(peerId))
+    await this.datastore.delete(peerIdToDatastoreKey(peerId), options)
   }
 
-  async load (peerId: PeerId): Promise<Peer> {
+  async load (peerId: PeerId, options?: AbortOptions): Promise<Peer> {
     const key = peerIdToDatastoreKey(peerId)
-    const buf = await this.datastore.get(key)
+    const buf = await this.datastore.get(key, options)
     const peer = PeerPB.decode(buf)
 
     if (this.#peerIsExpired(peerId, peer)) {
-      await this.datastore.delete(key)
+      await this.datastore.delete(key, options)
       throw new NotFoundError()
     }
 
     return pbToPeer(peerId, peer, this.peerId.equals(peerId) ? Infinity : this.maxAddressAge)
   }
 
-  async save (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
-    const existingPeer = await this.#findExistingPeer(peerId)
+  async save (peerId: PeerId, data: PeerData, options?: AbortOptions): Promise<PeerUpdate> {
+    const existingPeer = await this.#findExistingPeer(peerId, options)
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
+      ...options,
       addressFilter: this.addressFilter
     })
 
     return this.#saveIfDifferent(peerId, peerPb, existingPeer)
   }
 
-  async patch (peerId: PeerId, data: Partial<PeerData>): Promise<PeerUpdate> {
-    const existingPeer = await this.#findExistingPeer(peerId)
+  async patch (peerId: PeerId, data: Partial<PeerData>, options?: AbortOptions): Promise<PeerUpdate> {
+    const existingPeer = await this.#findExistingPeer(peerId, options)
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
+      ...options,
       addressFilter: this.addressFilter,
       existingPeer
     })
@@ -130,8 +133,8 @@ export class PersistentStore {
     return this.#saveIfDifferent(peerId, peerPb, existingPeer)
   }
 
-  async merge (peerId: PeerId, data: PeerData): Promise<PeerUpdate> {
-    const existingPeer = await this.#findExistingPeer(peerId)
+  async merge (peerId: PeerId, data: PeerData, options?: AbortOptions): Promise<PeerUpdate> {
+    const existingPeer = await this.#findExistingPeer(peerId, options)
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'merge', {
       addressFilter: this.addressFilter,
@@ -141,8 +144,8 @@ export class PersistentStore {
     return this.#saveIfDifferent(peerId, peerPb, existingPeer)
   }
 
-  async * all (query?: PeerQuery): AsyncGenerator<Peer, void, unknown> {
-    for await (const { key, value } of this.datastore.query(mapQuery(query ?? {}, this.maxAddressAge))) {
+  async * all (options?: PeerQuery): AsyncGenerator<Peer, void, unknown> {
+    for await (const { key, value } of this.datastore.query(mapQuery(options ?? {}, this.maxAddressAge), options)) {
       const peerId = keyToPeerId(key)
 
       // skip self peer if present
@@ -154,7 +157,7 @@ export class PersistentStore {
 
       // remove expired peer
       if (this.#peerIsExpired(peerId, peer)) {
-        await this.datastore.delete(key)
+        await this.datastore.delete(key, options)
         continue
       }
 
@@ -162,15 +165,15 @@ export class PersistentStore {
     }
   }
 
-  async #findExistingPeer (peerId: PeerId): Promise<ExistingPeer | undefined> {
+  async #findExistingPeer (peerId: PeerId, options?: AbortOptions): Promise<ExistingPeer | undefined> {
     try {
       const key = peerIdToDatastoreKey(peerId)
-      const buf = await this.datastore.get(key)
+      const buf = await this.datastore.get(key, options)
       const peerPB = PeerPB.decode(buf)
 
       // remove expired peer
       if (this.#peerIsExpired(peerId, peerPB)) {
-        await this.datastore.delete(key)
+        await this.datastore.delete(key, options)
         throw new NotFoundError()
       }
 
@@ -185,12 +188,12 @@ export class PersistentStore {
     }
   }
 
-  async #saveIfDifferent (peerId: PeerId, peer: PeerPB, existingPeer?: ExistingPeer): Promise<PeerUpdate> {
+  async #saveIfDifferent (peerId: PeerId, peer: PeerPB, existingPeer?: ExistingPeer, options?: AbortOptions): Promise<PeerUpdate> {
     // record last update
     peer.updated = Date.now()
     const buf = PeerPB.encode(peer)
 
-    await this.datastore.put(peerIdToDatastoreKey(peerId), buf)
+    await this.datastore.put(peerIdToDatastoreKey(peerId), buf, options)
 
     return {
       peer: bytesToPeer(peerId, buf, this.maxAddressAge),

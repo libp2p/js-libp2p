@@ -18,6 +18,10 @@ export interface ProvidersComponents {
   metrics?: Metrics
 }
 
+interface WriteProviderEntryOptions extends AbortOptions {
+  time?: Date
+}
+
 /**
  * Provides a mechanism to add and remove provider records from the datastore
  */
@@ -38,11 +42,11 @@ export class Providers {
    * Add a new provider for the given CID
    */
   async addProvider (cid: CID, provider: PeerId, options?: AbortOptions): Promise<void> {
-    const release = await this.lock.readLock()
+    const release = await this.lock.readLock(options)
 
     try {
       this.log.trace('%p provides %s', provider, cid)
-      await this.writeProviderEntry(cid, provider)
+      await this.writeProviderEntry(cid, provider, options)
     } finally {
       release()
     }
@@ -52,7 +56,7 @@ export class Providers {
    * Remove a provider for the given CID
    */
   async removeProvider (cid: CID, provider: PeerId, options?: AbortOptions): Promise<void> {
-    const release = await this.lock.writeLock()
+    const release = await this.lock.writeLock(options)
 
     try {
       const key = toProviderKey(this.datastorePrefix, cid, provider)
@@ -67,7 +71,7 @@ export class Providers {
    * Get a list of providers for the given CID
    */
   async getProviders (cid: CID, options?: AbortOptions): Promise<PeerId[]> {
-    const release = await this.lock.readLock()
+    const release = await this.lock.readLock(options)
 
     try {
       this.log.trace('get providers for %c', cid)
@@ -83,9 +87,9 @@ export class Providers {
   /**
    * Write a provider into the given store
    */
-  private async writeProviderEntry (cid: CID, peerId: PeerId, time: Date = new Date(), options?: AbortOptions): Promise<void> {
+  private async writeProviderEntry (cid: CID, peerId: PeerId, options?: WriteProviderEntryOptions): Promise<void> {
     const key = toProviderKey(this.datastorePrefix, cid, peerId)
-    const buffer = varint.encode(time.getTime())
+    const buffer = varint.encode(options?.time?.getTime() ?? Date.now())
 
     await this.datastore.put(key, buffer, options)
   }

@@ -2,7 +2,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { hashAndSign, utils, hashAndVerify } from './index.js'
-import type { RSAPublicKey as RSAPublicKeyInterface, RSAPrivateKey as RSAPrivateKeyInterface } from '@libp2p/interface'
+import type { RSAPublicKey as RSAPublicKeyInterface, RSAPrivateKey as RSAPrivateKeyInterface, AbortOptions } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -45,8 +45,8 @@ export class RSAPublicKey implements RSAPublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
-    return hashAndVerify(this.jwk, sig, data)
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean> {
+    return hashAndVerify(this.jwk, sig, data, options)
   }
 }
 
@@ -77,7 +77,7 @@ export class RSAPrivateKey implements RSAPrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
-    return hashAndSign(this.jwk, message)
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
+    return hashAndSign(this.jwk, message, options)
   }
 }

@@ -139,7 +139,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       metricName: `${init.metricsPrefix}_routing_table_ping_new_contact_time_milliseconds`
     })
 
-    this.kb = new KBucket({
+    this.kb = new KBucket(components, {
       kBucketSize: init.kBucketSize,
       prefixLength: init.prefixLength,
       splitThreshold: init.splitThreshold,
@@ -148,7 +148,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       ping: this.pingOldContacts,
       verify: this.verifyNewContact,
       onAdd: this.peerAdded,
-      onRemove: this.peerRemoved
+      onRemove: this.peerRemoved,
+      metricsPrefix: init.metricsPrefix
     })
 
     this.closestPeerTagger = new ClosestPeers(this.components, {
@@ -184,7 +185,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     this.running = true
 
-    await start(this.closestPeerTagger)
+    await start(this.closestPeerTagger, this.kb)
     await this.kb.addSelfPeer(this.components.peerId)
   }
 
@@ -232,12 +233,12 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
   async stop (): Promise<void> {
     this.running = false
-    await stop(this.closestPeerTagger)
+    await stop(this.closestPeerTagger, this.kb)
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
   }
 
-  private async peerAdded (peer: Peer, bucket: LeafBucket): Promise<void> {
+  private async peerAdded (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
     if (!this.components.peerId.equals(peer.peerId)) {
       await this.components.peerStore.merge(peer.peerId, {
         tags: {
@@ -245,7 +246,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             value: this.peerTagValue
           }
         }
-      })
+      }, options)
     }
 
     this.updateMetrics()
@@ -253,13 +254,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.safeDispatchEvent('peer:add', { detail: peer.peerId })
   }
 
-  private async peerRemoved (peer: Peer, bucket: LeafBucket): Promise<void> {
+  private async peerRemoved (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
     if (!this.components.peerId.equals(peer.peerId)) {
       await this.components.peerStore.merge(peer.peerId, {
         tags: {
           [this.peerTagName]: undefined
         }
-      })
+      }, options)
     }
 
     this.updateMetrics()
@@ -408,8 +409,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Find a specific peer by id
    */
-  async find (peer: PeerId): Promise<PeerId | undefined> {
-    const kadId = await utils.convertPeerId(peer)
+  async find (peer: PeerId, options?: AbortOptions): Promise<PeerId | undefined> {
+    const kadId = await utils.convertPeerId(peer, options)
     return this.kb.get(kadId)?.peerId
   }
 
@@ -451,14 +452,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Remove a given peer from the table
    */
-  async remove (peer: PeerId): Promise<void> {
+  async remove (peer: PeerId, options?: AbortOptions): Promise<void> {
     if (this.kb == null) {
       throw new Error('RoutingTable is not started')
     }
 
-    const kadId = await utils.convertPeerId(peer)
+    const kadId = await utils.convertPeerId(peer, options)
 
-    await this.kb.remove(kadId)
+    await this.kb.remove(kadId, options)
   }
 
   private updateMetrics (): void {

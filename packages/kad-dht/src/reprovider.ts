@@ -2,7 +2,7 @@ import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { Queue } from '@libp2p/utils/queue'
 import drain from 'it-drain'
-import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD } from './constants.js'
+import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD, REPROVIDE_TIMEOUT } from './constants.js'
 import { parseProviderKey, readProviderTime, timeOperationMethod } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { OperationMetrics } from './kad-dht.js'
@@ -103,7 +103,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.timeout = setTimeout(() => {
-      this.cleanUp().catch(err => {
+      this.cleanUp({
+        signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
+      }).catch(err => {
         this.log.error('error running reprovide/cleanup - %e', err)
       })
     }, this.interval)
@@ -120,8 +122,8 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
    * Check all provider records. Delete them if they have expired, reprovide
    * them if the provider is us and the expiry is within the reprovide window.
    */
-  private async cleanUp (): Promise<void> {
-    const release = await this.lock.writeLock()
+  private async cleanUp (options?: AbortOptions): Promise<void> {
+    const release = await this.lock.writeLock(options)
 
     try {
       this.safeDispatchEvent('reprovide:start')
@@ -165,7 +167,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
       if (this.running) {
         this.timeout = setTimeout(() => {
-          this.cleanUp().catch(err => {
+          this.cleanUp({
+            signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
+          }).catch(err => {
             this.log.error('error running re-provide - %e', err)
           })
         }, this.interval)
@@ -173,13 +177,13 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     }
   }
 
-  private async queueReprovide (cid: CID): Promise<void> {
+  private async queueReprovide (cid: CID, options?: AbortOptions): Promise<void> {
     if (!this.running) {
       return
     }
 
     this.log.trace('waiting for queue capacity before adding %c to re-provide queue', cid)
-    await this.reprovideQueue.onSizeLessThan(this.maxQueueSize)
+    await this.reprovideQueue.onSizeLessThan(this.maxQueueSize, options)
 
     const existingJob = this.reprovideQueue.queue.find(job => job.options.cid.equals(cid))
 

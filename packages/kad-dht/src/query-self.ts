@@ -133,6 +133,8 @@ export class QuerySelf implements Startable {
           async (source) => length(source)
         )
 
+        signal?.throwIfAborted()
+
         const duration = Date.now() - start
 
         this.log('self-query found %d peers in %dms', peers, duration)

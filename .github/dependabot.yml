@@ -1,8 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: npm
-  directories:
-    - "/"
+  directory: "/"
   schedule:
     interval: daily
     time: "10:00"
@@ -11,7 +10,7 @@ updates:
     prefix: "deps"
     prefix-development: "chore"
   groups:
-    libp2p-deps: # group all deps that should be updated when Helia deps need updated
+    libp2p-deps:
       patterns:
         - "*libp2p*"
         - "*multiformats*"

@@ -165,7 +165,9 @@ export class QueryManager implements Startable {
 
       log('query:start')
 
-      const id = await convertBuffer(key)
+      const id = await convertBuffer(key, {
+        signal
+      })
       const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize)
 
       // split peers into d buckets evenly(ish)
