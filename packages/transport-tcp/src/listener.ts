@@ -38,7 +38,7 @@ interface Context extends TCPCreateListenerOptions {
   logger: ComponentLogger
 }
 
-export interface TCPListenerMetrics {
+interface TCPListenerMetrics {
   status?: MetricGroup
   errors?: CounterGroup
   events?: CounterGroup
