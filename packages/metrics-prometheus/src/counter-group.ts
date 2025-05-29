@@ -1,35 +1,27 @@
 import { Counter as PromCounter } from 'prom-client'
 import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
-import type { CalculatedMetric } from './utils.js'
-import type { CounterGroup, CalculateMetric } from '@libp2p/interface'
+import type { CounterGroup } from '@libp2p/interface'
 import type { CollectFunction } from 'prom-client'
 
-export class PrometheusCounterGroup implements CounterGroup, CalculatedMetric<Record<string, number>> {
+export class PrometheusCounterGroup implements CounterGroup {
   private readonly counter: PromCounter
   private readonly label: string
-  private readonly calculators: Array<CalculateMetric<Record<string, number>>>
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions<Record<string, number>>) {
     name = normalizeString(name)
     const help = normalizeString(opts.help ?? name)
     const label = this.label = normalizeString(opts.label ?? name)
     let collect: CollectFunction<PromCounter<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        await Promise.all(self.calculators.map(async calculate => {
-          const values = await calculate()
+        const values = await opts.calculate()
 
-          Object.entries(values).forEach(([key, value]) => {
-            this.inc({ [label]: key }, value)
-          })
-        }))
+        Object.entries(values).forEach(([key, value]) => {
+          this.inc({ [label]: key }, value)
+        })
       }
     }
 
@@ -40,10 +32,6 @@ export class PrometheusCounterGroup implements CounterGroup, CalculatedMetric<Re
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric<Record<string, number>>): void {
-    this.calculators.push(calculator)
   }
 
   increment (values: Record<string, number | unknown>): void {

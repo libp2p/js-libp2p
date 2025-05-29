@@ -174,7 +174,7 @@ class PrometheusMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -222,8 +222,6 @@ class PrometheusMetrics implements Metrics {
 
   stop (): void {
     this.transferStats.clear()
-    metrics.clear()
-    register?.clear()
   }
 
   /**
@@ -281,11 +279,6 @@ class PrometheusMetrics implements Metrics {
 
     if (metric != null) {
       this.log('reuse existing metric', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
       return metric
     }
 
@@ -309,12 +302,7 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      this.log('reuse existing metric group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
+      this.log('reuse existing metric', name)
       return metricGroup
     }
 
@@ -339,11 +327,6 @@ class PrometheusMetrics implements Metrics {
 
     if (counter != null) {
       this.log('reuse existing counter', name)
-
-      if (opts.calculate != null) {
-        counter.addCalculator(opts.calculate)
-      }
-
       return counter
     }
 
@@ -368,11 +351,6 @@ class PrometheusMetrics implements Metrics {
 
     if (counterGroup != null) {
       this.log('reuse existing counter group', name)
-
-      if (opts.calculate != null) {
-        counterGroup.addCalculator(opts.calculate)
-      }
-
       return counterGroup
     }
 
@@ -397,11 +375,6 @@ class PrometheusMetrics implements Metrics {
 
     if (metric != null) {
       this.log('reuse existing histogram', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
       return metric
     }
 
@@ -426,11 +399,6 @@ class PrometheusMetrics implements Metrics {
 
     if (metricGroup != null) {
       this.log('reuse existing histogram group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
       return metricGroup
     }
 
@@ -455,11 +423,6 @@ class PrometheusMetrics implements Metrics {
 
     if (metric != null) {
       this.log('reuse existing summary', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
       return metric
     }
 
@@ -484,11 +447,6 @@ class PrometheusMetrics implements Metrics {
 
     if (metricGroup != null) {
       this.log('reuse existing summary group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
       return metricGroup
     }
 

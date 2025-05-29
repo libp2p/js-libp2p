@@ -118,7 +118,7 @@ class OpenTelemetryMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -139,8 +139,6 @@ class OpenTelemetryMetrics implements Metrics {
 
   stop (): void {
     this.transferStats.clear()
-    this.metrics.clear()
-    this.observables.clear()
   }
 
   /**
@@ -195,7 +193,13 @@ class OpenTelemetryMetrics implements Metrics {
     }
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions>(opts)) {
-      const gauge = this.observables.get(name) ?? this.meter.createObservableGauge(name, {
+      let gauge = this.observables.get(name)
+
+      if (gauge != null) {
+        return
+      }
+
+      gauge = this.meter.createObservableGauge(name, {
         description: opts?.help ?? name
       })
 
@@ -232,7 +236,13 @@ class OpenTelemetryMetrics implements Metrics {
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions<Record<string, number>>>(opts)) {
-      const gauge = this.observables.get(name) ?? this.meter.createObservableGauge(name, {
+      let gauge = this.observables.get(name)
+
+      if (gauge != null) {
+        return
+      }
+
+      gauge = this.meter.createObservableGauge(name, {
         description: opts?.help ?? name
       })
 
@@ -273,7 +283,13 @@ class OpenTelemetryMetrics implements Metrics {
     }
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions>(opts)) {
-      const counter = this.observables.get(name) ?? this.meter.createObservableCounter(name, {
+      let counter = this.observables.get(name)
+
+      if (counter != null) {
+        return
+      }
+
+      counter = this.meter.createObservableCounter(name, {
         description: opts?.help ?? name
       })
 
@@ -310,7 +326,13 @@ class OpenTelemetryMetrics implements Metrics {
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions<Record<string, number>>>(opts)) {
-      const counter = this.observables.get(name) ?? this.meter.createObservableCounter(name, {
+      let counter = this.observables.get(name)
+
+      if (counter != null) {
+        return
+      }
+
+      counter = this.meter.createObservableCounter(name, {
         description: opts?.help ?? name
       })
 

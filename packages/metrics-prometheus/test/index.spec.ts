@@ -13,7 +13,7 @@ describe('simple-metrics', () => {
     }
   })
 
-  it('should not retain metrics after stop', async () => {
+  it('should retain metrics after stop', async () => {
     metrics = prometheusMetrics()({
       logger: defaultLogger()
     })
@@ -31,6 +31,6 @@ describe('simple-metrics', () => {
 
     const m3 = metrics.registerCounterGroup('test_metric')
 
-    expect(m3).to.not.equal(m1, 're-used metric')
+    expect(m3).to.equal(m1, 'did not re-use metric')
   })
 })
