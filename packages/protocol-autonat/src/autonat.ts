@@ -6,6 +6,7 @@ import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
 import { pbStream } from 'it-protobuf-stream'
@@ -105,7 +106,10 @@ export class AutoNATService implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.connectionThreshold = init.connectionThreshold ?? DEFAULT_CONNECTION_THRESHOLD
     this.maxMessageSize = init.maxMessageSize ?? MAX_MESSAGE_SIZE
-    this.dialResults = new Map()
+    this.dialResults = trackedMap({
+      name: 'libp2p_autonat_dial_results',
+      metrics: components.metrics
+    })
     this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
     this.addressFilter = createScalableCuckooFilter(1024)
   }

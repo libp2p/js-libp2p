@@ -42,7 +42,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
     this.log = components.logger.forComponent('libp2p:transports')
     this.components = components
     this.started = false
-    this.transports = new Map<string, Transport>()
+    this.transports = trackedMap({
+      name: 'libp2p_transport_manager_transports',
+      metrics: this.components.metrics
+    })
     this.listeners = trackedMap({
       name: 'libp2p_transport_manager_listeners',
       metrics: this.components.metrics
