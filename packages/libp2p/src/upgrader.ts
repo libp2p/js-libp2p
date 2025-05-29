@@ -1,6 +1,7 @@
 import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { anySignal } from 'any-signal'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
@@ -130,13 +131,19 @@ export class Upgrader implements UpgraderInterface {
 
   constructor (components: UpgraderComponents, init: UpgraderInit) {
     this.components = components
-    this.connectionEncrypters = new Map()
+    this.connectionEncrypters = trackedMap({
+      name: 'libp2p_upgrader_connection_encrypters',
+      metrics: this.components.metrics
+    })
 
     init.connectionEncrypters.forEach(encrypter => {
       this.connectionEncrypters.set(encrypter.protocol, encrypter)
     })
 
-    this.streamMuxers = new Map()
+    this.streamMuxers = trackedMap({
+      name: 'libp2p_upgrader_stream_multiplexers',
+      metrics: this.components.metrics
+    })
 
     init.streamMuxers.forEach(muxer => {
       this.streamMuxers.set(muxer.protocol, muxer)

@@ -1,7 +1,8 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { mergeOptions } from '@libp2p/utils/merge-options'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 
@@ -13,6 +14,7 @@ export interface RegistrarComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**
@@ -25,10 +27,24 @@ export class Registrar implements RegistrarInterface {
   private readonly components: RegistrarComponents
 
   constructor (components: RegistrarComponents) {
+    this.components = components
     this.log = components.logger.forComponent('libp2p:registrar')
     this.topologies = new Map()
-    this.handlers = new Map()
-    this.components = components
+    components.metrics?.registerMetricGroup('libp2p_registrar_topologies', {
+      calculate: () => {
+        const output: Record<string, number> = {}
+
+        for (const [key, value] of this.topologies) {
+          output[key] = value.size
+        }
+
+        return output
+      }
+    })
+    this.handlers = trackedMap({
+      name: 'libp2p_registrar_protocol_handlers',
+      metrics: components.metrics
+    })
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)

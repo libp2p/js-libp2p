@@ -152,7 +152,7 @@ class PrometheusMetrics implements Metrics {
     if (init?.preserveExistingMetrics !== true) {
       this.log('Clearing existing metrics')
       metrics.clear()
-      ;(this.registry ?? register).clear()
+      register?.clear()
     }
 
     if (init?.collectDefaultMetrics !== false) {
@@ -174,7 +174,7 @@ class PrometheusMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -215,6 +215,14 @@ class PrometheusMetrics implements Metrics {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/metrics'
   ]
+
+  start (): void {
+
+  }
+
+  stop (): void {
+    this.transferStats.clear()
+  }
 
   /**
    * Increment the transfer stat for the passed key, making sure
@@ -269,17 +277,12 @@ class PrometheusMetrics implements Metrics {
 
     let metric = metrics.get(name)
 
-    if (metrics.has(name)) {
-      this.log('Reuse existing metric', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
-      return metrics.get(name)
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    this.log('Register metric', name)
+    this.log('register metric', name)
     metric = new PrometheusMetric(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metric)
@@ -299,16 +302,11 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      this.log('Reuse existing metric group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
+      this.log('reuse existing metric', name)
       return metricGroup
     }
 
-    this.log('Register metric group', name)
+    this.log('register metric group', name)
     metricGroup = new PrometheusMetricGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metricGroup)
@@ -328,16 +326,11 @@ class PrometheusMetrics implements Metrics {
     let counter = metrics.get(name)
 
     if (counter != null) {
-      this.log('Reuse existing counter', name)
-
-      if (opts.calculate != null) {
-        counter.addCalculator(opts.calculate)
-      }
-
-      return metrics.get(name)
+      this.log('reuse existing counter', name)
+      return counter
     }
 
-    this.log('Register counter', name)
+    this.log('register counter', name)
     counter = new PrometheusCounter(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counter)
@@ -357,16 +350,11 @@ class PrometheusMetrics implements Metrics {
     let counterGroup = metrics.get(name)
 
     if (counterGroup != null) {
-      this.log('Reuse existing counter group', name)
-
-      if (opts.calculate != null) {
-        counterGroup.addCalculator(opts.calculate)
-      }
-
+      this.log('reuse existing counter group', name)
       return counterGroup
     }
 
-    this.log('Register counter group', name)
+    this.log('register counter group', name)
     counterGroup = new PrometheusCounterGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, counterGroup)
@@ -385,17 +373,12 @@ class PrometheusMetrics implements Metrics {
 
     let metric = metrics.get(name)
 
-    if (metrics.has(name)) {
-      this.log('Reuse existing histogram', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
-      return metrics.get(name)
+    if (metric != null) {
+      this.log('reuse existing histogram', name)
+      return metric
     }
 
-    this.log('Register histogram', name)
+    this.log('register histogram', name)
     metric = new PrometheusHistogram(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metric)
@@ -415,16 +398,11 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      this.log('Reuse existing histogram group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
+      this.log('reuse existing histogram group', name)
       return metricGroup
     }
 
-    this.log('Register histogram group', name)
+    this.log('register histogram group', name)
     metricGroup = new PrometheusHistogramGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metricGroup)
@@ -443,17 +421,12 @@ class PrometheusMetrics implements Metrics {
 
     let metric = metrics.get(name)
 
-    if (metrics.has(name)) {
-      this.log('Reuse existing summary', name)
-
-      if (opts.calculate != null) {
-        metric.addCalculator(opts.calculate)
-      }
-
-      return metrics.get(name)
+    if (metric != null) {
+      this.log('reuse existing summary', name)
+      return metric
     }
 
-    this.log('Register summary', name)
+    this.log('register summary', name)
     metric = new PrometheusSummary(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metric)
@@ -473,16 +446,11 @@ class PrometheusMetrics implements Metrics {
     let metricGroup = metrics.get(name)
 
     if (metricGroup != null) {
-      this.log('Reuse existing summary group', name)
-
-      if (opts.calculate != null) {
-        metricGroup.addCalculator(opts.calculate)
-      }
-
+      this.log('reuse existing summary group', name)
       return metricGroup
     }
 
-    this.log('Register summary group', name)
+    this.log('register summary group', name)
     metricGroup = new PrometheusSummaryGroup(name, { registry: this.registry, ...opts })
 
     metrics.set(name, metricGroup)

@@ -369,7 +369,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/content-routing',
     '@libp2p/peer-routing',
-    '@libp2p/peer-discovery'
+    '@libp2p/peer-discovery',
+    '@libp2p/kad-dht'
   ]
 
   readonly [serviceDependencies]: string[] = [
