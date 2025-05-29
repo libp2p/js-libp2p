@@ -1,5 +1,6 @@
 import { isNetworkAddress } from '@libp2p/utils/multiaddr/is-network-address'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
@@ -22,7 +23,10 @@ export class TransportAddresses {
 
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
     this.log = components.logger.forComponent('libp2p:address-manager:observed-addresses')
-    this.addresses = new Map()
+    this.addresses = trackedMap({
+      name: 'libp2p_address_manager_transport_addresses',
+      metrics: components.metrics
+    })
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
   }
 
