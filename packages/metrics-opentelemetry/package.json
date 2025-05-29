@@ -47,6 +47,7 @@
     "it-stream-types": "^2.0.2"
   },
   "devDependencies": {
+    "@libp2p/logger": "^5.1.18",
     "aegir": "^47.0.14"
   },
   "browser": {
