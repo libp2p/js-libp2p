@@ -118,7 +118,7 @@ class OpenTelemetryMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -139,8 +139,6 @@ class OpenTelemetryMetrics implements Metrics {
 
   stop (): void {
     this.transferStats.clear()
-    this.metrics.clear()
-    this.observables.clear()
   }
 
   /**

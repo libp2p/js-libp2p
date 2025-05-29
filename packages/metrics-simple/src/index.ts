@@ -440,7 +440,6 @@ class SimpleMetrics implements Metrics, Startable {
     this.started = false
 
     clearInterval(this.interval)
-    this.metrics.clear()
     this.transferStats.clear()
   }
 

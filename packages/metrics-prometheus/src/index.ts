@@ -174,7 +174,7 @@ class PrometheusMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -222,8 +222,6 @@ class PrometheusMetrics implements Metrics {
 
   stop (): void {
     this.transferStats.clear()
-    metrics.clear()
-    register?.clear()
   }
 
   /**

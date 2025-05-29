@@ -27,7 +27,7 @@ describe('opentelemetry-metrics', () => {
     expect(wrapped).to.not.equal(target.wrapped)
   })
 
-  it('should not retain metrics after stop', async () => {
+  it('should retain metrics after stop', async () => {
     const metrics = openTelemetryMetrics()({
       nodeInfo: {
         name: 'test',
@@ -50,6 +50,6 @@ describe('opentelemetry-metrics', () => {
 
     const m3 = metrics.registerCounterGroup('test_metric')
 
-    expect(m3).to.not.equal(m1, 're-used metric')
+    expect(m3).to.equal(m1, 'did not re-use metric')
   })
 })
