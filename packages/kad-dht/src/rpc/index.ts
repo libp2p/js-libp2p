@@ -15,7 +15,7 @@ import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
 import type { GetValueHandlerComponents } from './handlers/get-value.js'
 import type { PutValueHandlerComponents } from './handlers/put-value.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData } from '@libp2p/interface'
+import { type CounterGroup, type Logger, type Metrics, type PeerId, type IncomingStreamData, TimeoutError } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -30,6 +30,7 @@ export interface RPCInit {
   metricsPrefix: string
   datastorePrefix: string
   peerInfoMapper: PeerInfoMapper
+  incomingMessageTimeout?: number
 }
 
 export interface RPCComponents extends GetValueHandlerComponents, PutValueHandlerComponents, FindNodeHandlerComponents, GetProvidersHandlerComponents {
@@ -38,12 +39,12 @@ export interface RPCComponents extends GetValueHandlerComponents, PutValueHandle
 
 export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
-  private readonly routingTable: RoutingTable
   private readonly log: Logger
   private readonly metrics: {
     operations?: CounterGroup
     errors?: CounterGroup
   }
+  private readonly incomingMessageTimeout: number
 
   constructor (components: RPCComponents, init: RPCInit) {
     this.metrics = {
@@ -52,7 +53,7 @@ export class RPC {
     }
 
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc`)
-    this.routingTable = init.routingTable
+    this.incomingMessageTimeout = init.incomingMessageTimeout ?? 10_000
     this.handlers = {
       [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, init),
       [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, init),
@@ -97,8 +98,14 @@ export class RPC {
     Promise.resolve().then(async () => {
       const { stream, connection } = data
       const peerId = connection.remotePeer
-
       const self = this
+
+      const abortListener = (): void => {
+        stream.abort(new TimeoutError())
+      }
+
+      let signal = AbortSignal.timeout(this.incomingMessageTimeout)
+      signal.addEventListener('abort', abortListener)
 
       await pipe(
         stream,
@@ -115,6 +122,12 @@ export class RPC {
             if (res != null) {
               yield Message.encode(res)
             }
+
+            // we have received a message so reset the timeout controller to
+            // allow the remote to send another
+            signal.removeEventListener('abort', abortListener)
+            signal = AbortSignal.timeout(self.incomingMessageTimeout)
+            signal.addEventListener('abort', abortListener)
           }
         },
         (source) => lp.encode(source),
