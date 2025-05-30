@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/plaintext",
-  "version": "2.0.25",
+  "version": "2.0.26",
   "description": "An insecure connection encrypter",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext#readme",
@@ -45,9 +45,9 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.4",
-    "@libp2p/interface": "^2.10.2",
-    "@libp2p/peer-id": "^5.1.5",
+    "@libp2p/crypto": "^5.1.5",
+    "@libp2p/interface": "^2.10.3",
+    "@libp2p/peer-id": "^5.1.6",
     "it-protobuf-stream": "^2.0.2",
     "it-stream-types": "^2.0.2",
     "protons-runtime": "^5.5.0",
@@ -55,8 +55,8 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.4",
-    "@libp2p/logger": "^5.1.18",
+    "@libp2p/crypto": "^5.1.5",
+    "@libp2p/logger": "^5.1.19",
     "aegir": "^47.0.14",
     "it-pair": "^2.0.6",
     "protons": "^7.6.1",
