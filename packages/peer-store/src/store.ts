@@ -1,4 +1,5 @@
 import { NotFoundError } from '@libp2p/interface'
+import { PeerMap, trackedPeerMap } from '@libp2p/peer-collections'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import mortice from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
@@ -13,7 +14,7 @@ import type { AddressFilter, PersistentPeerStoreComponents, PersistentPeerStoreI
 import type { PeerUpdate as PeerUpdateExternal, PeerId, Peer, PeerData, PeerQuery, Logger } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Datastore, Key, Query } from 'interface-datastore'
-import type { Mortice } from 'mortice'
+import type { Mortice, Release } from 'mortice'
 
 /**
  * Event detail emitted when peer data changes
@@ -53,10 +54,15 @@ function mapQuery (query: PeerQuery, maxAddressAge: number): Query {
   }
 }
 
+export interface Lock {
+  refs: number
+  lock: Mortice
+}
+
 export class PersistentStore {
   private readonly peerId: PeerId
   private readonly datastore: Datastore
-  public readonly lock: Mortice
+  private locks: PeerMap<Lock>
   private readonly addressFilter?: AddressFilter
   private readonly log: Logger
   private readonly maxAddressAge: number
@@ -67,12 +73,74 @@ export class PersistentStore {
     this.peerId = components.peerId
     this.datastore = components.datastore
     this.addressFilter = init.addressFilter
-    this.lock = mortice({
-      name: 'peer-store',
-      singleProcess: true
+    this.locks = trackedPeerMap({
+      name: 'libp2p_peer_store_locks',
+      metrics: components.metrics
     })
     this.maxAddressAge = init.maxAddressAge ?? MAX_ADDRESS_AGE
     this.maxPeerAge = init.maxPeerAge ?? MAX_PEER_AGE
+  }
+
+  getLock (peerId: PeerId): Lock {
+    let lock = this.locks.get(peerId)
+
+    if (lock == null) {
+      lock = {
+        refs: 0,
+        lock: mortice({
+          name: peerId.toString(),
+          singleProcess: true
+        })
+      }
+
+      this.locks.set(peerId, lock)
+    }
+
+    lock.refs++
+
+    return lock
+  }
+
+  private maybeRemoveLock (peerId: PeerId, lock: Lock): void {
+    lock.refs--
+
+    if (lock.refs === 0) {
+      this.locks.delete(peerId)
+    }
+  }
+
+  async getReadLock (peerId: PeerId, options?: AbortOptions): Promise<Release> {
+    const lock = this.getLock(peerId)
+
+    try {
+      const release = await lock.lock.readLock(options)
+
+      return () => {
+        release()
+        this.maybeRemoveLock(peerId, lock)
+      }
+    } catch (err) {
+      this.maybeRemoveLock(peerId, lock)
+
+      throw err
+    }
+  }
+
+  async getWriteLock (peerId: PeerId, options?: AbortOptions): Promise<Release> {
+    const lock = this.getLock(peerId)
+
+    try {
+      const release = await lock.lock.writeLock(options)
+
+      return () => {
+        release()
+        this.maybeRemoveLock(peerId, lock)
+      }
+    } catch (err) {
+      this.maybeRemoveLock(peerId, lock)
+
+      throw err
+    }
   }
 
   async has (peerId: PeerId, options?: AbortOptions): Promise<boolean> {
@@ -179,7 +247,7 @@ export class PersistentStore {
 
       return {
         peerPB,
-        peer: bytesToPeer(peerId, buf, this.maxAddressAge)
+        peer: pbToPeer(peerId, peerPB, this.maxAddressAge)
       }
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
@@ -196,7 +264,7 @@ export class PersistentStore {
     await this.datastore.put(peerIdToDatastoreKey(peerId), buf, options)
 
     return {
-      peer: bytesToPeer(peerId, buf, this.maxAddressAge),
+      peer: pbToPeer(peerId, peer, this.maxAddressAge),
       previous: existingPeer?.peer,
       updated: existingPeer == null || !peerEquals(peer, existingPeer.peerPB)
     }

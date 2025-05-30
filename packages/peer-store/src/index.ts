@@ -10,7 +10,7 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore } from './store.js'
 import type { PeerUpdate } from './store.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 
@@ -19,6 +19,7 @@ export interface PersistentPeerStoreComponents {
   datastore: Datastore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**
@@ -75,29 +76,17 @@ class PersistentPeerStore implements PeerStore {
   readonly [Symbol.toStringTag] = '@libp2p/peer-store'
 
   async forEach (fn: (peer: Peer,) => void, query?: PeerQuery): Promise<void> {
-    const release = await this.store.lock.readLock(query)
-
-    try {
-      for await (const peer of this.store.all(query)) {
-        fn(peer)
-      }
-    } finally {
-      release()
+    for await (const peer of this.store.all(query)) {
+      fn(peer)
     }
   }
 
   async all (query?: PeerQuery): Promise<Peer[]> {
-    const release = await this.store.lock.readLock(query)
-
-    try {
-      return await all(this.store.all(query))
-    } finally {
-      release()
-    }
+    return all(this.store.all(query))
   }
 
   async delete (peerId: PeerId, options?: AbortOptions): Promise<void> {
-    const release = await this.store.lock.writeLock(options)
+    const release = await this.store.getReadLock(peerId, options)
 
     try {
       await this.store.delete(peerId, options)
@@ -107,23 +96,23 @@ class PersistentPeerStore implements PeerStore {
   }
 
   async has (peerId: PeerId, options?: AbortOptions): Promise<boolean> {
-    const release = await this.store.lock.readLock(options)
+    const release = await this.store.getReadLock(peerId, options)
 
     try {
       return await this.store.has(peerId, options)
     } finally {
       this.log.trace('has release read lock')
-      release()
+      release?.()
     }
   }
 
   async get (peerId: PeerId, options?: AbortOptions): Promise<Peer> {
-    const release = await this.store.lock.readLock(options)
+    const release = await this.store.getReadLock(peerId, options)
 
     try {
       return await this.store.load(peerId, options)
     } finally {
-      release()
+      release?.()
     }
   }
 
@@ -137,7 +126,7 @@ class PersistentPeerStore implements PeerStore {
   }
 
   async save (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
-    const release = await this.store.lock.writeLock(options)
+    const release = await this.store.getWriteLock(id, options)
 
     try {
       const result = await this.store.save(id, data, options)
@@ -146,12 +135,12 @@ class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      release()
+      release?.()
     }
   }
 
   async patch (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
-    const release = await this.store.lock.writeLock(options)
+    const release = await this.store.getWriteLock(id, options)
 
     try {
       const result = await this.store.patch(id, data, options)
@@ -160,12 +149,12 @@ class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      release()
+      release?.()
     }
   }
 
   async merge (id: PeerId, data: PeerData, options?: AbortOptions): Promise<Peer> {
-    const release = await this.store.lock.writeLock(options)
+    const release = await this.store.getWriteLock(id, options)
 
     try {
       const result = await this.store.merge(id, data, options)
@@ -174,7 +163,7 @@ class PersistentPeerStore implements PeerStore {
 
       return result.peer
     } finally {
-      release()
+      release?.()
     }
   }
 
