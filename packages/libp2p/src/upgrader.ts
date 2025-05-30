@@ -127,6 +127,8 @@ export class Upgrader implements UpgraderInterface {
   private readonly metrics: {
     dials?: CounterGroup<'inbound' | 'outbound'>
     errors?: CounterGroup<'inbound' | 'outbound'>
+    inboundErrors?: CounterGroup
+    outboundErrors?: CounterGroup
   }
 
   constructor (components: UpgraderComponents, init: UpgraderInit) {
@@ -155,7 +157,9 @@ export class Upgrader implements UpgraderInterface {
     this.events = components.events
     this.metrics = {
       dials: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_total'),
-      errors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dial_errors_total')
+      errors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dial_errors_total'),
+      inboundErrors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_inbound_errors_total'),
+      outboundErrors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_outbound_errors_total')
     }
   }
 
@@ -213,9 +217,12 @@ export class Upgrader implements UpgraderInterface {
         ...opts,
         signal
       })
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors?.increment({
         inbound: true
+      })
+      this.metrics.inboundErrors?.increment({
+        [err.name ?? 'Error']: true
       })
 
       throw err
@@ -253,9 +260,12 @@ export class Upgrader implements UpgraderInterface {
       }
 
       return await this._performUpgrade(maConn, direction, opts)
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors?.increment({
         outbound: true
+      })
+      this.metrics.outboundErrors?.increment({
+        [err.name ?? 'Error']: true
       })
 
       throw err
