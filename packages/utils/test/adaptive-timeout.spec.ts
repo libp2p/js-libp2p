@@ -107,4 +107,41 @@ describe('adaptive-timeout', () => {
 
     adaptiveTimeout.cleanUp(signal)
   })
+
+  it('should have a minimum timeout', () => {
+    const adaptiveTimeout = new AdaptiveTimeout({
+      minTimeout: 10_000
+    })
+
+    const signal1 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal1)
+
+    const signal2 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal2)
+
+    const signal3 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal3)
+
+    expect(signal3).to.have.property('timeout', 10_000)
+  })
+
+  it('should have a maximum timeout', () => {
+    const adaptiveTimeout = new AdaptiveTimeout({
+      maxTimeout: 10_000
+    })
+
+    const signal1 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal1)
+
+    const signal2 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal2)
+
+    const signal3 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal3)
+
+    expect(signal3).to.have.property('timeout', 10_000)
+  })
 })
