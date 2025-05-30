@@ -96,6 +96,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     routingTableKadBucketMaxOccupancy: Metric
     kadBucketEvents: CounterGroup<'ping_old_contact' | 'ping_old_contact_error' | 'ping_new_contact' | 'ping_new_contact_error' | 'peer_added' | 'peer_removed'>
   }
+
   private shutdownController: AbortController
 
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
