@@ -46,6 +46,7 @@ export interface OnMoveCallback {
 }
 
 export interface KBucketComponents {
+  peerId: PeerId
   metrics?: Metrics
 }
 
@@ -134,6 +135,7 @@ export function isLeafBucket (obj: any): obj is LeafBucket {
  * configurable prefix length, bucket split threshold and size.
  */
 export class KBucket {
+  private readonly peerId: PeerId
   public root: Bucket
   public localPeer?: Peer
   private readonly prefixLength: number
@@ -149,6 +151,7 @@ export class KBucket {
   private readonly addingPeerMap: PeerMap<Promise<void>>
 
   constructor (components: KBucketComponents, options: KBucketOptions) {
+    this.peerId = components.peerId
     this.prefixLength = options.prefixLength ?? PREFIX_LENGTH
     this.kBucketSize = options.kBucketSize ?? KBUCKET_SIZE
     this.splitThreshold = options.splitThreshold ?? this.kBucketSize
@@ -170,8 +173,18 @@ export class KBucket {
     }
   }
 
+  async start (): Promise<void> {
+    await this.addSelfPeer(this.peerId)
+  }
+
   stop (): void {
     this.addingPeerMap.clear()
+
+    this.root = {
+      prefix: '',
+      depth: 0,
+      peers: []
+    }
   }
 
   async addSelfPeer (peerId: PeerId, options?: AbortOptions): Promise<void> {
