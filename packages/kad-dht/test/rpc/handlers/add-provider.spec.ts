@@ -6,7 +6,6 @@ import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import createMortice from 'mortice'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MessageType } from '../../../src/message/dht.js'
 import { Providers } from '../../../src/providers.js'
@@ -47,8 +46,7 @@ describe('rpc - handlers - AddProvider', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     handler = new AddProviderHandler({
