@@ -70,7 +70,7 @@ function createPeer (peerId: PeerId, peer: Partial<Peer> = {}): Peer {
     id: peerId,
     addresses: [{
       isCertified: false,
-      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.random() * (maxPort - minPort) + minPort}`)
+      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.round(Math.random() * (maxPort - minPort) + minPort)}`)
     }],
     tags: new Map(),
     metadata: new Map(),

@@ -549,6 +549,24 @@ describe('Routing Table', () => {
     }
   })
 
+  it('should remove peers on stop', async function () {
+    this.timeout(20 * 1000)
+
+    const ids = await createPeerIdsWithPrivateKey(20)
+
+    await Promise.all(
+      Array.from({ length: 1000 }).map(async () => { await table.add(ids[random(ids.length - 1)].peerId) })
+    )
+
+    expect(table.kb.root).to.have.property('peers').that.has.lengthOf(20)
+
+    await table.stop()
+
+    expect(table.kb.root).to.have.property('depth', 0)
+    expect(table.kb.root).to.have.property('prefix', '')
+    expect(table.kb.root).to.have.property('peers').that.is.empty()
+  })
+
   describe('max size', () => {
     it('should constrain size to 10', async () => {
       const prefixLength = 8

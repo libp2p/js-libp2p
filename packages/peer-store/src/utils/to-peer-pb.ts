@@ -252,8 +252,13 @@ function mapTag (key: string, tag: any): Tag {
     expiry = BigInt(Date.now() + Number(tag.ttl))
   }
 
-  return {
-    value: tag.value ?? 0,
-    expiry
+  const output: Tag = {
+    value: tag.value ?? 0
   }
+
+  if (expiry != null) {
+    output.expiry = expiry
+  }
+
+  return output
 }

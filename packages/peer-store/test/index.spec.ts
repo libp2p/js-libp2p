@@ -558,4 +558,34 @@ describe('PersistentPeerStore', () => {
       ]
     })
   })
+
+  it('should allow concurrent merging', async () => {
+    const peerStore = persistentPeerStore(components)
+
+    expect(peerStore).to.have.nested.property('store.locks')
+      .that.has.property('size', 0)
+
+    const p1 = peerStore.merge(otherPeerId, {
+      multiaddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/1234')
+      ]
+    })
+
+    const p2 = peerStore.merge(otherPeerId, {
+      multiaddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/4567')
+      ]
+    })
+
+    expect(peerStore).to.have.nested.property('store.locks')
+      .that.has.property('size', 1)
+
+    await Promise.all([p1, p2])
+
+    const peer = await peerStore.get(otherPeerId)
+
+    expect(peer.addresses).to.have.lengthOf(2)
+    expect(peerStore).to.have.nested.property('store.locks')
+      .that.has.property('size', 0)
+  })
 })

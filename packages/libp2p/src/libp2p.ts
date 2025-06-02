@@ -86,15 +86,15 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       dns: init.dns
     })
 
-    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
-      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
-      ...init.peerStore
-    }))
-
     // Create Metrics
     if (init.metrics != null) {
       this.metrics = this.configureComponent('metrics', init.metrics(this.components))
     }
+
+    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
+      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
+      ...init.peerStore
+    }))
 
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer

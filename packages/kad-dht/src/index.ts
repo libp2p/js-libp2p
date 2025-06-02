@@ -693,6 +693,14 @@ export interface KadDHTInit {
    * @default 10_000
    */
   onPeerConnectTimeout?: number
+
+  /**
+   * When acting as a DHT server, all incoming RPC requests must complete within
+   * this timeout in ms otherwise the stream will be closed.
+   *
+   * @default 10_000
+   */
+  incomingMessageTimeout?: number
 }
 
 export interface KadDHTComponents {

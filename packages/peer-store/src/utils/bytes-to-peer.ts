@@ -1,22 +1,20 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
-import { base58btc } from 'multiformats/bases/base58'
-import * as Digest from 'multiformats/hashes/digest'
 import { Peer as PeerPB } from '../pb/peer.js'
 import type { PeerId, Peer, Tag } from '@libp2p/interface'
+import type { Digest } from 'multiformats/hashes/digest'
 
 function populatePublicKey (peerId: PeerId, protobuf: PeerPB): PeerId {
   if (peerId.publicKey != null || protobuf.publicKey == null) {
     return peerId
   }
 
-  let digest: any
+  let digest: Digest<18, number> | undefined
 
   if (peerId.type === 'RSA') {
     // avoid hashing public key
-    const multihash = base58btc.decode(`z${peerId}`)
-    digest = Digest.decode(multihash)
+    digest = peerId.toMultihash()
   }
 
   const publicKey = publicKeyFromProtobuf(protobuf.publicKey, digest)
