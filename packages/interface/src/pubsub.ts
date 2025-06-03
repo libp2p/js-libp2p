@@ -1,8 +1,8 @@
 import type { Stream } from './connection.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { PublicKey } from './keys.js'
 import type { PeerId } from './peer-id.js'
 import type { Pushable } from 'it-pushable'
+import type { TypedEventTarget } from 'main-event'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**

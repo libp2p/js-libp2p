@@ -16,7 +16,6 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection.js'
 import type { ContentRouting } from './content-routing.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { Metrics } from './metrics.js'
 import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.js'
@@ -28,6 +27,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
@@ -870,6 +870,5 @@ export * from './stream-muxer.js'
 export * from './topology.js'
 export * from './transport.js'
 export * from './errors.js'
-export * from './event-target.js'
-export * from './events.js'
+export * from 'main-event'
 export * from './startable.js'
