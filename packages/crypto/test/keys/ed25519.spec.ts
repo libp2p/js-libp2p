@@ -16,6 +16,7 @@ describe('ed25519', function () {
 
   before(async () => {
     key = await generateKeyPair('Ed25519')
+
     if (key.type !== 'Ed25519') {
       throw new Error('Key was incorrect type')
     }
