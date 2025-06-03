@@ -57,7 +57,7 @@ describe('ed25519', function () {
   it('signs', async () => {
     const text = randomBytes(512)
     const sig = await key.sign(text)
-    const res = key.publicKey.verify(text, sig)
+    const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
   })
 
@@ -68,12 +68,12 @@ describe('ed25519', function () {
     )
     const sig = await key.sign(text)
 
-    expect(key.sign(text.subarray()))
+    expect(await key.sign(text.subarray()))
       .to.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    expect(key.publicKey.verify(text, sig))
+    expect(await key.publicKey.verify(text, sig))
       .to.be.true('did not verify message as list')
-    expect(key.publicKey.verify(text.subarray(), sig))
+    expect(await key.publicKey.verify(text.subarray(), sig))
       .to.be.true('did not verify message as single buffer')
   })
 
@@ -143,7 +143,7 @@ describe('ed25519', function () {
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = key.publicKey.verify(data, sig)
+    const valid = await key.publicKey.verify(data, sig)
     expect(valid).to.be.true()
   })
 
@@ -159,7 +159,7 @@ describe('ed25519', function () {
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = key.publicKey.verify(uint8ArrayFromString('hello'), sig)
+    const valid = await key.publicKey.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.be.false()
   })
 
