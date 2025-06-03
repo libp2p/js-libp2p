@@ -56,7 +56,7 @@
     "@multiformats/multiaddr": "^12.4.0",
     "interface-datastore": "^8.3.1",
     "it-all": "^3.0.8",
-    "mortice": "^3.0.6",
+    "mortice": "^3.2.1",
     "multiformats": "^13.3.6",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
