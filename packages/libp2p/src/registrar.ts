@@ -2,7 +2,7 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { mergeOptions } from '@libp2p/utils/merge-options'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 import type { TypedEventTarget } from 'main-event'
@@ -26,10 +26,12 @@ export class Registrar implements RegistrarInterface {
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
+  private readonly middleware: Map<string, StreamMiddleware[]>
 
   constructor (components: RegistrarComponents) {
     this.components = components
     this.log = components.logger.forComponent('libp2p:registrar')
+    this.middleware = new Map()
     this.topologies = new Map()
     components.metrics?.registerMetricGroup('libp2p_registrar_topologies', {
       calculate: () => {
@@ -163,6 +165,18 @@ export class Registrar implements RegistrarInterface {
         }
       }
     }
+  }
+
+  use (protocol: string, middleware: StreamMiddleware[]): void {
+    this.middleware.set(protocol, middleware)
+  }
+
+  unuse (protocol: string): void {
+    this.middleware.delete(protocol)
+  }
+
+  getMiddleware (protocol: string): StreamMiddleware[] {
+    return this.middleware.get(protocol) ?? []
   }
 
   /**
