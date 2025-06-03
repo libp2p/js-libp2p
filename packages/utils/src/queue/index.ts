@@ -1,5 +1,6 @@
-import { AbortError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
+import { TypedEventEmitter } from 'main-event'
 import { raceEvent } from 'race-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'

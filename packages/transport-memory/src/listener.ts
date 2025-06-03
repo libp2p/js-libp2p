@@ -1,5 +1,6 @@
-import { ListenError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { ListenError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { nanoid } from 'nanoid'
 import { MemoryConnection, connections } from './connections.js'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'

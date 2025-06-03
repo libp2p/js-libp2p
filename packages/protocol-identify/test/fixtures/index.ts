@@ -4,8 +4,9 @@ import { pushable } from 'it-pushable'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Identify as IdentifyMessage } from '../../src/pb/message.js'
-import type { ComponentLogger, Libp2pEvents, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, Stream, PrivateKey } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, PeerStore, Connection, Stream, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 export interface StubbedIdentifyComponents {

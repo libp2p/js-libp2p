@@ -1,14 +1,16 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start } from '@libp2p/interface'
+import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { KEEP_ALIVE_TAG } from '../../src/constants.js'
 import { ReservationStore } from '../../src/transport/reservation-store.js'
-import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PeerStore, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 export interface StubbedReservationStoreComponents {

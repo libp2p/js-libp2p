@@ -126,6 +126,7 @@
     "it-stream-types": "^2.0.2",
     "it-to-buffer": "^4.0.9",
     "libp2p": "^2.8.8",
+    "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "p-limit": "^6.2.0",

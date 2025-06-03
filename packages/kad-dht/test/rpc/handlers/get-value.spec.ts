@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MessageType } from '../../../src/message/dht.js'

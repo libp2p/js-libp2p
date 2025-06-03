@@ -1,6 +1,6 @@
 import { randomBytes } from '@libp2p/crypto'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'

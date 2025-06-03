@@ -1,6 +1,7 @@
 import { randomBytes } from '@libp2p/crypto'
-import { ProtocolError, TimeoutError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { ProtocolError, TimeoutError, serviceCapabilities } from '@libp2p/interface'
 import { byteStream } from 'it-byte-stream'
+import { setMaxListeners } from 'main-event'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'

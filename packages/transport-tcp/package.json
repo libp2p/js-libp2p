@@ -58,6 +58,7 @@
     "@multiformats/multiaddr": "^12.4.0",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "@types/sinon": "^17.0.4",
+    "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",

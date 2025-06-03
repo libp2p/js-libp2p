@@ -3,12 +3,12 @@
 
 import fs from 'node:fs'
 import http from 'node:http'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
+import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'

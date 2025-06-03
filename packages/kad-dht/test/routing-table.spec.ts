@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, stop, start } from '@libp2p/interface'
+import { stop, start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
@@ -10,6 +10,7 @@ import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import drain from 'it-drain'
 import random from 'lodash.random'
+import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'

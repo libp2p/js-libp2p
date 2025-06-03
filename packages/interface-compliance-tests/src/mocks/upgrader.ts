@@ -1,8 +1,9 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { mockConnection } from './connection.js'
-import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions, ClearableSignal, ConnectionEncrypter, StreamMuxerFactory } from '@libp2p/interface'
+import type { Libp2pEvents, Connection, MultiaddrConnection, Upgrader, UpgraderOptions, ClearableSignal, ConnectionEncrypter, StreamMuxerFactory } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface MockUpgraderInit {
   registrar?: Registrar

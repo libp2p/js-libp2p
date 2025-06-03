@@ -32,10 +32,11 @@
  * ```
  */
 
-import { TypedEventEmitter, peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
+import { peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { P2P } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter } from 'main-event'
 import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
