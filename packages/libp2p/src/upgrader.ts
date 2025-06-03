@@ -395,7 +395,7 @@ export class Upgrader implements UpgraderInterface {
 
     let muxer: StreamMuxer | undefined
     let newStream: ((multicodecs: string[], options?: AbortOptions) => Promise<Stream>) | undefined
-    let connection: Connection // eslint-disable-line prefer-const
+    let connection: Connection
 
     if (muxerFactory != null) {
       // Create the muxer
@@ -488,7 +488,7 @@ export class Upgrader implements UpgraderInterface {
         }
 
         connection.log.trace('starting new stream for protocols %s', protocols)
-        const muxedStream = await muxer.newStream()
+        let muxedStream = await muxer.newStream()
         connection.log.trace('started new stream %s for protocols %s', muxedStream.id, protocols)
 
         try {
@@ -555,6 +555,23 @@ export class Upgrader implements UpgraderInterface {
           }
 
           this.components.metrics?.trackProtocolStream(muxedStream, connection)
+
+          const middleware = this.components.registrar.getMiddleware(protocol)
+
+          middleware.push((stream, connection, next) => {
+            next(stream, connection)
+          })
+
+          let i = 0
+
+          while (i < middleware.length) {
+            // eslint-disable-next-line no-loop-func
+            middleware[i](muxedStream, connection, (s, c) => {
+              muxedStream = s
+              connection = c
+              i++
+            })
+          }
 
           return muxedStream
         } catch (err: any) {
@@ -652,14 +669,30 @@ export class Upgrader implements UpgraderInterface {
    * Routes incoming streams to the correct handler
    */
   _onStream (opts: OnStreamOptions): void {
-    const { connection, stream, protocol } = opts
+    let { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
     if (connection.limits != null && options.runOnLimitedConnection !== true) {
       throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
-    handler({ connection, stream })
+    const middleware = this.components.registrar.getMiddleware(protocol)
+
+    middleware.push((stream, connection, next) => {
+      handler({ connection, stream })
+      next(stream, connection)
+    })
+
+    let i = 0
+
+    while (i < middleware.length) {
+      // eslint-disable-next-line no-loop-func
+      middleware[i](stream, connection, (s, c) => {
+        stream = s
+        connection = c
+        i++
+      })
+    }
   }
 
   /**
