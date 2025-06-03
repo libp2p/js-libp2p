@@ -73,9 +73,9 @@ async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | U
   }
 
   const key = await crypto.get().subtle.importKey('jwk', jwk, { name: 'Ed25519' }, true, ['sign'])
+  const sig = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, msg instanceof Uint8Array ? msg : msg.subarray())
 
-  const buffer = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, msg instanceof Uint8Array ? msg : msg.subarray())
-  return new Uint8Array(buffer)
+  return new Uint8Array(sig, 0, sig.byteLength)
 }
 
 function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
