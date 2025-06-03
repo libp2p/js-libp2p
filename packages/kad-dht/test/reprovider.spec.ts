@@ -3,7 +3,6 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
-import createMortice from 'mortice'
 import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
@@ -45,22 +44,19 @@ describe('reprovider', () => {
     contentRouting = stubInterface()
     contentRouting.provide.resolves([])
 
-    const lock = createMortice()
     const logPrefix = 'libp2p'
     const datastorePrefix = '/dht'
     const metricsPrefix = ''
 
     providers = new Providers(components, {
       logPrefix,
-      datastorePrefix,
-      lock
+      datastorePrefix
     })
 
     reprovider = new Reprovider(components, {
       logPrefix,
       datastorePrefix,
       metricsPrefix,
-      lock,
       contentRouting,
       threshold: 100,
       validity: 200,

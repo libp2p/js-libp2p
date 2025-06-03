@@ -1,6 +1,5 @@
 import { NotFoundError, TypedEventEmitter, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
 import drain from 'it-drain'
-import createMortice from 'mortice'
 import pDefer from 'p-defer'
 import { ALPHA, ON_PEER_CONNECT_TIMEOUT, PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -175,13 +174,10 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper
     this.onPeerConnectTimeout = init.onPeerConnectTimeout ?? ON_PEER_CONNECT_TIMEOUT
 
-    const providerLock = createMortice()
-
     this.providers = new Providers(components, {
       ...init.providers,
       logPrefix,
-      datastorePrefix,
-      lock: providerLock
+      datastorePrefix
     })
 
     this.validators = {
@@ -292,7 +288,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       metricsPrefix,
       datastorePrefix,
       contentRouting: this.contentRouting,
-      lock: providerLock,
       operationMetrics
     })
 
