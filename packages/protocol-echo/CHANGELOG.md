@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.24](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.23...echo-v2.1.24) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/interface-internal bumped from ^2.3.14 to ^2.3.15
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
 ## [2.1.23](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.22...echo-v2.1.23) (2025-05-22)
 
 

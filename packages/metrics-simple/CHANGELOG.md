@@ -5,6 +5,27 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [1.3.13](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.3.12...simple-metrics-v1.3.13) (2025-06-03)
+
+
+### Bug Fixes
+
+* clear references to metrics on stop ([#3154](https://github.com/libp2p/js-libp2p/issues/3154)) ([01328a0](https://github.com/libp2p/js-libp2p/commit/01328a0b4eab0a66d5805d9ad4b6f25dbbdb4b03))
+* metrics should persist beyond node restarts ([#3159](https://github.com/libp2p/js-libp2p/issues/3159)) ([d91ae66](https://github.com/libp2p/js-libp2p/commit/d91ae66c6c8db5ae0a9cb9d388d67418fe318736))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
 ## [1.3.12](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.3.11...simple-metrics-v1.3.12) (2025-05-22)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.7](https://github.com/libp2p/js-libp2p/compare/record-v4.0.6...record-v4.0.7) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
 ## [4.0.6](https://github.com/libp2p/js-libp2p/compare/record-v4.0.5...record-v4.0.6) (2025-05-20)
 
 

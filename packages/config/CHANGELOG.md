@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.10](https://github.com/libp2p/js-libp2p/compare/config-v1.1.9...config-v1.1.10) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/keychain bumped from ^5.2.4 to ^5.2.5
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
 ## [1.1.9](https://github.com/libp2p/js-libp2p/compare/config-v1.1.8...config-v1.1.9) (2025-05-22)
 
 

@@ -68,6 +68,34 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.2.3](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.2...peer-store-v11.2.3) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+* deduplicate typed event target ([#3170](https://github.com/libp2p/js-libp2p/issues/3170)) ([cc7b34c](https://github.com/libp2p/js-libp2p/commit/cc7b34c0fe3ac5745fd082ae0198b8742371a412))
+* finalize peerstore lock after use ([#3168](https://github.com/libp2p/js-libp2p/issues/3168)) ([b8600fc](https://github.com/libp2p/js-libp2p/commit/b8600fce83ec3ee97ac47e9f1d8032bb545a67d2))
+* use a per-peer lock ([#3162](https://github.com/libp2p/js-libp2p/issues/3162)) ([2a7425c](https://github.com/libp2p/js-libp2p/commit/2a7425cdbcbbc18364c8385256ed457a46dafa4a))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-record bumped from ^8.0.30 to ^8.0.31
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
 ## [11.2.2](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.1...peer-store-v11.2.2) (2025-05-22)
 
 

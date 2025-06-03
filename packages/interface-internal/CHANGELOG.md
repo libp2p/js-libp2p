@@ -32,6 +32,26 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.15](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.14...interface-internal-v2.3.15) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+
 ## [2.3.14](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.13...interface-internal-v2.3.14) (2025-05-22)
 
 
