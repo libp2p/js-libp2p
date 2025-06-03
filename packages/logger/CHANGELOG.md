@@ -21,6 +21,22 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.1.19](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.18...logger-v5.1.19) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+
 ## [5.1.18](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.17...logger-v5.1.18) (2025-05-22)
 
 

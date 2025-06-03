@@ -72,6 +72,25 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.26](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.25...plaintext-v2.0.26) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
 ## [2.0.25](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.24...plaintext-v2.0.25) (2025-05-22)
 
 
