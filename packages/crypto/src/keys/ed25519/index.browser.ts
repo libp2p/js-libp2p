@@ -11,6 +11,8 @@ const KEYS_BYTE_LENGTH = 32
 export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
+// memoize support result to skip additional awaits every time we use an ed key
+let ed25519Supported: boolean | undefined
 const webCryptoEd25519SupportedPromise = (async () => {
   try {
     await crypto.get().subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify'])
@@ -83,9 +85,14 @@ function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayL
 }
 
 export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
-  if (await webCryptoEd25519SupportedPromise) {
+  if (ed25519Supported == null) {
+    ed25519Supported = await webCryptoEd25519SupportedPromise
+  }
+
+  if (ed25519Supported) {
     return hashAndSignWebCrypto(privateKey, msg)
   }
+
   return hashAndSignNoble(privateKey, msg)
 }
 
@@ -104,9 +111,14 @@ function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8A
 }
 
 export async function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
-  if (await webCryptoEd25519SupportedPromise) {
+  if (ed25519Supported == null) {
+    ed25519Supported = await webCryptoEd25519SupportedPromise
+  }
+
+  if (ed25519Supported) {
     return hashAndVerifyWebCrypto(publicKey, sig, msg)
   }
+
   return hashAndVerifyNoble(publicKey, sig, msg)
 }
 

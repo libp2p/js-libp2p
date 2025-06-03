@@ -2,6 +2,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { isPromise } from '../../util.ts'
 import { publicKeyToProtobuf } from '../index.js'
 import { ensureEd25519Key } from './utils.js'
 import * as crypto from './index.js'
@@ -39,8 +40,15 @@ export class Ed25519PublicKey implements Ed25519PublicKeyInterface {
 
   verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean> {
     options?.signal?.throwIfAborted()
-    const result = await crypto.hashAndVerify(this.raw, sig, data)
-    options?.signal?.throwIfAborted()
+    const result = crypto.hashAndVerify(this.raw, sig, data)
+
+    if (isPromise<boolean>(result)) {
+      return result.then(res => {
+        options?.signal?.throwIfAborted()
+        return res
+      })
+    }
+
     return result
   }
 }
@@ -68,6 +76,14 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
   sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
     options?.signal?.throwIfAborted()
     const sig = crypto.hashAndSign(this.raw, message)
+
+    if (isPromise<Uint8Array>(sig)) {
+      return sig.then(res => {
+        options?.signal?.throwIfAborted()
+        return res
+      })
+    }
+
     options?.signal?.throwIfAborted()
     return sig
   }
