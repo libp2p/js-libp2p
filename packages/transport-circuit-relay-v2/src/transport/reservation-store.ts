@@ -1,19 +1,21 @@
-import { ListenError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { ListenError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { nanoid } from 'nanoid'
 import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TIMEOUT, DEFAULT_RESERVATION_CONCURRENCY, KEEP_ALIVE_TAG, RELAY_V2_HOP_CODEC } from '../constants.js'
 import { DoubleRelayError, HadEnoughRelaysError, RelayQueueFullError } from '../errors.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
 import type { Reservation } from '../pb/index.js'
-import type { AbortOptions, TypedEventTarget, Libp2pEvents, ComponentLogger, Logger, PeerId, PeerStore, Startable, Metrics, Peer, Connection } from '@libp2p/interface'
+import type { AbortOptions, Libp2pEvents, ComponentLogger, Logger, PeerId, PeerStore, Startable, Metrics, Peer, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
+import type { TypedEventTarget } from 'main-event'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
 const REFRESH_WINDOW = (60 * 1000) * 10

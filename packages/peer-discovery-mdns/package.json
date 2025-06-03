@@ -50,6 +50,7 @@
     "@multiformats/multiaddr": "^12.4.0",
     "@types/multicast-dns": "^7.2.4",
     "dns-packet": "^5.6.1",
+    "main-event": "^1.0.1",
     "multicast-dns": "^7.2.5"
   },
   "devDependencies": {

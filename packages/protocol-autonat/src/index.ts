@@ -31,8 +31,9 @@
  */
 
 import { AutoNATService } from './autonat.js'
-import type { ComponentLogger, Libp2pEvents, Metrics, PeerId, PeerStore, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Metrics, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface AutoNATServiceInit {
   /**

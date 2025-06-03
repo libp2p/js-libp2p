@@ -15,7 +15,7 @@ import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
 import type { GetValueHandlerComponents } from './handlers/get-value.js'
 import type { PutValueHandlerComponents } from './handlers/put-value.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData } from '@libp2p/interface'
+import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData, MetricGroup } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -43,6 +43,7 @@ export class RPC {
   private readonly metrics: {
     operations?: CounterGroup
     errors?: CounterGroup
+    rpcTime?: MetricGroup
   }
 
   private readonly incomingMessageTimeout: number
@@ -50,7 +51,8 @@ export class RPC {
   constructor (components: RPCComponents, init: RPCInit) {
     this.metrics = {
       operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_requests_total`),
-      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`)
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`),
+      rpcTime: components.metrics?.registerMetricGroup(`${init.metricsPrefix}_inbound_rpc_time_seconds`, { label: 'operation' })
     }
 
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc`)
@@ -114,15 +116,30 @@ export class RPC {
             signal
           })
 
-          // handle the message
-          this.log('incoming %s from %p', message.type, connection.remotePeer)
-          const res = await this.handleMessage(connection.remotePeer, message)
+          const stopSuccessTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+          const stopErrorTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+          let errored = false
 
-          // Not all handlers will return a response
-          if (res != null) {
-            await messages.write(res, {
-              signal
-            })
+          try {
+            // handle the message
+            this.log('incoming %s from %p', message.type, connection.remotePeer)
+            const res = await this.handleMessage(connection.remotePeer, message)
+
+            // Not all handlers will return a response
+            if (res != null) {
+              await messages.write(res, {
+                signal
+              })
+            }
+          } catch (err) {
+            errored = true
+            stopErrorTimer?.()
+
+            throw err
+          } finally {
+            if (!errored) {
+              stopSuccessTimer?.()
+            }
           }
 
           // we have received a message so reset the timeout controller to

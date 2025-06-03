@@ -1,11 +1,12 @@
 /* eslint-disable max-depth */
-import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
+import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { PriorityQueue } from '@libp2p/utils/priority-queue'
 import { resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'

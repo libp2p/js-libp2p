@@ -4,7 +4,6 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
-import createMortice from 'mortice'
 import { CID } from 'multiformats/cid'
 import { Providers } from '../src/providers.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
@@ -24,8 +23,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -46,8 +44,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -72,8 +69,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
@@ -101,8 +97,7 @@ describe('providers', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     const cid = CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')

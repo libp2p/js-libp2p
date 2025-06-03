@@ -51,7 +51,8 @@
     "@libp2p/interface-internal": "^2.3.14",
     "@libp2p/peer-id": "^5.1.5",
     "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.4.0"
+    "@multiformats/multiaddr": "^12.4.0",
+    "main-event": "^1.0.1"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^6.4.8",

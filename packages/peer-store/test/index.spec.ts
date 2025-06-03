@@ -2,7 +2,6 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -10,9 +9,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import { persistentPeerStore } from '../src/index.js'
 import type { PersistentPeerStoreComponents } from '../src/index.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
+import type { TypedEventTarget } from 'main-event'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 

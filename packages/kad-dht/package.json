@@ -68,7 +68,7 @@
     "it-protobuf-stream": "^2.0.2",
     "it-pushable": "^3.2.3",
     "it-take": "^3.0.8",
-    "mortice": "^3.0.6",
+    "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",

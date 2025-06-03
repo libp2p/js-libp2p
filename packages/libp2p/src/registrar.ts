@@ -2,9 +2,10 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { mergeOptions } from '@libp2p/utils/merge-options'
 import { trackedMap } from '@libp2p/utils/tracked-map'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
+import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64

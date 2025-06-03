@@ -1,9 +1,9 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
   CIRCUIT_PROTO_CODE,

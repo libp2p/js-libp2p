@@ -105,6 +105,7 @@ export class PersistentStore {
     lock.refs--
 
     if (lock.refs === 0) {
+      lock.lock.finalize()
       this.locks.delete(peerId)
     }
   }

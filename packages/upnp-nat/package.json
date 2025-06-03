@@ -54,6 +54,7 @@
     "@libp2p/utils": "^6.6.5",
     "@multiformats/multiaddr": "^12.4.0",
     "@multiformats/multiaddr-matcher": "^1.7.2",
+    "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "race-signal": "^1.1.3"
   },

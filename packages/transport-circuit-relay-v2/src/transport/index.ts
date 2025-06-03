@@ -1,8 +1,9 @@
 import { CircuitRelayTransport } from './transport.js'
 import type { RelayDiscoveryComponents } from './discovery.js'
 import type { ReservationStoreInit } from './reservation-store.js'
-import type { Transport, Upgrader, Libp2pEvents, ConnectionGater, TypedEventTarget, PeerId, TopologyFilter } from '@libp2p/interface'
+import type { Transport, Upgrader, Libp2pEvents, ConnectionGater, PeerId, TopologyFilter } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface CircuitRelayTransportComponents extends RelayDiscoveryComponents {
   peerId: PeerId

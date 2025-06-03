@@ -1,4 +1,5 @@
-import { connectionSymbol, setMaxListeners, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError } from '@libp2p/interface'
+import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError } from '@libp2p/interface'
+import { setMaxListeners } from 'main-event'
 import type { AbortOptions, Logger, ComponentLogger, Direction, Connection, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

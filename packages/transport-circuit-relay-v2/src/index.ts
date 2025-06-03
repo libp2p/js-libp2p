@@ -39,8 +39,8 @@
  * ```
  */
 
+import { TypedEventEmitter } from 'main-event'
 import type { Limit } from './pb/index.js'
-import type { TypedEventEmitter } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { RetimeableAbortSignal } from 'retimeable-signal'

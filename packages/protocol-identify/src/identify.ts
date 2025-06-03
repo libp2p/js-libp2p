@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
@@ -7,6 +7,7 @@ import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION

@@ -1,7 +1,7 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
+import { setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'

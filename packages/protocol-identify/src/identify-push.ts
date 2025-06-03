@@ -1,9 +1,10 @@
-import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {

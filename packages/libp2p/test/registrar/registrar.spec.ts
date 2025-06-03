@@ -1,15 +1,16 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { Registrar } from '../../src/registrar.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 const protocol = '/test/1.0.0'

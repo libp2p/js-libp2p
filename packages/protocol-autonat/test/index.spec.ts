@@ -2,7 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -12,6 +12,7 @@ import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
+import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
