@@ -10,9 +10,10 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore } from './store.js'
 import type { PeerUpdate } from './store.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
 
 export interface PersistentPeerStoreComponents {
   peerId: PeerId

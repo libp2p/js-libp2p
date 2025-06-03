@@ -7,9 +7,10 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export const defaultValues = {
   protocolPrefix: 'ipfs',

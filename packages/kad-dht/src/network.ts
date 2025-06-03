@@ -1,7 +1,8 @@
-import { InvalidParametersError, TypedEventEmitter } from '@libp2p/interface'
+import { InvalidParametersError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import { Message } from './message/dht.js'
 import { fromPbPeerInfo } from './message/utils.js'
 import {

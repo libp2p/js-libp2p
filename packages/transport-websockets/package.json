@@ -74,6 +74,7 @@
     "@multiformats/multiaddr-to-uri": "^11.0.0",
     "@types/ws": "^8.18.1",
     "it-ws": "^6.1.5",
+    "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",

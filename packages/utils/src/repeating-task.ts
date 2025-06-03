@@ -1,5 +1,5 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import type { AbortOptions } from '@libp2p/interface'
 
 export interface RepeatingTask {

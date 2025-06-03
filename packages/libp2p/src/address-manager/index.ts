@@ -10,10 +10,11 @@ import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
 import { TransportAddresses } from './transport-addresses.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Metrics } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 const ONE_MINUTE = 60_000
 

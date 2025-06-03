@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, start } from '@libp2p/interface'
+import { start } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
@@ -10,6 +10,7 @@ import all from 'it-all'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'

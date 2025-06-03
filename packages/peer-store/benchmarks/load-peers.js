@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import Benchmark from 'benchmark'
 import { MemoryDatastore } from 'datastore-core'
+import { TypedEventEmitter } from 'main-event'
 import { persistentPeerStore } from '../dist/src/index.js'
 
 const privateKey = await generateKeyPair('Ed25519')

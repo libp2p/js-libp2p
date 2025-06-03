@@ -1,5 +1,6 @@
-import { ListenError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { ListenError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { DEFAULT_RESERVATION_COMPLETION_TIMEOUT } from '../constants.js'
 import { CircuitListen, CircuitSearch } from '../utils.js'
 import type { RelayReservation, ReservationStore } from './reservation-store.js'

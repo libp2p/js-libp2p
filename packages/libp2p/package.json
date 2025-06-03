@@ -98,6 +98,7 @@
     "it-byte-stream": "^2.0.2",
     "it-merge": "^3.0.11",
     "it-parallel": "^3.0.11",
+    "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
     "p-defer": "^4.0.1",
     "p-retry": "^6.2.1",

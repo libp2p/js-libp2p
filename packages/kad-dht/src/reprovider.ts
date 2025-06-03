@@ -1,7 +1,7 @@
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { Queue } from '@libp2p/utils/queue'
 import drain from 'it-drain'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD, REPROVIDE_TIMEOUT } from './constants.js'
 import { parseProviderKey, readProviderTime, timeOperationMethod } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'

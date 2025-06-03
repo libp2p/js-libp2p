@@ -1,10 +1,11 @@
 import { serviceCapabilities, serviceDependencies, isStartable } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { MissingServiceError, UnmetServiceDependenciesError } from './errors.js'
-import type { Startable, Libp2pEvents, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionGater, ContentRouting, TypedEventTarget, Metrics, PeerId, PeerRouting, PeerStore, PrivateKey, Upgrader } from '@libp2p/interface'
+import type { Startable, Libp2pEvents, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionGater, ContentRouting, Metrics, PeerId, PeerRouting, PeerStore, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
 
 export interface Components extends Record<string, any>, Startable {
   peerId: PeerId

@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { finalPeerEvent } from '../src/query/events.js'
