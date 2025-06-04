@@ -1,16 +1,16 @@
-import { webtransportBiDiStreamToStream } from './stream.js';
-import { inertDuplex } from './utils/inert-duplex.js';
-import type WebTransport from './webtransport.js';
+import { webtransportBiDiStreamToStream } from './stream.js'
+import { inertDuplex } from './utils/inert-duplex.js'
+import type WebTransport from './webtransport.js'
 import type {
   ComponentLogger,
   Stream,
   StreamMuxer,
   StreamMuxerFactory,
   StreamMuxerInit,
-} from '@libp2p/interface';
+} from '@libp2p/interface'
 
 export interface WebTransportMuxerInit {
-  maxInboundStreams: number;
+  maxInboundStreams: number
 }
 
 export function webtransportMuxer(
@@ -19,8 +19,8 @@ export function webtransportMuxer(
   logger: ComponentLogger,
   config: WebTransportMuxerInit
 ): StreamMuxerFactory {
-  let streamIDCounter = 0;
-  const log = logger.forComponent('libp2p:webtransport:muxer');
+  let streamIDCounter = 0
+  const log = logger.forComponent('libp2p:webtransport:muxer')
 
   return {
     protocol: 'webtransport',
@@ -29,38 +29,38 @@ export function webtransportMuxer(
 
       if (typeof init === 'function') {
         // The api docs say that init may be a function
-        init = { onIncomingStream: init };
+        init = { onIncomingStream: init }
       }
 
-      const activeStreams: Stream[] = [];
+      const activeStreams: Stream[] = []
 
       Promise.resolve()
         .then(async () => {
           //! TODO unclear how to add backpressure here?
           while (true) {
-            const { done, value: wtStream } = await reader.read();
+            const { done, value: wtStream } = await reader.read()
 
             if (done) {
-              break;
+              break
             }
 
             if (activeStreams.length >= config.maxInboundStreams) {
               log(
                 `too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`
-              );
+              )
               // We've reached our limit, close this stream.
               wtStream.writable.close().catch((err: Error) => {
                 log.error(
                   'failed to close inbound stream that crossed our maxInboundStream limit - %e',
                   err.message
-                );
-              });
+                )
+              })
               wtStream.readable.cancel().catch((err: Error) => {
                 log.error(
                   'failed to close inbound stream that crossed our maxInboundStream limit - %e',
                   err.message
-                );
-              });
+                )
+              })
             } else {
               const stream = await webtransportBiDiStreamToStream(
                 wtStream,
@@ -69,23 +69,23 @@ export function webtransportMuxer(
                 activeStreams,
                 init?.onStreamEnd,
                 logger
-              );
-              activeStreams.push(stream);
-              init?.onIncomingStream?.(stream);
+              )
+              activeStreams.push(stream)
+              init?.onIncomingStream?.(stream)
             }
           }
         })
         .catch((err) => {
-          log.error('could not create a new stream - %e', err);
-        });
+          log.error('could not create a new stream - %e', err)
+        })
 
       const muxer: StreamMuxer = {
         protocol: 'webtransport',
         streams: activeStreams,
         newStream: async (name?: string): Promise<Stream> => {
-          log('new outgoing stream', name);
+          log('new outgoing stream', name)
 
-          const wtStream = await wt.createBidirectionalStream();
+          const wtStream = await wt.createBidirectionalStream()
           const stream = await webtransportBiDiStreamToStream(
             wtStream,
             String(streamIDCounter++),
@@ -93,22 +93,22 @@ export function webtransportMuxer(
             activeStreams,
             init?.onStreamEnd,
             logger
-          );
-          activeStreams.push(stream);
+          )
+          activeStreams.push(stream)
 
-          return stream;
+          return stream
         },
 
         /**
          * Close all tracked streams and stop the muxer
          */
         close: async () => {
-          log('closing webtransport muxer gracefully');
+          log('closing webtransport muxer gracefully')
 
           try {
-            wt.close();
+            wt.close()
           } catch (err: any) {
-            muxer.abort(err);
+            muxer.abort(err)
           }
         },
 
@@ -116,20 +116,20 @@ export function webtransportMuxer(
          * Abort all tracked streams and stop the muxer
          */
         abort: (err: Error) => {
-          log('closing webtransport muxer with err:', err);
+          log('closing webtransport muxer with err:', err)
 
           try {
-            wt.close();
+            wt.close()
           } catch (err: any) {
-            log.error('webtransport session threw error during close', err);
+            log.error('webtransport session threw error during close', err)
           }
         },
 
         // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
         ...inertDuplex(),
-      };
+      }
 
-      return muxer;
+      return muxer
     },
-  };
+  }
 }

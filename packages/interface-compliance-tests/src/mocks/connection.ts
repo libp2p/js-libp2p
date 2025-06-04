@@ -1,14 +1,14 @@
-import { ConnectionClosedError } from '@libp2p/interface';
-import { defaultLogger, logger } from '@libp2p/logger';
-import * as mss from '@libp2p/multistream-select';
-import { peerIdFromString } from '@libp2p/peer-id';
-import { closeSource } from '@libp2p/utils/close-source';
-import { duplexPair } from 'it-pair/duplex';
-import { pipe } from 'it-pipe';
-import { Uint8ArrayList } from 'uint8arraylist';
-import { mockMultiaddrConnection } from './multiaddr-connection.js';
-import { mockMuxer } from './muxer.js';
-import { mockRegistrar } from './registrar.js';
+import { ConnectionClosedError } from '@libp2p/interface'
+import { defaultLogger, logger } from '@libp2p/logger'
+import * as mss from '@libp2p/multistream-select'
+import { peerIdFromString } from '@libp2p/peer-id'
+import { closeSource } from '@libp2p/utils/close-source'
+import { duplexPair } from 'it-pair/duplex'
+import { pipe } from 'it-pipe'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { mockMultiaddrConnection } from './multiaddr-connection.js'
+import { mockMuxer } from './muxer.js'
+import { mockRegistrar } from './registrar.js'
 import type {
   AbortOptions,
   ComponentLogger,
@@ -24,63 +24,63 @@ import type {
   StreamMuxerFactory,
   NewStreamOptions,
   ConnectionLimits,
-} from '@libp2p/interface';
-import type { Registrar } from '@libp2p/interface-internal';
-import type { Multiaddr } from '@multiformats/multiaddr';
-import type { Duplex, Source } from 'it-stream-types';
+} from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Duplex, Source } from 'it-stream-types'
 
 export interface MockConnectionOptions {
-  direction?: Direction;
-  registrar?: Registrar;
-  muxerFactory?: StreamMuxerFactory;
-  logger?: ComponentLogger;
+  direction?: Direction
+  registrar?: Registrar
+  muxerFactory?: StreamMuxerFactory
+  logger?: ComponentLogger
 }
 
 interface MockConnectionInit {
-  remoteAddr: Multiaddr;
-  remotePeer: PeerId;
-  direction: Direction;
-  maConn: MultiaddrConnection;
-  muxer: StreamMuxer;
-  logger: ComponentLogger;
+  remoteAddr: Multiaddr
+  remotePeer: PeerId
+  direction: Direction
+  maConn: MultiaddrConnection
+  muxer: StreamMuxer
+  logger: ComponentLogger
 }
 
 class MockConnection implements Connection {
-  public id: string;
-  public remoteAddr: Multiaddr;
-  public remotePeer: PeerId;
-  public direction: Direction;
-  public timeline: ConnectionTimeline;
-  public multiplexer?: string;
-  public encryption?: string;
-  public status: ConnectionStatus;
-  public streams: Stream[];
-  public tags: string[];
-  public limits?: ConnectionLimits;
-  public log: Logger;
+  public id: string
+  public remoteAddr: Multiaddr
+  public remotePeer: PeerId
+  public direction: Direction
+  public timeline: ConnectionTimeline
+  public multiplexer?: string
+  public encryption?: string
+  public status: ConnectionStatus
+  public streams: Stream[]
+  public tags: string[]
+  public limits?: ConnectionLimits
+  public log: Logger
 
-  private readonly muxer: StreamMuxer;
-  private readonly maConn: MultiaddrConnection;
-  private readonly logger: ComponentLogger;
+  private readonly muxer: StreamMuxer
+  private readonly maConn: MultiaddrConnection
+  private readonly logger: ComponentLogger
 
   constructor(init: MockConnectionInit) {
-    const { remoteAddr, remotePeer, direction, maConn, muxer, logger } = init;
+    const { remoteAddr, remotePeer, direction, maConn, muxer, logger } = init
 
-    this.id = `mock-connection-${Math.random()}`;
-    this.remoteAddr = remoteAddr;
-    this.remotePeer = remotePeer;
-    this.direction = direction;
-    this.status = 'open';
-    this.direction = direction;
-    this.timeline = maConn.timeline;
-    this.multiplexer = 'test-multiplexer';
-    this.encryption = 'yes-yes-very-secure';
-    this.streams = [];
-    this.tags = [];
-    this.muxer = muxer;
-    this.maConn = maConn;
-    this.logger = logger;
-    this.log = logger.forComponent(this.id);
+    this.id = `mock-connection-${Math.random()}`
+    this.remoteAddr = remoteAddr
+    this.remotePeer = remotePeer
+    this.direction = direction
+    this.status = 'open'
+    this.direction = direction
+    this.timeline = maConn.timeline
+    this.multiplexer = 'test-multiplexer'
+    this.encryption = 'yes-yes-very-secure'
+    this.streams = []
+    this.tags = []
+    this.muxer = muxer
+    this.maConn = maConn
+    this.logger = logger
+    this.log = logger.forComponent(this.id)
   }
 
   async newStream(
@@ -88,54 +88,54 @@ class MockConnection implements Connection {
     options?: NewStreamOptions
   ): Promise<Stream> {
     if (!Array.isArray(protocols)) {
-      protocols = [protocols];
+      protocols = [protocols]
     }
 
     if (protocols.length === 0) {
-      throw new Error('protocols must have a length');
+      throw new Error('protocols must have a length')
     }
 
     if (this.status !== 'open') {
       throw new ConnectionClosedError(
         'connection must be open to create streams'
-      );
+      )
     }
 
-    options?.signal?.throwIfAborted();
+    options?.signal?.throwIfAborted()
 
-    const id = `${Math.random()}`;
-    const stream = await this.muxer.newStream(id);
+    const id = `${Math.random()}`
+    const stream = await this.muxer.newStream(id)
     const result = await mss.select(stream, protocols, {
       ...options,
       log: this.logger.forComponent('libp2p:mock-connection:stream:mss:select'),
-    });
+    })
 
-    stream.protocol = result.protocol;
-    stream.direction = 'outbound';
-    stream.sink = result.stream.sink;
-    stream.source = result.stream.source;
+    stream.protocol = result.protocol
+    stream.direction = 'outbound'
+    stream.sink = result.stream.sink
+    stream.source = result.stream.source
 
-    this.streams.push(stream);
+    this.streams.push(stream)
 
-    return stream;
+    return stream
   }
 
   async close(options?: AbortOptions): Promise<void> {
-    this.status = 'closing';
-    await Promise.all(this.streams.map(async (s) => s.close(options)));
-    await this.maConn.close();
-    this.status = 'closed';
-    this.timeline.close = Date.now();
+    this.status = 'closing'
+    await Promise.all(this.streams.map(async (s) => s.close(options)))
+    await this.maConn.close()
+    this.status = 'closed'
+    this.timeline.close = Date.now()
   }
 
   abort(err: Error): void {
-    this.status = 'closing';
+    this.status = 'closing'
     this.streams.forEach((s) => {
-      s.abort(err);
-    });
-    this.maConn.abort(err);
-    this.status = 'closed';
-    this.timeline.close = Date.now();
+      s.abort(err)
+    })
+    this.maConn.abort(err)
+    this.status = 'closed'
+    this.timeline.close = Date.now()
   }
 }
 
@@ -143,21 +143,21 @@ export function mockConnection(
   maConn: MultiaddrConnection,
   opts: MockConnectionOptions = {}
 ): Connection {
-  const remoteAddr = maConn.remoteAddr;
+  const remoteAddr = maConn.remoteAddr
   const remotePeerIdStr =
     remoteAddr.getPeerId() ??
-    '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq';
-  const logger = opts.logger ?? defaultLogger();
+    '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq'
+  const logger = opts.logger ?? defaultLogger()
 
   if (remotePeerIdStr == null) {
-    throw new Error('Remote multiaddr must contain a peer id');
+    throw new Error('Remote multiaddr must contain a peer id')
   }
 
-  const remotePeer = peerIdFromString(remotePeerIdStr);
-  const direction = opts.direction ?? 'inbound';
-  const registrar = opts.registrar ?? mockRegistrar();
-  const muxerFactory = opts.muxerFactory ?? mockMuxer();
-  const log = logger.forComponent('libp2p:mock-muxer');
+  const remotePeer = peerIdFromString(remotePeerIdStr)
+  const direction = opts.direction ?? 'inbound'
+  const registrar = opts.registrar ?? mockRegistrar()
+  const muxerFactory = opts.muxerFactory ?? mockMuxer()
+  const log = logger.forComponent('libp2p:mock-muxer')
 
   const muxer = muxerFactory.createStreamMuxer({
     direction,
@@ -168,31 +168,31 @@ export function mockConnection(
             log,
           })
           .then(({ stream, protocol }) => {
-            log('%s: incoming stream opened on %s', direction, protocol);
-            muxedStream.protocol = protocol;
-            muxedStream.sink = stream.sink;
-            muxedStream.source = stream.source;
+            log('%s: incoming stream opened on %s', direction, protocol)
+            muxedStream.protocol = protocol
+            muxedStream.sink = stream.sink
+            muxedStream.source = stream.source
 
-            connection.streams.push(muxedStream);
-            const { handler } = registrar.getHandler(protocol);
+            connection.streams.push(muxedStream)
+            const { handler } = registrar.getHandler(protocol)
 
-            handler({ connection, stream: muxedStream });
+            handler({ connection, stream: muxedStream })
           })
           .catch((err) => {
-            log.error('incoming stream handler error - %e', err);
-          });
+            log.error('incoming stream handler error - %e', err)
+          })
       } catch (err: any) {
-        log.error('error handling incoming stream - %e', err);
+        log.error('error handling incoming stream - %e', err)
       }
     },
     onStreamEnd: (muxedStream) => {
       connection.streams = connection.streams.filter(
         (stream) => stream.id !== muxedStream.id
-      );
+      )
     },
-  });
+  })
 
-  void pipe(maConn, muxer, maConn);
+  void pipe(maConn, muxer, maConn)
 
   const connection = new MockConnection({
     remoteAddr,
@@ -201,15 +201,15 @@ export function mockConnection(
     maConn,
     muxer,
     logger,
-  });
+  })
 
-  return connection;
+  return connection
 }
 
 export interface StreamInit {
-  direction?: Direction;
-  protocol?: string;
-  id?: string;
+  direction?: Direction
+  protocol?: string
+  id?: string
 }
 
 export function mockStream(
@@ -220,12 +220,12 @@ export function mockStream(
   >,
   init: StreamInit = {}
 ): Stream {
-  const id = `stream-${Date.now()}`;
-  const log = logger(`libp2p:mock-stream:${id}`);
+  const id = `stream-${Date.now()}`
+  const log = logger(`libp2p:mock-stream:${id}`)
 
   // ensure stream output is `Uint8ArrayList` as it would be from an actual
   // Stream where everything is length-varint encoded
-  const originalSource = stream.source;
+  const originalSource = stream.source
   stream.source = (async function* (): AsyncGenerator<
     Uint8ArrayList,
     any,
@@ -233,50 +233,50 @@ export function mockStream(
   > {
     for await (const buf of originalSource) {
       if (buf instanceof Uint8Array) {
-        yield new Uint8ArrayList(buf);
+        yield new Uint8ArrayList(buf)
       } else {
-        yield buf;
+        yield buf
       }
     }
-  })();
+  })()
 
-  const abortSinkController = new AbortController();
-  const originalSink = stream.sink.bind(stream);
+  const abortSinkController = new AbortController()
+  const originalSink = stream.sink.bind(stream)
   stream.sink = async (source) => {
     abortSinkController.signal.addEventListener('abort', () => {
-      closeSource(source, log);
-    });
+      closeSource(source, log)
+    })
 
-    await originalSink(source);
-  };
+    await originalSink(source)
+  }
 
   const mockStream: Stream = {
     ...stream,
     close: async (options) => {
-      await mockStream.closeRead(options);
-      await mockStream.closeWrite(options);
+      await mockStream.closeRead(options)
+      await mockStream.closeWrite(options)
     },
     closeRead: async () => {
-      closeSource(originalSource, log);
-      mockStream.timeline.closeRead = Date.now();
+      closeSource(originalSource, log)
+      mockStream.timeline.closeRead = Date.now()
 
       if (mockStream.timeline.closeWrite != null) {
-        mockStream.timeline.close = Date.now();
+        mockStream.timeline.close = Date.now()
       }
     },
     closeWrite: async () => {
-      abortSinkController.abort();
-      mockStream.timeline.closeWrite = Date.now();
+      abortSinkController.abort()
+      mockStream.timeline.closeWrite = Date.now()
 
       if (mockStream.timeline.closeRead != null) {
-        mockStream.timeline.close = Date.now();
+        mockStream.timeline.close = Date.now()
       }
     },
     abort: () => {
-      closeSource(originalSource, log);
-      mockStream.timeline.closeWrite = Date.now();
-      mockStream.timeline.closeRead = Date.now();
-      mockStream.timeline.close = Date.now();
+      closeSource(originalSource, log)
+      mockStream.timeline.closeWrite = Date.now()
+      mockStream.timeline.closeRead = Date.now()
+      mockStream.timeline.close = Date.now()
     },
     direction: 'outbound',
     protocol: '/foo/1.0.0',
@@ -290,9 +290,9 @@ export function mockStream(
     writeStatus: 'ready',
     log: logger('mock-stream'),
     ...init,
-  };
+  }
 
-  return mockStream;
+  return mockStream
 }
 
 export interface StreamPairInit {
@@ -300,8 +300,8 @@ export interface StreamPairInit {
     AsyncGenerator<Uint8ArrayList>,
     Source<Uint8ArrayList | Uint8Array>,
     Promise<void>
-  >;
-  init?: StreamInit;
+  >
+  init?: StreamInit
 }
 
 export function streamPair(
@@ -320,33 +320,33 @@ export function streamPair(
       ...init,
       ...(b.init ?? {}),
     }),
-  ];
+  ]
 }
 
 export interface Peer {
-  peerId: PeerId;
-  registrar: Registrar;
+  peerId: PeerId
+  registrar: Registrar
 }
 
 export function multiaddrConnectionPair(
-  a: { peerId: PeerId; registrar: Registrar },
-  b: { peerId: PeerId; registrar: Registrar }
+  a: { peerId: PeerId registrar: Registrar },
+  b: { peerId: PeerId registrar: Registrar }
 ): [MultiaddrConnection, MultiaddrConnection] {
   const [peerBtoPeerA, peerAtoPeerB] = duplexPair<
     Uint8Array | Uint8ArrayList
-  >();
+  >()
 
   return [
     mockMultiaddrConnection(peerAtoPeerB, b.peerId),
     mockMultiaddrConnection(peerBtoPeerA, a.peerId),
-  ];
+  ]
 }
 
 export function connectionPair(
-  a: { peerId: PeerId; registrar: Registrar },
-  b: { peerId: PeerId; registrar: Registrar }
+  a: { peerId: PeerId registrar: Registrar },
+  b: { peerId: PeerId registrar: Registrar }
 ): [Connection, Connection] {
-  const [peerBtoPeerA, peerAtoPeerB] = multiaddrConnectionPair(a, b);
+  const [peerBtoPeerA, peerAtoPeerB] = multiaddrConnectionPair(a, b)
 
   return [
     mockConnection(peerBtoPeerA, {
@@ -355,5 +355,5 @@ export function connectionPair(
     mockConnection(peerAtoPeerB, {
       registrar: b.registrar,
     }),
-  ];
+  ]
 }
