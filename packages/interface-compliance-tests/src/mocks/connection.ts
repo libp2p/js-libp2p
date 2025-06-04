@@ -9,22 +9,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { mockMultiaddrConnection } from './multiaddr-connection.js'
 import { mockMuxer } from './muxer.js'
 import { mockRegistrar } from './registrar.js'
-import type {
-  AbortOptions,
-  ComponentLogger,
-  Logger,
-  MultiaddrConnection,
-  Connection,
-  Stream,
-  Direction,
-  ConnectionTimeline,
-  ConnectionStatus,
-  PeerId,
-  StreamMuxer,
-  StreamMuxerFactory,
-  NewStreamOptions,
-  ConnectionLimits,
-} from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus, PeerId, StreamMuxer, StreamMuxerFactory, NewStreamOptions, ConnectionLimits } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
@@ -63,7 +48,7 @@ class MockConnection implements Connection {
   private readonly maConn: MultiaddrConnection
   private readonly logger: ComponentLogger
 
-  constructor(init: MockConnectionInit) {
+  constructor (init: MockConnectionInit) {
     const { remoteAddr, remotePeer, direction, maConn, muxer, logger } = init
 
     this.id = `mock-connection-${Math.random()}`
@@ -83,10 +68,7 @@ class MockConnection implements Connection {
     this.log = logger.forComponent(this.id)
   }
 
-  async newStream(
-    protocols: string | string[],
-    options?: NewStreamOptions
-  ): Promise<Stream> {
+  async newStream (protocols: string | string[], options?: NewStreamOptions): Promise<Stream> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
@@ -96,9 +78,7 @@ class MockConnection implements Connection {
     }
 
     if (this.status !== 'open') {
-      throw new ConnectionClosedError(
-        'connection must be open to create streams'
-      )
+      throw new ConnectionClosedError('connection must be open to create streams')
     }
 
     options?.signal?.throwIfAborted()
@@ -107,7 +87,7 @@ class MockConnection implements Connection {
     const stream = await this.muxer.newStream(id)
     const result = await mss.select(stream, protocols, {
       ...options,
-      log: this.logger.forComponent('libp2p:mock-connection:stream:mss:select'),
+      log: this.logger.forComponent('libp2p:mock-connection:stream:mss:select')
     })
 
     stream.protocol = result.protocol
@@ -120,17 +100,19 @@ class MockConnection implements Connection {
     return stream
   }
 
-  async close(options?: AbortOptions): Promise<void> {
+  async close (options?: AbortOptions): Promise<void> {
     this.status = 'closing'
-    await Promise.all(this.streams.map(async (s) => s.close(options)))
+    await Promise.all(
+      this.streams.map(async s => s.close(options))
+    )
     await this.maConn.close()
     this.status = 'closed'
     this.timeline.close = Date.now()
   }
 
-  abort(err: Error): void {
+  abort (err: Error): void {
     this.status = 'closing'
-    this.streams.forEach((s) => {
+    this.streams.forEach(s => {
       s.abort(err)
     })
     this.maConn.abort(err)
@@ -139,14 +121,9 @@ class MockConnection implements Connection {
   }
 }
 
-export function mockConnection(
-  maConn: MultiaddrConnection,
-  opts: MockConnectionOptions = {}
-): Connection {
+export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectionOptions = {}): Connection {
   const remoteAddr = maConn.remoteAddr
-  const remotePeerIdStr =
-    remoteAddr.getPeerId() ??
-    '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq'
+  const remotePeerIdStr = remoteAddr.getPeerId() ?? '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq'
   const logger = opts.logger ?? defaultLogger()
 
   if (remotePeerIdStr == null) {
@@ -165,7 +142,7 @@ export function mockConnection(
       try {
         mss
           .handle(muxedStream, registrar.getProtocols(), {
-            log,
+            log
           })
           .then(({ stream, protocol }) => {
             log('%s: incoming stream opened on %s', direction, protocol)
@@ -186,10 +163,8 @@ export function mockConnection(
       }
     },
     onStreamEnd: (muxedStream) => {
-      connection.streams = connection.streams.filter(
-        (stream) => stream.id !== muxedStream.id
-      )
-    },
+      connection.streams = connection.streams.filter(stream => stream.id !== muxedStream.id)
+    }
   })
 
   void pipe(maConn, muxer, maConn)

@@ -133,9 +133,13 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   const opts: Libp2pOptions<ServiceMap> = {
     privateKey,
     addresses: {
-      listen: [],
+      listen: []
     },
-    transports: [tcp(), circuitRelayTransport(), webRTCDirect()],
+    transports: [
+      tcp(),
+      circuitRelayTransport(),
+      webRTCDirect()
+    ],
     streamMuxers: [],
     connectionEncrypters: []
   }
@@ -195,7 +199,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   const node: any = await createLibp2p({
     ...opts,
-    services,
+    services
   })
 
   const server = createServer(multiaddr('/ip4/127.0.0.1/tcp/0'), node)
@@ -206,7 +210,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     stop: async () => {
       await server.stop()
       await node.stop()
-    },
+    }
   }
 }
 
