@@ -11,16 +11,8 @@ import { splitAddr } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
 import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
 import type { DataChannelOptions } from '../index.js'
-import type {
-  LoggerOptions,
-  Connection,
-  ComponentLogger,
-  IncomingStreamData,
-} from '@libp2p/interface'
-import type {
-  ConnectionManager,
-  TransportManager,
-} from '@libp2p/interface-internal'
+import type { LoggerOptions, Connection, ComponentLogger, IncomingStreamData } from '@libp2p/interface'
+import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
@@ -30,9 +22,7 @@ export interface IncomingStreamOpts extends IncomingStreamData {
   signal: AbortSignal
 }
 
-export interface ConnectOptions
-  extends LoggerOptions,
-    ProgressOptions<WebRTCDialEvents> {
+export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDialEvents> {
   rtcConfiguration?: RTCConfiguration
   dataChannel?: DataChannelOptions
   multiaddr: Multiaddr
@@ -44,22 +34,7 @@ export interface ConnectOptions
   logger: ComponentLogger
 }
 
-export async function initiateConnection({
-  rtcConfiguration,
-  dataChannel,
-  signal,
-  metrics,
-  multiaddr: ma,
-  connectionManager,
-  transportManager,
-  log,
-  logger,
-  onProgress,
-}: ConnectOptions): Promise<{
-  remoteAddress: Multiaddr
-  peerConnection: RTCPeerConnection
-  muxerFactory: DataChannelMuxerFactory
-}> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { baseAddr } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -72,9 +47,7 @@ export async function initiateConnection({
     throw new InvalidParametersError('Relay peer was missing')
   }
 
-  const connections = connectionManager.getConnections(
-    peerIdFromString(relayPeer)
-  )
+  const connections = connectionManager.getConnections(peerIdFromString(relayPeer))
   let connection: Connection
   let shouldCloseConnection = false
 
@@ -86,7 +59,7 @@ export async function initiateConnection({
     // connection manager instead we can end up joining our own dial context
     connection = await transportManager.dial(baseAddr, {
       signal,
-      onProgress,
+      onProgress
     })
     // this connection is unmanaged by the connection manager so we should
     // close it when we are done
@@ -102,18 +75,18 @@ export async function initiateConnection({
 
     const stream = await connection.newStream(SIGNALING_PROTOCOL, {
       signal,
-      runOnLimitedConnection: true,
+      runOnLimitedConnection: true
     })
 
     const messageStream = pbStream(stream).pb(Message)
     const peerConnection = new RTCPeerConnection(rtcConfiguration)
     const muxerFactory = new DataChannelMuxerFactory(
       {
-        logger,
+        logger
       },
       {
         peerConnection,
-        dataChannelOptions: dataChannel,
+        dataChannelOptions: dataChannel
       }
     )
 
@@ -137,10 +110,10 @@ export async function initiateConnection({
           .write(
             {
               type: Message.Type.ICE_CANDIDATE,
-              data,
+              data
             },
             {
-              signal,
+              signal
             }
           )
           .catch((err) => {
@@ -162,12 +135,9 @@ export async function initiateConnection({
       onProgress?.(new CustomProgressEvent('webrtc:send-sdp-offer'))
 
       // write the offer to the stream
-      await messageStream.write(
-        { type: Message.Type.SDP_OFFER, data: offerSdp.sdp },
-        {
-          signal,
-        }
-      )
+     await messageStream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp }, {
+        signal
+      })
 
       // set offer as local description
       await peerConnection.setLocalDescription(offerSdp).catch((err) => {
@@ -181,7 +151,7 @@ export async function initiateConnection({
 
       // read answer
       const answerMessage = await messageStream.read({
-        signal,
+        signal
       })
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
@@ -207,7 +177,7 @@ export async function initiateConnection({
         direction: 'initiator',
         signal,
         log,
-        onProgress,
+        onProgress
       })
 
       log.trace('initiator connected, closing init channel')
@@ -217,7 +187,7 @@ export async function initiateConnection({
 
       log.trace('closing signaling channel')
       await stream.close({
-        signal,
+        signal
       })
 
       log.trace('initiator connected to remote address %s', ma)
@@ -225,7 +195,7 @@ export async function initiateConnection({
       return {
         remoteAddress: ma,
         peerConnection,
-        muxerFactory,
+        muxerFactory
       }
     } catch (err: any) {
       log.error('outgoing signaling error - %e', err)
@@ -243,7 +213,7 @@ export async function initiateConnection({
     if (shouldCloseConnection) {
       try {
         await connection.close({
-          signal,
+          signal
         })
       } catch (err: any) {
         connection.abort(err)

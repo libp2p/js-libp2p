@@ -1,13 +1,7 @@
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import type WebTransport from './webtransport.js'
-import type {
-  ComponentLogger,
-  Stream,
-  StreamMuxer,
-  StreamMuxerFactory,
-  StreamMuxerInit,
-} from '@libp2p/interface'
+import type { ComponentLogger, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export interface WebTransportMuxerInit {
   maxInboundStreams: number
@@ -126,10 +120,10 @@ export function webtransportMuxer(
         },
 
         // This stream muxer is webtransport native. Therefore it doesn't plug in with any other duplex.
-        ...inertDuplex(),
+        ...inertDuplex()
       }
 
       return muxer
-    },
+    }
   }
 }

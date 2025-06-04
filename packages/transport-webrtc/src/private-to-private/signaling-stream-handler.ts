@@ -14,13 +14,7 @@ export interface IncomingStreamOpts extends IncomingStreamData {
   log: Logger
 }
 
-export async function handleIncomingStream({
-  peerConnection,
-  stream,
-  signal,
-  connection,
-  log,
-}: IncomingStreamOpts): Promise<{ remoteAddress: Multiaddr }> {
+export async function handleIncomingStream ({ peerConnection, stream, signal, connection, log }: IncomingStreamOpts): Promise<{ remoteAddress: Multiaddr }> {
   log.trace('new inbound signaling stream')
 
   const messageStream = pbStream(stream).pb(Message)
