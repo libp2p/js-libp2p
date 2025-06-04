@@ -7,12 +7,7 @@ export interface WebTransportMuxerInit {
   maxInboundStreams: number
 }
 
-export function webtransportMuxer(
-  wt: Pick<WebTransport, 'close' | 'createBidirectionalStream'>,
-  reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>,
-  logger: ComponentLogger,
-  config: WebTransportMuxerInit
-): StreamMuxerFactory {
+export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidirectionalStream'>, reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>, logger: ComponentLogger, config: WebTransportMuxerInit): StreamMuxerFactory {
   let streamIDCounter = 0
   const log = logger.forComponent('libp2p:webtransport:muxer')
 
@@ -80,14 +75,7 @@ export function webtransportMuxer(
           log('new outgoing stream', name)
 
           const wtStream = await wt.createBidirectionalStream()
-          const stream = await webtransportBiDiStreamToStream(
-            wtStream,
-            String(streamIDCounter++),
-            init?.direction ?? 'outbound',
-            activeStreams,
-            init?.onStreamEnd,
-            logger
-          )
+          const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd, logger)
           activeStreams.push(stream)
 
           return stream

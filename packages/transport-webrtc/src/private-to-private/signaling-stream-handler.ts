@@ -30,17 +30,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
       log.trace('recipient sending ICE candidate %s', data)
 
-      messageStream
-        .write(
-          {
-            type: Message.Type.ICE_CANDIDATE,
-            data,
-          },
-          {
-            signal,
-          }
-        )
-        .catch((err) => {
+      messageStream.write({
+        type: Message.Type.ICE_CANDIDATE,
+        data
+      }, {
+        signal
+      })
+        .catch(err => {
           log.error('error sending ICE candidate - %e', err)
         })
     }
@@ -49,22 +45,18 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
 
     // read an SDP offer
     const pbOffer = await messageStream.read({
-      signal,
+      signal
     })
 
     if (pbOffer.type !== Message.Type.SDP_OFFER) {
-      throw new SDPHandshakeFailedError(
-        `expected message type SDP_OFFER, received: ${
-          pbOffer.type ?? 'undefined'
-        } `
-      )
+      throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? 'undefined'} `)
     }
 
     log.trace('recipient received SDP offer %s', pbOffer.data)
 
     const offer = new RTCSessionDescription({
       type: 'offer',
-      sdp: pbOffer.data,
+      sdp: pbOffer.data
     })
 
     await peerConnection.setRemoteDescription(offer).catch((err) => {
@@ -81,12 +73,9 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     log.trace('recipient send SDP answer %s', answer.sdp)
 
     // write the answer to the remote
-    await messageStream.write(
-      { type: Message.Type.SDP_ANSWER, data: answer.sdp },
-      {
-        signal,
-      }
-    )
+    await messageStream.write({ type: Message.Type.SDP_ANSWER, data: answer.sdp }, {
+      signal
+    })
 
     await peerConnection.setLocalDescription(answer).catch((err) => {
       log.error('could not execute setLocalDescription - %e', err)
@@ -99,7 +88,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: 'recipient',
       signal,
-      log,
+      log
     })
   } catch (err: any) {
     if (getConnectionState(peerConnection) !== 'connected') {
@@ -120,9 +109,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     }
   }
 
-  const remoteAddress = multiaddr(
-    `/webrtc/p2p/${connection.remoteAddr.getPeerId()}`
-  )
+  const remoteAddress = multiaddr(`/webrtc/p2p/${connection.remoteAddr.getPeerId()}`)
 
   log.trace('recipient connected to remote address %s', remoteAddress)
 

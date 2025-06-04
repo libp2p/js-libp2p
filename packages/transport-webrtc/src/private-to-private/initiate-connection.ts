@@ -80,15 +80,12 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     const messageStream = pbStream(stream).pb(Message)
     const peerConnection = new RTCPeerConnection(rtcConfiguration)
-    const muxerFactory = new DataChannelMuxerFactory(
-      {
-        logger
-      },
-      {
-        peerConnection,
-        dataChannelOptions: dataChannel
-      }
-    )
+    const muxerFactory = new DataChannelMuxerFactory({
+      logger
+    }, {
+      peerConnection,
+      dataChannelOptions: dataChannel
+    })
 
     try {
       // we create the channel so that the RTCPeerConnection has a component for
@@ -106,17 +103,13 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
         log.trace('initiator sending ICE candidate %o', candidate)
 
-        void messageStream
-          .write(
-            {
-              type: Message.Type.ICE_CANDIDATE,
-              data
-            },
-            {
-              signal
-            }
-          )
-          .catch((err) => {
+        void messageStream.write({
+          type: Message.Type.ICE_CANDIDATE,
+          data
+        }, {
+          signal
+        })
+          .catch(err => {
             log.error('error sending ICE candidate', err)
           })
       }

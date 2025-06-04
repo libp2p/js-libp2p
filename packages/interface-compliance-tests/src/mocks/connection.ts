@@ -140,8 +140,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     direction,
     onIncomingStream: (muxedStream) => {
       try {
-        mss
-          .handle(muxedStream, registrar.getProtocols(), {
+        mss.handle(muxedStream, registrar.getProtocols(), {
             log
           })
           .then(({ stream, protocol }) => {
@@ -304,6 +303,6 @@ export function connectionPair (a: { peerId: PeerId, registrar: Registrar }, b: 
     }),
     mockConnection(peerAtoPeerB, {
       registrar: b.registrar
-    }),
+    })
   ]
 }

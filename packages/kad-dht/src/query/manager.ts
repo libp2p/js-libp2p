@@ -5,7 +5,9 @@ import { setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { ALPHA, K, DEFAULT_QUERY_TIMEOUT } from '../constants.js'
+import {
+  ALPHA, K, DEFAULT_QUERY_TIMEOUT
+} from '../constants.js'
 import { convertBuffer } from '../utils.js'
 import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
@@ -166,10 +168,7 @@ export class QueryManager implements Startable {
       const id = await convertBuffer(key, {
         signal
       })
-      const peers = this.routingTable.closestPeers(
-        id,
-        this.routingTable.kBucketSize
-      )
+      const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize) 
 
       // split peers into d buckets evenly(ish)
       const peersToQuery = peers.sort(() => {
@@ -177,13 +176,13 @@ export class QueryManager implements Startable {
           return 1
         }
 
-          return -1
-        })
-         .reduce((acc: PeerId[][], curr, index) => {
+        return -1
+      })
+        .reduce((acc: PeerId[][], curr, index) => {
           acc[index % this.disjointPaths].push(curr)
 
-            return acc
-          },new Array(this.disjointPaths).fill(0).map(() => []))
+          return acc
+        },new Array(this.disjointPaths).fill(0).map(() => []))
         .filter(peers => peers.length > 0)
 
       if (peers.length === 0) {
@@ -222,11 +221,9 @@ export class QueryManager implements Startable {
         if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
             // eslint-disable-next-line max-depth
-            if (
-              !(await this.connectionManager.isDialable(peer.multiaddrs, {
-                signal
-              }))
-            ) {
+            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+              signal
+            }))) {
               continue
             }
 
