@@ -118,7 +118,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       }
 
       // create an offer
-      const offerSdp = await peerConnection.createOffer().catch((err) => {
+      const offerSdp = await peerConnection.createOffer().catch(err => {
         log.error('could not execute createOffer - %e', err)
         throw new SDPHandshakeFailedError('Failed to set createOffer')
       })
@@ -133,7 +133,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       })
 
       // set offer as local description
-      await peerConnection.setLocalDescription(offerSdp).catch((err) => {
+      await peerConnection.setLocalDescription(offerSdp).catch(err => {
         log.error('could not execute setLocalDescription - %e', err)
         throw new SDPHandshakeFailedError('Failed to set localDescription')
       })
@@ -153,11 +153,8 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
       log.trace('initiator received SDP answer %s', answerMessage.data)
 
-      const answerSdp = new RTCSessionDescription({
-        type: 'answer',
-        sdp: answerMessage.data,
-      })
-      await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
+      const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
+      await peerConnection.setRemoteDescription(answerSdp).catch(err => {
         log.error('could not execute setRemoteDescription - %e', err)
         throw new SDPHandshakeFailedError('Failed to set remoteDescription')
       })

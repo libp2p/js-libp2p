@@ -59,13 +59,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       sdp: pbOffer.data
     })
 
-    await peerConnection.setRemoteDescription(offer).catch((err) => {
+    await peerConnection.setRemoteDescription(offer).catch(err => {
       log.error('could not execute setRemoteDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
     // create and write an SDP answer
-    const answer = await peerConnection.createAnswer().catch((err) => {
+    const answer = await peerConnection.createAnswer().catch(err => {
       log.error('could not execute createAnswer - %e', err)
       throw new SDPHandshakeFailedError('Failed to create answer')
     })
@@ -77,7 +77,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       signal
     })
 
-    await peerConnection.setLocalDescription(answer).catch((err) => {
+    await peerConnection.setLocalDescription(answer).catch(err => {
       log.error('could not execute setLocalDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set localDescription')
     })

@@ -34,9 +34,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
             }
 
             if (activeStreams.length >= config.maxInboundStreams) {
-              log(
-                `too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`
-              )
+              log(`too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`)
               // We've reached our limit, close this stream.
               wtStream.writable.close().catch((err: Error) => {
                 log.error(
@@ -64,7 +62,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
             }
           }
         })
-        .catch((err) => {
+        .catch(err => {
           log.error('could not create a new stream - %e', err)
         })
 

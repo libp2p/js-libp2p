@@ -47,6 +47,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const opts = [
     `-listen=${apiAddr.toString()}`
   ]
+  
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {

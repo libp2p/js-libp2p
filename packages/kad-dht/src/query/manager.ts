@@ -168,7 +168,7 @@ export class QueryManager implements Startable {
       const id = await convertBuffer(key, {
         signal
       })
-      const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize) 
+      const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize)
 
       // split peers into d buckets evenly(ish)
       const peersToQuery = peers.sort(() => {
@@ -182,7 +182,7 @@ export class QueryManager implements Startable {
           acc[index % this.disjointPaths].push(curr)
 
           return acc
-        },new Array(this.disjointPaths).fill(0).map(() => []))
+        }, new Array(this.disjointPaths).fill(0).map(() => []))
         .filter(peers => peers.length > 0)
 
       if (peers.length === 0) {

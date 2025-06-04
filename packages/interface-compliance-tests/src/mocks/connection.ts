@@ -141,8 +141,8 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     onIncomingStream: (muxedStream) => {
       try {
         mss.handle(muxedStream, registrar.getProtocols(), {
-            log
-          })
+          log
+        })
           .then(({ stream, protocol }) => {
             log('%s: incoming stream opened on %s', direction, protocol)
             muxedStream.protocol = protocol
@@ -154,7 +154,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
 
             handler({ connection, stream: muxedStream })
           })
-          .catch((err) => {
+          .catch(err => {
             log.error('incoming stream handler error - %e', err)
           })
       } catch (err: any) {
