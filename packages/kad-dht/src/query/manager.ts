@@ -11,13 +11,7 @@ import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type {
-  ComponentLogger,
-  Metrics,
-  PeerId,
-  RoutingOptions,
-  Startable,
-} from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
@@ -62,7 +56,7 @@ export class QueryManager implements Startable {
   private readonly logPrefix: string
   private readonly allowQueryWithZeroPeers: boolean
 
-  constructor(components: QueryManagerComponents, init: QueryManagerInit) {
+  constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     this.logPrefix = init.logPrefix
     this.disjointPaths = init.disjointPaths ?? K
     this.alpha = init.alpha ?? ALPHA
@@ -81,14 +75,14 @@ export class QueryManager implements Startable {
     this.running = false
   }
 
-  isStarted(): boolean {
+  isStarted (): boolean {
     return this.running
   }
 
   /**
    * Starts the query manager
    */
-  async start(): Promise<void> {
+  async start (): Promise<void> {
     if (this.running) {
       return
     }
@@ -104,17 +98,13 @@ export class QueryManager implements Startable {
   /**
    * Stops all queries
    */
-  async stop(): Promise<void> {
+  async stop (): Promise<void> {
     this.running = false
 
     this.shutDownController.abort()
   }
 
-  async *run(
-    key: Uint8Array,
-    queryFunc: QueryFunc,
-    options: QueryOptions = {}
-  ): AsyncGenerator<QueryEvent> {
+  async * run (key: Uint8Array, queryFunc: QueryFunc, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       throw new Error('QueryManager not started')
     }
@@ -129,7 +119,7 @@ export class QueryManager implements Startable {
 
       options = {
         ...options,
-        signal,
+        signal
       }
     }
 
@@ -140,35 +130,27 @@ export class QueryManager implements Startable {
     const signal = anySignal([
       this.shutDownController.signal,
       queryEarlyExitController.signal,
-      options.signal,
+      options.signal
     ])
 
     // this signal will get listened to for every invocation of queryFunc
     // so make sure we don't make a lot of noise in the logs
     setMaxListeners(Infinity, signal, queryEarlyExitController.signal)
 
-    const log = this.logger.forComponent(
-      `${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc')
-    )
+    const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
     let queryFinished = false
 
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
-        log(
-          'routing table was empty, waiting for some peers before running%s query',
-          options.isSelfQuery === true ? ' self' : ''
-        )
+        log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
         // wait to discover at least one DHT peer that isn't us
         await pEvent(this.routingTable, 'peer:add', {
           signal,
-          filter: (event) => !this.peerId.equals(event.detail),
+          filter: (event) => !this.peerId.equals(event.detail)
         })
-        log(
-          'routing table has peers, continuing with%s query',
-          options.isSelfQuery === true ? ' self' : ''
-        )
+        log('routing table has peers, continuing with%s query', options.isSelfQuery === true ? ' self' : '')
       }
 
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
@@ -182,7 +164,7 @@ export class QueryManager implements Startable {
       log('query:start')
 
       const id = await convertBuffer(key, {
-        signal,
+        signal
       })
       const peers = this.routingTable.closestPeers(
         id,
@@ -190,23 +172,19 @@ export class QueryManager implements Startable {
       )
 
       // split peers into d buckets evenly(ish)
-      const peersToQuery = peers
-        .sort(() => {
-          if (Math.random() > 0.5) {
-            return 1
-          }
+      const peersToQuery = peers.sort(() => {
+        if (Math.random() > 0.5) {
+          return 1
+        }
 
           return -1
         })
-        .reduce(
-          (acc: PeerId[][], curr, index) => {
-            acc[index % this.disjointPaths].push(curr)
+         .reduce((acc: PeerId[][], curr, index) => {
+          acc[index % this.disjointPaths].push(curr)
 
             return acc
-          },
-          new Array(this.disjointPaths).fill(0).map(() => [])
-        )
-        .filter((peers) => peers.length > 0)
+          },new Array(this.disjointPaths).fill(0).map(() => []))
+        .filter(peers => peers.length > 0)
 
       if (peers.length === 0) {
         log.error('running query with no peers')
@@ -231,7 +209,7 @@ export class QueryManager implements Startable {
           log,
           peersSeen,
           onProgress: options.onProgress,
-          connectionManager: this.connectionManager,
+          connectionManager: this.connectionManager
         })
       })
 
@@ -246,14 +224,14 @@ export class QueryManager implements Startable {
             // eslint-disable-next-line max-depth
             if (
               !(await this.connectionManager.isDialable(peer.multiaddrs, {
-                signal,
+                signal
               }))
             ) {
               continue
             }
 
             await this.routingTable.add(peer.id, {
-              signal,
+              signal
             })
           }
         }
