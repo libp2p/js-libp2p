@@ -167,7 +167,9 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     }
   })
 
-  void pipe(maConn, muxer, maConn)
+  void pipe(
+    maConn, muxer, maConn
+  )
 
   const connection = new MockConnection({
     remoteAddr,
@@ -175,7 +177,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
     direction,
     maConn,
     muxer,
-    logger,
+    logger
   })
 
   return connection
@@ -187,25 +189,14 @@ export interface StreamInit {
   id?: string
 }
 
-export function mockStream(
-  stream: Duplex<
-    AsyncGenerator<Uint8ArrayList>,
-    Source<Uint8ArrayList | Uint8Array>,
-    Promise<void>
-  >,
-  init: StreamInit = {}
-): Stream {
+export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
   const id = `stream-${Date.now()}`
   const log = logger(`libp2p:mock-stream:${id}`)
 
   // ensure stream output is `Uint8ArrayList` as it would be from an actual
   // Stream where everything is length-varint encoded
   const originalSource = stream.source
-  stream.source = (async function* (): AsyncGenerator<
-    Uint8ArrayList,
-    any,
-    unknown
-  > {
+  stream.source = (async function * (): AsyncGenerator<Uint8ArrayList, any, unknown> {
     for await (const buf of originalSource) {
       if (buf instanceof Uint8Array) {
         yield new Uint8ArrayList(buf)
@@ -256,7 +247,7 @@ export function mockStream(
     direction: 'outbound',
     protocol: '/foo/1.0.0',
     timeline: {
-      open: Date.now(),
+      open: Date.now()
     },
     metadata: {},
     id: `stream-${Date.now()}`,
@@ -264,37 +255,29 @@ export function mockStream(
     readStatus: 'ready',
     writeStatus: 'ready',
     log: logger('mock-stream'),
-    ...init,
+    ...init
   }
 
   return mockStream
 }
 
 export interface StreamPairInit {
-  duplex: Duplex<
-    AsyncGenerator<Uint8ArrayList>,
-    Source<Uint8ArrayList | Uint8Array>,
-    Promise<void>
-  >
+  duplex: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>
   init?: StreamInit
 }
 
-export function streamPair(
-  a: StreamPairInit,
-  b: StreamPairInit,
-  init: StreamInit = {}
-): [Stream, Stream] {
+export function streamPair (a: StreamPairInit, b: StreamPairInit, init: StreamInit = {}): [Stream, Stream] {
   return [
     mockStream(a.duplex, {
       direction: 'outbound',
       ...init,
-      ...(a.init ?? {}),
+      ...(a.init ?? {})
     }),
     mockStream(b.duplex, {
       direction: 'inbound',
       ...init,
-      ...(b.init ?? {}),
-    }),
+      ...(b.init ?? {})
+    })
   ]
 }
 
@@ -303,32 +286,24 @@ export interface Peer {
   registrar: Registrar
 }
 
-export function multiaddrConnectionPair(
-  a: { peerId: PeerId registrar: Registrar },
-  b: { peerId: PeerId registrar: Registrar }
-): [MultiaddrConnection, MultiaddrConnection] {
-  const [peerBtoPeerA, peerAtoPeerB] = duplexPair<
-    Uint8Array | Uint8ArrayList
-  >()
+export function multiaddrConnectionPair (a: { peerId: PeerId, registrar: Registrar }, b: { peerId: PeerId, registrar: Registrar }): [ MultiaddrConnection, MultiaddrConnection ] {
+  const [peerBtoPeerA, peerAtoPeerB] = duplexPair<Uint8Array | Uint8ArrayList>()
 
   return [
     mockMultiaddrConnection(peerAtoPeerB, b.peerId),
-    mockMultiaddrConnection(peerBtoPeerA, a.peerId),
+    mockMultiaddrConnection(peerBtoPeerA, a.peerId)
   ]
 }
 
-export function connectionPair(
-  a: { peerId: PeerId registrar: Registrar },
-  b: { peerId: PeerId registrar: Registrar }
-): [Connection, Connection] {
+export function connectionPair (a: { peerId: PeerId, registrar: Registrar }, b: { peerId: PeerId, registrar: Registrar }): [ Connection, Connection ] {
   const [peerBtoPeerA, peerAtoPeerB] = multiaddrConnectionPair(a, b)
 
   return [
     mockConnection(peerBtoPeerA, {
-      registrar: a.registrar,
+      registrar: a.registrar
     }),
     mockConnection(peerAtoPeerB, {
-      registrar: b.registrar,
+      registrar: b.registrar
     }),
   ]
 }
