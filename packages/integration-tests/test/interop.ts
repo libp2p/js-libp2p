@@ -2,10 +2,7 @@ import fs from 'fs'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import {
-  circuitRelayServer,
-  circuitRelayTransport,
-} from '@libp2p/circuit-relay-v2'
+import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
@@ -41,14 +38,15 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  * ```
  */
 
-async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
+async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
   const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
 
   const log = logger(`go-libp2p:${controlPort}`)
 
-  const opts = [`-listen=${apiAddr.toString()}`]
-
+  const opts = [
+    `-listen=${apiAddr.toString()}`
+  ]
   if (options.noListen === true) {
     opts.push('-noListenAddrs')
   } else {
@@ -96,8 +94,8 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
   const deferred = pDefer()
   const proc = execa(p2pd(), opts, {
     env: {
-      GOLOG_LOG_LEVEL: 'debug',
-    },
+      GOLOG_LOG_LEVEL: 'debug'
+    }
   })
 
   proc.stdout?.on('data', (buf: Buffer) => {
@@ -120,11 +118,11 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
     client: createClient(apiAddr),
     stop: async () => {
       proc.kill()
-    },
+    }
   }
 }
 
-async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
+async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   let privateKey: PrivateKey | undefined
 
   if (options.key != null) {
@@ -139,7 +137,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
     },
     transports: [tcp(), circuitRelayTransport(), webRTCDirect()],
     streamMuxers: [],
-    connectionEncrypters: [],
+    connectionEncrypters: []
   }
 
   if (options.noListen !== true) {
@@ -156,11 +154,9 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
     throw new UnsupportedError()
   }
 
-  const services: ServiceFactoryMap<
-    { identify: Identify ping: PingService } & Record<string, any>
-  > = {
+  const services: ServiceFactoryMap<{ identify: Identify, ping: PingService } & Record<string, any>> = {
     identify: identify(),
-    ping: ping(),
+    ping: ping()
   }
 
   if (options.encryption === 'tls') {
@@ -193,7 +189,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
     services.dht = kadDHT({
       protocol: '/ipfs/kad/1.0.0',
       peerInfoMapper: passthroughMapper,
-      clientMode: false,
+      clientMode: false
     })
   }
 
@@ -214,21 +210,21 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
   }
 }
 
-async function main(): Promise<void> {
+async function main (): Promise<void> {
   const factory: DaemonFactory = {
-    async spawn(options: SpawnOptions) {
+    async spawn (options: SpawnOptions) {
       if (options.type === 'go') {
         return createGoPeer(options)
       }
 
       return createJsPeer(options)
-    },
+    }
   }
 
   await interopTests(factory)
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error(err) // eslint-disable-line no-console
   process.exit(1)
 })
