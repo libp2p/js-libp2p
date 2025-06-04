@@ -1,25 +1,25 @@
-import { createScalableCuckooFilter } from "@libp2p/utils/filters";
-import { anySignal } from "any-signal";
-import merge from "it-merge";
-import { setMaxListeners } from "main-event";
-import { pEvent } from "p-event";
-import { raceSignal } from "race-signal";
-import { toString as uint8ArrayToString } from "uint8arrays/to-string";
-import { ALPHA, K, DEFAULT_QUERY_TIMEOUT } from "../constants.js";
-import { convertBuffer } from "../utils.js";
-import { queryPath } from "./query-path.js";
-import type { QueryFunc } from "./types.js";
-import type { QueryEvent } from "../index.js";
-import type { RoutingTable } from "../routing-table/index.js";
+import { createScalableCuckooFilter } from '@libp2p/utils/filters';
+import { anySignal } from 'any-signal';
+import merge from 'it-merge';
+import { setMaxListeners } from 'main-event';
+import { pEvent } from 'p-event';
+import { raceSignal } from 'race-signal';
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string';
+import { ALPHA, K, DEFAULT_QUERY_TIMEOUT } from '../constants.js';
+import { convertBuffer } from '../utils.js';
+import { queryPath } from './query-path.js';
+import type { QueryFunc } from './types.js';
+import type { QueryEvent } from '../index.js';
+import type { RoutingTable } from '../routing-table/index.js';
 import type {
   ComponentLogger,
   Metrics,
   PeerId,
   RoutingOptions,
   Startable,
-} from "@libp2p/interface";
-import type { ConnectionManager } from "@libp2p/interface-internal";
-import type { DeferredPromise } from "p-defer";
+} from '@libp2p/interface';
+import type { ConnectionManager } from '@libp2p/interface-internal';
+import type { DeferredPromise } from 'p-defer';
 
 export interface CleanUpEvents {
   cleanup: CustomEvent;
@@ -116,7 +116,7 @@ export class QueryManager implements Startable {
     options: QueryOptions = {}
   ): AsyncGenerator<QueryEvent> {
     if (!this.running) {
-      throw new Error("QueryManager not started");
+      throw new Error('QueryManager not started');
     }
 
     if (options.signal == null) {
@@ -148,7 +148,7 @@ export class QueryManager implements Startable {
     setMaxListeners(Infinity, signal, queryEarlyExitController.signal);
 
     const log = this.logger.forComponent(
-      `${this.logPrefix}:query:` + uint8ArrayToString(key, "base58btc")
+      `${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc')
     );
 
     // query a subset of peers up to `kBucketSize / 2` in length
@@ -157,29 +157,29 @@ export class QueryManager implements Startable {
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
         log(
-          "routing table was empty, waiting for some peers before running%s query",
-          options.isSelfQuery === true ? " self" : ""
+          'routing table was empty, waiting for some peers before running%s query',
+          options.isSelfQuery === true ? ' self' : ''
         );
         // wait to discover at least one DHT peer that isn't us
-        await pEvent(this.routingTable, "peer:add", {
+        await pEvent(this.routingTable, 'peer:add', {
           signal,
           filter: (event) => !this.peerId.equals(event.detail),
         });
         log(
-          "routing table has peers, continuing with%s query",
-          options.isSelfQuery === true ? " self" : ""
+          'routing table has peers, continuing with%s query',
+          options.isSelfQuery === true ? ' self' : ''
         );
       }
 
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
-        log("waiting for initial self query before continuing");
+        log('waiting for initial self query before continuing');
 
         await raceSignal(this.initialQuerySelfHasRun.promise, signal);
 
         this.initialQuerySelfHasRun = undefined;
       }
 
-      log("query:start");
+      log('query:start');
 
       const id = await convertBuffer(key, {
         signal,
@@ -209,7 +209,7 @@ export class QueryManager implements Startable {
         .filter((peers) => peers.length > 0);
 
       if (peers.length === 0) {
-        log.error("running query with no peers");
+        log.error('running query with no peers');
         return;
       }
 
@@ -237,11 +237,11 @@ export class QueryManager implements Startable {
 
       // Execute the query along each disjoint path and yield their results as they become available
       for await (const event of merge(...paths)) {
-        if (event.name === "QUERY_ERROR") {
-          log.error("query error - %e", event.error);
+        if (event.name === 'QUERY_ERROR') {
+          log.error('query error - %e', event.error);
         }
 
-        if (event.name === "PEER_RESPONSE") {
+        if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
             // eslint-disable-next-line max-depth
             if (
@@ -270,13 +270,13 @@ export class QueryManager implements Startable {
       }
     } finally {
       if (!queryFinished) {
-        log("query exited early");
+        log('query exited early');
         queryEarlyExitController.abort();
       }
 
       signal.clear();
 
-      log("query finished");
+      log('query finished');
     }
   }
 }

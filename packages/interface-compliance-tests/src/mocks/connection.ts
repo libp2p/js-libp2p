@@ -1,14 +1,14 @@
-import { ConnectionClosedError } from "@libp2p/interface";
-import { defaultLogger, logger } from "@libp2p/logger";
-import * as mss from "@libp2p/multistream-select";
-import { peerIdFromString } from "@libp2p/peer-id";
-import { closeSource } from "@libp2p/utils/close-source";
-import { duplexPair } from "it-pair/duplex";
-import { pipe } from "it-pipe";
-import { Uint8ArrayList } from "uint8arraylist";
-import { mockMultiaddrConnection } from "./multiaddr-connection.js";
-import { mockMuxer } from "./muxer.js";
-import { mockRegistrar } from "./registrar.js";
+import { ConnectionClosedError } from '@libp2p/interface';
+import { defaultLogger, logger } from '@libp2p/logger';
+import * as mss from '@libp2p/multistream-select';
+import { peerIdFromString } from '@libp2p/peer-id';
+import { closeSource } from '@libp2p/utils/close-source';
+import { duplexPair } from 'it-pair/duplex';
+import { pipe } from 'it-pipe';
+import { Uint8ArrayList } from 'uint8arraylist';
+import { mockMultiaddrConnection } from './multiaddr-connection.js';
+import { mockMuxer } from './muxer.js';
+import { mockRegistrar } from './registrar.js';
 import type {
   AbortOptions,
   ComponentLogger,
@@ -24,10 +24,10 @@ import type {
   StreamMuxerFactory,
   NewStreamOptions,
   ConnectionLimits,
-} from "@libp2p/interface";
-import type { Registrar } from "@libp2p/interface-internal";
-import type { Multiaddr } from "@multiformats/multiaddr";
-import type { Duplex, Source } from "it-stream-types";
+} from '@libp2p/interface';
+import type { Registrar } from '@libp2p/interface-internal';
+import type { Multiaddr } from '@multiformats/multiaddr';
+import type { Duplex, Source } from 'it-stream-types';
 
 export interface MockConnectionOptions {
   direction?: Direction;
@@ -70,11 +70,11 @@ class MockConnection implements Connection {
     this.remoteAddr = remoteAddr;
     this.remotePeer = remotePeer;
     this.direction = direction;
-    this.status = "open";
+    this.status = 'open';
     this.direction = direction;
     this.timeline = maConn.timeline;
-    this.multiplexer = "test-multiplexer";
-    this.encryption = "yes-yes-very-secure";
+    this.multiplexer = 'test-multiplexer';
+    this.encryption = 'yes-yes-very-secure';
     this.streams = [];
     this.tags = [];
     this.muxer = muxer;
@@ -92,12 +92,12 @@ class MockConnection implements Connection {
     }
 
     if (protocols.length === 0) {
-      throw new Error("protocols must have a length");
+      throw new Error('protocols must have a length');
     }
 
-    if (this.status !== "open") {
+    if (this.status !== 'open') {
       throw new ConnectionClosedError(
-        "connection must be open to create streams"
+        'connection must be open to create streams'
       );
     }
 
@@ -107,11 +107,11 @@ class MockConnection implements Connection {
     const stream = await this.muxer.newStream(id);
     const result = await mss.select(stream, protocols, {
       ...options,
-      log: this.logger.forComponent("libp2p:mock-connection:stream:mss:select"),
+      log: this.logger.forComponent('libp2p:mock-connection:stream:mss:select'),
     });
 
     stream.protocol = result.protocol;
-    stream.direction = "outbound";
+    stream.direction = 'outbound';
     stream.sink = result.stream.sink;
     stream.source = result.stream.source;
 
@@ -121,20 +121,20 @@ class MockConnection implements Connection {
   }
 
   async close(options?: AbortOptions): Promise<void> {
-    this.status = "closing";
+    this.status = 'closing';
     await Promise.all(this.streams.map(async (s) => s.close(options)));
     await this.maConn.close();
-    this.status = "closed";
+    this.status = 'closed';
     this.timeline.close = Date.now();
   }
 
   abort(err: Error): void {
-    this.status = "closing";
+    this.status = 'closing';
     this.streams.forEach((s) => {
       s.abort(err);
     });
     this.maConn.abort(err);
-    this.status = "closed";
+    this.status = 'closed';
     this.timeline.close = Date.now();
   }
 }
@@ -146,18 +146,18 @@ export function mockConnection(
   const remoteAddr = maConn.remoteAddr;
   const remotePeerIdStr =
     remoteAddr.getPeerId() ??
-    "12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq";
+    '12D3KooWCrhmFM1BCPGBkNzbPfDk4cjYmtAYSpZwUBC69Qg2kZyq';
   const logger = opts.logger ?? defaultLogger();
 
   if (remotePeerIdStr == null) {
-    throw new Error("Remote multiaddr must contain a peer id");
+    throw new Error('Remote multiaddr must contain a peer id');
   }
 
   const remotePeer = peerIdFromString(remotePeerIdStr);
-  const direction = opts.direction ?? "inbound";
+  const direction = opts.direction ?? 'inbound';
   const registrar = opts.registrar ?? mockRegistrar();
   const muxerFactory = opts.muxerFactory ?? mockMuxer();
-  const log = logger.forComponent("libp2p:mock-muxer");
+  const log = logger.forComponent('libp2p:mock-muxer');
 
   const muxer = muxerFactory.createStreamMuxer({
     direction,
@@ -168,7 +168,7 @@ export function mockConnection(
             log,
           })
           .then(({ stream, protocol }) => {
-            log("%s: incoming stream opened on %s", direction, protocol);
+            log('%s: incoming stream opened on %s', direction, protocol);
             muxedStream.protocol = protocol;
             muxedStream.sink = stream.sink;
             muxedStream.source = stream.source;
@@ -179,10 +179,10 @@ export function mockConnection(
             handler({ connection, stream: muxedStream });
           })
           .catch((err) => {
-            log.error("incoming stream handler error - %e", err);
+            log.error('incoming stream handler error - %e', err);
           });
       } catch (err: any) {
-        log.error("error handling incoming stream - %e", err);
+        log.error('error handling incoming stream - %e', err);
       }
     },
     onStreamEnd: (muxedStream) => {
@@ -243,7 +243,7 @@ export function mockStream(
   const abortSinkController = new AbortController();
   const originalSink = stream.sink.bind(stream);
   stream.sink = async (source) => {
-    abortSinkController.signal.addEventListener("abort", () => {
+    abortSinkController.signal.addEventListener('abort', () => {
       closeSource(source, log);
     });
 
@@ -278,17 +278,17 @@ export function mockStream(
       mockStream.timeline.closeRead = Date.now();
       mockStream.timeline.close = Date.now();
     },
-    direction: "outbound",
-    protocol: "/foo/1.0.0",
+    direction: 'outbound',
+    protocol: '/foo/1.0.0',
     timeline: {
       open: Date.now(),
     },
     metadata: {},
     id: `stream-${Date.now()}`,
-    status: "open",
-    readStatus: "ready",
-    writeStatus: "ready",
-    log: logger("mock-stream"),
+    status: 'open',
+    readStatus: 'ready',
+    writeStatus: 'ready',
+    log: logger('mock-stream'),
     ...init,
   };
 
@@ -311,12 +311,12 @@ export function streamPair(
 ): [Stream, Stream] {
   return [
     mockStream(a.duplex, {
-      direction: "outbound",
+      direction: 'outbound',
       ...init,
       ...(a.init ?? {}),
     }),
     mockStream(b.duplex, {
-      direction: "inbound",
+      direction: 'inbound',
       ...init,
       ...(b.init ?? {}),
     }),

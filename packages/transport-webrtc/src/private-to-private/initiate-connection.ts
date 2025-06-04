@@ -1,28 +1,28 @@
-import { InvalidParametersError } from "@libp2p/interface";
-import { peerIdFromString } from "@libp2p/peer-id";
-import { pbStream } from "it-protobuf-stream";
-import { CustomProgressEvent } from "progress-events";
-import { SIGNALING_PROTOCOL } from "../constants.js";
-import { SDPHandshakeFailedError } from "../error.js";
-import { DataChannelMuxerFactory } from "../muxer.js";
-import { RTCPeerConnection, RTCSessionDescription } from "../webrtc/index.js";
-import { Message } from "./pb/message.js";
-import { splitAddr } from "./transport.js";
-import { readCandidatesUntilConnected } from "./util.js";
-import type { WebRTCDialEvents, WebRTCTransportMetrics } from "./transport.js";
-import type { DataChannelOptions } from "../index.js";
+import { InvalidParametersError } from '@libp2p/interface';
+import { peerIdFromString } from '@libp2p/peer-id';
+import { pbStream } from 'it-protobuf-stream';
+import { CustomProgressEvent } from 'progress-events';
+import { SIGNALING_PROTOCOL } from '../constants.js';
+import { SDPHandshakeFailedError } from '../error.js';
+import { DataChannelMuxerFactory } from '../muxer.js';
+import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js';
+import { Message } from './pb/message.js';
+import { splitAddr } from './transport.js';
+import { readCandidatesUntilConnected } from './util.js';
+import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js';
+import type { DataChannelOptions } from '../index.js';
 import type {
   LoggerOptions,
   Connection,
   ComponentLogger,
   IncomingStreamData,
-} from "@libp2p/interface";
+} from '@libp2p/interface';
 import type {
   ConnectionManager,
   TransportManager,
-} from "@libp2p/interface-internal";
-import type { Multiaddr } from "@multiformats/multiaddr";
-import type { ProgressOptions } from "progress-events";
+} from '@libp2p/interface-internal';
+import type { Multiaddr } from '@multiformats/multiaddr';
+import type { ProgressOptions } from 'progress-events';
 
 export interface IncomingStreamOpts extends IncomingStreamData {
   rtcConfiguration?: RTCConfiguration;
@@ -64,12 +64,12 @@ export async function initiateConnection({
 
   metrics?.dialerEvents.increment({ open: true });
 
-  log.trace("dialing base address: %a", baseAddr);
+  log.trace('dialing base address: %a', baseAddr);
 
   const relayPeer = baseAddr.getPeerId();
 
   if (relayPeer == null) {
-    throw new InvalidParametersError("Relay peer was missing");
+    throw new InvalidParametersError('Relay peer was missing');
   }
 
   const connections = connectionManager.getConnections(
@@ -79,7 +79,7 @@ export async function initiateConnection({
   let shouldCloseConnection = false;
 
   if (connections.length === 0) {
-    onProgress?.(new CustomProgressEvent("webrtc:dial-relay"));
+    onProgress?.(new CustomProgressEvent('webrtc:dial-relay'));
 
     // use the transport manager to open a connection. Initiating a WebRTC
     // connection takes place in the context of a dial - if we use the
@@ -92,13 +92,13 @@ export async function initiateConnection({
     // close it when we are done
     shouldCloseConnection = true;
   } else {
-    onProgress?.(new CustomProgressEvent("webrtc:reuse-relay-connection"));
+    onProgress?.(new CustomProgressEvent('webrtc:reuse-relay-connection'));
 
     connection = connections[0];
   }
 
   try {
-    onProgress?.(new CustomProgressEvent("webrtc:open-signaling-stream"));
+    onProgress?.(new CustomProgressEvent('webrtc:open-signaling-stream'));
 
     const stream = await connection.newStream(SIGNALING_PROTOCOL, {
       signal,
@@ -121,7 +121,7 @@ export async function initiateConnection({
       // we create the channel so that the RTCPeerConnection has a component for
       // which to collect candidates. The label is not relevant to connection
       // initiation but can be useful for debugging
-      const channel = peerConnection.createDataChannel("init");
+      const channel = peerConnection.createDataChannel('init');
 
       // setup callback to write ICE candidates to the remote peer
       peerConnection.onicecandidate = ({ candidate }) => {
@@ -131,7 +131,7 @@ export async function initiateConnection({
         // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
         const data = JSON.stringify(candidate?.toJSON() ?? null);
 
-        log.trace("initiator sending ICE candidate %o", candidate);
+        log.trace('initiator sending ICE candidate %o', candidate);
 
         void messageStream
           .write(
@@ -144,22 +144,22 @@ export async function initiateConnection({
             }
           )
           .catch((err) => {
-            log.error("error sending ICE candidate", err);
+            log.error('error sending ICE candidate', err);
           });
       };
       peerConnection.onicecandidateerror = (event) => {
-        log.error("initiator ICE candidate error", event);
+        log.error('initiator ICE candidate error', event);
       };
 
       // create an offer
       const offerSdp = await peerConnection.createOffer().catch((err) => {
-        log.error("could not execute createOffer - %e", err);
-        throw new SDPHandshakeFailedError("Failed to set createOffer");
+        log.error('could not execute createOffer - %e', err);
+        throw new SDPHandshakeFailedError('Failed to set createOffer');
       });
 
-      log.trace("initiator send SDP offer %s", offerSdp.sdp);
+      log.trace('initiator send SDP offer %s', offerSdp.sdp);
 
-      onProgress?.(new CustomProgressEvent("webrtc:send-sdp-offer"));
+      onProgress?.(new CustomProgressEvent('webrtc:send-sdp-offer'));
 
       // write the offer to the stream
       await messageStream.write(
@@ -171,13 +171,13 @@ export async function initiateConnection({
 
       // set offer as local description
       await peerConnection.setLocalDescription(offerSdp).catch((err) => {
-        log.error("could not execute setLocalDescription - %e", err);
-        throw new SDPHandshakeFailedError("Failed to set localDescription");
+        log.error('could not execute setLocalDescription - %e', err);
+        throw new SDPHandshakeFailedError('Failed to set localDescription');
       });
 
-      onProgress?.(new CustomProgressEvent("webrtc:read-sdp-answer"));
+      onProgress?.(new CustomProgressEvent('webrtc:read-sdp-answer'));
 
-      log.trace("initiator read SDP answer");
+      log.trace('initiator read SDP answer');
 
       // read answer
       const answerMessage = await messageStream.read({
@@ -185,42 +185,42 @@ export async function initiateConnection({
       });
 
       if (answerMessage.type !== Message.Type.SDP_ANSWER) {
-        throw new SDPHandshakeFailedError("Remote should send an SDP answer");
+        throw new SDPHandshakeFailedError('Remote should send an SDP answer');
       }
 
-      log.trace("initiator received SDP answer %s", answerMessage.data);
+      log.trace('initiator received SDP answer %s', answerMessage.data);
 
       const answerSdp = new RTCSessionDescription({
-        type: "answer",
+        type: 'answer',
         sdp: answerMessage.data,
       });
       await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
-        log.error("could not execute setRemoteDescription - %e", err);
-        throw new SDPHandshakeFailedError("Failed to set remoteDescription");
+        log.error('could not execute setRemoteDescription - %e', err);
+        throw new SDPHandshakeFailedError('Failed to set remoteDescription');
       });
 
-      log.trace("initiator read candidates until connected");
+      log.trace('initiator read candidates until connected');
 
-      onProgress?.(new CustomProgressEvent("webrtc:read-ice-candidates"));
+      onProgress?.(new CustomProgressEvent('webrtc:read-ice-candidates'));
 
       await readCandidatesUntilConnected(peerConnection, messageStream, {
-        direction: "initiator",
+        direction: 'initiator',
         signal,
         log,
         onProgress,
       });
 
-      log.trace("initiator connected, closing init channel");
+      log.trace('initiator connected, closing init channel');
       channel.close();
 
-      onProgress?.(new CustomProgressEvent("webrtc:close-signaling-stream"));
+      onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'));
 
-      log.trace("closing signaling channel");
+      log.trace('closing signaling channel');
       await stream.close({
         signal,
       });
 
-      log.trace("initiator connected to remote address %s", ma);
+      log.trace('initiator connected to remote address %s', ma);
 
       return {
         remoteAddress: ma,
@@ -228,7 +228,7 @@ export async function initiateConnection({
         muxerFactory,
       };
     } catch (err: any) {
-      log.error("outgoing signaling error - %e", err);
+      log.error('outgoing signaling error - %e', err);
 
       peerConnection.close();
       stream.abort(err);

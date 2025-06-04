@@ -1,33 +1,33 @@
-import { webtransportBiDiStreamToStream } from "./stream.js";
-import { inertDuplex } from "./utils/inert-duplex.js";
-import type WebTransport from "./webtransport.js";
+import { webtransportBiDiStreamToStream } from './stream.js';
+import { inertDuplex } from './utils/inert-duplex.js';
+import type WebTransport from './webtransport.js';
 import type {
   ComponentLogger,
   Stream,
   StreamMuxer,
   StreamMuxerFactory,
   StreamMuxerInit,
-} from "@libp2p/interface";
+} from '@libp2p/interface';
 
 export interface WebTransportMuxerInit {
   maxInboundStreams: number;
 }
 
 export function webtransportMuxer(
-  wt: Pick<WebTransport, "close" | "createBidirectionalStream">,
+  wt: Pick<WebTransport, 'close' | 'createBidirectionalStream'>,
   reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>,
   logger: ComponentLogger,
   config: WebTransportMuxerInit
 ): StreamMuxerFactory {
   let streamIDCounter = 0;
-  const log = logger.forComponent("libp2p:webtransport:muxer");
+  const log = logger.forComponent('libp2p:webtransport:muxer');
 
   return {
-    protocol: "webtransport",
+    protocol: 'webtransport',
     createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
       // !TODO handle abort signal when WebTransport supports this.
 
-      if (typeof init === "function") {
+      if (typeof init === 'function') {
         // The api docs say that init may be a function
         init = { onIncomingStream: init };
       }
@@ -51,13 +51,13 @@ export function webtransportMuxer(
               // We've reached our limit, close this stream.
               wtStream.writable.close().catch((err: Error) => {
                 log.error(
-                  "failed to close inbound stream that crossed our maxInboundStream limit - %e",
+                  'failed to close inbound stream that crossed our maxInboundStream limit - %e',
                   err.message
                 );
               });
               wtStream.readable.cancel().catch((err: Error) => {
                 log.error(
-                  "failed to close inbound stream that crossed our maxInboundStream limit - %e",
+                  'failed to close inbound stream that crossed our maxInboundStream limit - %e',
                   err.message
                 );
               });
@@ -65,7 +65,7 @@ export function webtransportMuxer(
               const stream = await webtransportBiDiStreamToStream(
                 wtStream,
                 String(streamIDCounter++),
-                "inbound",
+                'inbound',
                 activeStreams,
                 init?.onStreamEnd,
                 logger
@@ -76,20 +76,20 @@ export function webtransportMuxer(
           }
         })
         .catch((err) => {
-          log.error("could not create a new stream - %e", err);
+          log.error('could not create a new stream - %e', err);
         });
 
       const muxer: StreamMuxer = {
-        protocol: "webtransport",
+        protocol: 'webtransport',
         streams: activeStreams,
         newStream: async (name?: string): Promise<Stream> => {
-          log("new outgoing stream", name);
+          log('new outgoing stream', name);
 
           const wtStream = await wt.createBidirectionalStream();
           const stream = await webtransportBiDiStreamToStream(
             wtStream,
             String(streamIDCounter++),
-            init?.direction ?? "outbound",
+            init?.direction ?? 'outbound',
             activeStreams,
             init?.onStreamEnd,
             logger
@@ -103,7 +103,7 @@ export function webtransportMuxer(
          * Close all tracked streams and stop the muxer
          */
         close: async () => {
-          log("closing webtransport muxer gracefully");
+          log('closing webtransport muxer gracefully');
 
           try {
             wt.close();
@@ -116,12 +116,12 @@ export function webtransportMuxer(
          * Abort all tracked streams and stop the muxer
          */
         abort: (err: Error) => {
-          log("closing webtransport muxer with err:", err);
+          log('closing webtransport muxer with err:', err);
 
           try {
             wt.close();
           } catch (err: any) {
-            log.error("webtransport session threw error during close", err);
+            log.error('webtransport session threw error during close', err);
           }
         },
 

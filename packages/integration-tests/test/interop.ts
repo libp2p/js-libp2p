@@ -1,35 +1,35 @@
-import fs from "fs";
-import { gossipsub } from "@chainsafe/libp2p-gossipsub";
-import { noise } from "@chainsafe/libp2p-noise";
-import { yamux } from "@chainsafe/libp2p-yamux";
+import fs from 'fs';
+import { gossipsub } from '@chainsafe/libp2p-gossipsub';
+import { noise } from '@chainsafe/libp2p-noise';
+import { yamux } from '@chainsafe/libp2p-yamux';
 import {
   circuitRelayServer,
   circuitRelayTransport,
-} from "@libp2p/circuit-relay-v2";
-import { privateKeyFromProtobuf } from "@libp2p/crypto/keys";
-import { createClient } from "@libp2p/daemon-client";
-import { createServer } from "@libp2p/daemon-server";
-import { floodsub } from "@libp2p/floodsub";
-import { identify } from "@libp2p/identify";
-import { UnsupportedError, interopTests } from "@libp2p/interop";
-import { kadDHT, passthroughMapper } from "@libp2p/kad-dht";
-import { logger } from "@libp2p/logger";
-import { mplex } from "@libp2p/mplex";
-import { ping } from "@libp2p/ping";
-import { plaintext } from "@libp2p/plaintext";
-import { tcp } from "@libp2p/tcp";
-import { tls } from "@libp2p/tls";
-import { webRTCDirect } from "@libp2p/webrtc";
-import { multiaddr } from "@multiformats/multiaddr";
-import { execa } from "execa";
-import { path as p2pd } from "go-libp2p";
-import { createLibp2p } from "libp2p";
-import pDefer from "p-defer";
-import type { Identify } from "@libp2p/identify";
-import type { ServiceMap, PrivateKey } from "@libp2p/interface";
-import type { SpawnOptions, Daemon, DaemonFactory } from "@libp2p/interop";
-import type { PingService } from "@libp2p/ping";
-import type { Libp2pOptions, ServiceFactoryMap } from "libp2p";
+} from '@libp2p/circuit-relay-v2';
+import { privateKeyFromProtobuf } from '@libp2p/crypto/keys';
+import { createClient } from '@libp2p/daemon-client';
+import { createServer } from '@libp2p/daemon-server';
+import { floodsub } from '@libp2p/floodsub';
+import { identify } from '@libp2p/identify';
+import { UnsupportedError, interopTests } from '@libp2p/interop';
+import { kadDHT, passthroughMapper } from '@libp2p/kad-dht';
+import { logger } from '@libp2p/logger';
+import { mplex } from '@libp2p/mplex';
+import { ping } from '@libp2p/ping';
+import { plaintext } from '@libp2p/plaintext';
+import { tcp } from '@libp2p/tcp';
+import { tls } from '@libp2p/tls';
+import { webRTCDirect } from '@libp2p/webrtc';
+import { multiaddr } from '@multiformats/multiaddr';
+import { execa } from 'execa';
+import { path as p2pd } from 'go-libp2p';
+import { createLibp2p } from 'libp2p';
+import pDefer from 'p-defer';
+import type { Identify } from '@libp2p/identify';
+import type { ServiceMap, PrivateKey } from '@libp2p/interface';
+import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop';
+import type { PingService } from '@libp2p/ping';
+import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p';
 
 /**
  * @packageDocumentation
@@ -50,14 +50,14 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
   const opts = [`-listen=${apiAddr.toString()}`];
 
   if (options.noListen === true) {
-    opts.push("-noListenAddrs");
+    opts.push('-noListenAddrs');
   } else {
-    if (options.transport == null || options.transport === "tcp") {
-      opts.push("-hostAddrs=/ip4/127.0.0.1/tcp/0");
-    } else if (options.transport === "webtransport") {
-      opts.push("-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport");
-    } else if (options.transport === "webrtc-direct") {
-      opts.push("-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct");
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0');
+    } else if (options.transport === 'webtransport') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport');
+    } else if (options.transport === 'webrtc-direct') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct');
     } else {
       throw new UnsupportedError();
     }
@@ -68,15 +68,15 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
   }
 
   if (options.dht === true) {
-    opts.push("-dhtServer");
+    opts.push('-dhtServer');
   }
 
   if (options.relay === true) {
-    opts.push("-relay");
+    opts.push('-relay');
   }
 
   if (options.pubsub === true) {
-    opts.push("-pubsub");
+    opts.push('-pubsub');
   }
 
   if (options.pubsubRouter != null) {
@@ -87,31 +87,31 @@ async function createGoPeer(options: SpawnOptions): Promise<Daemon> {
     opts.push(`-id=${options.key}`);
   }
 
-  if (options.muxer === "mplex") {
-    opts.push("-muxer=mplex");
+  if (options.muxer === 'mplex') {
+    opts.push('-muxer=mplex');
   } else {
-    opts.push("-muxer=yamux");
+    opts.push('-muxer=yamux');
   }
 
   const deferred = pDefer();
   const proc = execa(p2pd(), opts, {
     env: {
-      GOLOG_LOG_LEVEL: "debug",
+      GOLOG_LOG_LEVEL: 'debug',
     },
   });
 
-  proc.stdout?.on("data", (buf: Buffer) => {
+  proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString();
     log(str);
 
     // daemon has started
-    if (str.includes("Control socket:")) {
+    if (str.includes('Control socket:')) {
       deferred.resolve();
     }
   });
 
-  proc.stderr?.on("data", (buf) => {
-    log.error("interop main error - %e", buf.toString());
+  proc.stderr?.on('data', (buf) => {
+    log.error('interop main error - %e', buf.toString());
   });
 
   await deferred.promise;
@@ -143,16 +143,16 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
   };
 
   if (options.noListen !== true) {
-    if (options.transport == null || options.transport === "tcp") {
-      opts.addresses?.listen?.push("/ip4/127.0.0.1/tcp/0");
-    } else if (options.transport === "webrtc-direct") {
-      opts.addresses?.listen?.push("/ip4/127.0.0.1/udp/0/webrtc-direct");
+    if (options.transport == null || options.transport === 'tcp') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0');
+    } else if (options.transport === 'webrtc-direct') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/webrtc-direct');
     } else {
       throw new UnsupportedError();
     }
   }
 
-  if (options.transport === "webtransport") {
+  if (options.transport === 'webtransport') {
     throw new UnsupportedError();
   }
 
@@ -163,22 +163,22 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
     ping: ping(),
   };
 
-  if (options.encryption === "tls") {
+  if (options.encryption === 'tls') {
     opts.connectionEncrypters?.push(tls());
-  } else if (options.encryption === "plaintext") {
+  } else if (options.encryption === 'plaintext') {
     opts.connectionEncrypters?.push(plaintext());
   } else {
     opts.connectionEncrypters?.push(noise());
   }
 
-  if (options.muxer === "mplex") {
+  if (options.muxer === 'mplex') {
     opts.streamMuxers?.push(mplex());
   } else {
     opts.streamMuxers?.push(yamux());
   }
 
   if (options.pubsub === true) {
-    if (options.pubsubRouter === "floodsub") {
+    if (options.pubsubRouter === 'floodsub') {
       services.pubsub = floodsub();
     } else {
       services.pubsub = gossipsub();
@@ -191,7 +191,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
 
   if (options.dht === true) {
     services.dht = kadDHT({
-      protocol: "/ipfs/kad/1.0.0",
+      protocol: '/ipfs/kad/1.0.0',
       peerInfoMapper: passthroughMapper,
       clientMode: false,
     });
@@ -202,7 +202,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
     services,
   });
 
-  const server = createServer(multiaddr("/ip4/127.0.0.1/tcp/0"), node);
+  const server = createServer(multiaddr('/ip4/127.0.0.1/tcp/0'), node);
   await server.start();
 
   return {
@@ -217,7 +217,7 @@ async function createJsPeer(options: SpawnOptions): Promise<Daemon> {
 async function main(): Promise<void> {
   const factory: DaemonFactory = {
     async spawn(options: SpawnOptions) {
-      if (options.type === "go") {
+      if (options.type === 'go') {
         return createGoPeer(options);
       }
 
