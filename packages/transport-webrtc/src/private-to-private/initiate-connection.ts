@@ -128,7 +128,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       onProgress?.(new CustomProgressEvent('webrtc:send-sdp-offer'))
 
       // write the offer to the stream
-     await messageStream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp }, {
+      await messageStream.write({ type: Message.Type.SDP_OFFER, data: offerSdp.sdp }, {
         signal
       })
 

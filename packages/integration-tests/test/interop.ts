@@ -110,7 +110,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   })
 
   proc.stderr?.on('data', (buf) => {
-    log.error('interop main error - %e', buf.toString())
+    log.error('interop main error - %s', buf.toString())
   })
 
   await deferred.promise

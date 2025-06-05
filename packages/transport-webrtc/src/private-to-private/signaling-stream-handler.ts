@@ -92,12 +92,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
   } catch (err: any) {
     if (getConnectionState(peerConnection) !== 'connected') {
-      log.error(
-        'error while handling signaling stream from peer %a - %e',
-        connection.remoteAddr,
-        err
-      )
-
+      log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
       peerConnection.close()
       throw err
     } else {
