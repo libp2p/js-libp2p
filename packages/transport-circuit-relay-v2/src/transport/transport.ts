@@ -5,6 +5,7 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
@@ -14,8 +15,8 @@ import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
@@ -62,11 +63,11 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   private readonly logger: ComponentLogger
   private readonly maxInboundStopStreams: number
   private readonly maxOutboundStopStreams?: number
-  private readonly stopTimeout: number
   private started: boolean
   private readonly log: Logger
+  private shutdownController: AbortController
 
-  constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
+  constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit = {}) {
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport')
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -79,7 +80,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     this.connectionGater = components.connectionGater
     this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
+    this.shutdownController = new AbortController()
 
     this.discovery = new RelayDiscovery(components, {
       filter: init.discoveryFilter ?? peerFilter(DEFAULT_DISCOVERY_FILTER_SIZE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE)
@@ -128,11 +129,20 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   }
 
   async start (): Promise<void> {
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
+
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
-      void this.onStop(data).catch(err => {
-        this.log.error('error while handling STOP protocol', err)
-        data.stream.abort(err)
-      })
+      const signal = this.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+
+      void this.onStop(data, signal)
+        .catch(err => {
+          this.log.error('error while handling STOP protocol', err)
+          data.stream.abort(err)
+        })
+        .finally(() => {
+          signal.clear()
+        })
     }, {
       maxInboundStreams: this.maxInboundStopStreams,
       maxOutboundStreams: this.maxOutboundStopStreams,
@@ -145,6 +155,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   }
 
   async stop (): Promise<void> {
+    this.shutdownController.abort()
     await stop(this.discovery, this.reservationStore)
     await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
 
@@ -279,7 +290,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   /**
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
-  async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
+  async onStop ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
     if (!this.reservationStore.hasReservation(connection.remotePeer)) {
       try {
         this.log('dialed via relay we did not have a reservation on, start listening on that relay address')
@@ -290,7 +301,6 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       }
     }
 
-    const signal = AbortSignal.timeout(this.stopTimeout)
     const pbstr = pbStream(stream).pb(StopMessage)
     const request = await pbstr.read({
       signal
@@ -322,7 +332,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
-      await stream.close()
+      await stream.close({
+        signal
+      })
       return
     }
 
@@ -333,7 +345,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
       })
-      await stream.close()
+      await stream.close({
+        signal
+      })
       return
     }
 
@@ -356,7 +370,8 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
     this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      limits: limits.getLimits()
+      limits: limits.getLimits(),
+      signal
     })
     this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
   }

@@ -1,6 +1,9 @@
+import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { mockConnection } from './connection.js'
-import type { Libp2pEvents, Connection, MultiaddrConnection, TypedEventTarget, Upgrader, UpgraderOptions } from '@libp2p/interface'
+import type { Libp2pEvents, Connection, MultiaddrConnection, Upgrader, UpgraderOptions, ClearableSignal, ConnectionEncrypter, StreamMuxerFactory } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface MockUpgraderInit {
   registrar?: Registrar
@@ -16,7 +19,7 @@ class MockUpgrader implements Upgrader {
     this.events = init.events
   }
 
-  async upgradeOutbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+  async upgradeOutbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions): Promise<Connection> {
     const connection = mockConnection(multiaddrConnection, {
       direction: 'outbound',
       registrar: this.registrar,
@@ -28,7 +31,7 @@ class MockUpgrader implements Upgrader {
     return connection
   }
 
-  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
+  async upgradeInbound (multiaddrConnection: MultiaddrConnection, opts: UpgraderOptions): Promise<void> {
     const connection = mockConnection(multiaddrConnection, {
       direction: 'inbound',
       registrar: this.registrar,
@@ -36,6 +39,24 @@ class MockUpgrader implements Upgrader {
     })
 
     this.events?.safeDispatchEvent('connection:open', { detail: connection })
+  }
+
+  createInboundAbortSignal (signal?: AbortSignal): ClearableSignal {
+    const output = anySignal([
+      AbortSignal.timeout(10_000),
+      signal
+    ])
+    setMaxListeners(Infinity, output)
+
+    return output
+  }
+
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter<unknown>> {
+    return new Map()
+  }
+
+  getStreamMuxers (): Map<string, StreamMuxerFactory> {
+    return new Map()
   }
 }
 

@@ -91,7 +91,7 @@ export class ClosestPeers implements Startable {
   }
 
   async updatePeerTags (): Promise<void> {
-    const newClosest = new PeerSet(this.newPeers?.peers.map(peer => peer.id))
+    const newClosest = new PeerSet(this.newPeers?.peers.map(({ peer }) => peer.id))
     const added = newClosest.difference(this.closestPeers)
     const removed = this.closestPeers.difference(newClosest)
     this.closestPeers = newClosest

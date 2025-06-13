@@ -1,5 +1,4 @@
-import { contentRoutingSymbol, TypedEventEmitter, start, stop, peerRoutingSymbol } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
+import { contentRoutingSymbol, start, stop, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -8,18 +7,23 @@ import all from 'it-all'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
-import { kadDHT, passthroughMapper, type KadDHT } from '../src/index.js'
+import { stubInterface } from 'sinon-ts'
+import { kadDHT, passthroughMapper } from '../src/index.js'
 import { Message, MessageType } from '../src/message/dht.js'
 import { convertBuffer } from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
-import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
+import type { KadDHT } from '../src/index.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
+import type { ContentRouting, PeerStore, PeerId, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Ping } from '@libp2p/ping'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedKadDHTComponents {
   peerId: PeerId
@@ -31,6 +35,7 @@ interface StubbedKadDHTComponents {
   datastore: Datastore
   events: TypedEventTarget<any>
   logger: ComponentLogger
+  ping: Ping
 }
 
 const PROTOCOL = '/test/dht/1.0.0'
@@ -51,7 +56,7 @@ function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): { 
 
   const connection = stubInterface<Connection>()
   connection.newStream.withArgs(PROTOCOL).resolves(outgoingStream)
-  components.connectionManager.openConnection.withArgs(matchPeerId(peerId)).resolves(connection)
+  components.connectionManager.openConnection.withArgs(peerId).resolves(connection)
 
   return {
     connection,
@@ -67,7 +72,7 @@ function createPeer (peerId: PeerId, peer: Partial<Peer> = {}): Peer {
     id: peerId,
     addresses: [{
       isCertified: false,
-      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.random() * (maxPort - minPort) + minPort}`)
+      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.round(Math.random() * (maxPort - minPort) + minPort)}`)
     }],
     tags: new Map(),
     metadata: new Map(),
@@ -82,7 +87,8 @@ describe('content routing', () => {
   let contentRouting: ContentRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerIdWithPrivateKey[]
+  let peers: PeerAndKey[]
+
   let key: CID
 
   beforeEach(async () => {
@@ -94,7 +100,7 @@ describe('content routing', () => {
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
 
     components = {
-      peerId: peers[peers.length - 1],
+      peerId: peers[peers.length - 1].peerId,
       privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
@@ -106,18 +112,22 @@ describe('content routing', () => {
       }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping: stubInterface<Ping>()
     }
 
     dht = kadDHT({
       protocol: PROTOCOL,
       peerInfoMapper: passthroughMapper,
       clientMode: false,
-      allowQueryWithZeroPeers: true
+      initialQuerySelfInterval: 10_000
     })(components)
 
     // @ts-expect-error not part of public api
     dht.routingTable.kb.verify = async () => true
+
+    // @ts-expect-error not part of public api
+    dht.queryManager.initialQuerySelfHasRun.resolve()
 
     await start(dht)
 
@@ -130,9 +140,13 @@ describe('content routing', () => {
   })
 
   it('should provide', async () => {
-    const remotePeer = createPeer(peers[0])
+    const remotePeer = createPeer(peers[0].peerId)
 
-    components.peerStore.get.withArgs(matchPeerId(remotePeer.id)).resolves(remotePeer)
+    components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -167,10 +181,14 @@ describe('content routing', () => {
   })
 
   it('should find providers', async () => {
-    const remotePeer = createPeer(peers[3])
-    const providerPeer = createPeer(peers[2])
+    const remotePeer = createPeer(peers[3].peerId)
+    const providerPeer = createPeer(peers[2].peerId)
 
-    components.peerStore.get.withArgs(matchPeerId(remotePeer.id)).resolves(remotePeer)
+    components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -215,7 +233,7 @@ describe('peer routing', () => {
   let peerRouting: PeerRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
-  let peers: PeerIdWithPrivateKey[]
+  let peers: PeerAndKey[]
   let key: CID
 
   beforeEach(async () => {
@@ -227,7 +245,7 @@ describe('peer routing', () => {
     peers = await sortClosestPeers(unsortedPeers, await convertBuffer(key.multihash.bytes))
 
     components = {
-      peerId: peers[peers.length - 1],
+      peerId: peers[peers.length - 1].peerId,
       privateKey: peers[peers.length - 1].privateKey,
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
@@ -239,20 +257,23 @@ describe('peer routing', () => {
       }),
       datastore: new MemoryDatastore(),
       events: new TypedEventEmitter<any>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping: stubInterface<Ping>()
     }
 
     dht = kadDHT({
       protocol: PROTOCOL,
       peerInfoMapper: passthroughMapper,
-      clientMode: false,
-      allowQueryWithZeroPeers: true
+      clientMode: false
     })(components)
 
     await start(dht)
 
     // @ts-expect-error not part of public api
     dht.routingTable.kb.verify = async () => true
+
+    // @ts-expect-error not part of public api
+    dht.queryManager.initialQuerySelfHasRun.resolve()
 
     // @ts-expect-error cannot use symbol to index KadDHT type
     peerRouting = dht[peerRoutingSymbol]
@@ -263,10 +284,10 @@ describe('peer routing', () => {
   })
 
   it('should find peer', async () => {
-    const remotePeer = createPeer(peers[1])
-    const targetPeer = createPeer(peers[0])
+    const remotePeer = createPeer(peers[1].peerId)
+    const targetPeer = createPeer(peers[0].peerId)
 
-    components.peerStore.get.withArgs(matchPeerId(remotePeer.id)).resolves(remotePeer)
+    components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
 
     const {
       connection,
@@ -278,13 +299,13 @@ describe('peer routing', () => {
     topology.onConnect?.(remotePeer.id, connection)
 
     // begin find
-    const p = peerRouting.findPeer(peers[0])
+    const p = peerRouting.findPeer(peers[0].peerId)
 
     // read FIND_NODE message
     const pb = pbStream(incomingStream)
     const findNodeRequest = await pb.read(Message)
     expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
-    expect(findNodeRequest.key).to.equalBytes(peers[0].toMultihash().bytes)
+    expect(findNodeRequest.key).to.equalBytes(peers[0].peerId.toMultihash().bytes)
 
     // reply with this node
     await pb.write({
@@ -307,14 +328,22 @@ describe('peer routing', () => {
   })
 
   it('should find closest peers', async () => {
-    const remotePeer = createPeer(peers[3])
-    const closestPeer = createPeer(peers[2])
+    const remotePeer = createPeer(peers[3].peerId)
+    const closestPeer = createPeer(peers[2].peerId)
 
     const remotePeerInteractionsComplete = pDefer()
     const closestPeerInteractionsComplete = pDefer()
 
-    components.peerStore.get.withArgs(matchPeerId(remotePeer.id)).resolves(remotePeer)
-    components.peerStore.get.withArgs(matchPeerId(closestPeer.id)).resolves(closestPeer)
+    components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
+    components.peerStore.get.withArgs(closestPeer.id).resolves(closestPeer)
+    components.peerStore.getInfo.withArgs(closestPeer.id).resolves({
+      id: closestPeer.id,
+      multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -371,10 +400,10 @@ describe('peer routing', () => {
     await expect(all(map(peerRouting.getClosestPeers(key.multihash.bytes), prov => ({
       id: prov.id.toString(),
       multiaddrs: prov.multiaddrs.map(ma => ma.toString())
-    })))).to.eventually.deep.equal([{
+    })))).to.eventually.deep.include({
       id: closestPeer.id.toString(),
       multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr.toString())
-    }])
+    })
 
     await expect(remotePeerInteractionsComplete.promise).to.eventually.be.undefined()
     await expect(closestPeerInteractionsComplete.promise).to.eventually.be.undefined()

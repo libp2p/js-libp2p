@@ -1,29 +1,22 @@
-import { type CollectFunction, Gauge } from 'prom-client'
-import { normaliseString } from './utils.js'
+import { Gauge } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
-import type { Metric, StopTimer, CalculateMetric } from '@libp2p/interface'
+import type { Metric, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusMetric implements Metric {
   private readonly gauge: Gauge
-  private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const labels = opts.label != null ? [normaliseString(opts.label)] : []
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<Gauge<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        const values = await Promise.all(self.calculators.map(async calculate => calculate()))
-        const sum = values.reduce((acc, curr) => acc + curr, 0)
-
-        this.set(sum)
+        this.set(await opts.calculate())
       }
     }
 
@@ -34,10 +27,6 @@ export class PrometheusMetric implements Metric {
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric): void {
-    this.calculators.push(calculator)
   }
 
   update (value: number): void {

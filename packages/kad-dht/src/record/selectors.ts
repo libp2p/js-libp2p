@@ -36,10 +36,10 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
  * Simply returns the first record, as all valid public key
  * records are equal
  */
-function publickKey (k: Uint8Array, records: Uint8Array[]): number {
+function publicKey (k: Uint8Array, records: Uint8Array[]): number {
   return 0
 }
 
 export const selectors: Selectors = {
-  pk: publickKey
+  pk: publicKey
 }

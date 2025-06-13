@@ -16,6 +16,7 @@
  * })
  *
  * libp2p.addEventListener('peer:discovery', (evt) => {
+ *   libp2p.dial(evt.detail.multiaddrs) // dial discovered peers
  *   console.log('found peer: ', evt.detail.toString())
  * })
  * ```

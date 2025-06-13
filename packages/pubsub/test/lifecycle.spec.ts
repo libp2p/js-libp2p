@@ -37,7 +37,7 @@ class PubsubProtocol extends PubSubBaseProtocol {
   }
 }
 
-describe('pubsub base lifecycle', () => {
+describe('pubsub base life cycle', () => {
   describe('should start and stop properly', () => {
     let pubsub: PubsubProtocol
     let sinonMockRegistrar: Registrar

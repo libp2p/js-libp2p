@@ -3,12 +3,12 @@
 
 import fs from 'node:fs'
 import http from 'node:http'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
+import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
@@ -80,13 +80,6 @@ describe('listen', () => {
 
       // call getAddrs before sockets have opened
       expect(listener.getAddrs()).to.be.empty()
-    })
-
-    it('should throw when `.getAddrs` called before `.listen`', async () => {
-      listener = ws.createListener({ upgrader })
-
-      // call getAddrs before sockets have opened
-      expect(() => listener.getAddrs()).to.throw(/not ready/)
     })
 
     it('should error on starting two listeners on same address', async () => {
@@ -262,7 +255,8 @@ describe('dial', () => {
 
     it('dial', async () => {
       await expect(ws.dial(ma, {
-        upgrader
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
       })).to.eventually.be.ok()
     })
 
@@ -270,7 +264,8 @@ describe('dial', () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
 
       await expect(ws.dial(ma, {
-        upgrader
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
       })).to.eventually.be.ok()
     })
 
@@ -300,7 +295,10 @@ describe('dial', () => {
       expect(localAddrs.length).to.equal(1)
 
       // Dial to that address
-      await ws.dial(localAddrs[0], { upgrader })
+      await ws.dial(localAddrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })
 
       // Wait for the incoming dial to be handled
       await pWaitFor(() => {
@@ -344,7 +342,10 @@ describe('dial', () => {
       }
 
       // Dial first no loopback address
-      await expect(ws.dial(addrs[0], { upgrader }))
+      await expect(ws.dial(addrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })
@@ -385,7 +386,10 @@ describe('dial', () => {
     })
 
     it('dial ip4', async () => {
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })
@@ -411,13 +415,19 @@ describe('dial', () => {
     })
 
     it('dial ip6', async () => {
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      await expect(ws.dial(ma, { upgrader }))
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
         .to.eventually.be.ok()
     })
   })

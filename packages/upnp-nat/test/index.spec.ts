@@ -1,17 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { TypedEventEmitter } from 'main-event'
+import { stubInterface } from 'sinon-ts'
 import { UPnPNAT } from '../src/upnp-nat.js'
 import type { UPnPNATInit } from '../src/index.js'
 import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
-import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedUPnPNATComponents {
   peerId: PeerId
@@ -29,7 +32,7 @@ describe('UPnP NAT (TCP)', () => {
   async function createNatManager (natManagerOptions: UPnPNATInit = {}): Promise<{ natManager: any, components: StubbedUPnPNATComponents }> {
     const components: StubbedUPnPNATComponents = {
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      nodeInfo: { name: 'test', version: 'test' },
+      nodeInfo: { name: 'test', version: 'test', userAgent: 'test' },
       logger: defaultLogger(),
       addressManager: stubInterface<AddressManager>(),
       events: new TypedEventEmitter()
@@ -159,7 +162,7 @@ describe('UPnP NAT (TCP)', () => {
     expect(components.addressManager.addPublicAddressMapping.called).to.be.true()
   })
 
-  it('should not map TCP connections when double-natted', async () => {
+  it('should not map TCP connections when double-NATed', async () => {
     const {
       natManager,
       components

@@ -67,4 +67,75 @@ describe('repeating-task', () => {
 
     expect(count).to.be.greaterThan(1)
   })
+
+  it('should update the interval of a task', async () => {
+    let count = 0
+
+    const task = repeatingTask(() => {
+      count++
+
+      if (count === 1) {
+        task.setInterval(2000)
+      }
+    }, 100)
+    task.start()
+
+    await delay(1000)
+
+    task.stop()
+
+    expect(count).to.equal(1)
+  })
+
+  it('should update the timeout of a task', async () => {
+    let count = 0
+
+    const task = repeatingTask(async (options) => {
+      // simulate a delay
+      await delay(100)
+
+      if (options?.signal?.aborted !== true) {
+        count++
+      }
+
+      if (count === 1) {
+        // set the task timeout to less than our simulated delay
+        task.setTimeout(10)
+      }
+    }, 100, {
+      timeout: 500
+    })
+    task.start()
+
+    await delay(1000)
+
+    task.stop()
+
+    expect(count).to.equal(1)
+  })
+
+  it('should not reschedule the task if the interval is updated to the same value', async () => {
+    let count = 0
+
+    const task = repeatingTask(() => {
+      count++
+    }, 1_000, {
+      runImmediately: true
+    })
+    task.start()
+
+    await delay(100)
+
+    task.setInterval(200)
+
+    await delay(100)
+
+    task.setInterval(200)
+
+    await delay(100)
+
+    task.stop()
+
+    expect(count).to.equal(2)
+  })
 })

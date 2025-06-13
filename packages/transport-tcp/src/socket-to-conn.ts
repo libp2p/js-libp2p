@@ -34,7 +34,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
   const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
-  let timedout = false
+  let timedOut = false
   let errored = false
 
   // Check if we are connected on a unix path
@@ -50,7 +50,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.on('error', err => {
     errored = true
 
-    if (!timedout) {
+    if (!timedOut) {
       log.error('%s socket error - %e', direction, err)
       metrics?.increment({ [`${metricPrefix}error`]: true })
     }
@@ -82,7 +82,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.setTimeout(inactivityTimeout)
 
   socket.once('timeout', () => {
-    timedout = true
+    timedOut = true
     log('%s %s socket read timeout', direction, lOptsStr)
     metrics?.increment({ [`${metricPrefix}timeout`]: true })
 
@@ -94,7 +94,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   socket.once('close', () => {
     // record metric for clean exit
-    if (!timedout && !errored) {
+    if (!timedOut && !errored) {
       log('%s %s socket close', direction, lOptsStr)
       metrics?.increment({ [`${metricPrefix}close`]: true })
     }

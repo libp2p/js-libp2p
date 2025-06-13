@@ -1,67 +1,6 @@
-/**
- * @packageDocumentation
- *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/)
- * that operates in-memory only.
- *
- * This is intended for testing and can only be used to connect two libp2p nodes
- * that are running in the same process.
- *
- * @example
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- * import { multiaddr } from '@multiformats/multiaddr'
- *
- * const listener = await createLibp2p({
- *   addresses: {
- *     listen: [
- *       '/memory/node-a'
- *     ]
- *   },
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const ma = multiaddr('/memory/node-a')
- *
- * // dial the listener, timing out after 10s
- * const connection = await dialer.dial(ma, {
- *   signal: AbortSignal.timeout(10_000)
- * })
- *
- * // use connection...
- * ```
- *
- * @example Simulating slow connections
- *
- * A `latency` argument can be passed to the factory. Each byte array that
- * passes through the transport will be delayed by this many ms.
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory({
- *       latency: 100
- *     })
- *   ]
- * })
- * ```
- */
-
-import { ListenError, TypedEventEmitter } from '@libp2p/interface'
+import { ListenError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { nanoid } from 'nanoid'
 import { MemoryConnection, connections } from './connections.js'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
@@ -77,12 +16,15 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   private connection?: MemoryConnection
   private readonly components: MemoryTransportComponents
   private readonly init: MemoryTransportListenerInit
+  private readonly shutdownController: AbortController
 
   constructor (components: MemoryTransportComponents, init: MemoryTransportListenerInit) {
     super()
 
     this.components = components
     this.init = init
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
   async listen (ma: Multiaddr): Promise<void> {
@@ -109,15 +51,9 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   }
 
   onConnection (maConn: MultiaddrConnection): void {
-    let signal: AbortSignal | undefined
-
-    if (this.init.inboundUpgradeTimeout != null) {
-      signal = AbortSignal.timeout(this.init.inboundUpgradeTimeout)
-    }
-
     this.init.upgrader.upgradeInbound(maConn, {
       ...this.init.upgraderOptions,
-      signal
+      signal: this.shutdownController.signal
     })
       .catch(err => {
         maConn.abort(err)
@@ -134,12 +70,18 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     ]
   }
 
+  updateAnnounceAddrs (): void {
+
+  }
+
   async close (): Promise<void> {
     this.connection?.close()
 
     if (this.listenAddr != null) {
       connections.delete(this.listenAddr.toString())
     }
+
+    this.shutdownController.abort()
 
     queueMicrotask(() => {
       this.safeDispatchEvent('close')

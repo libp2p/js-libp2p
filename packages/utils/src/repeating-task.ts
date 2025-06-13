@@ -1,9 +1,38 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import type { AbortOptions } from '@libp2p/interface'
 
 export interface RepeatingTask {
+  /**
+   * Update the interval after which the next iteration of the task will run.
+   *
+   * This is useful if, for example, you want to retry a task with a short rest
+   * duration until it succeeds, then periodically after that.
+   *
+   * This only affects the next iteration of the task, if it is currently
+   * running, that run will not be interrupted.
+   *
+   * Setting the interval to the current value has no effect.
+   */
+  setInterval(ms: number): void
+
+  /**
+   * Update the amount of time a task will run before the passed abort signal
+   * will fire.
+   *
+   * This only affects the next iteration of the task, if it is currently
+   * running, that run will not be interrupted.
+   */
+  setTimeout(ms: number): void
+
+  /**
+   * Start the task running
+   */
   start(): void
+
+  /**
+   * Stop the task running
+   */
   stop(): void
 }
 
@@ -16,6 +45,8 @@ export interface RepeatingTaskOptions {
 
   /**
    * Whether to schedule the task to run immediately
+   *
+   * @default false
    */
   runImmediately?: boolean
 }
@@ -54,7 +85,25 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
   let started = false
 
   return {
-    start: () => {
+    setInterval: (ms): void => {
+      if (interval === ms) {
+        // already running at this interval, nothing to do
+        return
+      }
+
+      interval = ms
+
+      // maybe reschedule
+      if (timeout != null) {
+        clearTimeout(timeout)
+        timeout = setTimeout(runTask, interval)
+      }
+    },
+    setTimeout: (ms): void => {
+      options ??= {}
+      options.timeout = ms
+    },
+    start: (): void => {
       if (started) {
         return
       }
@@ -73,7 +122,7 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
         timeout = setTimeout(runTask, interval)
       }
     },
-    stop: () => {
+    stop: (): void => {
       clearTimeout(timeout)
       shutdownController?.abort()
       started = false

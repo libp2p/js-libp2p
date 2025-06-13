@@ -16,17 +16,17 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('Network', () => {
   let dht: KadDHT
-  let tdht: TestDHT
+  let testDHT: TestDHT
 
   before(async function () {
     this.timeout(10 * 1000)
-    tdht = new TestDHT()
-    dht = await tdht.spawn({
+    testDHT = new TestDHT()
+    dht = await testDHT.spawn({
       clientMode: false
     })
   })
 
-  after(async () => { await tdht.teardown() })
+  after(async () => { await testDHT.teardown() })
 
   describe('sendRequest', () => {
     it('send and response echo', async () => {
@@ -35,7 +35,14 @@ describe('Network', () => {
         key: uint8ArrayFromString('hello')
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()
@@ -90,7 +97,14 @@ describe('Network', () => {
         return connection
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg))
+      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }))
       const response = events
         .filter(event => event.name === 'PEER_RESPONSE')
         .pop()

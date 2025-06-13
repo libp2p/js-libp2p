@@ -1,9 +1,11 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import merge from 'merge-options'
+import { mergeOptions } from '@libp2p/utils/merge-options'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import * as errorsJs from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, TypedEventTarget, PeerId, PeerStore, Topology } from '@libp2p/interface'
-import type { StreamHandlerOptions, StreamHandlerRecord, Registrar, StreamHandler } from '@libp2p/interface-internal'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
+import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
+import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_MAX_INBOUND_STREAMS = 32
 export const DEFAULT_MAX_OUTBOUND_STREAMS = 64
@@ -13,22 +15,37 @@ export interface RegistrarComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**
  * Responsible for notifying registered protocols of events in the network.
  */
-export class DefaultRegistrar implements Registrar {
+export class Registrar implements RegistrarInterface {
   private readonly log: Logger
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
 
   constructor (components: RegistrarComponents) {
+    this.components = components
     this.log = components.logger.forComponent('libp2p:registrar')
     this.topologies = new Map()
-    this.handlers = new Map()
-    this.components = components
+    components.metrics?.registerMetricGroup('libp2p_registrar_topologies', {
+      calculate: () => {
+        const output: Record<string, number> = {}
+
+        for (const [key, value] of this.topologies) {
+          output[key] = value.size
+        }
+
+        return output
+      }
+    })
+    this.handlers = trackedMap({
+      name: 'libp2p_registrar_protocol_handlers',
+      metrics: components.metrics
+    })
 
     this._onDisconnect = this._onDisconnect.bind(this)
     this._onPeerUpdate = this._onPeerUpdate.bind(this)
@@ -73,11 +90,11 @@ export class DefaultRegistrar implements Registrar {
    * Registers the `handler` for each protocol
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
-    if (this.handlers.has(protocol)) {
+    if (this.handlers.has(protocol) && opts?.force !== true) {
       throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
-    const options = merge.bind({ ignoreUndefined: true })({
+    const options = mergeOptions.bind({ ignoreUndefined: true })({
       maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
       maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
     }, opts)
@@ -90,14 +107,14 @@ export class DefaultRegistrar implements Registrar {
     // Add new protocol to self protocols in the peer store
     await this.components.peerStore.merge(this.components.peerId, {
       protocols: [protocol]
-    })
+    }, opts)
   }
 
   /**
    * Removes the handler for each protocol. The protocol
    * will no longer be supported on streams.
    */
-  async unhandle (protocols: string | string[]): Promise<void> {
+  async unhandle (protocols: string | string[], options?: AbortOptions): Promise<void> {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols]
 
     protocolList.forEach(protocol => {
@@ -107,7 +124,7 @@ export class DefaultRegistrar implements Registrar {
     // Update self protocols in the peer store
     await this.components.peerStore.patch(this.components.peerId, {
       protocols: this.getProtocols()
-    })
+    }, options)
   }
 
   /**
@@ -153,8 +170,11 @@ export class DefaultRegistrar implements Registrar {
    */
   _onDisconnect (evt: CustomEvent<PeerId>): void {
     const remotePeer = evt.detail
+    const options = {
+      signal: AbortSignal.timeout(5_000)
+    }
 
-    void this.components.peerStore.get(remotePeer)
+    void this.components.peerStore.get(remotePeer, options)
       .then(peer => {
         for (const protocol of peer.protocols) {
           const topologies = this.topologies.get(protocol)

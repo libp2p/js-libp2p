@@ -50,7 +50,7 @@ Other systems have tried to fill this gap, notably CommonJS, AMD, RequireJS and 
 }
 ```
 
-For more info on enablng ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
+For more info on enabling ES modules in Node, see [this guide](https://nodejs.org/api/esm.html).
 
 ### Basic setup
 
@@ -176,8 +176,8 @@ const node = await createLibp2p({
 await node.start()
 console.log('libp2p has started')
 
-const listenAddrs = node.getMultiaddrs()
-console.log('libp2p is listening on the following addresses: ', listenAddrs)
+const listenAddresses = node.getMultiaddrs()
+console.log('libp2p is listening on the following addresses: ', listenAddresses)
 
 // stop libp2p
 await node.stop()
@@ -254,17 +254,17 @@ When running libp2p you may want to see what things are happening behind the sce
 
 ### Node
 
-```javascript
+```JavaScript
 # all libp2p debug logs
-DEBUG="libp2p:*" node myscript.js
+DEBUG="libp2p:*" node my-script.js
 
 # networking debug logs
-DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node myscript.js
+DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node my-script.js
 ```
 
 ### Browser
 
-```javascript
+```JavaScript
 // all libp2p debug logs
 localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
 

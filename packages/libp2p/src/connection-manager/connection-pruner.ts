@@ -3,9 +3,10 @@ import { safelyCloseConnectionIfUnused } from '@libp2p/utils/close'
 import { MAX_CONNECTIONS } from './constants.js'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { Libp2pEvents, Logger, ComponentLogger, TypedEventTarget, PeerStore, Connection } from '@libp2p/interface'
+import type { Libp2pEvents, Logger, ComponentLogger, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 interface ConnectionPrunerInit {
   maxConnections?: number

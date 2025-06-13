@@ -1,10 +1,13 @@
 import { UnsupportedOperationError, isPeerId } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import { connectionPair } from './connection.js'
-import type { PrivateKey, PeerId, ComponentLogger, Libp2pEvents, PendingDial, Connection, TypedEventTarget, PubSub, Startable } from '@libp2p/interface'
+import type { PrivateKey, PeerId, ComponentLogger, Libp2pEvents, PendingDial, Connection, PubSub, Startable } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions } from 'it-pushable'
+import type { TypedEventTarget } from 'main-event'
 
 export interface MockNetworkComponents {
   peerId: PeerId
@@ -101,10 +104,12 @@ class MockConnectionManager implements ConnectionManager, Startable {
     return 10_000
   }
 
-  async openConnection (peerId: PeerId | Multiaddr | Multiaddr[]): Promise<Connection> {
+  async openConnection (peerId: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection> {
     if (isMultiaddr(peerId)) {
       throw new UnsupportedOperationError('Dialing multiaddrs not supported')
     }
+
+    options?.signal?.throwIfAborted()
 
     let existingConnections: Connection[] = []
 

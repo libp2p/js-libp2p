@@ -22,6 +22,9 @@
       "path": "../interface-internal"
     },
     {
+      "path": "../keychain"
+    },
+    {
       "path": "../logger"
     },
     {

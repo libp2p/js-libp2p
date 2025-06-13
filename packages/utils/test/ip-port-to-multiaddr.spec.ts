@@ -35,7 +35,7 @@ describe('IP and port to Multiaddr', () => {
   })
 
   it('throws for invalid IP address', () => {
-    const ip = 'aewmrn4awoew'
+    const ip = 'not-an-ip'
     const port = '234'
     expect(() => ipPortToMultiaddr(ip, port)).to.throw('invalid ip:port for creating a multiaddr').with.property('name', 'InvalidParametersError')
   })

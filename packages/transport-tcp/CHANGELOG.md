@@ -89,6 +89,252 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.14](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.13...tcp-v10.1.14) (2025-06-03)
+
+
+### Bug Fixes
+
+* deduplicate typed event target ([#3170](https://github.com/libp2p/js-libp2p/issues/3170)) ([cc7b34c](https://github.com/libp2p/js-libp2p/commit/cc7b34c0fe3ac5745fd082ae0198b8742371a412))
+* do not re-register metrics ([#3153](https://github.com/libp2p/js-libp2p/issues/3153)) ([5b004c0](https://github.com/libp2p/js-libp2p/commit/5b004c0c42195c893dece1989a52ad6ddc90a3c1))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
+## [10.1.13](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.12...tcp-v10.1.13) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/utils bumped from ^6.6.4 to ^6.6.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+
+## [10.1.12](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.11...tcp-v10.1.12) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+
+## [10.1.11](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.10...tcp-v10.1.11) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/utils bumped from ^6.6.2 to ^6.6.3
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+
+## [10.1.10](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.9...tcp-v10.1.10) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/utils bumped from ^6.6.1 to ^6.6.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+
+## [10.1.9](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.8...tcp-v10.1.9) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/utils bumped from ^6.6.0 to ^6.6.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
+## [10.1.8](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.7...tcp-v10.1.8) (2025-03-18)
+
+
+### Bug Fixes
+
+* use getThinWaistAddresss function ([#3047](https://github.com/libp2p/js-libp2p/issues/3047)) ([a7ab9a4](https://github.com/libp2p/js-libp2p/commit/a7ab9a41b97504695d10045c1d50b2a610d69c24))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+
+## [10.1.7](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.6...tcp-v10.1.7) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+
+## [10.1.6](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.5...tcp-v10.1.6) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/utils bumped from ^6.5.6 to ^6.5.7
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+
+## [10.1.5](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.4...tcp-v10.1.5) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+
+## [10.1.4](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.3...tcp-v10.1.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* constrain ip6 listener to ip6 addresses ([#3010](https://github.com/libp2p/js-libp2p/issues/3010)) ([22e62d0](https://github.com/libp2p/js-libp2p/commit/22e62d00f508b0d77fc61e93b2f365963b6b699a))
+
+## [10.1.3](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.2...tcp-v10.1.3) (2025-02-25)
+
+
+### Bug Fixes
+
+* add inbound upgrade timeout config option ([#2995](https://github.com/libp2p/js-libp2p/issues/2995)) ([f465c54](https://github.com/libp2p/js-libp2p/commit/f465c5473bbf4446fa1e8b882e6df6c1da18785e))
+* ensure that the upgrader applies timeouts to incoming dials ([#3000](https://github.com/libp2p/js-libp2p/issues/3000)) ([90cca82](https://github.com/libp2p/js-libp2p/commit/90cca822b4cb112fc71bf9ad954023de685a9040))
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/utils bumped from ^6.5.4 to ^6.5.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+
+## [10.1.2](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.1...tcp-v10.1.2) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.3 to ^6.5.4
+
+## [10.1.1](https://github.com/libp2p/js-libp2p/compare/tcp-v10.1.0...tcp-v10.1.1) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+
+## [10.1.0](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.20...tcp-v10.1.0) (2025-02-20)
+
+
+### Features
+
+* allow transports to modify announce addresses ([#2978](https://github.com/libp2p/js-libp2p/issues/2978)) ([8331c8e](https://github.com/libp2p/js-libp2p/commit/8331c8ea8feef1d642b6667213409dbe8293b606))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/utils bumped from ^6.5.1 to ^6.5.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+
+## [10.0.20](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.19...tcp-v10.0.20) (2025-02-18)
+
+
+### Bug Fixes
+
+* override browser override for react-native ([#2970](https://github.com/libp2p/js-libp2p/issues/2970)) ([5a9bbf7](https://github.com/libp2p/js-libp2p/commit/5a9bbf7eeb52df79a5d8b99a19d2b108f8bbbc55)), closes [#2969](https://github.com/libp2p/js-libp2p/issues/2969)
+
+## [10.0.19](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.18...tcp-v10.0.19) (2025-02-13)
+
+
+### Bug Fixes
+
+* remove unused fields from browser polyfill ([#2958](https://github.com/libp2p/js-libp2p/issues/2958)) ([c4e8627](https://github.com/libp2p/js-libp2p/commit/c4e8627313f40cd625b6149da6967df48ce6ffba))
+
+## [10.0.18](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.17...tcp-v10.0.18) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/utils bumped from ^6.5.0 to ^6.5.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+
+## [10.0.17](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.16...tcp-v10.0.17) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
+## [10.0.16](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.15...tcp-v10.0.16) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+
 ## [10.0.15](https://github.com/libp2p/js-libp2p/compare/tcp-v10.0.14...tcp-v10.0.15) (2025-01-07)
 
 

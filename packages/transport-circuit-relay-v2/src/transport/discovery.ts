@@ -1,6 +1,6 @@
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { anySignal } from 'any-signal'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   RELAY_V2_HOP_CODEC
@@ -114,7 +114,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             }
           ],
           orders: [
-            // randomise
+            // randomize
             () => Math.random() < 0.5 ? 1 : -1,
             // prefer peers we've connected to in the past
             (a, b) => {

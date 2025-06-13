@@ -1,7 +1,7 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
-import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
@@ -11,9 +11,11 @@ import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_DIAL_PRIORITY = 50
 
@@ -59,7 +61,7 @@ export interface ConnectionManagerInit {
    * How long a dial attempt is allowed to take, including DNS resolution
    * of the multiaddr, opening a socket and upgrading it to a Connection.
    *
-   * @default 5000
+   * @default 10_000
    */
   dialTimeout?: number
 
@@ -67,7 +69,7 @@ export interface ConnectionManagerInit {
    * When a new incoming connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 3000
+   * @default 10_000
    */
   inboundUpgradeTimeout?: number
 
@@ -75,7 +77,9 @@ export interface ConnectionManagerInit {
    * When a new outbound connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 3000
+   * Does not apply if an abort signal is passed to the `.dial` method.
+   *
+   * @deprecated This is handled by `dialTimeout`
    */
   outboundUpgradeTimeout?: number
 
@@ -83,8 +87,27 @@ export interface ConnectionManagerInit {
    * Protocol negotiation must complete within this number of ms
    *
    * @default 2000
+   * @deprecated use outboundStreamProtocolNegotiationTimeout or inboundStreamProtocolNegotiationTimeout instead
    */
   protocolNegotiationTimeout?: number
+
+  /**
+   * Outbound protocol negotiation must complete within this number of ms.
+   *
+   * Does not apply if an abort signal is passed to the `.dial` or
+   * `.dialProtocol` method of the `ConnectionManager` or the `openStream`
+   * method of the `Connection`.
+   *
+   * @default 10_000
+   */
+  outboundStreamProtocolNegotiationTimeout?: number
+
+  /**
+   * Inbound protocol negotiation must complete within this number of ms
+   *
+   * @default 10_000
+   */
+  inboundStreamProtocolNegotiationTimeout?: number
 
   /**
    * Multiaddr resolvers to use when dialling

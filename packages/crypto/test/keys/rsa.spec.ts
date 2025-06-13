@@ -1,15 +1,24 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { isPrivateKey, isPublicKey } from '@libp2p/interface'
+import { sha256 } from '@noble/hashes/sha256'
 import { expect } from 'aegir/chai'
+import * as asn1js from 'asn1js'
+import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
-import { MAX_RSA_KEY_SIZE, pkcs1ToRSAPrivateKey, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
+import { privateKeyFromCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
+import * as pb from '../../src/keys/keys.js'
+import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.js'
+import { MAX_RSA_KEY_SIZE, jwkToPkcs1, jwkToPkix, jwkToRSAPrivateKey, pkcs1ToJwk, pkcs1ToRSAPrivateKey, pkixToJwk, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
 import fixtures from '../fixtures/go-key-rsa.js'
+import { RSA_KEY_1024_BITS, RSA_KEY_2048_BITS, RSA_KEY_512_BITS, RSA_KEY_8192_BITS, RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
+import type { JWKKeyPair } from '../../src/keys/interface.js'
 import type { RSAPrivateKey } from '@libp2p/interface'
+
+const SHA2_256_CODE = 0x12
 
 describe('RSA', function () {
   this.timeout(20 * 1000)
@@ -30,19 +39,23 @@ describe('RSA', function () {
   })
 
   it('does not unmarshal a big key', async function () {
-    /*
     const k = RSA_KEY_8200_BITS
 
-    const pubk = new RSAPublicKeyClass(k.publicKey)
-    const sk = new RSAPrivateKeyClass(k.privateKey, k.publicKey)
+    const hash = sha256(pb.PublicKey.encode({
+      Type: pb.KeyType.RSA,
+      Data: uint8ArrayFromString(k.publicKey.n ?? '', 'base64url')
+    }))
+    const digest = create(SHA2_256_CODE, hash)
 
-    const m = sk.marshal()
-    const pubm = pubk.marshal()
+    const pubK = new RSAPublicKeyClass(k.publicKey, digest)
+    const sk = new RSAPrivateKeyClass(k.privateKey, pubK)
 
-    await expect(pkcs1ToRSAPrivateKey(m)).to.eventually.be.rejectedWith(/too large/)
-    expect(() => pkixToRSAPublicKey(pubm)).to.throw(/too large/)
-    await expect(fromJwk(k.privateKey)).to.eventually.be.rejectedWith(/too large/)
-    */
+    const m = privateKeyToProtobuf(sk)
+    const pubM = publicKeyToProtobuf(pubK)
+
+    expect(() => privateKeyFromProtobuf(m)).to.throw(/too large/)
+    expect(() => publicKeyFromProtobuf(pubM)).to.throw(/too large/)
+    expect(() => jwkToRSAPrivateKey(k.privateKey)).to.throw(/too large/)
   })
 
   it('signs', async () => {
@@ -59,13 +72,45 @@ describe('RSA', function () {
     )
     const sig = await key.sign(text)
 
-    await expect(key.sign(text.subarray()))
+    await expect((async () => {
+      return key.sign(text.subarray())
+    })())
       .to.eventually.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    await expect(key.publicKey.verify(text, sig))
+    await expect((async () => {
+      return key.publicKey.verify(text, sig)
+    })())
       .to.eventually.be.true('did not verify message as list')
-    await expect(key.publicKey.verify(text.subarray(), sig))
+    await expect((async () => {
+      return key.publicKey.verify(text.subarray(), sig)
+    })())
       .to.eventually.be.true('did not verify message as single buffer')
+  })
+
+  it('should abort signing', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    await expect((async () => {
+      return key.sign(text, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort verifying', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+
+    await expect((async () => {
+      return key.publicKey.verify(text, sig, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
   })
 
   it('encoding', async () => {
@@ -161,7 +206,7 @@ describe('RSA', function () {
     expect(valid).to.be.eql(false)
   })
 
-  describe('throws error instead of crashing', () => {
+  it('throws error instead of crashing', () => {
     const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
     testGarbage('key.verify', key.verify.bind(key), 2, true)
     testGarbage(
@@ -177,4 +222,117 @@ describe('RSA', function () {
       expect(ok).to.equal(true)
     })
   })
+
+  describe('pkix', () => {
+    function roundTrip (jwk: JWKKeyPair): void {
+      const pkix = jwkToPkix(jwk.publicKey)
+
+      const buf = new asn1js.Sequence({
+        value: [
+          new asn1js.Sequence({
+            value: [
+              // rsaEncryption
+              new asn1js.ObjectIdentifier({
+                value: '1.2.840.113549.1.1.1'
+              }),
+              new asn1js.Null()
+            ]
+          }),
+          new asn1js.BitString({
+            valueHex:
+            new asn1js.Sequence({
+              value: [
+                asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.publicKey.n ?? '', 'base64url'))),
+                asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.publicKey.e ?? '', 'base64url')))
+              ]
+            }).toBER()
+          })
+        ]
+      }).toBER()
+
+      expect(pkix).to.equalBytes(new Uint8Array(buf))
+
+      expect(pkixToJwk(pkix)).to.deep.equal(jwk.publicKey)
+    }
+
+    it('should round trip 512 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_512_BITS)
+    })
+
+    it('should round trip 1024 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_1024_BITS)
+    })
+
+    it('should round trip 2048 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_2048_BITS)
+    })
+
+    it('should round trip 8192 bit public key as pkix', () => {
+      roundTrip(RSA_KEY_8192_BITS)
+    })
+  })
+
+  describe('pkcs#1', () => {
+    function roundTrip (jwk: JWKKeyPair): void {
+      const pkcs1 = jwkToPkcs1(jwk.privateKey)
+
+      const buf = new asn1js.Sequence({
+        value: [
+          new asn1js.Integer({ value: 0 }),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.n ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.e ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.d ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.p ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.q ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.dp ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.dq ?? '', 'base64url'))),
+          asn1js.Integer.fromBigInt(bufToBn(uint8ArrayFromString(jwk.privateKey.qi ?? '', 'base64url')))
+        ]
+      }).toBER()
+
+      expect(pkcs1).to.equalBytes(new Uint8Array(buf))
+
+      expect(pkcs1ToJwk(pkcs1)).to.deep.equal(jwk.privateKey)
+    }
+
+    it('should round trip 512 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_512_BITS)
+    })
+
+    it('should round trip 1024 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_1024_BITS)
+    })
+
+    it('should round trip 2048 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_2048_BITS)
+    })
+
+    it('should round trip 8192 bit private key as pkix', () => {
+      roundTrip(RSA_KEY_8192_BITS)
+    })
+  })
+
+  it('exports to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('RSA')
+    const keyPair = await privateKeyToCryptoKeyPair(key)
+    const key2 = await privateKeyFromCryptoKeyPair(keyPair)
+
+    expect(key.publicKey.toCID()).to.deep.equal(key2.publicKey.toCID())
+  })
 })
+
+function bufToBn (u8: Uint8Array): bigint {
+  const hex: string[] = []
+
+  u8.forEach(function (i) {
+    let h = i.toString(16)
+
+    if (h.length % 2 > 0) {
+      h = `0${h}`
+    }
+
+    hex.push(h)
+  })
+
+  return BigInt('0x' + hex.join(''))
+}

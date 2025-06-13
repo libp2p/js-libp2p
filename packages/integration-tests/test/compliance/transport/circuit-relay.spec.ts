@@ -6,7 +6,6 @@ import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import tests from '@libp2p/interface-compliance-tests/transport'
 import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { Circuit, P2P } from '@multiformats/multiaddr-matcher'
 import { and, fmt, literal } from '@multiformats/multiaddr-matcher/utils'
 
@@ -20,9 +19,7 @@ describe('Circuit relay transport interface compliance', () => {
       const dialer = {
         transports: [
           circuitRelayTransport(),
-          webSockets({
-            filter: all
-          })
+          webSockets()
         ],
         connectionEncrypters: [
           noise()

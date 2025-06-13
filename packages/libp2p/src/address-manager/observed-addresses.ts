@@ -1,5 +1,6 @@
 import { isLinkLocal } from '@libp2p/utils/multiaddr/is-link-local'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
@@ -23,7 +24,10 @@ export class ObservedAddresses {
 
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
     this.log = components.logger.forComponent('libp2p:address-manager:observed-addresses')
-    this.addresses = new Map()
+    this.addresses = trackedMap({
+      name: 'libp2p_address_manager_observed_addresses',
+      metrics: components.metrics
+    })
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
   }
 
@@ -84,6 +88,7 @@ export class ObservedAddresses {
     }
     const startingConfidence = metadata.verified
     metadata.verified = true
+    metadata.expires = Date.now() + ttl
     metadata.lastVerified = Date.now()
 
     this.log('marking observed address %a as verified', addrString)

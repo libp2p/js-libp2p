@@ -1,6 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "libp2p",
+  "readme": "./README.md",
+  "headings": {
+    "readme": false,
+    "document": false
+  },
   "exclude": [
     "doc",
     "interop",

@@ -1,18 +1,21 @@
-import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
+import { TimeoutError } from '@libp2p/interface'
+import { pbStream } from 'it-protobuf-stream'
 import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
-import { FindNodeHandler, type FindNodeHandlerComponents } from './handlers/find-node.js'
-import { GetProvidersHandler, type GetProvidersHandlerComponents } from './handlers/get-providers.js'
-import { GetValueHandler, type GetValueHandlerComponents } from './handlers/get-value.js'
+import { FindNodeHandler } from './handlers/find-node.js'
+import { GetProvidersHandler } from './handlers/get-providers.js'
+import { GetValueHandler } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
-import { PutValueHandler, type PutValueHandlerComponents } from './handlers/put-value.js'
+import { PutValueHandler } from './handlers/put-value.js'
 import type { PeerInfoMapper, Validators } from '../index.js'
-import type { PeerRouting } from '../peer-routing'
-import type { Providers } from '../providers'
-import type { RoutingTable } from '../routing-table'
-import type { CounterGroup, Logger, Metrics, PeerId } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal'
+import type { PeerRouting } from '../peer-routing/index.js'
+import type { Providers } from '../providers.js'
+import type { FindNodeHandlerComponents } from './handlers/find-node.js'
+import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
+import type { GetValueHandlerComponents } from './handlers/get-value.js'
+import type { PutValueHandlerComponents } from './handlers/put-value.js'
+import type { RoutingTable } from '../routing-table/index.js'
+import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData, MetricGroup } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -27,6 +30,7 @@ export interface RPCInit {
   metricsPrefix: string
   datastorePrefix: string
   peerInfoMapper: PeerInfoMapper
+  incomingMessageTimeout?: number
 }
 
 export interface RPCComponents extends GetValueHandlerComponents, PutValueHandlerComponents, FindNodeHandlerComponents, GetProvidersHandlerComponents {
@@ -35,21 +39,24 @@ export interface RPCComponents extends GetValueHandlerComponents, PutValueHandle
 
 export class RPC {
   private readonly handlers: Record<string, DHTMessageHandler>
-  private readonly routingTable: RoutingTable
   private readonly log: Logger
   private readonly metrics: {
     operations?: CounterGroup
     errors?: CounterGroup
+    rpcTime?: MetricGroup
   }
+
+  private readonly incomingMessageTimeout: number
 
   constructor (components: RPCComponents, init: RPCInit) {
     this.metrics = {
       operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_requests_total`),
-      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`)
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`),
+      rpcTime: components.metrics?.registerMetricGroup(`${init.metricsPrefix}_inbound_rpc_time_seconds`, { label: 'operation' })
     }
 
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc`)
-    this.routingTable = init.routingTable
+    this.incomingMessageTimeout = init.incomingMessageTimeout ?? 10_000
     this.handlers = {
       [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, init),
       [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, init),
@@ -89,34 +96,61 @@ export class RPC {
    * Handle incoming streams on the dht protocol
    */
   onIncomingStream (data: IncomingStreamData): void {
-    let message = 'unknown'
+    const message = 'unknown'
 
     Promise.resolve().then(async () => {
       const { stream, connection } = data
-      const peerId = connection.remotePeer
 
-      const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+      const abortListener = (): void => {
+        stream.abort(new TimeoutError())
+      }
 
-      await pipe(
-        stream,
-        (source) => lp.decode(source),
-        async function * (source) {
-          for await (const msg of source) {
+      let signal = AbortSignal.timeout(this.incomingMessageTimeout)
+      signal.addEventListener('abort', abortListener)
+
+      const messages = pbStream(stream).pb(Message)
+
+      try {
+        while (true) {
+          const message = await messages.read({
+            signal
+          })
+
+          const stopSuccessTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+          const stopErrorTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+          let errored = false
+
+          try {
             // handle the message
-            const desMessage = Message.decode(msg)
-            message = desMessage.type
-            self.log('incoming %s from %p', desMessage.type, peerId)
-            const res = await self.handleMessage(peerId, desMessage)
+            this.log('incoming %s from %p', message.type, connection.remotePeer)
+            const res = await this.handleMessage(connection.remotePeer, message)
 
             // Not all handlers will return a response
             if (res != null) {
-              yield Message.encode(res)
+              await messages.write(res, {
+                signal
+              })
+            }
+          } catch (err) {
+            errored = true
+            stopErrorTimer?.()
+
+            throw err
+          } finally {
+            if (!errored) {
+              stopSuccessTimer?.()
             }
           }
-        },
-        (source) => lp.encode(source),
-        stream
-      )
+
+          // we have received a message so reset the timeout controller to
+          // allow the remote to send another
+          signal.removeEventListener('abort', abortListener)
+          signal = AbortSignal.timeout(this.incomingMessageTimeout)
+          signal.addEventListener('abort', abortListener)
+        }
+      } catch (err: any) {
+        stream.abort(err)
+      }
     })
       .catch(err => {
         this.log.error('error handling %s RPC message from %p - %e', message, data.connection.remotePeer, err)

@@ -1,29 +1,22 @@
-import { type CollectFunction, Histogram as PromHistogram } from 'prom-client'
-import { normaliseString } from './utils.js'
+import { Histogram as PromHistogram } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedHistogramOptions } from './index.js'
-import type { StopTimer, CalculateMetric, Histogram } from '@libp2p/interface'
+import type { StopTimer, Histogram } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusHistogram implements Histogram {
   private readonly histogram: PromHistogram
-  private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedHistogramOptions) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const labels = opts.label != null ? [normaliseString(opts.label)] : []
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<PromHistogram<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        const values = await Promise.all(self.calculators.map(async calculate => calculate()))
-        for (const value of values) {
-          this.observe(value)
-        }
+        this.observe(await opts.calculate())
       }
     }
 
@@ -35,10 +28,6 @@ export class PrometheusHistogram implements Histogram {
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric): void {
-    this.calculators.push(calculator)
   }
 
   observe (value: number): void {

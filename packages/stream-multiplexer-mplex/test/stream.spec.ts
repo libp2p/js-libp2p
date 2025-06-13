@@ -41,7 +41,7 @@ const msgToBuffer = (msg: Message): Uint8ArrayList => {
 const bufferToMessage = (buf: Uint8Array | Uint8ArrayList): Message => cborg.decode(buf.subarray())
 
 interface onMessage {
-  (msg: Message, initator: MplexStream, receiver: MplexStream): void
+  (msg: Message, initiator: MplexStream, receiver: MplexStream): void
 }
 
 export interface StreamPair {

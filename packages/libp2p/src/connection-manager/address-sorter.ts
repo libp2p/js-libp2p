@@ -1,3 +1,4 @@
+import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { Circuit, WebSockets, WebSocketsSecure, WebRTC, WebRTCDirect, WebTransport, TCP } from '@multiformats/multiaddr-matcher'
 import type { Address } from '@libp2p/interface'
@@ -10,14 +11,14 @@ import type { Address } from '@libp2p/interface'
  */
 // eslint-disable-next-line complexity
 export function reliableTransportsFirst (a: Address, b: Address): -1 | 0 | 1 {
-  const isATCP = TCP.exactMatch(a.multiaddr)
-  const isBTCP = TCP.exactMatch(b.multiaddr)
+  const isATcp = TCP.exactMatch(a.multiaddr)
+  const isBTcp = TCP.exactMatch(b.multiaddr)
 
-  if (isATCP && !isBTCP) {
+  if (isATcp && !isBTcp) {
     return -1
   }
 
-  if (!isATCP && isBTCP) {
+  if (!isATcp && isBTcp) {
     return 1
   }
 
@@ -81,6 +82,23 @@ export function reliableTransportsFirst (a: Address, b: Address): -1 | 0 | 1 {
 }
 
 /**
+ * Compare function for array.sort() that moves loopback addresses to the end
+ * of the array.
+ */
+export function loopbackAddressLast (a: Address, b: Address): -1 | 0 | 1 {
+  const isALoopback = isLoopback(a.multiaddr)
+  const isBLoopback = isLoopback(b.multiaddr)
+
+  if (isALoopback && !isBLoopback) {
+    return 1
+  } else if (!isALoopback && isBLoopback) {
+    return -1
+  }
+
+  return 0
+}
+
+/**
  * Compare function for array.sort() that moves public addresses to the start
  * of the array.
  */
@@ -134,4 +152,5 @@ export function defaultAddressSorter (addresses: Address[]): Address[] {
     .sort(certifiedAddressesFirst)
     .sort(circuitRelayAddressesLast)
     .sort(publicAddressesFirst)
+    .sort(loopbackAddressLast)
 }

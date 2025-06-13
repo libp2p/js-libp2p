@@ -2,15 +2,17 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from 'it-protobuf-stream'
 import { CustomProgressEvent } from 'progress-events'
+import { SIGNALING_PROTOCOL } from '../constants.js'
 import { SDPHandshakeFailedError } from '../error.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { SIGNALING_PROTO_ID, splitAddr, type WebRTCDialEvents, type WebRTCTransportMetrics } from './transport.js'
+import { splitAddr } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
+import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
 import type { DataChannelOptions } from '../index.js'
-import type { LoggerOptions, Connection, ComponentLogger } from '@libp2p/interface'
-import type { ConnectionManager, IncomingStreamData, TransportManager } from '@libp2p/interface-internal'
+import type { LoggerOptions, Connection, ComponentLogger, IncomingStreamData } from '@libp2p/interface'
+import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
@@ -71,7 +73,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   try {
     onProgress?.(new CustomProgressEvent('webrtc:open-signaling-stream'))
 
-    const stream = await connection.newStream(SIGNALING_PROTO_ID, {
+    const stream = await connection.newStream(SIGNALING_PROTOCOL, {
       signal,
       runOnLimitedConnection: true
     })

@@ -9,11 +9,11 @@ export class MovingAverage {
   public variance: number
   public deviation: number
   public forecast: number
-  private readonly timespan: number
+  private readonly timeSpan: number
   private previousTime?: number
 
-  constructor (timespan: number) {
-    this.timespan = timespan
+  constructor (timeSpan: number) {
+    this.timeSpan = timeSpan
     this.movingAverage = 0
     this.variance = 0
     this.deviation = 0
@@ -21,7 +21,7 @@ export class MovingAverage {
   }
 
   alpha (t: number, pt: number): number {
-    return 1 - (Math.exp(-(t - pt) / this.timespan))
+    return 1 - (Math.exp(-(t - pt) / this.timeSpan))
   }
 
   push (value: number, time: number = Date.now()): void {

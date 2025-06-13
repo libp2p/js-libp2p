@@ -6,7 +6,7 @@ import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr } from '@multiformats/multiaddr'
 import { QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
-import { dynamicExternalAddress } from './check-external-address.js'
+import { dynamicExternalAddress, staticExternalAddress } from './check-external-address.js'
 import { DoubleNATError } from './errors.js'
 import type { ExternalAddress } from './check-external-address.js'
 import type { Gateway } from '@achingbrain/nat-port-mapper'
@@ -18,6 +18,7 @@ const MAX_DATE = 8_640_000_000_000_000
 
 export interface UPnPPortMapperInit {
   gateway: Gateway
+  externalAddress?: string
   externalAddressCheckInterval?: number
   externalAddressCheckTimeout?: number
 }
@@ -48,15 +49,20 @@ export class UPnPPortMapper {
     this.log = components.logger.forComponent(`libp2p:upnp-nat:gateway:${init.gateway.id}`)
     this.addressManager = components.addressManager
     this.gateway = init.gateway
-    this.externalAddress = dynamicExternalAddress({
-      gateway: this.gateway,
-      addressManager: this.addressManager,
-      logger: components.logger
-    }, {
-      interval: init.externalAddressCheckInterval,
-      timeout: init.externalAddressCheckTimeout,
-      onExternalAddressChange: this.remapPorts.bind(this)
-    })
+
+    if (init.externalAddress != null) {
+      this.externalAddress = staticExternalAddress(init.externalAddress)
+    } else {
+      this.externalAddress = dynamicExternalAddress({
+        gateway: this.gateway,
+        addressManager: this.addressManager,
+        logger: components.logger
+      }, {
+        interval: init.externalAddressCheckInterval,
+        timeout: init.externalAddressCheckTimeout,
+        onExternalAddressChange: this.remapPorts.bind(this)
+      })
+    }
     this.gateway = init.gateway
     this.mappedPorts = new Map()
     this.started = false

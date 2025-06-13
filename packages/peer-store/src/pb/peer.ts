@@ -1,11 +1,8 @@
-/* eslint-disable import/export */
 /* eslint-disable complexity */
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
-/* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, MaxLengthError, MaxSizeError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, MaxLengthError, MaxSizeError, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
+import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Peer {
@@ -15,6 +12,7 @@ export interface Peer {
   peerRecordEnvelope?: Uint8Array
   metadata: Map<string, Uint8Array>
   tags: Map<string, Tag>
+  updated?: number
 }
 
 export namespace Peer {
@@ -208,6 +206,11 @@ export namespace Peer {
           }
         }
 
+        if (obj.updated != null) {
+          w.uint32(64)
+          w.uint64Number(obj.updated)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
@@ -273,6 +276,10 @@ export namespace Peer {
               obj.tags.set(entry.key, entry.value)
               break
             }
+            case 8: {
+              obj.updated = reader.uint64Number()
+              break
+            }
             default: {
               reader.skipType(tag & 7)
               break
@@ -299,6 +306,7 @@ export namespace Peer {
 export interface Address {
   multiaddr: Uint8Array
   isCertified?: boolean
+  observed?: number
 }
 
 export namespace Address {
@@ -321,6 +329,11 @@ export namespace Address {
           w.bool(obj.isCertified)
         }
 
+        if (obj.observed != null) {
+          w.uint32(24)
+          w.uint64Number(obj.observed)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
@@ -341,6 +354,10 @@ export namespace Address {
             }
             case 2: {
               obj.isCertified = reader.bool()
+              break
+            }
+            case 3: {
+              obj.observed = reader.uint64Number()
               break
             }
             default: {

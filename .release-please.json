@@ -9,7 +9,6 @@
     { "type": "refactor", "section": "Refactors", "hidden": false }
   ],
   "packages": {
-    "packages/auto-tls": {},
     "packages/config": {},
     "packages/connection-encrypter-plaintext": {},
     "packages/connection-encrypter-tls": {},
@@ -21,7 +20,6 @@
     "packages/keychain": {},
     "packages/libp2p": {},
     "packages/logger": {},
-    "packages/metrics-devtools": {},
     "packages/metrics-opentelemetry": {},
     "packages/metrics-prometheus": {},
     "packages/metrics-simple": {},

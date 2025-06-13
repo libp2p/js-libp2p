@@ -69,10 +69,10 @@ describe('Envelope', () => {
     const envelope = await RecordEnvelope.seal(testRecord, key)
     const rawEnvelope = envelope.marshal()
 
-    const unmarshalledEnvelope = await RecordEnvelope.openAndCertify(rawEnvelope, testRecord.domain)
-    expect(unmarshalledEnvelope).to.exist()
+    const unmarshaledEnvelope = await RecordEnvelope.openAndCertify(rawEnvelope, testRecord.domain)
+    expect(unmarshaledEnvelope).to.exist()
 
-    const equals = envelope.equals(unmarshalledEnvelope)
+    const equals = envelope.equals(unmarshaledEnvelope)
     expect(equals).to.eql(true)
   })
 

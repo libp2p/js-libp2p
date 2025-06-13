@@ -34,6 +34,9 @@
  */
 
 import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
+import { isAsyncGenerator } from '@libp2p/utils/is-async-generator'
+import { isGenerator } from '@libp2p/utils/is-generator'
+import { isPromise } from '@libp2p/utils/is-promise'
 import { trace, metrics, context, SpanStatusCode } from '@opentelemetry/api'
 import each from 'it-foreach'
 import { OpenTelemetryCounterGroup } from './counter-group.js'
@@ -45,14 +48,15 @@ import { OpenTelemetryMetric } from './metric.js'
 import { OpenTelemetrySummaryGroup } from './summary-group.js'
 import { OpenTelemetrySummary } from './summary.js'
 import { collectSystemMetrics } from './system-metrics.js'
-import type { MultiaddrConnection, Stream, Connection, Metric, MetricGroup, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, NodeInfo, TraceFunctionOptions, TraceGeneratorFunctionOptions, TraceAttributes } from '@libp2p/interface'
-import type { Span, Attributes } from '@opentelemetry/api'
+import type { MultiaddrConnection, Stream, Connection, Metric, MetricGroup, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, NodeInfo, TraceFunctionOptions, TraceGeneratorFunctionOptions, TraceAttributes, ComponentLogger, Logger } from '@libp2p/interface'
+import type { Span, Attributes, Meter, Observable } from '@opentelemetry/api'
 import type { Duplex } from 'it-stream-types'
 
 // see https://betterstack.com/community/guides/observability/opentelemetry-metrics-nodejs/#prerequisites
 
 export interface OpenTelemetryComponents {
   nodeInfo: NodeInfo
+  logger: ComponentLogger
 }
 
 export interface OpenTelemetryMetricsInit {
@@ -89,14 +93,20 @@ export interface OpenTelemetryMetricsInit {
 class OpenTelemetryMetrics implements Metrics {
   private transferStats: Map<string, number>
   private readonly tracer: ReturnType<typeof trace.getTracer>
-  private readonly meterName: string
+  private readonly meter: Meter
+  private readonly log: Logger
+  private metrics: Map<string, OpenTelemetryMetric | OpenTelemetryMetricGroup | OpenTelemetryCounter | OpenTelemetryCounterGroup | OpenTelemetryHistogram | OpenTelemetryHistogramGroup | OpenTelemetrySummary | OpenTelemetrySummaryGroup>
+  private observables: Map<string, Observable>
 
   constructor (components: OpenTelemetryComponents, init?: OpenTelemetryMetricsInit) {
+    this.log = components.logger.forComponent('libp2p:open-telemetry-metrics')
     this.tracer = trace.getTracer(init?.appName ?? components.nodeInfo.name, init?.appVersion ?? components.nodeInfo.version)
+    this.metrics = new Map()
+    this.observables = new Map()
 
     // holds global and per-protocol sent/received stats
     this.transferStats = new Map()
-    this.meterName = init?.meterName ?? components.nodeInfo.name
+    this.meter = metrics.getMeterProvider().getMeter(init?.meterName ?? components.nodeInfo.name)
 
     this.registerCounterGroup('libp2p_data_transfer_bytes_total', {
       label: 'protocol',
@@ -108,7 +118,7 @@ class OpenTelemetryMetrics implements Metrics {
         }
 
         // reset counts for next time
-        this.transferStats = new Map()
+        this.transferStats.clear()
 
         return output
       }
@@ -122,6 +132,14 @@ class OpenTelemetryMetrics implements Metrics {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/metrics'
   ]
+
+  start (): void {
+
+  }
+
+  stop (): void {
+    this.transferStats.clear()
+  }
 
   /**
    * Increment the transfer stat for the passed key, making sure
@@ -174,23 +192,38 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
-
     if (isCalculatedMetricOptions<CalculatedMetricOptions>(opts)) {
-      const calculate = opts.calculate
-      const counter = meter.createObservableGauge(name, {
+      let gauge = this.observables.get(name)
+
+      if (gauge != null) {
+        return
+      }
+
+      gauge = this.meter.createObservableGauge(name, {
         description: opts?.help ?? name
       })
-      counter.addCallback(async (result) => {
+
+      const calculate = opts.calculate
+      gauge.addCallback(async (result) => {
         result.observe(await calculate())
       })
+
+      this.observables.set(name, gauge)
 
       return
     }
 
-    return new OpenTelemetryMetric(meter.createGauge(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryMetric(this.meter.createGauge(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerMetricGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
@@ -200,14 +233,20 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions<Record<string, number>>>(opts)) {
-      const calculate = opts.calculate
-      const gauge = meter.createObservableGauge(name, {
+      let gauge = this.observables.get(name)
+
+      if (gauge != null) {
+        return
+      }
+
+      gauge = this.meter.createObservableGauge(name, {
         description: opts?.help ?? name
       })
+
+      const calculate = opts.calculate
       gauge.addCallback(async (observable) => {
         const observed = await calculate()
 
@@ -218,12 +257,22 @@ class OpenTelemetryMetrics implements Metrics {
         }
       })
 
+      this.observables.set(name, gauge)
+
       return
     }
 
-    return new OpenTelemetryMetricGroup(label, meter.createGauge(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryMetricGroup(label, this.meter.createGauge(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerCounter (name: string, opts: CalculatedMetricOptions): void
@@ -233,23 +282,38 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
-
     if (isCalculatedMetricOptions<CalculatedMetricOptions>(opts)) {
-      const calculate = opts.calculate
-      const counter = meter.createObservableCounter(name, {
+      let counter = this.observables.get(name)
+
+      if (counter != null) {
+        return
+      }
+
+      counter = this.meter.createObservableCounter(name, {
         description: opts?.help ?? name
       })
+
+      const calculate = opts.calculate
       counter.addCallback(async (result) => {
         result.observe(await calculate())
       })
 
+      this.observables.set(name, counter)
+
       return
     }
 
-    return new OpenTelemetryCounter(meter.createCounter(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryCounter(this.meter.createCounter(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerCounterGroup (name: string, opts: CalculatedMetricOptions<Record<string, number>>): void
@@ -259,15 +323,21 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedMetricOptions<Record<string, number>>>(opts)) {
-      const values: Record<string, number> = {}
-      const calculate = opts.calculate
-      const counter = meter.createObservableGauge(name, {
+      let counter = this.observables.get(name)
+
+      if (counter != null) {
+        return
+      }
+
+      counter = this.meter.createObservableCounter(name, {
         description: opts?.help ?? name
       })
+
+      const values: Record<string, number> = {}
+      const calculate = opts.calculate
       counter.addCallback(async (observable) => {
         const observed = await calculate()
 
@@ -287,9 +357,17 @@ class OpenTelemetryMetrics implements Metrics {
       return
     }
 
-    return new OpenTelemetryCounterGroup(label, meter.createCounter(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryCounterGroup(label, this.meter.createCounter(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerHistogram (name: string, opts: CalculatedHistogramOptions): void
@@ -299,18 +377,24 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
-
     if (isCalculatedMetricOptions<CalculatedHistogramOptions>(opts)) {
       return
     }
 
-    return new OpenTelemetryHistogram(meter.createHistogram(name, {
-      advice: {
-        explicitBucketBoundaries: opts.buckets
-      },
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryHistogram(this.meter.createHistogram(name, {
+        advice: {
+          explicitBucketBoundaries: opts.buckets
+        },
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerHistogramGroup (name: string, opts: CalculatedHistogramOptions<Record<string, number>>): void
@@ -320,19 +404,26 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedHistogramOptions<Record<string, number>>>(opts)) {
       return
     }
 
-    return new OpenTelemetryHistogramGroup(label, meter.createHistogram(name, {
-      advice: {
-        explicitBucketBoundaries: opts.buckets
-      },
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetryHistogramGroup(label, this.meter.createHistogram(name, {
+        advice: {
+          explicitBucketBoundaries: opts.buckets
+        },
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerSummary (name: string, opts: CalculatedSummaryOptions): void
@@ -342,15 +433,21 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
-
     if (isCalculatedMetricOptions<CalculatedHistogramOptions>(opts)) {
       return
     }
 
-    return new OpenTelemetrySummary(meter.createGauge(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetrySummary(this.meter.createGauge(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   registerSummaryGroup (name: string, opts: CalculatedSummaryOptions<Record<string, number>>): void
@@ -360,16 +457,23 @@ class OpenTelemetryMetrics implements Metrics {
       throw new InvalidParametersError('Metric name is required')
     }
 
-    const meter = metrics.getMeterProvider().getMeter(this.meterName)
     const label = opts?.label ?? name
 
     if (isCalculatedMetricOptions<CalculatedSummaryOptions>(opts)) {
       return
     }
 
-    return new OpenTelemetrySummaryGroup(label, meter.createGauge(name, {
-      description: opts?.help ?? name
-    }))
+    let metric = this.metrics.get(name)
+
+    if (metric == null) {
+      metric = new OpenTelemetrySummaryGroup(label, this.meter.createGauge(name, {
+        description: opts?.help ?? name
+      }))
+
+      this.metrics.set(name, metric)
+    }
+
+    return metric
   }
 
   createTrace (): any {
@@ -438,10 +542,6 @@ export function openTelemetryMetrics (init: OpenTelemetryMetricsInit = {}): (com
   return (components: OpenTelemetryComponents) => new OpenTelemetryMetrics(components, init)
 }
 
-function isPromise <T = any> (obj?: any): obj is Promise<T> {
-  return typeof obj?.then === 'function'
-}
-
 async function wrapPromise (promise: Promise<any>, span: Span, attributes: TraceAttributes, options?: TraceFunctionOptions<any, any>): Promise<any> {
   return promise
     .then(res => {
@@ -456,10 +556,6 @@ async function wrapPromise (promise: Promise<any>, span: Span, attributes: Trace
     .finally(() => {
       span.end()
     })
-}
-
-function isGenerator (obj?: any): obj is Generator {
-  return obj?.[Symbol.iterator] != null
 }
 
 function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes, options?: TraceGeneratorFunctionOptions<any, any, any>): Generator {
@@ -500,10 +596,6 @@ function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes,
   }
 
   return wrapped
-}
-
-function isAsyncGenerator (obj?: any): obj is AsyncGenerator {
-  return obj?.[Symbol.asyncIterator] != null
 }
 
 function wrapAsyncGenerator (gen: AsyncGenerator, span: Span, attributes: TraceAttributes, options?: TraceGeneratorFunctionOptions<any, any, any>): AsyncGenerator {

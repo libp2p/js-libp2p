@@ -1,4 +1,5 @@
 import { isIPv4 } from '@chainsafe/is-ip'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
@@ -32,7 +33,10 @@ export class IPMappings {
 
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
     this.log = components.logger.forComponent('libp2p:address-manager:ip-mappings')
-    this.mappings = new Map()
+    this.mappings = trackedMap({
+      name: 'libp2p_address_manager_ip_mappings',
+      metrics: components.metrics
+    })
   }
 
   has (ma: Multiaddr): boolean {
@@ -151,7 +155,6 @@ export class IPMappings {
 
     for (const mappings of this.mappings.values()) {
       for (const mapping of mappings) {
-        // eslint-disable-next-line max-depth
         if (mapping.externalIp === host) {
           this.log('marking %s to %s IP mapping as verified', mapping.internalIp, mapping.externalIp)
           startingConfidence = mapping.verified

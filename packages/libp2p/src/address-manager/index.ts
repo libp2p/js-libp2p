@@ -3,15 +3,18 @@ import { isIPv4 } from '@chainsafe/is-ip'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { debounce } from '@libp2p/utils/debounce'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr } from '@multiformats/multiaddr'
+import { QUICV1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
 import { TransportAddresses } from './transport-addresses.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Metrics } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 const ONE_MINUTE = 60_000
 
@@ -81,6 +84,7 @@ export interface AddressManagerComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**
@@ -249,20 +253,42 @@ export class AddressManager implements AddressManagerInterface {
     addr = stripPeerId(addr, this.components.peerId)
     let startingConfidence = true
 
-    if (options?.type === 'observed' || this.observed.has(addr)) {
-      startingConfidence = this.observed.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
-    }
-
     if (options?.type === 'transport' || this.transportAddresses.has(addr)) {
-      startingConfidence = this.transportAddresses.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+      const transportStartingConfidence = this.transportAddresses.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+
+      if (!transportStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     if (options?.type === 'dns-mapping' || this.dnsMappings.has(addr)) {
-      startingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+      const dnsMappingStartingConfidence = this.dnsMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+
+      if (!dnsMappingStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     if (options?.type === 'ip-mapping' || this.ipMappings.has(addr)) {
-      startingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+      const ipMappingStartingConfidence = this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+
+      if (!ipMappingStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
+    }
+
+    if (options?.type === 'observed' || this.observed.has(addr)) {
+      // try to match up observed address with local transport listener
+      if (this.maybeUpgradeToIPMapping(addr)) {
+        this.ipMappings.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+        startingConfidence = false
+      } else {
+        const observedStartingConfidence = this.observed.confirm(addr, options?.ttl ?? this.addressVerificationTTL)
+
+        if (!observedStartingConfidence && startingConfidence) {
+          startingConfidence = false
+        }
+      }
     }
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
@@ -277,19 +303,35 @@ export class AddressManager implements AddressManagerInterface {
     let startingConfidence = false
 
     if (this.observed.has(addr)) {
-      startingConfidence = this.observed.remove(addr)
+      const observedStartingConfidence = this.observed.remove(addr)
+
+      if (!observedStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     if (this.transportAddresses.has(addr)) {
-      startingConfidence = this.transportAddresses.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+      const transportStartingConfidence = this.transportAddresses.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+
+      if (!transportStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     if (this.dnsMappings.has(addr)) {
-      startingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+      const dnsMappingStartingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+
+      if (!dnsMappingStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     if (this.ipMappings.has(addr)) {
-      startingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+      const ipMappingStartingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
+
+      if (!ipMappingStartingConfidence && startingConfidence) {
+        startingConfidence = false
+      }
     }
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
@@ -342,6 +384,11 @@ export class AddressManager implements AddressManagerInterface {
     const announceMultiaddrs = this.getAnnounceAddrs()
 
     if (announceMultiaddrs.length > 0) {
+      // allow transports to add certhashes and other runtime information
+      this.components.transportManager.getListeners().forEach(listener => {
+        listener.updateAnnounceAddrs(announceMultiaddrs)
+      })
+
       return announceMultiaddrs.map(multiaddr => ({
         multiaddr,
         verified: true,
@@ -359,16 +406,25 @@ export class AddressManager implements AddressManagerInterface {
         .map(multiaddr => this.transportAddresses.get(multiaddr, this.addressVerificationTTL))
     )
 
+    const appendAnnounceMultiaddrs = this.getAppendAnnounceAddrs()
+
     // add append announce addresses
-    addresses = addresses.concat(
-      this.getAppendAnnounceAddrs().map(multiaddr => ({
-        multiaddr,
-        verified: true,
-        type: 'announce',
-        expires: Date.now() + this.addressVerificationTTL,
-        lastVerified: Date.now()
-      }))
-    )
+    if (appendAnnounceMultiaddrs.length > 0) {
+      // allow transports to add certhashes and other runtime information
+      this.components.transportManager.getListeners().forEach(listener => {
+        listener.updateAnnounceAddrs(appendAnnounceMultiaddrs)
+      })
+
+      addresses = addresses.concat(
+        appendAnnounceMultiaddrs.map(multiaddr => ({
+          multiaddr,
+          verified: true,
+          type: 'announce',
+          expires: Date.now() + this.addressVerificationTTL,
+          lastVerified: Date.now()
+        }))
+      )
+    }
 
     // add observed addresses
     addresses = addresses.concat(
@@ -409,5 +465,83 @@ export class AddressManager implements AddressManagerInterface {
     if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`))) {
       this._updatePeerStoreAddresses()
     }
+  }
+
+  /**
+   * Where an external service (router, gateway, etc) is forwarding traffic to
+   * us, attempt to add an IP mapping for the external address - this will
+   * include the observed mapping in the address list where we also have a DNS
+   * mapping for the external IP.
+   *
+   * Returns true if we added a new mapping
+   */
+  private maybeUpgradeToIPMapping (ma: Multiaddr): boolean {
+    // this address is already mapped
+    if (this.ipMappings.has(ma)) {
+      return false
+    }
+
+    const maOptions = ma.toOptions()
+
+    // only public IPv4 addresses
+    if (maOptions.family === 6 || maOptions.host === '127.0.0.1' || isPrivateIp(maOptions.host) === true) {
+      return false
+    }
+
+    const listeners = this.components.transportManager.getListeners()
+
+    const transportMatchers: Array<(ma: Multiaddr) => boolean> = [
+      (ma: Multiaddr) => WebSockets.exactMatch(ma) || WebSocketsSecure.exactMatch(ma),
+      (ma: Multiaddr) => TCP.exactMatch(ma),
+      (ma: Multiaddr) => QUICV1.exactMatch(ma)
+    ]
+
+    for (const matcher of transportMatchers) {
+      // is the incoming address the same type as the matcher
+      if (!matcher(ma)) {
+        continue
+      }
+
+      // get the listeners for this transport
+      const transportListeners = listeners.filter(listener => {
+        return listener.getAddrs().filter(ma => {
+          // only IPv4 addresses of the matcher type
+          return ma.toOptions().family === 4 && matcher(ma)
+        }).length > 0
+      })
+
+      // because the NAT mapping could be forwarding different external ports to
+      // internal ones, we can only be sure enough to add a mapping if there is
+      // a single listener
+      if (transportListeners.length !== 1) {
+        continue
+      }
+
+      // we have one listener which listens on one port so whatever the external
+      // NAT port mapping is, it should be for this listener
+      const linkLocalAddr = transportListeners[0].getAddrs().filter(ma => {
+        return ma.toOptions().host !== '127.0.0.1'
+      }).pop()
+
+      if (linkLocalAddr == null) {
+        continue
+      }
+
+      const linkLocalOptions = linkLocalAddr.toOptions()
+
+      // upgrade observed address to IP mapping
+      this.observed.remove(ma)
+      this.ipMappings.add(
+        linkLocalOptions.host,
+        linkLocalOptions.port,
+        maOptions.host,
+        maOptions.port,
+        maOptions.transport
+      )
+
+      return true
+    }
+
+    return false
   }
 }

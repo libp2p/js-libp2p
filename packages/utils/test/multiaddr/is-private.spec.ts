@@ -15,7 +15,7 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/ip4/172.16.0.1/tcp/1000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p'),
       multiaddr('/ip4/172.16.0.1')
     ].forEach(ma => {
-      expect(isPrivate(ma)).to.be.true()
+      expect(isPrivate(ma)).to.be.true(`"${ma}" was not identified as private`)
     })
   })
 
@@ -29,7 +29,7 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/ip4/2.16.0.1/tcp/1000/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/12D3KooWNvSZnPi3RrhrTwEY4LuuBeB6K6facKUCJcyWG1aoDd2p'),
       multiaddr('/ip4/2.16.0.1')
     ].forEach(ma => {
-      expect(isPrivate(ma)).to.be.false()
+      expect(isPrivate(ma)).to.be.false(`"${ma}" was identified as private`)
     })
   })
 
@@ -48,8 +48,8 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/ip6/::ffff:127.0.0.1')
     ].forEach(ma => {
       try {
-        expect(isPrivate(ma)).to.be.true()
-      } catch (error) {
+        expect(isPrivate(ma)).to.be.true(`"${ma}" was not identified as private`)
+      } catch {
         throw new Error(`Failed for ${ma.toString()}`)
       }
     })
@@ -77,7 +77,7 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/ip6/::ffff:192.169.0.1/tcp/1000'), // not a private range
       multiaddr('/ip6/::ffff:192.169.0.1') // not a private range
     ].forEach(ma => {
-      expect(isPrivate(ma)).to.be.false()
+      expect(isPrivate(ma)).to.be.false(`"${ma}" was identified as private`)
     })
   })
 
@@ -85,20 +85,21 @@ describe('multiaddr isPrivate', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/dns6/wss0.bootstrap.libp2p.io')
+      multiaddr('/dns6/wss0.bootstrap.libp2p.io'),
+      multiaddr('/memory/addr-1'),
+      multiaddr('/unix/foo/bar/baz.sock')
     ].forEach(ma => {
-      expect(isPrivate(ma)).to.be.false()
+      expect(isPrivate(ma)).to.be.false(`"${ma}" was identified as private`)
     })
   })
 
   it('identifies non-public addresses', () => {
     [
       multiaddr('/ip4/127.0.0.1/tcp/1000/p2p-circuit'),
-      multiaddr('/unix/foo/bar/baz.sock'),
       multiaddr('/ip4/127.0.0.1/sctp/1000'),
       multiaddr('/ip4/127.0.0.1')
     ].forEach(ma => {
-      expect(isPrivate(ma)).to.be.true()
+      expect(isPrivate(ma)).to.be.true(`"${ma}" was not identified as private`)
     })
   })
 })

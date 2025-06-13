@@ -1,7 +1,7 @@
 {
+  "readme": "none",
   "entryPoints": [
     "./src/index.ts",
-    "./src/errors.ts",
     "./src/peer-streams.ts",
     "./src/utils.ts"
   ]

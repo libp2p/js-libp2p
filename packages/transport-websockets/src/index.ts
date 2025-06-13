@@ -25,16 +25,18 @@
 
 import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
-import { connect, type WebSocketOptions } from 'it-ws/client'
+import { connect } from 'it-ws/client'
 import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, TypedEventTarget, Libp2pEvents } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { WebSocketOptions } from 'it-ws/client'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { TypedEventTarget } from 'main-event'
 import type http from 'node:http'
 import type https from 'node:https'
 import type { ProgressEvent } from 'progress-events'
@@ -65,7 +67,7 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
    * Inbound connections must complete their upgrade within this many ms
    *
-   * @default 5000
+   * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
    */
   inboundConnectionUpgradeTimeout?: number
 }
@@ -153,7 +155,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
       await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
     } catch (err: any) {
-      if (options.signal?.aborted === true) {
+      if (options.signal?.aborted) {
         this.metrics?.dialerEvents.increment({ abort: true })
       }
 

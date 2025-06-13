@@ -1,16 +1,16 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
-import { DefaultRegistrar } from '../../src/registrar.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
-import type { Registrar } from '@libp2p/interface-internal'
+import { Registrar } from '../../src/registrar.js'
+import type { Libp2pEvents, PeerId, PeerStore, Topology, Peer, Connection } from '@libp2p/interface'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 const protocol = '/test/1.0.0'
@@ -31,7 +31,7 @@ describe('registrar topologies', () => {
     peerStore = stubInterface<PeerStore>()
     events = new TypedEventEmitter<Libp2pEvents>()
 
-    registrar = new DefaultRegistrar({
+    registrar = new Registrar({
       peerId,
       peerStore,
       events,
@@ -221,10 +221,10 @@ describe('registrar topologies', () => {
 
     const topology: Topology = {
       onConnect: () => {
-        onConnectDefer.reject(new Error('Topolgy onConnect called for limited connection'))
+        onConnectDefer.reject(new Error('Topology onConnect called for limited connection'))
       },
       onDisconnect: () => {
-        onDisconnectDefer.reject(new Error('Topolgy onDisconnect called for limited connection'))
+        onDisconnectDefer.reject(new Error('Topology onDisconnect called for limited connection'))
       }
     }
 
@@ -395,7 +395,7 @@ describe('registrar topologies', () => {
     // setup connections before registrar
     const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    // peer exists in peer store with the regsitered protocol
+    // peer exists in peer store with the registered protocol
     peerStore.get.withArgs(remotePeerId).resolves(stubInterface<Peer>({
       protocols: [protocol]
     }))

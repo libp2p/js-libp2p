@@ -15,7 +15,7 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
@@ -38,15 +38,15 @@ async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Prom
 }
 
 describe('KadDHT', () => {
-  let peerIds: PeerIdWithPrivateKey[]
-  let tdht: TestDHT
+  let peerIds: PeerAndKey[]
+  let testDHT: TestDHT
 
   beforeEach(() => {
-    tdht = new TestDHT()
+    testDHT = new TestDHT()
   })
 
   afterEach(async () => {
-    await tdht.teardown()
+    await testDHT.teardown()
   })
 
   before(async function () {
@@ -61,7 +61,7 @@ describe('KadDHT', () => {
   describe('start and stop', () => {
     it('default mode', async () => {
       // off by default
-      const dht = await tdht.spawn({ clientMode: undefined }, false)
+      const dht = await testDHT.spawn({ clientMode: undefined }, false)
 
       const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
 
@@ -78,7 +78,7 @@ describe('KadDHT', () => {
 
     it('server mode', async () => {
       // turn client mode off explicitly
-      const dht = await tdht.spawn({ clientMode: false }, false)
+      const dht = await testDHT.spawn({ clientMode: false }, false)
 
       const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
 
@@ -95,7 +95,7 @@ describe('KadDHT', () => {
 
     it('client mode', async () => {
       // turn client mode on explicitly
-      const dht = await tdht.spawn({ clientMode: true }, false)
+      const dht = await testDHT.spawn({ clientMode: true }, false)
 
       const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
 
@@ -107,7 +107,7 @@ describe('KadDHT', () => {
     })
 
     it('should not fail when already started', async () => {
-      const dht = await tdht.spawn(undefined, false)
+      const dht = await testDHT.spawn(undefined, false)
 
       await dht.start()
       await dht.start()
@@ -117,7 +117,7 @@ describe('KadDHT', () => {
     })
 
     it('should not fail to stop when was not started', async () => {
-      const dht = await tdht.spawn(undefined, false)
+      const dht = await testDHT.spawn(undefined, false)
 
       await dht.stop()
     })
@@ -130,7 +130,7 @@ describe('KadDHT', () => {
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
 
-      const dht = await tdht.spawn()
+      const dht = await testDHT.spawn()
 
       // Exchange data through the dht
       await drain(dht.put(key, value))
@@ -146,12 +146,12 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
       // Connect nodes
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       // Exchange data through the dht
       await drain(dhtA.put(key, value))
@@ -167,12 +167,12 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
       // Connect nodes
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       const putProgress = sinon.stub()
 
@@ -200,10 +200,10 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB, dhtC, dhtD] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn({
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn({
           // Stub verify record
           validators: {
             v: sinon.stub().rejects(error)
@@ -212,9 +212,9 @@ describe('KadDHT', () => {
       ])
 
       await Promise.all([
-        tdht.connect(dhtA, dhtB),
-        tdht.connect(dhtA, dhtC),
-        tdht.connect(dhtA, dhtD)
+        testDHT.connect(dhtA, dhtB),
+        testDHT.connect(dhtA, dhtC),
+        testDHT.connect(dhtA, dhtD)
       ])
 
       // DHT operations
@@ -231,11 +231,11 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       // DHT operations
       await drain(dhtA.put(key, value))
@@ -251,7 +251,7 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn({
+        testDHT.spawn({
           validators: {
             ipns: sinon.stub().resolves()
           },
@@ -259,7 +259,7 @@ describe('KadDHT', () => {
             ipns: sinon.stub().returns(0)
           }
         }),
-        tdht.spawn({
+        testDHT.spawn({
           validators: {
             ipns: sinon.stub().resolves()
           },
@@ -269,7 +269,7 @@ describe('KadDHT', () => {
         })
       ])
 
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       // DHT operations
       await drain(dhtA.put(key, value))
@@ -285,11 +285,11 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       await drain(dhtA.put(key, value))
 
@@ -301,28 +301,29 @@ describe('KadDHT', () => {
       this.timeout(20 * 1000)
 
       const key = uint8ArrayFromString('/v/hello')
-      const valueA = uint8ArrayFromString('worldA')
-      const valueB = uint8ArrayFromString('worldB')
+      const valueA = uint8ArrayFromString('world2')
+      const valueB = uint8ArrayFromString('world1')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
       const dhtASpy = sinon.spy(dhtA.network, 'sendRequest')
 
-      // Put before peers connected
+      // put before peers connected
       await drain(dhtA.put(key, valueA))
       await drain(dhtB.put(key, valueB))
 
-      // Connect peers
-      await tdht.connect(dhtA, dhtB)
+      // connect peers
+      await testDHT.connect(dhtA, dhtB)
 
-      // Get values
+      // get values
       const resA = await last(dhtA.get(key))
       const resB = await last(dhtB.get(key))
 
-      // First is selected
+      // first is selected because the selector sorts alphabetically and chooses
+      // the last value
       expect(resA).to.have.property('value').that.equalBytes(valueA)
       expect(resB).to.have.property('value').that.equalBytes(valueA)
 
@@ -352,17 +353,17 @@ describe('KadDHT', () => {
       const value = uint8ArrayFromString('world')
 
       const dhts = await sortDHTs(await Promise.all([
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn()
       ]), await kadUtils.convertBuffer(key))
 
       // Connect all
       await Promise.all([
-        tdht.connect(dhts[0], dhts[1]),
-        tdht.connect(dhts[1], dhts[2]),
-        tdht.connect(dhts[2], dhts[3])
+        testDHT.connect(dhts[0], dhts[1]),
+        testDHT.connect(dhts[1], dhts[2]),
+        testDHT.connect(dhts[2], dhts[3])
       ])
 
       // DHT operations
@@ -372,22 +373,28 @@ describe('KadDHT', () => {
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
-    it('getMany with nvals=1 goes out to swarm if there is no local value', async () => {
+    it('getMany with number of values = 1 goes out to swarm if there is no local value', async () => {
       const key = uint8ArrayFromString('/v/hello')
       const value = uint8ArrayFromString('world')
       const rec = new Libp2pRecord(key, value, new Date())
-      const dht = await tdht.spawn()
+      const dht = await testDHT.spawn()
 
       // Simulate returning a peer id to query
-      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1]])
+      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1].peerId])
       // Simulate going out to the network and returning the record
       sinon.stub(dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
         yield peerResponseEvent({
           messageType: MessageType.GET_VALUE,
           from: peer,
-          record: rec
+          record: rec,
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
         })
-      }) // eslint-disable-line require-await
+      })
 
       const res = await last(dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
@@ -399,16 +406,16 @@ describe('KadDHT', () => {
       this.timeout(240 * 1000)
 
       const dhts = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
       await Promise.all([
-        tdht.connect(dhts[0], dhts[1]),
-        tdht.connect(dhts[0], dhts[2]),
-        tdht.connect(dhts[0], dhts[3])
+        testDHT.connect(dhts[0], dhts[1]),
+        testDHT.connect(dhts[0], dhts[2]),
+        testDHT.connect(dhts[0], dhts[3])
       ])
 
       const ids = dhts.map((d) => d.components.peerId)
@@ -423,13 +430,13 @@ describe('KadDHT', () => {
 
       const nDHTs = 30
       const dhts = await Promise.all(
-        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
+        new Array(nDHTs).fill(0).map(async () => testDHT.spawn())
       )
 
       const connected: Array<Promise<void>> = []
 
       for (let i = 0; i < dhts.length - 1; i++) {
-        connected.push(tdht.connect(dhts[i], dhts[(i + 1) % dhts.length]))
+        connected.push(testDHT.connect(dhts[i], dhts[(i + 1) % dhts.length]))
       }
 
       await Promise.all(connected)
@@ -444,13 +451,13 @@ describe('KadDHT', () => {
 
       const nDHTs = 30
       const dhts = await Promise.all(
-        new Array(nDHTs).fill(0).map(async () => tdht.spawn())
+        new Array(nDHTs).fill(0).map(async () => testDHT.spawn())
       )
 
       const connected: Array<Promise<void>> = []
 
       for (let i = 0; i < dhts.length - 1; i++) {
-        connected.push(tdht.connect(dhts[i], dhts[(i + 1) % dhts.length]))
+        connected.push(testDHT.connect(dhts[i], dhts[(i + 1) % dhts.length]))
       }
 
       await Promise.all(connected)
@@ -458,7 +465,7 @@ describe('KadDHT', () => {
       const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
       expect(res).to.not.be.empty()
 
-      // no peer should include itself in the response, only other peers that it
+      // should not include requester in the response, only other peers that it
       // knows who are closer
       for (const event of res) {
         if (event.name !== 'PEER_RESPONSE') {
@@ -478,11 +485,11 @@ describe('KadDHT', () => {
       const error = new Error('fake error')
 
       const [dhtA, dhtB] = await Promise.all([
-        tdht.spawn(),
-        tdht.spawn()
+        testDHT.spawn(),
+        testDHT.spawn()
       ])
 
-      await tdht.connect(dhtA, dhtB)
+      await testDHT.connect(dhtA, dhtB)
 
       const stub = sinon.stub(dhtA.components.connectionManager, 'openConnection').rejects(error)
 

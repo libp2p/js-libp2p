@@ -1,6 +1,8 @@
 /**
  * @packageDocumentation
  *
+ * Utilities to make working with libp2p configuration simpler.
+ *
  * @example Load or create the "self" private key in a datastore
  *
  * Most nodes will want to persist the same private key between restarts so this
@@ -10,7 +12,7 @@
  * The options you pass to this function should be the same as those passed to
  * the `@libp2p/keychain` service you configure your node with.
  *
- * ```ts
+ * ```TypeScript
  * import { loadOrCreateSelfKey } from '@libp2p/config'
  * import { keychain } from '@libp2p/keychain'
  * import { LevelDatastore } from 'datastore-level'

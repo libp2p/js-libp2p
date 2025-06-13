@@ -1,8 +1,8 @@
 import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology } from '@libp2p/interface'
-import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerRecord } from '@libp2p/interface-internal'
+import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, IncomingStreamData, StreamHandler, StreamHandlerRecord } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
   async publishMessage (): Promise<PublishResult> {

@@ -98,6 +98,323 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.38](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.37...floodsub-v10.1.38) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/pubsub bumped from ^10.1.13 to ^10.1.14
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface-compliance-tests bumped from ^6.4.8 to ^6.4.9
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+
+## [10.1.37](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.36...floodsub-v10.1.37) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/pubsub bumped from ^10.1.12 to ^10.1.13
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface-compliance-tests bumped from ^6.4.7 to ^6.4.8
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/peer-collections bumped from ^6.0.29 to ^6.0.30
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+
+## [10.1.36](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.35...floodsub-v10.1.36) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/pubsub bumped from ^10.1.11 to ^10.1.12
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface-compliance-tests bumped from ^6.4.6 to ^6.4.7
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+
+## [10.1.35](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.34...floodsub-v10.1.35) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/pubsub bumped from ^10.1.10 to ^10.1.11
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface-compliance-tests bumped from ^6.4.5 to ^6.4.6
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/peer-collections bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+
+## [10.1.34](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.33...floodsub-v10.1.34) (2025-04-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.4 to ^6.4.5
+
+## [10.1.33](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.32...floodsub-v10.1.33) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/pubsub bumped from ^10.1.9 to ^10.1.10
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface-compliance-tests bumped from ^6.4.3 to ^6.4.4
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/peer-collections bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+
+## [10.1.32](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.31...floodsub-v10.1.32) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/pubsub bumped from ^10.1.8 to ^10.1.9
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-collections bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+
+## [10.1.31](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.30...floodsub-v10.1.31) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.1.7 to ^10.1.8
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.1 to ^6.4.2
+    * @libp2p/peer-collections bumped from ^6.0.24 to ^6.0.25
+
+## [10.1.30](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.29...floodsub-v10.1.30) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.1.6 to ^10.1.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.0 to ^6.4.1
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/peer-collections bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+
+## [10.1.29](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.28...floodsub-v10.1.29) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/pubsub bumped from ^10.1.5 to ^10.1.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface-compliance-tests bumped from ^6.3.7 to ^6.4.0
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+
+## [10.1.28](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.27...floodsub-v10.1.28) (2025-03-03)
+
+
+### Bug Fixes
+
+* .d.ts is in ./dist folder ([#3018](https://github.com/libp2p/js-libp2p/issues/3018)) ([52a46ec](https://github.com/libp2p/js-libp2p/commit/52a46ecad0d2ccd88eaf6190a1d6d67d388fd11b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.1.4 to ^10.1.5
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/interface-compliance-tests bumped from ^6.3.6 to ^6.3.7
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/peer-collections bumped from ^6.0.21 to ^6.0.22
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+
+## [10.1.27](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.26...floodsub-v10.1.27) (2025-02-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.5 to ^6.3.6
+
+## [10.1.26](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.25...floodsub-v10.1.26) (2025-02-25)
+
+
+### Documentation
+
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/pubsub bumped from ^10.1.3 to ^10.1.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface-compliance-tests bumped from ^6.3.4 to ^6.3.5
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-collections bumped from ^6.0.20 to ^6.0.21
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+
+## [10.1.25](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.24...floodsub-v10.1.25) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.1.2 to ^10.1.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.3 to ^6.3.4
+    * @libp2p/peer-collections bumped from ^6.0.19 to ^6.0.20
+
+## [10.1.24](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.23...floodsub-v10.1.24) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.1.1 to ^10.1.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.2 to ^6.3.3
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+
+## [10.1.23](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.22...floodsub-v10.1.23) (2025-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/pubsub bumped from ^10.1.0 to ^10.1.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface-compliance-tests bumped from ^6.3.1 to ^6.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-collections bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+
+## [10.1.22](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.21...floodsub-v10.1.22) (2025-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.0.18 to ^10.1.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.0 to ^6.3.1
+
+## [10.1.21](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.20...floodsub-v10.1.21) (2025-02-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.7 to ^6.3.0
+
+## [10.1.20](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.19...floodsub-v10.1.20) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.6 to ^6.2.7
+
+## [10.1.19](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.18...floodsub-v10.1.19) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/pubsub bumped from ^10.0.17 to ^10.0.18
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface-compliance-tests bumped from ^6.2.5 to ^6.2.6
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-collections bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+
+## [10.1.18](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.17...floodsub-v10.1.18) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/pubsub bumped from ^10.0.16 to ^10.0.17
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.4 to ^6.2.5
+    * @libp2p/peer-collections bumped from ^6.0.15 to ^6.0.16
+
+## [10.1.17](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.16...floodsub-v10.1.17) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/pubsub bumped from ^10.0.15 to ^10.0.16
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface-compliance-tests bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-collections bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
 ## [10.1.16](https://github.com/libp2p/js-libp2p/compare/floodsub-v10.1.15...floodsub-v10.1.16) (2025-01-13)
 
 

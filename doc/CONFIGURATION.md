@@ -20,7 +20,7 @@
     - [Setup with Delegated Content and Peer Routing](#setup-with-delegated-content-and-peer-routing)
     - [Setup with Relay](#setup-with-relay)
     - [Setup with Automatic Reservations](#setup-with-automatic-reservations)
-    - [Setup with Preconfigured Reservations](#setup-with-preconfigured-reservations)
+    - [Setup with Pre-configured Reservations](#setup-with-pre-configured-reservations)
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Connection Manager](#configuring-connection-manager)
     - [Configuring Connection Gater](#configuring-connection-gater)
@@ -127,16 +127,12 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
-- [@chainsafe/discv5](https://github.com/chainsafe/discv5)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) ([spec](https://github.com/libp2p/specs/blob/master/discovery/mdns.md))
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht) ([spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md))
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) (typically used together with @libp2p/kad-dht)
+- [@chainsafe/discv5](https://github.com/chainsafe/discv5) ([spec](https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md))
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
-
-If you want to know more about libp2p peer discovery, you should read the following content:
-
-- https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 
 ### Content Routing
 
@@ -175,7 +171,7 @@ If none of the available peer routing protocols fulfills your needs, you can cre
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia white paper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
@@ -268,7 +264,7 @@ const node = await createLibp2p({
   ],
   streamMuxers: [yamux()],
   connectionEncrypters: [noise()],
-  peerDiscovery: [MulticastDNS],
+  peerDiscovery: [mdns()],
   services: {
     dht: kadDHT(),
     pubsub: gossipsub()
@@ -303,7 +299,16 @@ const node = await createLibp2p({
     })
   ]
 })
+
+node.addEventListener('peer:discovery', (event) => {
+  console.log('Discovered new peer:', event.detail.id.toString())
+  node.dial(event.detail.multiaddrs)
+})
 ```
+
+Note the `bootstrap` peer discovery module will automatically dial the bootstrap peers when the node starts up, while `mdns` will only trigger the `peer:discovery` event when a new peer is discovered.
+
+
 
 #### Customizing Pubsub
 
@@ -501,7 +506,7 @@ const node = await createLibp2p({
 })
 ```
 
-#### Setup with Preconfigured Reservations
+#### Setup with Pre-configured Reservations
 
 In this configuration the libp2p node is a circuit relay client which connects to a relay, `/ip4/123.123.123.123/p2p/QmRelay` which has been configured to have slots available.
 
@@ -563,7 +568,7 @@ const node = await createLibp2p({
     noise()
   ],
   keychain: {
-    pass: 'notsafepassword123456789',
+    pass: 'not-safe-password-123456789',
   },
   datastore
 })
@@ -640,7 +645,7 @@ const node = await createLibp2p({
      * multiaddr for the given peer.
      *
      * This is called by the dialer.connectToPeer implementation after it has
-     * resolved the peer's addrs, and prior to dialling each.
+     * resolved the peer's addresses, and prior to dialling each.
      *
      * Return true to prevent dialing the passed peer on the passed multiaddr.
      */
@@ -795,7 +800,7 @@ const node = await createLibp2p({
 
 PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
 
-The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
+The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with un-flushed records when the window is closed.
 
 | Name        | Type      | Description                    |
 | ----------- | --------- | ------------------------------ |

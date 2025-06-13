@@ -5,37 +5,39 @@ import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import * as Digest from 'multiformats/hashes/digest'
-import Sinon, { type SinonStubbedInstance } from 'sinon'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { FindNodeHandler } from '../../../src/rpc/handlers/find-node.js'
 import { passthroughMapper, removePrivateAddressesMapper, removePublicAddressesMapper } from '../../../src/utils.js'
-import { createPeerId } from '../../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
+import type { Message } from '../../../src/message/dht.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
 import type { AddressManager } from '@libp2p/interface-internal'
+import type { SinonStubbedInstance } from 'sinon'
 import type { StubbedInstance } from 'sinon-ts'
 
 const T = MessageType.FIND_NODE
 
 describe('rpc - handlers - FindNode', () => {
-  let peerId: PeerId
-  let sourcePeer: PeerId
-  let targetPeer: PeerId
+  let peerId: PeerAndKey
+  let sourcePeer: PeerAndKey
+  let targetPeer: PeerAndKey
   let handler: DHTMessageHandler
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let addressManager: StubbedInstance<AddressManager>
 
   beforeEach(async () => {
-    peerId = await createPeerId()
-    sourcePeer = await createPeerId()
-    targetPeer = await createPeerId()
+    peerId = await createPeerIdWithPrivateKey()
+    sourcePeer = await createPeerIdWithPrivateKey()
+    targetPeer = await createPeerIdWithPrivateKey()
     peerRouting = Sinon.createStubInstance(PeerRouting)
     addressManager = stubInterface<AddressManager>()
 
     handler = new FindNodeHandler({
-      peerId,
+      peerId: peerId.peerId,
       addressManager,
       logger: defaultLogger()
     }, {
@@ -48,7 +50,7 @@ describe('rpc - handlers - FindNode', () => {
   it('returns nodes close to self and includes self, if asked for self', async () => {
     const msg: Message = {
       type: T,
-      key: peerId.toMultihash().bytes,
+      key: peerId.peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
@@ -59,10 +61,10 @@ describe('rpc - handlers - FindNode', () => {
       multiaddr('/ip4/221.4.67.0/tcp/4002')
     ])
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(peerId.toMultihash().bytes, peerId)
+    peerRouting.getClosestPeersOffline
+      .withArgs(peerId.peerId.toMultihash().bytes)
       .resolves([{
-        id: targetPeer, // closer peer
+        id: targetPeer.peerId, // closer peer
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
@@ -70,7 +72,7 @@ describe('rpc - handlers - FindNode', () => {
         ]
       }])
 
-    const response = await handler.handle(peerId, msg)
+    const response = await handler.handle(peerId.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -79,25 +81,25 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(2)
     const peer = response.closer[0]
 
-    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
     expect(peer.multiaddrs).to.not.be.empty()
 
     const self = response.closer[1]
-    expect(peerIdFromMultihash(Digest.decode(self.id)).toString()).to.equal(peerId.toString())
+    expect(peerIdFromMultihash(Digest.decode(self.id)).toString()).to.equal(peerId.peerId.toString())
   })
 
   it('returns closer peers', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.toMultihash().bytes,
+      key: targetPeer.peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
-        id: targetPeer,
+        id: targetPeer.peerId,
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
@@ -105,7 +107,7 @@ describe('rpc - handlers - FindNode', () => {
         ]
       }])
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -114,21 +116,41 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
     expect(peer.multiaddrs).to.not.be.empty()
+  })
+
+  it('does not return requesting peer in results', async () => {
+    const msg: Message = {
+      type: T,
+      key: targetPeer.peerId.toMultihash().bytes,
+      closer: [],
+      providers: []
+    }
+
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
+      .resolves([])
+
+    await handler.handle(sourcePeer.peerId, msg)
+
+    expect(peerRouting.getClosestPeersOffline.getCall(0).args[1]?.exclude)
+      .to.include(peerId.peerId, 'did not exclude server PeerId from results')
+    expect(peerRouting.getClosestPeersOffline.getCall(0).args[1]?.exclude)
+      .to.include(sourcePeer.peerId, 'did not exclude requesting peer id from results')
   })
 
   it('handles no peers found', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.toMultihash().bytes,
+      key: targetPeer.peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline.resolves([])
+    peerRouting.getClosestPeersOffline.resolves([])
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     expect(response).to.have.property('closer').that.is.empty()
   })
@@ -136,15 +158,15 @@ describe('rpc - handlers - FindNode', () => {
   it('returns only lan addresses', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.toMultihash().bytes,
+      key: targetPeer.peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
-        id: targetPeer,
+        id: targetPeer.peerId,
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
@@ -153,7 +175,7 @@ describe('rpc - handlers - FindNode', () => {
       }])
 
     handler = new FindNodeHandler({
-      peerId,
+      peerId: peerId.peerId,
       addressManager,
       logger: defaultLogger()
     }, {
@@ -162,7 +184,7 @@ describe('rpc - handlers - FindNode', () => {
       peerInfoMapper: removePublicAddressesMapper
     })
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -171,7 +193,7 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/192.168.1.5/tcp/4002')
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/221.4.67.0/tcp/4002')
   })
@@ -179,15 +201,15 @@ describe('rpc - handlers - FindNode', () => {
   it('returns only wan addresses', async () => {
     const msg: Message = {
       type: T,
-      key: targetPeer.toMultihash().bytes,
+      key: targetPeer.peerId.toMultihash().bytes,
       closer: [],
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.toMultihash().bytes, sourcePeer)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
-        id: targetPeer,
+        id: targetPeer.peerId,
         multiaddrs: [
           multiaddr('/ip4/127.0.0.1/tcp/4002'),
           multiaddr('/ip4/192.168.1.5/tcp/4002'),
@@ -196,7 +218,7 @@ describe('rpc - handlers - FindNode', () => {
       }])
 
     handler = new FindNodeHandler({
-      peerId,
+      peerId: peerId.peerId,
       addressManager,
       logger: defaultLogger()
     }, {
@@ -205,7 +227,7 @@ describe('rpc - handlers - FindNode', () => {
       peerInfoMapper: removePrivateAddressesMapper
     })
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
 
     if (response == null) {
       throw new Error('No response received from handler')
@@ -214,7 +236,7 @@ describe('rpc - handlers - FindNode', () => {
     expect(response.closer).to.have.length(1)
     const peer = response.closer[0]
 
-    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.toString())
+    expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/192.168.1.5/tcp/4002')
     expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/221.4.67.0/tcp/4002')
   })

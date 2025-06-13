@@ -1,33 +1,15 @@
 import net from 'net'
-import { AlreadyStartedError, InvalidParametersError, NotStartedError, TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { AlreadyStartedError, InvalidParametersError, NotStartedError } from '@libp2p/interface'
+import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
-import { CODE_P2P } from './constants.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
-import {
-  getMultiaddrs,
-  multiaddrToNetConfig,
-  type NetConfig
-} from './utils.js'
-import type { TCPCreateListenerOptions } from './index.js'
+import { multiaddrToNetConfig } from './utils.js'
+import type { CloseServerOnMaxConnectionsOpts, TCPCreateListenerOptions } from './index.js'
+import type { NetConfig } from './utils.js'
 import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-export interface CloseServerOnMaxConnectionsOpts {
-  /**
-   * Server listens once connection count is less than `listenBelow`
-   */
-  listenBelow: number
-
-  /**
-   * Close server once connection count is greater than or equal to `closeAbove`
-   */
-  closeAbove: number
-
-  /**
-   * Invoked when there was an error listening on a socket
-   */
-  onListenError?(err: Error): void
-}
 
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
@@ -40,10 +22,10 @@ interface Context extends TCPCreateListenerOptions {
   logger: ComponentLogger
 }
 
-export interface TCPListenerMetrics {
-  status: MetricGroup
-  errors: CounterGroup
-  events: CounterGroup
+interface TCPListenerMetrics {
+  status?: MetricGroup
+  errors?: CounterGroup
+  events?: CounterGroup
 }
 
 enum TCPListenerStatusCode {
@@ -51,17 +33,16 @@ enum TCPListenerStatusCode {
    * When server object is initialized but we don't know the listening address
    * yet or the server object is stopped manually, can be resumed only by
    * calling listen()
-   **/
+   */
   INACTIVE = 0,
   ACTIVE = 1,
   /* During the connection limits */
-  PAUSED = 2,
+  PAUSED = 2
 }
 
 type Status = { code: TCPListenerStatusCode.INACTIVE } | {
   code: Exclude<TCPListenerStatusCode, TCPListenerStatusCode.INACTIVE>
   listeningAddr: Multiaddr
-  peerId: string | null
   netConfig: NetConfig
 }
 
@@ -70,7 +51,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   /** Keep track of open sockets to destroy in case of timeout */
   private readonly sockets = new Set<net.Socket>()
   private status: Status = { code: TCPListenerStatusCode.INACTIVE }
-  private metrics?: TCPListenerMetrics
+  private metrics: TCPListenerMetrics
   private addr: string
   private readonly log: Logger
   private readonly shutdownController: AbortController
@@ -103,59 +84,57 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       }
     }
 
+    context.metrics?.registerMetricGroup('libp2p_tcp_inbound_connections_total', {
+      label: 'address',
+      help: 'Current active connections in TCP listener',
+      calculate: () => {
+        return {
+          [this.addr]: this.sockets.size
+        }
+      }
+    })
+
+    this.metrics = {
+      status: context.metrics?.registerMetricGroup('libp2p_tcp_listener_status_info', {
+        label: 'address',
+        help: 'Current status of the TCP listener socket'
+      }),
+      errors: context.metrics?.registerMetricGroup('libp2p_tcp_listener_errors_total', {
+        label: 'address',
+        help: 'Total count of TCP listener errors by type'
+      }),
+      events: context.metrics?.registerMetricGroup('libp2p_tcp_listener_events_total', {
+        label: 'address',
+        help: 'Total count of TCP listener events by type'
+      })
+    }
+
     this.server
       .on('listening', () => {
-        if (context.metrics != null) {
-          // we are listening, register metrics for our port
-          const address = this.server.address()
+        // we are listening, register metrics for our port
+        const address = this.server.address()
 
-          if (address == null) {
-            this.addr = 'unknown'
-          } else if (typeof address === 'string') {
-            // unix socket
-            this.addr = address
-          } else {
-            this.addr = `${address.address}:${address.port}`
-          }
-
-          context.metrics?.registerMetricGroup('libp2p_tcp_inbound_connections_total', {
-            label: 'address',
-            help: 'Current active connections in TCP listener',
-            calculate: () => {
-              return {
-                [this.addr]: this.sockets.size
-              }
-            }
-          })
-
-          this.metrics = {
-            status: context.metrics.registerMetricGroup('libp2p_tcp_listener_status_info', {
-              label: 'address',
-              help: 'Current status of the TCP listener socket'
-            }),
-            errors: context.metrics.registerMetricGroup('libp2p_tcp_listener_errors_total', {
-              label: 'address',
-              help: 'Total count of TCP listener errors by type'
-            }),
-            events: context.metrics.registerMetricGroup('libp2p_tcp_listener_events_total', {
-              label: 'address',
-              help: 'Total count of TCP listener events by type'
-            })
-          }
-
-          this.metrics?.status.update({
-            [this.addr]: TCPListenerStatusCode.ACTIVE
-          })
+        if (address == null) {
+          this.addr = 'unknown'
+        } else if (typeof address === 'string') {
+          // unix socket
+          this.addr = address
+        } else {
+          this.addr = `${address.address}:${address.port}`
         }
+
+        this.metrics.status?.update({
+          [this.addr]: TCPListenerStatusCode.ACTIVE
+        })
 
         this.safeDispatchEvent('listening')
       })
       .on('error', err => {
-        this.metrics?.errors.increment({ [`${this.addr} listen_error`]: true })
+        this.metrics.errors?.increment({ [`${this.addr} listen_error`]: true })
         this.safeDispatchEvent('error', { detail: err })
       })
       .on('close', () => {
-        this.metrics?.status.update({
+        this.metrics.status?.update({
           [this.addr]: this.status.code
         })
 
@@ -168,12 +147,12 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         }
       })
       .on('drop', () => {
-        this.metrics?.events.increment({ [`${this.addr} drop`]: true })
+        this.metrics.events?.increment({ [`${this.addr} drop`]: true })
       })
   }
 
   private onSocket (socket: net.Socket): void {
-    this.metrics?.events.increment({ [`${this.addr} connection`]: true })
+    this.metrics.events?.increment({ [`${this.addr} connection`]: true })
 
     if (this.status.code !== TCPListenerStatusCode.ACTIVE) {
       socket.destroy()
@@ -193,7 +172,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)
-      this.metrics?.errors.increment({ [`${this.addr} inbound_to_connection`]: true })
+      this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
       socket.destroy()
       return
     }
@@ -236,7 +215,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       })
       .catch(async err => {
         this.log.error('inbound connection upgrade failed', err)
-        this.metrics?.errors.increment({ [`${this.addr} inbound_upgrade`]: true })
+        this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
         this.sockets.delete(socket)
         maConn.abort(err)
       })
@@ -247,31 +226,24 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       return []
     }
 
-    let addrs: Multiaddr[] = []
     const address = this.server.address()
-    const { listeningAddr, peerId } = this.status
 
     if (address == null) {
       return []
     }
 
     if (typeof address === 'string') {
-      addrs = [listeningAddr]
-    } else {
-      try {
-        // Because TCP will only return the IPv6 version
-        // we need to capture from the passed multiaddr
-        if (listeningAddr.toString().startsWith('/ip4')) {
-          addrs = addrs.concat(getMultiaddrs('ip4', address.address, address.port))
-        } else if (address.family === 'IPv6') {
-          addrs = addrs.concat(getMultiaddrs('ip6', address.address, address.port))
-        }
-      } catch (err) {
-        this.log.error('could not turn %s:%s into multiaddr', address.address, address.port, err)
-      }
+      return [
+        // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
+        multiaddr(`/unix/${address}`)
+      ]
     }
 
-    return addrs.map(ma => peerId != null ? ma.encapsulate(`/p2p/${peerId}`) : ma)
+    return getThinWaistAddresses(this.status.listeningAddr, address.port)
+  }
+
+  updateAnnounceAddrs (): void {
+
   }
 
   async listen (ma: Multiaddr): Promise<void> {
@@ -279,16 +251,11 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       throw new AlreadyStartedError('server is already listening')
     }
 
-    const peerId = ma.getPeerId()
-    const listeningAddr = peerId == null ? ma.decapsulateCode(CODE_P2P) : ma
-    const { backlog } = this.context
-
     try {
       this.status = {
         code: TCPListenerStatusCode.ACTIVE,
-        listeningAddr,
-        peerId,
-        netConfig: multiaddrToNetConfig(listeningAddr, { backlog })
+        listeningAddr: ma,
+        netConfig: multiaddrToNetConfig(ma, this.context)
       }
 
       await this.resume()

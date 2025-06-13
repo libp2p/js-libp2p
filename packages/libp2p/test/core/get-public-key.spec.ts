@@ -38,7 +38,7 @@ describe('getPublicKey', () => {
     expect(otherPeer.publicKey.equals(key)).to.be.true()
   })
 
-  it('should get key from the peerstore', async () => {
+  it('should get key from the peer store', async () => {
     const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
 
     if (otherPeer.publicKey == null) {

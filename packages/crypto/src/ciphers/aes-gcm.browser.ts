@@ -1,7 +1,7 @@
 import { concat } from 'uint8arrays/concat'
 import { fromString } from 'uint8arrays/from-string'
 import webcrypto from '../webcrypto/index.js'
-import type { CreateOptions, AESCipher } from './interface.js'
+import type { CreateAESCipherOptions, AESCipher } from './interface.js'
 
 // WebKit on Linux does not support deriving a key from an empty PBKDF2 key.
 // So, as a workaround, we provide the generated key as a constant. We test that
@@ -13,11 +13,18 @@ import type { CreateOptions, AESCipher } from './interface.js'
 //     await crypto.subtle.importKey('raw', new Uint8Array(0), { name: 'PBKDF2' }, false, ['deriveKey']),
 //     { name: 'AES-GCM', length: 128 }, true, ['encrypt', 'decrypt'])
 // )
-export const derivedEmptyPasswordKey = { alg: 'A128GCM', ext: true, k: 'scm9jmO_4BJAgdwWGVulLg', key_ops: ['encrypt', 'decrypt'], kty: 'oct' }
+export const derivedEmptyPasswordKey = {
+  alg: 'A128GCM',
+  ext: true,
+  /* spell-checker:disable-next-line */
+  k: 'scm9jmO_4BJAgdwWGVulLg',
+  key_ops: ['encrypt', 'decrypt'],
+  kty: 'oct'
+}
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
-export function create (opts?: CreateOptions): AESCipher {
+export function create (opts?: CreateAESCipherOptions): AESCipher {
   const algorithm = opts?.algorithm ?? 'AES-GCM'
   let keyLength = opts?.keyLength ?? 16
   const nonceLength = opts?.nonceLength ?? 12

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/simple-metrics",
-  "version": "1.3.0",
+  "version": "1.3.13",
   "description": "Simple in-memory metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-simple#readme",
@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -49,15 +42,15 @@
     "dep-check": "aegir dep-check -i events"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.4.0",
-    "@libp2p/logger": "^5.1.6",
-    "it-foreach": "^2.1.1",
+    "@libp2p/interface": "^2.10.3",
+    "@libp2p/logger": "^5.1.19",
+    "it-foreach": "^2.1.3",
     "it-stream-types": "^2.0.2",
     "tdigest": "^0.1.2"
   },
   "devDependencies": {
-    "@types/tdigest": "^0.1.4",
-    "aegir": "^45.0.5",
+    "@types/tdigest": "^0.1.5",
+    "aegir": "^47.0.14",
     "p-defer": "^4.0.1"
   },
   "sideEffects": false

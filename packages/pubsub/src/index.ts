@@ -30,9 +30,10 @@
  * ```
  */
 
-import { TypedEventEmitter, TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
+import { TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
+import { TypedEventEmitter } from 'main-event'
 import Queue from 'p-queue'
 import { PeerStreams as PeerStreamsImpl } from './peer-streams.js'
 import {
@@ -40,8 +41,8 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey } from '@libp2p/interface'
-import type { IncomingStreamData, Registrar } from '@libp2p/interface-internal'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, IncomingStreamData } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PubSubComponents {
@@ -488,7 +489,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
         }
 
         if (msg.sequenceNumber == null) {
-          throw new InvalidMessageError('Need seqno when signature policy is StrictSign but it was missing')
+          throw new InvalidMessageError('Need sequence number when signature policy is StrictSign but it was missing')
         }
 
         if (msg.key == null) {
@@ -505,7 +506,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
   /**
    * Whether to accept a message from a peer
-   * Override to create a graylist
+   * Override to create a gray list
    */
   acceptFrom (id: PeerId): boolean {
     return true
@@ -566,7 +567,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    * Validates the given message. The signature will be checked for authenticity.
    * Throws an error on invalid messages
    */
-  async validate (from: PeerId, message: Message): Promise<void> { // eslint-disable-line require-await
+  async validate (from: PeerId, message: Message): Promise<void> {
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':

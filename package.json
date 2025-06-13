@@ -21,14 +21,17 @@
     "test:firefox": "aegir run test:firefox",
     "test:firefox-webworker": "aegir run test:firefox-webworker",
     "test:electron-main": "aegir run test:electron-main",
+    "test:webkit": "aegir run test:webkit",
     "test:cli": "aegir run test:cli",
     "test:interop": "aegir run test:interop",
     "coverage": "aegir run coverage",
     "build": "aegir run build",
+    "generate": "aegir run generate",
     "clean": "aegir run clean",
     "lint": "aegir run lint",
     "dep-check": "aegir run dep-check",
     "doc-check": "aegir run doc-check",
+    "spell-check": "aegir spell-check",
     "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
@@ -36,14 +39,8 @@
     "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
   },
   "devDependencies": {
-    "aegir": "^45.0.5",
+    "aegir": "^47.0.6",
     "npm-run-all": "^4.1.5"
-  },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "ignorePatterns": [
-      "!.aegir.js"
-    ]
   },
   "workspaces": [
     "doc",

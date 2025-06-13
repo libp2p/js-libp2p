@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/dcutr",
-  "version": "2.0.15",
+  "version": "2.0.33",
   "description": "Implementation of the DCUtR Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-dcutr#readme",
@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "start": "node dist/src/main.js",
     "build": "aegir build",
@@ -52,20 +45,20 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.4.0",
-    "@libp2p/interface-internal": "^2.2.2",
-    "@libp2p/utils": "^6.3.1",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@multiformats/multiaddr-matcher": "^1.6.0",
+    "@libp2p/interface": "^2.10.3",
+    "@libp2p/interface-internal": "^2.3.15",
+    "@libp2p/utils": "^6.6.6",
+    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr-matcher": "^1.7.2",
     "delay": "^6.0.0",
-    "it-protobuf-stream": "^1.1.5",
+    "it-protobuf-stream": "^2.0.2",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^45.0.5",
-    "protons": "^7.6.0",
-    "sinon": "^19.0.2",
+    "aegir": "^47.0.14",
+    "protons": "^7.6.1",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

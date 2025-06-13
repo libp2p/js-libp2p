@@ -4,13 +4,14 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Validators } from '../index.js'
 import type { Libp2pRecord } from '@libp2p/record'
+import type { AbortOptions } from 'it-pushable'
 
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
  * If verification fails the returned Promise will reject with the error.
  */
-export async function verifyRecord (validators: Validators, record: Libp2pRecord): Promise<void> {
+export async function verifyRecord (validators: Validators, record: Libp2pRecord, options?: AbortOptions): Promise<void> {
   const key = record.key
   const keyString = uint8ArrayToString(key)
   const parts = keyString.split('/')
@@ -26,7 +27,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
     throw new InvalidParametersError(`No validator available for key type "${parts[1]}"`)
   }
 
-  await validator(key, record.value)
+  await validator(key, record.value, options)
 }
 
 /**
@@ -38,7 +39,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
  * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
  * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
  */
-const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): Promise<void> => {
+const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array, options?: AbortOptions): Promise<void> => {
   if (!(key instanceof Uint8Array)) {
     throw new InvalidParametersError('"key" must be a Uint8Array')
   }
@@ -54,9 +55,9 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array): 
   }
 
   const pubKey = publicKeyFromProtobuf(publicKey)
-  const keyhash = key.slice(4)
+  const keyHash = key.slice(4)
 
-  if (!uint8ArrayEquals(keyhash, pubKey.toMultihash().bytes)) {
+  if (!uint8ArrayEquals(keyHash, pubKey.toMultihash().bytes)) {
     throw new InvalidParametersError('public key does not match passed in key')
   }
 }

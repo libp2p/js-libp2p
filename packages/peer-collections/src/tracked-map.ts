@@ -45,7 +45,7 @@ class TrackedPeerMap<V> extends PeerMap<V> {
  *
  * @example
  *
- * * ```Typescript
+ * ```Typescript
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  *

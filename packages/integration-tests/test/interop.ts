@@ -12,16 +12,21 @@ import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
+import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
+import { webRTCDirect } from '@libp2p/webrtc'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
-import { createLibp2p, type Libp2pOptions, type ServiceFactoryMap } from 'libp2p'
+import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
+import type { Identify } from '@libp2p/identify'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
+import type { PingService } from '@libp2p/ping'
+import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
 /**
  * @packageDocumentation
@@ -131,33 +136,40 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     addresses: {
       listen: []
     },
-    transports: [tcp(), circuitRelayTransport()],
+    transports: [
+      tcp(),
+      circuitRelayTransport(),
+      webRTCDirect()
+    ],
     streamMuxers: [],
-    connectionEncrypters: [noise()]
+    connectionEncrypters: []
   }
 
   if (options.noListen !== true) {
     if (options.transport == null || options.transport === 'tcp') {
       opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'webrtc-direct') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/webrtc-direct')
     } else {
       throw new UnsupportedError()
     }
   }
 
-  if (options.transport === 'webtransport' || options.transport === 'webrtc-direct') {
+  if (options.transport === 'webtransport') {
     throw new UnsupportedError()
   }
 
-  const services: ServiceFactoryMap = {
-    identify: identify()
+  const services: ServiceFactoryMap<{ identify: Identify, ping: PingService } & Record<string, any>> = {
+    identify: identify(),
+    ping: ping()
   }
 
-  if (options.encryption === 'noise') {
-    opts.connectionEncrypters?.push(noise())
-  } else if (options.encryption === 'tls') {
+  if (options.encryption === 'tls') {
     opts.connectionEncrypters?.push(tls())
   } else if (options.encryption === 'plaintext') {
     opts.connectionEncrypters?.push(plaintext())
+  } else {
+    opts.connectionEncrypters?.push(noise())
   }
 
   if (options.muxer === 'mplex') {
@@ -191,7 +203,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     services
   })
 
-  const server = createServer(multiaddr('/ip4/0.0.0.0/tcp/0'), node)
+  const server = createServer(multiaddr('/ip4/127.0.0.1/tcp/0'), node)
   await server.start()
 
   return {

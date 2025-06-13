@@ -1,5 +1,281 @@
 # Changelog
 
+## [2.0.39](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.38...pnet-v2.0.39) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.8 to ^6.4.9
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+
+## [2.0.38](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.37...pnet-v2.0.38) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.7 to ^6.4.8
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+
+## [2.0.37](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.36...pnet-v2.0.37) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.6 to ^6.4.7
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+
+## [2.0.36](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.35...pnet-v2.0.36) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.5 to ^6.4.6
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+
+## [2.0.35](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.34...pnet-v2.0.35) (2025-04-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.4 to ^6.4.5
+
+## [2.0.34](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.33...pnet-v2.0.34) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.3 to ^6.4.4
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+
+## [2.0.33](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.32...pnet-v2.0.33) (2025-04-09)
+
+
+### Bug Fixes
+
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.2 to ^6.4.3
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+
+## [2.0.32](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.31...pnet-v2.0.32) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.1 to ^6.4.2
+
+## [2.0.31](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.30...pnet-v2.0.31) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.0 to ^6.4.1
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+
+## [2.0.30](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.29...pnet-v2.0.30) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.7 to ^6.4.0
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+
+## [2.0.29](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.28...pnet-v2.0.29) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.6 to ^6.3.7
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+
+## [2.0.28](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.27...pnet-v2.0.28) (2025-02-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.5 to ^6.3.6
+
+## [2.0.27](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.26...pnet-v2.0.27) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.4 to ^6.3.5
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+
+## [2.0.26](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.25...pnet-v2.0.26) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.3 to ^6.3.4
+
+## [2.0.25](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.24...pnet-v2.0.25) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.2 to ^6.3.3
+
+## [2.0.24](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.23...pnet-v2.0.24) (2025-02-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.1 to ^6.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+
+## [2.0.23](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.22...pnet-v2.0.23) (2025-02-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.3.0 to ^6.3.1
+
+## [2.0.22](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.21...pnet-v2.0.22) (2025-02-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.7 to ^6.3.0
+
+## [2.0.21](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.20...pnet-v2.0.21) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.6 to ^6.2.7
+
+## [2.0.20](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.19...pnet-v2.0.20) (2025-02-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.5 to ^6.2.6
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+
+## [2.0.19](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.18...pnet-v2.0.19) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.4 to ^6.2.5
+
+## [2.0.18](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.17...pnet-v2.0.18) (2025-02-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+
 ## [2.0.17](https://github.com/libp2p/js-libp2p/compare/pnet-v2.0.16...pnet-v2.0.17) (2025-01-07)
 
 

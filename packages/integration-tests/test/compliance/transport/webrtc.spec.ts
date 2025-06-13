@@ -8,7 +8,6 @@ import tests from '@libp2p/interface-compliance-tests/transport'
 import { ping } from '@libp2p/ping'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { all } from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { isWebWorker } from 'wherearewe'
 
@@ -22,9 +21,7 @@ describe('WebRTC transport interface compliance', () => {
       const dialer = {
         transports: [
           circuitRelayTransport(),
-          webSockets({
-            filter: all
-          }),
+          webSockets(),
           webRTC()
         ],
         connectionEncrypters: [
