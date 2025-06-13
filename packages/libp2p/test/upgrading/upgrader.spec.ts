@@ -25,6 +25,7 @@ describe('upgrader', () => {
   let init: UpgraderInit
   const encrypterProtocol = '/test-encrypter'
   const muxerProtocol = '/test-muxer'
+  const streamProtocol = '/test/protocol'
   let remotePeer: PeerId
   let remoteAddr: Multiaddr
   let maConn: MultiaddrConnection
@@ -34,6 +35,38 @@ describe('upgrader', () => {
     public protocol = encrypterProtocol
     async secureInbound (): Promise<SecuredConnection> { throw new Error('Boom') }
     async secureOutbound (): Promise<SecuredConnection> { throw new Error('Boom') }
+  }
+
+  function stubMuxerFactory (protocol: string = streamProtocol, onInit?: (init: StreamMuxerInit) => void): StreamMuxerFactory {
+    return stubInterface<StreamMuxerFactory>({
+      protocol: muxerProtocol,
+      createStreamMuxer: (init = {}) => {
+        const streamMuxer = stubInterface<StreamMuxer>({
+          protocol: muxerProtocol,
+          sink: async (source) => drain(source),
+          source: (async function * () {})(),
+          streams: [],
+          newStream: () => {
+            const outgoingStream = stubInterface<Stream>({
+              id: 'stream-id',
+              log: logger('test-stream'),
+              direction: 'outbound',
+              sink: async (source) => drain(source),
+              source: map((async function * () {
+                yield '/multistream/1.0.0\n'
+                yield `${protocol}\n`
+              })(), str => encode.single(uint8ArrayFromString(str)))
+            })
+
+            streamMuxer?.streams.push(outgoingStream)
+            return outgoingStream
+          }
+        })
+
+        onInit?.(init)
+        return streamMuxer
+      }
+    })
   }
 
   beforeEach(async () => {
@@ -435,7 +468,8 @@ describe('upgrader', () => {
           },
           handler: Sinon.stub()
         }),
-        getProtocols: () => [protocol]
+        getProtocols: () => [protocol],
+        getMiddleware: () => []
       })
     })
     const upgrader = new Upgrader(components, {
@@ -503,7 +537,8 @@ describe('upgrader', () => {
           },
           handler: Sinon.stub()
         }),
-        getProtocols: () => [protocol]
+        getProtocols: () => [protocol],
+        getMiddleware: () => []
       })
     })
     const upgrader = new Upgrader(components, {
@@ -566,7 +601,8 @@ describe('upgrader', () => {
           options: {},
           handler: Sinon.stub()
         }),
-        getProtocols: () => [protocol]
+        getProtocols: () => [protocol],
+        getMiddleware: () => []
       })
     })
     const upgrader = new Upgrader(components, {
@@ -623,6 +659,115 @@ describe('upgrader', () => {
 
     await expect(conn.newStream(protocol, opts)).to.eventually.be.rejected
       .with.property('name', 'TooManyOutboundProtocolStreamsError')
+  })
+
+  it('should support outgoing stream middleware', async () => {
+    const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+    const middleware2 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+
+    const middleware = [
+      middleware1,
+      middleware2
+    ]
+
+    const components = await createDefaultUpgraderComponents({
+      registrar: stubInterface<Registrar>({
+        getHandler: () => ({
+          options: {},
+          handler: Sinon.stub()
+        }),
+        getProtocols: () => [streamProtocol],
+        getMiddleware: () => middleware
+      })
+    })
+    const upgrader = new Upgrader(components, {
+      ...init,
+      streamMuxers: [
+        stubMuxerFactory()
+      ]
+    })
+
+    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+
+    await upgrader.upgradeInbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
+
+    const event = await connectionPromise
+    const conn = event.detail
+
+    expect(conn.streams).to.have.lengthOf(0)
+
+    await conn.newStream(streamProtocol)
+
+    expect(middleware1.called).to.be.true()
+    expect(middleware2.called).to.be.true()
+  })
+
+  it('should support incoming stream middleware', async () => {
+    const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+    const middleware2 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+
+    const middleware = [
+      middleware1,
+      middleware2
+    ]
+
+    const streamMuxerInitPromise = Promise.withResolvers<StreamMuxerInit>()
+
+    const components = await createDefaultUpgraderComponents({
+      registrar: stubInterface<Registrar>({
+        getHandler: () => ({
+          options: {},
+          handler: Sinon.stub()
+        }),
+        getProtocols: () => [streamProtocol],
+        getMiddleware: () => middleware
+      })
+    })
+    const upgrader = new Upgrader(components, {
+      ...init,
+      streamMuxers: [
+        stubMuxerFactory(muxerProtocol, (init) => {
+          streamMuxerInitPromise.resolve(init)
+        })
+      ]
+    })
+
+    const conn = await upgrader.upgradeOutbound(maConn, {
+      signal: AbortSignal.timeout(5_000)
+    })
+
+    const { onIncomingStream } = await streamMuxerInitPromise.promise
+
+    expect(conn.streams).to.have.lengthOf(0)
+
+    const incomingStream = stubInterface<Stream>({
+      id: 'stream-id',
+      log: logger('test-stream'),
+      direction: 'outbound',
+      sink: async (source) => drain(source),
+      source: map((async function * () {
+        yield '/multistream/1.0.0\n'
+        yield `${streamProtocol}\n`
+      })(), str => encode.single(uint8ArrayFromString(str)))
+    })
+
+    onIncomingStream?.(incomingStream)
+
+    // incoming stream is opened asynchronously
+    await delay(100)
+
+    expect(middleware1.called).to.be.true()
+    expect(middleware2.called).to.be.true()
   })
 
   describe('early muxer selection', () => {
