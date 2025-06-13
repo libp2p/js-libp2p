@@ -334,8 +334,7 @@ export class DialQueue {
             return false
           })
 
-          // return existing, open connection to peer if equal or better limits
-          if (existingConnection?.status === 'open' && (existingConnection?.limits == null || conn?.limits != null)) {
+          if (existingConnection?.status === 'open') {
             this.log('already connected to %a', existingConnection.remoteAddr)
             options?.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
 
