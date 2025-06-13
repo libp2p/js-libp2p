@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [15.1.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.3...kad-dht-v15.1.4) (2025-06-13)
+
+
+### Bug Fixes
+
+* return closest known peers, even if they are not closer ([#3182](https://github.com/libp2p/js-libp2p/issues/3182)) ([ae595d8](https://github.com/libp2p/js-libp2p/commit/ae595d8db4456e57064876f7646ad3d2610177c2))
+
 ## [15.1.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.2...kad-dht-v15.1.3) (2025-06-03)
 
 
