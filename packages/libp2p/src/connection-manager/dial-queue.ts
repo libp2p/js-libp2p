@@ -338,8 +338,10 @@ export class DialQueue {
           if (existingConnection?.status === 'open' && (existingConnection?.limits == null || conn?.limits != null)) {
             this.log('already connected to %a', existingConnection.remoteAddr)
             options?.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+
             this.log('closing duplicate connection to %p', remotePeer)
             await conn.close()
+
             return existingConnection
           }
 
