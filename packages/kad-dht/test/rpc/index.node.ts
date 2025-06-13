@@ -90,7 +90,7 @@ describe('rpc', () => {
       defer.resolve()
     }
 
-    peerRouting.getCloserPeersOffline.resolves([])
+    peerRouting.getClosestPeersOffline.resolves([])
 
     const source = pipe(
       [Message.encode(msg)],

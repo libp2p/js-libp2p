@@ -107,7 +107,7 @@ describe('rpc - handlers - GetProviders', () => {
     }]
 
     providers.getProviders.withArgs(v.cid).resolves([providerPeer.peerId])
-    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer.peerId).resolves(closer)
+    peerRouting.getClosestPeersOffline.withArgs(msg.key).resolves(closer)
 
     await peerStore.merge(providerPeer.peerId, {
       multiaddrs: provider[0].multiaddrs

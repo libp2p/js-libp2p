@@ -7,7 +7,7 @@ import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as utils from '../utils.js'
 import { ClosestPeers } from './closest-peers.js'
 import { KBucket, isLeafBucket } from './k-bucket.js'
-import type { Bucket, LeafBucket, Peer } from './k-bucket.js'
+import type { Bucket, GetClosestPeersOptions, LeafBucket, Peer } from './k-bucket.js'
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
@@ -444,7 +444,9 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
    * Retrieve the closest peers to the given kadId
    */
   closestPeer (kadId: Uint8Array): PeerId | undefined {
-    const res = this.closestPeers(kadId, 1)
+    const res = this.closestPeers(kadId, {
+      count: 1
+    })
 
     if (res.length > 0) {
       return res[0]
@@ -456,12 +458,12 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Retrieve the `count`-closest peers to the given kadId
    */
-  closestPeers (kadId: Uint8Array, count = this.kBucketSize): PeerId[] {
+  closestPeers (kadId: Uint8Array, options?: GetClosestPeersOptions): PeerId[] {
     if (this.kb == null) {
       return []
     }
 
-    return [...this.kb.closest(kadId, count)]
+    return [...this.kb.closest(kadId, options)]
   }
 
   /**
