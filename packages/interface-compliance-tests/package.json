@@ -108,7 +108,7 @@
     "@libp2p/peer-id": "^5.1.6",
     "@libp2p/plaintext": "^2.0.26",
     "@libp2p/utils": "^6.6.6",
-    "@multiformats/multiaddr": "^12.4.2",
+    "@multiformats/multiaddr": "^12.4.3",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.14",

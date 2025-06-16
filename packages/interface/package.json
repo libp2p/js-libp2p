@@ -41,7 +41,7 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@multiformats/multiaddr": "^12.4.2",
+    "@multiformats/multiaddr": "^12.4.3",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
     "main-event": "^1.0.1",
