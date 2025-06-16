@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [6.6.7](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.6...utils-v6.6.7) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+
 ## [6.6.6](https://github.com/libp2p/js-libp2p/compare/utils-v6.6.5...utils-v6.6.6) (2025-06-03)
 
 
