@@ -52,7 +52,7 @@
     "@libp2p/interface": "^2.10.3",
     "@libp2p/interface-internal": "^2.3.15",
     "@libp2p/utils": "^6.6.6",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.4",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "main-event": "^1.0.1",
     "p-defer": "^4.0.1",

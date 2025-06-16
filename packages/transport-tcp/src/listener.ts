@@ -234,8 +234,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     if (typeof address === 'string') {
       return [
-        // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
-        multiaddr(`/unix/${address}`)
+        multiaddr(`/unix/${encodeURIComponent(address)}`)
       ]
     }
 

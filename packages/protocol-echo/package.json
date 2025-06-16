@@ -46,7 +46,7 @@
   "dependencies": {
     "@libp2p/interface": "^2.10.3",
     "@libp2p/interface-internal": "^2.3.15",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.4",
     "it-byte-stream": "^2.0.2",
     "it-pipe": "^3.0.1"
   },

@@ -206,7 +206,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private outboundPendingConnections: number
-  private readonly maxConnections: number
+  private maxConnections: number
 
   public readonly dialQueue: DialQueue
   public readonly reconnectQueue: ReconnectQueue
@@ -261,7 +261,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       events: components.events,
       logger: components.logger
     }, {
-      maxConnections: this.maxConnections,
       allow: init.allow?.map(a => multiaddr(a))
     })
 
@@ -422,6 +421,24 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   getMaxConnections (): number {
     return this.maxConnections
+  }
+
+  setMaxConnections (maxConnections: number): void {
+    if (this.maxConnections < 1) {
+      throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
+    }
+
+    let needsPrune = false
+
+    if (maxConnections < this.maxConnections) {
+      needsPrune = true
+    }
+
+    this.maxConnections = maxConnections
+
+    if (needsPrune) {
+      this.connectionPruner.maybePruneConnections()
+    }
   }
 
   onConnect (evt: CustomEvent<Connection>): void {

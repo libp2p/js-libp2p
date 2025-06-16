@@ -41,7 +41,7 @@ describe('listen', () => {
   })
 
   it('listen on unix domain socket', async () => {
-    const mh = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const mh = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     listener = transport.createListener({
       upgrader
@@ -206,7 +206,7 @@ describe('dial', () => {
   })
 
   it('dial unix domain socket', async () => {
-    const ma = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const ma = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     const listener = transport.createListener({
       upgrader

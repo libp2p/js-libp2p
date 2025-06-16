@@ -52,7 +52,7 @@
     "@libp2p/interface-compliance-tests": "^6.4.9",
     "@libp2p/logger": "^5.1.19",
     "@libp2p/peer-id": "^5.1.6",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.4",
     "aegir": "^47.0.14",
     "it-drain": "^3.0.9",
     "it-pipe": "^3.0.1",

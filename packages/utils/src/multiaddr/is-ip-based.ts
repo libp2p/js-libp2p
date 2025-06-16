@@ -1,16 +1,18 @@
+import { CODE_IP4, CODE_IP6, CODE_IP6ZONE } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const CODEC_IP4 = 0x04
-const CODEC_IP6 = 0x29
 
 /**
  * Check if a given multiaddr is IP-based
  */
 export function isIpBased (ma: Multiaddr): boolean {
   try {
-    const [[codec]] = ma.stringTuples()
+    for (const { code } of ma.getComponents()) {
+      if (code === CODE_IP6ZONE) {
+        continue
+      }
 
-    return codec === CODEC_IP4 || codec === CODEC_IP6
+      return code === CODE_IP4 || code === CODE_IP6
+    }
   } catch {
 
   }

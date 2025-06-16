@@ -365,13 +365,9 @@ export class AddressManager implements AddressManagerInterface {
     return this.announceFilter(
       multiaddrs.map(str => {
         const ma = multiaddr(str)
+        const lastComponent = ma.getComponents().pop()
 
-        // do not append our peer id to a path multiaddr as it will become invalid
-        if (ma.protos().pop()?.path === true) {
-          return ma
-        }
-
-        if (ma.getPeerId() === this.components.peerId.toString()) {
+        if (lastComponent?.value === this.components.peerId.toString()) {
           return ma
         }
 
