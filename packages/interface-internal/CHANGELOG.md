@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.16](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.15...interface-internal-v2.3.16) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+
 ## [2.3.15](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.14...interface-internal-v2.3.15) (2025-06-03)
 
 
