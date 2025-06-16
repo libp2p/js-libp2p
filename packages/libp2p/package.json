@@ -90,7 +90,7 @@
     "@libp2p/peer-store": "^11.2.3",
     "@libp2p/utils": "^6.6.6",
     "@multiformats/dns": "^1.0.6",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.2",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "any-signal": "^4.1.1",
     "datastore-core": "^10.0.2",

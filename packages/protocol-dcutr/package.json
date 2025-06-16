@@ -48,7 +48,7 @@
     "@libp2p/interface": "^2.10.3",
     "@libp2p/interface-internal": "^2.3.15",
     "@libp2p/utils": "^6.6.6",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.2",
     "@multiformats/multiaddr-matcher": "^1.7.2",
     "delay": "^6.0.0",
     "it-protobuf-stream": "^2.0.2",

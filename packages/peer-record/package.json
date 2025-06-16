@@ -52,7 +52,7 @@
     "@libp2p/interface": "^2.10.3",
     "@libp2p/peer-id": "^5.1.6",
     "@libp2p/utils": "^6.6.6",
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.2",
     "multiformats": "^13.3.6",
     "protons-runtime": "^5.5.0",
     "uint8-varint": "^2.0.4",

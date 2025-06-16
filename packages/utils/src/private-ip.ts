@@ -89,5 +89,19 @@ function ipv6Check (ipAddr: string): boolean {
 }
 
 export function isPrivateIp (ip: string): boolean | undefined {
-  if (isIPv4(ip)) { return ipv4Check(ip) } else if (isIpv4MappedIpv6(ip)) { return ipv4MappedIpv6Check(ip) } else if (isIpv4EmbeddedIpv6(ip)) { return ipv4EmbeddedIpv6Check(ip) } else if (isIPv6(ip)) { return ipv6Check(ip) } else { return undefined }
+  if (isIPv4(ip)) {
+    return ipv4Check(ip)
+  }
+
+  if (isIpv4MappedIpv6(ip)) {
+    return ipv4MappedIpv6Check(ip)
+  }
+
+  if (isIpv4EmbeddedIpv6(ip)) {
+    return ipv4EmbeddedIpv6Check(ip)
+  }
+
+  if (isIPv6(ip)) {
+    return ipv6Check(ip)
+  }
 }

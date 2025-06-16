@@ -352,8 +352,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     if (typeof address === 'string') {
-      // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
-      return [multiaddr(`/unix/${address}/ws`)]
+      return [multiaddr(`/unix/${encodeURIComponent(address)}/ws`)]
     }
 
     const multiaddrs: Multiaddr[] = getThinWaistAddresses(this.listeningMultiaddr, address.port)
