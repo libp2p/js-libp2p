@@ -65,7 +65,7 @@
     "@libp2p/logger": "^5.1.19",
     "@libp2p/peer-collections": "^6.0.31",
     "@libp2p/peer-id": "^5.1.6",
-    "@multiformats/multiaddr": "^12.4.3",
+    "@multiformats/multiaddr": "^12.4.4",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "multiformats": "^13.3.6",
