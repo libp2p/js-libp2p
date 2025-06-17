@@ -205,4 +205,30 @@ describe('address-sort', () => {
       ].map(ma => ma.toString()))
     })
   })
+
+  it('should sort public, local then loopback addresses', () => {
+    const pub = multiaddr('/ip4/80.123.123.123/tcp/123/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+    const classB = multiaddr('/ip4/172.123.123.123/tcp/123/ws/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+    const tcpLoopback = multiaddr('/ip4/127.0.0.1/tcp/123/ws/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+    const webRTCDirectLoopback = multiaddr('/ip4/127.0.0.1/udp/43543/webrtc-direct/certhash/uEiCJOmJR6bCtNcRVjdcGXQGxr4L5oPjg4G02FP35aCwIog/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+    const webRTCDirectClassB = multiaddr('/ip4/172.20.0.4/udp/43543/webrtc-direct/certhash/uEiCJOmJR6bCtNcRVjdcGXQGxr4L5oPjg4G02FP35aCwIog/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+
+    const addresses = [pub, classB, tcpLoopback, webRTCDirectLoopback, webRTCDirectClassB]
+      .sort(() => Math.random() < 0.5 ? -1 : 1)
+      .map(multiaddr => ({
+        multiaddr,
+        isCertified: true
+      }))
+
+    const sortedAddresses = defaultAddressSorter(addresses)
+      .map(({ multiaddr }) => multiaddr.toString())
+
+    expect(sortedAddresses).to.deep.equal([
+      pub,
+      classB,
+      webRTCDirectClassB,
+      tcpLoopback,
+      webRTCDirectLoopback
+    ].map(ma => ma.toString()))
+  })
 })

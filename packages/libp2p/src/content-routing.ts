@@ -104,7 +104,9 @@ export class CompoundContentRouting implements ContentRouting, Startable {
     const seen = new PeerSet()
 
     for await (const peer of merge(
-      ...self.routers.map(router => router.findProviders(key, options))
+      ...self.routers
+        .filter(router => router.findProviders instanceof Function)
+        .map(router => router.findProviders(key, options))
     )) {
       // the peer was yielded by a content router without multiaddrs and we
       // failed to load them
@@ -116,7 +118,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       if (peer.multiaddrs.length > 0) {
         await this.components.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       // deduplicate peers
@@ -139,9 +141,12 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new NoContentRoutersError('No content routers available')
     }
 
-    await Promise.all(this.routers.map(async (router) => {
-      await router.provide(key, options)
-    }))
+    await Promise.all(
+      this.routers
+        .filter(router => router.provide instanceof Function)
+        .map(async (router) => {
+          await router.provide(key, options)
+        }))
   }
 
   async cancelReprovide (key: CID, options: AbortOptions = {}): Promise<void> {
@@ -149,9 +154,13 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new NoContentRoutersError('No content routers available')
     }
 
-    await Promise.all(this.routers.map(async (router) => {
-      await router.cancelReprovide(key, options)
-    }))
+    await Promise.all(
+      this.routers
+        .filter(router => router.cancelReprovide instanceof Function)
+        .map(async (router) => {
+          await router.cancelReprovide(key, options)
+        })
+    )
   }
 
   /**
@@ -162,9 +171,13 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new NotStartedError()
     }
 
-    await Promise.all(this.routers.map(async (router) => {
-      await router.put(key, value, options)
-    }))
+    await Promise.all(
+      this.routers
+        .filter(router => router.put instanceof Function)
+        .map(async (router) => {
+          await router.put(key, value, options)
+        })
+    )
   }
 
   /**
@@ -176,8 +189,12 @@ export class CompoundContentRouting implements ContentRouting, Startable {
       throw new NotStartedError()
     }
 
-    return Promise.any(this.routers.map(async (router) => {
-      return router.get(key, options)
-    }))
+    return Promise.any(
+      this.routers
+        .filter(router => router.get instanceof Function)
+        .map(async (router) => {
+          return router.get(key, options)
+        })
+    )
   }
 }

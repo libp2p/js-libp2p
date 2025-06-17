@@ -124,4 +124,40 @@ vQ2NBF1B1/I4w5/LCbEDxrliX5fTe9osfkFZolLMsD6B9c2J1DvAJKaiMhc=
         .with.property('name', 'InvalidParametersError')
     })
   })
+
+  describe('ECDSA', () => {
+    it('should export a password encrypted libp2p-key', async () => {
+      const key = await generateKeyPair('ECDSA')
+      const encryptedKey = await exportPrivateKey(key, 'my secret')
+
+      // Import the key
+      const importedKey = await importPrivateKey(encryptedKey, 'my secret')
+
+      expect(key.equals(importedKey)).to.equal(true)
+    })
+
+    it('should export a libp2p-key with no password to encrypt', async () => {
+      const key = await generateKeyPair('ECDSA')
+      const encryptedKey = await exportPrivateKey(key, '')
+
+      // Import the key
+      const importedKey = await importPrivateKey(encryptedKey, '')
+
+      expect(key.equals(importedKey)).to.equal(true)
+    })
+
+    it('should fail to import libp2p-key with wrong password', async () => {
+      const key = await generateKeyPair('ECDSA')
+      const encryptedKey = await exportPrivateKey(key, 'my secret', 'libp2p-key')
+
+      try {
+        await importPrivateKey(encryptedKey, 'not my secret')
+      } catch (err) {
+        expect(err).to.exist()
+        return
+      }
+
+      expect.fail('should have thrown')
+    })
+  })
 })

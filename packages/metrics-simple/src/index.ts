@@ -27,13 +27,26 @@ import { serviceCapabilities } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import each from 'it-foreach'
 import { TDigest } from 'tdigest'
-import type { Startable, MultiaddrConnection, Stream, Connection, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions } from '@libp2p/interface'
+import type { Startable, MultiaddrConnection, Stream, Connection, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, ComponentLogger, Logger } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
 
 const log = logger('libp2p:simple-metrics')
 
-class DefaultMetric implements Metric {
-  public value: number = 0
+class SimpleMetric implements Metric {
+  private value: number = 0
+  private readonly calculate?: CalculateMetric
+
+  constructor (opts?: CalculatedMetricOptions) {
+    this.calculate = opts?.calculate
+  }
+
+  async collect (): Promise<number> {
+    if (this.calculate != null) {
+      return this.calculate()
+    }
+
+    return this.value
+  }
 
   update (value: number): void {
     this.value = value
@@ -60,8 +73,21 @@ class DefaultMetric implements Metric {
   }
 }
 
-class DefaultGroupMetric implements MetricGroup {
-  public values: Record<string, number> = {}
+class SimpleGroupMetric implements MetricGroup {
+  private values: Record<string, number> = {}
+  private readonly calculate?: CalculateMetric<Record<string, number>>
+
+  constructor (opts?: CalculatedMetricOptions<Record<string, number>>) {
+    this.calculate = opts?.calculate
+  }
+
+  async collect (): Promise<Record<string, number>> {
+    if (this.calculate != null) {
+      return this.calculate()
+    }
+
+    return this.values
+  }
 
   update (values: Record<string, number>): void {
     Object.entries(values).forEach(([key, value]) => {
@@ -100,18 +126,32 @@ class DefaultGroupMetric implements MetricGroup {
   }
 }
 
-class DefaultHistogram implements Histogram {
-  public bucketValues = new Map<number, number>()
-  public countValue: number = 0
-  public sumValue: number = 0
+class SimpleHistogram implements Histogram {
+  private bucketValues = new Map<number, number>()
+  private countValue: number = 0
+  private sumValue: number = 0
+  private readonly calculate?: CalculateMetric
 
-  constructor (opts: HistogramOptions) {
+  constructor (opts?: CalculatedHistogramOptions) {
     const buckets = [
-      ...(opts.buckets ?? [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]),
+      ...(opts?.buckets ?? [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]),
       Infinity
     ]
     for (const bucket of buckets) {
       this.bucketValues.set(bucket, 0)
+    }
+    this.calculate = opts?.calculate
+  }
+
+  public async collect (): Promise<{ count: number, sum: number, buckets: Record<number, number> }> {
+    if (this.calculate != null) {
+      this.observe(await this.calculate())
+    }
+
+    return {
+      count: this.countValue,
+      sum: this.sumValue,
+      buckets: { ...this.bucketValues }
     }
   }
 
@@ -143,17 +183,29 @@ class DefaultHistogram implements Histogram {
   }
 }
 
-class DefaultHistogramGroup implements HistogramGroup {
-  public histograms: Record<string, DefaultHistogram> = {}
+class SimpleHistogramGroup implements HistogramGroup {
+  public histograms: Record<string, SimpleHistogram> = {}
+  private readonly calculate?: CalculateMetric
 
-  constructor (opts: HistogramOptions) {
+  constructor (opts?: CalculatedHistogramOptions) {
     this.histograms = {}
+    this.calculate = opts?.calculate
+  }
+
+  public async collect (): Promise<Record<string, { count: number, sum: number, buckets: Record<number, number> }>> {
+    const output: Record<string, { count: number, sum: number, buckets: Record<number, number> }> = {}
+
+    for (const [key, histogram] of Object.entries(this.histograms)) {
+      output[key] = await histogram.collect()
+    }
+
+    return output
   }
 
   observe (values: Partial<Record<string, number>>): void {
     for (const [key, value] of Object.entries(values) as Array<[string, number]>) {
       if (this.histograms[key] === undefined) {
-        this.histograms[key] = new DefaultHistogram({})
+        this.histograms[key] = new SimpleHistogram()
       }
 
       this.histograms[key].observe(value)
@@ -175,16 +227,30 @@ class DefaultHistogramGroup implements HistogramGroup {
   }
 }
 
-class DefaultSummary implements Summary {
+class SimpleSummary implements Summary {
   public sumValue: number = 0
   public countValue: number = 0
   public percentiles: number[]
   public tdigest = new TDigest(0.01)
   private readonly compressCount: number
+  private readonly calculate?: CalculateMetric
 
-  constructor (opts: SummaryOptions) {
-    this.percentiles = opts.percentiles ?? [0.01, 0.05, 0.5, 0.9, 0.95, 0.99, 0.999]
-    this.compressCount = opts.compressCount ?? 1000
+  constructor (opts?: CalculatedSummaryOptions) {
+    this.percentiles = opts?.percentiles ?? [0.01, 0.05, 0.5, 0.9, 0.95, 0.99, 0.999]
+    this.compressCount = opts?.compressCount ?? 1000
+    this.calculate = opts?.calculate
+  }
+
+  public async collect (): Promise<{ count: number, sum: number, percentiles: Record<string, number> }> {
+    if (this.calculate != null) {
+      this.observe(await this.calculate())
+    }
+
+    return {
+      count: this.countValue,
+      sum: this.sumValue,
+      percentiles: Object.fromEntries(this.percentiles.map(p => [p, this.tdigest.percentile(p)]))
+    }
   }
 
   observe (value: number): void {
@@ -213,19 +279,31 @@ class DefaultSummary implements Summary {
   }
 }
 
-class DefaultSummaryGroup implements SummaryGroup {
-  public summaries: Record<string, DefaultSummary> = {}
-  private readonly opts: SummaryOptions
+class SimpleSummaryGroup implements SummaryGroup {
+  public summaries: Record<string, SimpleSummary> = {}
+  private readonly opts?: CalculatedSummaryOptions
 
-  constructor (opts: SummaryOptions) {
+  constructor (opts?: CalculatedSummaryOptions) {
     this.summaries = {}
     this.opts = opts
+  }
+
+  public async collect (): Promise<Record<string, { count: number, sum: number, percentiles: Record<string, number> }>> {
+    return {
+      ...Object.fromEntries(Object.entries(this.summaries).map(([key, summary]) => {
+        return [key, {
+          count: summary.countValue,
+          sum: summary.sumValue,
+          percentiles: Object.fromEntries(summary.percentiles.map(p => [p, summary.tdigest.percentile(p)]))
+        }]
+      }))
+    }
   }
 
   observe (values: Record<string, number>): void {
     for (const [key, value] of Object.entries(values)) {
       if (this.summaries[key] === undefined) {
-        this.summaries[key] = new DefaultSummary(this.opts)
+        this.summaries[key] = new SimpleSummary(this.opts)
       }
 
       this.summaries[key].observe(value)
@@ -261,15 +339,21 @@ export interface SimpleMetricsInit {
   onMetrics: OnMetrics
 }
 
+export interface SimpleMetricsComponents {
+  logger: ComponentLogger
+}
+
 class SimpleMetrics implements Metrics, Startable {
-  public metrics = new Map<string, DefaultMetric | DefaultGroupMetric | CalculateMetric | DefaultHistogram | DefaultHistogramGroup | DefaultSummary | DefaultSummaryGroup>()
+  public metrics = new Map<string, SimpleMetric | SimpleGroupMetric | SimpleHistogram | SimpleHistogramGroup | SimpleSummary | SimpleSummaryGroup>()
   private readonly transferStats: Map<string, number>
   private started: boolean
   private interval?: ReturnType<typeof setInterval>
   private readonly intervalMs: number
   private readonly onMetrics: OnMetrics
+  private readonly log: Logger
 
-  constructor (components: unknown, init: SimpleMetricsInit) {
+  constructor (components: SimpleMetricsComponents, init: SimpleMetricsInit) {
+    this.log = components.logger.forComponent('libp2p:simple-metrics')
     this.started = false
 
     this._emitMetrics = this._emitMetrics.bind(this)
@@ -301,52 +385,15 @@ class SimpleMetrics implements Metrics, Startable {
     this.started = false
 
     clearInterval(this.interval)
+    this.transferStats.clear()
   }
 
   private _emitMetrics (): void {
-    void Promise.resolve().then(async () => {
+    Promise.resolve().then(async () => {
       const output: Record<string, any> = {}
 
       for (const [name, metric] of this.metrics.entries()) {
-        if (metric instanceof DefaultMetric) {
-          output[name] = metric.value
-        } else if (metric instanceof DefaultGroupMetric) {
-          output[name] = metric.values
-        } else if (metric instanceof DefaultHistogram) {
-          output[name] = {
-            count: metric.countValue,
-            sum: metric.sumValue,
-            buckets: { ...metric.bucketValues }
-          }
-        } else if (metric instanceof DefaultHistogramGroup) {
-          output[name] = {
-            ...Object.fromEntries(Object.entries(metric.histograms).map(([key, histogram]) => {
-              return [key, {
-                count: histogram.countValue,
-                sum: histogram.sumValue,
-                buckets: { ...histogram.bucketValues }
-              }]
-            }))
-          }
-        } else if (metric instanceof DefaultSummary) {
-          output[name] = {
-            count: metric.countValue,
-            sum: metric.sumValue,
-            percentiles: Object.fromEntries(metric.percentiles.map(p => [p, metric.tdigest.percentile(p)]))
-          }
-        } else if (metric instanceof DefaultSummaryGroup) {
-          output[name] = {
-            ...Object.fromEntries(Object.entries(metric.summaries).map(([key, summary]) => {
-              return [key, {
-                count: summary.countValue,
-                sum: summary.sumValue,
-                percentiles: Object.fromEntries(summary.percentiles.map(p => [p, summary.tdigest.percentile(p)]))
-              }]
-            }))
-          }
-        } else {
-          output[name] = await metric()
-        }
+        output[name] = await metric.collect()
       }
 
       this.onMetrics(structuredClone(output))
@@ -407,13 +454,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultMetric()
+    metric = new SimpleMetric(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -426,13 +474,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultGroupMetric()
+    metric = new SimpleGroupMetric(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -445,13 +494,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultMetric()
+    metric = new SimpleMetric(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -464,13 +514,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultGroupMetric()
+    metric = new SimpleGroupMetric(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -483,13 +534,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultHistogram(opts)
+    metric = new SimpleHistogram(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -502,13 +554,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultHistogramGroup(opts)
+    metric = new SimpleHistogramGroup(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -521,13 +574,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultSummary(opts)
+    metric = new SimpleSummary(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -540,13 +594,14 @@ class SimpleMetrics implements Metrics, Startable {
       throw new Error('Metric name is required')
     }
 
-    if (opts?.calculate != null) {
-      // calculated metric
-      this.metrics.set(name, opts.calculate)
-      return
+    let metric = this.metrics.get(name)
+
+    if (metric != null) {
+      this.log('reuse existing metric', name)
+      return metric
     }
 
-    const metric = new DefaultSummaryGroup(opts)
+    metric = new SimpleSummaryGroup(opts)
     this.metrics.set(name, metric)
 
     return metric
@@ -562,6 +617,6 @@ class SimpleMetrics implements Metrics, Startable {
   }
 }
 
-export function simpleMetrics (init: SimpleMetricsInit): (components: unknown) => Metrics {
-  return (components: unknown) => new SimpleMetrics(components, init)
+export function simpleMetrics (init: SimpleMetricsInit): (components: SimpleMetricsComponents) => Metrics {
+  return (components) => new SimpleMetrics(components, init)
 }

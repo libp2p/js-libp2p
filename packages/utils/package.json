@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "6.5.0",
+  "version": "6.7.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -41,7 +41,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
     },
     "./abort-options": {
@@ -76,6 +76,11 @@
       "types": "./dist/src/filters/index.d.ts",
       "import": "./dist/src/filters/index.js"
     },
+    "./get-thin-waist-addresses": {
+      "types": "./dist/src/get-thin-waist-addresses.d.ts",
+      "browser": "./dist/src/get-thin-waist-addresses.browser.js",
+      "import": "./dist/src/get-thin-waist-addresses.js"
+    },
     "./global-unicast-ip": {
       "types": "./dist/src/global-unicast-ip.d.ts",
       "import": "./dist/src/global-unicast-ip.js"
@@ -100,6 +105,10 @@
       "types": "./dist/src/link-local-ip.d.ts",
       "import": "./dist/src/link-local-ip.js"
     },
+    "./merge-options": {
+      "types": "./dist/src/merge-options.d.ts",
+      "import": "./dist/src/merge-options.js"
+    },
     "./moving-average": {
       "types": "./dist/src/moving-average.d.ts",
       "import": "./dist/src/moving-average.js"
@@ -108,6 +117,10 @@
       "types": "./dist/src/multiaddr/is-global-unicast.d.ts",
       "import": "./dist/src/multiaddr/is-global-unicast.js"
     },
+    "./multiaddr/is-ip-based": {
+      "types": "./dist/src/multiaddr/is-ip-based.d.ts",
+      "import": "./dist/src/multiaddr/is-ip-based.js"
+    },
     "./multiaddr/is-link-local": {
       "types": "./dist/src/multiaddr/is-link-local.d.ts",
       "import": "./dist/src/multiaddr/is-link-local.js"
@@ -115,6 +128,10 @@
     "./multiaddr/is-loopback": {
       "types": "./dist/src/multiaddr/is-loopback.d.ts",
       "import": "./dist/src/multiaddr/is-loopback.js"
+    },
+    "./multiaddr/is-network-address": {
+      "types": "./dist/src/multiaddr/is-network-address.d.ts",
+      "import": "./dist/src/multiaddr/is-network-address.js"
     },
     "./multiaddr/is-private": {
       "types": "./dist/src/multiaddr/is-private.d.ts",
@@ -157,13 +174,6 @@
       "import": "./dist/src/tracked-map.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -179,41 +189,48 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@chainsafe/is-ip": "^2.0.2",
+    "@chainsafe/is-ip": "^2.1.0",
     "@chainsafe/netmask": "^2.0.0",
-    "@libp2p/crypto": "^5.0.10",
-    "@libp2p/interface": "^2.4.1",
-    "@libp2p/logger": "^5.1.7",
-    "@multiformats/multiaddr": "^12.3.3",
+    "@libp2p/crypto": "^5.1.6",
+    "@libp2p/interface": "^2.10.4",
+    "@libp2p/logger": "^5.1.20",
+    "@multiformats/multiaddr": "^12.4.4",
     "@sindresorhus/fnv1a": "^3.1.0",
-    "@types/murmurhash3js-revisited": "^3.0.3",
     "any-signal": "^4.1.1",
     "delay": "^6.0.0",
     "get-iterator": "^2.0.1",
     "is-loopback-addr": "^2.0.2",
-    "it-foreach": "^2.1.1",
+    "is-plain-obj": "^4.1.0",
+    "it-foreach": "^2.1.3",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
-    "murmurhash3js-revisited": "^3.0.0",
+    "main-event": "^1.0.1",
     "netmask": "^2.0.2",
     "p-defer": "^4.0.1",
     "race-event": "^1.3.0",
-    "race-signal": "^1.1.0",
+    "race-signal": "^1.1.3",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^5.0.11",
+    "@libp2p/peer-id": "^5.1.7",
     "@types/netmask": "^2.0.5",
-    "aegir": "^45.0.5",
+    "aegir": "^47.0.14",
     "benchmark": "^2.1.4",
     "delay": "^6.0.0",
-    "it-all": "^3.0.6",
-    "it-drain": "^3.0.7",
+    "it-all": "^3.0.8",
+    "it-drain": "^3.0.9",
     "it-pair": "^2.0.6",
-    "sinon": "^19.0.2",
-    "sinon-ts": "^2.0.0"
+    "sinon": "^20.0.0",
+    "sinon-ts": "^2.0.0",
+    "wherearewe": "^2.0.1"
+  },
+  "browser": {
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js"
+  },
+  "react-native": {
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js"
   },
   "sideEffects": false
 }

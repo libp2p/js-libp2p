@@ -1,17 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { KEEP_ALIVE, TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { KEEP_ALIVE, start, stop } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { ReconnectQueue } from '../../src/connection-manager/reconnect-queue.js'
-import type { ComponentLogger, Libp2pEvents, PeerStore, TypedEventTarget, Peer } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('reconnect queue', () => {
   let components: {

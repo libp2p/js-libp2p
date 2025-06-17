@@ -1,11 +1,6 @@
-/* eslint-disable import/export */
-/* eslint-disable complexity */
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
-import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
+import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
@@ -98,7 +93,7 @@ export namespace KeyType {
   }
 }
 export interface PublicKey {
-  Type: KeyType
+  Type?: KeyType
   Data: Uint8Array
 }
 
@@ -112,7 +107,7 @@ export namespace PublicKey {
           w.fork()
         }
 
-        if (obj.Type != null && __KeyTypeValues[obj.Type] !== 0) {
+        if (obj.Type != null) {
           w.uint32(8)
           KeyType.codec().encode(obj.Type, w)
         }
@@ -127,7 +122,6 @@ export namespace PublicKey {
         }
       }, (reader, length, opts = {}) => {
         const obj: any = {
-          Type: KeyType.RSA,
           Data: uint8ArrayAlloc(0)
         }
 

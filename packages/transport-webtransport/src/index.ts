@@ -34,13 +34,14 @@ import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
+import { MAX_INBOUND_STREAMS } from './constants.js'
 import createListener from './listener.js'
 import { webtransportMuxer } from './muxer.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import WebTransport from './webtransport.js'
-import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
+import type { Upgrader, Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -71,6 +72,7 @@ export interface WebTransportComponents {
   privateKey: PrivateKey
   metrics?: Metrics
   logger: ComponentLogger
+  upgrader: Upgrader
 }
 
 export interface WebTransportMetrics {
@@ -101,7 +103,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     this.components = components
     this.config = {
       ...init,
-      maxInboundStreams: init.maxInboundStreams ?? 1000,
+      maxInboundStreams: init.maxInboundStreams ?? MAX_INBOUND_STREAMS,
       certificates: init.certificates ?? []
     }
 
@@ -124,7 +126,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
   ]
 
   async dial (ma: Multiaddr, options: DialTransportOptions<WebTransportDialEvents>): Promise<Connection> {
-    options?.signal?.throwIfAborted()
+    options.signal.throwIfAborted()
 
     this.log('dialing %s', ma)
 
@@ -177,7 +179,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           cleanUpWTSession('ready_timeout')
         }
       }
-      options.signal?.addEventListener('abort', abortListener, {
+      options.signal.addEventListener('abort', abortListener, {
         once: true
       })
 
@@ -227,10 +229,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       }
 
       return await options.upgrader.upgradeOutbound(maConn, {
+        ...options,
         skipEncryption: true,
         muxerFactory: webtransportMuxer(wt, wt.incomingBidirectionalStreams.getReader(), this.components.logger, this.config),
-        skipProtection: true,
-        onProgress: options.onProgress
+        skipProtection: true
       })
     } catch (err: any) {
       this.log.error('caught wt session err', err)
@@ -291,7 +293,8 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
     const { remoteExtensions } = await n.secureOutbound(duplex, {
       signal,
-      remotePeer
+      remotePeer,
+      skipStreamMuxerNegotiation: true
     })
 
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))

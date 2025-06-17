@@ -26,12 +26,14 @@ describe('filter addrs', () => {
     const ma6 = multiaddr('/ip4/127.0.0.1/tcp/9090/p2p-circuit' + ipfs)
     const ma7 = multiaddr('/dns4/libp2p.io/tcp/9090')
     const ma8 = multiaddr('/dnsaddr/libp2p.io/tcp/9090')
-    const ma9 = multiaddr('/unix' + unix)
+    const ma9 = multiaddr('/unix/' + encodeURIComponent(unix))
 
     const valid = transport.dialFilter([ma1, ma2, ma3, ma4, ma5, ma6, ma7, ma8, ma9])
     expect(valid.length).to.equal(5)
     expect(valid[0]).to.deep.equal(ma1)
     expect(valid[1]).to.deep.equal(ma4)
+    expect(valid[2]).to.deep.equal(ma7)
+    expect(valid[3]).to.deep.equal(ma8)
     expect(valid[4]).to.deep.equal(ma9)
   })
 

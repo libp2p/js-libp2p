@@ -4,10 +4,11 @@ import { randomBytes } from '@libp2p/crypto'
 import { mdns } from '@libp2p/mdns'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
-import { createLibp2p, type Libp2pOptions } from 'libp2p'
+import { createLibp2p } from 'libp2p'
 import defer from 'p-defer'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Libp2p } from '@libp2p/interface'
+import type { Libp2pOptions } from 'libp2p'
 
 const listenAddr = multiaddr('/ip4/127.0.0.1/tcp/0')
 

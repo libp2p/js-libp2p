@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
-import { DefaultRegistrar } from '../../src/registrar.js'
+import { Registrar } from '../../src/registrar.js'
 import type { Components } from '../../src/components.js'
 import type { Upgrader, ConnectionGater, PeerId } from '@libp2p/interface'
-import type { Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { TransportManager } from '@libp2p/interface-internal'
 
 describe('registrar errors', () => {
   let components: Components
@@ -35,7 +35,7 @@ describe('registrar errors', () => {
       maxConnections: 1000,
       inboundUpgradeTimeout: 1000
     })
-    registrar = new DefaultRegistrar(components)
+    registrar = new Registrar(components)
   })
 
   it('should fail to register a protocol if no multicodec is provided', () => {

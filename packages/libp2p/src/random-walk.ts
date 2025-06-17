@@ -1,11 +1,12 @@
 import { randomBytes } from '@libp2p/crypto'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
-import pDefer, { type DeferredPromise } from 'p-defer'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
+import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions, ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
 import type { RandomWalk as RandomWalkInterface } from '@libp2p/interface-internal'
+import type { DeferredPromise } from 'p-defer'
 
 export interface RandomWalkComponents {
   peerRouting: PeerRouting
@@ -133,7 +134,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
 
           this.log('walk iteration for %b and %d walkers finished, found %d peers', data, this.walkers, found)
         } catch (err) {
-          this.log.error('randomwalk errored', err)
+          this.log.error('random walk errored', err)
 
           this.safeDispatchEvent('walk:error', {
             detail: err
@@ -144,7 +145,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
       this.log('no walkers left, ended walk')
     })
       .catch(err => {
-        this.log.error('randomwalk errored', err)
+        this.log.error('random walk errored', err)
       })
       .finally(() => {
         this.log('finished walk, found %d peers after %dms', found, Date.now() - start)

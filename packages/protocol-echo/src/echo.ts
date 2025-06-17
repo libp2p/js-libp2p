@@ -58,7 +58,10 @@ export class Echo implements Startable, EchoInterface {
 
     const [, output] = await Promise.all([
       bytes.write(buf, options),
-      bytes.read(buf.byteLength, options)
+      bytes.read({
+        ...options,
+        bytes: buf.byteLength
+      })
     ])
 
     await stream.close(options)

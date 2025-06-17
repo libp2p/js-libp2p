@@ -11,7 +11,8 @@ import { stubInterface } from 'sinon-ts'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { getComponent } from '../fixtures/get-component.js'
-import { createDefaultConnectionManagerComponents, type StubbedDefaultConnectionManagerComponents } from './utils.js'
+import { createDefaultConnectionManagerComponents } from './utils.js'
+import type { StubbedDefaultConnectionManagerComponents } from './utils.js'
 import type { Libp2p, Connection, MultiaddrConnection } from '@libp2p/interface'
 
 const defaultOptions = {
@@ -67,11 +68,11 @@ describe('Connection Manager', () => {
     ]
 
     // Test that the 'allow' list is correctly parsed and stored as IpNet objects
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+
     expect(connectionManager['allow']).to.deep.equal(expectedIpNets)
 
     // Test that the 'deny' list is correctly parsed and stored as IpNet objects
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+
     expect(connectionManager['deny']).to.deep.equal(expectedIpNets)
   })
 

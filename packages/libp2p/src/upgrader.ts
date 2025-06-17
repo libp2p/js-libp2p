@@ -1,14 +1,18 @@
-import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, setMaxListeners, InvalidPeerIdError } from '@libp2p/interface'
+import { InvalidMultiaddrError, TooManyInboundProtocolStreamsError, TooManyOutboundProtocolStreamsError, LimitedConnectionError, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { createConnection } from './connection/index.js'
-import { PROTOCOL_NEGOTIATION_TIMEOUT, UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup, ClearableSignal } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 interface CreateConnectionOptions {
   cryptoProtocol: string
@@ -40,13 +44,6 @@ export interface UpgraderInit {
    * @default 3000
    */
   inboundUpgradeTimeout?: number
-
-  /**
-   * An amount of ms by which an outbound connection upgrade must complete
-   *
-   * @default 3000
-   */
-  outboundUpgradeTimeout?: number
 
   /**
    * When a new incoming stream is opened on a multiplexed connection, protocol
@@ -107,7 +104,7 @@ function countStreams (protocol: string, direction: 'inbound' | 'outbound', conn
   return streamCount
 }
 
-export interface DefaultUpgraderComponents {
+export interface UpgraderComponents {
   peerId: PeerId
   metrics?: Metrics
   connectionManager: ConnectionManager
@@ -121,42 +118,50 @@ export interface DefaultUpgraderComponents {
 
 type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection' | 'denyInboundEncryptedConnection' | 'denyOutboundEncryptedConnection' | 'denyInboundUpgradedConnection' | 'denyOutboundUpgradedConnection'>
 
-export class DefaultUpgrader implements Upgrader {
-  private readonly components: DefaultUpgraderComponents
+export class Upgrader implements UpgraderInterface {
+  private readonly components: UpgraderComponents
   private readonly connectionEncrypters: Map<string, ConnectionEncrypter>
   private readonly streamMuxers: Map<string, StreamMuxerFactory>
   private readonly inboundUpgradeTimeout: number
-  private readonly outboundUpgradeTimeout: number
   private readonly inboundStreamProtocolNegotiationTimeout: number
   private readonly outboundStreamProtocolNegotiationTimeout: number
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly metrics: {
     dials?: CounterGroup<'inbound' | 'outbound'>
     errors?: CounterGroup<'inbound' | 'outbound'>
+    inboundErrors?: CounterGroup
+    outboundErrors?: CounterGroup
   }
 
-  constructor (components: DefaultUpgraderComponents, init: UpgraderInit) {
+  constructor (components: UpgraderComponents, init: UpgraderInit) {
     this.components = components
-    this.connectionEncrypters = new Map()
+    this.connectionEncrypters = trackedMap({
+      name: 'libp2p_upgrader_connection_encrypters',
+      metrics: this.components.metrics
+    })
 
     init.connectionEncrypters.forEach(encrypter => {
       this.connectionEncrypters.set(encrypter.protocol, encrypter)
     })
 
-    this.streamMuxers = new Map()
+    this.streamMuxers = trackedMap({
+      name: 'libp2p_upgrader_stream_multiplexers',
+      metrics: this.components.metrics
+    })
 
     init.streamMuxers.forEach(muxer => {
       this.streamMuxers.set(muxer.protocol, muxer)
     })
 
-    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? UPGRADE_TIMEOUT
-    this.outboundUpgradeTimeout = init.outboundUpgradeTimeout ?? UPGRADE_TIMEOUT
+    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.events = components.events
     this.metrics = {
       dials: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_total'),
-      errors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dial_errors_total')
+      errors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dial_errors_total'),
+      inboundErrors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_inbound_errors_total'),
+      outboundErrors: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_outbound_errors_total')
     }
   }
 
@@ -178,33 +183,54 @@ export class DefaultUpgrader implements Upgrader {
     }
   }
 
+  createInboundAbortSignal (signal: AbortSignal): ClearableSignal {
+    const output = anySignal([
+      AbortSignal.timeout(this.inboundUpgradeTimeout),
+      signal
+    ])
+    setMaxListeners(Infinity, output)
+
+    return output
+  }
+
   /**
    * Upgrades an inbound connection
    */
-  async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<void> {
+  async upgradeInbound (maConn: MultiaddrConnection, opts: UpgraderOptions): Promise<void> {
     let accepted = false
+
+    // always apply upgrade timeout for incoming upgrades
+    const signal = this.createInboundAbortSignal(opts.signal)
 
     try {
       this.metrics.dials?.increment({
         inbound: true
       })
 
-      accepted = await this.components.connectionManager.acceptIncomingConnection(maConn)
+      accepted = await raceSignal(this.components.connectionManager.acceptIncomingConnection(maConn), signal)
 
       if (!accepted) {
         throw new ConnectionDeniedError('Connection denied')
       }
 
-      await this.shouldBlockConnection('denyInboundConnection', maConn)
+      await raceSignal(this.shouldBlockConnection('denyInboundConnection', maConn), signal)
 
-      await this._performUpgrade(maConn, 'inbound', opts)
-    } catch (err) {
+      await this._performUpgrade(maConn, 'inbound', {
+        ...opts,
+        signal
+      })
+    } catch (err: any) {
       this.metrics.errors?.increment({
         inbound: true
+      })
+      this.metrics.inboundErrors?.increment({
+        [err.name ?? 'Error']: true
       })
 
       throw err
     } finally {
+      signal.clear()
+
       if (accepted) {
         this.components.connectionManager.afterUpgradeInbound()
       }
@@ -214,7 +240,7 @@ export class DefaultUpgrader implements Upgrader {
   /**
    * Upgrades an outbound connection
    */
-  async upgradeOutbound (maConn: MultiaddrConnection, opts: UpgraderOptions = {}): Promise<Connection> {
+  async upgradeOutbound (maConn: MultiaddrConnection, opts: UpgraderOptions): Promise<Connection> {
     try {
       this.metrics.dials?.increment({
         outbound: true
@@ -225,7 +251,7 @@ export class DefaultUpgrader implements Upgrader {
 
       if (idStr != null) {
         remotePeerId = peerIdFromString(idStr)
-        await this.shouldBlockConnection('denyOutboundConnection', remotePeerId, maConn)
+        await raceSignal(this.shouldBlockConnection('denyOutboundConnection', remotePeerId, maConn), opts.signal)
       }
 
       let direction: 'inbound' | 'outbound' = 'outbound'
@@ -236,9 +262,12 @@ export class DefaultUpgrader implements Upgrader {
       }
 
       return await this._performUpgrade(maConn, direction, opts)
-    } catch (err) {
+    } catch (err: any) {
       this.metrics.errors?.increment({
         outbound: true
+      })
+      this.metrics.outboundErrors?.increment({
+        [err.name ?? 'Error']: true
       })
 
       throw err
@@ -251,11 +280,6 @@ export class DefaultUpgrader implements Upgrader {
     let upgradedConn: MultiaddrConnection
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
-
-    const upgradeTimeoutSignal = AbortSignal.timeout(direction === 'inbound' ? this.inboundUpgradeTimeout : this.outboundUpgradeTimeout)
-    const signal = anySignal([upgradeTimeoutSignal, opts.signal])
-    setMaxListeners(Infinity, upgradeTimeoutSignal, signal)
-    opts.signal = signal
 
     this.components.metrics?.trackMultiaddrConnection(maConn)
 
@@ -282,16 +306,11 @@ export class DefaultUpgrader implements Upgrader {
         ({
           conn: encryptedConn,
           remotePeer,
-          protocol: cryptoProtocol
+          protocol: cryptoProtocol,
+          streamMuxer: muxerFactory
         } = await (direction === 'inbound'
-          ? this._encryptInbound(protectedConn, {
-            ...opts,
-            signal
-          })
-          : this._encryptOutbound(protectedConn, {
-            ...opts,
-            signal
-          })
+          ? this._encryptInbound(protectedConn, opts)
+          : this._encryptOutbound(protectedConn, opts)
         ))
 
         const maConn: MultiaddrConnection = {
@@ -324,7 +343,7 @@ export class DefaultUpgrader implements Upgrader {
       upgradedConn = encryptedConn
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
-      } else if (this.streamMuxers.size > 0) {
+      } else if (muxerFactory == null && this.streamMuxers.size > 0) {
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:multiplex-${direction}-connection`))
 
         // Multiplex the connection
@@ -343,8 +362,6 @@ export class DefaultUpgrader implements Upgrader {
     } catch (err: any) {
       maConn.log.error('failed to upgrade inbound connection %s %a - %e', direction === 'inbound' ? 'from' : 'to', maConn.remoteAddr, err)
       throw err
-    } finally {
-      signal.clear()
     }
 
     await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
@@ -390,11 +407,12 @@ export class DefaultUpgrader implements Upgrader {
             return
           }
 
+          const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
+          setMaxListeners(Infinity, signal)
+
           void Promise.resolve()
             .then(async () => {
               const protocols = this.components.registrar.getProtocols()
-              const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
-              setMaxListeners(Infinity, signal)
 
               const { stream, protocol } = await mss.handle(muxedStream, protocols, {
                 signal,
@@ -419,7 +437,7 @@ export class DefaultUpgrader implements Upgrader {
               }
 
               // after the handshake the returned stream can have early data so override
-              // the souce/sink
+              // the source/sink
               muxedStream.source = stream.source
               muxedStream.sink = stream.sink
               muxedStream.protocol = protocol
@@ -440,9 +458,11 @@ export class DefaultUpgrader implements Upgrader {
               }
 
               // If a protocol stream has been successfully negotiated and is to be passed to the application,
-              // the peerstore should ensure that the peer is registered with that protocol
+              // the peer store should ensure that the peer is registered with that protocol
               await this.components.peerStore.merge(remotePeer, {
                 protocols: [protocol]
+              }, {
+                signal
               })
 
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
@@ -453,7 +473,10 @@ export class DefaultUpgrader implements Upgrader {
               connection.log.error('error handling incoming stream id %s - %e', muxedStream.id, err)
 
               if (muxedStream.timeline.close == null) {
-                await muxedStream.close()
+                await muxedStream.close({
+                  signal
+                })
+                  .catch(err => muxedStream.abort(err))
               }
             })
         }
@@ -505,13 +528,13 @@ export class DefaultUpgrader implements Upgrader {
           }
 
           // If a protocol stream has been successfully negotiated and is to be passed to the application,
-          // the peerstore should ensure that the peer is registered with that protocol
+          // the peer store should ensure that the peer is registered with that protocol
           await this.components.peerStore.merge(remotePeer, {
             protocols: [protocol]
           })
 
           // after the handshake the returned stream can have early data so override
-          // the souce/sink
+          // the source/sink
           muxedStream.source = stream.source
           muxedStream.sink = stream.sink
           muxedStream.protocol = protocol
@@ -749,5 +772,13 @@ export class DefaultUpgrader implements Upgrader {
       connection.log.error('error multiplexing inbound connection', err)
       throw new MuxerUnavailableError(String(err))
     }
+  }
+
+  getConnectionEncrypters (): Map<string, ConnectionEncrypter<unknown>> {
+    return this.connectionEncrypters
+  }
+
+  getStreamMuxers (): Map<string, StreamMuxerFactory> {
+    return this.streamMuxers
   }
 }

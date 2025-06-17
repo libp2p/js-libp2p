@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf } from '../../src/keys/index.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
 import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
 import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
@@ -46,6 +46,32 @@ describe('secp256k1 keys', () => {
       .to.be.true('did not verify message as list')
     expect(await key.publicKey.verify(text.subarray(), sig))
       .to.be.true('did not verify message as single buffer')
+  })
+
+  it('should abort signing', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    await expect((async () => {
+      return key.sign(text, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort verifying', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+
+    await expect((async () => {
+      return key.publicKey.verify(text, sig, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
   })
 
   it('encoding', () => {
@@ -199,6 +225,13 @@ describe('crypto functions', () => {
     expect(decompressed).to.have.lengthOf(65)
     const recompressed = compressSecp256k1PublicKey(decompressed)
     expect(recompressed).to.equalBytes(pubKey)
+  })
+
+  it('fails to export to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('secp256k1')
+
+    await expect(privateKeyToCryptoKeyPair(key)).to.eventually.be.rejected
+      .with.property('message', 'Only RSA and ECDSA keys are supported')
   })
 })
 

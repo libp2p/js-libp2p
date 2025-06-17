@@ -1,51 +1,38 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { transportSymbol, serviceCapabilities, InvalidParametersError } from '@libp2p/interface'
+import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
+import { InvalidParametersError, NotFoundError, NotStartedError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { protocols } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import * as Digest from 'multiformats/hashes/digest'
-import { concat } from 'uint8arrays/concat'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { DataChannelError, UnimplementedError } from '../error.js'
-import { WebRTCMultiaddrConnection } from '../maconn.js'
-import { DataChannelMuxerFactory } from '../muxer.js'
-import { createStream } from '../stream.js'
-import { getRtcConfiguration, isFirefox } from '../util.js'
-import { RTCPeerConnection } from '../webrtc/index.js'
-import * as sdp from './sdp.js'
-import { genUfrag } from './util.js'
-import type { WebRTCDialOptions } from './options.js'
-import type { DataChannelOptions } from '../index.js'
-import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, PrivateKey } from '@libp2p/interface'
+import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } from '@peculiar/x509'
+import { Key } from 'interface-datastore'
+import { TypedEventEmitter } from 'main-event'
+import { base64url } from 'multiformats/bases/base64'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
+import { genUfrag } from '../util.js'
+import { WebRTCDirectListener } from './listener.js'
+import { connect } from './utils/connect.js'
+import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
+import { formatAsPem } from './utils/pem.js'
+import type { DataChannelOptions, TransportCertificate } from '../index.js'
+import type { WebRTCDialEvents } from '../private-to-private/transport.js'
+import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey, Upgrader, Startable } from '@libp2p/interface'
+import type { TransportManager } from '@libp2p/interface-internal'
+import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
 
-/**
- * The time to wait, in milliseconds, for the data channel handshake to complete
- */
-const HANDSHAKE_TIMEOUT_MS = 10_000
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const WEBRTC_CODE: number = protocols('webrtc-direct').code
-
-/**
- * Created by converting the hexadecimal protocol code to an integer.
- *
- * {@link https://github.com/multiformats/multiaddr/blob/master/protocols.csv}
- */
-export const CERTHASH_CODE: number = protocols('certhash').code
-
-/**
- * The peer for this transport
- */
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId
   privateKey: PrivateKey
   metrics?: Metrics
   logger: ComponentLogger
+  transportManager: TransportManager
+  upgrader: Upgrader
+  keychain?: Keychain
+  datastore: Datastore
 }
 
 export interface WebRTCMetrics {
@@ -53,19 +40,91 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
+  /**
+   * The default configuration used by all created RTCPeerConnections
+   */
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
+
+  /**
+   * The default configuration used by all created RTCDataChannels
+   */
   dataChannel?: DataChannelOptions
+
+  /**
+   * @deprecated use `certificate` instead - this option will be removed in a future release
+   */
+  certificates?: TransportCertificate[]
+
+  /**
+   * Use an existing TLS certificate to secure incoming connections or supply
+   * settings to generate one.
+   *
+   * This must be an ECDSA certificate using the P-256 curve.
+   *
+   * From our testing we find that P-256 elliptic curve is supported by Pion,
+   * webrtc-rs, as well as Chromium (P-228 and P-384 was not supported in
+   * Chromium).
+   */
+  certificate?: TransportCertificate
+
+  /**
+   * @deprecated this setting is ignored and will be removed in a future release
+   */
+  useLibjuice?: boolean
+
+  /**
+   * The key the certificate is stored in the datastore under
+   *
+   * @default '/libp2p/webrtc-direct/certificate'
+   */
+  certificateDatastoreKey?: string
+
+  /**
+   * The name the certificate private key is stored in the keychain with
+   *
+   * @default 'webrtc-direct-certificate-private-key'
+   */
+  certificateKeychainName?: string
+
+  /**
+   * Number of ms a certificate should be valid for (defaults to 14 days)
+   *
+   * @default 2_592_000_000
+   */
+  certificateLifespan?: number
+
+  /**
+   * Certificates will be renewed this many ms before expiry (defaults to 1 day)
+   *
+   * @default 86_400_000
+   */
+  certificateRenewalThreshold?: number
 }
 
-export class WebRTCDirectTransport implements Transport {
+export interface WebRTCDirectTransportCertificateEvents {
+  'certificate:renew': CustomEvent<TransportCertificate>
+}
+
+export class WebRTCDirectTransport implements Transport, Startable {
   private readonly log: Logger
   private readonly metrics?: WebRTCMetrics
   private readonly components: WebRTCDirectTransportComponents
   private readonly init: WebRTCTransportDirectInit
+  private certificate?: TransportCertificate
+  private privateKey?: PrivateKey
+  private readonly emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
+  private renewCertificateTask?: ReturnType<typeof setTimeout>
+
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
     this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
+    this.emitter = new TypedEventEmitter()
+
+    if (init.certificateLifespan != null && init.certificateRenewalThreshold != null && init.certificateRenewalThreshold >= init.certificateLifespan) {
+      throw new InvalidParametersError('Certificate renewal threshold must be less than certificate lifespan')
+    }
+
     if (components.metrics != null) {
       this.metrics = {
         dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc-direct_dialer_events_total', {
@@ -84,20 +143,72 @@ export class WebRTCDirectTransport implements Transport {
     '@libp2p/transport'
   ]
 
-  /**
-   * Dial a given multiaddr
-   */
-  async dial (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
-    const rawConn = await this._connect(ma, options)
-    this.log('dialing address: %a', ma)
-    return rawConn
+  async start (): Promise<void> {
+    this.certificate = await this.getCertificate()
+  }
+
+  async stop (): Promise<void> {
+    if (this.renewCertificateTask != null) {
+      clearTimeout(this.renewCertificateTask)
+    }
+
+    this.certificate = undefined
   }
 
   /**
-   * Create transport listeners no supported by browsers
+   * Dial a given multiaddr
+   */
+  async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
+    this.log('dial %a', ma)
+    // do not create RTCPeerConnection if the signal has already been aborted
+    options.signal.throwIfAborted()
+
+    let theirPeerId: PeerId | undefined
+    const remotePeerString = ma.getPeerId()
+    if (remotePeerString != null) {
+      theirPeerId = peerIdFromString(remotePeerString)
+    }
+
+    const ufrag = genUfrag()
+
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
+    const peerConnection = await createDialerRTCPeerConnection('client', ufrag, typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {})
+
+    try {
+      return await connect(peerConnection, ufrag, {
+        role: 'client',
+        log: this.log,
+        logger: this.components.logger,
+        metrics: this.components.metrics,
+        events: this.metrics?.dialerEvents,
+        signal: options.signal,
+        remoteAddr: ma,
+        dataChannel: this.init.dataChannel,
+        upgrader: options.upgrader,
+        peerId: this.components.peerId,
+        remotePeerId: theirPeerId,
+        privateKey: this.components.privateKey
+      })
+    } catch (err) {
+      peerConnection.close()
+      throw err
+    }
+  }
+
+  /**
+   * Create a transport listener - this will throw in browsers
    */
   createListener (options: CreateListenerOptions): Listener {
-    throw new UnimplementedError('WebRTCTransport.createListener')
+    if (this.certificate == null) {
+      throw new NotStartedError()
+    }
+
+    return new WebRTCDirectListener(this.components, {
+      ...this.init,
+      ...options,
+      certificate: this.certificate,
+      emitter: this.emitter
+    })
   }
 
   /**
@@ -114,185 +225,185 @@ export class WebRTCDirectTransport implements Transport {
     return this.listenFilter(multiaddrs)
   }
 
-  /**
-   * Connect to a peer using a multiaddr
-   */
-  async _connect (ma: Multiaddr, options: WebRTCDialOptions): Promise<Connection> {
-    const controller = new AbortController()
-    const signal = controller.signal
-
-    let remotePeer: PeerId | undefined
-    const remotePeerString = ma.getPeerId()
-    if (remotePeerString != null) {
-      remotePeer = peerIdFromString(remotePeerString)
+  private async getCertificate (forceRenew?: boolean): Promise<TransportCertificate> {
+    if (isTransportCertificate(this.init.certificate)) {
+      this.log('using provided TLS certificate')
+      return this.init.certificate
     }
 
-    const remoteCerthash = sdp.decodeCerthash(sdp.certhash(ma))
+    const privateKey = await this.loadOrCreatePrivateKey()
+    const { pem, certhash } = await this.loadOrCreateCertificate(privateKey, forceRenew)
 
-    // ECDSA is preferred over RSA here. From our testing we find that P-256 elliptic
-    // curve is supported by Pion, webrtc-rs, as well as Chromium (P-228 and P-384
-    // was not supported in Chromium). We use the same hash function as found in the
-    // multiaddr if it is supported.
-    const certificate = await RTCPeerConnection.generateCertificate({
-      name: 'ECDSA',
-      namedCurve: 'P-256',
-      hash: sdp.toSupportedHashFunction(remoteCerthash.code)
-    } as any)
+    return {
+      privateKey: await formatAsPem(privateKey),
+      pem,
+      certhash
+    }
+  }
 
-    const peerConnection = new RTCPeerConnection({
-      ...(await getRtcConfiguration(this.init.rtcConfiguration)),
-      certificates: [certificate]
-    })
+  private async loadOrCreatePrivateKey (): Promise<PrivateKey> {
+    if (this.privateKey != null) {
+      return this.privateKey
+    }
+
+    const keychainName = this.init.certificateKeychainName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
+    const keychain = this.getKeychain()
 
     try {
-      // create data channel for running the noise handshake. Once the data channel is opened,
-      // the remote will initiate the noise handshake. This is used to confirm the identity of
-      // the peer.
-      const dataChannelOpenPromise = new Promise<RTCDataChannel>((resolve, reject) => {
-        const handshakeDataChannel = peerConnection.createDataChannel('', { negotiated: true, id: 0 })
-        const handshakeTimeout = setTimeout(() => {
-          const error = `Data channel was never opened: state: ${handshakeDataChannel.readyState}`
-          this.log.error(error)
-          this.metrics?.dialerEvents.increment({ open_error: true })
-          reject(new DataChannelError('data', error))
-        }, HANDSHAKE_TIMEOUT_MS)
-
-        handshakeDataChannel.onopen = (_) => {
-          clearTimeout(handshakeTimeout)
-          resolve(handshakeDataChannel)
-        }
-
-        // ref: https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel/error_event
-        handshakeDataChannel.onerror = (event: Event) => {
-          clearTimeout(handshakeTimeout)
-          const errorTarget = event.target?.toString() ?? 'not specified'
-          const error = `Error opening a data channel for handshaking: ${errorTarget}`
-          this.log.error(error)
-          // NOTE: We use unknown error here but this could potentially be considered a reset by some standards.
-          this.metrics?.dialerEvents.increment({ unknown_error: true })
-          reject(new DataChannelError('data', error))
-        }
-      })
-
-      const ufrag = 'libp2p+webrtc+v1/' + genUfrag(32)
-
-      // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-      // respond to STUN messages without performing an actual SDP exchange.
-      // This is because it can infer the passwd field by reading the USERNAME
-      // attribute of the STUN message.
-      const offerSdp = await peerConnection.createOffer()
-      const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-      await peerConnection.setLocalDescription(mungedOfferSdp)
-
-      // construct answer sdp from multiaddr and ufrag
-      const answerSdp = sdp.fromMultiAddr(ma, ufrag)
-      await peerConnection.setRemoteDescription(answerSdp)
-
-      // wait for peerconnection.onopen to fire, or for the datachannel to open
-      const handshakeDataChannel = await dataChannelOpenPromise
-
-      // Do noise handshake.
-      // Set the Noise Prologue to libp2p-webrtc-noise:<FINGERPRINTS> before starting the actual Noise handshake.
-      // <FINGERPRINTS> is the concatenation of the of the two TLS fingerprints of A and B in their multihash byte representation, sorted in ascending order.
-      const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma)
-
-      // Since we use the default crypto interface and do not use a static key or early data,
-      // we pass in undefined for these parameters.
-      const connectionEncrypter = noise({ prologueBytes: fingerprintsPrologue })(this.components)
-
-      const wrappedChannel = createStream({
-        channel: handshakeDataChannel,
-        direction: 'inbound',
-        logger: this.components.logger,
-        ...(this.init.dataChannel ?? {})
-      })
-      const wrappedDuplex = {
-        ...wrappedChannel,
-        sink: wrappedChannel.sink.bind(wrappedChannel),
-        source: (async function * () {
-          for await (const list of wrappedChannel.source) {
-            for (const buf of list) {
-              yield buf
-            }
-          }
-        }())
+      if (keychain == null) {
+        this.log('no keychain configured - not checking for stored private key')
+        throw new NotFoundError()
       }
 
-      // Creating the connection before completion of the noise
-      // handshake ensures that the stream opening callback is set up
-      const maConn = new WebRTCMultiaddrConnection(this.components, {
-        peerConnection,
-        remoteAddr: ma,
-        timeline: {
-          open: Date.now()
-        },
-        metrics: this.metrics?.dialerEvents
-      })
+      this.log.trace('checking for stored private key')
+      this.privateKey = await keychain.exportKey(keychainName)
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        throw err
+      }
 
-      const eventListeningName = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
+      this.log.trace('generating private key')
+      this.privateKey = await generateKeyPair('ECDSA', 'P-256')
 
-      peerConnection.addEventListener(eventListeningName, () => {
-        switch (peerConnection.connectionState) {
-          case 'failed':
-          case 'disconnected':
-          case 'closed':
-            maConn.close().catch((err) => {
-              this.log.error('error closing connection', err)
-            }).finally(() => {
-              // Remove the event listener once the connection is closed
-              controller.abort()
-            })
-            break
-          default:
-            break
-        }
-      }, { signal })
+      if (keychain != null) {
+        this.log.trace('storing private key')
+        await keychain.importKey(keychainName, this.privateKey)
+      } else {
+        this.log('no keychain configured - not storing private key')
+      }
+    }
 
-      // Track opened peer connection
-      this.metrics?.dialerEvents.increment({ peer_connection: true })
+    return this.privateKey
+  }
 
-      const muxerFactory = new DataChannelMuxerFactory(this.components, {
-        peerConnection,
-        metrics: this.metrics?.dialerEvents,
-        dataChannelOptions: this.init.dataChannel
-      })
+  private async loadOrCreateCertificate (privateKey: PrivateKey, forceRenew?: boolean): Promise<{ pem: string, certhash: string }> {
+    if (this.certificate != null && forceRenew !== true) {
+      return this.certificate
+    }
 
-      // For outbound connections, the remote is expected to start the noise handshake.
-      // Therefore, we need to secure an inbound noise connection from the remote.
-      await connectionEncrypter.secureInbound(wrappedDuplex, {
-        signal,
-        remotePeer
-      })
+    let cert: X509Certificate
+    const dsKey = new Key(this.init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY)
+    const keyPair = await privateKeyToCryptoKeyPair(privateKey)
 
-      return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory })
-    } catch (err) {
-      peerConnection.close()
-      throw err
+    try {
+      if (forceRenew === true) {
+        this.log.trace('forcing renewal of TLS certificate')
+        throw new NotFoundError()
+      }
+
+      this.log.trace('checking for stored TLS certificate')
+      cert = await this.loadCertificate(dsKey, keyPair)
+    } catch (err: any) {
+      if (err.name !== 'NotFoundError') {
+        throw err
+      }
+
+      this.log.trace('generating new TLS certificate')
+      cert = await this.createCertificate(dsKey, keyPair)
+    }
+
+    // set timeout to renew certificate
+    let renewTime = (cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)) - Date.now()
+
+    if (renewTime < 0) {
+      renewTime = 100
+    }
+
+    this.log('will renew TLS certificate after %d ms', renewTime)
+
+    this.renewCertificateTask = setTimeout(() => {
+      this.log('renewing TLS certificate')
+      this.getCertificate(true)
+        .then(cert => {
+          this.certificate = cert
+          this.emitter.safeDispatchEvent('certificate:renew', {
+            detail: cert
+          })
+        })
+        .catch(err => {
+          this.log.error('could not renew certificate - %e', err)
+        })
+    }, renewTime)
+
+    return {
+      pem: cert.toString('pem'),
+      certhash: base64url.encode((await sha256.digest(new Uint8Array(cert.rawData))).bytes)
     }
   }
 
-  /**
-   * Generate a noise prologue from the peer connection's certificate.
-   * noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
-   */
-  private generateNoisePrologue (pc: RTCPeerConnection, hashCode: number, ma: Multiaddr): Uint8Array {
-    if (pc.getConfiguration().certificates?.length === 0) {
-      throw new InvalidParametersError('no local certificate')
+  async loadCertificate (dsKey: Key, keyPair: CryptoKeyPair): Promise<X509Certificate> {
+    const buf = await this.components.datastore.get(dsKey)
+    const cert = new X509Certificate(buf)
+
+    // check expiry date
+    const expiryTime = cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)
+
+    if (Date.now() > expiryTime) {
+      this.log('stored TLS certificate has expired')
+      // act as if no certificate was present
+      throw new NotFoundError()
     }
 
-    const localFingerprint = sdp.getLocalFingerprint(pc, {
-      log: this.log
-    })
-    if (localFingerprint == null) {
-      throw new InvalidParametersError('no local fingerprint found')
+    this.log('loaded certificate, expires in %d ms', expiryTime)
+
+    // check public keys match
+    const exportedCertKey = await cert.publicKey.export(crypto)
+    const rawCertKey = await crypto.subtle.exportKey('raw', exportedCertKey)
+    const rawKeyPairKey = await crypto.subtle.exportKey('raw', keyPair.publicKey)
+
+    if (!uint8ArrayEquals(
+      new Uint8Array(rawCertKey, 0, rawCertKey.byteLength),
+      new Uint8Array(rawKeyPairKey, 0, rawKeyPairKey.byteLength)
+    )) {
+      this.log('stored TLS certificate public key did not match public key from private key')
+      throw new NotFoundError()
     }
 
-    const localFpString = localFingerprint.trim().toLowerCase().replaceAll(':', '')
-    const localFpArray = uint8arrayFromString(localFpString, 'hex')
-    const local = Digest.create(hashCode, localFpArray)
-    const remote: Uint8Array = sdp.mbdecoder.decode(sdp.certhash(ma))
-    const prefix = uint8arrayFromString('libp2p-webrtc-noise:')
+    this.log('loaded certificate, expiry time is %o', expiryTime)
 
-    return concat([prefix, local.bytes, remote])
+    return cert
   }
+
+  async createCertificate (dsKey: Key, keyPair: CryptoKeyPair): Promise<X509Certificate> {
+    const notBefore = new Date()
+    const notAfter = new Date(Date.now() + (this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN))
+
+    // have to set ms to 0 to work around https://github.com/PeculiarVentures/x509/issues/73
+    notBefore.setMilliseconds(0)
+    notAfter.setMilliseconds(0)
+
+    const cert = await X509CertificateGenerator.createSelfSigned({
+      serialNumber: (BigInt(Math.random().toString().replace('.', '')) * 100000n).toString(16),
+      name: 'CN=example.com, C=US, L=CA, O=example, ST=CA',
+      notBefore,
+      notAfter,
+      keys: keyPair,
+      extensions: [
+        new BasicConstraintsExtension(false, undefined, true)
+      ]
+    }, crypto)
+
+    if (this.getKeychain() != null) {
+      this.log.trace('storing TLS certificate')
+      await this.components.datastore.put(dsKey, uint8ArrayFromString(cert.toString('pem')))
+    } else {
+      this.log('no keychain is configured so not storing TLS certificate since the private key will not be reused')
+    }
+
+    return cert
+  }
+
+  private getKeychain (): Keychain | undefined {
+    try {
+      return this.components.keychain
+    } catch {}
+  }
+}
+
+function isTransportCertificate (obj?: any): obj is TransportCertificate {
+  if (obj == null) {
+    return false
+  }
+
+  return typeof obj.privateKey === 'string' && typeof obj.pem === 'string' && typeof obj.certhash === 'string'
 }

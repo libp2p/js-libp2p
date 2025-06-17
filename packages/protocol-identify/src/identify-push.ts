@@ -1,11 +1,10 @@
-/* eslint-disable complexity */
-
-import { serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { protocols } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
@@ -15,8 +14,8 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
-import type { Stream, Startable } from '@libp2p/interface'
-import type { ConnectionManager, IncomingStreamData } from '@libp2p/interface-internal'
+import type { Stream, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export class IdentifyPush extends AbstractIdentify implements Startable, IdentifyPushInterface {
   private readonly connectionManager: ConnectionManager

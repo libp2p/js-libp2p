@@ -1,4 +1,5 @@
 import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
@@ -31,7 +32,10 @@ export class DNSMappings {
 
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
     this.log = components.logger.forComponent('libp2p:address-manager:dns-mappings')
-    this.mappings = new Map()
+    this.mappings = trackedMap({
+      name: 'libp2p_address_manager_dns_mappings',
+      metrics: components.metrics
+    })
   }
 
   has (ma: Multiaddr): boolean {

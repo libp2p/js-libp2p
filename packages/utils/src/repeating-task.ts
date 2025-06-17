@@ -1,5 +1,6 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
+import { debounce } from './debounce.ts'
 import type { AbortOptions } from '@libp2p/interface'
 
 export interface RepeatingTask {
@@ -11,6 +12,8 @@ export interface RepeatingTask {
    *
    * This only affects the next iteration of the task, if it is currently
    * running, that run will not be interrupted.
+   *
+   * Setting the interval to the current value has no effect.
    */
   setInterval(ms: number): void
 
@@ -18,10 +21,17 @@ export interface RepeatingTask {
    * Update the amount of time a task will run before the passed abort signal
    * will fire.
    *
-   * * This only affects the next iteration of the task, if it is currently
+   * This only affects the next iteration of the task, if it is currently
    * running, that run will not be interrupted.
    */
   setTimeout(ms: number): void
+
+  /**
+   * Schedule the task to be run immediately - if the task is not running it
+   * will run after a short delay in order to debounce multiple `.run()`
+   * invocations.
+   */
+  run(): void
 
   /**
    * Start the task running
@@ -47,11 +57,20 @@ export interface RepeatingTaskOptions {
    * @default false
    */
   runImmediately?: boolean
+
+  /**
+   * When `.run()` is called to run the task outside of the current interval,
+   * debounce repeated calls to `.run()` by this amount.
+   *
+   * @default 100
+   */
+  debounce?: number
 }
 
 export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<void>, interval: number, options?: RepeatingTaskOptions): RepeatingTask {
   let timeout: ReturnType<typeof setTimeout>
   let shutdownController: AbortController
+  let running = false
 
   function runTask (): void {
     const opts: AbortOptions = {
@@ -65,11 +84,15 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
       opts.signal = signal
     }
 
+    running = true
+
     Promise.resolve().then(async () => {
       await fn(opts)
     })
       .catch(() => {})
       .finally(() => {
+        running = false
+
         if (shutdownController.signal.aborted) {
           // task has been cancelled, bail
           return
@@ -80,10 +103,17 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
       })
   }
 
+  const runTaskDebounced = debounce(runTask, options?.debounce ?? 100)
+
   let started = false
 
   return {
-    setInterval: (ms) => {
+    setInterval: (ms): void => {
+      if (interval === ms) {
+        // already running at this interval, nothing to do
+        return
+      }
+
       interval = ms
 
       // maybe reschedule
@@ -92,14 +122,19 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
         timeout = setTimeout(runTask, interval)
       }
     },
-    setTimeout: (ms) => {
-      if (options == null) {
-        options = {}
-      }
-
+    setTimeout: (ms): void => {
+      options ??= {}
       options.timeout = ms
     },
-    start: () => {
+    run: (): void => {
+      if (running) {
+        return
+      }
+
+      clearTimeout(timeout)
+      runTaskDebounced()
+    },
+    start: (): void => {
       if (started) {
         return
       }
@@ -118,7 +153,7 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
         timeout = setTimeout(runTask, interval)
       }
     },
-    stop: () => {
+    stop: (): void => {
       clearTimeout(timeout)
       shutdownController?.abort()
       started = false

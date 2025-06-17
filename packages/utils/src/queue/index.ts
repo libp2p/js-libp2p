@@ -1,6 +1,8 @@
-import { AbortError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
+import { TypedEventEmitter } from 'main-event'
 import { raceEvent } from 'race-event'
+import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
@@ -70,49 +72,49 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
   /**
    * A job is about to start running
    */
-  'active': CustomEvent
+  active: CustomEvent
 
   /**
    * All jobs have finished and the queue is empty
    */
-  'idle': CustomEvent
+  idle: CustomEvent
 
   /**
    * The queue is empty, jobs may be running
    */
-  'empty': CustomEvent
+  empty: CustomEvent
 
   /**
    * A job was added to the queue
    */
-  'add': CustomEvent
+  add: CustomEvent
 
   /**
    * A job has finished or failed
    */
-  'next': CustomEvent
+  next: CustomEvent
 
   /**
    * A job has finished successfully
    */
-  'completed': CustomEvent<JobReturnType>
+  completed: CustomEvent<JobReturnType>
 
   /**
    * A job has failed
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted just after `"completed", a job has finished successfully - this
    * event gives access to the job and it's result
    */
-  'success': CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
+  success: CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
 
   /**
    * Emitted just after `"error", a job has failed - this event gives access to
    * the job and the thrown error
    */
-  'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
+  failure: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
 /**
@@ -149,22 +151,33 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     this.sort = init.sort
     this.queue = []
+
+    this.emitEmpty = debounce(this.emitEmpty.bind(this), 1)
+    this.emitIdle = debounce(this.emitIdle.bind(this), 1)
+  }
+
+  emitEmpty (): void {
+    if (this.size !== 0) {
+      return
+    }
+
+    this.safeDispatchEvent('empty')
+  }
+
+  emitIdle (): void {
+    if (this.running !== 0) {
+      return
+    }
+
+    this.safeDispatchEvent('idle')
   }
 
   private tryToStartAnother (): boolean {
     if (this.size === 0) {
-      // do this in the microtask queue so all job recipients receive the
-      // result before the "empty" event fires
-      queueMicrotask(() => {
-        this.safeDispatchEvent('empty')
-      })
+      this.emitEmpty()
 
       if (this.running === 0) {
-        // do this in the microtask queue so all job recipients receive the
-        // result before the "idle" event fires
-        queueMicrotask(() => {
-          this.safeDispatchEvent('idle')
-        })
+        this.emitIdle()
       }
 
       return false

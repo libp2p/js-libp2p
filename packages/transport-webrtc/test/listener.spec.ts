@@ -2,6 +2,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { WebRTCPeerListener } from '../src/private-to-private/listener.js'
@@ -17,7 +18,8 @@ describe('webrtc private-to-private listener', () => {
 
     const listener = new WebRTCPeerListener({
       peerId,
-      transportManager
+      transportManager,
+      events: new TypedEventEmitter()
     }, {
       shutdownController: new AbortController()
     })

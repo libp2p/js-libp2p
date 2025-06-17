@@ -8,38 +8,9 @@
 [![npm](https://img.shields.io/npm/dm/libp2p.svg?style=flat-square)](https://www.npmjs.com/package/libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
 [![Matrix](https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
-[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
+[![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet\&label=discord\&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
-
-# About
-
-<!--
-
-!IMPORTANT!
-
-Everything in this README between "# About" and "# Install" is automatically
-generated and will be overwritten the next time the doc generator is run.
-
-To make changes to this section, please update the @packageDocumentation section
-of src/index.js or src/index.ts
-
-To experiment with formatting, please run "npm run docs" from the root of this
-repo and examine the changes made.
-
--->
-
-Use the `createLibp2p` function to create a libp2p node.
-
-## Example
-
-```typescript
-import { createLibp2p } from 'libp2p'
-
-const node = await createLibp2p({
-  // ...other options
-})
-```
 
 # Background
 
@@ -56,7 +27,7 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
 
-To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradeability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
+To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
 # Roadmap
 
@@ -98,7 +69,7 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 ## Run unit tests
 
 ```sh
-# run all the unit tsts
+# run all the unit tests
 > npm test
 
 # run just Node.js tests
@@ -171,7 +142,7 @@ And [many others...](https://github.com/libp2p/js-libp2p/network/dependents)
 The libp2p implementation in JavaScript is a work in progress. As such, there are a few things you can do right now to help out:
 
 - Go through the modules and **check out existing issues**. This would be especially useful for modules in active development. Some knowledge of IPFS/libp2p may be required, as well as the infrastructure behind it - for instance, you may need to read up on p2p and more complex operations like muxing to be able to help technically.
-- **Perform code reviews**. Most of this has been developed by @diasdavid, which means that more eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
+- **Perform code reviews**. More eyes will help a) speed the project along b) ensure quality and c) reduce possible future bugs.
 - **Add tests**. There can never be enough tests.
 
 # API Docs

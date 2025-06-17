@@ -1,5 +1,5 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
@@ -11,11 +11,13 @@ import * as lp from 'it-length-prefixed'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import { pushable } from 'it-pushable'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Identify } from '../src/identify.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyConnection, identifyStream, type StubbedIdentifyComponents } from './fixtures/index.js'
+import { identifyConnection, identifyStream } from './fixtures/index.js'
+import type { StubbedIdentifyComponents } from './fixtures/index.js'
 import type { Libp2pEvents, PeerStore, Connection, Stream } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -39,7 +41,8 @@ describe('identify', () => {
       logger: defaultLogger(),
       nodeInfo: {
         name: 'test',
-        version: '1.0.0'
+        version: '1.0.0',
+        userAgent: 'test'
       }
     }
   })
@@ -340,7 +343,7 @@ describe('identify', () => {
     expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
-  it('should not send unroutable observed addresses', async () => {
+  it('should not send un-routable observed addresses', async () => {
     identify = new Identify(components)
 
     await start(identify)
@@ -387,7 +390,7 @@ describe('identify', () => {
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
-      observedAddr: multiaddr('/ip6/fe80::2892:aef3:af04:735a%en').bytes
+      observedAddr: multiaddr('/ip6zone/en/ip6/fe80::2892:aef3:af04:735a').bytes
     }
 
     const connection = identifyConnection(remotePeer, message)

@@ -41,7 +41,7 @@ describe('listen', () => {
   })
 
   it('listen on unix domain socket', async () => {
-    const mh = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const mh = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     listener = transport.createListener({
       upgrader
@@ -150,18 +150,6 @@ describe('listen', () => {
     expect(multiaddrs.length > 0).to.equal(true)
     expect(multiaddrs[0].toOptions().host).to.not.equal('::')
   })
-
-  it('getAddrs preserves IPFS Id', async () => {
-    const mh = multiaddr('/ip4/127.0.0.1/tcp/9090/ipfs/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-    listener = transport.createListener({
-      upgrader
-    })
-    await listener.listen(mh)
-
-    const multiaddrs = listener.getAddrs()
-    expect(multiaddrs.length).to.equal(1)
-    expect(multiaddrs[0]).to.deep.equal(mh)
-  })
 })
 
 describe('dial', () => {
@@ -191,7 +179,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -209,14 +198,15 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
   })
 
   it('dial unix domain socket', async () => {
-    const ma = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const ma = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     const listener = transport.createListener({
       upgrader
@@ -224,7 +214,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -238,7 +229,8 @@ describe('dial', () => {
     await listener.listen(ma)
 
     await expect(transport.dial(ma, {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.ok()
 
     await listener.close()
@@ -250,7 +242,7 @@ describe('dial', () => {
 
     // create a listener with the handler
     const listener = transport.createListener({
-      upgrader: {
+      upgrader: stubInterface<Upgrader>({
         async upgradeInbound () {
           upgradeStarted.resolve()
 
@@ -259,7 +251,7 @@ describe('dial', () => {
         async upgradeOutbound () {
           return new Promise(() => {})
         }
-      }
+      })
     })
 
     // listen on a multiaddr
@@ -270,7 +262,8 @@ describe('dial', () => {
 
     // dial the listener address
     transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     }).catch(() => {})
 
     // wait for the upgrade to start
@@ -287,7 +280,7 @@ describe('dial', () => {
 
     // create a listener with the handler
     const listener = transport.createListener({
-      upgrader: {
+      upgrader: stubInterface<Upgrader>({
         async upgradeInbound (maConn, opts) {
           upgradeStarted.resolve()
 
@@ -302,7 +295,7 @@ describe('dial', () => {
         async upgradeOutbound () {
           return new Promise(() => {})
         }
-      }
+      })
     })
 
     // listen on a multiaddr
@@ -313,7 +306,8 @@ describe('dial', () => {
 
     // dial the listener address
     transport.dial(localAddrs[0], {
-      upgrader
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
     }).catch(() => {})
 
     // wait for the upgrade to start

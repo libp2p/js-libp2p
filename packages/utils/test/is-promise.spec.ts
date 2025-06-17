@@ -13,7 +13,7 @@ describe('is-promise', () => {
   })
 
   it('should detect new Promise', () => {
-    expect(isPromise(new Promise((resolve, reject) => {}))).to.be.true()
+    expect(isPromise(new Promise(() => {}))).to.be.true()
   })
 
   it('should not detect boolean', () => {
@@ -35,7 +35,9 @@ describe('is-promise', () => {
   it('should return true if the value is a promise', () => {
     expect(isPromise(Promise.resolve())).to.be.true()
     expect(isPromise(new Promise(() => {}))).to.be.true()
-    expect(isPromise(Promise.reject(new Error('test')))).to.be.true()
+    const rejected = Promise.reject(new Error('test'))
+    expect(isPromise(rejected)).to.be.true()
+    rejected.catch(() => {})
   })
 
   it('should return false if the value is not a promise', () => {

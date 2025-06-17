@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "10.0.17",
+  "version": "10.1.16",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp#readme",
@@ -38,13 +38,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -60,11 +53,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.4.1",
-    "@libp2p/utils": "^6.5.0",
-    "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.3.3",
-    "@types/sinon": "^17.0.3",
+    "@libp2p/interface": "^2.10.4",
+    "@libp2p/utils": "^6.7.0",
+    "@multiformats/multiaddr": "^12.4.4",
+    "@multiformats/multiaddr-matcher": "^1.7.2",
+    "@types/sinon": "^17.0.4",
+    "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",
@@ -72,15 +66,18 @@
     "stream-to-it": "^1.0.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.7",
-    "aegir": "^45.0.5",
+    "@libp2p/logger": "^5.1.20",
+    "aegir": "^47.0.14",
     "p-wait-for": "^5.0.2",
-    "sinon": "^19.0.2",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },
   "browser": {
     "./dist/src/tcp.js": "./dist/src/tcp.browser.js"
+  },
+  "react-native": {
+    "./dist/src/tcp.js": "./dist/src/tcp.js"
   },
   "sideEffects": false
 }

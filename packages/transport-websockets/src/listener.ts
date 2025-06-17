@@ -1,19 +1,19 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import os from 'node:os'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
+import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
-import { isLinkLocalIp } from '@libp2p/utils/link-local-ip'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import duplex from 'it-ws/duplex'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import * as ws from 'ws'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, TypedEventTarget, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { TypedEventTarget } from 'main-event'
 import type { EventEmitter } from 'node:events'
 import type { Server } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -27,7 +27,6 @@ export interface WebSocketListenerComponents {
 
 export interface WebSocketListenerInit extends CreateListenerOptions {
   server?: Server
-  inboundConnectionUpgradeTimeout?: number
   cert?: string
   key?: string
   http?: http.ServerOptions
@@ -48,9 +47,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   private readonly metrics: WebSocketListenerMetrics
   private readonly sockets: Set<net.Socket>
   private readonly upgrader: Upgrader
-  private readonly inboundConnectionUpgradeTimeout: number
   private readonly httpOptions?: http.ServerOptions
   private readonly httpsOptions?: https.ServerOptions
+  private readonly shutdownController: AbortController
   private http?: http.Server
   private https?: https.Server
   private addr?: string
@@ -64,8 +63,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.upgrader = init.upgrader
     this.httpOptions = init.http
     this.httpsOptions = init.https ?? init.http
-    this.inboundConnectionUpgradeTimeout = init.inboundConnectionUpgradeTimeout ?? 5000
     this.sockets = new Set()
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.wsServer = new ws.WebSocketServer({
       noServer: true
@@ -214,11 +214,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     this.log('new inbound connection %s', maConn.remoteAddr)
-    const signal = AbortSignal.timeout(this.inboundConnectionUpgradeTimeout)
-    setMaxListeners(Infinity, signal)
 
     this.upgrader.upgradeInbound(maConn, {
-      signal
+      signal: this.shutdownController.signal
     })
       .catch(async err => {
         this.log.error('inbound connection failed to upgrade - %e', err)
@@ -251,11 +249,13 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
     }
 
-    this.listeningMultiaddr = ma
-    const { host, port } = ma.toOptions()
-    this.addr = `${host}:${port}`
+    const options = ma.toOptions()
+    this.addr = `${options.host}:${options.port}`
 
-    this.server.listen(port, host)
+    this.server.listen({
+      ...options,
+      ipv6Only: options.family === 6
+    })
 
     await new Promise<void>((resolve, reject) => {
       const onListening = (): void => {
@@ -281,6 +281,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       this.server.addListener('drop', onDrop)
     })
 
+    this.listeningMultiaddr = ma
     this.safeDispatchEvent('listening')
   }
 
@@ -330,6 +331,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       socket.destroy()
     })
 
+    // abort and in-flight connection upgrades
+    this.shutdownController.abort()
+
     await Promise.all([
       pEvent(this.server, 'close'),
       this.http == null ? null : pEvent(this.http, 'close'),
@@ -341,10 +345,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   }
 
   getAddrs (): Multiaddr[] {
-    if (this.listeningMultiaddr == null) {
-      throw new Error('Listener is not ready yet')
-    }
-
     const address = this.server.address()
 
     if (address == null) {
@@ -352,52 +352,10 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     if (typeof address === 'string') {
-      throw new Error('Wrong address type received - expected AddressInfo, got string - are you trying to listen on a unix socket?')
+      return [multiaddr(`/unix/${encodeURIComponent(address)}/ws`)]
     }
 
-    const options = this.listeningMultiaddr.toOptions()
-    const multiaddrs: Multiaddr[] = []
-
-    if (options.family === 4) {
-      if (options.host === '0.0.0.0') {
-        Object.values(os.networkInterfaces()).forEach(niInfos => {
-          if (niInfos == null) {
-            return
-          }
-
-          niInfos.forEach(ni => {
-            if (ni.family === 'IPv4') {
-              multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
-            }
-          })
-        })
-      } else {
-        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
-      }
-    } else if (options.family === 6) {
-      if (options.host === '::') {
-        Object.values(os.networkInterfaces()).forEach(niInfos => {
-          if (niInfos == null) {
-            return
-          }
-
-          for (const ni of niInfos) {
-            if (ni.family !== 'IPv6') {
-              continue
-            }
-
-            if (isLinkLocalIp(ni.address)) {
-              continue
-            }
-
-            multiaddrs.push(multiaddr(`/ip${options.family}/${ni.address}/${options.transport}/${address.port}`))
-          }
-        })
-      } else {
-        multiaddrs.push(multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${address.port}`))
-      }
-    }
-
+    const multiaddrs: Multiaddr[] = getThinWaistAddresses(this.listeningMultiaddr, address.port)
     const insecureMultiaddrs: Multiaddr[] = []
 
     if (this.http != null) {
@@ -418,6 +376,10 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       ...insecureMultiaddrs,
       ...secureMultiaddrs
     ]
+  }
+
+  updateAnnounceAddrs (): void {
+
   }
 
   private httpRequestHandler (req: http.IncomingMessage, res: http.ServerResponse): void {

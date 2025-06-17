@@ -2,18 +2,19 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { persistentPeerStore } from '../src/index.js'
 import { Peer as PeerPB } from '../src/pb/peer.js'
-import type { TypedEventTarget, Libp2pEvents, PeerId, PeerStore, PeerData, PeerUpdate } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, PeerData, PeerUpdate } from '@libp2p/interface'
+import type { TypedEventTarget } from 'main-event'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 const addr2 = multiaddr('/ip4/20.0.0.1/tcp/8001')
@@ -165,7 +166,7 @@ describe('save', () => {
 
   it('should not store a public key if already stored', async () => {
     // @ts-expect-error private fields
-    const spy = sinon.spy(peerStore.store.datastore, 'put')
+    const spy = sinon.spy(peerStore.store, 'save')
 
     if (otherPeerId.publicKey == null) {
       throw new Error('Public key was missing')
@@ -179,7 +180,9 @@ describe('save', () => {
       publicKey: otherPeerId.publicKey
     })
 
-    expect(spy).to.have.property('callCount', 1)
+    expect(spy.callCount).to.equal(2)
+    await expect(spy.getCall(0).returnValue).to.eventually.have.property('updated', true)
+    await expect(spy.getCall(1).returnValue).to.eventually.have.property('updated', false)
   })
 
   it('should not store a public key if part of peer id', async () => {

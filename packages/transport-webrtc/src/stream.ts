@@ -1,16 +1,19 @@
 import { StreamStateError, TimeoutError } from '@libp2p/interface'
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
+import { anySignal } from 'any-signal'
 import * as lengthPrefixed from 'it-length-prefixed'
-import { type Pushable, pushable } from 'it-pushable'
+import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
-import { pEvent } from 'p-event'
 import pTimeout from 'p-timeout'
+import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
-import { encodingLength } from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { Message } from './pb/message.js'
+import { BUFFERED_AMOUNT_LOW_TIMEOUT, FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, OPEN_TIMEOUT, PROTOBUF_OVERHEAD } from './constants.js'
+import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
 import type { AbortOptions, ComponentLogger, Direction } from '@libp2p/interface'
+import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { Pushable } from 'it-pushable'
 import type { DeferredPromise } from 'p-defer'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
@@ -24,65 +27,6 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
 
   logger: ComponentLogger
 }
-
-/**
- * How much can be buffered to the DataChannel at once
- */
-export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
-
-/**
- * How long time we wait for the 'bufferedamountlow' event to be emitted
- */
-export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
-
-/**
- * Max message size that can be sent to the DataChannel. In browsers this is
- * 256KiB but go-libp2p and rust-libp2p only support 16KiB at the time of
- * writing.
- *
- * @see https://blog.mozilla.org/webrtc/large-data-channel-messages/
- * @see https://issues.webrtc.org/issues/40644524
- */
-export const MAX_MESSAGE_SIZE = 16 * 1024
-
-/**
- * max protobuf overhead:
- *
- * ```
- * [message-length][flag-field-id+type][flag-field-length][flag-field][message-field-id+type][message-field-length][message-field]
- * ```
- */
-function calculateProtobufOverhead (maxMessageSize = MAX_MESSAGE_SIZE): number {
-  // these have a fixed size
-  const messageLength = encodingLength(maxMessageSize - encodingLength(maxMessageSize))
-  const flagField = 1 + encodingLength(Object.keys(Message.Flag).length - 1) // id+type/value
-  const messageFieldIdType = 1 // id+type
-  const available = maxMessageSize - messageLength - flagField - messageFieldIdType
-
-  // let message-length/message-data fill the rest of the message
-  const messageFieldLengthLength = encodingLength(available)
-
-  return messageLength + flagField + messageFieldIdType + messageFieldLengthLength
-}
-
-/**
- * The protobuf message overhead includes the maximum amount of all bytes in the
- * protobuf that aren't message field bytes
- */
-export const PROTOBUF_OVERHEAD = calculateProtobufOverhead()
-
-/**
- * When closing streams we send a FIN then wait for the remote to
- * reply with a FIN_ACK. If that does not happen within this timeout
- * we close the stream anyway.
- */
-export const FIN_ACK_TIMEOUT = 5000
-
-/**
- * When sending data messages, if the channel is not in the "open" state, wait
- * this long for the "open" event to fire.
- */
-export const OPEN_TIMEOUT = 5000
 
 export class WebRTCStream extends AbstractStream {
   /**
@@ -111,12 +55,13 @@ export class WebRTCStream extends AbstractStream {
   private readonly receiveFinAck: DeferredPromise<void>
   private readonly finAckTimeout: number
   private readonly openTimeout: number
+  private readonly closeController: AbortController
 
   constructor (init: WebRTCStreamInit) {
     // override onEnd to send/receive FIN_ACK before closing the stream
     const originalOnEnd = init.onEnd
     init.onEnd = (err?: Error): void => {
-      this.log.trace('readable and writeable ends closed', this.status)
+      this.log.trace('readable and writeable ends closed with status "%s"', this.status)
 
       void Promise.resolve(async () => {
         if (this.timeline.abort != null || this.timeline.reset !== null) {
@@ -133,7 +78,7 @@ export class WebRTCStream extends AbstractStream {
         }
       })
         .then(() => {
-        // stop processing incoming messages
+          // stop processing incoming messages
           this.incomingData.end()
 
           // final cleanup
@@ -141,6 +86,9 @@ export class WebRTCStream extends AbstractStream {
         })
         .catch(err => {
           this.log.error('error ending stream', err)
+        })
+        .finally(() => {
+          this.channel.close()
         })
     }
 
@@ -155,6 +103,7 @@ export class WebRTCStream extends AbstractStream {
     this.receiveFinAck = pDefer()
     this.finAckTimeout = init.closeTimeout ?? FIN_ACK_TIMEOUT
     this.openTimeout = init.openTimeout ?? OPEN_TIMEOUT
+    this.closeController = new AbortController()
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -183,6 +132,11 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onclose = (_evt) => {
+      this.log.trace('received onclose event')
+
+      // stop any in-progress writes
+      this.closeController.abort()
+
       // if the channel has closed we'll never receive a FIN_ACK so resolve the
       // promise so we don't try to wait later
       this.receiveFinAck.resolve()
@@ -193,6 +147,11 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onerror = (evt) => {
+      this.log.trace('received onerror event')
+
+      // stop any in-progress writes
+      this.closeController.abort()
+
       const err = (evt as RTCErrorEvent).error
       this.abort(err)
     }
@@ -230,34 +189,59 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async _sendMessage (data: Uint8ArrayList, checkBuffer: boolean = true): Promise<void> {
-    if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
-      try {
-        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
-        await pEvent(this.channel, 'bufferedamountlow', { timeout: this.bufferedAmountLowEventTimeout })
-      } catch (err: any) {
-        if (err instanceof TimeoutError) {
-          throw new TimeoutError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`)
-        }
-
-        throw err
-      }
-    }
-
     if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
       throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
     if (this.channel.readyState !== 'open') {
-      this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
-      await pEvent(this.channel, 'open', { timeout: this.openTimeout })
+      const timeout = AbortSignal.timeout(this.openTimeout)
+      const signal = anySignal([
+        this.closeController.signal,
+        timeout
+      ])
+
+      try {
+        this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
+        await raceEvent(this.channel, 'open', signal)
+      } finally {
+        signal.clear()
+      }
+
       this.log('channel state is now "%s", sending data', this.channel.readyState)
     }
 
-    // send message without copying data
-    this.channel.send(data.subarray())
+    if (checkBuffer && this.channel.bufferedAmount > this.maxBufferedAmount) {
+      const timeout = AbortSignal.timeout(this.bufferedAmountLowEventTimeout)
+      const signal = anySignal([
+        this.closeController.signal,
+        timeout
+      ])
+
+      try {
+        this.log('channel buffer is %d, wait for "bufferedamountlow" event', this.channel.bufferedAmount)
+        await raceEvent(this.channel, 'bufferedamountlow', signal)
+      } catch (err: any) {
+        if (timeout.aborted) {
+          throw new TimeoutError(`Timed out waiting for DataChannel buffer to clear after ${this.bufferedAmountLowEventTimeout}ms`)
+        }
+
+        throw err
+      } finally {
+        signal.clear()
+      }
+    }
+
+    try {
+      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
+      // send message without copying data
+      this.channel.send(data.subarray())
+    } catch (err: any) {
+      this.log.error('error while sending message', err)
+    }
   }
 
   async sendData (data: Uint8ArrayList): Promise<void> {
+    const bytesTotal = data.byteLength
     // sending messages is an async operation so use a copy of the list as it
     // may be changed beneath us
     data = data.sublist()
@@ -265,12 +249,15 @@ export class WebRTCStream extends AbstractStream {
     while (data.byteLength > 0) {
       const toSend = Math.min(data.byteLength, this.maxMessageSize)
       const buf = data.subarray(0, toSend)
-      const msgbuf = Message.encode({ message: buf })
-      const sendbuf = lengthPrefixed.encode.single(msgbuf)
-      await this._sendMessage(sendbuf)
+      const messageBuf = Message.encode({ message: buf })
+      const sendBuf = lengthPrefixed.encode.single(messageBuf)
+      this.log.trace('sending %d/%d bytes on channel', buf.byteLength, bytesTotal)
+      await this._sendMessage(sendBuf)
 
       data.consume(toSend)
     }
+
+    this.log.trace('finished sending data, channel state "%s"', this.channel.readyState)
   }
 
   async sendReset (): Promise<void> {
@@ -278,10 +265,17 @@ export class WebRTCStream extends AbstractStream {
       await this._sendFlag(Message.Flag.RESET)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
+    } finally {
+      this.channel.close()
     }
   }
 
   async sendCloseWrite (options: AbortOptions): Promise<void> {
+    if (this.channel.readyState !== 'open') {
+      this.receiveFinAck.resolve()
+      return
+    }
+
     const sent = await this._sendFlag(Message.Flag.FIN)
 
     if (sent) {
@@ -303,6 +297,10 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendCloseRead (): Promise<void> {
+    if (this.channel.readyState !== 'open') {
+      return
+    }
+
     await this._sendFlag(Message.Flag.STOP_SENDING)
   }
 
@@ -353,13 +351,13 @@ export class WebRTCStream extends AbstractStream {
       // flags can be sent while we or the remote are closing the datachannel so
       // if the channel isn't open, don't try to send it but return false to let
       // the caller know and act if they need to
-      this.log.trace('not sending flag %s because channel is "%s" and not "open"', this.channel.readyState, flag.toString())
+      this.log.trace('not sending flag %s because channel is "%s" and not "open"', flag.toString(), this.channel.readyState)
       return false
     }
 
     this.log.trace('sending flag %s', flag.toString())
-    const msgbuf = Message.encode({ flag })
-    const prefixedBuf = lengthPrefixed.encode.single(msgbuf)
+    const messageBuf = Message.encode({ flag })
+    const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
 
     try {
       await this._sendMessage(prefixedBuf, false)
@@ -393,14 +391,20 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
   onEnd?(err?: Error | undefined): void
 
   logger: ComponentLogger
+
+  /**
+   * If true the underlying datachannel is being used to perform the noise
+   * handshake during connection establishment
+   */
+  handshake?: boolean
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
-  const { channel, direction } = options
+  const { channel, direction, handshake } = options
 
   return new WebRTCStream({
-    id: direction === 'inbound' ? (`i${channel.id}`) : `r${channel.id}`,
-    log: options.logger.forComponent(`libp2p:webrtc:stream:${direction}:${channel.id}`),
+    id: `${channel.id}`,
+    log: options.logger.forComponent(`libp2p:webrtc:stream:${handshake === true ? 'handshake' : direction}:${channel.id}`),
     ...options
   })
 }

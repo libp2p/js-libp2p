@@ -5,7 +5,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
-import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw } from '../../src/keys/index.js'
+import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Ed25519PrivateKey } from '@libp2p/interface'
@@ -31,33 +31,33 @@ describe('ed25519', function () {
 
   it('generates a valid key from seed', async () => {
     const seed = randomBytes(32)
-    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
-    expect(seededkey).to.have.property('type', 'Ed25519')
+    const seededKey = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededKey).to.have.property('type', 'Ed25519')
     expect(key.raw).to.have.length(64)
     expect(key.publicKey.raw).to.have.length(32)
   })
 
   it('generates the same key from the same seed', async () => {
     const seed = randomBytes(32)
-    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed)
-    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed)
-    expect(seededkey1.equals(seededkey2)).to.be.true()
-    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.true()
+    const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed)
+    const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed)
+    expect(seededKey1.equals(seededKey2)).to.be.true()
+    expect(seededKey1.publicKey.equals(seededKey2.publicKey)).to.be.true()
   })
 
   it('generates different keys for different seeds', async () => {
     const seed1 = randomBytes(32)
-    const seededkey1 = await generateKeyPairFromSeed('Ed25519', seed1)
+    const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed1)
     const seed2 = randomBytes(32)
-    const seededkey2 = await generateKeyPairFromSeed('Ed25519', seed2)
-    expect(seededkey1.equals(seededkey2)).to.be.false()
-    expect(seededkey1.publicKey.equals(seededkey2.publicKey)).to.be.false()
+    const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed2)
+    expect(seededKey1.equals(seededKey2)).to.be.false()
+    expect(seededKey1.publicKey.equals(seededKey2.publicKey)).to.be.false()
   })
 
   it('signs', async () => {
     const text = randomBytes(512)
     const sig = await key.sign(text)
-    const res = key.publicKey.verify(text, sig)
+    const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
   })
 
@@ -68,13 +68,39 @@ describe('ed25519', function () {
     )
     const sig = await key.sign(text)
 
-    expect(key.sign(text.subarray()))
+    expect(await key.sign(text.subarray()))
       .to.deep.equal(sig, 'list did not have same signature as a single buffer')
 
-    expect(key.publicKey.verify(text, sig))
+    expect(await key.publicKey.verify(text, sig))
       .to.be.true('did not verify message as list')
-    expect(key.publicKey.verify(text.subarray(), sig))
+    expect(await key.publicKey.verify(text.subarray(), sig))
       .to.be.true('did not verify message as single buffer')
+  })
+
+  it('should abort signing', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    await expect((async () => {
+      return key.sign(text, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort verifying', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+
+    await expect((async () => {
+      return key.publicKey.verify(text, sig, {
+        signal: controller.signal
+      })
+    })()).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
   })
 
   it('encoding', () => {
@@ -117,23 +143,23 @@ describe('ed25519', function () {
   it('sign and verify', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = key.publicKey.verify(data, sig)
+    const valid = await key.publicKey.verify(data, sig)
     expect(valid).to.be.true()
   })
 
   it('sign and verify from seed', async () => {
     const seed = new Uint8Array(32).fill(1)
-    const seededkey = await generateKeyPairFromSeed('Ed25519', seed)
+    const seededKey = await generateKeyPairFromSeed('Ed25519', seed)
     const data = uint8ArrayFromString('hello world')
-    const sig = await seededkey.sign(data)
-    const valid = await seededkey.publicKey.verify(data, sig)
+    const sig = await seededKey.sign(data)
+    const valid = await seededKey.publicKey.verify(data, sig)
     expect(valid).to.be.true()
   })
 
   it('fails to verify for different data', async () => {
     const data = uint8ArrayFromString('hello world')
     const sig = await key.sign(data)
-    const valid = key.publicKey.verify(uint8ArrayFromString('hello'), sig)
+    const valid = await key.publicKey.verify(uint8ArrayFromString('hello'), sig)
     expect(valid).to.be.be.false()
   })
 
@@ -169,6 +195,13 @@ describe('ed25519', function () {
 
     expect(isPrivateKey(key.publicKey)).to.be.false()
     expect(isPublicKey(key.publicKey)).to.be.true()
+  })
+
+  it('fails to export to CryptoKeyPair', async () => {
+    const key = await generateKeyPair('Ed25519')
+
+    await expect(privateKeyToCryptoKeyPair(key)).to.eventually.be.rejected
+      .with.property('message', 'Only RSA and ECDSA keys are supported')
   })
 
   describe('go interop', () => {

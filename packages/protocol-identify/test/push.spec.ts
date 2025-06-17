@@ -1,15 +1,17 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pair } from 'it-pair'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { IdentifyPush } from '../src/identify-push.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyPushStream, type StubbedIdentifyComponents } from './fixtures/index.js'
+import { identifyPushStream } from './fixtures/index.js'
+import type { StubbedIdentifyComponents } from './fixtures/index.js'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -32,7 +34,8 @@ describe('identify (push)', () => {
       logger: defaultLogger(),
       nodeInfo: {
         name: 'test',
-        version: '1.0.0'
+        version: '1.0.0',
+        userAgent: 'test'
       }
     }
   })

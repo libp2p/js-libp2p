@@ -1,9 +1,9 @@
 // ported from xxbloom - https://github.com/ceejbot/xxbloom/blob/master/LICENSE
 import { randomBytes } from '@libp2p/crypto'
-import mur from 'murmurhash3js-revisited'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { alloc } from 'uint8arrays/alloc'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { fnv1a } from './hashes.js'
 import type { Filter } from './index.js'
 
 const LN2_SQUARED = Math.LN2 * Math.LN2
@@ -39,7 +39,7 @@ export class BloomFilter implements Filter {
     }
 
     for (let i = 0; i < this.seeds.length; i++) {
-      const hash = mur.x86.hash32(item, this.seeds[i])
+      const hash = fnv1a.hash(item, this.seeds[i])
       const bit = hash % this.bits
 
       this.setbit(bit)
@@ -57,7 +57,7 @@ export class BloomFilter implements Filter {
     }
 
     for (let i = 0; i < this.seeds.length; i++) {
-      const hash = mur.x86.hash32(item, this.seeds[i])
+      const hash = fnv1a.hash(item, this.seeds[i])
       const bit = hash % this.bits
 
       const isSet = this.getbit(bit)
@@ -81,17 +81,17 @@ export class BloomFilter implements Filter {
     const pos = Math.floor(bit / 8)
     const shift = bit % 8
 
-    let bitfield = this.buffer[pos]
-    bitfield |= (0x1 << shift)
-    this.buffer[pos] = bitfield
+    let bitField = this.buffer[pos]
+    bitField |= (0x1 << shift)
+    this.buffer[pos] = bitField
   }
 
   getbit (bit: number): boolean {
     const pos = Math.floor(bit / 8)
     const shift = bit % 8
 
-    const bitfield = this.buffer[pos]
-    return (bitfield & (0x1 << shift)) !== 0
+    const bitField = this.buffer[pos]
+    return (bitField & (0x1 << shift)) !== 0
   }
 }
 
@@ -99,8 +99,8 @@ export class BloomFilter implements Filter {
  * Create a `BloomFilter` with the smallest `bits` and `hashes` value for the
  * specified item count and error rate.
  */
-export function createBloomFilter (itemcount: number, errorRate: number = 0.005): Filter {
-  const opts = optimize(itemcount, errorRate)
+export function createBloomFilter (itemCount: number, errorRate: number = 0.005): Filter {
+  const opts = optimize(itemCount, errorRate)
   return new BloomFilter(opts)
 }
 

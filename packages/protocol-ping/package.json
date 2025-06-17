@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/ping",
-  "version": "2.0.17",
+  "version": "2.0.35",
   "description": "Implementation of Ping Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-ping#readme",
@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "build": "aegir build",
     "test": "aegir test",
@@ -50,17 +43,18 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.10",
-    "@libp2p/interface": "^2.4.1",
-    "@libp2p/interface-internal": "^2.2.4",
-    "@multiformats/multiaddr": "^12.3.3",
-    "it-byte-stream": "^1.1.0",
+    "@libp2p/crypto": "^5.1.6",
+    "@libp2p/interface": "^2.10.4",
+    "@libp2p/interface-internal": "^2.3.17",
+    "@multiformats/multiaddr": "^12.4.4",
+    "it-byte-stream": "^2.0.2",
+    "main-event": "^1.0.1",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.7",
-    "@libp2p/peer-id": "^5.0.11",
-    "aegir": "^45.0.5",
+    "@libp2p/logger": "^5.1.20",
+    "@libp2p/peer-id": "^5.1.7",
+    "aegir": "^47.0.14",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "sinon-ts": "^2.0.0"

@@ -27,7 +27,24 @@ export class PeerFilter {
 }
 
 /**
- * Create and return a PeerFilter
+ * Create and return a PeerFilter. This can be used by topologies to prevent
+ * them receiving duplicate notifications for a peer that connects repeatedly.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { peerFilter } from '@libp2p/peer-collections'
+ * import type { Registrar } from '@libp2p/interface-internal'
+ *
+ * const registrar: Registrar
+ *
+ * registrar.register('/my/protocol/1.0.0', {
+ *   filter: peerFilter(),
+ *   onConnect: (peerId) => {
+ *     // will only be invoked for a given peerId once
+ *   }
+ * })
+ * ```
  *
  * @param size - The maximum number of peers expected to be added to the filter
  * @param errorRate - The acceptable error rate

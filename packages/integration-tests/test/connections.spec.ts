@@ -259,22 +259,22 @@ describe('connections', () => {
     ({ dialer, listener } = await createPeers({
       transports: [
         memory({
-          latency: 1000
+          latency: 5_000
         })
       ],
       connectionManager: {
-        outboundUpgradeTimeout: 10
+        dialTimeout: 10
       }
     }, {
       transports: [
         memory({
-          latency: 1000
+          latency: 5_000
         })
       ]
     }))
 
     await expect(dialer.dial(listener.getMultiaddrs())).to.eventually.be.rejected
-      .with.property('name', 'EncryptionFailedError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('should abort incoming dials on queue task timeout', async () => {

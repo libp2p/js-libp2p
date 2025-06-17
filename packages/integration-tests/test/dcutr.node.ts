@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { identify } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -10,6 +10,7 @@ import { createLibp2p } from 'libp2p'
 import pRetry from 'p-retry'
 import { createBaseOptions } from './fixtures/base-options.js'
 import { usingAsRelay } from './fixtures/utils.js'
+import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p } from '@libp2p/interface'
 
 const RELAY_PORT = 47330
@@ -121,7 +122,7 @@ describe('dcutr', () => {
   })
 
   // TODO: how to test this? We need to simulate a firewall of some sort
-  describe.skip('dctur connection upgrade', () => {
+  describe.skip('DCUtR connection upgrade', () => {
     beforeEach(async () => {
       libp2pA = await createLibp2p(createBaseOptions({
         addresses: {
@@ -176,7 +177,7 @@ describe('dcutr', () => {
       expect(libp2pA.getConnections(libp2pB.peerId)).to.have.lengthOf(1, 'had multiple connections to remote peer')
     })
 
-    it('should perform holepunch using TCP Simultaneous Connect', async () => {
+    it('should perform hole punch using TCP Simultaneous Connect', async () => {
       const relayedAddress = multiaddr(`/ip4/127.0.0.1/tcp/${RELAY_PORT}/p2p/${relay.peerId}/p2p-circuit/p2p/${libp2pB.peerId}`)
       const connection = await libp2pA.dial(relayedAddress)
 

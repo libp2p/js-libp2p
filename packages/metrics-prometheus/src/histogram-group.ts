@@ -1,33 +1,27 @@
-import { type CollectFunction, Histogram as PromHistogram } from 'prom-client'
-import { normaliseString, type CalculatedMetric } from './utils.js'
+import { Histogram as PromHistogram } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedHistogramOptions } from './index.js'
-import type { CalculateMetric, HistogramGroup, StopTimer } from '@libp2p/interface'
+import type { HistogramGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
-export class PrometheusHistogramGroup implements HistogramGroup, CalculatedMetric<Record<string, number>> {
+export class PrometheusHistogramGroup implements HistogramGroup {
   private readonly histogram: PromHistogram
   private readonly label: string
-  private readonly calculators: Array<CalculateMetric<Record<string, number>>>
 
   constructor (name: string, opts: PrometheusCalculatedHistogramOptions<Record<string, number>>) {
-    name = normaliseString(name)
-    const help = normaliseString(opts.help ?? name)
-    const label = this.label = normaliseString(opts.label ?? name)
+    name = normalizeString(name)
+    const help = normalizeString(opts.help ?? name)
+    const label = this.label = normalizeString(opts.label ?? name)
     let collect: CollectFunction<PromHistogram<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        await Promise.all(self.calculators.map(async calculate => {
-          const values = await calculate()
+        const values = await opts.calculate()
 
-          Object.entries(values).forEach(([key, value]) => {
-            this.observe({ [label]: key }, value)
-          })
-        }))
+        Object.entries(values).forEach(([key, value]) => {
+          this.observe({ [label]: key }, value)
+        })
       }
     }
 
@@ -39,10 +33,6 @@ export class PrometheusHistogramGroup implements HistogramGroup, CalculatedMetri
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric<Record<string, number>>): void {
-    this.calculators.push(calculator)
   }
 
   observe (values: Record<string, number>): void {

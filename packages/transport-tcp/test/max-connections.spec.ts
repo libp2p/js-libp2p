@@ -67,7 +67,7 @@ describe('maxConnections', () => {
     }
 
     // With server.maxConnections the TCP socket is created and the initial handshake is completed
-    // Then in the server handler NodeJS javascript code will call socket.emit('drop') if over the limit
+    // Then in the server handler NodeJS JavaScript code will call socket.emit('drop') if over the limit
     // https://github.com/nodejs/node/blob/fddc701d3c0eb4520f2af570876cc987ae6b4ba2/lib/net.js#L1706
 
     // Wait for some time for server to drop all sockets above limit

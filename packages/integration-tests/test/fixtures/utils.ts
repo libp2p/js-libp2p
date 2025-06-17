@@ -1,5 +1,6 @@
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -66,10 +67,18 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
     const relayHosts = new Set<string>()
 
     const relayAddrs = node.getMultiaddrs().filter(addr => {
-      const options = addr.toOptions()
-      relayHosts.add(options.host)
+      if (!addr.protoNames().includes('p2p-circuit')) {
+        return false
+      }
 
-      return addr.protoNames().includes('p2p-circuit')
+      const ma = multiaddr(addr.toString().split('/p2p-circuit')[0])
+      const relayPeer = ma.getPeerId()
+
+      if (relayPeer != null) {
+        relayHosts.add(relayPeer)
+      }
+
+      return true
     })
 
     if (relayAddrs.length === 0) {

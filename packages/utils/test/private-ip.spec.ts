@@ -1,3 +1,4 @@
+/* spell-checker:disable */
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'

@@ -72,13 +72,15 @@ export class DefaultPeerRouting implements PeerRouting {
 
     const self = this
     const source = merge(
-      ...this.routers.map(router => (async function * () {
-        try {
-          yield await router.findPeer(id, options)
-        } catch (err) {
-          self.log.error(err)
-        }
-      })())
+      ...this.routers
+        .filter(router => router.findPeer instanceof Function)
+        .map(router => (async function * () {
+          try {
+            yield await router.findPeer(id, options)
+          } catch (err) {
+            self.log.error(err)
+          }
+        })())
     )
 
     for await (const peer of source) {
@@ -90,7 +92,7 @@ export class DefaultPeerRouting implements PeerRouting {
       if (peer.multiaddrs.length > 0) {
         await this.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       return peer
@@ -113,7 +115,9 @@ export class DefaultPeerRouting implements PeerRouting {
     for await (const peer of parallel(
       async function * () {
         const source = merge(
-          ...self.routers.map(router => router.getClosestPeers(key, options))
+          ...self.routers
+            .filter(router => router.getClosestPeers instanceof Function)
+            .map(router => router.getClosestPeers(key, options))
         )
 
         for await (let peer of source) {
@@ -144,7 +148,7 @@ export class DefaultPeerRouting implements PeerRouting {
       if (peer.multiaddrs.length > 0) {
         await this.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
-        })
+        }, options)
       }
 
       // deduplicate peers

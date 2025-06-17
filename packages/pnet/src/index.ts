@@ -136,7 +136,8 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       bytes.write(localNonce, {
         signal
       }),
-      bytes.read(NONCE_LENGTH, {
+      bytes.read({
+        bytes: NONCE_LENGTH,
         signal
       })
     ])

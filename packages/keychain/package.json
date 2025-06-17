@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/keychain",
-  "version": "5.0.13",
+  "version": "5.2.7",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
@@ -33,15 +33,8 @@
   ],
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
-    }
-  },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
     }
   },
   "scripts": {
@@ -59,19 +52,19 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.0.10",
-    "@libp2p/interface": "^2.4.1",
-    "@noble/hashes": "^1.6.1",
-    "asn1js": "^3.0.5",
+    "@libp2p/crypto": "^5.1.6",
+    "@libp2p/interface": "^2.10.4",
+    "@libp2p/utils": "^6.7.0",
+    "@noble/hashes": "^1.8.0",
+    "asn1js": "^3.0.6",
     "interface-datastore": "^8.3.1",
-    "merge-options": "^3.0.4",
-    "multiformats": "^13.3.1",
+    "multiformats": "^13.3.6",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.7",
-    "aegir": "^45.0.5",
+    "@libp2p/logger": "^5.1.20",
+    "aegir": "^47.0.14",
     "datastore-core": "^10.0.2"
   },
   "sideEffects": false

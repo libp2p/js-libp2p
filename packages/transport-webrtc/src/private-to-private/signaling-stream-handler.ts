@@ -1,11 +1,12 @@
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { pbStream } from 'it-protobuf-stream'
 import { SDPHandshakeFailedError } from '../error.js'
-import { type RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
+import { RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import { getConnectionState, readCandidatesUntilConnected } from './util.js'
-import type { Logger } from '@libp2p/interface'
-import type { IncomingStreamData } from '@libp2p/interface-internal'
+import type { RTCPeerConnection } from '../webrtc/index.js'
+import type { Logger, IncomingStreamData } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface IncomingStreamOpts extends IncomingStreamData {
   peerConnection: RTCPeerConnection
