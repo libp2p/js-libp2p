@@ -37,16 +37,10 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
               log(`too many inbound streams open - ${activeStreams.length}/${config.maxInboundStreams}, closing new incoming stream`)
               // We've reached our limit, close this stream.
               wtStream.writable.close().catch((err: Error) => {
-                log.error(
-                  'failed to close inbound stream that crossed our maxInboundStream limit - %e',
-                  err.message
-                )
+                log.error('failed to close inbound stream that crossed our maxInboundStream limit - %e', err)
               })
               wtStream.readable.cancel().catch((err: Error) => {
-                log.error(
-                  'failed to close inbound stream that crossed our maxInboundStream limit - %e',
-                  err.message
-                )
+                log.error('failed to close inbound stream that crossed our maxInboundStream limit - %e', err)
               })
             } else {
               const stream = await webtransportBiDiStreamToStream(

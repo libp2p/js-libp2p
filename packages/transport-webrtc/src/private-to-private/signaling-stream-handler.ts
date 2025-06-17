@@ -96,11 +96,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
       peerConnection.close()
       throw err
     } else {
-      log(
-        'error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected - %e',
-        connection.remoteAddr,
-        err
-      )
+      log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
     }
   }
 
