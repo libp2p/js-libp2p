@@ -101,6 +101,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.2.18](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.17...circuit-relay-v2-v3.2.18) (2025-06-17)
+
+
+### Bug Fixes
+
+* dial peers until relays are discovered ([#3188](https://github.com/libp2p/js-libp2p/issues/3188)) ([439d2c9](https://github.com/libp2p/js-libp2p/commit/439d2c9ce3376077e7448b507d445154c0311fe5))
+
 ## [3.2.17](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.16...circuit-relay-v2-v3.2.17) (2025-06-17)
 
 
