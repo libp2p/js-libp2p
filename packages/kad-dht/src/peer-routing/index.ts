@@ -3,8 +3,6 @@ import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
-import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
 import { PeerDistanceList } from '../peer-distance-list.js'
@@ -14,13 +12,14 @@ import {
   valueEvent
 } from '../query/events.js'
 import { verifyRecord } from '../record/validators.js'
-import { convertBuffer, convertPeerId, keyForPublicKey } from '../utils.js'
+import { convertBuffer, keyForPublicKey } from '../utils.js'
 import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network, SendMessageOptions } from '../network.js'
 import type { QueryManager, QueryOptions } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
+import type { GetClosestPeersOptions } from '../routing-table/k-bucket.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AbortOptions } from 'it-pushable'
@@ -246,7 +245,7 @@ export class PeerRouting {
     const self = this
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
-      self.log('getClosestPeers asking %p', peer)
+      self.log('getClosestPeers asking %p', peer.id)
       const request: Partial<Message> = {
         type: MessageType.FIND_NODE,
         key
@@ -336,10 +335,9 @@ export class PeerRouting {
   }
 
   /**
-   * Get the peers in our routing table that are closer than the passed PeerId
-   * to the passed key
+   * Get the peers in our routing table that are closest to the passed key
    */
-  async getCloserPeersOffline (key: Uint8Array, closerThan: PeerId, options?: AbortOptions): Promise<PeerInfo[]> {
+  async getClosestPeersOffline (key: Uint8Array, options?: GetClosestPeersOptions): Promise<PeerInfo[]> {
     const output: PeerInfo[] = []
 
     // try getting the peer directly
@@ -356,19 +354,9 @@ export class PeerRouting {
     } catch {}
 
     const keyKadId = await convertBuffer(key, options)
-    const ids = this.routingTable.closestPeers(keyKadId)
-    const closerThanKadId = await convertPeerId(closerThan, options)
-    const requesterXor = uint8ArrayXor(closerThanKadId, keyKadId)
+    const ids = this.routingTable.closestPeers(keyKadId, options)
 
     for (const peerId of ids) {
-      const peerKadId = await convertPeerId(peerId, options)
-      const peerXor = uint8ArrayXor(peerKadId, keyKadId)
-
-      // only include if peer is closer than requester
-      if (uint8ArrayXorCompare(peerXor, requesterXor) !== -1) {
-        continue
-      }
-
       try {
         output.push(await this.components.peerStore.getInfo(peerId, options))
       } catch (err: any) {
@@ -379,9 +367,9 @@ export class PeerRouting {
     }
 
     if (output.length > 0) {
-      this.log('getCloserPeersOffline found %d peer(s) closer to %b than %p', output.length, key, closerThan)
+      this.log('getClosestPeersOffline returning the %d closest peer(s) %b we know', output.length, key)
     } else {
-      this.log('getCloserPeersOffline could not find peer closer to %b than %p with %d peers in the routing table', key, closerThan, this.routingTable.size)
+      this.log('getClosestPeersOffline could not any peers close to %b with %d peers in the routing table', key, this.routingTable.size)
     }
 
     return output

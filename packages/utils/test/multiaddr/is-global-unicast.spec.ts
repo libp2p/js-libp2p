@@ -23,7 +23,7 @@ describe('multiaddr isGlobalUnicast', () => {
   it('identifies global unicast ip6 multiaddrs', () => {
     [
       multiaddr('/ip6/2001:8a0:7ac5:4201:3ac9:86ff:fe31:7095/tcp/1000'),
-      multiaddr('/ip6/2001:8a0:7ac5:4201:3ac9:86ff:fe31:7095%en0/tcp/1000')
+      multiaddr('/ip6zone/en0/ip6/2001:8a0:7ac5:4201:3ac9:86ff:fe31:7095/tcp/1000')
     ].forEach(ma => {
       expect(isGlobalUnicast(ma)).to.be.true(`"${ma}" was not identified as global unicast`)
     })
@@ -31,9 +31,9 @@ describe('multiaddr isGlobalUnicast', () => {
 
   it('identifies non global unicast ip6 multiaddrs', () => {
     [
-      multiaddr('/ip6/fe80::1%lo0'),
-      multiaddr('/ip6/fe80::1%lo0/tcp/1000'),
-      multiaddr('/ip6/fe80::1893:def4:af04:635a%en'),
+      multiaddr('/ip6zone/lo0/ip6/fe80::1'),
+      multiaddr('/ip6zone/lo0/ip6/fe80::1/tcp/1000'),
+      multiaddr('/ip6zone/en/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a/udp/2183'),
       multiaddr('/ip6/::/tcp/1000'),

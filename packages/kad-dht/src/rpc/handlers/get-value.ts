@@ -84,7 +84,7 @@ export class GetValueHandler implements DHTMessageHandler {
 
     const [record, closer] = await Promise.all([
       this._checkLocalDatastore(key),
-      this.peerRouting.getCloserPeersOffline(key, peerId)
+      this.peerRouting.getClosestPeersOffline(key)
     ])
 
     if (record != null) {

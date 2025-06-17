@@ -87,7 +87,7 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io'),
       multiaddr('/memory/addr-1'),
-      multiaddr('/unix/foo/bar/baz.sock')
+      multiaddr('/unix/%2Ffoo%2Fbar%2Fbaz.sock')
     ].forEach(ma => {
       expect(isPrivate(ma)).to.be.false(`"${ma}" was identified as private`)
     })

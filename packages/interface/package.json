@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "2.10.3",
+  "version": "2.10.4",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
@@ -41,7 +41,7 @@
     "build": "aegir build"
   },
   "dependencies": {
-    "@multiformats/multiaddr": "^12.4.0",
+    "@multiformats/multiaddr": "^12.4.4",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
     "main-event": "^1.0.1",

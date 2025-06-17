@@ -130,6 +130,11 @@ export function isLeafBucket (obj: any): obj is LeafBucket {
   return Array.isArray(obj?.peers)
 }
 
+export interface GetClosestPeersOptions extends AbortOptions {
+  count?: number
+  exclude?: PeerId[]
+}
+
 /**
  * Implementation of a Kademlia DHT routing table as a prefix binary trie with
  * configurable prefix length, bucket split threshold and size.
@@ -318,10 +323,14 @@ export class KBucket {
    * @param {Uint8Array} id - Contact node id
    * @returns {Generator<Peer, void, undefined>} Array Maximum of n closest contacts to the node id
    */
-  * closest (id: Uint8Array, n: number = this.kBucketSize): Generator<PeerId, void, undefined> {
-    const list = new PeerDistanceList(id, n)
+  * closest (id: Uint8Array, options?: GetClosestPeersOptions): Generator<PeerId, void, undefined> {
+    const list = new PeerDistanceList(id, options?.count ?? this.kBucketSize)
 
     for (const peer of this.toIterable()) {
+      if (options?.exclude?.some(p => p.equals(peer.peerId)) === true) {
+        continue
+      }
+
       list.addWithKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
     }
 

@@ -210,7 +210,9 @@ describe('Routing Table', () => {
         const id = ids[random(ids.length - 1)]
         const key = await kadUtils.convertPeerId(id.peerId)
 
-        expect(table.closestPeers(key, 5).length)
+        expect(table.closestPeers(key, {
+          count: 5
+        }).length)
           .to.be.above(0)
       })
     )
@@ -291,7 +293,9 @@ describe('Routing Table', () => {
     }))
 
     const key = await kadUtils.convertPeerId(peers[2].peerId)
-    expect(table.closestPeers(key, 10)).to.have.length(10)
+    expect(table.closestPeers(key, {
+      count: 10
+    })).to.have.length(10)
     await expect(table.find(peers[5].peerId)).to.eventually.be.ok()
     expect(table.size).to.equal(10)
 
@@ -329,7 +333,9 @@ describe('Routing Table', () => {
     await Promise.all(peers.map(async (peer) => { await table.add(peer.peerId) }))
 
     const key = await kadUtils.convertPeerId(peers[2].peerId)
-    expect(table.closestPeers(key, 15)).to.have.length(15)
+    expect(table.closestPeers(key, {
+      count: 15
+    })).to.have.length(15)
   })
 
   it('favours old peers that respond to pings', async () => {

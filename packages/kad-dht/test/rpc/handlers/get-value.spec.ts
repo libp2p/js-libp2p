@@ -92,7 +92,7 @@ describe('rpc - handlers - GetValue', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline.withArgs(msg.key, sourcePeer.peerId).resolves([])
+    peerRouting.getClosestPeersOffline.withArgs(msg.key).resolves([])
 
     const response = await handler.handle(sourcePeer.peerId, msg)
 
@@ -112,7 +112,7 @@ describe('rpc - handlers - GetValue', () => {
   it('responds with closer peers returned from the dht', async () => {
     const key = uint8ArrayFromString('hello')
 
-    peerRouting.getCloserPeersOffline.withArgs(key, sourcePeer.peerId)
+    peerRouting.getClosestPeersOffline.withArgs(key)
       .resolves([{
         id: closerPeer.peerId,
         multiaddrs: []
@@ -175,7 +175,7 @@ describe('rpc - handlers - GetValue', () => {
         providers: []
       }
 
-      peerRouting.getCloserPeersOffline.resolves([])
+      peerRouting.getClosestPeersOffline.resolves([])
 
       const response = await handler.handle(sourcePeer.peerId, msg)
 
