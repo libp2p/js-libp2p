@@ -15,8 +15,8 @@ describe('multiaddr isIpBased', () => {
       multiaddr('/ip4/10.0.0.1/tcp/1000'),
       multiaddr('/ip4/192.168.0.1/tcp/1000'),
       multiaddr('/ip4/172.16.0.1/tcp/1000'),
-      multiaddr('/ip6/fe80::1%lo0/tcp/1000'),
-      multiaddr('/ip6/fe80::1893:def4:af04:635a%en'),
+      multiaddr('/ip6zone/lo0/ip6/fe80::1/tcp/1000'),
+      multiaddr('/ip6zone/en/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a/udp/2183'),
       multiaddr('/ip6/::/tcp/1000'),
@@ -29,7 +29,7 @@ describe('multiaddr isIpBased', () => {
   it('identifies non-IP-based multiaddrs', () => {
     [
       multiaddr('/memory/address-1'),
-      multiaddr('/unix/path/to/socket'),
+      multiaddr('/unix/%2Fpath%2Fto%2Fsocket'),
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dnsaddr/wss0.bootstrap.libp2p.io/tcp/443')

@@ -48,6 +48,29 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [3.0.20](https://github.com/libp2p/js-libp2p/compare/fetch-v3.0.19...fetch-v3.0.20) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.16 to ^2.3.17
+
+## [3.0.19](https://github.com/libp2p/js-libp2p/compare/fetch-v3.0.18...fetch-v3.0.19) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/interface-internal bumped from ^2.3.15 to ^2.3.16
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+
 ## [3.0.18](https://github.com/libp2p/js-libp2p/compare/fetch-v3.0.17...fetch-v3.0.18) (2025-06-03)
 
 

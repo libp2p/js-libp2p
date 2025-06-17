@@ -67,6 +67,13 @@ export interface ConnectionManager {
   getMaxConnections(): number
 
   /**
+   * Update the maximum number of connections that are accepted - setting this
+   * to a smaller value than the current setting will cause connections to be
+   * pruned.
+   */
+  setMaxConnections(maxConnections: number): void
+
+  /**
    * Open a connection to a remote peer
    *
    * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.

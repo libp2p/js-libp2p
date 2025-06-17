@@ -465,15 +465,10 @@ export class DialQueue {
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       resolvedAddresses = resolvedAddresses.map(addr => {
-        const lastProto = addr.multiaddr.protos().pop()
-
-        // do not append peer id to path multiaddrs
-        if (lastProto?.path === true) {
-          return addr
-        }
+        const lastComponent = addr.multiaddr.getComponents().pop()
 
         // append peer id to multiaddr if it is not already present
-        if (addr.multiaddr.getPeerId() == null) {
+        if (lastComponent?.name !== 'p2p') {
           return {
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified
