@@ -68,6 +68,16 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.2.5](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.4...peer-store-v11.2.5) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/peer-record bumped from ^8.0.32 to ^8.0.33
+
 ## [11.2.4](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.3...peer-store-v11.2.4) (2025-06-16)
 
 

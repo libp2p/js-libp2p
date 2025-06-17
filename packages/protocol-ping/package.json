@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/ping",
-  "version": "2.0.34",
+  "version": "2.0.35",
   "description": "Implementation of Ping Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-ping#readme",
@@ -45,7 +45,7 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.6",
     "@libp2p/interface": "^2.10.4",
-    "@libp2p/interface-internal": "^2.3.16",
+    "@libp2p/interface-internal": "^2.3.17",
     "@multiformats/multiaddr": "^12.4.4",
     "it-byte-stream": "^2.0.2",
     "main-event": "^1.0.1",

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/keychain",
-  "version": "5.2.6",
+  "version": "5.2.7",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
@@ -54,7 +54,7 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.6",
     "@libp2p/interface": "^2.10.4",
-    "@libp2p/utils": "^6.6.7",
+    "@libp2p/utils": "^6.7.0",
     "@noble/hashes": "^1.8.0",
     "asn1js": "^3.0.6",
     "interface-datastore": "^8.3.1",
