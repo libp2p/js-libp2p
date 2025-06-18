@@ -39,7 +39,9 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     if ((init.runOnSelfUpdate ?? defaultValues.runOnSelfUpdate)) {
       // When self peer record changes, trigger identify-push
       components.events.addEventListener('self:peer:update', (evt) => {
-        this._push()
+        this.push().catch(err => {
+          this.log.error('error pushing updates to peers - %e', err)
+        })
       })
     }
   }
