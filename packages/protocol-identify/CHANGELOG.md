@@ -76,6 +76,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.36](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.35...identify-v3.0.36) (2025-06-18)
+
+
+### Bug Fixes
+
+* debounce sending identify push messages ([#3193](https://github.com/libp2p/js-libp2p/issues/3193)) ([451e011](https://github.com/libp2p/js-libp2p/commit/451e011d471141d00d6fb6ad86c7f62bee6c7e26)), closes [#2389](https://github.com/libp2p/js-libp2p/issues/2389)
+
 ## [3.0.35](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.34...identify-v3.0.35) (2025-06-17)
 
 
