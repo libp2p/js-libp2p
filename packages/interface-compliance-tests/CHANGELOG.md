@@ -75,6 +75,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.4.12](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.11...interface-compliance-tests-v6.4.12) (2025-06-18)
+
+
+### Bug Fixes
+
+* use `.close()` to close streams ([#3191](https://github.com/libp2p/js-libp2p/issues/3191)) ([53001ad](https://github.com/libp2p/js-libp2p/commit/53001addfadc264712f4c030be0c3356c6e8a197))
+
 ## [6.4.11](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.10...interface-compliance-tests-v6.4.11) (2025-06-17)
 
 
