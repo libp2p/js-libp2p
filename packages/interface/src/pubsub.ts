@@ -1,29 +1,29 @@
 import type { Stream } from './connection.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { PublicKey } from './keys.js'
 import type { PeerId } from './peer-id.js'
 import type { Pushable } from 'it-pushable'
+import type { TypedEventTarget } from 'main-event'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
  * On the producing side:
- * * Build messages with the signature, key (from may be enough for certain inlineable public key types), from and seqno fields.
+ * - Build messages with the signature, key (from may be enough for certain inlineable public key types), from and seqno fields.
  *
  * On the consuming side:
- * * Enforce the fields to be present, reject otherwise.
- * * Propagate only if the fields are valid and signature can be verified, reject otherwise.
+ * - Enforce the fields to be present, reject otherwise.
+ * - Propagate only if the fields are valid and signature can be verified, reject otherwise.
  */
 export const StrictSign = 'StrictSign'
 
 /**
  * On the producing side:
- * * Build messages without the signature, key, from and seqno fields.
- * * The corresponding protobuf key-value pairs are absent from the marshaled message, not just empty.
+ * - Build messages without the signature, key, from and seqno fields.
+ * - The corresponding protobuf key-value pairs are absent from the marshaled message, not just empty.
  *
  * On the consuming side:
- * * Enforce the fields to be absent, reject otherwise.
- * * Propagate only if the fields are absent, reject otherwise.
- * * A message_id function will not be able to use the above fields, and should instead rely on the data field. A commonplace strategy is to calculate a hash.
+ * - Enforce the fields to be absent, reject otherwise.
+ * - Propagate only if the fields are absent, reject otherwise.
+ * - A message_id function will not be able to use the above fields, and should instead rely on the data field. A commonplace strategy is to calculate a hash.
  */
 export const StrictNoSign = 'StrictNoSign'
 
@@ -127,7 +127,7 @@ export interface SubscriptionChangeData {
 
 export interface PubSubEvents {
   'subscription-change': CustomEvent<SubscriptionChangeData>
-  'message': CustomEvent<Message>
+  message: CustomEvent<Message>
 }
 
 export interface PublishResult {
@@ -153,6 +153,9 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
+/**
+ * @deprecated This will be removed from `@libp2p/interface` in a future release, pubsub implementations should declare their own types
+ */
 export interface PubSub<Events extends Record<string, any> = PubSubEvents> extends TypedEventTarget<Events> {
   /**
    * The global signature policy controls whether or not we sill send and receive
@@ -266,7 +269,7 @@ export interface PubSub<Events extends Record<string, any> = PubSubEvents> exten
 export interface PeerStreamEvents {
   'stream:inbound': CustomEvent<never>
   'stream:outbound': CustomEvent<never>
-  'close': CustomEvent<never>
+  close: CustomEvent<never>
 }
 
 /**

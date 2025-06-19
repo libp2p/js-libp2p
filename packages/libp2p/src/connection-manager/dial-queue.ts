@@ -1,11 +1,12 @@
 /* eslint-disable max-depth */
-import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
+import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { PriorityQueue } from '@libp2p/utils/priority-queue'
 import { resolvers, multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
@@ -104,7 +105,7 @@ export class DialQueue {
     })
     // a started job errored
     this.queue.addEventListener('error', (event) => {
-      if (event.detail.name !== AbortError.name) {
+      if (event.detail?.name !== AbortError.name) {
         this.log.error('error in dial queue - %e', event.detail)
       }
     })
@@ -385,8 +386,9 @@ export class DialQueue {
         }
       }
 
-      // if we still don't have any addresses for this peer, try a lookup
-      // using the peer routing
+      // if we still don't have any addresses for this peer, or the only
+      // addresses we have are without any routing information (e.g.
+      // `/p2p/Qmfoo`), try a lookup using the peer routing
       if (addrs.length === 0) {
         this.log('looking up multiaddrs for %p in the peer routing', peerId)
 
@@ -435,15 +437,10 @@ export class DialQueue {
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       resolvedAddresses = resolvedAddresses.map(addr => {
-        const lastProto = addr.multiaddr.protos().pop()
-
-        // do not append peer id to path multiaddrs
-        if (lastProto?.path === true) {
-          return addr
-        }
+        const lastComponent = addr.multiaddr.getComponents().pop()
 
         // append peer id to multiaddr if it is not already present
-        if (addr.multiaddr.getPeerId() == null) {
+        if (lastComponent?.name !== 'p2p') {
           return {
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified

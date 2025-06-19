@@ -2,7 +2,8 @@ import type { Connection } from './connection.js'
 import type { PeerId } from './peer-id.js'
 
 /**
- * A topology filter
+ * A topology filter - this can be used by topologies to ensure they do not
+ * receive duplicate notifications of individual peers
  *
  * @see https://libp2p.github.io/js-libp2p/functions/_libp2p_peer_collections.peerFilter-1.html
  */

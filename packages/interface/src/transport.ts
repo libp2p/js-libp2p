@@ -1,8 +1,8 @@
 import type { Connection, ConnectionLimits, MultiaddrConnection } from './connection.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { AbortOptions, ClearableSignal, ConnectionEncrypter } from './index.js'
 import type { StreamMuxerFactory } from './stream-muxer.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export interface ListenerEvents {
@@ -10,18 +10,18 @@ export interface ListenerEvents {
    * This event signals to the transport manager that the listening addresses
    * have changed and may be emitted at any point and/or multiple times
    */
-  'listening': CustomEvent
+  listening: CustomEvent
 
   /**
    * Emitted if listening on an address failed
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted when the listener has been shut down, has no open connections and
    * will no longer accept new connections
    */
-  'close': CustomEvent
+  close: CustomEvent
 }
 
 export interface Listener extends TypedEventTarget<ListenerEvents> {
@@ -48,7 +48,12 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
 
 export const transportSymbol = Symbol.for('@libp2p/transport')
 
-export interface MultiaddrFilter { (multiaddrs: Multiaddr[]): Multiaddr[] }
+/**
+ * A filter that acts on a list of multiaddrs
+ */
+export interface MultiaddrFilter {
+  (multiaddrs: Multiaddr[]): Multiaddr[]
+}
 
 export interface CreateListenerOptions {
   /**
@@ -103,7 +108,10 @@ export interface Transport<DialEvents extends ProgressEvent = ProgressEvent> {
   dialFilter: MultiaddrFilter
 }
 
-export function isTransport (other: any): other is Transport {
+/**
+ * Used to disambiguate transport implementations
+ */
+export function isTransport (other?: any): other is Transport {
   return other != null && Boolean(other[transportSymbol])
 }
 
@@ -122,11 +130,45 @@ export enum FaultTolerance {
   NO_FATAL
 }
 
+/**
+ * Options accepted by the upgrader during connection establishment
+ */
 export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents>, Required<AbortOptions> {
+  /**
+   * If true the invoking transport is expected to implement it's own encryption
+   * and an encryption protocol will not attempted to be negotiated via
+   * multi-stream select
+   *
+   * @default false
+   */
   skipEncryption?: boolean
+
+  /**
+   * If true no connection protection will be performed on the connection.
+   */
   skipProtection?: boolean
+
+  /**
+   * By default a stream muxer protocol will be negotiated via multi-stream
+   * select after an encryption protocol has been agreed on.
+   *
+   * If a transport provides it's own stream muxing facility pass a muxer
+   * factory instance here to skip muxer negotiation.
+   */
   muxerFactory?: StreamMuxerFactory
+
+  /**
+   * If the connection is to have limits applied to it, pass them here
+   */
   limits?: ConnectionLimits
+
+  /**
+   * Multi-stream select is a initiator/responder protocol. By default a
+   * connection returned from `upgrader.upgradeOutbound` will be the initiator
+   * and one returned from `upgrader.upgradeInbound` will be the responder.
+   *
+   * Pass a value here to override the default.
+   */
   initiator?: boolean
 }
 

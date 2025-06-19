@@ -5,14 +5,15 @@
   },
   "include": [
     "src",
-    "test"
-, "../../otel-test.js"  ],
+    "test",
+    "../../otel-test.js"
+  ],
   "references": [
     {
       "path": "../interface"
     },
     {
-      "path": "../logger"
+      "path": "../utils"
     }
   ]
 }

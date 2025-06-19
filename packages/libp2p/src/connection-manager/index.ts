@@ -1,7 +1,7 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
-import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
@@ -11,9 +11,11 @@ import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
+import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_DIAL_PRIORITY = 50
 
@@ -204,7 +206,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private outboundPendingConnections: number
-  private readonly maxConnections: number
+  private maxConnections: number
 
   public readonly dialQueue: DialQueue
   public readonly reconnectQueue: ReconnectQueue
@@ -259,7 +261,6 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       events: components.events,
       logger: components.logger
     }, {
-      maxConnections: this.maxConnections,
       allow: init.allow?.map(a => multiaddr(a))
     })
 
@@ -420,6 +421,24 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   getMaxConnections (): number {
     return this.maxConnections
+  }
+
+  setMaxConnections (maxConnections: number): void {
+    if (this.maxConnections < 1) {
+      throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
+    }
+
+    let needsPrune = false
+
+    if (maxConnections < this.maxConnections) {
+      needsPrune = true
+    }
+
+    this.maxConnections = maxConnections
+
+    if (needsPrune) {
+      this.connectionPruner.maybePruneConnections()
+    }
   }
 
   onConnect (evt: CustomEvent<Connection>): void {

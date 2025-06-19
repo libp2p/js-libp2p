@@ -30,9 +30,10 @@
  * ```
  */
 
-import { TypedEventEmitter, TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
+import { TopicValidatorResult, InvalidMessageError, NotStartedError, InvalidParametersError } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
 import { pipe } from 'it-pipe'
+import { TypedEventEmitter } from 'main-event'
 import Queue from 'p-queue'
 import { PeerStreams as PeerStreamsImpl } from './peer-streams.js'
 import {
@@ -566,7 +567,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
    * Validates the given message. The signature will be checked for authenticity.
    * Throws an error on invalid messages
    */
-  async validate (from: PeerId, message: Message): Promise<void> { // eslint-disable-line require-await
+  async validate (from: PeerId, message: Message): Promise<void> {
     const signaturePolicy = this.globalSignaturePolicy
     switch (signaturePolicy) {
       case 'StrictNoSign':

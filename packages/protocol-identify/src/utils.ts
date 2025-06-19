@@ -2,13 +2,15 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, TypedEventTarget, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export const defaultValues = {
   protocolPrefix: 'ipfs',
@@ -112,7 +114,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
       // if we have previously received a signed record for this peer, compare it to the incoming one
       if (existingPeer.peerRecordEnvelope != null) {
-        const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
+        const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
         const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
         // ensure seq is greater than, or equal to, the last received

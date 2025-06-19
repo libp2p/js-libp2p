@@ -39,7 +39,7 @@ describe('abstract stream', () => {
       id: 'test',
       direction: 'outbound',
       log: logger('test'),
-      onEnd: () => {}
+      onEnd: (): void => {}
     })
   })
 
@@ -64,7 +64,7 @@ describe('abstract stream', () => {
     stream.remoteCloseWrite()
 
     const output = await all(stream.source)
-    expect(output[0].subarray()).to.equalBytes(data.subarray())
+    expect(output[0]?.subarray()).to.equalBytes(data.subarray())
   })
 
   it('closes', async () => {
@@ -205,7 +205,7 @@ describe('abstract stream', () => {
     const wasAbortedAfterSendingFinished = pDefer()
 
     // stub send method to simulate slow sending
-    stream.sendData = async (data, options) => {
+    stream.sendData = async (data, options): Promise<void> => {
       sendStarted.resolve()
       await delay(1000)
       timeFinished = Date.now()
@@ -240,7 +240,7 @@ describe('abstract stream', () => {
     const sendStarted = pDefer()
 
     // stub send method to simulate slow sending
-    stream.sendData = async () => {
+    stream.sendData = async (): Promise<void> => {
       sendStarted.resolve()
       await delay(1000)
     }

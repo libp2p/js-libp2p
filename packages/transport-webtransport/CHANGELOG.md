@@ -96,6 +96,155 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.46](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.45...webtransport-v5.0.46) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+  * devDependencies
+    * @libp2p/ping bumped from ^2.0.34 to ^2.0.35
+    * libp2p bumped from ^2.8.10 to ^2.8.11
+
+## [5.0.45](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.44...webtransport-v5.0.45) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/ping bumped from ^2.0.33 to ^2.0.34
+    * libp2p bumped from ^2.8.9 to ^2.8.10
+
+## [5.0.44](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.43...webtransport-v5.0.44) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/ping bumped from ^2.0.32 to ^2.0.33
+    * libp2p bumped from ^2.8.8 to ^2.8.9
+
+## [5.0.43](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.42...webtransport-v5.0.43) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/utils bumped from ^6.6.4 to ^6.6.5
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/ping bumped from ^2.0.31 to ^2.0.32
+    * libp2p bumped from ^2.8.7 to ^2.8.8
+
+## [5.0.42](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.41...webtransport-v5.0.42) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/ping bumped from ^2.0.30 to ^2.0.31
+    * libp2p bumped from ^2.8.6 to ^2.8.7
+
+## [5.0.41](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.40...webtransport-v5.0.41) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/utils bumped from ^6.6.2 to ^6.6.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/ping bumped from ^2.0.29 to ^2.0.30
+    * libp2p bumped from ^2.8.5 to ^2.8.6
+
+## [5.0.40](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.39...webtransport-v5.0.40) (2025-04-17)
+
+
+### Bug Fixes
+
+* skip muxer negotiation ([#3084](https://github.com/libp2p/js-libp2p/issues/3084)) ([6f96de8](https://github.com/libp2p/js-libp2p/commit/6f96de86cc951910211e21393117a1ffe96ee588))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.8.4 to ^2.8.5
+
+## [5.0.39](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.38...webtransport-v5.0.39) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/utils bumped from ^6.6.1 to ^6.6.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/ping bumped from ^2.0.28 to ^2.0.29
+    * libp2p bumped from ^2.8.3 to ^2.8.4
+
+## [5.0.38](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.37...webtransport-v5.0.38) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/utils bumped from ^6.6.0 to ^6.6.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/ping bumped from ^2.0.27 to ^2.0.28
+    * libp2p bumped from ^2.8.2 to ^2.8.3
+
 ## [5.0.37](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.36...webtransport-v5.0.37) (2025-03-18)
 
 

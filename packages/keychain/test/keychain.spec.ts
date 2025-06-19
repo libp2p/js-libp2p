@@ -10,7 +10,6 @@ import { Key } from 'interface-datastore/key'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Keychain as KeychainClass } from '../src/keychain.js'
 import { importPrivateKey } from '../src/utils/import.js'
-import { createSelfSigned } from './fixtures/create-certificate.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
 import type { PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -406,10 +405,6 @@ describe('keychain', () => {
       const key = await generateKeyPair('RSA', 2048)
       await kc.importKey('keyCreatedWithOldPassword', key)
 
-      const certKey = await generateKeyPair('ECDSA')
-      const cert = await createSelfSigned(certKey)
-      await kc.importX509('certCreatedWithOldPassword', cert.toString('pem'))
-
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
 
       // Get Key PEM from datastore
@@ -442,10 +437,6 @@ describe('keychain', () => {
       // Dek with new password should work:
       await expect(importPrivateKey(pem, newDek))
         .to.eventually.have.property('type', 'RSA')
-
-      // Cert with new password should work:
-      await expect(kc.exportX509('certCreatedWithOldPassword'))
-        .to.eventually.equal(cert.toString('pem'))
     }).timeout(10000)
   })
 

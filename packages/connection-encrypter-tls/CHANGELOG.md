@@ -6,6 +6,115 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.2.5](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.4...tls-v2.2.5) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
+## [2.2.4](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.3...tls-v2.2.4) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
+## [2.2.3](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.2...tls-v2.2.3) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+
+## [2.2.2](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.1...tls-v2.2.2) (2025-05-20)
+
+
+### Dependencies
+
+* bump it-queueless-pushable from 1.0.2 to 2.0.1 in /packages/connection-encrypter-tls ([#3117](https://github.com/libp2p/js-libp2p/issues/3117)) ([923ecc6](https://github.com/libp2p/js-libp2p/commit/923ecc6cd9b5df0dfef4df621dc035aaa36f3c85))
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/tls-v2.2.0...tls-v2.2.1) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.2...tls-v2.2.0) (2025-04-16)
+
+
+### Features
+
+* add skip muxer negotiation ([#3081](https://github.com/libp2p/js-libp2p/issues/3081)) ([3833353](https://github.com/libp2p/js-libp2p/commit/3833353bdc936695b17cc836515763ead2137756))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+
+## [2.1.2](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.1...tls-v2.1.2) (2025-04-09)
+
+
+### Bug Fixes
+
+* add backpressure to tls encryption ([#3054](https://github.com/libp2p/js-libp2p/issues/3054)) ([0712672](https://github.com/libp2p/js-libp2p/commit/071267286c2adc79e03ba47a199bd4c0943f1ae3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
 ## [2.1.1](https://github.com/libp2p/js-libp2p/compare/tls-v2.1.0...tls-v2.1.1) (2025-03-12)
 
 

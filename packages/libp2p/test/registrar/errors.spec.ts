@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { defaultComponents } from '../../src/components.js'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'

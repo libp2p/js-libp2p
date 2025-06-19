@@ -67,7 +67,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
         return info
       })),
-      this.peerRouting.getCloserPeersOffline(msg.key, this.peerId)
+      this.peerRouting.getClosestPeersOffline(msg.key)
     ])
 
     const response: Message = {

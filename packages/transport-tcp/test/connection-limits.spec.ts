@@ -64,14 +64,13 @@ const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise
 async function assertServerConnections (listener: TCPListener, connections: number): Promise<void> {
   // Expect server connections but allow time for sockets to connect or disconnect
   for (let i = 0; i < 100; i++) {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     if (listener['sockets'].size === connections) {
       return
     } else {
       await promisify(setTimeout)(10)
     }
   }
-  // eslint-disable-next-line @typescript-eslint/dot-notation
+
   expect(listener['sockets'].size).equals(connections, 'invalid amount of server connections')
 }
 

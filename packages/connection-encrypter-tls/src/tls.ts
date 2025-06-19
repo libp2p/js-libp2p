@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
+import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
@@ -26,6 +26,7 @@ import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
 import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory } from '@libp2p/interface'
 import type { Duplex } from 'it-stream-types'
+import type { TLSSocketOptions } from 'node:tls'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class TLS implements ConnectionEncrypter {
@@ -90,6 +91,12 @@ export class TLS implements ConnectionEncrypter {
   async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     let streamMuxer: StreamMuxerFactory | undefined
 
+    let streamMuxers: string[] = []
+
+    if (options?.skipStreamMuxerNegotiation !== true) {
+      streamMuxers = [...this.components.upgrader.getStreamMuxers().keys()]
+    }
+
     const opts: TLSSocketOptions = {
       ...await generateCertificate(this.components.privateKey),
       isServer,
@@ -101,7 +108,7 @@ export class TLS implements ConnectionEncrypter {
 
       // early negotiation of muxer via ALPN protocols
       ALPNProtocols: [
-        ...this.components.upgrader.getStreamMuxers().keys(),
+        ...streamMuxers,
         'libp2p'
       ],
       ALPNCallback: ({ protocols }) => {
@@ -158,17 +165,9 @@ export class TLS implements ConnectionEncrypter {
           .then(remotePeer => {
             this.log('remote certificate ok, remote peer %p', remotePeer)
 
-            if (!isServer && typeof socket.alpnProtocol === 'string') {
-              streamMuxer = this.components.upgrader.getStreamMuxers().get(socket.alpnProtocol)
-
-              if (streamMuxer == null) {
-                this.log.error('selected muxer that did not exist')
-              }
-            }
-
             // 'libp2p' is a special protocol - if it's sent the remote does not
             // support early muxer negotiation
-            if (!isServer && typeof socket.alpnProtocol === 'string' && socket.alpnProtocol !== 'libp2p') {
+            if (!isServer && typeof socket.alpnProtocol === 'string' && socket.alpnProtocol !== 'libp2p' && options?.skipStreamMuxerNegotiation !== true) {
               this.log.trace('got early muxer', socket.alpnProtocol)
               streamMuxer = this.components.upgrader.getStreamMuxers().get(socket.alpnProtocol)
 

@@ -16,7 +16,6 @@
 
 import type { Connection, NewStreamOptions, Stream } from './connection.js'
 import type { ContentRouting } from './content-routing.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { Metrics } from './metrics.js'
 import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.js'
@@ -28,6 +27,7 @@ import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
@@ -53,6 +53,9 @@ export interface SignedPeerRecord {
   seq: bigint
 }
 
+/**
+ * A certificate that can be used to secure connections
+ */
 export interface TLSCertificate {
   /**
    * The private key that corresponds to the certificate in PEM format
@@ -130,9 +133,43 @@ export interface Logger {
 }
 
 /**
- * Peer logger component for libp2p
+ * Peer logger component for libp2p. This can be used to create loggers that are
+ * scoped to individual system components or services.
+ *
+ * To see logs, run your app with `DEBUG` set as an env var or for browsers, in
+ * `localStorage`:
+ *
+ * ```console
+ * $ DEBUG=libp2p* node index.js
+ *  libp2p:my-service hello +0ms
+ * ```
  */
 export interface ComponentLogger {
+  /**
+   * Returns a logger for the specified component.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * import { ComponentLogger, Logger } from '@libp2p/interface'
+   *
+   * interface MyServiceComponents {
+   *   logger: ComponentLogger
+   * }
+   *
+   * class MyService {
+   *   private readonly log: Logger
+   *
+   *   constructor (components) {
+   *     this.log = components.logger.forComponent('libp2p:my-service')
+   *
+   *     this.log('hello')
+   *     // logs:
+   *     // libp2p:my-service hello +0ms
+   *   }
+   * }
+   * ```
+   */
   forComponent(name: string): Logger
 }
 
@@ -299,7 +336,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'start': CustomEvent<Libp2p<T>>
+  start: CustomEvent<Libp2p<T>>
 
   /**
    * This event notifies listeners that the node has stopped
@@ -310,7 +347,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'stop': CustomEvent<Libp2p<T>>
+  stop: CustomEvent<Libp2p<T>>
 }
 
 /**
@@ -648,7 +685,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
-  unhandle(protocols: string[] | string): Promise<void>
+  unhandle(protocols: string[] | string, options?: AbortOptions): Promise<void>
 
   /**
    * Register a topology to be informed when peers are encountered that
@@ -667,7 +704,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * })
    * ```
    */
-  register(protocol: string, topology: Topology): Promise<string>
+  register(protocol: string, topology: Topology, options?: AbortOptions): Promise<string>
 
   /**
    * Unregister topology to no longer be informed when peers connect or
@@ -833,6 +870,5 @@ export * from './stream-muxer.js'
 export * from './topology.js'
 export * from './transport.js'
 export * from './errors.js'
-export * from './event-target.js'
-export * from './events.js'
+export * from 'main-event'
 export * from './startable.js'

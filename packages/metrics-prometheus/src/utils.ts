@@ -1,9 +1,3 @@
-import type { CalculateMetric } from '@libp2p/interface'
-
-export interface CalculatedMetric <T = number> {
-  addCalculator(calculator: CalculateMetric<T>): void
-}
-
 export const ONE_SECOND = 1000
 export const ONE_MINUTE = 60 * ONE_SECOND
 

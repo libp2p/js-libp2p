@@ -13,3 +13,5 @@ export const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 
 // https://github.com/libp2p/go-libp2p/blob/0385ec924bad172f74a74db09939e97c079b1420/p2p/protocol/identify/id.go#L47C7-L47C25
 export const MAX_PUSH_CONCURRENCY = 32
+
+export const PUSH_DEBOUNCE_MS = 1_000

@@ -1,4 +1,5 @@
-import { AbortError, setMaxListeners } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
+import { setMaxListeners } from 'main-event'
 import { raceSignal } from 'race-signal'
 import { JobRecipient } from './recipient.js'
 import type { JobStatus } from './index.js'

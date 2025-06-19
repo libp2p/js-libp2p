@@ -1,21 +1,20 @@
 import { cidrContains } from '@chainsafe/netmask'
+import { CODE_IP6 } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const CODEC_IP6 = 0x29
 
 /**
  * Check if a given multiaddr is an IPv6 global unicast address
  */
 export function isGlobalUnicast (ma: Multiaddr): boolean {
   try {
-    const [[codec, value]] = ma.stringTuples()
+    for (const { code, value } of ma.getComponents()) {
+      if (value == null) {
+        continue
+      }
 
-    if (value == null) {
-      return false
-    }
-
-    if (codec === CODEC_IP6) {
-      return cidrContains('2000::/3', value)
+      if (code === CODE_IP6) {
+        return cidrContains('2000::/3', value)
+      }
     }
   } catch {
 

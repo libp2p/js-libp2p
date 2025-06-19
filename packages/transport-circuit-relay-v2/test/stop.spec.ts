@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, isStartable } from '@libp2p/interface'
+import { isStartable } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -10,13 +10,17 @@ import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
 import delay from 'delay'
 import { duplexPair } from 'it-pair/duplex'
-import { pbStream, type MessageStream } from 'it-protobuf-stream'
+import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
 import { CircuitRelayTransport } from '../src/transport/transport.js'
-import type { TypedEventTarget, ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, StreamHandler } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, StreamHandler } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { MessageStream } from 'it-protobuf-stream'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedCircuitRelayTransportComponents {
   peerId: PeerId

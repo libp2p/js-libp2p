@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -7,13 +7,16 @@ import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL } from '../../src/constants.js'
-import { type KadDHT, type KadDHTComponents, type KadDHTInit } from '../../src/index.js'
 import { KadDHT as KadDHTClass } from '../../src/kad-dht.js'
+import type { KadDHT, KadDHTComponents, KadDHTInit } from '../../src/index.js'
 import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Ping } from '@libp2p/ping'
 
 export class TestDHT {
   private readonly peers: Map<string, { dht: KadDHT, registrar: Registrar }>
@@ -37,7 +40,8 @@ export class TestDHT {
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
       events,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping: stubInterface<Ping>()
     }
     components.connectionManager = mockConnectionManager({
       ...components,
@@ -79,10 +83,19 @@ export class TestDHT {
         }
       },
       selectors: {
-        v: () => 0
+        v: (key, values) => {
+          const strings = values
+            .map(buf => uint8ArrayToString(buf))
+          const sortedStrings = strings
+            .toSorted((a, b) => a.localeCompare(b))
+
+          const target = sortedStrings[sortedStrings.length - 1]
+
+          return strings.findIndex(str => str === target)
+        }
       },
-      querySelfInterval: 600000,
-      initialQuerySelfInterval: 600000,
+      querySelfInterval: 600_000,
+      initialQuerySelfInterval: 600_000,
       allowQueryWithZeroPeers: true,
       clientMode: false,
       ...options

@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from 'main-event'
 import type { GatewayFinder, GatewayFinderEvents } from './upnp-nat.js'
 import type { Gateway, UPnPNAT } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Logger } from '@libp2p/interface'

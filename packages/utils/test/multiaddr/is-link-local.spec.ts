@@ -29,9 +29,9 @@ describe('multiaddr isLinkLocal', () => {
 
   it('identifies link-local ip6 multiaddrs', () => {
     [
-      multiaddr('/ip6/fe80::1%lo0'),
-      multiaddr('/ip6/fe80::1%lo0/tcp/1000'),
-      multiaddr('/ip6/fe80::1893:def4:af04:635a%en'),
+      multiaddr('/ip6zone/lo0/ip6/fe80::1'),
+      multiaddr('/ip6zone/lo0/ip6/fe80::1/tcp/1000'),
+      multiaddr('/ip6zone/en/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a'),
       multiaddr('/ip6/fe80::1893:def4:af04:635a/udp/2183')
     ].forEach(ma => {
@@ -52,7 +52,7 @@ describe('multiaddr isLinkLocal', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/unix/path/to/socket'),
+      multiaddr('/unix/%2Fpath%2Fto%2Fsocket'),
       multiaddr('/memory/addr-1')
     ].forEach(ma => {
       expect(isLinkLocal(ma)).to.be.false(`"${ma}" was identified as link local`)

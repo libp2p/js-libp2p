@@ -1,8 +1,10 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { identify } from '@libp2p/identify'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
+import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -11,8 +13,10 @@ import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 import pWaitFor from 'p-wait-for'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import type { Identify } from '@libp2p/identify'
 import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
+import type { PingService } from '@libp2p/ping'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -62,7 +66,9 @@ describe('DHT subsystem operates correctly', () => {
             protocol: subsystemMulticodecs[0],
             peerInfoMapper: passthroughMapper,
             allowQueryWithZeroPeers: true
-          })
+          }),
+          ping: ping(),
+          identify: identify()
         }
       })
 
@@ -85,7 +91,9 @@ describe('DHT subsystem operates correctly', () => {
             protocol: subsystemMulticodecs[0],
             peerInfoMapper: passthroughMapper,
             allowQueryWithZeroPeers: true
-          })
+          }),
+          ping: ping(),
+          identify: identify()
         }
       })
 
@@ -145,7 +153,7 @@ describe('DHT subsystem operates correctly', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = pDefer()
 
-    const getConfig = (): Libp2pOptions<{ dht: KadDHT }> => ({
+    const getConfig = (): Libp2pOptions<{ dht: KadDHT, ping: PingService, identify: Identify }> => ({
       addresses: {
         listen: [
           listenAddr.toString()
@@ -156,7 +164,9 @@ describe('DHT subsystem operates correctly', () => {
           protocol: subsystemMulticodecs[0],
           peerInfoMapper: passthroughMapper,
           allowQueryWithZeroPeers: true
-        })
+        }),
+        ping: ping(),
+        identify: identify()
       }
     })
 

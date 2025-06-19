@@ -33,12 +33,13 @@
  */
 
 import { pubSubSymbol, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
-import { PubSubBaseProtocol, type PubSubComponents } from '@libp2p/pubsub'
+import { PubSubBaseProtocol } from '@libp2p/pubsub'
 import { toString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
 import { multicodec } from './config.js'
 import { RPC } from './message/rpc.js'
 import type { PeerId, PubSubInit, Message, PubSubRPC, PubSubRPCMessage, PublishResult, PubSub } from '@libp2p/interface'
+import type { PubSubComponents } from '@libp2p/pubsub'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { multicodec }

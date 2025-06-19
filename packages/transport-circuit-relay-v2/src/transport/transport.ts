@@ -5,6 +5,7 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
@@ -129,6 +130,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
   async start (): Promise<void> {
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
       const signal = this.upgrader.createInboundAbortSignal(this.shutdownController.signal)

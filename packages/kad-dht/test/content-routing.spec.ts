@@ -11,6 +11,7 @@ import * as kadUtils from '../src/utils.js'
 import { createValues } from './utils/create-values.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
+import type { QueryEvent } from '../src/index.js'
 import type { PeerId } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
@@ -46,7 +47,7 @@ describe('content routing', () => {
       testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
-    sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
 
     // connect peers
     await Promise.all([
@@ -59,8 +60,7 @@ describe('content routing', () => {
     await drain(dhts[3].provide(cid))
 
     // check network messages
-    // @ts-expect-error fn is a spy
-    const calls = dhts[3].network.sendMessage.getCalls().map(c => c.args)
+    const calls = sendMessageSpy.getCalls().map(c => c.args)
 
     const peersSentMessage = new Set<string>()
 
@@ -69,8 +69,8 @@ describe('content routing', () => {
 
       expect(msg.type).equals(MessageType.ADD_PROVIDER)
       expect(msg.key).equalBytes(cid.multihash.bytes)
-      expect(msg.providers.length).equals(1)
-      expect(msg.providers[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
+      expect(msg.providers?.length).equals(1)
+      expect(msg.providers?.[0].id).to.equalBytes(dhts[3].components.peerId.toMultihash().bytes)
     }
 
     // expect an ADD_PROVIDER message to be sent to each peer for each value
@@ -252,5 +252,106 @@ describe('content routing', () => {
       return acc
     }, {}))
     expect(provs).to.have.length(1)
+  })
+
+  it('aborts provide operation when abort signal is triggered before starting', async function () {
+    this.timeout(20 * 1000)
+
+    const dhts = await sortDHTs(await Promise.all([
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
+
+    // Spy on network.sendMessage to verify it's not called after abort
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+
+    // Connect peers
+    await Promise.all([
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
+    ])
+
+    const controller = new AbortController()
+    controller.abort()
+
+    const generator = dhts[3].provide(cid, { signal: controller.signal })
+    await expect(all(generator)).to.eventually.be.rejected
+      .with.property('message').that.include('aborted')
+
+    expect(sendMessageSpy.called).to.be.false('sendMessage should not be called when aborted')
+  })
+
+  it('properly terminates generator when a non-immediate abort signal is triggered', async function () {
+    this.timeout(20 * 1000)
+
+    const dhts = await sortDHTs(await Promise.all([
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
+
+    // Connect peers
+    await Promise.all([
+      testDHT.connect(dhts[0], dhts[1]),
+      testDHT.connect(dhts[1], dhts[2]),
+      testDHT.connect(dhts[2], dhts[3])
+    ])
+
+    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+
+    const controller = new AbortController()
+
+    // Start the provide operation
+    const generator = dhts[3].provide(cid, { signal: controller.signal })
+
+    // We want to push the generator manually to control timing
+    const reader = async (): Promise<{ results: QueryEvent[], aborted: boolean }> => {
+      const results = []
+      try {
+        for await (const event of generator) {
+          results.push(event)
+          // After we get the first few results, abort the operation
+          if (results.length === 2) {
+            controller.abort()
+            // This delay simulates an onward consumer performing work before
+            // accepting another value from the generator
+            await delay(50)
+          }
+        }
+      } catch (err) {
+        // We expect an abort error here
+        expect(err).to.have.property('message').that.include('abort')
+        return { results, aborted: true }
+      }
+      return { results, aborted: false }
+    }
+
+    const { results, aborted } = await reader()
+
+    // We should have aborted
+    expect(aborted).to.be.true('Generator should have thrown an abort error')
+
+    // We should have received some events before the abort
+    expect(results.length).to.be.greaterThan(0, 'Should have received some events before abort')
+
+    // After aborting, if we try to get more from the generator, it should be
+    // done. Testing this requires using the original generator reference, but
+    // we've already drained it. So instead we check side effects to confirm the
+    // operation stopped.
+
+    // Wait a reasonable time for any pending operations to complete
+    await delay(500)
+
+    // Check that no new network calls were made after the abort
+    const initialMessageCalls = sendMessageSpy.callCount
+    await delay(200)
+
+    // The number of calls should not have increased
+    expect(sendMessageSpy.callCount).to.equal(initialMessageCalls,
+      'No new network calls should be made after abort')
   })
 })

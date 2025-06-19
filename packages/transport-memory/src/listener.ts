@@ -1,5 +1,6 @@
-import { ListenError, TypedEventEmitter } from '@libp2p/interface'
+import { ListenError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { nanoid } from 'nanoid'
 import { MemoryConnection, connections } from './connections.js'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
@@ -23,6 +24,7 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
     this.components = components
     this.init = init
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
   }
 
   async listen (ma: Multiaddr): Promise<void> {

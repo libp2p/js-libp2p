@@ -34,12 +34,16 @@ The Kademlia DHT allow for several operations such as finding peers, searching f
 import { kadDHT } from '@libp2p/kad-dht'
 import { createLibp2p } from 'libp2p'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { ping } from '@libp2p/ping'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   services: {
     dht: kadDHT({
       // DHT options
-    })
+    }),
+    ping: ping(),
+    identify: identify()
   }
 })
 
@@ -59,13 +63,17 @@ If you are trying to access content on the public internet, this is the implemen
 import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { createLibp2p } from 'libp2p'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { ping } from '@libp2p/ping'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   services: {
     aminoDHT: kadDHT({
       protocol: '/ipfs/kad/1.0.0',
       peerInfoMapper: removePrivateAddressesMapper
-    })
+    }),
+    ping: ping(),
+    identify: identify()
   }
 })
 
@@ -85,6 +93,8 @@ This is for use when peers are on the local area network.
 import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { createLibp2p } from 'libp2p'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { ping } from '@libp2p/ping'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   services: {
@@ -92,7 +102,9 @@ const node = await createLibp2p({
       protocol: '/ipfs/lan/kad/1.0.0',
       peerInfoMapper: removePublicAddressesMapper,
       clientMode: false
-    })
+    }),
+    ping: ping(),
+    identify: identify()
   }
 })
 
@@ -111,6 +123,8 @@ log prefixes to ensure that data is kept separate for each instance.
 import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { createLibp2p } from 'libp2p'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { ping } from '@libp2p/ping'
+import { identify } from '@libp2p/identify'
 
 const node = await createLibp2p({
   services: {
@@ -128,7 +142,9 @@ const node = await createLibp2p({
       logPrefix: 'libp2p:dht-amino',
       datastorePrefix: '/dht-amino',
       metricsPrefix: 'libp2p_dht_amino'
-    })
+    }),
+    ping: ping(),
+    identify: identify()
   }
 })
 

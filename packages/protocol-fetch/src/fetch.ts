@@ -1,5 +1,6 @@
-import { AbortError, InvalidMessageError, InvalidParametersError, ProtocolError, setMaxListeners } from '@libp2p/interface'
+import { AbortError, InvalidMessageError, InvalidParametersError, ProtocolError } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'

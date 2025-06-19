@@ -1,4 +1,5 @@
 import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, IncomingStreamData } from '@libp2p/interface'
+import type { AbortOptions } from '@multiformats/multiaddr'
 
 export type {
   /**
@@ -58,7 +59,7 @@ export interface Registrar {
    * @param protocol - The protocol to unhandle.
    * @returns A promise that resolves once the handler is removed.
    */
-  unhandle(protocol: string): Promise<void>
+  unhandle(protocol: string, options?: AbortOptions): Promise<void>
 
   /**
    * Retrieve the registered handler for a given protocol.
@@ -80,7 +81,7 @@ export interface Registrar {
    * @param topology - The topology handler to register.
    * @returns A promise resolving to a unique ID for the registered topology.
    */
-  register(protocol: string, topology: Topology): Promise<string>
+  register(protocol: string, topology: Topology, options?: AbortOptions): Promise<string>
 
   /**
    * Unregister a topology handler using its unique ID.

@@ -1,9 +1,10 @@
-import { TypedEventEmitter } from '@libp2p/interface'
 import { P2P } from '@multiformats/multiaddr-matcher'
 import { fmt, literal } from '@multiformats/multiaddr-matcher/utils'
-import type { PeerId, ListenerEvents, Listener, Libp2pEvents, TypedEventTarget } from '@libp2p/interface'
+import { TypedEventEmitter } from 'main-event'
+import type { PeerId, ListenerEvents, Listener, Libp2pEvents } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 const Circuit = fmt(P2P.matchers[0], literal('p2p-circuit'))
 

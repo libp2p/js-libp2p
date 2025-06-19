@@ -1,16 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerStore, type Peer, type Listener } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { type AddressFilter, AddressManager } from '../../src/address-manager/index.js'
+import { stubInterface } from 'sinon-ts'
+import { AddressManager } from '../../src/address-manager/index.js'
+import type { AddressFilter } from '../../src/address-manager/index.js'
+import type { Libp2pEvents, PeerId, PeerStore, Peer, Listener } from '@libp2p/interface'
 import type { NodeAddress, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddresses = ['/dns4/peer.io']
@@ -86,7 +90,9 @@ describe('Address Manager', () => {
   })
 
   it('should add appendAnnounce multiaddrs on get', () => {
-    const transportManager = stubInterface<TransportManager>()
+    const transportManager = stubInterface<TransportManager>({
+      getListeners: Sinon.stub().returns([])
+    })
     const am = new AddressManager({
       peerId,
       transportManager,
@@ -260,8 +266,8 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
-  it('should not add our peer id to path multiaddrs', () => {
-    const ma = '/unix/foo/bar/baz'
+  it('should add our peer id to path multiaddrs', () => {
+    const ma = '/unix/%2Ffoo%2Fbar%2Fbaz'
     const transportManager = stubInterface<TransportManager>()
     const am = new AddressManager({
       peerId,
@@ -278,7 +284,7 @@ describe('Address Manager', () => {
 
     const addrs = am.getAddresses()
     expect(addrs).to.have.lengthOf(1)
-    expect(addrs[0].toString()).to.not.include(`/p2p/${peerId.toString()}`)
+    expect(addrs[0].toString()).to.include(`/p2p/${peerId.toString()}`)
   })
 
   it('should add an IPv4 DNS mapping', () => {
@@ -809,6 +815,60 @@ describe('Address Manager', () => {
       verified: true,
       type: 'observed'
     }])
+  })
+
+  it('should allow updating announce addresses', async () => {
+    const listener = stubInterface<Listener>({
+      updateAnnounceAddrs: Sinon.stub().returnsArg(0)
+    })
+
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getListeners: Sinon.stub().returns([
+          listener
+        ])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      announce: [
+        '/ip4/123.123.123.123/tcp/1234'
+      ]
+    })
+
+    expect(am.getAddresses()).to.have.lengthOf(1)
+    expect(listener.updateAnnounceAddrs.called).to.be.true()
+  })
+
+  it('should allow updating appendAnnounce addresses', async () => {
+    const listener = stubInterface<Listener>({
+      updateAnnounceAddrs: Sinon.stub().returnsArg(0)
+    })
+
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([
+          multiaddr('/ip4/127.0.0.1/tcp/1234'),
+          multiaddr('/ip4/192.168.1.123/tcp/1234')
+        ]),
+        getListeners: Sinon.stub().returns([
+          listener
+        ])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    }, {
+      appendAnnounce: [
+        '/ip4/123.123.123.123/tcp/1234'
+      ]
+    })
+
+    expect(am.getAddresses()).to.have.lengthOf(3)
+    expect(listener.updateAnnounceAddrs.called).to.be.true()
   })
 })
 

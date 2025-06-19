@@ -1,14 +1,13 @@
-/* eslint-disable complexity */
-
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
+import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { protocols } from '@multiformats/multiaddr'
+import { CODE_IP6, CODE_IP6ZONE, protocols } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
@@ -17,8 +16,6 @@ import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, IncomingStreamData } from '@libp2p/interface'
-
-const CODEC_IP6 = 0x29
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -129,9 +126,9 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       return
     }
 
-    const tuples = cleanObservedAddr.stringTuples()
+    const tuples = cleanObservedAddr.getComponents()
 
-    if (tuples[0][0] === CODEC_IP6 && !isGlobalUnicast(cleanObservedAddr)) {
+    if (((tuples[0].code === CODE_IP6) || (tuples[0].code === CODE_IP6ZONE && tuples[1].code === CODE_IP6)) && !isGlobalUnicast(cleanObservedAddr)) {
       this.log.trace('our observed address was IPv6 but not a global unicast address')
       return
     }

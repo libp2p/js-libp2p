@@ -1,7 +1,8 @@
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, ComponentLogger, Direction, Stream } from '@libp2p/interface'
+import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
   bidiStream: WebTransportBidirectionalStream
@@ -57,7 +58,7 @@ class WebTransportStream extends AbstractStream {
   }
 
   async sendData (buf: Uint8ArrayList, options?: AbortOptions): Promise<void> {
-    for await (const chunk of buf) {
+    for (const chunk of buf) {
       this.log('sendData waiting for writer to be ready')
       await raceSignal(this.writer.ready, options?.signal)
 

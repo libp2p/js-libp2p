@@ -1,4 +1,5 @@
 {
+  "readme": "none",
   "entryPoints": [
     "./src/index.ts",
     "./src/abort-options.ts",
@@ -16,6 +17,7 @@
     "./src/is-generator.ts",
     "./src/is-promise.ts",
     "./src/link-local-ip.ts",
+    "./src/merge-options.ts",
     "./src/moving-average.ts",
     "./src/multiaddr/is-global-unicast.ts",
     "./src/multiaddr/is-ip-based.ts",

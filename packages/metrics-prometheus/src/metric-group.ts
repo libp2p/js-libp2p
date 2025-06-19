@@ -1,33 +1,27 @@
-import { type CollectFunction, Gauge } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Gauge } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedMetricOptions } from './index.js'
-import type { CalculateMetric, MetricGroup, StopTimer } from '@libp2p/interface'
+import type { MetricGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
-export class PrometheusMetricGroup implements MetricGroup, CalculatedMetric<Record<string, number>> {
+export class PrometheusMetricGroup implements MetricGroup {
   private readonly gauge: Gauge
   private readonly label: string
-  private readonly calculators: Array<CalculateMetric<Record<string, number>>>
 
   constructor (name: string, opts: PrometheusCalculatedMetricOptions<Record<string, number>>) {
     name = normalizeString(name)
     const help = normalizeString(opts.help ?? name)
     const label = this.label = normalizeString(opts.label ?? name)
     let collect: CollectFunction<Gauge<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        await Promise.all(self.calculators.map(async calculate => {
-          const values = await calculate()
+        const values = await opts.calculate()
 
-          Object.entries(values).forEach(([key, value]) => {
-            this.set({ [label]: key }, value)
-          })
-        }))
+        Object.entries(values).forEach(([key, value]) => {
+          this.set({ [label]: key }, value)
+        })
       }
     }
 
@@ -38,10 +32,6 @@ export class PrometheusMetricGroup implements MetricGroup, CalculatedMetric<Reco
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric<Record<string, number>>): void {
-    this.calculators.push(calculator)
   }
 
   update (values: Record<string, number>): void {

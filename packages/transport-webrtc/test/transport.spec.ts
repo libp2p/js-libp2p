@@ -1,18 +1,21 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { transportSymbol, type Upgrader, type Listener, type Transport } from '@libp2p/interface'
+import { transportSymbol, start, stop } from '@libp2p/interface'
+import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
+import { MemoryDatastore } from 'datastore-core'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
-import { WebRTCDirectTransport, type WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.js'
+import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
+import type { Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
   let port: number | undefined
@@ -36,10 +39,12 @@ describe('WebRTCDirect Transport', () => {
 
   beforeEach(async () => {
     const privateKey = await generateKeyPair('Ed25519')
+    const datastore = new MemoryDatastore()
+    const logger = defaultLogger()
 
     components = {
       peerId: peerIdFromPrivateKey(privateKey),
-      logger: defaultLogger(),
+      logger,
       transportManager: stubInterface<TransportManager>(),
       privateKey,
       upgrader: stubInterface<Upgrader>({
@@ -49,11 +54,19 @@ describe('WebRTCDirect Transport', () => {
             signal
           ])
         }
+      }),
+      datastore,
+      keychain: keychain()({
+        datastore,
+        logger
       })
     }
 
     upgrader = stubInterface<Upgrader>()
     transport = new WebRTCDirectTransport(components)
+
+    await start(transport)
+
     listener = transport.createListener({
       upgrader
     })
@@ -61,6 +74,7 @@ describe('WebRTCDirect Transport', () => {
 
   afterEach(async () => {
     await listener?.close()
+    await stop(transport)
   })
 
   it('can construct', () => {
@@ -114,8 +128,8 @@ describe('WebRTCDirect Transport', () => {
       return this.skip()
     }
 
-    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37287')
-    const ipv6 = multiaddr('/ip6/::1/udp/37287')
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/37288')
+    const ipv6 = multiaddr('/ip6/::1/udp/37288')
 
     await Promise.all([
       listener.listen(ipv4),
@@ -218,6 +232,7 @@ describe('WebRTCDirect Transport', () => {
       ...components,
       peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     })
+    await start(otherTransport)
     const otherTransportIp4Listener = otherTransport.createListener({
       upgrader
     })
@@ -248,6 +263,7 @@ describe('WebRTCDirect Transport', () => {
     await otherTransportIp4Listener.close()
     await otherTransportIp6Listener.close()
     await ip6Listener.close()
+    await otherTransport.stop()
   })
 
   it('can start multiple wildcard listeners', async function () {

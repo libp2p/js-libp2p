@@ -15,7 +15,7 @@ import * as kadUtils from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { PeerIdWithPrivateKey } from './utils/create-peer-id.js'
+import type { PeerAndKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
@@ -38,7 +38,7 @@ async function findEvent (events: AsyncIterable<QueryEvent>, name: string): Prom
 }
 
 describe('KadDHT', () => {
-  let peerIds: PeerIdWithPrivateKey[]
+  let peerIds: PeerAndKey[]
   let testDHT: TestDHT
 
   beforeEach(() => {
@@ -301,8 +301,8 @@ describe('KadDHT', () => {
       this.timeout(20 * 1000)
 
       const key = uint8ArrayFromString('/v/hello')
-      const valueA = uint8ArrayFromString('worldA')
-      const valueB = uint8ArrayFromString('worldB')
+      const valueA = uint8ArrayFromString('world2')
+      const valueB = uint8ArrayFromString('world1')
 
       const [dhtA, dhtB] = await Promise.all([
         testDHT.spawn(),
@@ -311,18 +311,19 @@ describe('KadDHT', () => {
 
       const dhtASpy = sinon.spy(dhtA.network, 'sendRequest')
 
-      // Put before peers connected
+      // put before peers connected
       await drain(dhtA.put(key, valueA))
       await drain(dhtB.put(key, valueB))
 
-      // Connect peers
+      // connect peers
       await testDHT.connect(dhtA, dhtB)
 
-      // Get values
+      // get values
       const resA = await last(dhtA.get(key))
       const resB = await last(dhtB.get(key))
 
-      // First is selected
+      // first is selected because the selector sorts alphabetically and chooses
+      // the last value
       expect(resA).to.have.property('value').that.equalBytes(valueA)
       expect(resB).to.have.property('value').that.equalBytes(valueA)
 
@@ -379,15 +380,21 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn()
 
       // Simulate returning a peer id to query
-      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1]])
+      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1].peerId])
       // Simulate going out to the network and returning the record
       sinon.stub(dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
         yield peerResponseEvent({
           messageType: MessageType.GET_VALUE,
           from: peer,
-          record: rec
+          record: rec,
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
         })
-      }) // eslint-disable-line require-await
+      })
 
       const res = await last(dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
@@ -458,7 +465,7 @@ describe('KadDHT', () => {
       const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
       expect(res).to.not.be.empty()
 
-      // no peer should include itself in the response, only other peers that it
+      // should not include requester in the response, only other peers that it
       // knows who are closer
       for (const event of res) {
         if (event.name !== 'PEER_RESPONSE') {

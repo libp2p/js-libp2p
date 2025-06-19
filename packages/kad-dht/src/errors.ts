@@ -9,16 +9,6 @@ export class QueryError extends Error {
 }
 
 /**
- * A query was aborted
- */
-export class QueryAbortedError extends Error {
-  constructor (message = 'Query aborted') {
-    super(message)
-    this.name = 'QueryAbortedError'
-  }
-}
-
-/**
  * An invalid record was received
  */
 export class InvalidRecordError extends Error {

@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { TypedEventEmitter } from 'main-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'

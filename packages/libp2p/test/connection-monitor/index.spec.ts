@@ -5,10 +5,11 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pair } from 'it-pair'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { ConnectionMonitor } from '../../src/connection-monitor.js'
 import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedConnectionMonitorComponents {
   logger: ComponentLogger
@@ -93,10 +94,7 @@ describe('connection monitor', () => {
 
   it('should abort a connection that times out', async () => {
     monitor = new ConnectionMonitor(components, {
-      pingInterval: 50,
-      pingTimeout: {
-        initialValue: 10
-      }
+      pingInterval: 50
     })
 
     await start(monitor)

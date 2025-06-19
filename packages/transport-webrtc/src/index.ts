@@ -206,11 +206,66 @@
  *   }
  * )
  * ```
+ *
+ * ## WebRTC Direct certificate hashes
+ *
+ * WebRTC Direct listeners publish the hash of their TLS certificate as part of
+ * the listening multiaddr.
+ *
+ * By default these certificates are generated at start up using an ephemeral
+ * keypair that only exists while the node is running.
+ *
+ * This means that the certificate hashes change when the node is restarted,
+ * which can be undesirable if multiaddrs are intended to be long lived (e.g.
+ * if the node is used as a network bootstrapper).
+ *
+ * To reuse the same certificate and keypair, configure a persistent datastore
+ * and the [@libp2p/keychain](https://www.npmjs.com/package/@libp2p/keychain)
+ * service as part of your service map:
+ *
+ * @example Reuse TLS certificates after restart
+ *
+ * ```ts
+ * import { LevelDatastore } from 'datastore-level'
+ * import { webRTCDirect } from '@libp2p/webrtc'
+ * import { keychain } from '@libp2p/keychain'
+ * import { createLibp2p } from 'libp2p'
+ *
+ * // store data on disk between restarts
+ * const datastore = new LevelDatastore('/path/to/store')
+ *
+ * const listener = await createLibp2p({
+ *   addresses: {
+ *     listen: [
+ *       '/ip4/0.0.0.0/udp/0/webrtc-direct'
+ *     ]
+ *   },
+ *   datastore,
+ *   transports: [
+ *     webRTCDirect()
+ *   ],
+ *   services: {
+ *     keychain: keychain()
+ *   }
+ * })
+ *
+ * await listener.start()
+ *
+ * console.info(listener.getMultiaddrs())
+ * // /ip4/...../udp/../webrtc-direct/certhash/foo
+ *
+ * await listener.stop()
+ * await listener.start()
+ *
+ * console.info(listener.getMultiaddrs())
+ * // /ip4/...../udp/../webrtc-direct/certhash/foo
+ * ```
  */
 
 import { WebRTCTransport } from './private-to-private/transport.js'
-import { WebRTCDirectTransport, type WebRTCTransportDirectInit, type WebRTCDirectTransportComponents } from './private-to-public/transport.js'
+import { WebRTCDirectTransport } from './private-to-public/transport.js'
 import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
+import type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents } from './private-to-public/transport.js'
 import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {

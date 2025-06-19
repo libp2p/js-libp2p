@@ -9,11 +9,12 @@ import { byteStream } from 'it-byte-stream'
 import { pair } from 'it-pair'
 import { duplexPair } from 'it-pair/duplex'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { PING_PROTOCOL } from '../src/constants.js'
-import { PingService } from '../src/ping.js'
+import { Ping } from '../src/ping.js'
 import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPingServiceComponents {
   registrar: StubbedInstance<Registrar>
@@ -34,7 +35,7 @@ function echoStream (): StubbedInstance<Stream> {
 
 describe('ping', () => {
   let components: StubbedPingServiceComponents
-  let ping: PingService
+  let ping: Ping
 
   beforeEach(async () => {
     components = {
@@ -43,7 +44,7 @@ describe('ping', () => {
       logger: defaultLogger()
     }
 
-    ping = new PingService(components, {
+    ping = new Ping(components, {
       timeout: 50
     })
 

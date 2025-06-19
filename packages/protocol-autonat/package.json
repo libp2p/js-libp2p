@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/autonat",
-  "version": "2.0.28",
+  "version": "2.0.36",
   "description": "Implementation of Autonat Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-autonat#readme",
@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "start": "node dist/src/main.js",
     "build": "aegir build",
@@ -52,30 +45,31 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.7.0",
-    "@libp2p/interface-internal": "^2.3.9",
-    "@libp2p/peer-collections": "^6.0.25",
-    "@libp2p/peer-id": "^5.1.0",
-    "@libp2p/utils": "^6.6.0",
-    "@multiformats/multiaddr": "^12.3.3",
+    "@libp2p/interface": "^2.10.4",
+    "@libp2p/interface-internal": "^2.3.17",
+    "@libp2p/peer-collections": "^6.0.33",
+    "@libp2p/peer-id": "^5.1.7",
+    "@libp2p/utils": "^6.7.0",
+    "@multiformats/multiaddr": "^12.4.4",
     "any-signal": "^4.1.1",
-    "it-protobuf-stream": "^2.0.1",
-    "multiformats": "^13.3.1",
+    "it-protobuf-stream": "^2.0.2",
+    "main-event": "^1.0.1",
+    "multiformats": "^13.3.6",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.0.15",
-    "@libp2p/logger": "^5.1.13",
-    "aegir": "^45.1.1",
-    "it-all": "^3.0.6",
-    "it-drain": "^3.0.7",
+    "@libp2p/crypto": "^5.1.6",
+    "@libp2p/logger": "^5.1.20",
+    "aegir": "^47.0.14",
+    "it-all": "^3.0.8",
+    "it-drain": "^3.0.9",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "p-retry": "^6.2.1",
-    "protons": "^7.6.0",
-    "sinon": "^19.0.2",
+    "protons": "^7.6.1",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

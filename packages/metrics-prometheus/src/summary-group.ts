@@ -1,33 +1,27 @@
-import { type CollectFunction, Summary as PromSummary } from 'prom-client'
-import { normalizeString, type CalculatedMetric } from './utils.js'
+import { Summary as PromSummary } from 'prom-client'
+import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedSummaryOptions } from './index.js'
-import type { CalculateMetric, SummaryGroup, StopTimer } from '@libp2p/interface'
+import type { SummaryGroup, StopTimer } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
-export class PrometheusSummaryGroup implements SummaryGroup, CalculatedMetric<Record<string, number>> {
+export class PrometheusSummaryGroup implements SummaryGroup {
   private readonly summary: PromSummary
   private readonly label: string
-  private readonly calculators: Array<CalculateMetric<Record<string, number>>>
 
   constructor (name: string, opts: PrometheusCalculatedSummaryOptions<Record<string, number>>) {
     name = normalizeString(name)
     const help = normalizeString(opts.help ?? name)
     const label = this.label = normalizeString(opts.label ?? name)
     let collect: CollectFunction<PromSummary<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        await Promise.all(self.calculators.map(async calculate => {
-          const values = await calculate()
+        const values = await opts.calculate()
 
-          Object.entries(values).forEach(([key, value]) => {
-            this.observe({ [label]: key }, value)
-          })
-        }))
+        Object.entries(values).forEach(([key, value]) => {
+          this.observe({ [label]: key }, value)
+        })
       }
     }
 
@@ -43,10 +37,6 @@ export class PrometheusSummaryGroup implements SummaryGroup, CalculatedMetric<Re
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric<Record<string, number>>): void {
-    this.calculators.push(calculator)
   }
 
   observe (values: Record<string, number>): void {

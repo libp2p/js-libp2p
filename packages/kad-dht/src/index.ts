@@ -11,12 +11,16 @@
  * import { kadDHT } from '@libp2p/kad-dht'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromString } from '@libp2p/peer-id'
+ * import { ping } from '@libp2p/ping'
+ * import { identify } from '@libp2p/identify'
  *
  * const node = await createLibp2p({
  *   services: {
  *     dht: kadDHT({
  *       // DHT options
- *     })
+ *     }),
+ *     ping: ping(),
+ *     identify: identify()
  *   }
  * })
  *
@@ -36,13 +40,17 @@
  * import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromString } from '@libp2p/peer-id'
+ * import { ping } from '@libp2p/ping'
+ * import { identify } from '@libp2p/identify'
  *
  * const node = await createLibp2p({
  *   services: {
  *     aminoDHT: kadDHT({
  *       protocol: '/ipfs/kad/1.0.0',
  *       peerInfoMapper: removePrivateAddressesMapper
- *     })
+ *     }),
+ *     ping: ping(),
+ *     identify: identify()
  *   }
  * })
  *
@@ -62,6 +70,8 @@
  * import { kadDHT, removePublicAddressesMapper } from '@libp2p/kad-dht'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromString } from '@libp2p/peer-id'
+ * import { ping } from '@libp2p/ping'
+ * import { identify } from '@libp2p/identify'
  *
  * const node = await createLibp2p({
  *   services: {
@@ -69,7 +79,9 @@
  *       protocol: '/ipfs/lan/kad/1.0.0',
  *       peerInfoMapper: removePublicAddressesMapper,
  *       clientMode: false
- *     })
+ *     }),
+ *     ping: ping(),
+ *     identify: identify()
  *   }
  * })
  *
@@ -88,6 +100,8 @@
  * import { kadDHT, removePublicAddressesMapper, removePrivateAddressesMapper } from '@libp2p/kad-dht'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromString } from '@libp2p/peer-id'
+ * import { ping } from '@libp2p/ping'
+ * import { identify } from '@libp2p/identify'
  *
  * const node = await createLibp2p({
  *   services: {
@@ -105,7 +119,9 @@
  *       logPrefix: 'libp2p:dht-amino',
  *       datastorePrefix: '/dht-amino',
  *       metricsPrefix: 'libp2p_dht_amino'
- *     })
+ *     }),
+ *     ping: ping(),
+ *     identify: identify()
  *   }
  * })
  *
@@ -119,10 +135,12 @@
 import { KadDHT as KadDHTClass } from './kad-dht.js'
 import { MessageType } from './message/dht.js'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
-import type { Libp2pEvents, ComponentLogger, TypedEventTarget, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/src/adaptive-timeout.js'
+import type { Ping } from '@libp2p/ping'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
 import type { CID } from 'multiformats/cid'
 import type { ProgressEvent } from 'progress-events'
 
@@ -140,7 +158,8 @@ export enum EventTypes {
   PROVIDER,
   VALUE,
   ADD_PEER,
-  DIAL_PEER
+  DIAL_PEER,
+  PATH_ENDED
 }
 
 /**
@@ -166,6 +185,13 @@ export type DHTProgressEvents =
   ProgressEvent<'kad-dht:query:add-peer', AddPeerEvent> |
   ProgressEvent<'kad-dht:query:dial-peer', DialPeerEvent>
 
+export interface DisjointPath {
+  index: number
+  queued: number
+  running: number
+  total: number
+}
+
 /**
  * Emitted when sending queries to remote peers
  */
@@ -175,6 +201,7 @@ export interface SendQueryEvent {
   name: 'SEND_QUERY'
   messageName: keyof typeof MessageType
   messageType: MessageType
+  path: DisjointPath
 }
 
 /**
@@ -190,6 +217,7 @@ export interface PeerResponseEvent {
   closer: PeerInfo[]
   providers: PeerInfo[]
   record?: DHTRecord
+  path: DisjointPath
 }
 
 /**
@@ -200,6 +228,7 @@ export interface FinalPeerEvent {
   peer: PeerInfo
   type: EventTypes.FINAL_PEER
   name: 'FINAL_PEER'
+  path: DisjointPath
 }
 
 /**
@@ -210,6 +239,7 @@ export interface QueryErrorEvent {
   type: EventTypes.QUERY_ERROR
   name: 'QUERY_ERROR'
   error: Error
+  path: DisjointPath
 }
 
 /**
@@ -220,6 +250,7 @@ export interface ProviderEvent {
   type: EventTypes.PROVIDER
   name: 'PROVIDER'
   providers: PeerInfo[]
+  path: DisjointPath
 }
 
 /**
@@ -230,6 +261,7 @@ export interface ValueEvent {
   type: EventTypes.VALUE
   name: 'VALUE'
   value: Uint8Array
+  path: DisjointPath
 }
 
 /**
@@ -239,18 +271,29 @@ export interface AddPeerEvent {
   type: EventTypes.ADD_PEER
   name: 'ADD_PEER'
   peer: PeerId
+  path: DisjointPath
 }
 
 /**
- * Emitted when peers are dialled as part of a query
+ * Emitted when peers are dialled and a new stream is opened as part of a query
  */
 export interface DialPeerEvent {
   peer: PeerId
   type: EventTypes.DIAL_PEER
   name: 'DIAL_PEER'
+  path: DisjointPath
 }
 
-export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent
+/**
+ * Emitted when sending queries to remote peers
+ */
+export interface PathEndedEvent {
+  type: EventTypes.PATH_ENDED
+  name: 'PATH_ENDED'
+  path: DisjointPath
+}
+
+export type QueryEvent = SendQueryEvent | PeerResponseEvent | FinalPeerEvent | QueryErrorEvent | ProviderEvent | ValueEvent | AddPeerEvent | DialPeerEvent | PathEndedEvent
 
 export interface RoutingTable {
   size: number
@@ -260,7 +303,29 @@ export interface PeerInfoMapper {
   (peer: PeerInfo): PeerInfo
 }
 
+export interface SetModeOptions extends AbortOptions {
+  force?: boolean
+}
+
 export interface KadDHT {
+  /**
+   * This is the maximum size of the k-buckets and how many peers are looked up
+   * when searching for peers close to a key.
+   */
+  readonly k: number
+
+  /**
+   * Query concurrency factor - this controls how many peers we contact in
+   * parallel during a query.
+   */
+  readonly a: number
+
+  /**
+   * From section 4.4 of the S/Kademlia paper - this is how many disjoint paths
+   * are used during a query.
+   */
+  readonly d: number
+
   /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
@@ -290,7 +355,7 @@ export interface KadDHT {
    * Provider records must be re-published every 24 hours - pass a previously
    * provided CID here to not re-publish a record for it any more
    */
-  cancelReprovide(key: CID): Promise<void>
+  cancelReprovide(key: CID, options?: AbortOptions): Promise<void>
 
   /**
    * Store the passed value under the passed key on the DHT
@@ -306,12 +371,12 @@ export interface KadDHT {
    * If 'server' this node will respond to DHT queries, if 'client' this node
    * will not.
    */
-  setMode(mode: 'client' | 'server'): Promise<void>
+  setMode(mode: 'client' | 'server', options?: SetModeOptions): Promise<void>
 
   /**
    * Force a routing table refresh
    */
-  refreshRoutingTable(): Promise<void>
+  refreshRoutingTable(options?: AbortOptions): Promise<void>
 }
 
 export interface SingleKadDHT extends KadDHT {
@@ -328,7 +393,7 @@ export interface SelectFn { (key: Uint8Array, records: Uint8Array[]): number }
  * A validator function takes a DHT key and the value of the record for that key
  * and throws if the record is invalid
  */
-export interface ValidateFn { (key: Uint8Array, value: Uint8Array): Promise<void> }
+export interface ValidateFn { (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> }
 
 /**
  * Selectors are a map of key prefixes to selector functions
@@ -420,6 +485,22 @@ export interface KadDHTInit {
   kBucketSplitThreshold?: number
 
   /**
+   * How many peers are queried in parallel during a query.
+   *
+   * @default 3
+   */
+  alpha?: number
+
+  /**
+   * How many disjoint paths are used during a query
+   *
+   * @see https://telematics.tm.kit.edu/publications/Files/267/SKademlia_2007.pdf - section 4.4
+   *
+   * @default alpha
+   */
+  disjointPaths?: number
+
+  /**
    * How many bits of the KAD-ID of peers to use when creating the routing
    * table.
    *
@@ -489,8 +570,8 @@ export interface KadDHTInit {
   initialQuerySelfInterval?: number
 
   /**
-   * After startup by default all queries will be paused until the initial
-   * self-query has run and there are some peers in the routing table.
+   * After startup by default all queries will be paused until there is at least
+   * one peer in the routing table.
    *
    * Pass true here to disable this behavior.
    *
@@ -604,6 +685,23 @@ export interface KadDHTInit {
    * Dynamic network timeout settings for sending messages to peers
    */
   networkDialTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
+
+  /**
+   * When a peer that supports the KAD-DHT protocol connects we try to add it to
+   * the routing table. This setting is how long we will try to do that for in
+   * ms.
+   *
+   * @default 10_000
+   */
+  onPeerConnectTimeout?: number
+
+  /**
+   * When acting as a DHT server, all incoming RPC requests must complete within
+   * this timeout in ms otherwise the stream will be closed.
+   *
+   * @default 10_000
+   */
+  incomingMessageTimeout?: number
 }
 
 export interface KadDHTComponents {
@@ -617,6 +715,7 @@ export interface KadDHTComponents {
   datastore: Datastore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  ping: Ping
 }
 
 /**

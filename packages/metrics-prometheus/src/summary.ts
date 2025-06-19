@@ -1,29 +1,22 @@
-import { type CollectFunction, Summary as PromSummary } from 'prom-client'
+import { Summary as PromSummary } from 'prom-client'
 import { normalizeString } from './utils.js'
 import type { PrometheusCalculatedSummaryOptions } from './index.js'
-import type { StopTimer, CalculateMetric, Summary } from '@libp2p/interface'
+import type { StopTimer, Summary } from '@libp2p/interface'
+import type { CollectFunction } from 'prom-client'
 
 export class PrometheusSummary implements Summary {
   private readonly summary: PromSummary
-  private readonly calculators: CalculateMetric[]
 
   constructor (name: string, opts: PrometheusCalculatedSummaryOptions) {
     name = normalizeString(name)
     const help = normalizeString(opts.help ?? name)
     const labels = opts.label != null ? [normalizeString(opts.label)] : []
     let collect: CollectFunction<PromSummary<any>> | undefined
-    this.calculators = []
 
     // calculated metric
     if (opts?.calculate != null) {
-      this.calculators.push(opts.calculate)
-      const self = this
-
       collect = async function () {
-        const values = await Promise.all(self.calculators.map(async calculate => calculate()))
-        for (const value of values) {
-          this.observe(value)
-        }
+        this.observe(await opts.calculate())
       }
     }
 
@@ -39,10 +32,6 @@ export class PrometheusSummary implements Summary {
       registers: opts.registry !== undefined ? [opts.registry] : undefined,
       collect
     })
-  }
-
-  addCalculator (calculator: CalculateMetric): void {
-    this.calculators.push(calculator)
   }
 
   observe (value: number): void {

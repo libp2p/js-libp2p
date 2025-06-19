@@ -10,10 +10,11 @@ import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
 import { TransportAddresses } from './transport-addresses.js'
-import type { ComponentLogger, Libp2pEvents, Logger, TypedEventTarget, PeerId, PeerStore } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Metrics } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils/filters'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 const ONE_MINUTE = 60_000
 
@@ -83,6 +84,7 @@ export interface AddressManagerComponents {
   peerStore: PeerStore
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
+  metrics?: Metrics
 }
 
 /**
@@ -363,13 +365,9 @@ export class AddressManager implements AddressManagerInterface {
     return this.announceFilter(
       multiaddrs.map(str => {
         const ma = multiaddr(str)
+        const lastComponent = ma.getComponents().pop()
 
-        // do not append our peer id to a path multiaddr as it will become invalid
-        if (ma.protos().pop()?.path === true) {
-          return ma
-        }
-
-        if (ma.getPeerId() === this.components.peerId.toString()) {
+        if (lastComponent?.value === this.components.peerId.toString()) {
           return ma
         }
 
@@ -404,16 +402,25 @@ export class AddressManager implements AddressManagerInterface {
         .map(multiaddr => this.transportAddresses.get(multiaddr, this.addressVerificationTTL))
     )
 
+    const appendAnnounceMultiaddrs = this.getAppendAnnounceAddrs()
+
     // add append announce addresses
-    addresses = addresses.concat(
-      this.getAppendAnnounceAddrs().map(multiaddr => ({
-        multiaddr,
-        verified: true,
-        type: 'announce',
-        expires: Date.now() + this.addressVerificationTTL,
-        lastVerified: Date.now()
-      }))
-    )
+    if (appendAnnounceMultiaddrs.length > 0) {
+      // allow transports to add certhashes and other runtime information
+      this.components.transportManager.getListeners().forEach(listener => {
+        listener.updateAnnounceAddrs(appendAnnounceMultiaddrs)
+      })
+
+      addresses = addresses.concat(
+        appendAnnounceMultiaddrs.map(multiaddr => ({
+          multiaddr,
+          verified: true,
+          type: 'announce',
+          expires: Date.now() + this.addressVerificationTTL,
+          lastVerified: Date.now()
+        }))
+      )
+    }
 
     // add observed addresses
     addresses = addresses.concat(

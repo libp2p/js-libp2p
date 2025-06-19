@@ -47,6 +47,120 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [5.2.7](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.6...keychain-v5.2.7) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+
+## [5.2.6](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.5...keychain-v5.2.6) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
+## [5.2.5](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.4...keychain-v5.2.5) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
+## [5.2.4](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.3...keychain-v5.2.4) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/utils bumped from ^6.6.4 to ^6.6.5
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+
+## [5.2.3](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.2...keychain-v5.2.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+
+## [5.2.2](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.1...keychain-v5.2.2) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+
+## [5.2.1](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.0...keychain-v5.2.1) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/keychain-v5.1.4...keychain-v5.2.0) (2025-04-09)
+
+
+### Features
+
+* store x509 certs in the keychain ([#3062](https://github.com/libp2p/js-libp2p/issues/3062)) ([d53ef17](https://github.com/libp2p/js-libp2p/commit/d53ef170cb171f5301758d5b2fc9e782950b4204))
+* support ECDSA private keys ([#3059](https://github.com/libp2p/js-libp2p/issues/3059)) ([fc51221](https://github.com/libp2p/js-libp2p/commit/fc512211024778d4aefb04411e815d977e91e03a))
+
+
+### Bug Fixes
+
+* do not store x509 certs in the keychain ([#3069](https://github.com/libp2p/js-libp2p/issues/3069)) ([da4e9da](https://github.com/libp2p/js-libp2p/commit/da4e9da825721edd94958426d4742b816aafb44d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+
 ## [5.1.4](https://github.com/libp2p/js-libp2p/compare/keychain-v5.1.3...keychain-v5.1.4) (2025-03-12)
 
 

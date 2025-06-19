@@ -1,5 +1,6 @@
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
+import { TypedEventEmitter } from 'main-event'
 import { DEFAULT_GATEWAY_SEARCH_INTERVAL, DEFAULT_GATEWAY_SEARCH_MESSAGE_INTERVAL, DEFAULT_GATEWAY_SEARCH_TIMEOUT, DEFAULT_INITIAL_GATEWAY_SEARCH_INTERVAL, DEFAULT_INITIAL_GATEWAY_SEARCH_MESSAGE_INTERVAL, DEFAULT_INITIAL_GATEWAY_SEARCH_TIMEOUT } from './constants.js'
 import type { GatewayFinder, GatewayFinderEvents } from './upnp-nat.js'
 import type { Gateway, UPnPNAT } from '@achingbrain/nat-port-mapper'
