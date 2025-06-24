@@ -24,9 +24,6 @@
       "path": "../peer-collections"
     },
     {
-      "path": "../peer-id"
-    },
-    {
       "path": "../utils"
     }
   ]
