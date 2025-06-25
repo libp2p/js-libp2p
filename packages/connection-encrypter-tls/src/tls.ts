@@ -98,7 +98,7 @@ export class TLS implements ConnectionEncrypter {
     }
 
     const opts: TLSSocketOptions = {
-      ...await generateCertificate(this.components.privateKey),
+      ...await generateCertificate(this.components.privateKey, options),
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',
@@ -147,17 +147,19 @@ export class TLS implements ConnectionEncrypter {
       })
     }
 
-    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
-      options?.signal?.addEventListener('abort', () => {
-        this.metrics[isServer ? 'server' : 'client'].events?.increment({
-          abort: true
-        })
-        this.metrics[isServer ? 'server' : 'client'].errors?.increment({
-          encrypt_abort: true
-        })
-        socket.emit('error', new HandshakeTimeoutError())
+    const onAbort = () => {
+      this.metrics[isServer ? 'server' : 'client'].events?.increment({
+        abort: true
       })
+      this.metrics[isServer ? 'server' : 'client'].errors?.increment({
+        encrypt_abort: true
+      })
+      socket.emit('error', new HandshakeTimeoutError())
+    }
 
+    options?.signal?.addEventListener('abort', onAbort)
+
+    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
       const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
@@ -234,6 +236,9 @@ export class TLS implements ConnectionEncrypter {
         })
       })
     })
+      .finally(() => {
+        options?.signal?.removeEventListener('abort', onAbort)
+      })
   }
 }
 
