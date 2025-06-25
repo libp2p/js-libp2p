@@ -2,8 +2,7 @@
 import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { PriorityQueue } from '@libp2p/utils/priority-queue'
-import { resolvers, multiaddr } from '@multiformats/multiaddr'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
@@ -20,13 +19,13 @@ import {
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
-import { resolveMultiaddrs } from './utils.js'
+import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
 import type { DNS } from '@multiformats/dns'
-import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PendingDialTarget {
@@ -45,7 +44,7 @@ interface DialerInit {
   maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
-  resolvers?: Record<string, Resolver>
+  resolvers?: Record<string, MultiaddrResolver>
   connections?: PeerMap<Connection[]>
 }
 
@@ -80,6 +79,7 @@ export class DialQueue {
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
+  private readonly resolvers: Record<string, MultiaddrResolver>
 
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter
@@ -89,13 +89,10 @@ export class DialQueue {
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
     this.components = components
+    this.resolvers = init.resolvers ?? defaultOptions.resolvers
 
     this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
-
-    for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      resolvers.set(key, value)
-    }
 
     // controls dial concurrency
     this.queue = new PriorityQueue({
@@ -415,7 +412,7 @@ export class DialQueue {
     // dnsaddrs are resolved
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
-        const result = await resolveMultiaddrs(addr.multiaddr, {
+        const result = await resolveMultiaddr(addr.multiaddr, this.resolvers, {
           dns: this.components.dns,
           ...options,
           log: this.log
