@@ -1,7 +1,8 @@
-import { dns, RecordType, type DNS } from '@multiformats/dns'
+import { dns, RecordType } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrResolver, MultiaddrResolveOptions } from '@libp2p/interface'
+import type { DNS } from '@multiformats/dns'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 class DNSAddrResolver implements MultiaddrResolver {
   private dns?: DNS

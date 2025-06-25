@@ -26,10 +26,10 @@ import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
+import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
-import type { DNS } from '@multiformats/dns'
 
 /**
  * Used by the connection manager to sort addresses into order before dialling

@@ -1,7 +1,7 @@
-import type { Multiaddr } from '@multiformats/multiaddr'
-import { MAX_RECURSIVE_DEPTH } from '../constants.defaults.ts'
 import { RecursionLimitError } from '../../errors.ts'
+import { MAX_RECURSIVE_DEPTH } from '../constants.defaults.ts'
 import type { MultiaddrResolveOptions, MultiaddrResolver } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ResolveOptions extends MultiaddrResolveOptions {
   /**
