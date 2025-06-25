@@ -414,8 +414,8 @@ export class DialQueue {
       addrs.map(async addr => {
         const result = await resolveMultiaddr(addr.multiaddr, this.resolvers, {
           dns: this.components.dns,
-          ...options,
-          log: this.log
+          log: this.log,
+          ...options
         })
 
         if (result.length === 1 && result[0].equals(addr.multiaddr)) {
