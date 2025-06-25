@@ -104,7 +104,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     log.error('error during query - %e', evt.detail)
   })
 
-  const onAbort = () => {
+  const onAbort = (): void => {
     queue.abort()
     events.end(new AbortError())
   }
