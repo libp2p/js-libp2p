@@ -1,13 +1,13 @@
+import { defaultLogger } from '@libp2p/logger'
 import { RecordType } from '@multiformats/dns'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { multiaddr } from '@multiformats/multiaddr'
 import { dnsaddrResolver, resolveMultiaddr } from '../../src/connection-manager/resolvers/index.js'
+import type { Logger, MultiaddrResolver } from '@libp2p/interface'
 import type { DNS } from '@multiformats/dns'
 import type { StubbedInstance } from 'sinon-ts'
-import type { ComponentLogger, Logger, MultiaddrResolver } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 
 const stubs: Record<string, string[]> = {
   '_dnsaddr.bootstrap.libp2p.io': [
@@ -54,7 +54,7 @@ const stubs: Record<string, string[]> = {
   ]
 }
 
-describe.only('multiaddr resolve', () => {
+describe('multiaddr resolve', () => {
   let dns: StubbedInstance<DNS>
   let resolvers: Record<string, MultiaddrResolver>
   let log: Logger
