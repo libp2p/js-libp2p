@@ -1,5 +1,3 @@
-# @libp2p/autonat
-
 # @libp2p/autonat-v2
 
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
@@ -7,7 +5,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-> Implementation of the Autonat Protocol v2
+> Implementation of the AutoNAT Protocol v2
 
 # About
 
@@ -26,31 +24,22 @@ repo and examine the changes made.
 
 -->
 
-The AutoNAT service uses the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/).
-The service confirms addresses are dialable by remote peers, and updates the list it advertises.
+The AutoNATv2 service implements the [AutoNAT v2 protocol](https://github.com/libp2p/specs/blob/master/autonat/autonat-v2.md)
+to confirm whether addresses the node is listening on are dialable by remote
+peers.
 
-The service dials randomly selected peers with a request to verify it's external addresses.
-The request includes a list of public multiaddrs (addressManager.getObservedAddrs()).
-The remote peers dial that list and respond with the results.
-
-The AutoNAT service uses those responses to either:
-
-- addressManager.confirmObservedAddr(addr)
-- addressManager.removeObservedAddr(addr)
-
-The result list of candidates and confirmed addresses can be found
-at addressManager.getObservedAddrs()
+It does not implement NAT hole punching.
 
 ## Example
 
 ```typescript
 import { createLibp2p } from 'libp2p'
-import { autoNAT } from '@libp2p/autonat'
+import { autoNATv2 } from '@libp2p/autonat-v2'
 
 const node = await createLibp2p({
   // ...other options
   services: {
-    autoNAT: autoNAT()
+    autoNAT: autoNATv2()
   }
 })
 ```
