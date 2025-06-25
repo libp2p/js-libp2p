@@ -23,7 +23,7 @@ import type { PeerInfo } from './peer-info.js'
 import type { PeerRouting } from './peer-routing.js'
 import type { Address, Peer, PeerStore } from './peer-store.js'
 import type { Startable } from './startable.js'
-import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
+import type { StreamHandler, StreamHandlerOptions, StreamMiddleware } from './stream-handler.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
 import type { DNS } from '@multiformats/dns'
@@ -743,6 +743,33 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * ```
    */
   unregister(id: string): void
+
+  /**
+   * Registers one or more middleware implementations that will be invoked for
+   * incoming and outgoing protocol streams that match the passed protocol.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.use('/my/protocol/1.0.0', (stream, connection, next) => {
+   *   // do something with stream and/or connection
+   *   next(stream, connection)
+   * })
+   * ```
+   */
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
+
+  /**
+   * Deregisters all middleware for the passed protocol.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.unuse('/my/protocol/1.0.0')
+   * // any previously registered middleware will no longer be invoked
+   * ```
+   */
+  unuse (protocol: string): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'

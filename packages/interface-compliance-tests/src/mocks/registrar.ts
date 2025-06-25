@@ -1,10 +1,11 @@
 import { mergeOptions } from '@libp2p/utils/merge-options'
-import type { Connection, PeerId, Topology, IncomingStreamData, StreamHandler, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface'
+import type { Connection, PeerId, Topology, IncomingStreamData, StreamHandler, StreamHandlerOptions, StreamHandlerRecord, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export class MockRegistrar implements Registrar {
   private readonly topologies = new Map<string, Array<{ id: string, topology: Topology }>>()
   private readonly handlers = new Map<string, StreamHandlerRecord>()
+  private readonly middleware = new Map<string, StreamMiddleware[]>()
 
   getProtocols (): string[] {
     return Array.from(this.handlers.keys()).sort()
@@ -68,6 +69,18 @@ export class MockRegistrar implements Registrar {
 
   getTopologies (protocol: string): Topology[] {
     return (this.topologies.get(protocol) ?? []).map(t => t.topology)
+  }
+
+  use (protocol: string, middleware: StreamMiddleware[]): void {
+    this.middleware.set(protocol, middleware)
+  }
+
+  unuse (protocol: string): void {
+    this.middleware.delete(protocol)
+  }
+
+  getMiddleware (protocol: string): StreamMiddleware[] {
+    return this.middleware.get(protocol) ?? []
   }
 }
 
