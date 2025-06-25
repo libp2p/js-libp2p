@@ -41,6 +41,7 @@
     "build": "aegir build"
   },
   "dependencies": {
+    "@multiformats/dns": "^1.0.6",
     "@multiformats/multiaddr": "^12.4.4",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
