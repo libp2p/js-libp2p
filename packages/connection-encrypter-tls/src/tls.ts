@@ -147,7 +147,7 @@ export class TLS implements ConnectionEncrypter {
       })
     }
 
-    const onAbort = () => {
+    const onAbort = (): void => {
       this.metrics[isServer ? 'server' : 'client'].events?.increment({
         abort: true
       })
