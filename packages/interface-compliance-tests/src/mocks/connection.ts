@@ -153,11 +153,12 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
             const { handler } = registrar.getHandler(protocol)
 
             handler({ connection, stream: muxedStream })
-          }).catch(err => {
-            log.error(err)
+          })
+          .catch(err => {
+            log.error('incoming stream handler error - %e', err)
           })
       } catch (err: any) {
-        log.error(err)
+        log.error('error handling incoming stream - %e', err)
       }
     },
     onStreamEnd: (muxedStream) => {
