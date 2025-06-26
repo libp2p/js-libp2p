@@ -606,14 +606,6 @@ export class Upgrader implements UpgraderInterface {
         } catch (err: any) {
           connection.log.error('could not create new outbound stream on connection %s %a for protocols %s - %e', direction === 'inbound' ? 'from' : 'to', opts.maConn.remoteAddr, protocols, err)
 
-          // clean up failed streams
-          if (muxer.streams != null) {
-            const index = muxer.streams.indexOf(muxedStream)
-            if (index !== -1) {
-              muxer.streams.splice(index, 1)
-            }
-          }
-
           if (muxedStream.timeline.close == null) {
             muxedStream.abort(err)
           }
@@ -726,7 +718,7 @@ export class Upgrader implements UpgraderInterface {
         handler({ stream: s, connection: c })
       })
       .catch(err => {
-        connection.log.error('middleware threw for inbound stream %s - %e', stream.id, err)
+        connection.log.error('middleware error for inbound stream %s - %e', stream.id, err)
         stream.abort(err)
       })
   }
