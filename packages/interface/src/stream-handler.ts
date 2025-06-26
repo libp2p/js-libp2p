@@ -24,7 +24,7 @@ export interface StreamHandler {
  * Stream middleware allows accessing stream data outside of the stream handler
  */
 export interface StreamMiddleware {
-  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void): void
+  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void | Promise<void>): void | Promise<void>
 }
 
 export interface StreamHandlerOptions extends AbortOptions {
