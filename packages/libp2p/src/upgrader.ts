@@ -379,23 +379,22 @@ export class Upgrader implements UpgraderInterface {
     })
   }
 
-  async _runMiddlewareChain(
+  async _runMiddlewareChain (
     stream: Stream,
     connection: Connection,
     middleware: StreamMiddleware[],
     log?: Logger
   ): Promise<{ stream: Stream; connection: Connection }> {
-    let i = 0
+    for (let i = 0; i < middleware.length; i++) {
+      const mw = middleware[i]
+      log?.trace('running middleware', i, mw)
 
-    while (i < middleware.length) {
-      log?.trace('running middleware', i, middleware[i])
-
+      // eslint-disable-next-line no-loop-func
       await new Promise<void>((resolve, reject) => {
         try {
-          const result = middleware[i](stream, connection, (s, c) => {
+          const result = mw(stream, connection, (s, c) => {
             stream = s
             connection = c
-            i++
             resolve()
           })
 
@@ -407,7 +406,7 @@ export class Upgrader implements UpgraderInterface {
         }
       })
 
-      log?.trace('ran middleware', i, middleware[i])
+      log?.trace('ran middleware', i, mw)
     }
 
     return { stream, connection }
@@ -707,7 +706,7 @@ export class Upgrader implements UpgraderInterface {
    * Routes incoming streams to the correct handler
    */
   _onStream (opts: OnStreamOptions): void {
-    let { connection, stream, protocol } = opts
+    const { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
     if (connection.limits != null && options.runOnLimitedConnection !== true) {
