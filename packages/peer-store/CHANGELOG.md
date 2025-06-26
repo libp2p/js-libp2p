@@ -68,6 +68,51 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [11.2.6](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.5...peer-store-v11.2.6) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-record bumped from ^8.0.33 to ^8.0.34
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+
+## [11.2.5](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.4...peer-store-v11.2.5) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/peer-record bumped from ^8.0.32 to ^8.0.33
+
+## [11.2.4](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.3...peer-store-v11.2.4) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-record bumped from ^8.0.31 to ^8.0.32
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
 ## [11.2.3](https://github.com/libp2p/js-libp2p/compare/peer-store-v11.2.2...peer-store-v11.2.3) (2025-06-03)
 
 

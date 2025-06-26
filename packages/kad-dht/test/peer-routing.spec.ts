@@ -65,8 +65,7 @@ describe('peer-routing', () => {
     it('should only return DHT servers', async () => {
       const key = Uint8Array.from([0, 1, 2, 3, 4])
       const [
-        serverPeerId,
-        requester
+        serverPeerId
       ] = await getSortedPeers(key)
 
       const serverPeer: Peer = stubInterface<Peer>({
@@ -86,7 +85,7 @@ describe('peer-routing', () => {
         multiaddrs: serverPeer.addresses.map(({ multiaddr }) => multiaddr)
       })
 
-      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
+      const closer = await peerRouting.getClosestPeersOffline(key)
 
       expect(closer).to.have.lengthOf(1)
       expect(closer[0].id).to.equal(serverPeer.id)
@@ -96,8 +95,7 @@ describe('peer-routing', () => {
       const clientPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
       const key = clientPeerId.toMultihash().bytes
       const [
-        serverPeerId,
-        requester
+        serverPeerId
       ] = await getSortedPeers(key)
 
       const clientPeer: Peer = stubInterface<Peer>({
@@ -130,57 +128,11 @@ describe('peer-routing', () => {
         multiaddrs: clientPeer.addresses.map(({ multiaddr }) => multiaddr)
       })
 
-      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
+      const closer = await peerRouting.getClosestPeersOffline(key)
 
       expect(closer).to.have.lengthOf(2)
       expect(closer[0].id).to.equal(clientPeer.id)
       expect(closer[1].id).to.equal(serverPeer.id)
-    })
-
-    // this is not in the spec
-    it.skip('should only include peers closer than the requesting peer', async () => {
-      const key = Uint8Array.from([0, 1, 2, 3, 4])
-      const [
-        closerPeerId,
-        requester,
-        furtherPeerId
-      ] = await getSortedPeers(key)
-
-      const closerPeer: Peer = stubInterface<Peer>({
-        id: closerPeerId.peerId,
-        addresses: [{
-          isCertified: true,
-          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
-        }]
-      })
-      const furtherPeer: Peer = stubInterface<Peer>({
-        id: furtherPeerId.peerId,
-        addresses: [{
-          isCertified: true,
-          multiaddr: multiaddr('/ip4/127.0.0.1/tcp/4002')
-        }]
-      })
-
-      init.routingTable.closestPeers.returns([
-        closerPeer.id,
-        furtherPeer.id
-      ])
-
-      components.peerStore.get.withArgs(closerPeer.id).resolves(closerPeer)
-      components.peerStore.getInfo.withArgs(closerPeer.id).resolves({
-        id: closerPeer.id,
-        multiaddrs: closerPeer.addresses.map(({ multiaddr }) => multiaddr)
-      })
-      components.peerStore.get.withArgs(furtherPeer.id).resolves(furtherPeer)
-      components.peerStore.getInfo.withArgs(furtherPeer.id).resolves({
-        id: furtherPeer.id,
-        multiaddrs: furtherPeer.addresses.map(({ multiaddr }) => multiaddr)
-      })
-
-      const closer = await peerRouting.getCloserPeersOffline(key, requester.peerId)
-
-      expect(closer).to.have.lengthOf(1)
-      expect(closer[0].id).to.equal(closerPeer.id)
     })
   })
 })

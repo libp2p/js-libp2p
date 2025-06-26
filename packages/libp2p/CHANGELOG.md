@@ -110,6 +110,62 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.11...libp2p-v2.8.12) (2025-06-25)
+
+
+### Bug Fixes
+
+* add multiaddr resolvers ([#3200](https://github.com/libp2p/js-libp2p/issues/3200)) ([1c1c49e](https://github.com/libp2p/js-libp2p/commit/1c1c49ef4f25dcd8925d134f7e185658c10d2d6b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/interface-internal bumped from ^2.3.17 to ^2.3.18
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/multistream-select bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-store bumped from ^11.2.5 to ^11.2.6
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+
+## [2.8.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.10...libp2p-v2.8.11) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.16 to ^2.3.17
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/peer-store bumped from ^11.2.4 to ^11.2.5
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+
+## [2.8.10](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.9...libp2p-v2.8.10) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/interface-internal bumped from ^2.3.15 to ^2.3.16
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/multistream-select bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-store bumped from ^11.2.3 to ^11.2.4
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+
 ## [2.8.9](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.8...libp2p-v2.8.9) (2025-06-03)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pubsub",
-  "version": "10.1.14",
+  "version": "10.1.17",
   "description": "libp2p pubsub base class",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub#readme",
@@ -73,12 +73,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.5",
-    "@libp2p/interface": "^2.10.3",
-    "@libp2p/interface-internal": "^2.3.15",
-    "@libp2p/peer-collections": "^6.0.31",
-    "@libp2p/peer-id": "^5.1.6",
-    "@libp2p/utils": "^6.6.6",
+    "@libp2p/crypto": "^5.1.7",
+    "@libp2p/interface": "^2.10.5",
+    "@libp2p/interface-internal": "^2.3.18",
+    "@libp2p/peer-collections": "^6.0.34",
+    "@libp2p/peer-id": "^5.1.8",
+    "@libp2p/utils": "^6.7.1",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
@@ -89,7 +89,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.19",
+    "@libp2p/logger": "^5.1.21",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",

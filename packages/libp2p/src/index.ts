@@ -34,6 +34,8 @@ export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
 
 export type { AddressManagerInit, AddressFilter }
 
+export { dnsaddrResolver } from './connection-manager/resolvers/index.ts'
+
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
  */

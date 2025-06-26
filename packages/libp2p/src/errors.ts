@@ -114,3 +114,10 @@ export class TransportUnavailableError extends Error {
     this.name = 'TransportUnavailableError'
   }
 }
+
+export class RecursionLimitError extends Error {
+  constructor (message = 'Max recursive depth reached') {
+    super(message)
+    this.name = 'RecursionLimitError'
+  }
+}

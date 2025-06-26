@@ -104,6 +104,10 @@ class MockConnectionManager implements ConnectionManager, Startable {
     return 10_000
   }
 
+  setMaxConnections (): void {
+
+  }
+
   async openConnection (peerId: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<Connection> {
     if (isMultiaddr(peerId)) {
       throw new UnsupportedOperationError('Dialing multiaddrs not supported')
