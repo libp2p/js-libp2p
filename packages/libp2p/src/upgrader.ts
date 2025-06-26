@@ -10,7 +10,7 @@ import { createConnection } from './connection/index.js'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup, ClearableSignal } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, Stream, ConnectionProtector, NewStreamOptions, ConnectionEncrypter, SecuredConnection, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxer, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, SecureConnectionOptions, CounterGroup, ClearableSignal, Logger, StreamMiddleware } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
 
@@ -379,6 +379,39 @@ export class Upgrader implements UpgraderInterface {
     })
   }
 
+  async _runMiddlewareChain (
+    stream: Stream,
+    connection: Connection,
+    middleware: StreamMiddleware[],
+    log?: Logger
+  ): Promise<{ stream: Stream; connection: Connection }> {
+    for (let i = 0; i < middleware.length; i++) {
+      const mw = middleware[i]
+      log?.trace('running middleware', i, mw)
+
+      // eslint-disable-next-line no-loop-func
+      await new Promise<void>((resolve, reject) => {
+        try {
+          const result = mw(stream, connection, (s, c) => {
+            stream = s
+            connection = c
+            resolve()
+          })
+
+          if (result instanceof Promise) {
+            result.catch(reject)
+          }
+        } catch (err) {
+          reject(err)
+        }
+      })
+
+      log?.trace('ran middleware', i, mw)
+    }
+
+    return { stream, connection }
+  }
+
   /**
    * A convenience method for generating a new `Connection`
    */
@@ -395,7 +428,7 @@ export class Upgrader implements UpgraderInterface {
 
     let muxer: StreamMuxer | undefined
     let newStream: ((multicodecs: string[], options?: AbortOptions) => Promise<Stream>) | undefined
-    let connection: Connection // eslint-disable-line prefer-const
+    let connection: Connection
 
     if (muxerFactory != null) {
       // Create the muxer
@@ -488,7 +521,7 @@ export class Upgrader implements UpgraderInterface {
         }
 
         connection.log.trace('starting new stream for protocols %s', protocols)
-        const muxedStream = await muxer.newStream()
+        let muxedStream = await muxer.newStream()
         connection.log.trace('started new stream %s for protocols %s', muxedStream.id, protocols)
 
         try {
@@ -555,6 +588,19 @@ export class Upgrader implements UpgraderInterface {
           }
 
           this.components.metrics?.trackProtocolStream(muxedStream, connection)
+
+          const middleware = this.components.registrar.getMiddleware(protocol)
+
+          middleware.push((stream, connection, next) => {
+            next(stream, connection)
+          })
+
+          ;({ stream: muxedStream, connection } = await this._runMiddlewareChain(
+            muxedStream,
+            connection,
+            middleware,
+            muxedStream.log
+          ))
 
           return muxedStream
         } catch (err: any) {
@@ -659,7 +705,22 @@ export class Upgrader implements UpgraderInterface {
       throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
-    handler({ connection, stream })
+    const middleware = this.components.registrar.getMiddleware(protocol)
+
+    if (middleware.length === 0) {
+      // No middleware, call handler immediately
+      handler({ stream, connection })
+      return
+    }
+
+    this._runMiddlewareChain(stream, connection, middleware, stream.log)
+      .then(({ stream: s, connection: c }) => {
+        handler({ stream: s, connection: c })
+      })
+      .catch(err => {
+        connection.log.error('middleware error for inbound stream %s - %e', stream.id, err)
+        stream.abort(err)
+      })
   }
 
   /**
