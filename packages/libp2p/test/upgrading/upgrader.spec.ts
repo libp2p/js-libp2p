@@ -772,7 +772,7 @@ describe('upgrader', () => {
     expect(conn.streams).to.have.lengthOf(1)
   })
 
-  it.only('should not call outbound middleware if previous middleware throws', async () => {
+  it('should not call outbound middleware if previous middleware throws', async () => {
     const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
       throw new Error('boom')
     })
@@ -827,7 +827,7 @@ describe('upgrader', () => {
     expect(conn.streams).to.have.lengthOf(0)
   })
 
-  it.only('should not call inbound middleware if previous throws', async () => {
+  it('should not call inbound middleware if previous throws', async () => {
     const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
       throw new Error('boom')
     })
