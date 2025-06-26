@@ -10,7 +10,7 @@ import drain from 'it-drain'
 import { encode } from 'it-length-prefixed'
 import map from 'it-map'
 import { pEvent } from 'p-event'
-import Sinon, { type SinonStub } from 'sinon'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Upgrader } from '../../src/upgrader.js'
@@ -19,6 +19,7 @@ import type { UpgraderComponents, UpgraderInit } from '../../src/upgrader.js'
 import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit, Connection, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { SinonStub } from 'sinon'
 
 describe('upgrader', () => {
   let components: UpgraderComponents
@@ -40,7 +41,7 @@ describe('upgrader', () => {
   function stubMuxerFactory (protocol: string = streamProtocol, onInit?: (init: StreamMuxerInit) => void): StreamMuxerFactory {
     return stubInterface<StreamMuxerFactory>({
       protocol: muxerProtocol,
-      createStreamMuxer(init: StreamMuxerInit = {}): StreamMuxer {
+      createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
         onInit?.(init)
 
         // our “stub” muxer keeps its own streams list
@@ -68,18 +69,21 @@ describe('upgrader', () => {
             const abortStub = outgoingStream.abort as SinonStub<[Error], void>
             abortStub.callsFake((_: Error) => {
               const idx = streams.indexOf(outgoingStream)
-              if (idx !== -1) streams.splice(idx, 1)
-
+              if (idx !== -1) {
+                streams.splice(idx, 1)
+              }
             })
 
             const closeStub = outgoingStream.close as SinonStub<[AbortOptions?], Promise<void>>
             closeStub.callsFake(async (_?: AbortOptions) => {
               const idx = streams.indexOf(outgoingStream)
-              if (idx !== -1) streams.splice(idx, 1)
+              if (idx !== -1) {
+                streams.splice(idx, 1)
+              }
             })
 
             return outgoingStream
-          },
+          }
         })
 
         // wrap the user’s onIncomingStream callback so we track inbound
@@ -852,7 +856,7 @@ describe('upgrader', () => {
       expect(middleware1.called).to.be.true()
       expect(middleware2.called).to.be.false()
       expect(conn.streams).to.have.lengthOf(0)
-      expect(stream).to.be.undefined
+      expect(stream).to.be.undefined()
     })
 
     it('should not call inbound middleware if previous middleware errors', async () => {
