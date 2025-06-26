@@ -26,6 +26,7 @@ import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
+import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
@@ -171,6 +172,29 @@ export interface ComponentLogger {
    * ```
    */
   forComponent(name: string): Logger
+}
+
+export interface MultiaddrResolveOptions extends AbortOptions, LoggerOptions {
+  /**
+   * An optional DNS resolver
+   */
+  dns?: DNS
+}
+
+/**
+ * `MultiaddrResolver`s perform resolution of multiaddr components that require
+ * translation by external systems (for example DNSADDR to TXT records).
+ */
+export interface MultiaddrResolver {
+  /**
+   * Returns true if this resolver can resolve components of this multiaddr
+   */
+  canResolve (address: Multiaddr): boolean
+
+  /**
+   * Returns one or more multiaddrs with components resolved to other values
+   */
+  resolve (address: Multiaddr, options: MultiaddrResolveOptions): Promise<Multiaddr[]>
 }
 
 /**

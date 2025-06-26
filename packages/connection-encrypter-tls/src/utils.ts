@@ -13,7 +13,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
-import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey } from '@libp2p/interface'
+import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions } from '@libp2p/interface'
 import type { Pushable } from 'it-queueless-pushable'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -91,7 +91,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   return remotePeerId
 }
 
-export async function generateCertificate (privateKey: PrivateKey): Promise<{ cert: string, key: string }> {
+export async function generateCertificate (privateKey: PrivateKey, options?: AbortOptions): Promise<{ cert: string, key: string }> {
   const now = Date.now()
 
   const alg = {
@@ -101,9 +101,13 @@ export async function generateCertificate (privateKey: PrivateKey): Promise<{ ce
   }
 
   const keys = await crypto.subtle.generateKey(alg, true, ['sign'])
+  options?.signal?.throwIfAborted()
+
   const certPublicKeySpki = await crypto.subtle.exportKey('spki', keys.publicKey)
+  options?.signal?.throwIfAborted()
+
   const dataToSign = encodeSignatureData(certPublicKeySpki)
-  const sig = await privateKey.sign(dataToSign)
+  const sig = await privateKey.sign(dataToSign, options)
   const notAfter = new Date(now + CERT_VALIDITY_PERIOD_TO)
   // workaround for https://github.com/PeculiarVentures/x509/issues/73
   notAfter.setMilliseconds(0)
@@ -133,8 +137,10 @@ export async function generateCertificate (privateKey: PrivateKey): Promise<{ ce
       }).toBER())
     ]
   })
+  options?.signal?.throwIfAborted()
 
   const certPrivateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keys.privateKey)
+  options?.signal?.throwIfAborted()
 
   return {
     cert: selfCert.toString(),
