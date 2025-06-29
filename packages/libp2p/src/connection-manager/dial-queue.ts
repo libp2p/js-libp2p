@@ -36,6 +36,7 @@ export interface PendingDialTarget {
 interface DialQueueJobOptions extends PriorityQueueJobOptions, ProgressOptions<OpenConnectionProgressEvents> {
   peerId?: PeerId
   multiaddrs: Set<string>
+  force?: boolean
 }
 
 interface DialerInit {
@@ -135,11 +136,12 @@ export class DialQueue {
    */
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
+    const { force } = options
 
     // make sure we don't have an existing connection to any of the addresses we
     // are about to dial
     const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
-      if (options.force === true) {
+      if (force === true) {
         return false
       }
 
@@ -220,6 +222,7 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
+      force,
       signal: options.signal ?? AbortSignal.timeout(this.dialTimeout),
       onProgress: options.onProgress
     })
@@ -311,6 +314,31 @@ export class DialQueue {
             })
           } catch (err: any) {
             this.log.error('could not update last dial failure key for %p', peerId, err)
+          }
+
+          const { remotePeer } = conn
+
+          // make sure we don't have an existing connection to the address we dialed
+          const existingConnection = Array.from(this.connections.values()).flat().find(_conn => {
+            if (options.force === true) {
+              return false
+            }
+
+            if (_conn.remotePeer.equals(remotePeer) && _conn !== conn) {
+              return true
+            }
+
+            return false
+          })
+
+          if (existingConnection?.status === 'open') {
+            this.log('already connected to %a', existingConnection.remoteAddr)
+            options?.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+
+            this.log('closing duplicate connection to %p', remotePeer)
+            await conn.close()
+
+            return existingConnection
           }
 
           // dial successful, return the connection
