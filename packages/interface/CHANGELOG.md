@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.10.5](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.4...interface-v2.10.5) (2025-06-25)
+
+
+### Bug Fixes
+
+* add multiaddr resolvers ([#3200](https://github.com/libp2p/js-libp2p/issues/3200)) ([1c1c49e](https://github.com/libp2p/js-libp2p/commit/1c1c49ef4f25dcd8925d134f7e185658c10d2d6b))
+
 ## [2.10.4](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.3...interface-v2.10.4) (2025-06-16)
 
 

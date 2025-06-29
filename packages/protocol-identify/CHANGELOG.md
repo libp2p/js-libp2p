@@ -76,6 +76,29 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.37](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.36...identify-v3.0.37) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/interface-internal bumped from ^2.3.17 to ^2.3.18
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-record bumped from ^8.0.33 to ^8.0.34
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+
+## [3.0.36](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.35...identify-v3.0.36) (2025-06-18)
+
+
+### Bug Fixes
+
+* debounce sending identify push messages ([#3193](https://github.com/libp2p/js-libp2p/issues/3193)) ([451e011](https://github.com/libp2p/js-libp2p/commit/451e011d471141d00d6fb6ad86c7f62bee6c7e26)), closes [#2389](https://github.com/libp2p/js-libp2p/issues/2389)
+
 ## [3.0.35](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.34...identify-v3.0.35) (2025-06-17)
 
 

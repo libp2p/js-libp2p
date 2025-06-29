@@ -2,19 +2,19 @@ import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, I
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { multiaddr } from '@multiformats/multiaddr'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
+import { dnsaddrResolver } from './resolvers/index.ts'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
-import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_DIAL_PRIORITY = 50
@@ -112,7 +112,7 @@ export interface ConnectionManagerInit {
   /**
    * Multiaddr resolvers to use when dialling
    */
-  resolvers?: Record<string, Resolver>
+  resolvers?: Record<string, MultiaddrResolver>
 
   /**
    * A list of multiaddrs that will always be allowed (except if they are in the

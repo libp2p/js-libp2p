@@ -17,6 +17,15 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.7](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.6...crypto-v5.1.7) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+
 ## [5.1.6](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.5...crypto-v5.1.6) (2025-06-16)
 
 

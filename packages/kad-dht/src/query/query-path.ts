@@ -104,118 +104,124 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     log.error('error during query - %e', evt.detail)
   })
 
-  signal.addEventListener('abort', () => {
+  const onAbort = (): void => {
     queue.abort()
     events.end(new AbortError())
-  })
+  }
 
-  // perform lookups on kadId, not the actual value
-  const kadId = await convertBuffer(key, {
-    signal
-  })
+  signal.addEventListener('abort', onAbort)
 
-  /**
-   * Adds the passed peer to the query queue if it's not us and no other path
-   * has passed through this peer
-   */
-  function queryPeer (peer: PeerInfo, peerKadId: Uint8Array): void {
-    if (peer == null) {
-      return
-    }
+  try {
+    // perform lookups on kadId, not the actual value
+    const kadId = await convertBuffer(key, {
+      signal
+    })
 
-    peersSeen.add(peer.id.toMultihash().bytes)
+    /**
+     * Adds the passed peer to the query queue if it's not us and no other path
+     * has passed through this peer
+     */
+    function queryPeer (peer: PeerInfo, peerKadId: Uint8Array): void {
+      if (peer == null) {
+        return
+      }
 
-    const peerXor = uint8ArrayXor(peerKadId, kadId)
+      peersSeen.add(peer.id.toMultihash().bytes)
 
-    queue.add(async () => {
-      try {
-        for await (const event of query({
-          ...options,
-          key,
-          peer,
-          path: {
-            index: path,
-            queued: queue.queued,
-            running: queue.running,
-            total: queue.size
-          },
-          numPaths,
-          peerKadId,
-          signal
-        })) {
-          // if there are closer peers and the query has not completed, continue the query
-          if (event.name === 'PEER_RESPONSE') {
-            for (const closerPeer of event.closer) {
-              if (peersSeen.has(closerPeer.id.toMultihash().bytes)) { // eslint-disable-line max-depth
-                log('already seen %p in query', closerPeer.id)
-                continue
-              }
+      const peerXor = uint8ArrayXor(peerKadId, kadId)
 
-              if (ourPeerId.equals(closerPeer.id)) { // eslint-disable-line max-depth
-                log('not querying ourselves')
-                continue
-              }
-
-              if (!(await connectionManager.isDialable(closerPeer.multiaddrs))) { // eslint-disable-line max-depth
-                log('not querying undialable peer')
-                continue
-              }
-
-              const closerPeerKadId = await convertPeerId(closerPeer.id, {
-                signal
-              })
-              const closerPeerXor = uint8ArrayXor(closerPeerKadId, kadId)
-
-              // only continue query if closer peer is actually closer
-              if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
-                log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
-                continue
-              }
-
-              log('querying closer peer %p', closerPeer.id)
-              queryPeer(closerPeer, closerPeerKadId)
-            }
-          }
-
-          events.push({
-            ...event,
+      queue.add(async () => {
+        try {
+          for await (const event of query({
+            ...options,
+            key,
+            peer,
             path: {
               index: path,
               queued: queue.queued,
               running: queue.running,
               total: queue.size
+            },
+            numPaths,
+            peerKadId,
+            signal
+          })) {
+            // if there are closer peers and the query has not completed, continue the query
+            if (event.name === 'PEER_RESPONSE') {
+              for (const closerPeer of event.closer) {
+                if (peersSeen.has(closerPeer.id.toMultihash().bytes)) { // eslint-disable-line max-depth
+                  log('already seen %p in query', closerPeer.id)
+                  continue
+                }
+
+                if (ourPeerId.equals(closerPeer.id)) { // eslint-disable-line max-depth
+                  log('not querying ourselves')
+                  continue
+                }
+
+                if (!(await connectionManager.isDialable(closerPeer.multiaddrs))) { // eslint-disable-line max-depth
+                  log('not querying undialable peer')
+                  continue
+                }
+
+                const closerPeerKadId = await convertPeerId(closerPeer.id, {
+                  signal
+                })
+                const closerPeerXor = uint8ArrayXor(closerPeerKadId, kadId)
+
+                // only continue query if closer peer is actually closer
+                if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
+                  log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
+                  continue
+                }
+
+                log('querying closer peer %p', closerPeer.id)
+                queryPeer(closerPeer, closerPeerKadId)
+              }
             }
-          })
-        }
-      } catch (err: any) {
-        // yield error event if query is continuing
-        events.push(queryErrorEvent({
-          from: peer.id,
-          error: err,
-          path: {
-            index: path,
-            queued: queue.queued,
-            running: queue.running - 1,
-            total: queue.size - 1
+
+            events.push({
+              ...event,
+              path: {
+                index: path,
+                queued: queue.queued,
+                running: queue.running,
+                total: queue.size
+              }
+            })
           }
-        }, options))
-      }
-    }, {
-      distance: peerXor
-    }).catch(err => {
-      log.error('error during query - %e', err)
-    })
+        } catch (err: any) {
+          // yield error event if query is continuing
+          events.push(queryErrorEvent({
+            from: peer.id,
+            error: err,
+            path: {
+              index: path,
+              queued: queue.queued,
+              running: queue.running - 1,
+              total: queue.size - 1
+            }
+          }, options))
+        }
+      }, {
+        distance: peerXor
+      }).catch(err => {
+        log.error('error during query - %e', err)
+      })
+    }
+
+    // begin the query with the starting peers
+    await Promise.all(
+      startingPeers.map(async startingPeer => {
+        queryPeer({ id: startingPeer, multiaddrs: [] }, await convertPeerId(startingPeer, {
+          signal
+        }))
+      })
+    )
+
+    // yield results as they come in
+    yield * events
+  } finally {
+    signal.removeEventListener('abort', onAbort)
   }
-
-  // begin the query with the starting peers
-  await Promise.all(
-    startingPeers.map(async startingPeer => {
-      queryPeer({ id: startingPeer, multiaddrs: [] }, await convertPeerId(startingPeer, {
-        signal
-      }))
-    })
-  )
-
-  // yield results as they come in
-  yield * events
 }

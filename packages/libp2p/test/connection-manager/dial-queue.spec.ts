@@ -5,7 +5,7 @@ import { NotFoundError } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, resolvers } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { TCP, WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -14,7 +14,7 @@ import { raceSignal } from 'race-signal'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { DialQueue } from '../../src/connection-manager/dial-queue.js'
-import type { ComponentLogger, Connection, ConnectionGater, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
+import type { ComponentLogger, Connection, ConnectionGater, MultiaddrResolver, PeerId, PeerRouting, PeerStore, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -295,8 +295,8 @@ describe('dial queue', () => {
     const ma = multiaddr(`/dnsaddr/example.com/p2p/${remotePeer}`)
     const maStr = `/ip4/123.123.123.123/tcp/2348/p2p/${remotePeer}`
     const resolvedAddresses = [
-      `/ip4/234.234.234.234/tcp/4213/p2p/${otherRemotePeer}`,
-      maStr
+      multiaddr(`/ip4/234.234.234.234/tcp/4213/p2p/${otherRemotePeer}`),
+      multiaddr(maStr)
     ]
 
     let resolvedDNSAddrs = false
@@ -304,17 +304,23 @@ describe('dial queue', () => {
 
     // simulate a DNSAddr that resolves to multiple different peers like
     // bootstrap.libp2p.io
-    resolvers.set('dnsaddr', async (addr) => {
-      if (addr.equals(ma)) {
-        resolvedDNSAddrs = true
-        return resolvedAddresses
-      }
+    const resolvers: Record<string, MultiaddrResolver> = {
+      dnsaddr: {
+        canResolve: (ma) => ma.getComponents().some(({ name }) => name === 'dnsaddr'),
+        resolve: async (addr) => {
+          if (addr.equals(ma)) {
+            resolvedDNSAddrs = true
+            return resolvedAddresses
+          }
 
-      return []
-    })
+          return [ma]
+        }
+      }
+    }
 
     dialer = new DialQueue(components, {
-      maxParallelDials: 50
+      maxParallelDials: 50,
+      resolvers
     })
     components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
 
@@ -335,8 +341,6 @@ describe('dial queue', () => {
     await expect(dialer.dial(ma)).to.eventually.equal(connection)
     expect(resolvedDNSAddrs).to.be.true('Did not resolve DNSAddrs')
     expect(dialedBadAddress).to.be.false('Dialed address with wrong peer id')
-
-    resolvers.delete('dnsaddr')
   })
 
   it('should dial WebRTC address with peer id appended', async () => {
