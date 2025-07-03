@@ -111,7 +111,7 @@ describe('circuit-relay', () => {
     expect(event.detail.remotePeer.toString()).to.equal(remote.peerId.toString())
   })
 
-  it.only('should deduplicate relayed connections', async () => {
+  it('should deduplicate relayed connections', async () => {
     remote = await createLibp2p({
       addresses: {
         listen: [
