@@ -78,6 +78,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.44](https://github.com/libp2p/js-libp2p/compare/mplex-v11.0.43...mplex-v11.0.44) (2025-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.13 to ^6.4.14
+
 ## [11.0.43](https://github.com/libp2p/js-libp2p/compare/mplex-v11.0.42...mplex-v11.0.43) (2025-06-25)
 
 

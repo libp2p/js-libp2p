@@ -111,6 +111,20 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.21](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.20...webrtc-v5.2.21) (2025-07-03)
+
+
+### Bug Fixes
+
+* do not close relay connection after WebRTC upgrade ([#3205](https://github.com/libp2p/js-libp2p/issues/3205)) ([cfe2be4](https://github.com/libp2p/js-libp2p/commit/cfe2be4c9319b68f8e68df8021b9ee3c1a7236fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.13 to ^6.4.14
+
 ## [5.2.20](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.19...webrtc-v5.2.20) (2025-06-25)
 
 
