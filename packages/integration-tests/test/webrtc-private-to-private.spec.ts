@@ -11,9 +11,17 @@ import { webSockets } from '@libp2p/websockets'
 import { Circuit, WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
+import { isWebWorker } from 'wherearewe'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('webrtc private-to-private', () => {
+  if (isWebWorker) {
+    it.skip('tests are skipped because WebWorkers cannot use WebRTC', () => {
+
+    })
+    return
+  }
+
   let local: Libp2p
   let remote: Libp2p
 
