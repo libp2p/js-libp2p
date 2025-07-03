@@ -264,32 +264,20 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   }
 }
 
-export function splitAddr (ma: Multiaddr): { baseAddr: Multiaddr, peerId: PeerId } {
-  const addrs = ma.toString().split('/webrtc/')
-  if (addrs.length !== 2) {
-    throw new InvalidParametersError('webrtc protocol was not present in multiaddr')
+export function splitAddr (ma: Multiaddr): { circuitAddress: Multiaddr, targetPeer: PeerId } {
+  const target = ma.getComponents()
+    .filter(({ name }) => name === 'p2p')
+    .map(({ value }) => value)
+    .pop()
+
+  if (target == null) {
+    throw new InvalidParametersError('Destination peer id was missing')
   }
 
-  if (!addrs[0].includes('/p2p-circuit')) {
-    throw new InvalidParametersError('p2p-circuit protocol was not present in multiaddr')
-  }
+  const circuitAddress = multiaddr(
+    ma.getComponents()
+      .filter(({ name }) => name !== 'webrtc')
+  )
 
-  // look for remote peerId
-  let remoteAddr = multiaddr(addrs[0])
-  const destination = multiaddr('/' + addrs[1])
-
-  const destinationIdString = destination.getPeerId()
-  if (destinationIdString == null) {
-    throw new InvalidParametersError('destination peer id was missing')
-  }
-
-  const lastProtoInRemote = remoteAddr.protos().pop()
-  if (lastProtoInRemote === undefined) {
-    throw new InvalidParametersError('invalid multiaddr')
-  }
-  if (lastProtoInRemote.name !== 'p2p') {
-    remoteAddr = remoteAddr.encapsulate(`/p2p/${destinationIdString}`)
-  }
-
-  return { baseAddr: remoteAddr, peerId: peerIdFromString(destinationIdString) }
+  return { circuitAddress, targetPeer: peerIdFromString(target) }
 }

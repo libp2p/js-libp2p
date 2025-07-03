@@ -136,10 +136,14 @@ export class DialQueue {
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    // make sure we don't have an existing connection to any of the addresses we
-    // are about to dial
+    // make sure we don't have an existing non-limited connection to any of the
+    // addresses we are about to dial
     const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
       if (options.force === true) {
+        return false
+      }
+
+      if (conn.limits != null) {
         return false
       }
 
