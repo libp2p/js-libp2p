@@ -7,7 +7,7 @@ import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
-import { Circuit } from '@multiformats/mafmt'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
@@ -109,5 +109,67 @@ describe('circuit-relay', () => {
 
     // connection should have been to remote
     expect(event.detail.remotePeer.toString()).to.equal(remote.peerId.toString())
+  })
+
+  it.only('should deduplicate relayed connections', async () => {
+    remote = await createLibp2p({
+      addresses: {
+        listen: [
+          `${process.env.LIMITED_RELAY_MULTIADDR}/p2p-circuit`
+        ]
+      },
+      transports: [
+        circuitRelayTransport(),
+        webSockets()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncrypters: [
+        plaintext()
+      ],
+      connectionGater: {
+        denyDialMultiaddr: () => false
+      },
+      services: {
+        identify: identify()
+      }
+    })
+
+    local = await createLibp2p({
+      transports: [
+        circuitRelayTransport(),
+        webSockets()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncrypters: [
+        plaintext()
+      ],
+      connectionGater: {
+        denyDialMultiaddr: () => false
+      },
+      services: {
+        identify: identify()
+      }
+    })
+
+    const relayedAddress = remote.getMultiaddrs().filter(ma => Circuit.exactMatch(ma))[0]
+
+    if (relayedAddress == null) {
+      throw new Error('Did not have relay address')
+    }
+
+    const limitedConn = await local.dial(relayedAddress)
+    expect(limitedConn).to.have.property('limits').that.is.ok()
+    expect(Circuit.exactMatch(limitedConn.remoteAddr)).to.be.true()
+
+    const otherLimitedConn = await local.dial(relayedAddress)
+    expect(otherLimitedConn).to.have.property('limits').that.is.ok()
+    expect(Circuit.exactMatch(otherLimitedConn.remoteAddr)).to.be.true()
+
+    expect(limitedConn).to.equal(otherLimitedConn)
+    expect(limitedConn).to.have.property('id', otherLimitedConn.id)
   })
 })
