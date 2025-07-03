@@ -4,19 +4,21 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
+import { stop } from '@libp2p/interface'
 import { plaintext } from '@libp2p/plaintext'
-import { webRTC } from '@libp2p/webrtc'
+import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { WebRTC } from '@multiformats/multiaddr-matcher'
+import { Circuit, WebRTC } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('webrtc private-to-private', () => {
   let local: Libp2p
+  let remote: Libp2p
 
   afterEach(async () => {
-    await local?.stop()
+    await stop(local, remote)
   })
 
   it('should listen on two webrtc addresses', async () => {
@@ -52,5 +54,69 @@ describe('webrtc private-to-private', () => {
 
     expect(local.getMultiaddrs().filter(WebRTC.exactMatch))
       .to.have.property('length').that.is.greaterThan(1)
+  })
+
+  it('should dial WebRTC with existing relayed connection', async () => {
+    remote = await createLibp2p({
+      addresses: {
+        listen: [
+          `${process.env.LIMITED_RELAY_MULTIADDR}/p2p-circuit`,
+          '/webrtc'
+        ]
+      },
+      transports: [
+        circuitRelayTransport(),
+        webSockets(),
+        webRTC()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncrypters: [
+        plaintext()
+      ],
+      connectionGater: {
+        denyDialMultiaddr: () => false
+      },
+      services: {
+        identify: identify()
+      }
+    })
+
+    local = await createLibp2p({
+      transports: [
+        circuitRelayTransport(),
+        webSockets(),
+        webRTC(),
+        webRTCDirect()
+      ],
+      streamMuxers: [
+        yamux()
+      ],
+      connectionEncrypters: [
+        plaintext()
+      ],
+      connectionGater: {
+        denyDialMultiaddr: () => false
+      },
+      services: {
+        identify: identify()
+      }
+    })
+
+    const relayedAddress = remote.getMultiaddrs().filter(ma => Circuit.exactMatch(ma)).pop()
+    const webRTCAddress = remote.getMultiaddrs().filter(ma => WebRTC.exactMatch(ma)).pop()
+
+    if (relayedAddress == null || webRTCAddress == null) {
+      throw new Error('Did not have relay and/or WebRTC address')
+    }
+
+    const limitedConn = await local.dial(relayedAddress)
+    expect(limitedConn).to.have.property('limits').that.is.ok()
+    expect(WebRTC.exactMatch(limitedConn.remoteAddr)).to.be.false()
+
+    const webRTCConn = await local.dial(webRTCAddress)
+    expect(webRTCConn).to.have.property('limits').that.is.not.ok()
+    expect(WebRTC.exactMatch(webRTCConn.remoteAddr)).to.be.true()
   })
 })

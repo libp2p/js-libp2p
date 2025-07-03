@@ -69,6 +69,51 @@ export default {
         }
       })
 
+      const libp2pLimitedRelay = await createLibp2p({
+        logger: prefixLogger('limited-relay'),
+        connectionManager: {
+          inboundConnectionThreshold: Infinity
+        },
+        addresses: {
+          listen: [
+            '/ip4/127.0.0.1/tcp/0/ws',
+            '/ip4/127.0.0.1/tcp/0/ws',
+            '/ip4/0.0.0.0/udp/0/webrtc-direct',
+            '/ip4/0.0.0.0/udp/0/webrtc-direct'
+          ]
+        },
+        transports: [
+          circuitRelayTransport(),
+          webSockets(),
+          webRTCDirect()
+        ],
+        streamMuxers: [
+          yamux(),
+          () => mockMuxer(),
+          mplex()
+        ],
+        connectionEncrypters: [
+          noise(),
+          plaintext()
+        ],
+        services: {
+          identify: identify(),
+          relay: circuitRelayServer({
+            reservations: {
+              maxReservations: Infinity
+            }
+          }),
+          echo: echo({
+            maxInboundStreams: 5
+          }),
+          ping: ping()
+        },
+        connectionMonitor: {
+          enabled: false
+        }
+      })
+
+
       const goLibp2pRelay = await createGoLibp2pRelay()
       const wsAddresses = libp2p.getMultiaddrs().filter(ma => WebSockets.exactMatch(ma))
       const webRTCDirectPorts = new Set()
@@ -88,16 +133,19 @@ export default {
 
           return WebRTCDirect.exactMatch(ma)
         })
+      const limitedWsAddresses = libp2pLimitedRelay.getMultiaddrs().filter(ma => WebSockets.exactMatch(ma))
 
       return {
         libp2p,
         goLibp2pRelay,
+        libp2pLimitedRelay,
         env: {
           RELAY_MULTIADDR: wsAddresses[0],
           RELAY_WS_MULTIADDR_0: wsAddresses[0],
           RELAY_WS_MULTIADDR_1: wsAddresses[1],
           RELAY_WEBRTC_DIRECT_MULTIADDR_0: webRTCDirectAddresses[0],
           RELAY_WEBRTC_DIRECT_MULTIADDR_1: webRTCDirectAddresses[1],
+          LIMITED_RELAY_MULTIADDR: limitedWsAddresses[0],
           GO_RELAY_PEER: goLibp2pRelay.peerId,
           GO_RELAY_MULTIADDRS: goLibp2pRelay.multiaddrs,
           GO_RELAY_APIADDR: goLibp2pRelay.apiAddr
@@ -107,6 +155,7 @@ export default {
     after: async (_, before) => {
       await before.libp2p.stop()
       await before.goLibp2pRelay.proc.kill()
+      await before.libp2pLimitedRelay.stop()
     }
   }
 }
