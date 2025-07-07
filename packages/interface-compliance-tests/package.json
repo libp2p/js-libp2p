@@ -109,7 +109,7 @@
     "@libp2p/plaintext": "^2.0.28",
     "@libp2p/utils": "^6.7.1",
     "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^1.7.2",
+    "@multiformats/multiaddr-matcher": "^2.0.0",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.14",
     "any-signal": "^4.1.1",

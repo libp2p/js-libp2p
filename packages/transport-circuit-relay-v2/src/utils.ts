@@ -1,5 +1,5 @@
 import { P2P } from '@multiformats/multiaddr-matcher'
-import { fmt, literal, and } from '@multiformats/multiaddr-matcher/utils'
+import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -9,6 +9,7 @@ import type { Limit } from './pb/index.js'
 import type { ConnectionLimits, LoggerOptions, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 
 async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }, options: LoggerOptions): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
   const limitBytes = limit.remaining
@@ -197,12 +198,12 @@ export class LimitTracker {
  * A custom matcher that tells us to listen on a particular relay
  */
 export const CircuitListen = fmt(
-  and(P2P.matchers[0], literal('p2p-circuit'))
+  and(P2P.matchers[0], code(CODE_P2P_CIRCUIT))
 )
 
 /**
  * A custom matcher that tells us to discover available relays
  */
 export const CircuitSearch = fmt(
-  literal('p2p-circuit')
+  code(CODE_P2P_CIRCUIT)
 )

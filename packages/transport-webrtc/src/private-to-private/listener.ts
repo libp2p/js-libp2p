@@ -1,12 +1,12 @@
 import { P2P } from '@multiformats/multiaddr-matcher'
-import { fmt, literal } from '@multiformats/multiaddr-matcher/utils'
+import { fmt, code } from '@multiformats/multiaddr-matcher/utils'
 import { TypedEventEmitter } from 'main-event'
 import type { PeerId, ListenerEvents, Listener, Libp2pEvents } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P_CIRCUIT, type Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
-const Circuit = fmt(P2P.matchers[0], literal('p2p-circuit'))
+const Circuit = fmt(P2P.matchers[0], code(CODE_P2P_CIRCUIT))
 
 export interface WebRTCPeerListenerComponents {
   peerId: PeerId
