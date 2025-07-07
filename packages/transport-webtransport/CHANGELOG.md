@@ -96,6 +96,16 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.0.49](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.48...webtransport-v5.0.49) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+* The following workspace dependencies were updated
+  * devDependencies
+    * libp2p bumped from ^2.8.13 to ^2.8.14
+
 ## [5.0.48](https://github.com/libp2p/js-libp2p/compare/webtransport-v5.0.47...webtransport-v5.0.48) (2025-07-03)
 
 

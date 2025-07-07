@@ -70,6 +70,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.18](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.17...websockets-v9.2.18) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
 ## [9.2.17](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.16...websockets-v9.2.17) (2025-06-25)
 
 

@@ -44,6 +44,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [2.0.37](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.36...dcutr-v2.0.37) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
 ## [2.0.36](https://github.com/libp2p/js-libp2p/compare/dcutr-v2.0.35...dcutr-v2.0.36) (2025-06-25)
 
 
