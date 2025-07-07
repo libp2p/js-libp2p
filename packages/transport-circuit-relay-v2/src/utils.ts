@@ -1,3 +1,4 @@
+import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
 import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
@@ -9,7 +10,6 @@ import type { Limit } from './pb/index.js'
 import type { ConnectionLimits, LoggerOptions, Stream } from '@libp2p/interface'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 
 async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }, options: LoggerOptions): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
   const limitBytes = limit.remaining
