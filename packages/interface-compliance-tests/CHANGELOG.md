@@ -75,6 +75,17 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.4.15](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.14...interface-compliance-tests-v6.4.15) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/memory bumped from ^1.1.12 to ^1.1.13
+    * libp2p bumped from ^2.8.13 to ^2.8.14
+
 ## [6.4.14](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.13...interface-compliance-tests-v6.4.14) (2025-07-03)
 
 

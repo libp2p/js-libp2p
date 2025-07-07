@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.13](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.12...memory-v1.1.13) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
 ## [1.1.12](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.11...memory-v1.1.12) (2025-06-25)
 
 
