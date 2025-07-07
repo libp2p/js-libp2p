@@ -5,7 +5,7 @@ import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr } from '@multiformats/multiaddr'
-import { QUICV1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
+import { QUIC_V1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
 import { dynamicExternalAddress, staticExternalAddress } from './check-external-address.js'
 import { DoubleNATError } from './errors.js'
 import type { ExternalAddress } from './check-external-address.js'
@@ -242,7 +242,7 @@ export class UPnPPortMapper {
     return TCP.exactMatch(ma) ||
       WebSockets.exactMatch(ma) ||
       WebSocketsSecure.exactMatch(ma) ||
-      QUICV1.exactMatch(ma) ||
+      QUIC_V1.exactMatch(ma) ||
       WebTransport.exactMatch(ma)
   }
 }
