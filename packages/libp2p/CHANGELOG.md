@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.9.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.14...libp2p-v2.9.0) (2025-07-08)
+
+
+### Features
+
+* add isLibp2p function for type guarding ([#3211](https://github.com/libp2p/js-libp2p/issues/3211)) ([87e5d59](https://github.com/libp2p/js-libp2p/commit/87e5d5938368fee2b34ed386ab42294307f9bf6e))
+
 ## [2.8.14](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.13...libp2p-v2.8.14) (2025-07-07)
 
 
