@@ -79,6 +79,20 @@ describe('logger', () => {
     expect(log).to.have.nested.property('trace.enabled').that.is.true()
   })
 
+  it('creates a sub logger', () => {
+    debug.enable('enabled-with-trace-logger*,*:trace')
+
+    const log = logger('enabled-with-trace-logger')
+    const subLog = log.forComponent('sub-component')
+
+    expect(subLog).to.be.a('function')
+    expect(subLog).to.have.property('enabled').that.is.true()
+    expect(subLog).to.have.property('error').that.is.a('function')
+    expect(subLog).to.have.nested.property('error.enabled').that.is.true()
+    expect(subLog).to.have.property('trace').that.is.a('function')
+    expect(subLog).to.have.nested.property('trace.enabled').that.is.true()
+  })
+
   it('has all formatters', () => {
     debug.enable('enabled-with-formatters')
 
