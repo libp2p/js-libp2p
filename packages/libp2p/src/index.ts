@@ -225,6 +225,10 @@ export function isLibp2p <T extends ServiceMap = ServiceMap> (obj?: any): obj is
     return false
   }
 
+  if (obj instanceof Libp2pClass) {
+    return true
+  }
+
   // if these are all functions it's probably a libp2p object
   return LIBP2P_METHODS.every(m => typeof obj[m] === 'function')
 }
