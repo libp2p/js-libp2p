@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/websockets",
-  "version": "9.2.17",
+  "version": "9.2.18",
   "description": "JavaScript implementation of the WebSockets module that libp2p uses and that implements the interface-transport spec",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets#readme",
@@ -70,7 +70,7 @@
     "@libp2p/interface": "^2.10.5",
     "@libp2p/utils": "^6.7.1",
     "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^1.7.2",
+    "@multiformats/multiaddr-matcher": "^2.0.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
     "@types/ws": "^8.18.1",
     "it-ws": "^6.1.5",

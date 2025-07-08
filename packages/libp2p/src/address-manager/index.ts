@@ -5,7 +5,7 @@ import { debounce } from '@libp2p/utils/debounce'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { isPrivateIp } from '@libp2p/utils/private-ip'
 import { multiaddr } from '@multiformats/multiaddr'
-import { QUICV1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
+import { QUIC_V1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
@@ -489,7 +489,7 @@ export class AddressManager implements AddressManagerInterface {
     const transportMatchers: Array<(ma: Multiaddr) => boolean> = [
       (ma: Multiaddr) => WebSockets.exactMatch(ma) || WebSocketsSecure.exactMatch(ma),
       (ma: Multiaddr) => TCP.exactMatch(ma),
-      (ma: Multiaddr) => QUICV1.exactMatch(ma)
+      (ma: Multiaddr) => QUIC_V1.exactMatch(ma)
     ]
 
     for (const matcher of transportMatchers) {

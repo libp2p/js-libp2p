@@ -110,6 +110,20 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.8.14](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.13...libp2p-v2.8.14) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
+## [2.8.13](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.12...libp2p-v2.8.13) (2025-07-03)
+
+
+### Bug Fixes
+
+* do not close relay connection after WebRTC upgrade ([#3205](https://github.com/libp2p/js-libp2p/issues/3205)) ([cfe2be4](https://github.com/libp2p/js-libp2p/commit/cfe2be4c9319b68f8e68df8021b9ee3c1a7236fd))
+
 ## [2.8.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.11...libp2p-v2.8.12) (2025-06-25)
 
 
