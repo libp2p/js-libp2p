@@ -159,6 +159,7 @@ describe('stream', () => {
     const name = `STREAM${Date.now()}`
     const stream = createStream({
       id,
+      name,
       send: mockSend,
       log: defaultLogger().forComponent('initiator')
     })
@@ -610,6 +611,7 @@ describe('stream', () => {
     const stream = createStream({
       id,
       send,
+      maxMsgSize,
       log: defaultLogger().forComponent('initiator')
     })
 
