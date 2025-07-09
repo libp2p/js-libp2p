@@ -154,7 +154,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       const message = await pb.read(options)
       await stream.close(options)
 
-      await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+      await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
     } catch (err: any) {
       log.error('received invalid message', err)
       stream.abort(err)
