@@ -72,7 +72,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       let openedStreams = 0
       const expectedStreams = 5
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       // Listener is echo server :)
       const listenerFactory = await common.setup()
@@ -114,7 +116,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       let openedStreams = 0
       const expectedStreams = 5
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       // Listener is echo server :)
       const listenerFactory = await common.setup()
@@ -157,7 +161,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       let openedStreams = 0
       const expectedStreams = 5
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       // Listener is echo server :)
       const listenerFactory = await common.setup()
@@ -212,7 +218,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('calling newStream after close throws an error', async () => {
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       await dialer.close()
 
@@ -227,7 +235,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('closing one of the muxed streams doesn\'t close others', async () => {
       const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       // Listener is echo server :)
       const listenerFactory = await common.setup()
@@ -280,7 +290,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
       const data = [randomBuffer(), randomBuffer()]
 
       const listenerFactory = await common.setup()
@@ -325,7 +337,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const deferred = pDefer<Uint8ArrayList[]>()
       const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
       const data = [randomBuffer(), randomBuffer()].map(d => new Uint8ArrayList(d))
       const expected = toBuffer(data.map(d => d.subarray()))
 
@@ -391,7 +405,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const p = duplexPair<Uint8Array | Uint8ArrayList>()
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       const listenerFactory = await common.setup()
       const listener = listenerFactory.createStreamMuxer({

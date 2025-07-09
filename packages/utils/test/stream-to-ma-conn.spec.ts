@@ -45,7 +45,7 @@ describe('Convert stream into a multiaddr connection', () => {
       stream: toMuxedStream(stream),
       localAddr,
       remoteAddr,
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     expect(maConn).to.exist()
@@ -66,7 +66,7 @@ describe('Convert stream into a multiaddr connection', () => {
       stream: toMuxedStream(stream),
       localAddr,
       remoteAddr,
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     const data = uint8ArrayFromString('hey')

@@ -476,7 +476,8 @@ describe('upgrader', () => {
         source: map((async function * () {
           yield '/multistream/1.0.0\n'
           yield `${protocol}\n`
-        })(), str => encode.single(uint8ArrayFromString(str)))
+        })(), str => encode.single(uint8ArrayFromString(str))),
+        close: async () => {}
       })
 
       streamMuxer?.streams.push(incomingStream)

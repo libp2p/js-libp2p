@@ -1,26 +1,20 @@
 import { webtransportBiDiStreamToStream } from './stream.js'
 import { inertDuplex } from './utils/inert-duplex.js'
 import type WebTransport from './webtransport.js'
-import type { ComponentLogger, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
+import type { Logger, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
 
 export interface WebTransportMuxerInit {
   maxInboundStreams: number
 }
 
-export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidirectionalStream'>, reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>, logger: ComponentLogger, config: WebTransportMuxerInit): StreamMuxerFactory {
+export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidirectionalStream'>, reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>, log: Logger, config: WebTransportMuxerInit): StreamMuxerFactory {
   let streamIDCounter = 0
-  const log = logger.forComponent('libp2p:webtransport:muxer')
+  log = log.newScope('muxer')
 
   return {
     protocol: 'webtransport',
     createStreamMuxer: (init?: StreamMuxerInit): StreamMuxer => {
       // !TODO handle abort signal when WebTransport supports this.
-
-      if (typeof init === 'function') {
-        // The api docs say that init may be a function
-        init = { onIncomingStream: init }
-      }
-
       const activeStreams: Stream[] = []
 
       Promise.resolve()
@@ -49,7 +43,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
                 'inbound',
                 activeStreams,
                 init?.onStreamEnd,
-                logger
+                log
               )
               activeStreams.push(stream)
               init?.onIncomingStream?.(stream)
@@ -67,7 +61,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
           log('new outgoing stream', name)
 
           const wtStream = await wt.createBidirectionalStream()
-          const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd, logger)
+          const stream = await webtransportBiDiStreamToStream(wtStream, String(streamIDCounter++), init?.direction ?? 'outbound', activeStreams, init?.onStreamEnd, log)
           activeStreams.push(stream)
 
           return stream

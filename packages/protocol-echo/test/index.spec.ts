@@ -11,21 +11,19 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Echo } from '../src/echo.js'
-import type { ComponentLogger, Connection, Stream } from '@libp2p/interface'
+import type { Connection, Stream } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedFetchComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
-  logger: ComponentLogger
 }
 
 async function createComponents (): Promise<StubbedFetchComponents> {
   return {
     registrar: stubInterface<Registrar>(),
-    connectionManager: stubInterface<ConnectionManager>(),
-    logger: defaultLogger()
+    connectionManager: stubInterface<ConnectionManager>()
   }
 }
 
@@ -63,7 +61,9 @@ describe('echo', () => {
     const handler = components.registrar.handle.getCall(0).args[1]
     handler({
       stream: incomingStream,
-      connection: stubInterface<Connection>()
+      connection: stubInterface<Connection>({
+        log: defaultLogger().forComponent('connection')
+      })
     })
 
     const input = Uint8Array.from([0, 1, 2, 3])
@@ -94,7 +94,9 @@ describe('echo', () => {
     const handler = components.registrar.handle.getCall(0).args[1]
     handler({
       stream: incomingStream,
-      connection: stubInterface<Connection>()
+      connection: stubInterface<Connection>({
+        log: defaultLogger().forComponent('connection')
+      })
     })
 
     const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')

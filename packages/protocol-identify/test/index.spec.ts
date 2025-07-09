@@ -367,7 +367,8 @@ describe('identify', () => {
     void identify.handleProtocol({
       stream: incomingStream,
       connection: stubInterface<Connection>({
-        remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA')
+        remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA'),
+        log: defaultLogger().forComponent('connection')
       })
     })
 

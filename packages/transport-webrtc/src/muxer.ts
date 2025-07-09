@@ -78,7 +78,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
         onEnd: (err) => {
           bufferedStream.onEnd(err)
         },
-        logger: components.logger,
+        log: this.log,
         ...this.dataChannelOptions
       })
 
@@ -129,7 +129,7 @@ export class DataChannelMuxer implements StreamMuxer {
   private readonly logger: ComponentLogger
 
   constructor (components: DataChannelMuxerComponents, readonly init: DataChannelMuxerInit) {
-    this.log = components.logger.forComponent('libp2p:webrtc:muxer')
+    this.log = init.log?.newScope('muxer') ?? components.logger.forComponent('libp2p:webrtc:muxer')
     this.logger = components.logger
     this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
@@ -165,7 +165,7 @@ export class DataChannelMuxer implements StreamMuxer {
           this.#onStreamEnd(stream, channel)
           this.log('incoming channel %s ended', id)
         },
-        logger: this.logger,
+        log: this.log,
         ...this.dataChannelOptions
       })
 
@@ -257,7 +257,7 @@ export class DataChannelMuxer implements StreamMuxer {
         this.#onStreamEnd(stream, channel)
         this.log('outgoing channel %s ended', id)
       },
-      logger: this.logger,
+      log: this.log,
       ...this.dataChannelOptions
     })
     this.streams.push(stream)

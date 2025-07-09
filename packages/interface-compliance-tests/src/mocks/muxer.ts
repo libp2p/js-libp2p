@@ -1,4 +1,4 @@
-import { logger } from '@libp2p/logger'
+import { defaultLogger, logger } from '@libp2p/logger'
 import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { abortableSource } from 'abortable-iterator'
 import map from 'it-map'
@@ -131,7 +131,7 @@ class MockMuxer implements StreamMuxer {
     this.registryInitiatorStreams = new Map()
     this.registryRecipientStreams = new Map()
     this.log('create muxer')
-    this.options = init ?? { direction: 'inbound' }
+    this.options = init ?? { direction: 'inbound', log: defaultLogger().forComponent('mock-muxer') }
     this.closeController = new AbortController()
     // receives data from the muxer at the other end of the stream
     this.source = this.input = pushable({

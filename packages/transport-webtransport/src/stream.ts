@@ -1,7 +1,7 @@
 import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions, ComponentLogger, Direction, Stream } from '@libp2p/interface'
+import type { AbortOptions, Direction, Logger, Stream } from '@libp2p/interface'
 import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
@@ -90,14 +90,12 @@ class WebTransportStream extends AbstractStream {
   }
 }
 
-export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), logger: ComponentLogger): Promise<Stream> {
-  const log = logger.forComponent(`libp2p:webtransport:stream:${direction}:${streamId}`)
-
+export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), log: Logger): Promise<Stream> {
   const stream = new WebTransportStream({
     bidiStream,
     id: streamId,
     direction,
-    log,
+    log: log.newScope(`${direction}:${streamId}`),
     onEnd: () => {
       const index = activeStreams.findIndex(s => s === stream)
       if (index !== -1) {
