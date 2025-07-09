@@ -238,12 +238,14 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         onDataWrite: limits.onData
       })
 
-      this.log('new outbound relayed connection %a, limits %o', maConn.remoteAddr, status.limit)
-
-      return await this.upgrader.upgradeOutbound(maConn, {
+      const conn = await this.upgrader.upgradeOutbound(maConn, {
         ...options,
         limits: limits.getLimits()
       })
+
+      conn.log('outbound relayed connection established to %p with limits %o, over connection %s', conn.remotePeer, status.limit ?? 'none', relayConnection.id)
+
+      return conn
     } catch (err: any) {
       this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
       stream?.abort(err)
@@ -368,11 +370,11 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       onDataWrite: limits.onData
     })
 
-    this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
       limits: limits.getLimits(),
       signal
     })
-    this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
+
+    maConn.log('inbound relayed connection established to %p with limits %o, over connection %s', remotePeerId, request.limit ?? 'none', connection.id)
   }
 }

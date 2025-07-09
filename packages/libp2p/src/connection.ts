@@ -223,7 +223,7 @@ export class Connection implements ConnectionInterface {
           yieldBytes: false
         })
 
-        this.log('incoming stream opened on %s', protocol)
+        this.log('incoming %s stream opened', protocol)
 
         const incomingLimit = findIncomingStreamLimit(protocol, this.components.registrar)
         const streamCount = countStreams(protocol, 'inbound', this)

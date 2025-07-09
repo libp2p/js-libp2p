@@ -15,7 +15,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, IncomingStreamData, Logger } from '@libp2p/interface'
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -89,37 +89,38 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     } = message
 
     if (publicKey == null) {
-      throw new InvalidMessageError('public key was missing from identify message')
+      throw new InvalidMessageError('Public key was missing from identify message')
     }
 
     const key = publicKeyFromProtobuf(publicKey)
     const id = peerIdFromCID(key.toCID())
+    const log = connection.log.newScope('identify')
 
     if (!connection.remotePeer.equals(id)) {
-      throw new InvalidMessageError('identified peer does not match the expected peer')
+      throw new InvalidMessageError('Identified peer does not match the expected peer')
     }
 
     if (this.peerId.equals(id)) {
-      throw new InvalidMessageError('identified peer is our own peer id?')
+      throw new InvalidMessageError('Identified peer is our own peer id?')
     }
 
     // if the observed address is publicly routable, add it to the address
     // manager for verification via AutoNAT
-    this.maybeAddObservedAddress(observedAddr)
+    this.maybeAddObservedAddress(observedAddr, log)
 
-    this.log('identify completed for peer %p and protocols %o', id, protocols)
+    log('completed for peer %p and protocols %o', id, protocols)
 
     return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
   }
 
-  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
+  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined, log: Logger): void {
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     if (cleanObservedAddr == null) {
       return
     }
 
-    this.log.trace('our observed address was %a', cleanObservedAddr)
+    log.trace('our observed address was %a', cleanObservedAddr)
 
     if (isPrivate(cleanObservedAddr)) {
       this.log.trace('our observed address was private')
@@ -129,7 +130,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const tuples = cleanObservedAddr.getComponents()
 
     if (((tuples[0].code === CODE_IP6) || (tuples[0].code === CODE_IP6ZONE && tuples[1].code === CODE_IP6)) && !isGlobalUnicast(cleanObservedAddr)) {
-      this.log.trace('our observed address was IPv6 but not a global unicast address')
+      log.trace('our observed address was IPv6 but not a global unicast address')
       return
     }
 
@@ -141,7 +142,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       return
     }
 
-    this.log.trace('storing the observed address')
+    log.trace('storing the observed address')
     this.addressManager.addObservedAddr(cleanObservedAddr)
   }
 
@@ -151,6 +152,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
    */
   async handleProtocol (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
+    const log = connection.log.newScope('identify')
 
     const signal = AbortSignal.timeout(this.timeout)
 
@@ -195,7 +197,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         signal
       })
     } catch (err: any) {
-      this.log.error('could not respond to identify request', err)
+      log.error('could not respond to identify request', err)
       stream.abort(err)
     }
   }

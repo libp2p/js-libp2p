@@ -56,12 +56,14 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
         )
       )
     } catch (err: any) {
+      maConn.log.error('errored - %e', err)
+
       // If aborted we can safely ignore
       if (err.type !== 'aborted') {
         // If the source errored the socket will already have been destroyed by
         // toIterable.duplex(). If the socket errored it will already be
         // destroyed. There's nothing to do here except log the error & return.
-        maConn.log.error('%s error in sink', remoteAddr, err)
+        maConn.log.error('%s error in sink - %e', remoteAddr, err)
       }
     } finally {
       closedWrite = true

@@ -72,7 +72,7 @@ export class DNSMappings {
 
     for (const [ip, mapping] of this.mappings.entries()) {
       if (mapping.domain === host) {
-        this.log('removing %s to %s DNS mapping %e', ip, mapping.domain, new Error('where'))
+        this.log('removing %s to %s DNS mapping %e', ip, mapping.domain)
         this.mappings.delete(ip)
         wasConfident = wasConfident || mapping.verified
       }
