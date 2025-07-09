@@ -83,7 +83,7 @@ describe('logger', () => {
     debug.enable('enabled-with-trace-logger*,*:trace')
 
     const log = logger('enabled-with-trace-logger')
-    const subLog = log.forComponent('sub-component')
+    const subLog = log.newScope('sub-component')
 
     expect(subLog).to.be.a('function')
     expect(subLog).to.have.property('enabled').that.is.true()
