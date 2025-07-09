@@ -71,7 +71,7 @@
     "multiformats": "^13.3.6",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.1",
-    "sinon": "^20.0.0"
+    "sinon": "^21.0.0"
   },
   "sideEffects": false
 }

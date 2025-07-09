@@ -69,7 +69,7 @@
     "@libp2p/logger": "^5.1.21",
     "aegir": "^47.0.14",
     "p-wait-for": "^5.0.2",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },
