@@ -14,6 +14,7 @@ import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
 
 interface CreateConnectionOptions {
+  id: string
   cryptoProtocol: string
   direction: 'inbound' | 'outbound'
   maConn: MultiaddrConnection
@@ -232,6 +233,9 @@ export class Upgrader implements UpgraderInterface {
     let muxerFactory: StreamMuxerFactory | undefined
     let cryptoProtocol
 
+    const id = `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`
+    maConn.log = maConn.log.newScope(`${direction}:${id}`)
+
     this.components.metrics?.trackMultiaddrConnection(maConn)
 
     maConn.log.trace('starting the %s connection upgrade', direction)
@@ -317,9 +321,8 @@ export class Upgrader implements UpgraderInterface {
 
     await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
 
-    maConn.log('successfully upgraded %s connection', direction)
-
-    return this._createConnection({
+    const conn = this._createConnection({
+      id,
       cryptoProtocol,
       direction,
       maConn,
@@ -328,6 +331,10 @@ export class Upgrader implements UpgraderInterface {
       remotePeer,
       limits: opts?.limits
     })
+
+    conn.log('successfully upgraded %s connection', direction)
+
+    return conn
   }
 
   /**
@@ -335,6 +342,7 @@ export class Upgrader implements UpgraderInterface {
    */
   _createConnection (opts: CreateConnectionOptions): Connection {
     const {
+      id,
       cryptoProtocol,
       direction,
       maConn,
@@ -375,6 +383,7 @@ export class Upgrader implements UpgraderInterface {
 
     // Create the connection
     connection = createConnection(this.components, {
+      id,
       maConn: upgradedConn,
       remotePeer,
       direction,

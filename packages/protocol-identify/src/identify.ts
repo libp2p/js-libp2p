@@ -110,7 +110,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
     log('completed for peer %p and protocols %o', id, protocols)
 
-    return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+    return consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
   }
 
   private maybeAddObservedAddress (observedAddr: Uint8Array | undefined, log: Logger): void {

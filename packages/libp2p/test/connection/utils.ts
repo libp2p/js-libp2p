@@ -52,6 +52,7 @@ export async function defaultConnectionInit (init: DefaultConnectionInit = {}): 
   const streams: Stream[] = []
 
   return {
+    id: `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`,
     remotePeer,
     maConn: stubInterface<MultiaddrConnection>({
       log,

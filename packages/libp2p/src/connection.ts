@@ -17,6 +17,7 @@ export interface ConnectionComponents {
 }
 
 export interface ConnectionInit {
+  id: string
   maConn: MultiaddrConnection
   remotePeer: PeerId
   direction?: Direction
@@ -53,7 +54,7 @@ export class Connection implements ConnectionInterface {
   constructor (components: ConnectionComponents, init: ConnectionInit) {
     this.components = components
 
-    this.id = `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`
+    this.id = init.id
     this.remoteAddr = init.maConn.remoteAddr
     this.remotePeer = init.remotePeer
     this.direction = init.direction ?? 'outbound'
@@ -62,7 +63,7 @@ export class Connection implements ConnectionInterface {
     this.encryption = init.encryption
     this.limits = init.limits
     this.maConn = init.maConn
-    this.log = init.maConn.log = init.maConn.log.newScope(`${this.direction}:${this.id}`)
+    this.log = init.maConn.log
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
 
