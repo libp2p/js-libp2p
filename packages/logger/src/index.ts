@@ -197,7 +197,7 @@ export function logger (name: string): Logger {
   return Object.assign(debug(name), {
     error: debug(`${name}:error`),
     trace,
-    forComponent: (sub: string) => logger(`${name}:${sub}`)
+    newScope: (sub: string) => logger(`${name}:${sub}`)
   })
 }
 

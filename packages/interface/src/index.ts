@@ -160,13 +160,13 @@ export interface Logger {
    * log('hello')
    * // foo hello
    *
-   * const subLog = log.forComponent('bar')
+   * const subLog = log.newScope('bar')
    *
    * subLog('hello')
    * // foo:bar hello
    * ```
    */
-  forComponent(name: string): Logger
+  newScope(name: string): Logger
 }
 
 /**
