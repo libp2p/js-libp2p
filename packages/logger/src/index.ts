@@ -197,7 +197,7 @@ export function logger (name: string): Logger {
   return Object.assign(debug(name), {
     error: debug(`${name}:error`),
     trace,
-    newScope: (sub: string) => logger(`${name}:${sub}`)
+    newScope: (scope: string) => logger(`${name}:${scope}`)
   })
 }
 
