@@ -467,17 +467,11 @@ export class Upgrader implements UpgraderInterface {
 
               this.components.metrics?.trackProtocolStream(muxedStream, connection)
 
-              this._onStream({ connection, stream: muxedStream, protocol })
+              await this._onStream({ connection, stream: muxedStream, protocol })
             })
             .catch(async err => {
               connection.log.error('error handling incoming stream id %s - %e', muxedStream.id, err)
-
-              if (muxedStream.timeline.close == null) {
-                await muxedStream.close({
-                  signal
-                })
-                  .catch(err => muxedStream.abort(err))
-              }
+              muxedStream.abort(err)
             })
         }
       })
@@ -651,7 +645,7 @@ export class Upgrader implements UpgraderInterface {
   /**
    * Routes incoming streams to the correct handler
    */
-  _onStream (opts: OnStreamOptions): void {
+  async _onStream (opts: OnStreamOptions): Promise<void> {
     const { connection, stream, protocol } = opts
     const { handler, options } = this.components.registrar.getHandler(protocol)
 
@@ -659,7 +653,7 @@ export class Upgrader implements UpgraderInterface {
       throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
-    handler({ connection, stream })
+    await handler({ connection, stream })
   }
 
   /**

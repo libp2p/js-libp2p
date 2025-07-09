@@ -143,7 +143,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
         mss.handle(muxedStream, registrar.getProtocols(), {
           log
         })
-          .then(({ stream, protocol }) => {
+          .then(async ({ stream, protocol }) => {
             log('%s: incoming stream opened on %s', direction, protocol)
             muxedStream.protocol = protocol
             muxedStream.sink = stream.sink
@@ -152,7 +152,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
             connection.streams.push(muxedStream)
             const { handler } = registrar.getHandler(protocol)
 
-            handler({ connection, stream: muxedStream })
+            await handler({ connection, stream: muxedStream })
           }).catch(err => {
             log.error(err)
           })

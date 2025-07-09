@@ -17,7 +17,7 @@ export interface StreamHandler {
   /**
    * A callback function that accepts the incoming stream data
    */
-  (data: IncomingStreamData): void
+  (data: IncomingStreamData): void | Promise<void>
 }
 
 export interface StreamHandlerOptions extends AbortOptions {
