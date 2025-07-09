@@ -548,7 +548,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           .find(conn => conn.limits == null)
 
         if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p', peerId)
+          this.log('had an existing non-limited connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
           return existingConnection

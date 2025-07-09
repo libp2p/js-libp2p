@@ -139,6 +139,7 @@ describe('mplex', () => {
       logger: defaultLogger()
     })
     const muxer = factory.createStreamMuxer({
+      log: defaultLogger().forComponent('libp2p:mplex'),
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up
       },

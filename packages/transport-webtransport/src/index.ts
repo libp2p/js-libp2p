@@ -231,7 +231,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       return await options.upgrader.upgradeOutbound(maConn, {
         ...options,
         skipEncryption: true,
-        muxerFactory: webtransportMuxer(wt, wt.incomingBidirectionalStreams.getReader(), this.components.logger, this.config),
+        muxerFactory: webtransportMuxer(wt, wt.incomingBidirectionalStreams.getReader(), this.log, this.config),
         skipProtection: true
       })
     } catch (err: any) {

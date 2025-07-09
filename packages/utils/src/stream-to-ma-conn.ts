@@ -1,6 +1,6 @@
 import forEach from 'it-foreach'
 import { pipe } from 'it-pipe'
-import type { ComponentLogger, MultiaddrConnection, Stream } from '@libp2p/interface'
+import type { Logger, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -8,7 +8,7 @@ export interface StreamProperties {
   stream: Stream
   remoteAddr: Multiaddr
   localAddr: Multiaddr
-  logger: ComponentLogger
+  log: Logger
 
   /**
    * A callback invoked when data is read from the stream
@@ -26,8 +26,7 @@ export interface StreamProperties {
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
 export function streamToMaConnection (props: StreamProperties): MultiaddrConnection {
-  const { stream, remoteAddr, logger, onDataRead, onDataWrite } = props
-  const log = logger.forComponent('libp2p:stream:converter')
+  const { stream, remoteAddr, log, onDataRead, onDataWrite } = props
 
   let closedRead = false
   let closedWrite = false
@@ -62,7 +61,7 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
         // If the source errored the socket will already have been destroyed by
         // toIterable.duplex(). If the socket errored it will already be
         // destroyed. There's nothing to do here except log the error & return.
-        log.error('%s error in sink', remoteAddr, err)
+        maConn.log.error('%s error in sink', remoteAddr, err)
       }
     } finally {
       closedWrite = true
@@ -71,7 +70,7 @@ export function streamToMaConnection (props: StreamProperties): MultiaddrConnect
   }
 
   const maConn: MultiaddrConnection = {
-    log,
+    log: log.newScope('stream-to-maconn'),
     sink: stream.sink,
     source: (async function * (): AsyncGenerator<Uint8ArrayList> {
       try {

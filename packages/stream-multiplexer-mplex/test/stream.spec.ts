@@ -72,8 +72,18 @@ async function streamPair (n: number, onInitiatorMessage?: onMessage, onReceiver
 
     initiator.sourcePush(msgToBuffer(msg))
   }
-  const initiator = createStream({ id, send: mockInitiatorSend, type: 'initiator', logger: defaultLogger() })
-  const receiver = createStream({ id, send: mockReceiverSend, type: 'receiver', logger: defaultLogger() })
+  const initiator = createStream({
+    id,
+    send: mockInitiatorSend,
+    type: 'initiator',
+    log: defaultLogger().forComponent('initiator')
+  })
+  const receiver = createStream({
+    id,
+    send: mockReceiverSend,
+    type: 'receiver',
+    log: defaultLogger().forComponent('receiver')
+  })
   const input = new Array(n).fill(0).map((_, i) => new Uint8ArrayList(Uint8Array.from([i])))
 
   void pipe(
@@ -128,7 +138,11 @@ describe('stream', () => {
     const msgs: Message[] = []
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
-    const stream = createStream({ id, send: mockSend, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send: mockSend,
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -143,7 +157,11 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
-    const stream = createStream({ id, name, send: mockSend, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send: mockSend,
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -159,7 +177,13 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const deferred = defer()
-    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      onEnd: deferred.resolve,
+      send: mockSend,
+      log: defaultLogger().forComponent('initiator')
+    })
 
     const error = new Error('boom')
     stream.abort(error)
@@ -174,7 +198,13 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const deferred = defer()
-    const stream = createStream({ id, name, onEnd: deferred.resolve, send: mockSend, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      onEnd: deferred.resolve,
+      send: mockSend,
+      log: defaultLogger().forComponent('initiator')
+    })
 
     stream.reset()
 
@@ -188,7 +218,13 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'initiator',
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -209,7 +245,14 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'receiver',
+      log: defaultLogger().forComponent('receiver')
+    })
+
     const input = randomInput()
 
     await pipe(input, stream)
@@ -230,7 +273,13 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'initiator',
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -247,7 +296,13 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'receiver',
+      log: defaultLogger().forComponent('receiver')
+    })
     const input = randomInput()
 
     await pipe(input, stream)
@@ -264,7 +319,13 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'initiator', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'initiator',
+      log: defaultLogger().forComponent('initiator')
+    })
     const error = new Error(`Boom ${Date.now()}`)
     const input = {
       [Symbol.iterator]: function * () {
@@ -290,7 +351,13 @@ describe('stream', () => {
     const mockSend = async (msg: Message): Promise<void> => { msgs.push(msg) }
     const id = randomInt(1000)
     const name = id.toString()
-    const stream = createStream({ id, name, send: mockSend, type: 'receiver', logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      type: 'receiver',
+      log: defaultLogger().forComponent('receiver')
+    })
     const error = new Error(`Boom ${Date.now()}`)
     const input = {
       [Symbol.iterator]: function * () {
@@ -486,7 +553,13 @@ describe('stream', () => {
     const name = id.toString()
     const deferred = defer()
     const onEnd = (err?: any): void => { err != null ? deferred.reject(err) : deferred.resolve() }
-    const stream = createStream({ id, name, send, onEnd, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send,
+      onEnd,
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     void pipe(
@@ -505,7 +578,12 @@ describe('stream', () => {
     const id = randomInt(1000)
     const deferred = defer()
     const onEnd = (err?: any): void => { err != null ? deferred.reject(err) : deferred.resolve() }
-    const stream = createStream({ id, send, onEnd, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send,
+      onEnd,
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = randomInput()
 
     pipe(
@@ -529,7 +607,11 @@ describe('stream', () => {
     }
     const maxMsgSize = 10
     const id = randomInt(1000)
-    const stream = createStream({ id, send, maxMsgSize, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send,
+      log: defaultLogger().forComponent('initiator')
+    })
 
     await pipe(
       [
@@ -547,7 +629,11 @@ describe('stream', () => {
   it('should error on double sink', async () => {
     const send = async (): Promise<void> => {}
     const id = randomInt(1000)
-    const stream = createStream({ id, send, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send,
+      log: defaultLogger().forComponent('initiator')
+    })
 
     // first sink is ok
     void stream.sink([])
@@ -560,7 +646,11 @@ describe('stream', () => {
   it('should error on double sink after sink has ended', async () => {
     const send = async (): Promise<void> => {}
     const id = randomInt(1000)
-    const stream = createStream({ id, send, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      send,
+      log: defaultLogger().forComponent('initiator')
+    })
 
     // first sink is ok
     await stream.sink([])
@@ -576,7 +666,13 @@ describe('stream', () => {
     const id = randomInt(1000)
     const name = `STREAM${Date.now()}`
     const maxMsgSize = 10
-    const stream = createStream({ id, name, send: mockSend, maxMsgSize, logger: defaultLogger() })
+    const stream = createStream({
+      id,
+      name,
+      send: mockSend,
+      maxMsgSize,
+      log: defaultLogger().forComponent('initiator')
+    })
     const input = [
       new Uint8Array(1024).map(() => randomInt(0, 255))
     ]

@@ -4,17 +4,17 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import type { Message } from './message-types.js'
-import type { ComponentLogger } from '@libp2p/interface'
+import type { Logger } from '@libp2p/interface'
 import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
 
 export interface Options {
   id: number
   send(msg: Message): Promise<void>
+  log: Logger
   name?: string
   onEnd?(err?: Error): void
   type?: 'initiator' | 'receiver'
   maxMsgSize?: number
-  logger: ComponentLogger
 }
 
 interface MplexStreamInit extends AbstractStreamInit {
@@ -80,15 +80,16 @@ export class MplexStream extends AbstractStream {
 
 export function createStream (options: Options): MplexStream {
   const { id, name, send, onEnd, type = 'initiator', maxMsgSize = MAX_MSG_SIZE } = options
+  const direction = type === 'initiator' ? 'outbound' : 'inbound'
 
   return new MplexStream({
     id: type === 'initiator' ? (`i${id}`) : `r${id}`,
     streamId: id,
     name: `${name ?? id}`,
-    direction: type === 'initiator' ? 'outbound' : 'inbound',
+    direction,
     maxDataSize: maxMsgSize,
     onEnd,
     send,
-    log: options.logger.forComponent(`libp2p:mplex:stream:${type}:${id}`)
+    log: options.log.newScope(`${direction}:${id}`)
   })
 }

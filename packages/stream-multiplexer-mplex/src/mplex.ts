@@ -70,7 +70,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   constructor (components: MplexComponents, init?: MplexStreamMuxerInit) {
     init = init ?? {}
 
-    this.log = components.logger.forComponent('libp2p:mplex')
+    this.log = init.log?.newScope('mplex') ?? components.logger.forComponent('libp2p:mplex')
     this.logger = components.logger
     this._streamId = 0
     this._streams = {
@@ -233,7 +233,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       }
     }
 
-    const stream = createStream({ id, name, send, type, onEnd, maxMsgSize: this._init.maxMsgSize, logger: this.logger })
+    const stream = createStream({ id, name, send, type, onEnd, maxMsgSize: this._init.maxMsgSize, log: this.log })
     registry.set(id, stream)
     return stream
   }

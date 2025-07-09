@@ -323,31 +323,37 @@ export class AutoNATService implements Startable {
     const multiaddrs = peer.addrs
       .map(buf => multiaddr(buf))
       .filter(ma => {
-        const options = ma.toOptions()
+        try {
+          const options = ma.toOptions()
 
-        if (isPrivate(ma)) {
-          // don't try to dial private addresses
+          if (isPrivate(ma)) {
+            // don't try to dial private addresses
+            return false
+          }
+
+          if (options.host !== connection.remoteAddr.toOptions().host) {
+            // skip any Multiaddrs where the target node's IP does not match the sending node's IP
+            this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
+            return false
+          }
+
+          if (ourHosts.includes(options.host)) {
+            // don't try to dial nodes on the same host as us
+            return false
+          }
+
+          if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
+            // skip any Multiaddrs that have transports we do not support
+            this.log.trace('not dialing %a - transport unsupported', ma)
+            return false
+          }
+
+          return true
+        } catch {
+          // skip any addresses that cannot be parsed (memory, webrtc incoming,
+          // etc)
           return false
         }
-
-        if (options.host !== connection.remoteAddr.toOptions().host) {
-          // skip any Multiaddrs where the target node's IP does not match the sending node's IP
-          this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
-          return false
-        }
-
-        if (ourHosts.includes(options.host)) {
-          // don't try to dial nodes on the same host as us
-          return false
-        }
-
-        if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
-          // skip any Multiaddrs that have transports we do not support
-          this.log.trace('not dialing %a - transport unsupported', ma)
-          return false
-        }
-
-        return true
       })
       .map(ma => {
         if (ma.getPeerId() == null) {

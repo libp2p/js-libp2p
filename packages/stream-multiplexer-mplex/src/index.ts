@@ -112,7 +112,7 @@ class Mplex implements StreamMuxerFactory {
     '@libp2p/stream-multiplexing'
   ]
 
-  createStreamMuxer (init: StreamMuxerInit = {}): StreamMuxer {
+  createStreamMuxer (init: StreamMuxerInit): StreamMuxer {
     return new MplexStreamMuxer(this.components, {
       ...init,
       ...this._init

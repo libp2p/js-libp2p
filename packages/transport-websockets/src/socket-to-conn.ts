@@ -14,12 +14,11 @@ export interface SocketToConnOptions {
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
 export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, options: SocketToConnOptions): MultiaddrConnection {
-  const log = options.logger.forComponent('libp2p:websockets:maconn')
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
 
   const maConn: MultiaddrConnection = {
-    log,
+    log: options.logger.forComponent('libp2p:websockets:connection'),
 
     async sink (source) {
       try {
@@ -34,7 +33,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         })())
       } catch (err: any) {
         if (err.type !== 'aborted') {
-          log.error(err)
+          maConn.log.error(err)
         }
       }
     },
@@ -59,7 +58,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
       const listener = (): void => {
         const { host, port } = maConn.remoteAddr.toOptions()
-        log('timeout closing stream to %s:%s after %dms, destroying it manually',
+        maConn.log('timeout closing stream to %s:%s after %dms, destroying it manually',
           host, port, Date.now() - start)
 
         this.abort(new AbortError('Socket close timeout'))
@@ -70,7 +69,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
       try {
         await stream.close()
       } catch (err: any) {
-        log.error('error closing WebSocket gracefully', err)
+        maConn.log.error('error closing WebSocket gracefully', err)
         this.abort(err)
       } finally {
         options.signal?.removeEventListener('abort', listener)
@@ -80,7 +79,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
 
     abort (err: Error): void {
       const { host, port } = maConn.remoteAddr.toOptions()
-      log('timeout closing stream to %s:%s due to error',
+      maConn.log('timeout closing stream to %s:%s due to error',
         host, port, err)
 
       stream.destroy()

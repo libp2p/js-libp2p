@@ -118,7 +118,7 @@ export class MemoryConnection {
         open: Date.now()
       },
       remoteAddr: multiaddr(`${this.init.address}/p2p/${this.components.peerId}`),
-      log: this.components.logger.forComponent(`libp2p:memory:outgoing:${1}`)
+      log: this.components.logger.forComponent('libp2p:memory')
     }
 
     const listener: MultiaddrConnection = {
@@ -158,7 +158,7 @@ export class MemoryConnection {
         open: Date.now()
       },
       remoteAddr: multiaddr(`${this.init.address}-outgoing/p2p/${dialingPeerId}`),
-      log: this.components.logger.forComponent(`libp2p:memory:outgoing:${1}`)
+      log: this.components.logger.forComponent('libp2p:memory')
     }
 
     this.connections.add(dialer)

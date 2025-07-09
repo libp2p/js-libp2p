@@ -233,12 +233,12 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
-        logger: this.logger,
+        log: this.log,
         onDataRead: limits.onData,
         onDataWrite: limits.onData
       })
 
-      this.log('new outbound relayed connection %a', maConn.remoteAddr)
+      this.log('new outbound relayed connection %a, limits %o', maConn.remoteAddr, status.limit)
 
       return await this.upgrader.upgradeOutbound(maConn, {
         ...options,
@@ -363,7 +363,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
-      logger: this.logger,
+      log: this.log,
       onDataRead: limits.onData,
       onDataWrite: limits.onData
     })
