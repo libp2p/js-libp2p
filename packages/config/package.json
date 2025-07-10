@@ -1,0 +1,53 @@
+{
+  "name": "@libp2p/config",
+  "version": "1.1.13",
+  "description": "Helper functions to make dealing with libp2p config easier",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/config#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "build": "aegir build --bundle false",
+    "test": "aegir test -t node",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
+  },
+  "dependencies": {
+    "@libp2p/crypto": "^5.1.7",
+    "@libp2p/interface": "^2.10.5",
+    "@libp2p/keychain": "^5.2.8",
+    "@libp2p/logger": "^5.1.21",
+    "interface-datastore": "^8.3.1"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.14",
+    "datastore-core": "^10.0.2"
+  },
+  "sideEffects": false
+}

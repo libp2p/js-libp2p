@@ -1,18 +1,22 @@
 /* eslint-disable complexity */
 
 import { noise } from '@chainsafe/libp2p-noise'
+import { quic } from '@chainsafe/libp2p-quic'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { type Identify, identify } from '@libp2p/identify'
+import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
-import { type PingService, ping } from '@libp2p/ping'
+import { ping } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
+import { tls } from '@libp2p/tls'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
-import { type Libp2pOptions, createLibp2p } from 'libp2p'
+import { createLibp2p } from 'libp2p'
+import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
+import type { PingService } from '@libp2p/ping'
+import type { Libp2pOptions } from 'libp2p'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
 
@@ -27,6 +31,9 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     start: true,
     connectionGater: {
       denyDialMultiaddr: async () => false
+    },
+    connectionMonitor: {
+      enabled: false
     },
     services: {
       ping: ping(),
@@ -54,14 +61,13 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
       }
       break
     case 'webrtc':
-      options.transports = [webRTC(),
-        webSockets({ filter: filters.all }), // ws needed to connect to relay
-        circuitRelayTransport({
-          discoverRelays: 1
-        }) // needed to use the relay
+      options.transports = [
+        webRTC(),
+        webSockets(), // ws needed to connect to relay
+        circuitRelayTransport()
       ]
       options.addresses = {
-        listen: isDialer ? [] : ['/webrtc']
+        listen: isDialer ? [] : ['/p2p-circuit', '/webrtc']
       }
       break
     case 'ws':
@@ -77,6 +83,12 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
         listen: isDialer ? [] : [`/ip4/${IP}/tcp/0/wss`]
       }
       break
+    case 'quic-v1':
+      options.transports = [quic()]
+      options.addresses = {
+        listen: isDialer ? [] : [`/ip4/${IP}/udp/0/quic-v1`]
+      }
+      break
     default:
       throw new Error(`Unknown transport: ${TRANSPORT ?? '???'}`)
   }
@@ -86,6 +98,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   switch (TRANSPORT) {
     case 'webtransport':
     case 'webrtc-direct':
+    case 'quic-v1':
       skipSecureChannel = true
       skipMuxer = true
       break
@@ -104,6 +117,9 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     switch (SECURE_CHANNEL) {
       case 'noise':
         options.connectionEncrypters = [noise()]
+        break
+      case 'tls':
+        options.connectionEncrypters = [tls()]
         break
       default:
         throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)

@@ -13,6 +13,6 @@ enum KeyType {
 }
 
 message PublicKey {
-  KeyType Type = 1;
+  optional KeyType Type = 1;
   bytes Data = 2;
 }

@@ -17,6 +17,7 @@ import {
 import type { Network } from '../../src/network.js'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { Ping } from '@libp2p/ping'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -60,11 +61,13 @@ describe.skip('generate peers', function () {
       peerId: id,
       connectionManager: stubInterface<ConnectionManager>(),
       peerStore: stubInterface<PeerStore>(),
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      ping: stubInterface<Ping>()
     }
     const table = new RoutingTable(components, {
       kBucketSize: 20,
       logPrefix: '',
+      metricsPrefix: '',
       protocol: '/ipfs/kad/1.0.0',
       network: stubInterface<Network>()
     })
@@ -102,7 +105,7 @@ describe.skip('generate peers', function () {
       const localKadId = await convertPeerId(peerId)
 
       const goOutput = await fromGo(targetCpl, randPrefix, uintArrayToString(localKadId, 'base64pad'))
-      const jsOutput = await refresh._makePeerId(localKadId, randPrefix, targetCpl)
+      const jsOutput = refresh._makePeerId(localKadId, randPrefix, targetCpl)
 
       expect(goOutput).to.deep.equal(jsOutput)
     })

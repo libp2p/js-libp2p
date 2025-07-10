@@ -9,9 +9,12 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { createLibp2p, type Libp2p } from '../../src/index.js'
+import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
+import { createLibp2p } from '../../src/index.js'
+import type { Libp2p } from '../../src/index.js'
 import type { ContentRouting, PeerInfo } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('content-routing', () => {
   describe('no routers', () => {
@@ -327,7 +330,7 @@ describe('content-routing', () => {
       const serviceDeferred = pDefer()
       const delegatedDeferred = pDefer()
 
-      router.provide.callsFake(async function () { // eslint-disable-line require-yield
+      router.provide.callsFake(async function () {
         serviceDeferred.resolve()
       })
 
@@ -356,7 +359,7 @@ describe('content-routing', () => {
         yield results[0]
       })
 
-      delegate.findProviders.callsFake(async function * () { // eslint-disable-line require-yield
+      delegate.findProviders.callsFake(async function * () {
       })
 
       const providers = []
@@ -390,6 +393,47 @@ describe('content-routing', () => {
 
       expect(providers).to.have.length.above(0)
       expect(providers).to.eql(results)
+    })
+  })
+
+  describe('partial implementation', () => {
+    let node: Libp2p
+    let router: StubbedInstance<Partial<ContentRouting>>
+
+    beforeEach(async () => {
+      router = {
+        provide: sinon.stub()
+      }
+
+      node = await createLibp2p({
+        services: {
+          router: () => ({
+            [contentRoutingSymbol]: router
+          })
+        }
+      })
+    })
+
+    afterEach(async () => {
+      await node?.stop()
+    })
+
+    it('should invoke a method defined on the service', async () => {
+      const deferred = pDefer()
+
+      router.provide?.callsFake(async function () {
+        deferred.resolve()
+      })
+
+      void node.contentRouting.provide(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB'))
+
+      await deferred.promise
+    })
+
+    it('should not invoke a method not defined on the service', async () => {
+      const result = await all(node.contentRouting.findProviders(CID.parse('QmU621oD8AhHw6t25vVyfYKmL9VV3PTgc52FngEhTGACFB')))
+
+      expect(result).to.be.empty()
     })
   })
 })

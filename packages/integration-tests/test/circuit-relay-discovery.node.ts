@@ -1,16 +1,18 @@
 /* eslint-env mocha */
 
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayServer, type CircuitRelayService, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { stop } from '@libp2p/interface'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
+import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 import { getRelayAddress, hasRelay } from './fixtures/utils.js'
+import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 
@@ -43,6 +45,7 @@ describe('circuit-relay discovery', () => {
           }
         }),
         identify: identify(),
+        ping: ping(),
         kadDht: kadDHT({
           protocol: DHT_PROTOCOL,
           peerInfoMapper: passthroughMapper,
@@ -66,6 +69,7 @@ describe('circuit-relay discovery', () => {
       ],
       services: {
         identify: identify(),
+        ping: ping(),
         kadDht: kadDHT({
           protocol: DHT_PROTOCOL,
           peerInfoMapper: passthroughMapper,
@@ -92,13 +96,13 @@ describe('circuit-relay discovery', () => {
     ;[local, remote] = await Promise.all([
       createLibp2p({
         addresses: {
-          listen: ['/ip4/127.0.0.1/tcp/0']
+          listen: [
+            '/p2p-circuit'
+          ]
         },
         transports: [
           tcp(),
-          circuitRelayTransport({
-            discoverRelays: 1
-          })
+          circuitRelayTransport()
         ],
         streamMuxers: [
           yamux()
@@ -108,6 +112,7 @@ describe('circuit-relay discovery', () => {
         ],
         services: {
           identify: identify(),
+          ping: ping(),
           kadDht: kadDHT({
             protocol: DHT_PROTOCOL,
             peerInfoMapper: passthroughMapper,
@@ -117,13 +122,13 @@ describe('circuit-relay discovery', () => {
       }),
       createLibp2p({
         addresses: {
-          listen: ['/ip4/127.0.0.1/tcp/0']
+          listen: [
+            '/p2p-circuit'
+          ]
         },
         transports: [
           tcp(),
-          circuitRelayTransport({
-            discoverRelays: 1
-          })
+          circuitRelayTransport()
         ],
         streamMuxers: [
           yamux()
@@ -133,6 +138,7 @@ describe('circuit-relay discovery', () => {
         ],
         services: {
           identify: identify(),
+          ping: ping(),
           kadDht: kadDHT({
             protocol: DHT_PROTOCOL,
             peerInfoMapper: passthroughMapper,

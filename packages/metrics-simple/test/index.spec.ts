@@ -1,4 +1,5 @@
 import { start, stop } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { simpleMetrics } from '../src/index.js'
@@ -21,7 +22,9 @@ describe('simple-metrics', () => {
         deferred.resolve(metrics)
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     await start(s)
 
@@ -42,7 +45,9 @@ describe('simple-metrics', () => {
         }
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     const group = s.registerMetricGroup('foo')
     group.update({ bar: 5 })
@@ -64,7 +69,9 @@ describe('simple-metrics', () => {
         deferred.resolve(metrics)
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     await start(s)
 
@@ -83,7 +90,9 @@ describe('simple-metrics', () => {
         deferred.resolve(metrics)
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     await start(s)
 
@@ -102,7 +111,9 @@ describe('simple-metrics', () => {
         deferred.resolve(metrics)
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     await start(s)
 
@@ -127,7 +138,9 @@ describe('simple-metrics', () => {
         deferred.resolve(metrics)
       },
       intervalMs: 10
-    })({})
+    })({
+      logger: defaultLogger()
+    })
 
     await start(s)
 
@@ -142,5 +155,31 @@ describe('simple-metrics', () => {
       foo: 10,
       bar: 20
     })
+  })
+
+  it('should retain metrics after stop', async () => {
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    await start(s)
+
+    const m1 = s.registerCounterGroup('test_metric')
+    const m2 = s.registerCounterGroup('test_metric')
+
+    expect(m1).to.equal(m2, 'did not re-use metric')
+
+    await stop(s)
+
+    await start(s)
+
+    const m3 = s.registerCounterGroup('test_metric')
+
+    expect(m3).to.equal(m1, 'did not re-use metric')
   })
 })

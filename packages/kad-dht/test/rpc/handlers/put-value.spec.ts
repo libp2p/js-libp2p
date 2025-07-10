@@ -7,24 +7,25 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
-import { createPeerId } from '../../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
 import type { Validators } from '../../../src/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { Message } from '../../../src/message/dht.js'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
 import type { Datastore } from 'interface-datastore'
 
 const T = MessageType.PUT_VALUE
 
 describe('rpc - handlers - PutValue', () => {
-  let sourcePeer: PeerId
+  let sourcePeer: PeerAndKey
   let handler: PutValueHandler
   let datastore: Datastore
   let validators: Validators
 
   beforeEach(async () => {
-    sourcePeer = await createPeerId()
+    sourcePeer = await createPeerIdWithPrivateKey()
     datastore = new MemoryDatastore()
     validators = {}
 
@@ -35,7 +36,8 @@ describe('rpc - handlers - PutValue', () => {
 
     handler = new PutValueHandler(components, {
       validators,
-      logPrefix: ''
+      logPrefix: 'dht',
+      datastorePrefix: '/dht'
     })
   })
 
@@ -48,7 +50,7 @@ describe('rpc - handlers - PutValue', () => {
     }
 
     try {
-      await handler.handle(sourcePeer, msg)
+      await handler.handle(sourcePeer.peerId, msg)
     } catch (err: any) {
       expect(err.name).to.equal('InvalidMessageError')
       return
@@ -72,10 +74,10 @@ describe('rpc - handlers - PutValue', () => {
     msg.record = record.serialize()
     validators.val = async () => {}
 
-    const response = await handler.handle(sourcePeer, msg)
+    const response = await handler.handle(sourcePeer.peerId, msg)
     expect(response).to.deep.equal(msg)
 
-    const key = utils.bufferToRecordKey(uint8ArrayFromString('hello'))
+    const key = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('hello'))
     const res = await datastore.get(key)
 
     const rec = Libp2pRecord.deserialize(res)

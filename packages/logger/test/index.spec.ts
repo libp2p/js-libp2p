@@ -9,7 +9,7 @@ import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as unint8ArrayToString } from 'uint8arrays/to-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import debug from 'weald'
 import { logger, peerLogger } from '../src/index.js'
 
@@ -79,6 +79,20 @@ describe('logger', () => {
     expect(log).to.have.nested.property('trace.enabled').that.is.true()
   })
 
+  it('creates a sub logger', () => {
+    debug.enable('enabled-with-trace-logger*,*:trace')
+
+    const log = logger('enabled-with-trace-logger')
+    const subLog = log.newScope('sub-component')
+
+    expect(subLog).to.be.a('function')
+    expect(subLog).to.have.property('enabled').that.is.true()
+    expect(subLog).to.have.property('error').that.is.a('function')
+    expect(subLog).to.have.nested.property('error.enabled').that.is.true()
+    expect(subLog).to.have.property('trace').that.is.a('function')
+    expect(subLog).to.have.nested.property('trace.enabled').that.is.true()
+  })
+
   it('has all formatters', () => {
     debug.enable('enabled-with-formatters')
 
@@ -145,7 +159,7 @@ describe('logger', () => {
   it('test datastore key formatter', () => {
     const buf = uint8ArrayFromString('jbswy3dpfqqho33snrscc===', 'base32')
 
-    const key = new Key('/' + unint8ArrayToString(buf, 'base32'), false)
+    const key = new Key('/' + uint8ArrayToString(buf, 'base32'), false)
 
     expect(debug.formatters.k(key)).to.equal(key.toString())
   })

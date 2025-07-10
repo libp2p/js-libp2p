@@ -1,22 +1,16 @@
-import { expect } from 'aegir/chai'
+import os from 'node:os'
+import { isIPv6 } from '@chainsafe/is-ip'
 import * as lengthPrefixed from 'it-length-prefixed'
-import { Message } from '../src/pb/message.js'
-
-export const expectError = (error: unknown, message: string): void => {
-  if (error instanceof Error) {
-    expect(error.message).to.equal(message)
-  } else {
-    expect('Did not throw error:').to.equal(message)
-  }
-}
+import { isNode, isElectronMain } from 'wherearewe'
+import { Message } from '../src/private-to-public/pb/message.js'
 
 /**
  * simulates receiving a FIN_ACK on the passed datachannel
  */
 export function receiveFinAck (channel: RTCDataChannel): void {
-  const msgbuf = Message.encode({ flag: Message.Flag.FIN_ACK })
-  const data = lengthPrefixed.encode.single(msgbuf).subarray()
-  channel.onmessage?.(new MessageEvent<ArrayBuffer>('message', { data }))
+  const msgBuf = Message.encode({ flag: Message.Flag.FIN_ACK })
+  const data = lengthPrefixed.encode.single(msgBuf).subarray()
+  channel.onmessage?.(new MessageEvent<Uint8Array>('message', { data }))
 }
 
 let mockDataChannelId = 0
@@ -33,4 +27,22 @@ export const mockDataChannel = (opts: { send(bytes: Uint8Array): void, bufferedA
   }
 
   return channel
+}
+
+/**
+ * If we don't have any IPv6 network interfaces, the network we are on probably
+ * doesn't support IPv6
+ */
+export function supportsIpV6 (): boolean {
+  if (!isNode && !isElectronMain) {
+    return false
+  }
+
+  return Object.entries(os.networkInterfaces())
+    .flatMap(([_, addresses]) => addresses)
+    .map(address => address?.address)
+    .filter(address => {
+      return address != null && isIPv6(address)
+    })
+    .length > 0
 }

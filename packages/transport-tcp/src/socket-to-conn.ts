@@ -28,13 +28,12 @@ interface ToConnectionOptions {
  */
 export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptions): MultiaddrConnection => {
   let closePromise: DeferredPromise<void>
-  const log = options.logger.forComponent('libp2p:tcp:socket')
   const direction = options.direction
   const metrics = options.metrics
   const metricPrefix = options.metricPrefix ?? ''
   const inactivityTimeout = options.socketInactivityTimeout ?? SOCKET_TIMEOUT
   const closeTimeout = options.socketCloseTimeout ?? CLOSE_TIMEOUT
-  let timedout = false
+  let timedOut = false
   let errored = false
 
   // Check if we are connected on a unix path
@@ -50,8 +49,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.on('error', err => {
     errored = true
 
-    if (!timedout) {
-      log.error('%s socket error - %e', direction, err)
+    if (!timedOut) {
+      maConn.log.error('%s socket error - %e', direction, err)
       metrics?.increment({ [`${metricPrefix}error`]: true })
     }
 
@@ -82,8 +81,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.setTimeout(inactivityTimeout)
 
   socket.once('timeout', () => {
-    timedout = true
-    log('%s %s socket read timeout', direction, lOptsStr)
+    timedOut = true
+    maConn.log('%s %s socket read timeout', direction, lOptsStr)
     metrics?.increment({ [`${metricPrefix}timeout`]: true })
 
     // if the socket times out due to inactivity we must manually close the connection
@@ -94,8 +93,8 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
   socket.once('close', () => {
     // record metric for clean exit
-    if (!timedout && !errored) {
-      log('%s %s socket close', direction, lOptsStr)
+    if (!timedOut && !errored) {
+      maConn.log('%s %s socket close', direction, lOptsStr)
       metrics?.increment({ [`${metricPrefix}close`]: true })
     }
 
@@ -109,7 +108,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
   socket.once('end', () => {
     // the remote sent a FIN packet which means no more data will be sent
     // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-    log('%s %s socket end', direction, lOptsStr)
+    maConn.log('%s %s socket end', direction, lOptsStr)
     metrics?.increment({ [`${metricPrefix}end`]: true })
   })
 
@@ -131,7 +130,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           // If the source errored the socket will already have been destroyed by
           // duplex(). If the socket errored it will already be
           // destroyed. There's nothing to do here except log the error & return.
-          log.error('%s %s error in sink - %e', direction, lOptsStr, err)
+          maConn.log.error('%s %s error in sink - %e', direction, lOptsStr, err)
         }
       }
 
@@ -148,12 +147,12 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
     async close (options: AbortOptions = {}) {
       if (socket.closed) {
-        log('the %s %s socket is already closed', direction, lOptsStr)
+        maConn.log('the %s %s socket is already closed', direction, lOptsStr)
         return
       }
 
       if (socket.destroyed) {
-        log('the %s %s socket is already destroyed', direction, lOptsStr)
+        maConn.log('the %s %s socket is already destroyed', direction, lOptsStr)
         return
       }
 
@@ -175,11 +174,11 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
 
         // wait for any unsent data to be sent
         if (socket.writableLength > 0) {
-          log('%s %s draining socket', direction, lOptsStr)
+          maConn.log('%s %s draining socket', direction, lOptsStr)
           await raceEvent(eventTarget, 'drain', signal, {
             errorEvent: 'error'
           })
-          log('%s %s socket drained', direction, lOptsStr)
+          maConn.log('%s %s socket drained', direction, lOptsStr)
         }
 
         await Promise.all([
@@ -198,7 +197,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
     },
 
     abort: (err: Error) => {
-      log('%s %s socket abort due to error - %e', direction, lOptsStr, err)
+      maConn.log('%s %s socket abort due to error - %e', direction, lOptsStr, err)
 
       // the abortSignalListener may already destroyed the socket with an error
       socket.destroy()
@@ -210,7 +209,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
       maConn.timeline.close = Date.now()
     },
 
-    log
+    log: options.logger.forComponent('libp2p:tcp:connection')
   }
 
   return maConn

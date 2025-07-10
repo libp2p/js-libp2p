@@ -1,14 +1,14 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { duplexPair } from 'it-pair/duplex'
 import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tls } from '../src/index.js'
-import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
+import type { StreamMuxerFactory, ConnectionEncrypter, PeerId, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 
 describe('tls', () => {
   let localPeer: PeerId
@@ -27,7 +27,14 @@ describe('tls', () => {
 
     encrypter = tls()({
       privateKey: localKeyPair,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      upgrader: stubInterface<Upgrader>({
+        getStreamMuxers () {
+          return new Map([['/test/muxer', stubInterface<StreamMuxerFactory>({
+            protocol: '/test/muxer'
+          })]])
+        }
+      })
     })
   })
 
@@ -36,19 +43,19 @@ describe('tls', () => {
   })
 
   it('should verify the public key and id match', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      remotePeer,
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ]
-    })
+    const [inbound, outbound] = duplexPair<any>()
 
     await Promise.all([
-      encrypter.secureInbound(inbound, {
+      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
+      }), {
         remotePeer
       }),
-      encrypter.secureOutbound(outbound, {
+      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
+      }), {
         remotePeer: wrongPeer
       })
     ]).then(() => expect.fail('should have failed'), (err) => {
@@ -64,25 +71,76 @@ describe('tls', () => {
 
     encrypter = tls()({
       privateKey: keyPair,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      upgrader: stubInterface<Upgrader>({
+        getStreamMuxers () {
+          return new Map([['/test/muxer', stubInterface<StreamMuxerFactory>()]])
+        }
+      })
     })
 
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      remotePeer,
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ]
-    })
+    const [inbound, outbound] = duplexPair<any>()
 
     await expect(Promise.all([
-      encrypter.secureInbound(inbound, {
+      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
+      }), {
         remotePeer
       }),
-      encrypter.secureOutbound(outbound, {
+      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
+      }), {
         remotePeer: localPeer
       })
     ]))
       .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
+  })
+
+  it('should select an early muxer', async () => {
+    const [inbound, outbound] = duplexPair<any>()
+
+    const result = await Promise.all([
+      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
+      }), {
+        remotePeer: localPeer
+      }),
+      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
+      }), {
+        remotePeer: localPeer
+      })
+    ])
+
+    expect(result).to.have.nested.property('[0].streamMuxer.protocol', '/test/muxer')
+    expect(result).to.have.nested.property('[1].streamMuxer.protocol', '/test/muxer')
+  })
+
+  it('should not select an early muxer when it is skipped', async () => {
+    const [inbound, outbound] = duplexPair<any>()
+
+    const result = await Promise.all([
+      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
+      }), {
+        remotePeer: localPeer,
+        skipStreamMuxerNegotiation: true
+      }),
+      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
+      }), {
+        remotePeer: localPeer,
+        skipStreamMuxerNegotiation: true
+      })
+    ])
+
+    expect(result).to.have.nested.property('[0].streamMuxer', undefined)
+    expect(result).to.have.nested.property('[1].streamMuxer', undefined)
   })
 })

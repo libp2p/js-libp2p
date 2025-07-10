@@ -11,8 +11,9 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encode } from '../src/encode.js'
 import { mplex } from '../src/index.js'
-import { type CloseInitiatorMessage, type Message, type MessageInitiatorMessage, MessageTypes, type NewStreamMessage } from '../src/message-types.js'
+import { MessageTypes } from '../src/message-types.js'
 import { decode } from './fixtures/decode.js'
+import type { CloseInitiatorMessage, Message, MessageInitiatorMessage, NewStreamMessage } from '../src/message-types.js'
 import type { Source } from 'it-stream-types'
 
 describe('mplex', () => {
@@ -138,6 +139,7 @@ describe('mplex', () => {
       logger: defaultLogger()
     })
     const muxer = factory.createStreamMuxer({
+      log: defaultLogger().forComponent('libp2p:mplex'),
       onIncomingStream () {
         // do nothing with the stream so the buffer fills up
       },

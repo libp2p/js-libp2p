@@ -26,12 +26,12 @@ Setting up a fleet of [`go-libp2p`](https://github.com/libp2p/go-libp2p) nodes i
 
 ## Connecting to Nodes with connectivity limitations
 
-While the libp2p core codebase aims to work in multiple environments, there are some limitations that are not possible to overcome at the time of writing. These limitations include browser nodes, nodes behind NAT, reverse proxies, firewalls, or lack of compatible transports.
+While the libp2p core code base aims to work in multiple environments, there are some limitations that are not possible to overcome at the time of writing. These limitations include browser nodes, nodes behind NAT, reverse proxies, firewalls, or lack of compatible transports.
 
 In the browser, libp2p supports three transports: `WebSockets`, `WebRTC`, and `WebTransport`.
 
 - [WebSockets](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets) is generally used as a full-duplex communication protocol over a single TCP connection, allowing for real-time data transfer between the client and the server.
-- [WebRTC](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc) is primarly geared towards facilitating browser-to-browser connections. It also enables browsers to connect to public server nodes without those server nodes providing a TLS certificate within the browser's trustchain. This differs from the `WebSockets` transport as the browser requires the remote to have a trusted TLS certificate. Please note that webRTC iss currently not supported by [go-libp2p](https://github.com/libp2p/go-libp2p/issues/2009) but this is in development.
+- [WebRTC](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc) is primarily geared towards facilitating browser-to-browser connections. It also enables browsers to connect to public server nodes without those server nodes providing a TLS certificate within the browser's trust chain. This differs from the `WebSockets` transport as the browser requires the remote to have a trusted TLS certificate. Please note that webRTC is currently not supported by [go-libp2p](https://github.com/libp2p/go-libp2p/issues/2009) but this is in development.
 - [WebTransport](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport) is a way for browsers to establish a stream-multiplexed and bidirectional connection to servers, that uses QUIC to offer an alternative to WebSocket. It exhibits all the advantages of QUIC over TCP, including faster handshakes, no head-of-line blocking, and being future-proof. Browsers cannot listen for WebTransport connections since it is similar to TCP in that it requires opening sockets on the host machine which is forbidden by the browser security model.
 
 Libp2p nodes acting as circuit relay aim to establish connectivity between libp2p nodes (e.g. IPFS nodes) that wouldn't otherwise be able to establish a direct connection to each other.

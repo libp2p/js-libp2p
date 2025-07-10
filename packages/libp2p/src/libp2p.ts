@@ -1,14 +1,15 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DefaultAddressManager } from './address-manager/index.js'
+import { AddressManager } from './address-manager/index.js'
 import { checkServiceDependencies, defaultComponents } from './components.js'
 import { connectionGater } from './config/connection-gater.js'
 import { DefaultConnectionManager } from './connection-manager/index.js'
@@ -16,14 +17,15 @@ import { ConnectionMonitor } from './connection-monitor.js'
 import { CompoundContentRouting } from './content-routing.js'
 import { DefaultPeerRouting } from './peer-routing.js'
 import { RandomWalk } from './random-walk.js'
-import { DefaultRegistrar } from './registrar.js'
+import { Registrar } from './registrar.js'
 import { DefaultTransportManager } from './transport-manager.js'
-import { DefaultUpgrader } from './upgrader.js'
+import { Upgrader } from './upgrader.js'
+import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey } from '@libp2p/interface'
-import type { StreamHandler, StreamHandlerOptions } from '@libp2p/interface-internal'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
@@ -38,6 +40,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   public components: Components & T
   private readonly log: Logger
 
+  // eslint-disable-next-line complexity
   constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
     super()
 
@@ -64,13 +67,18 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
     this.services = {}
+
+    const nodeInfoName = init.nodeInfo?.name ?? pkg.name
+    const nodeInfoVersion = init.nodeInfo?.version ?? pkg.version
+
     // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
-      nodeInfo: init.nodeInfo ?? {
-        name: pkg.name,
-        version: pkg.version
+      nodeInfo: {
+        name: nodeInfoName,
+        version: nodeInfoVersion,
+        userAgent: init.nodeInfo?.userAgent ?? userAgent(nodeInfoName, nodeInfoVersion)
       },
       logger: this.logger,
       events,
@@ -79,15 +87,15 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       dns: init.dns
     })
 
-    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
-      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
-      ...init.peerStore
-    }))
-
     // Create Metrics
     if (init.metrics != null) {
       this.metrics = this.configureComponent('metrics', init.metrics(this.components))
     }
+
+    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
+      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
+      ...init.peerStore
+    }))
 
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer
@@ -107,11 +115,12 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     // Set up the Upgrader
-    this.components.upgrader = new DefaultUpgrader(this.components, {
+    this.components.upgrader = new Upgrader(this.components, {
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
-      outboundUpgradeTimeout: init.connectionManager?.outboundUpgradeTimeout
+      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
+      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout
     })
 
     // Setup the transport manager
@@ -126,10 +135,10 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     // Create the Registrar
-    this.configureComponent('registrar', new DefaultRegistrar(this.components))
+    this.configureComponent('registrar', new Registrar(this.components))
 
     // Addresses {listen, announce, noAnnounce}
-    this.configureComponent('addressManager', new DefaultAddressManager(this.components, init.addresses))
+    this.configureComponent('addressManager', new AddressManager(this.components, init.addresses))
 
     // Peer routers
     const peerRouters: PeerRouting[] = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)))
@@ -332,7 +341,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     try {
-      const peerInfo = await this.peerStore.get(peer)
+      const peerInfo = await this.peerStore.get(peer, options)
 
       if (peerInfo.id.publicKey != null) {
         return peerInfo.id.publicKey
@@ -356,7 +365,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     await this.peerStore.patch(peer, {
       publicKey
-    })
+    }, options)
 
     return publicKey
   }
@@ -373,20 +382,20 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     )
   }
 
-  async unhandle (protocols: string[] | string): Promise<void> {
+  async unhandle (protocols: string[] | string, options?: AbortOptions): Promise<void> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
     await Promise.all(
       protocols.map(async protocol => {
-        await this.components.registrar.unhandle(protocol)
+        await this.components.registrar.unhandle(protocol, options)
       })
     )
   }
 
-  async register (protocol: string, topology: Topology): Promise<string> {
-    return this.components.registrar.register(protocol, topology)
+  async register (protocol: string, topology: Topology, options?: AbortOptions): Promise<string> {
+    return this.components.registrar.register(protocol, topology, options)
   }
 
   unregister (id: string): void {

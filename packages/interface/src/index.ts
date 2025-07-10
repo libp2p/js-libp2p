@@ -14,20 +14,21 @@
  * ```
  */
 
-import type { Connection, NewStreamOptions, Stream } from './connection/index.js'
-import type { ContentRouting } from './content-routing/index.js'
-import type { TypedEventTarget } from './event-target.js'
-import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys/index.js'
-import type { Metrics } from './metrics/index.js'
-import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id/index.js'
-import type { PeerInfo } from './peer-info/index.js'
-import type { PeerRouting } from './peer-routing/index.js'
-import type { Address, Peer, PeerStore } from './peer-store/index.js'
+import type { Connection, NewStreamOptions, Stream } from './connection.js'
+import type { ContentRouting } from './content-routing.js'
+import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
+import type { Metrics } from './metrics.js'
+import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.js'
+import type { PeerInfo } from './peer-info.js'
+import type { PeerRouting } from './peer-routing.js'
+import type { Address, Peer, PeerStore } from './peer-store.js'
 import type { Startable } from './startable.js'
-import type { StreamHandler, StreamHandlerOptions } from './stream-handler/index.js'
-import type { Topology } from './topology/index.js'
-import type { Listener, OutboundConnectionUpgradeEvents } from './transport/index.js'
+import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
+import type { Topology } from './topology.js'
+import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
+import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 /**
@@ -51,6 +52,21 @@ export interface PeerUpdate {
 export interface SignedPeerRecord {
   addresses: Multiaddr[]
   seq: bigint
+}
+
+/**
+ * A certificate that can be used to secure connections
+ */
+export interface TLSCertificate {
+  /**
+   * The private key that corresponds to the certificate in PEM format
+   */
+  key: string
+
+  /**
+   * The certificate chain in PEM format
+   */
+  cert: string
 }
 
 /**
@@ -111,17 +127,110 @@ export interface IdentifyResult {
  * Logger component for libp2p
  */
 export interface Logger {
+  /**
+   * Log a message
+   */
   (formatter: any, ...args: any[]): void
+
+  /**
+   * Log an error message
+   */
   error(formatter: any, ...args: any[]): void
+
+  /**
+   * Log a trace message
+   */
   trace(formatter: any, ...args: any[]): void
+
+  /**
+   * `true` if this logger is enabled
+   */
   enabled: boolean
+
+  /**
+   * Create a logger scoped below this one
+   *
+   * @example
+   *
+   * ```ts
+   * import { defaultLogger } from '@libp2p/logger'
+   *
+   * const log = defaultLogger().forComponent('foo')
+   *
+   * log('hello')
+   * // foo hello
+   *
+   * const subLog = log.newScope('bar')
+   *
+   * subLog('hello')
+   * // foo:bar hello
+   * ```
+   */
+  newScope(name: string): Logger
 }
 
 /**
- * Peer logger component for libp2p
+ * Peer logger component for libp2p. This can be used to create loggers that are
+ * scoped to individual system components or services.
+ *
+ * To see logs, run your app with `DEBUG` set as an env var or for browsers, in
+ * `localStorage`:
+ *
+ * ```console
+ * $ DEBUG=libp2p* node index.js
+ *  libp2p:my-service hello +0ms
+ * ```
  */
 export interface ComponentLogger {
+  /**
+   * Returns a logger for the specified component.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * import { ComponentLogger, Logger } from '@libp2p/interface'
+   *
+   * interface MyServiceComponents {
+   *   logger: ComponentLogger
+   * }
+   *
+   * class MyService {
+   *   private readonly log: Logger
+   *
+   *   constructor (components) {
+   *     this.log = components.logger.forComponent('libp2p:my-service')
+   *
+   *     this.log('hello')
+   *     // logs:
+   *     // libp2p:my-service hello +0ms
+   *   }
+   * }
+   * ```
+   */
   forComponent(name: string): Logger
+}
+
+export interface MultiaddrResolveOptions extends AbortOptions, LoggerOptions {
+  /**
+   * An optional DNS resolver
+   */
+  dns?: DNS
+}
+
+/**
+ * `MultiaddrResolver`s perform resolution of multiaddr components that require
+ * translation by external systems (for example DNSADDR to TXT records).
+ */
+export interface MultiaddrResolver {
+  /**
+   * Returns true if this resolver can resolve components of this multiaddr
+   */
+  canResolve (address: Multiaddr): boolean
+
+  /**
+   * Returns one or more multiaddrs with components resolved to other values
+   */
+  resolve (address: Multiaddr, options: MultiaddrResolveOptions): Promise<Multiaddr[]>
 }
 
 /**
@@ -268,6 +377,17 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
   'connection:close': CustomEvent<Connection>
 
   /**
+   * This event notifies listeners that a TLS certificate is available for use
+   */
+  'certificate:provision': CustomEvent<TLSCertificate>
+
+  /**
+   * This event notifies listeners that a new TLS certificate is available for
+   * use. Any previous certificate may no longer be valid.
+   */
+  'certificate:renew': CustomEvent<TLSCertificate>
+
+  /**
    * This event notifies listeners that the node has started
    *
    * ```TypeScript
@@ -276,7 +396,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'start': CustomEvent<Libp2p<T>>
+  start: CustomEvent<Libp2p<T>>
 
   /**
    * This event notifies listeners that the node has stopped
@@ -287,7 +407,7 @@ export interface Libp2pEvents<T extends ServiceMap = ServiceMap> {
    * })
    * ```
    */
-  'stop': CustomEvent<Libp2p<T>>
+  stop: CustomEvent<Libp2p<T>>
 }
 
 /**
@@ -597,7 +717,8 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    *
    * `libp2p.handle(protocols, handler, options)`
    *
-   * In the event of a new handler for the same protocol being added, the first one is discarded.
+   * In the event of a new handler for the same protocol being added and error
+   * will be thrown. Pass `force: true` to override this.
    *
    * @example
    *
@@ -624,7 +745,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * libp2p.unhandle(['/echo/1.0.0'])
    * ```
    */
-  unhandle(protocols: string[] | string): Promise<void>
+  unhandle(protocols: string[] | string, options?: AbortOptions): Promise<void>
 
   /**
    * Register a topology to be informed when peers are encountered that
@@ -643,7 +764,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * })
    * ```
    */
-  register(protocol: string, topology: Topology): Promise<string>
+  register(protocol: string, topology: Topology, options?: AbortOptions): Promise<string>
 
   /**
    * Unregister topology to no longer be informed when peers connect or
@@ -700,6 +821,11 @@ export interface NodeInfo {
    * The implementation version
    */
   version: string
+
+  /**
+   * A string that contains information about the implementation and runtime
+   */
+  userAgent: string
 }
 
 /**
@@ -731,12 +857,28 @@ export interface LoggerOptions {
 }
 
 /**
+ * An object that includes a trace object that is passed onwards.
+ *
+ * This is used by metrics method tracing to link function calls together.
+ */
+export interface TraceOptions {
+  trace?: any
+}
+
+/**
+ * A signal that needs to be cleared when no longer in use
+ */
+export interface ClearableSignal extends AbortSignal {
+  clear(): void
+}
+
+/**
  * When a routing operation involves reading values, these options allow
  * controlling where the values are read from. By default libp2p will check
  * local caches but may not use the network if a valid local value is found,
- * these options allow tuning that behaviour.
+ * these options allow tuning that behavior.
  */
-export interface RoutingOptions extends AbortOptions, ProgressOptions {
+export interface RoutingOptions extends AbortOptions, ProgressOptions, TraceOptions {
   /**
    * Pass `false` to not use the network
    *
@@ -770,25 +912,23 @@ export const serviceCapabilities = Symbol.for('@libp2p/service-capabilities')
  */
 export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
 
-export * from './connection/index.js'
-export * from './connection-encrypter/index.js'
-export * from './connection-gater/index.js'
-export * from './content-routing/index.js'
-export * from './keys/index.js'
-export * from './metrics/index.js'
-export * from './peer-discovery/index.js'
-export * from './peer-id/index.js'
-export * from './peer-info/index.js'
-export * from './peer-routing/index.js'
-export * from './peer-store/index.js'
-export * from './peer-store/tags.js'
-export * from './pubsub/index.js'
-export * from './record/index.js'
-export * from './stream-handler/index.js'
-export * from './stream-muxer/index.js'
-export * from './topology/index.js'
-export * from './transport/index.js'
+export * from './connection.js'
+export * from './connection-encrypter.js'
+export * from './connection-gater.js'
+export * from './content-routing.js'
+export * from './keys.js'
+export * from './metrics.js'
+export * from './peer-discovery.js'
+export * from './peer-id.js'
+export * from './peer-info.js'
+export * from './peer-routing.js'
+export * from './peer-store.js'
+export * from './pubsub.js'
+export * from './record.js'
+export * from './stream-handler.js'
+export * from './stream-muxer.js'
+export * from './topology.js'
+export * from './transport.js'
 export * from './errors.js'
-export * from './event-target.js'
-export * from './events.js'
+export * from 'main-event'
 export * from './startable.js'

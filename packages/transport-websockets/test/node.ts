@@ -1,53 +1,27 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import fs from 'fs'
-import http from 'http'
-import https from 'https'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockRegistrar, mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
+import fs from 'node:fs'
+import http from 'node:http'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
+import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { isLoopbackAddr } from 'is-loopback-addr'
-import all from 'it-all'
-import drain from 'it-drain'
-import { goodbye } from 'it-goodbye'
-import { pipe } from 'it-pipe'
-import defer from 'p-defer'
-import waitFor from 'p-wait-for'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { TypedEventEmitter } from 'main-event'
+import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
-import type { Listener, Transport } from '@libp2p/interface'
-import type { Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
-import './compliance.node.js'
-
-async function * toBuffers (source: Source<Uint8ArrayList>): AsyncGenerator<Uint8Array, void, undefined> {
-  for await (const list of source) {
-    yield * list
-  }
-}
-
-const protocol = '/say-hello/1.0.0'
-const registrar = mockRegistrar()
-void registrar.handle(protocol, (evt) => {
-  void pipe([
-    uint8ArrayFromString('hey')
-  ],
-  evt.stream,
-  drain
-  )
-})
-const upgrader = mockUpgrader({
-  registrar,
-  events: new TypedEventEmitter()
-})
+import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
+import type { StubbedInstance } from 'sinon-ts'
 
 describe('instantiate the transport', () => {
   it('create', () => {
     const ws = webSockets()({
+      events: new TypedEventEmitter(),
       logger: defaultLogger()
     })
     expect(ws).to.exist()
@@ -55,31 +29,17 @@ describe('instantiate the transport', () => {
 })
 
 describe('listen', () => {
-  it('should close connections when stopping the listener', async () => {
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
+  let upgrader: StubbedInstance<Upgrader>
 
-    const ws = webSockets()({
-      logger: defaultLogger()
-    })
-    const listener = ws.createListener({
-      handler: (conn) => {
-        void conn.newStream([protocol]).then(async (stream) => {
-          await pipe(stream, stream)
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
         })
-      },
-      upgrader
+      }
     })
-    await listener.listen(ma)
-
-    const conn = await ws.dial(ma, {
-      upgrader
-    })
-    const stream = await conn.newStream([protocol])
-    void pipe(stream, stream)
-
-    await listener.close()
-
-    await waitFor(() => conn.timeline.close != null)
   })
 
   describe('ip4', () => {
@@ -89,6 +49,7 @@ describe('listen', () => {
 
     beforeEach(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -112,10 +73,20 @@ describe('listen', () => {
       void listener.listen(ma)
     })
 
+    it('should return an empty address list when `getAddrs` called before listening has finished', async () => {
+      listener = ws.createListener({ upgrader })
+
+      void listener.listen(ma)
+
+      // call getAddrs before sockets have opened
+      expect(listener.getAddrs()).to.be.empty()
+    })
+
     it('should error on starting two listeners on same address', async () => {
       listener = ws.createListener({ upgrader })
       const dumbServer = http.createServer()
-      await new Promise<void>(resolve => dumbServer.listen(ma.toOptions().port, resolve))
+      const options = ma.toOptions()
+      await new Promise<void>(resolve => dumbServer.listen(options.port, options.host, resolve))
       await expect(listener.listen(ma)).to.eventually.rejectedWith('listen EADDRINUSE')
       await new Promise<void>(resolve => dumbServer.close(() => { resolve() }))
     })
@@ -191,7 +162,7 @@ describe('listen', () => {
     })
 
     it('getAddrs preserves p2p Id', async () => {
-      const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/47382/ws')
       listener = ws.createListener({ upgrader })
 
       await listener.listen(ma)
@@ -207,6 +178,7 @@ describe('listen', () => {
 
     beforeEach(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -248,6 +220,19 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
+  let upgrader: StubbedInstance<Upgrader>
+
+  beforeEach(() => {
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async (maConn) => {
+        return stubInterface<Connection>({
+          remoteAddr: maConn.remoteAddr
+        })
+      }
+    })
+  })
+
   describe('ip4', () => {
     let ws: Transport
     let listener: Listener
@@ -255,29 +240,33 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
-      listener = ws.createListener({ upgrader })
+      listener = ws.createListener({
+        upgrader
+      })
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const stream = await conn.newStream([protocol])
-
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
-      await conn.close()
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })).to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = await ws.dial(ma, { upgrader })
-      const stream = await conn.newStream([protocol])
 
-      expect((await all(stream.source)).map(list => list.subarray())).to.deep.equal([uint8ArrayFromString('hey')])
-      await conn.close()
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })).to.eventually.be.ok()
     })
 
     it('dial should throw on immediate abort', async () => {
@@ -293,13 +282,11 @@ describe('dial', () => {
     it('should resolve port 0', async () => {
       const ma = multiaddr('/ip4/127.0.0.1/tcp/0/ws')
       const ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
 
-      // Create a Promise that resolves when a connection is handled
-      const deferred = defer()
-
-      const listener = ws.createListener({ handler: deferred.resolve, upgrader })
+      const listener = ws.createListener({ upgrader })
 
       // Listen on the multiaddr
       await listener.listen(ma)
@@ -308,10 +295,15 @@ describe('dial', () => {
       expect(localAddrs.length).to.equal(1)
 
       // Dial to that address
-      await ws.dial(localAddrs[0], { upgrader })
+      await ws.dial(localAddrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })
 
       // Wait for the incoming dial to be handled
-      await deferred.promise
+      await pWaitFor(() => {
+        return upgrader.upgradeInbound.callCount === 1
+      })
 
       // close the listener
       await listener.close()
@@ -325,20 +317,18 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
       })
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial', async () => {
       const addrs = listener.getAddrs().filter((ma) => {
@@ -352,44 +342,33 @@ describe('dial', () => {
       }
 
       // Dial first no loopback address
-      const conn = await ws.dial(addrs[0], { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(
-        s,
-        stream,
-        toBuffers,
-        s
-      )).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(addrs[0], {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
+        .to.eventually.be.ok()
     })
   })
 
   describe('ip4 with wss', () => {
     let ws: Transport
     let listener: Listener
-    const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/wss')
-    let server: https.Server
+    const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/tls/ws')
 
     beforeEach(async () => {
-      server = https.createServer({
-        cert: fs.readFileSync('./test/fixtures/certificate.pem'),
-        key: fs.readFileSync('./test/fixtures/key.pem')
-      })
-      ws = webSockets({ websocket: { rejectUnauthorized: false }, server })({
+      ws = webSockets({
+        websocket: {
+          rejectUnauthorized: false
+        },
+        https: {
+          cert: fs.readFileSync('./test/fixtures/certificate.pem'),
+          key: fs.readFileSync('./test/fixtures/key.pem')
+        }
+      })({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
       })
       await listener.listen(ma)
@@ -397,7 +376,6 @@ describe('dial', () => {
 
     afterEach(async () => {
       await listener.close()
-      server.close()
     })
 
     it('should listen on wss address', () => {
@@ -408,19 +386,11 @@ describe('dial', () => {
     })
 
     it('dial ip4', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      const res = await pipe(s, stream, toBuffers, s)
-
-      expect(res[0]).to.equalBytes(uint8ArrayFromString('hey'))
-      await conn.close()
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
+        .to.eventually.be.ok()
     })
   })
 
@@ -431,47 +401,34 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
       listener = ws.createListener({
-        handler: (conn) => {
-          void conn.newStream([protocol]).then(async (stream) => {
-            await pipe(stream, stream)
-          })
-        },
         upgrader
       })
       await listener.listen(ma)
     })
 
-    afterEach(async () => { await listener.close() })
+    afterEach(async () => {
+      await listener.close()
+    })
 
     it('dial ip6', async () => {
-      const conn = await ws.dial(ma, { upgrader })
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
+        .to.eventually.be.ok()
     })
 
     it('dial with p2p Id', async () => {
       const ma = multiaddr('/ip6/::1/tcp/9091/ws/p2p/Qmb6owHp6eaWArVbcJJbQSyifyJBttMMjYV76N2hMbf5Vw')
-      const conn = await ws.dial(ma, { upgrader })
-
-      const s = goodbye({
-        source: (async function * () {
-          yield uint8ArrayFromString('hey')
-        })(),
-        sink: all
-      })
-      const stream = await conn.newStream([protocol])
-
-      await expect(pipe(s, stream, toBuffers, s)).to.eventually.deep.equal([uint8ArrayFromString('hey')])
+      await expect(ws.dial(ma, {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      }))
+        .to.eventually.be.ok()
     })
   })
 })
@@ -482,6 +439,7 @@ describe('filter addrs', () => {
   describe('default filter addrs with only dns', () => {
     before(() => {
       ws = webSockets()({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -552,6 +510,7 @@ describe('filter addrs', () => {
   describe('custom filter addrs', () => {
     before(() => {
       ws = webSockets({ filter: filters.all })({
+        events: new TypedEventEmitter(),
         logger: defaultLogger()
       })
     })
@@ -679,5 +638,137 @@ describe('filter addrs', () => {
       expect(valid.length).to.equal(1)
       expect(valid[0]).to.deep.equal(ma)
     })
+  })
+})
+
+describe('auto-tls (IPv4)', () => {
+  let ws: Transport
+  let listener: Listener
+  let events: TypedEventEmitter<Libp2pEvents>
+  const ma = multiaddr('/ip4/127.0.0.1/tcp/37284/ws')
+
+  beforeEach(async () => {
+    events = new TypedEventEmitter()
+
+    const upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
+
+    ws = webSockets({
+      websocket: {
+        rejectUnauthorized: false
+      }
+    })({
+      events,
+      logger: defaultLogger()
+    })
+    listener = ws.createListener({
+      upgrader
+    })
+    await listener.listen(ma)
+  })
+
+  afterEach(async () => {
+    await listener.close()
+  })
+
+  it('should listen on wss after a certificate is found', async () => {
+    const addrs = listener.getAddrs()
+    expect(addrs).to.have.lengthOf(1)
+    expect(WebSockets.exactMatch(addrs[0])).to.be.true()
+    const listeningPromise = pEvent(listener, 'listening')
+
+    events.safeDispatchEvent<TLSCertificate>('certificate:provision', {
+      detail: {
+        key: fs.readFileSync('./test/fixtures/key.pem', {
+          encoding: 'utf-8'
+        }),
+        cert: fs.readFileSync('./test/fixtures/certificate.pem', {
+          encoding: 'utf-8'
+        })
+      }
+    })
+
+    await listeningPromise
+
+    const addrs2 = listener.getAddrs()
+    expect(addrs2).to.have.lengthOf(2)
+    expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
+    expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
+
+    const wsOptions = addrs2[0].toOptions()
+    const wssOptions = addrs2[1].toOptions()
+
+    expect(wsOptions.host).to.equal(wssOptions.host)
+    expect(wsOptions.port).to.equal(wssOptions.port)
+  })
+})
+
+describe('auto-tls (IPv6)', () => {
+  let ws: Transport
+  let listener: Listener
+  let events: TypedEventEmitter<Libp2pEvents>
+  const ma = multiaddr('/ip6/::1/tcp/37284/ws')
+
+  beforeEach(async () => {
+    events = new TypedEventEmitter()
+
+    const upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
+
+    ws = webSockets({
+      websocket: {
+        rejectUnauthorized: false
+      }
+    })({
+      events,
+      logger: defaultLogger()
+    })
+    listener = ws.createListener({
+      upgrader
+    })
+    await listener.listen(ma)
+  })
+
+  afterEach(async () => {
+    await listener.close()
+  })
+
+  it('should listen on wss after a certificate is found', async () => {
+    const addrs = listener.getAddrs()
+    expect(addrs).to.have.lengthOf(1)
+    expect(WebSockets.exactMatch(addrs[0])).to.be.true()
+    const listeningPromise = pEvent(listener, 'listening')
+
+    events.safeDispatchEvent<TLSCertificate>('certificate:provision', {
+      detail: {
+        key: fs.readFileSync('./test/fixtures/key.pem', {
+          encoding: 'utf-8'
+        }),
+        cert: fs.readFileSync('./test/fixtures/certificate.pem', {
+          encoding: 'utf-8'
+        })
+      }
+    })
+
+    await listeningPromise
+
+    const addrs2 = listener.getAddrs()
+    expect(addrs2).to.have.lengthOf(2)
+    expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
+    expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
+
+    const wsOptions = addrs2[0].toOptions()
+    const wssOptions = addrs2[1].toOptions()
+
+    expect(wsOptions.host).to.equal(wssOptions.host)
+    expect(wsOptions.port).to.equal(wssOptions.port)
   })
 })

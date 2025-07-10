@@ -59,6 +59,20 @@ export class DialDeniedError extends Error {
   }
 }
 
+export class UnsupportedListenAddressError extends Error {
+  constructor (message = 'No transport was configured to listen on this address') {
+    super(message)
+    this.name = 'UnsupportedListenAddressError'
+  }
+}
+
+export class UnsupportedListenAddressesError extends Error {
+  constructor (message = 'Configured listen addresses could not be listened on') {
+    super(message)
+    this.name = 'UnsupportedListenAddressesError'
+  }
+}
+
 export class NoValidAddressesError extends Error {
   constructor (message = 'No valid addresses') {
     super(message)
@@ -98,5 +112,12 @@ export class TransportUnavailableError extends Error {
   constructor (message = 'Transport unavailable') {
     super(message)
     this.name = 'TransportUnavailableError'
+  }
+}
+
+export class RecursionLimitError extends Error {
+  constructor (message = 'Max recursive depth reached') {
+    super(message)
+    this.name = 'RecursionLimitError'
   }
 }

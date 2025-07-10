@@ -1,3 +1,4 @@
+import { MUXER_PROTOCOL } from './constants.js'
 import { createStream } from './stream.js'
 import { drainAndClose, nopSink, nopSource } from './util.js'
 import type { DataChannelOptions } from './index.js'
@@ -5,8 +6,6 @@ import type { ComponentLogger, Logger, Stream, CounterGroup, StreamMuxer, Stream
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Source, Sink } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
-
-const PROTOCOL = '/webrtc'
 
 export interface DataChannelMuxerFactoryInit {
   /**
@@ -54,11 +53,11 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.components = components
     this.peerConnection = init.peerConnection
     this.metrics = init.metrics
-    this.protocol = init.protocol ?? PROTOCOL
+    this.protocol = init.protocol ?? MUXER_PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
-    this.log = components.logger.forComponent('libp2p:webrtc:datachannelmuxerfactory')
+    this.log = components.logger.forComponent('libp2p:webrtc:muxerfactory')
 
-    // store any datachannels opened before upgrade has been completed
+    // store any data channels opened before upgrade has been completed
     this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming early datachannel with channel id %d and label "%s"', channel.id)
 
@@ -79,7 +78,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
         onEnd: (err) => {
           bufferedStream.onEnd(err)
         },
-        logger: components.logger,
+        log: this.log,
         ...this.dataChannelOptions
       })
 
@@ -130,11 +129,11 @@ export class DataChannelMuxer implements StreamMuxer {
   private readonly logger: ComponentLogger
 
   constructor (components: DataChannelMuxerComponents, readonly init: DataChannelMuxerInit) {
-    this.log = components.logger.forComponent('libp2p:webrtc:muxer')
+    this.log = init.log?.newScope('muxer') ?? components.logger.forComponent('libp2p:webrtc:muxer')
     this.logger = components.logger
     this.streams = init.streams.map(s => s.stream)
     this.peerConnection = init.peerConnection
-    this.protocol = init.protocol ?? PROTOCOL
+    this.protocol = init.protocol ?? MUXER_PROTOCOL
     this.metrics = init.metrics
     this.dataChannelOptions = init.dataChannelOptions ?? {}
 
@@ -155,14 +154,18 @@ export class DataChannelMuxer implements StreamMuxer {
         return
       }
 
+      // lib-datachannel throws if `.getId` is called on a closed channel so
+      // memoize it
+      const id = channel.id
+
       const stream = createStream({
         channel,
         direction: 'inbound',
         onEnd: () => {
-          this.log('incoming channel %s ended with state %s', channel.id, channel.readyState)
           this.#onStreamEnd(stream, channel)
+          this.log('incoming channel %s ended', id)
         },
-        logger: this.logger,
+        log: this.log,
         ...this.dataChannelOptions
       })
 
@@ -239,19 +242,22 @@ export class DataChannelMuxer implements StreamMuxer {
   sink: Sink<Source<Uint8Array | Uint8ArrayList>, Promise<void>> = nopSink
 
   newStream (): Stream {
-    // The spec says the label SHOULD be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
+    // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('')
+    // lib-datachannel throws if `.getId` is called on a closed channel so
+    // memoize it
+    const id = channel.id
 
-    this.log.trace('opened outgoing datachannel with channel id %s', channel.id)
+    this.log.trace('opened outgoing datachannel with channel id %s', id)
 
     const stream = createStream({
       channel,
       direction: 'outbound',
       onEnd: () => {
-        this.log('outgoing channel %s ended with state %s', channel.id, channel.readyState)
         this.#onStreamEnd(stream, channel)
+        this.log('outgoing channel %s ended', id)
       },
-      logger: this.logger,
+      log: this.log,
       ...this.dataChannelOptions
     })
     this.streams.push(stream)

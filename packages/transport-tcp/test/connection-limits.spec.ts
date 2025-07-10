@@ -1,12 +1,13 @@
 import net from 'node:net'
 import { promisify } from 'util'
-import { TypedEventEmitter } from '@libp2p/interface'
-import { mockUpgrader } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
 import type { TCPListener } from '../src/listener.js'
+import type { Connection, Upgrader } from '@libp2p/interface'
 
 const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket(i: number): Promise<net.Socket>, assertRefusedSocket(i: number): Promise<net.Socket> } => {
   function createSocket (i: number): net.Socket {
@@ -63,22 +64,33 @@ const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise
 async function assertServerConnections (listener: TCPListener, connections: number): Promise<void> {
   // Expect server connections but allow time for sockets to connect or disconnect
   for (let i = 0; i < 100; i++) {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    if (listener['connections'].size === connections) {
+    if (listener['sockets'].size === connections) {
       return
     } else {
       await promisify(setTimeout)(10)
     }
   }
-  // eslint-disable-next-line @typescript-eslint/dot-notation
-  expect(listener['connections'].size).equals(connections, 'invalid amount of server connections')
+
+  expect(listener['sockets'].size).equals(connections, 'invalid amount of server connections')
 }
 
 describe('closeAbove/listenBelow', () => {
-  const afterEachCallbacks: Array<() => Promise<any> | any> = []
+  let afterEachCallbacks: Array<() => Promise<any> | any> = []
+  let upgrader: Upgrader
+
+  beforeEach(() => {
+    afterEachCallbacks = []
+
+    upgrader = stubInterface<Upgrader>({
+      upgradeInbound: Sinon.stub().resolves(),
+      upgradeOutbound: async () => {
+        return stubInterface<Connection>()
+      }
+    })
+  })
+
   afterEach(async () => {
     await Promise.all(afterEachCallbacks.map(fn => fn()))
-    afterEachCallbacks.length = 0
   })
 
   it('reject dial of connection above closeAbove', async () => {
@@ -86,16 +98,13 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+    const transport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
-    const listener = trasnport.createListener({ upgrader }) as TCPListener
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    const listener = transport.createListener({ upgrader }) as TCPListener
+    afterEachCallbacks.push(async () => listener.close())
+
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
     const { assertConnectedSocket, assertRefusedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
@@ -115,16 +124,13 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+    const transport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
-    const listener = trasnport.createListener({ upgrader }) as TCPListener
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    const listener = transport.createListener({ upgrader }) as TCPListener
+    afterEachCallbacks.push(async () => listener.close())
+
     await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}`))
     const { assertConnectedSocket } = buildSocketAssertions(port, afterEachCallbacks)
 
@@ -152,16 +158,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+    const transport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
-    const listener = trasnport.createListener({ upgrader }) as TCPListener
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    const listener = transport.createListener({ upgrader }) as TCPListener
+    afterEachCallbacks.push(async () => listener.close())
 
     let closeEventCallCount = 0
     listener.addEventListener('close', () => {
@@ -185,16 +187,12 @@ describe('closeAbove/listenBelow', () => {
     const closeAbove = 3
     const port = 9900
 
-    const trasnport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
+    const transport = tcp({ closeServerOnMaxConnections: { listenBelow, closeAbove } })({
       logger: defaultLogger()
     })
 
-    const upgrader = mockUpgrader({
-      events: new TypedEventEmitter()
-    })
-    const listener = trasnport.createListener({ upgrader }) as TCPListener
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    afterEachCallbacks.push(() => listener.close())
+    const listener = transport.createListener({ upgrader }) as TCPListener
+    afterEachCallbacks.push(async () => listener.close())
 
     let listeningEventCallCount = 0
     listener.addEventListener('listening', () => {

@@ -1,4 +1,6 @@
 import { InvalidMessageError } from '@libp2p/interface'
+import all from 'it-all'
+import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
@@ -17,11 +19,13 @@ export interface GetProvidersHandlerInit {
 }
 
 export interface GetProvidersHandlerComponents {
+  peerId: PeerId
   peerStore: PeerStore
   logger: ComponentLogger
 }
 
 export class GetProvidersHandler implements DHTMessageHandler {
+  private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
   private readonly peerStore: PeerStore
@@ -32,6 +36,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     const { peerRouting, providers, logPrefix } = init
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:get-providers`)
+    this.peerId = components.peerId
     this.peerStore = components.peerStore
     this.peerRouting = peerRouting
     this.providers = providers
@@ -52,27 +57,33 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
     this.log('%p asking for providers for %s', peerId, cid)
 
-    const [peers, closer] = await Promise.all([
-      this.providers.getProviders(cid),
-      this.peerRouting.getCloserPeersOffline(msg.key, peerId)
+    const [providerPeers, closerPeers] = await Promise.all([
+      all(map(await this.providers.getProviders(cid), async (peerId) => {
+        const peer = await this.peerStore.get(peerId)
+        const info: PeerInfo = {
+          id: peer.id,
+          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
+        }
+
+        return info
+      })),
+      this.peerRouting.getClosestPeersOffline(msg.key)
     ])
 
-    const providerPeers = await this._getPeers(peers)
-    const closerPeers = await this._getPeers(closer.map(({ id }) => id))
     const response: Message = {
       type: MessageType.GET_PROVIDERS,
       key: msg.key,
       clusterLevel: msg.clusterLevel,
       closer: closerPeers
         .map(this.peerInfoMapper)
-        .filter(({ multiaddrs }) => multiaddrs.length)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
           id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
         })),
       providers: providerPeers
         .map(this.peerInfoMapper)
-        .filter(({ multiaddrs }) => multiaddrs.length)
+        .filter(({ id, multiaddrs }) => multiaddrs.length > 0)
         .map(peerInfo => ({
           id: peerInfo.id.toMultihash().bytes,
           multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
@@ -86,30 +97,5 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
   async _getAddresses (peerId: PeerId): Promise<Multiaddr[]> {
     return []
-  }
-
-  async _getPeers (peerIds: PeerId[]): Promise<PeerInfo[]> {
-    const output: PeerInfo[] = []
-
-    for (const peerId of peerIds) {
-      try {
-        const peer = await this.peerStore.get(peerId)
-
-        const peerAfterFilter = this.peerInfoMapper({
-          id: peerId,
-          multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
-        })
-
-        if (peerAfterFilter.multiaddrs.length > 0) {
-          output.push(peerAfterFilter)
-        }
-      } catch (err: any) {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      }
-    }
-
-    return output
   }
 }

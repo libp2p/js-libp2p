@@ -110,6 +110,673 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [2.9.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.14...libp2p-v2.9.0) (2025-07-08)
+
+
+### Features
+
+* add isLibp2p function for type guarding ([#3211](https://github.com/libp2p/js-libp2p/issues/3211)) ([87e5d59](https://github.com/libp2p/js-libp2p/commit/87e5d5938368fee2b34ed386ab42294307f9bf6e))
+
+## [2.8.14](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.13...libp2p-v2.8.14) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
+## [2.8.13](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.12...libp2p-v2.8.13) (2025-07-03)
+
+
+### Bug Fixes
+
+* do not close relay connection after WebRTC upgrade ([#3205](https://github.com/libp2p/js-libp2p/issues/3205)) ([cfe2be4](https://github.com/libp2p/js-libp2p/commit/cfe2be4c9319b68f8e68df8021b9ee3c1a7236fd))
+
+## [2.8.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.11...libp2p-v2.8.12) (2025-06-25)
+
+
+### Bug Fixes
+
+* add multiaddr resolvers ([#3200](https://github.com/libp2p/js-libp2p/issues/3200)) ([1c1c49e](https://github.com/libp2p/js-libp2p/commit/1c1c49ef4f25dcd8925d134f7e185658c10d2d6b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/interface-internal bumped from ^2.3.17 to ^2.3.18
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/multistream-select bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-store bumped from ^11.2.5 to ^11.2.6
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+
+## [2.8.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.10...libp2p-v2.8.11) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.16 to ^2.3.17
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/peer-store bumped from ^11.2.4 to ^11.2.5
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+
+## [2.8.10](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.9...libp2p-v2.8.10) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/interface-internal bumped from ^2.3.15 to ^2.3.16
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/multistream-select bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-store bumped from ^11.2.3 to ^11.2.4
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+
+## [2.8.9](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.8...libp2p-v2.8.9) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+* add tracking for long-lived maps ([#3158](https://github.com/libp2p/js-libp2p/issues/3158)) ([3528df8](https://github.com/libp2p/js-libp2p/commit/3528df8295ed0ccceff5cfac6a3d35d8f2480765))
+* deduplicate typed event target ([#3170](https://github.com/libp2p/js-libp2p/issues/3170)) ([cc7b34c](https://github.com/libp2p/js-libp2p/commit/cc7b34c0fe3ac5745fd082ae0198b8742371a412))
+* pass metrics to peerstore ([#3164](https://github.com/libp2p/js-libp2p/issues/3164)) ([307d0ba](https://github.com/libp2p/js-libp2p/commit/307d0ba58b7301f3fc5f6c86066606d63b72c882))
+* report dial errors to metrics ([#3165](https://github.com/libp2p/js-libp2p/issues/3165)) ([ec73d59](https://github.com/libp2p/js-libp2p/commit/ec73d59a68947cbedc3367deceec21a1e59f21db))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/interface-internal bumped from ^2.3.14 to ^2.3.15
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/multistream-select bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/peer-store bumped from ^11.2.2 to ^11.2.3
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+
+## [2.8.8](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.7...libp2p-v2.8.8) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/interface-internal bumped from ^2.3.13 to ^2.3.14
+    * @libp2p/logger bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/multistream-select bumped from ^6.0.24 to ^6.0.25
+    * @libp2p/peer-collections bumped from ^6.0.29 to ^6.0.30
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/peer-store bumped from ^11.2.1 to ^11.2.2
+    * @libp2p/utils bumped from ^6.6.4 to ^6.6.5
+
+## [2.8.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.6...libp2p-v2.8.7) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/interface-internal bumped from ^2.3.12 to ^2.3.13
+    * @libp2p/logger bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/multistream-select bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/peer-store bumped from ^11.2.0 to ^11.2.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+
+## [2.8.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.5...libp2p-v2.8.6) (2025-05-19)
+
+
+### Bug Fixes
+
+* allow partial routing implementations ([#3093](https://github.com/libp2p/js-libp2p/issues/3093)) ([772b401](https://github.com/libp2p/js-libp2p/commit/772b4011e18ab7bbfc5aeeefd9e13e168d5d9579))
+* increase default adaptive timeout ([#3104](https://github.com/libp2p/js-libp2p/issues/3104)) ([a01606e](https://github.com/libp2p/js-libp2p/commit/a01606e1a370843f5bc3cf0b1a45d6f5eac96194))
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/interface-internal bumped from ^2.3.11 to ^2.3.12
+    * @libp2p/logger bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/multistream-select bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-collections bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/peer-store bumped from ^11.1.4 to ^11.2.0
+    * @libp2p/utils bumped from ^6.6.2 to ^6.6.3
+
+## [2.8.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.4...libp2p-v2.8.5) (2025-04-17)
+
+
+### Bug Fixes
+
+* update append announce addresses ([#3085](https://github.com/libp2p/js-libp2p/issues/3085)) ([afa5c9f](https://github.com/libp2p/js-libp2p/commit/afa5c9f598297fef9a5dd50d856868f190629837)), closes [#3080](https://github.com/libp2p/js-libp2p/issues/3080)
+
+## [2.8.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.3...libp2p-v2.8.4) (2025-04-16)
+
+
+### Bug Fixes
+
+* allow empty error events ([#3082](https://github.com/libp2p/js-libp2p/issues/3082)) ([ae7d867](https://github.com/libp2p/js-libp2p/commit/ae7d867f25a7a730bbd551eb1167a6c148975d86))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/interface-internal bumped from ^2.3.10 to ^2.3.11
+    * @libp2p/logger bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/multistream-select bumped from ^6.0.21 to ^6.0.22
+    * @libp2p/peer-collections bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/peer-id bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/peer-store bumped from ^11.1.3 to ^11.1.4
+    * @libp2p/utils bumped from ^6.6.1 to ^6.6.2
+
+## [2.8.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.2...libp2p-v2.8.3) (2025-04-09)
+
+
+### Bug Fixes
+
+* handle dialing /p2p/Qmfoo-style addresses ([#3064](https://github.com/libp2p/js-libp2p/issues/3064)) ([bec05ed](https://github.com/libp2p/js-libp2p/commit/bec05ed48219f6ed9af4a4a7a13a1b4a462c3cee))
+* update stream deps ([#3055](https://github.com/libp2p/js-libp2p/issues/3055)) ([b2124c2](https://github.com/libp2p/js-libp2p/commit/b2124c2db02d7870b958f294da42ec79084818a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.15 to ^5.1.0
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/interface-internal bumped from ^2.3.9 to ^2.3.10
+    * @libp2p/logger bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/multistream-select bumped from ^6.0.20 to ^6.0.21
+    * @libp2p/peer-collections bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/peer-id bumped from ^5.1.0 to ^5.1.1
+    * @libp2p/peer-store bumped from ^11.1.2 to ^11.1.3
+    * @libp2p/utils bumped from ^6.6.0 to ^6.6.1
+
+## [2.8.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.1...libp2p-v2.8.2) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.8 to ^2.3.9
+    * @libp2p/peer-collections bumped from ^6.0.24 to ^6.0.25
+    * @libp2p/peer-store bumped from ^11.1.1 to ^11.1.2
+    * @libp2p/utils bumped from ^6.5.8 to ^6.6.0
+
+## [2.8.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.8.0...libp2p-v2.8.1) (2025-03-12)
+
+
+### Bug Fixes
+
+* import StreamHandler from interface ([#3037](https://github.com/libp2p/js-libp2p/issues/3037)) ([88b5c29](https://github.com/libp2p/js-libp2p/commit/88b5c29ed78b54e51c2a69094c8d9f2d41f2287c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.7 to ^2.3.8
+    * @libp2p/logger bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/multistream-select bumped from ^6.0.19 to ^6.0.20
+    * @libp2p/peer-collections bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/peer-id bumped from ^5.0.16 to ^5.1.0
+    * @libp2p/peer-store bumped from ^11.1.0 to ^11.1.1
+    * @libp2p/utils bumped from ^6.5.7 to ^6.5.8
+
+## [2.8.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.5...libp2p-v2.8.0) (2025-03-03)
+
+
+### Features
+
+* allow early muxer selection by connection encrypters ([#3022](https://github.com/libp2p/js-libp2p/issues/3022)) ([dd71d8a](https://github.com/libp2p/js-libp2p/commit/dd71d8a86841acbccdca8f3e930bda0eced6d1d0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/interface-internal bumped from ^2.3.6 to ^2.3.7
+    * @libp2p/logger bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/multistream-select bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+    * @libp2p/peer-id bumped from ^5.0.15 to ^5.0.16
+    * @libp2p/peer-store bumped from ^11.0.22 to ^11.1.0
+    * @libp2p/utils bumped from ^6.5.6 to ^6.5.7
+
+## [2.7.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.4...libp2p-v2.7.5) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/interface-internal bumped from ^2.3.5 to ^2.3.6
+    * @libp2p/logger bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/multistream-select bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-collections bumped from ^6.0.21 to ^6.0.22
+    * @libp2p/peer-id bumped from ^5.0.14 to ^5.0.15
+    * @libp2p/peer-store bumped from ^11.0.21 to ^11.0.22
+    * @libp2p/utils bumped from ^6.5.5 to ^6.5.6
+
+## [2.7.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.3...libp2p-v2.7.4) (2025-02-26)
+
+
+### Bug Fixes
+
+* check for new addresses during dialing ([#3003](https://github.com/libp2p/js-libp2p/issues/3003)) ([be9b6a0](https://github.com/libp2p/js-libp2p/commit/be9b6a0708b82f97da00d1e94d74f38314cf1f4f))
+* ignore failures to listen on IPv6 addresses when IPv4 succeeds ([#3001](https://github.com/libp2p/js-libp2p/issues/3001)) ([e2f4943](https://github.com/libp2p/js-libp2p/commit/e2f49432b58fe3f8484c8f7f0237f996b4d211fa)), closes [#2977](https://github.com/libp2p/js-libp2p/issues/2977)
+* improve error message when starting server ([#3008](https://github.com/libp2p/js-libp2p/issues/3008)) ([ab1bb86](https://github.com/libp2p/js-libp2p/commit/ab1bb862f3c22059c8d3c7f750ceab0755a0a0f2))
+
+## [2.7.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.2...libp2p-v2.7.3) (2025-02-25)
+
+
+### Bug Fixes
+
+* ensure that the upgrader applies timeouts to incoming dials ([#3000](https://github.com/libp2p/js-libp2p/issues/3000)) ([90cca82](https://github.com/libp2p/js-libp2p/commit/90cca822b4cb112fc71bf9ad954023de685a9040))
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/interface-internal bumped from ^2.3.4 to ^2.3.5
+    * @libp2p/logger bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/multistream-select bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/peer-collections bumped from ^6.0.20 to ^6.0.21
+    * @libp2p/peer-id bumped from ^5.0.13 to ^5.0.14
+    * @libp2p/peer-store bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/utils bumped from ^6.5.4 to ^6.5.5
+
+## [2.7.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.1...libp2p-v2.7.2) (2025-02-21)
+
+
+### Bug Fixes
+
+* report version correctly ([#2984](https://github.com/libp2p/js-libp2p/issues/2984)) ([9b1a379](https://github.com/libp2p/js-libp2p/commit/9b1a3791dc5a37f23d608f222fc6a48f999096a5))
+* update race-signal ([#2986](https://github.com/libp2p/js-libp2p/issues/2986)) ([2a3cec9](https://github.com/libp2p/js-libp2p/commit/2a3cec9220f1250b7558635c4cb37d61f745645d)), closes [#2702](https://github.com/libp2p/js-libp2p/issues/2702)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.3 to ^2.3.4
+    * @libp2p/multistream-select bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/peer-collections bumped from ^6.0.19 to ^6.0.20
+    * @libp2p/peer-store bumped from ^11.0.19 to ^11.0.20
+    * @libp2p/utils bumped from ^6.5.3 to ^6.5.4
+
+## [2.7.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.7.0...libp2p-v2.7.1) (2025-02-21)
+
+
+### Bug Fixes
+
+* dial loopback addresses last ([#2982](https://github.com/libp2p/js-libp2p/issues/2982)) ([1ab50cc](https://github.com/libp2p/js-libp2p/commit/1ab50cc0d1ce19f629105b9e154be9f8571dba8d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.2 to ^2.3.3
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-store bumped from ^11.0.18 to ^11.0.19
+    * @libp2p/utils bumped from ^6.5.2 to ^6.5.3
+
+## [2.7.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.3...libp2p-v2.7.0) (2025-02-20)
+
+
+### Features
+
+* allow transports to modify announce addresses ([#2978](https://github.com/libp2p/js-libp2p/issues/2978)) ([8331c8e](https://github.com/libp2p/js-libp2p/commit/8331c8ea8feef1d642b6667213409dbe8293b606))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/interface-internal bumped from ^2.3.1 to ^2.3.2
+    * @libp2p/logger bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/multistream-select bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/peer-collections bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-id bumped from ^5.0.12 to ^5.0.13
+    * @libp2p/peer-store bumped from ^11.0.17 to ^11.0.18
+    * @libp2p/utils bumped from ^6.5.1 to ^6.5.2
+
+## [2.6.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.2...libp2p-v2.6.3) (2025-02-18)
+
+
+### Dependencies
+
+* bump it-length-prefixed from 9.1.1 to 10.0.1 ([#2962](https://github.com/libp2p/js-libp2p/issues/2962)) ([1fc0e26](https://github.com/libp2p/js-libp2p/commit/1fc0e26620d2fd9d752179ab4f6dcc7b6ed5ee5c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.0 to ^2.3.1
+    * @libp2p/multistream-select bumped from ^6.0.13 to ^6.0.14
+
+## [2.6.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.1...libp2p-v2.6.2) (2025-02-13)
+
+
+### Bug Fixes
+
+* respect dial signal and expose protocol negotiation timeouts ([#2956](https://github.com/libp2p/js-libp2p/issues/2956)) ([f9345a7](https://github.com/libp2p/js-libp2p/commit/f9345a7a10974edf47a61279360b57012aae2da0))
+
+## [2.6.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.6.0...libp2p-v2.6.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* override user agent in exports map ([#2952](https://github.com/libp2p/js-libp2p/issues/2952)) ([d8f003e](https://github.com/libp2p/js-libp2p/commit/d8f003e6e512fb3cff46ab167e7cd4f521c13f1b))
+
+## [2.6.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.2...libp2p-v2.6.0) (2025-02-10)
+
+
+### Features
+
+* allow overriding stream handlers ([#2945](https://github.com/libp2p/js-libp2p/issues/2945)) ([21088c5](https://github.com/libp2p/js-libp2p/commit/21088c5195df2c3c371fc28bb824f5f84760bf12)), closes [#2928](https://github.com/libp2p/js-libp2p/issues/2928)
+
+
+### Bug Fixes
+
+* include platform in user agent ([#2942](https://github.com/libp2p/js-libp2p/issues/2942)) ([96f14e4](https://github.com/libp2p/js-libp2p/commit/96f14e429eac84d02504c4b97f183511c8af2add))
+* upgrade observed address to ip mapping ([#2941](https://github.com/libp2p/js-libp2p/issues/2941)) ([d795be1](https://github.com/libp2p/js-libp2p/commit/d795be1870c07464d3bc2d1c00823074331c7432)), closes [#2929](https://github.com/libp2p/js-libp2p/issues/2929)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/interface-internal bumped from ^2.2.4 to ^2.3.0
+    * @libp2p/logger bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/multistream-select bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-collections bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/peer-id bumped from ^5.0.11 to ^5.0.12
+    * @libp2p/peer-store bumped from ^11.0.16 to ^11.0.17
+    * @libp2p/utils bumped from ^6.5.0 to ^6.5.1
+
+## [2.5.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.1...libp2p-v2.5.2) (2025-02-04)
+
+
+### Bug Fixes
+
+* set expires on observed address ([#2935](https://github.com/libp2p/js-libp2p/issues/2935)) ([d61cbac](https://github.com/libp2p/js-libp2p/commit/d61cbacec14b9cdc61984d3b9e67f20eec038c4e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.3 to ^2.2.4
+    * @libp2p/peer-collections bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/peer-store bumped from ^11.0.15 to ^11.0.16
+    * @libp2p/utils bumped from ^6.4.0 to ^6.5.0
+
+## [2.5.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.5.0...libp2p-v2.5.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/interface-internal bumped from ^2.2.2 to ^2.2.3
+    * @libp2p/logger bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/multistream-select bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/peer-collections bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/peer-id bumped from ^5.0.10 to ^5.0.11
+    * @libp2p/peer-store bumped from ^11.0.14 to ^11.0.15
+    * @libp2p/utils bumped from ^6.3.1 to ^6.4.0
+
+## [2.5.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.2...libp2p-v2.5.0) (2025-01-07)
+
+
+### Features
+
+* add traceFunction call to metrics ([#2898](https://github.com/libp2p/js-libp2p/issues/2898)) ([20d9ba7](https://github.com/libp2p/js-libp2p/commit/20d9ba73e2fc76e42327458b2a1e29d1ba162bba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/interface-internal bumped from ^2.2.1 to ^2.2.2
+    * @libp2p/logger bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/multistream-select bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/peer-collections bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/peer-id bumped from ^5.0.9 to ^5.0.10
+    * @libp2p/peer-store bumped from ^11.0.13 to ^11.0.14
+    * @libp2p/utils bumped from ^6.3.0 to ^6.3.1
+
+## [2.4.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.1...libp2p-v2.4.2) (2024-12-12)
+
+
+### Bug Fixes
+
+* pass abort signal to peer routing query ([#2888](https://github.com/libp2p/js-libp2p/issues/2888)) ([3c63482](https://github.com/libp2p/js-libp2p/commit/3c63482e5587e0edabb5c215cb6e565ed4f1185e))
+
+## [2.4.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.4.0...libp2p-v2.4.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* auto-confirm relay addresses ([#2886](https://github.com/libp2p/js-libp2p/issues/2886)) ([5c4a79e](https://github.com/libp2p/js-libp2p/commit/5c4a79e5a6e8d0db1ef6464075841a0b9de507ef)), closes [#2883](https://github.com/libp2p/js-libp2p/issues/2883)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.2.0 to ^2.2.1
+
+## [2.4.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.3.1...libp2p-v2.4.0) (2024-12-09)
+
+
+### Features
+
+* add append announce addresses ([#2834](https://github.com/libp2p/js-libp2p/issues/2834)) ([b248eef](https://github.com/libp2p/js-libp2p/commit/b248eefc01e6034c211b0d458d0ce7a74e99c24f))
+* allow adding external ip/port mapping ([#2836](https://github.com/libp2p/js-libp2p/issues/2836)) ([6ddc1b8](https://github.com/libp2p/js-libp2p/commit/6ddc1b80ebe396afee58082865ae6cae2bb39fb1))
+* Use CIDR format for connection-manager allow/deny lists ([#2783](https://github.com/libp2p/js-libp2p/issues/2783)) ([48e9cfa](https://github.com/libp2p/js-libp2p/commit/48e9cfa56fdf9d2dcdc0efc758cf7f055106cbb5))
+
+
+### Bug Fixes
+
+* confirm dns mappings with ip mappings ([#2861](https://github.com/libp2p/js-libp2p/issues/2861)) ([0f87479](https://github.com/libp2p/js-libp2p/commit/0f8747950c26a47828c826b7f0a257bf95276b0f))
+* ensure user dial signals are respected ([#2842](https://github.com/libp2p/js-libp2p/issues/2842)) ([bc90b4f](https://github.com/libp2p/js-libp2p/commit/bc90b4fd58aee1ccd94d4fd61cc48d336e77d772))
+* handle router mappings of mixed IP version ([#2858](https://github.com/libp2p/js-libp2p/issues/2858)) ([f28c31d](https://github.com/libp2p/js-libp2p/commit/f28c31d803f13872ec151f8b5fe073aedc5dbcbf))
+* limit observed addresses in address manager ([#2869](https://github.com/libp2p/js-libp2p/issues/2869)) ([06f79b6](https://github.com/libp2p/js-libp2p/commit/06f79b6466fa8f6656676a71a5b90e6071825303))
+* remove browser dial filter ([#2838](https://github.com/libp2p/js-libp2p/issues/2838)) ([d6cd25d](https://github.com/libp2p/js-libp2p/commit/d6cd25d0deca292420093d894edbfbc47b347e5d))
+* require confirmation of global unicast addresses ([#2876](https://github.com/libp2p/js-libp2p/issues/2876)) ([92cc740](https://github.com/libp2p/js-libp2p/commit/92cc740828963a4786ea83befe606dac4ba25e45))
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+* trigger self:peer:update when ip/dns mappings change ([#2839](https://github.com/libp2p/js-libp2p/issues/2839)) ([4a85eb0](https://github.com/libp2p/js-libp2p/commit/4a85eb033f7ea8461a10bc8b38bbc76d1383d1cc))
+* update agent version ([#2845](https://github.com/libp2p/js-libp2p/issues/2845)) ([4761dd7](https://github.com/libp2p/js-libp2p/commit/4761dd701aec6620ee504cb9908fa2319971b79b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/interface-internal bumped from ^2.1.1 to ^2.2.0
+    * @libp2p/logger bumped from ^5.1.4 to ^5.1.5
+    * @libp2p/multistream-select bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-id bumped from ^5.0.8 to ^5.0.9
+    * @libp2p/peer-store bumped from ^11.0.12 to ^11.0.13
+    * @libp2p/utils bumped from ^6.2.1 to ^6.3.0
+
+## [2.3.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.3.0...libp2p-v2.3.1) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/interface-internal bumped from ^2.1.0 to ^2.1.1
+    * @libp2p/logger bumped from ^5.1.3 to ^5.1.4
+    * @libp2p/multistream-select bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-collections bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/peer-id bumped from ^5.0.7 to ^5.0.8
+    * @libp2p/peer-store bumped from ^11.0.11 to ^11.0.12
+    * @libp2p/utils bumped from ^6.2.0 to ^6.2.1
+
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.2.1...libp2p-v2.3.0) (2024-11-16)
+
+
+### Features
+
+* add dns mappings to address manager ([#2818](https://github.com/libp2p/js-libp2p/issues/2818)) ([7dcabb8](https://github.com/libp2p/js-libp2p/commit/7dcabb884c37dfba69e3ce427544ab05209d137b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.10 to ^2.1.0
+    * @libp2p/peer-collections bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/peer-store bumped from ^11.0.10 to ^11.0.11
+    * @libp2p/utils bumped from ^6.1.3 to ^6.2.0
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.2.0...libp2p-v2.2.1) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/websockets bumped from ^9.0.10 to ^9.0.11
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.10...libp2p-v2.2.0) (2024-10-28)
+
+
+### Features
+
+* add reprovide ([#2785](https://github.com/libp2p/js-libp2p/issues/2785)) ([52b3b1a](https://github.com/libp2p/js-libp2p/commit/52b3b1a16e56f73de9a75e7f62d5c3b367d757d9))
+
+
+### Bug Fixes
+
+* only update pending incoming connections if connection accepted ([#2790](https://github.com/libp2p/js-libp2p/issues/2790)) ([d34642d](https://github.com/libp2p/js-libp2p/commit/d34642db1c2be39a74fe7cf21508eb17c19c8a22))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/interface-internal bumped from ^2.0.9 to ^2.0.10
+    * @libp2p/logger bumped from ^5.1.2 to ^5.1.3
+    * @libp2p/multistream-select bumped from ^6.0.7 to ^6.0.8
+    * @libp2p/peer-collections bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/peer-id bumped from ^5.0.6 to ^5.0.7
+    * @libp2p/peer-store bumped from ^11.0.9 to ^11.0.10
+    * @libp2p/utils bumped from ^6.1.2 to ^6.1.3
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^3.0.0 to ^3.1.0
+    * @libp2p/identify bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/interface-compliance-tests bumped from ^6.1.7 to ^6.1.8
+    * @libp2p/mplex bumped from ^11.0.9 to ^11.0.10
+    * @libp2p/plaintext bumped from ^2.0.9 to ^2.0.10
+    * @libp2p/tcp bumped from ^10.0.10 to ^10.0.11
+    * @libp2p/websockets bumped from ^9.0.9 to ^9.0.10
+
+## [2.1.10](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.9...libp2p-v2.1.10) (2024-10-23)
+
+
+### Documentation
+
+* add roadmap for 2024/early 25 ([#2754](https://github.com/libp2p/js-libp2p/issues/2754)) ([3bc9769](https://github.com/libp2p/js-libp2p/commit/3bc9769b8aff1e9bb3588905323a2bc6b7d7b7bf))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/logger bumped from ^5.1.1 to ^5.1.2
+    * @libp2p/multistream-select bumped from ^6.0.6 to ^6.0.7
+    * @libp2p/peer-collections bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-id bumped from ^5.0.5 to ^5.0.6
+    * @libp2p/peer-store bumped from ^11.0.8 to ^11.0.9
+    * @libp2p/utils bumped from ^6.1.1 to ^6.1.2
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^2.1.5 to ^3.0.0
+    * @libp2p/identify bumped from ^3.0.8 to ^3.0.9
+    * @libp2p/interface-compliance-tests bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/mplex bumped from ^11.0.8 to ^11.0.9
+    * @libp2p/plaintext bumped from ^2.0.8 to ^2.0.9
+    * @libp2p/tcp bumped from ^10.0.9 to ^10.0.10
+    * @libp2p/websockets bumped from ^9.0.8 to ^9.0.9
+
 ## [2.1.9](https://github.com/libp2p/js-libp2p/compare/libp2p-v2.1.8...libp2p-v2.1.9) (2024-10-11)
 
 
@@ -1998,7 +2665,7 @@
 ### Bug Fixes
 
 * encapsulate /p2p-circuit multiaddrs when dialing a known peerid ([#1680](https://www.github.com/libp2p/js-libp2p/issues/1680)) ([4078082](https://www.github.com/libp2p/js-libp2p/commit/4078082dac944c6feb64e9e45e5275d7f0bf6ae4))
-* refactor connection manager to use a prioritised queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
+* refactor connection manager to use a prioritized queue ([#1678](https://www.github.com/libp2p/js-libp2p/issues/1678)) ([4c02e48](https://www.github.com/libp2p/js-libp2p/commit/4c02e485f1a81f6ead7f7c9a982537ce0ab84d6e))
 
 ### [0.43.4](https://www.github.com/libp2p/js-libp2p/compare/v0.43.3...v0.43.4) (2023-04-05)
 
@@ -2140,7 +2807,7 @@
 ### ⚠ BREAKING CHANGES
 
 * modules no longer implement `Initializable` instead switching to constructor injection
-* the old behaviour was to dial any peer we discover, now we just add them to the peer store instead
+* the old behavior was to dial any peer we discover, now we just add them to the peer store instead
 
 ### Features
 

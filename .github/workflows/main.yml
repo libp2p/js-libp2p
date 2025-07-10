@@ -7,35 +7,42 @@ on:
     branches:
       - '**'
 
+env:
+  CACHE_DIRS: |
+    ./interop/dist
+    ./interop/node_modules
+    ./doc/node_modules
+
 jobs:
 
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - uses: ipfs/aegir/actions/cache-node-modules@master
-      with:
-        directories: |
-          ./interop/dist
-          ./interop/node_modules
-          ./doc/node_modules
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
 
   check:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - uses: ipfs/aegir/actions/cache-node-modules@master
-    - run: npm run --if-present lint
-    - run: npm run --if-present dep-check
-    - run: npm run --if-present docs:no-publish
-    - run: npm run --if-present doc-check
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
+      - run: npm run --if-present lint
+      - run: npm run --if-present dep-check
+      - run: npm run --if-present docs:no-publish
+      - run: npm run --if-present doc-check
+      - run: npm run --if-present spell-check
+
   test-node:
     needs: build
     runs-on: ${{ matrix.os }}
@@ -49,9 +56,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
@@ -65,9 +74,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
@@ -81,9 +92,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -97,9 +110,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
@@ -113,9 +128,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -129,14 +146,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       # https://github.com/actions/runner-images/issues/9733#issuecomment-2074590278
       - run: |
           sudo rm /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
@@ -150,9 +169,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
@@ -166,9 +187,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+      - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
@@ -182,7 +205,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
       - run: npm run test:interop -- --bail
 
   transport-interop:
@@ -193,11 +218,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
-          directories: |
-            ./interop/dist
-            ./interop/node_modules
+         directories: ${{ env.CACHE_DIRS }}
       - name: Build images
         run: (cd interop && make -j 4)
       - name: Save package-lock.json as artifact
@@ -207,10 +230,11 @@ jobs:
           path: |
             package-lock.json
             interop/package-lock.json
-      - uses: libp2p/test-plans/.github/actions/run-interop-ping-test@master
+      - uses: libp2p/test-plans/.github/actions/run-transport-interop-test@master
         with:
           test-filter: js-libp2p-head
-          extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json
+          test-ignore: nim
+          extra-versions: ${{ github.workspace }}/interop/node-version.json ${{ github.workspace }}/interop/chromium-version.json ${{ github.workspace }}/interop/firefox-version.json ${{ github.workspace }}/interop/webkit-version.json
           s3-cache-bucket: ${{ vars.S3_LIBP2P_BUILD_CACHE_BUCKET_NAME }}
           s3-access-key-id: ${{ vars.S3_LIBP2P_BUILD_CACHE_AWS_ACCESS_KEY_ID }}
           s3-secret-access-key: ${{ secrets.S3_LIBP2P_BUILD_CACHE_AWS_SECRET_ACCESS_KEY }}
@@ -248,8 +272,10 @@ jobs:
         with:
           node-version: lts/*
           registry-url: 'https://registry.npmjs.org'
-      - uses: ipfs/aegir/actions/cache-node-modules@master
-      - uses: ipfs/aegir/actions/docker-login@master
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+        with:
+          directories: ${{ env.CACHE_DIRS }}
+      - uses: ipfs/aegir/actions/docker-login@main
         with:
           docker-token: ${{ secrets.DOCKER_TOKEN }}
           docker-username: ${{ secrets.DOCKER_USERNAME }}

@@ -8,7 +8,7 @@ import { base16 } from 'multiformats/bases/base16'
 // priv, pub, err := crypto.GenerateKeyPair(crypto.RSA, 1024)
 //
 // rec, err := record.MakePutRecord(priv, "hello", []byte("world"), false)
-// rec2, err := recordd.MakePutRecord(priv, "hello", []byte("world"), true)
+// rec2, err := record.MakePutRecord(priv, "hello", []byte("world"), true)
 //
 // :import github.com/gogo/protobuf/proto
 // enc, err := proto.Marshal(rec)

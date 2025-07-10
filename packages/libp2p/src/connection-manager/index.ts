@@ -1,17 +1,21 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
-import { type Multiaddr, type Resolver, multiaddr } from '@multiformats/multiaddr'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { multiaddr } from '@multiformats/multiaddr'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
 import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, TypedEventTarget, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions } from '@libp2p/interface'
+import { dnsaddrResolver } from './resolvers/index.ts'
+import { multiaddrToIpNet } from './utils.js'
+import type { IpNet } from '@chainsafe/netmask'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils/queue'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export const DEFAULT_DIAL_PRIORITY = 50
 
@@ -57,7 +61,7 @@ export interface ConnectionManagerInit {
    * How long a dial attempt is allowed to take, including DNS resolution
    * of the multiaddr, opening a socket and upgrading it to a Connection.
    *
-   * @default 5000
+   * @default 10_000
    */
   dialTimeout?: number
 
@@ -65,7 +69,7 @@ export interface ConnectionManagerInit {
    * When a new incoming connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 3000
+   * @default 10_000
    */
   inboundUpgradeTimeout?: number
 
@@ -73,7 +77,9 @@ export interface ConnectionManagerInit {
    * When a new outbound connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *
-   * @default 3000
+   * Does not apply if an abort signal is passed to the `.dial` method.
+   *
+   * @deprecated This is handled by `dialTimeout`
    */
   outboundUpgradeTimeout?: number
 
@@ -81,13 +87,32 @@ export interface ConnectionManagerInit {
    * Protocol negotiation must complete within this number of ms
    *
    * @default 2000
+   * @deprecated use outboundStreamProtocolNegotiationTimeout or inboundStreamProtocolNegotiationTimeout instead
    */
   protocolNegotiationTimeout?: number
 
   /**
+   * Outbound protocol negotiation must complete within this number of ms.
+   *
+   * Does not apply if an abort signal is passed to the `.dial` or
+   * `.dialProtocol` method of the `ConnectionManager` or the `openStream`
+   * method of the `Connection`.
+   *
+   * @default 10_000
+   */
+  outboundStreamProtocolNegotiationTimeout?: number
+
+  /**
+   * Inbound protocol negotiation must complete within this number of ms
+   *
+   * @default 10_000
+   */
+  inboundStreamProtocolNegotiationTimeout?: number
+
+  /**
    * Multiaddr resolvers to use when dialling
    */
-  resolvers?: Record<string, Resolver>
+  resolvers?: Record<string, MultiaddrResolver>
 
   /**
    * A list of multiaddrs that will always be allowed (except if they are in the
@@ -176,12 +201,12 @@ export interface DefaultConnectionManagerComponents {
 export class DefaultConnectionManager implements ConnectionManager, Startable {
   private started: boolean
   private readonly connections: PeerMap<Connection[]>
-  private readonly allow: Multiaddr[]
-  private readonly deny: Multiaddr[]
+  private readonly allow: IpNet[]
+  private readonly deny: IpNet[]
   private readonly maxIncomingPendingConnections: number
   private incomingPendingConnections: number
   private outboundPendingConnections: number
-  private readonly maxConnections: number
+  private maxConnections: number
 
   public readonly dialQueue: DialQueue
   public readonly reconnectQueue: ReconnectQueue
@@ -216,8 +241,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(ma => multiaddr(ma))
-    this.deny = (init.deny ?? []).map(ma => multiaddr(ma))
+    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(str))
+    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(str))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -236,8 +261,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       events: components.events,
       logger: components.logger
     }, {
-      maxConnections: this.maxConnections,
-      allow: this.allow
+      allow: init.allow?.map(a => multiaddr(a))
     })
 
     this.dialQueue = new DialQueue(components, {
@@ -395,6 +419,28 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.log('stopped')
   }
 
+  getMaxConnections (): number {
+    return this.maxConnections
+  }
+
+  setMaxConnections (maxConnections: number): void {
+    if (this.maxConnections < 1) {
+      throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
+    }
+
+    let needsPrune = false
+
+    if (maxConnections < this.maxConnections) {
+      needsPrune = true
+    }
+
+    this.maxConnections = maxConnections
+
+    if (needsPrune) {
+      this.connectionPruner.maybePruneConnections()
+    }
+  }
+
   onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
       this.log.error(err)
@@ -454,7 +500,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     if (filteredPeerConns.length === 0) {
       // trigger disconnect event if no connections remain
-      this.log('onDisconnect remove all connections for peer %p', peerId)
+      this.log.trace('peer %p disconnected, removing connection map entry', peerId)
       this.connections.delete(peerId)
 
       // broadcast disconnect event
@@ -502,7 +548,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           .find(conn => conn.limits == null)
 
         if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p', peerId)
+          this.log('had an existing non-limited connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
           return existingConnection
@@ -571,7 +617,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
     // check deny list
     const denyConnection = this.deny.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+      return ma.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (denyConnection) {
@@ -580,8 +626,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }
 
     // check allow list
-    const allowConnection = this.allow.some(ma => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString())
+    const allowConnection = this.allow.some(ipNet => {
+      return ipNet.contains(maConn.remoteAddr.nodeAddress().address)
     })
 
     if (allowConnection) {

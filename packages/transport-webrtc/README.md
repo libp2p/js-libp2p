@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC datachannels](https://webrtc.org/).
+A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
 
 [WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
 
@@ -44,18 +44,6 @@ A WebRTC Direct multiaddr also includes a certhash of the target peer - this is 
 
 In both cases, once the connection is established a [Noise handshake](https://noiseprotocol.org/noise.html) is carried out to ensure that the remote peer has the private key that corresponds to the public key that makes up their PeerId, giving you both encryption and authentication.
 
-## Support
-
-WebRTC is supported in both Node.js and browsers.
-
-At the time of writing, WebRTC Direct is dial-only in browsers and not supported in Node.js at all.
-
-Support in Node.js is possible but PRs will need to be opened to [libdatachannel](https://github.com/paullouisageneau/libdatachannel) and the appropriate APIs exposed in [node-datachannel](https://github.com/murat-dogan/node-datachannel).
-
-WebRTC Direct support is available in rust-libp2p and arriving soon in go-libp2p.
-
-See the WebRTC section of <https://connectivity.libp2p.io> for more information.
-
 ## Example - WebRTC
 
 WebRTC requires use of a relay to connect two nodes. The listener first discovers a relay server and makes a reservation, then the dialer can connect via the relayed address.
@@ -68,7 +56,6 @@ import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay
 import { identify } from '@libp2p/identify'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pipe } from 'it-pipe'
@@ -82,10 +69,13 @@ const relay = await createLibp2p({
   listen: ['/ip4/127.0.0.1/tcp/0/ws']
   },
   transports: [
-    webSockets({filter: filters.all})
+    webSockets()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     relay: circuitRelayServer()
@@ -97,17 +87,21 @@ const relay = await createLibp2p({
 // WebRTC connections
 const listener = await createLibp2p({
   addresses: {
-  listen: ['/webrtc']
+    listen: [
+      '/p2p-circuit',
+      '/webrtc'
+    ]
   },
   transports: [
-    webSockets({filter: filters.all}),
+    webSockets(),
     webRTC(),
-    circuitRelayTransport({
-      discoverRelays: 1
-    })
+    circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     echo: echo()
@@ -139,12 +133,15 @@ while (true) {
 // direct WebRTC connection
 const dialer = await createLibp2p({
   transports: [
-    webSockets({filter: filters.all}),
+    webSockets(),
     webRTC(),
     circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
+  connectionGater: {
+    denyDialMultiaddr: () => false
+  },
   services: {
     identify: identify(),
     echo: echo()
@@ -173,32 +170,52 @@ await pipe(
 
 ## Example - WebRTC Direct
 
-At the time of writing WebRTC Direct is dial-only in browsers and unsupported in Node.js.
+WebRTC Direct allows a client to establish a WebRTC connection to a server
+without using a relay to first exchange SDP messages.
 
-The only implementation that supports a WebRTC Direct listener is go-libp2p and it's not yet enabled by default.
+Instead the server listens on a public UDP port and embeds its certificate
+hash in the published multiaddr. It derives the client's SDP offer based on
+the incoming IP/port of STUN messages sent to this public port.
+
+The client derives the server's SDP answer based on the information in the
+multiaddr so no SDP handshake via a third party is required.
+
+Full details of the connection protocol can be found in the [WebRTC Direct spec](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
+
+Browsers cannot listen on WebRTC Direct addresses since they cannot open
+ports, but they can dial all spec-compliant servers.
+
+Node.js/go and rust-libp2p can listen on and dial WebRTC Direct addresses.
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
-import { noise } from '@chainsafe/libp2p-noise'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pipe } from 'it-pipe'
 import { fromString, toString } from 'uint8arrays'
 import { webRTCDirect } from '@libp2p/webrtc'
 
-const node = await createLibp2p({
+const listener = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/udp/0/webrtc-direct'
+    ]
+  },
   transports: [
     webRTCDirect()
-  ],
-  connectionEncrypters: [
-    noise()
   ]
 })
 
-await node.start()
+await listener.start()
 
-// this multiaddr corresponds to a remote node running a WebRTC Direct listener
-const ma = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc-direct/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
-const stream = await node.dialProtocol(ma, '/my-protocol/1.0.0', {
+const dialer = await createLibp2p({
+  transports: [
+    webRTCDirect()
+  ]
+})
+
+await dialer.start()
+
+const stream = await dialer.dialProtocol(listener.getMultiaddrs(), '/my-protocol/1.0.0', {
   signal: AbortSignal.timeout(10_000)
 })
 
@@ -213,6 +230,60 @@ await pipe(
 )
 ```
 
+## WebRTC Direct certificate hashes
+
+WebRTC Direct listeners publish the hash of their TLS certificate as part of
+the listening multiaddr.
+
+By default these certificates are generated at start up using an ephemeral
+keypair that only exists while the node is running.
+
+This means that the certificate hashes change when the node is restarted,
+which can be undesirable if multiaddrs are intended to be long lived (e.g.
+if the node is used as a network bootstrapper).
+
+To reuse the same certificate and keypair, configure a persistent datastore
+and the [@libp2p/keychain](https://www.npmjs.com/package/@libp2p/keychain)
+service as part of your service map:
+
+## Example - Reuse TLS certificates after restart
+
+```ts
+import { LevelDatastore } from 'datastore-level'
+import { webRTCDirect } from '@libp2p/webrtc'
+import { keychain } from '@libp2p/keychain'
+import { createLibp2p } from 'libp2p'
+
+// store data on disk between restarts
+const datastore = new LevelDatastore('/path/to/store')
+
+const listener = await createLibp2p({
+  addresses: {
+    listen: [
+      '/ip4/0.0.0.0/udp/0/webrtc-direct'
+    ]
+  },
+  datastore,
+  transports: [
+    webRTCDirect()
+  ],
+  services: {
+    keychain: keychain()
+  }
+})
+
+await listener.start()
+
+console.info(listener.getMultiaddrs())
+// /ip4/...../udp/../webrtc-direct/certhash/foo
+
+await listener.stop()
+await listener.start()
+
+console.info(listener.getMultiaddrs())
+// /ip4/...../udp/../webrtc-direct/certhash/foo
+```
+
 # Install
 
 ```console
@@ -221,7 +292,7 @@ $ npm i @libp2p/webrtc
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pWebrtc` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pWebrtc` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/webrtc/dist/index.min.js"></script>

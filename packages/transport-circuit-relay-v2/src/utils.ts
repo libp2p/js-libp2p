@@ -1,5 +1,6 @@
+import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
-import { fmt, peerId, literal, optional, and } from '@multiformats/multiaddr-matcher/utils'
+import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
@@ -194,7 +195,15 @@ export class LimitTracker {
 }
 
 /**
- * A custom matcher that makes the `/p2p/peer-id` part of circuit relay
- * addresses optional
+ * A custom matcher that tells us to listen on a particular relay
  */
-export const CircuitListen = fmt(and(P2P.matchers[0], literal('p2p-circuit'), optional(peerId())))
+export const CircuitListen = fmt(
+  and(P2P.matchers[0], code(CODE_P2P_CIRCUIT))
+)
+
+/**
+ * A custom matcher that tells us to discover available relays
+ */
+export const CircuitSearch = fmt(
+  code(CODE_P2P_CIRCUIT)
+)

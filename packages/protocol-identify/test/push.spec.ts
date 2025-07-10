@@ -1,16 +1,18 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start, stop } from '@libp2p/interface'
-import { matchPeerId } from '@libp2p/interface-compliance-tests/matchers'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { pair } from 'it-pair'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { IdentifyPush } from '../src/identify-push.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyPushStream, type StubbedIdentifyComponents } from './fixtures/index.js'
+import { identifyPushStream } from './fixtures/index.js'
+import type { StubbedIdentifyComponents } from './fixtures/index.js'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -33,7 +35,8 @@ describe('identify (push)', () => {
       logger: defaultLogger(),
       nodeInfo: {
         name: 'test',
-        version: '1.0.0'
+        version: '1.0.0',
+        userAgent: 'test'
       }
     }
   })
@@ -70,7 +73,7 @@ describe('identify (push)', () => {
     components.registrar.getProtocols.returns(['/super/fun/protocol'])
 
     // local peer data
-    components.peerStore.get.withArgs(matchPeerId(components.peerId)).resolves({
+    components.peerStore.get.withArgs(components.peerId).resolves({
       id: components.peerId,
       addresses: [],
       protocols: [],
@@ -79,7 +82,7 @@ describe('identify (push)', () => {
     })
 
     // connected peer that supports identify push
-    components.peerStore.get.withArgs(matchPeerId(remotePeer)).resolves({
+    components.peerStore.get.withArgs(remotePeer).resolves({
       id: components.peerId,
       addresses: [],
       protocols: ['/ipfs/id/push/1.0.0'],
@@ -161,5 +164,36 @@ describe('identify (push)', () => {
 
     expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
     expect(stream.abort.callCount).to.equal(1, 'did not abort stream')
+  })
+
+  it('should debounce outgoing pushes', async () => {
+    identify = new IdentifyPush(components, {
+      timeout: 10
+    })
+
+    await start(identify)
+
+    components.addressManager.getAddresses.returns([multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${components.peerId}`)])
+    components.registrar.getProtocols.returns(['/super/fun/protocol'])
+    components.peerStore.get.withArgs(components.peerId).resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    expect(components.connectionManager.getConnections.called).to.be.false()
+
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+
+    await delay(2_000)
+
+    expect(components.connectionManager.getConnections.callCount).to.equal(1)
   })
 })

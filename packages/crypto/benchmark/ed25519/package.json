@@ -9,7 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@stablelib/ed25519": "^1.0.2",
+    "@stablelib/ed25519": "^2.0.1",
     "benchmark": "^2.1.4",
     "ed25519": "^0.0.5",
     "ed25519-wasm-pro": "^1.1.1",

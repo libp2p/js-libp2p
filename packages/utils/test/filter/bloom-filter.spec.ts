@@ -60,7 +60,7 @@ describe('bloom-filter', () => {
     })
   })
 
-  describe('setbit() and getbit()', () => {
+  describe('setting and getting bits', () => {
     it('sets the specified bit', () => {
       const filter = new BloomFilter({ hashes: 3, bits: 16 })
 

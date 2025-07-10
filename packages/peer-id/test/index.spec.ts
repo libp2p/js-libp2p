@@ -1,9 +1,12 @@
 /* eslint-env mocha */
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
+import { base32 } from 'multiformats/bases/base32'
+import { base36 } from 'multiformats/bases/base36'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
+import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.js'
 import type { KeyType, PeerId } from '@libp2p/interface'
@@ -55,6 +58,20 @@ describe('PeerId', () => {
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
+      it('should return the correct peer id from cid encoded peer id in base36', async () => {
+        const id = peerIdFromString(peerId.toCID().toString(base36))
+        expect(id.type).to.equal(type)
+        expect(id.toString()).to.equal(peerId.toString())
+        expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
+      })
+
+      it('should return the correct peer id from cid encoded peer id in base32', async () => {
+        const id = peerIdFromString(peerId.toCID().toString(base32))
+        expect(id.type).to.equal(type)
+        expect(id.toString()).to.equal(peerId.toString())
+        expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
+      })
+
       it('should default to base58btc when stringifying', async () => {
         expect(base58btc.decode(`z${peerId.toString()}`)).to.be.ok()
       })
@@ -98,6 +115,13 @@ describe('PeerId', () => {
         peerId1.toString()
 
         expect(peerId1).to.deep.equal(peerId2)
+      })
+
+      it('should be matched by sinon', () => {
+        const stub = Sinon.stub()
+        stub(peerId)
+
+        expect(stub.calledWith(peerId)).to.be.true()
       })
     })
   })

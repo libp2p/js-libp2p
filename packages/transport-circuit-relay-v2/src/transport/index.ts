@@ -1,8 +1,9 @@
 import { CircuitRelayTransport } from './transport.js'
 import type { RelayDiscoveryComponents } from './discovery.js'
 import type { ReservationStoreInit } from './reservation-store.js'
-import type { Transport, Upgrader, Libp2pEvents, ConnectionGater, TypedEventTarget, PeerId, TopologyFilter } from '@libp2p/interface'
+import type { Transport, Upgrader, Libp2pEvents, ConnectionGater, PeerId, TopologyFilter } from '@libp2p/interface'
 import type { AddressManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface CircuitRelayTransportComponents extends RelayDiscoveryComponents {
   peerId: PeerId
@@ -17,13 +18,6 @@ export interface CircuitRelayTransportComponents extends RelayDiscoveryComponent
  * RelayConfig configures the circuit v2 relay transport.
  */
 export interface CircuitRelayTransportInit extends ReservationStoreInit {
-  /**
-   * The number of peers running diable relays to search for and connect to
-   *
-   * @default 0
-   */
-  discoverRelays?: number
-
   /**
    * An optional filter used to prevent duplicate attempts to reserve relay
    * slots on the same peer
@@ -52,14 +46,14 @@ export interface CircuitRelayTransportInit extends ReservationStoreInit {
    * relay) must finish the initial protocol negotiation within this timeout in
    * ms
    *
-   * @default 30000
+   * @deprecated Configure `connectionManager.inboundUpgradeTimeout` instead
    */
   stopTimeout?: number
 
   /**
    * When creating a reservation it must complete within this number of ms
    *
-   * @default 10000
+   * @default 10_000
    */
   reservationCompletionTimeout?: number
 }

@@ -1,23 +1,27 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { mockRegistrar, mockUpgrader, streamPair } from '@libp2p/interface-compliance-tests/mocks'
+import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { detect } from 'detect-browser'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
+import { SIGNALING_PROTOCOL } from '../src/constants.js'
 import { initiateConnection } from '../src/private-to-private/initiate-connection.js'
 import { Message } from '../src/private-to-private/pb/message.js'
 import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
-import { SIGNALING_PROTO_ID, WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
+import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
 import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
-import type { Logger, Connection, Stream, ComponentLogger } from '@libp2p/interface'
-import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { Logger, Connection, Stream, ComponentLogger, Upgrader } from '@libp2p/interface'
+import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { StubbedInstance } from 'sinon-ts'
 
 const browser = detect()
 
@@ -54,12 +58,12 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
   const [initiatorStream, receiverStream] = streamPair({
     duplex: initiatorToReceiver,
     init: {
-      protocol: SIGNALING_PROTO_ID
+      protocol: SIGNALING_PROTOCOL
     }
   }, {
     duplex: receiverToInitiator,
     init: {
-      protocol: SIGNALING_PROTO_ID
+      protocol: SIGNALING_PROTOCOL
     }
   })
 
@@ -109,7 +113,7 @@ describe('webrtc basic', () => {
     initiator.transportManager.dial.resolves(initiator.connection)
 
     // signaling stream opens successfully
-    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+    initiator.connection.newStream.withArgs(SIGNALING_PROTOCOL).resolves(initiator.stream)
 
     ;[{ peerConnection: initiatorPeerConnection }] = await expect(
       Promise.all([
@@ -155,17 +159,15 @@ describe('webrtc basic', () => {
       }),
       handleIncomingStream(recipient)
     ]))
-      .to.eventually.be.rejected.with.property('message', 'Oh noes!')
+      .to.eventually.be.rejected.with.property('message').that.matches(/Oh noes!/)
   })
 })
 
 describe('webrtc receiver', () => {
   let initiator: Initiator
   let recipient: Recipient
-  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
@@ -182,10 +184,8 @@ describe('webrtc receiver', () => {
 describe('webrtc dialer', () => {
   let initiator: Initiator
   let recipient: Recipient
-  let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
 
@@ -198,7 +198,7 @@ describe('webrtc dialer', () => {
     ])
 
     // signaling stream opens successfully
-    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+    initiator.connection.newStream.withArgs(SIGNALING_PROTOCOL).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)
     const stream = pbStream(recipient.stream).pb(Message)
@@ -219,7 +219,7 @@ describe('webrtc dialer', () => {
     ])
 
     // signaling stream opens successfully
-    initiator.connection.newStream.withArgs(SIGNALING_PROTO_ID).resolves(initiator.stream)
+    initiator.connection.newStream.withArgs(SIGNALING_PROTOCOL).resolves(initiator.stream)
 
     const initiatorPeerConnectionPromise = initiateConnection(initiator)
 
@@ -250,9 +250,10 @@ describe('webrtc filter', () => {
       transportManager: stubInterface<TransportManager>(),
       connectionManager: stubInterface<ConnectionManager>(),
       peerId: Sinon.stub() as any,
-      registrar: mockRegistrar(),
-      upgrader: mockUpgrader({}),
-      logger: defaultLogger()
+      registrar: stubInterface<Registrar>(),
+      upgrader: stubInterface<Upgrader>(),
+      logger: defaultLogger(),
+      events: new TypedEventEmitter()
     })
 
     const valid = [
@@ -267,18 +268,18 @@ describe('webrtc splitAddr', () => {
   it('can split a ws relay addr', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/49173/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/webrtc/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
 
-    const { baseAddr, peerId } = splitAddr(ma)
+    const { circuitAddress, targetPeer } = splitAddr(ma)
 
-    expect(baseAddr.toString()).to.eq('/ip4/127.0.0.1/tcp/49173/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
-    expect(peerId.toString()).to.eq('12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
+    expect(circuitAddress.toString()).to.eq('/ip4/127.0.0.1/tcp/49173/ws/p2p/12D3KooWFqpHsdZaL4NW6eVE3yjhoSDNv7HJehPZqj17kjKntAh2/p2p-circuit/p2p/12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
+    expect(targetPeer.toString()).to.eq('12D3KooWF2P1k8SVRL1cV1Z9aNM8EVRwbrMESyRf58ceQkaht4AF')
   })
 
   it('can split a webrtc-direct relay addr', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/udp/9090/webrtc-direct/certhash/uEiBUr89tH2P9paTCPn-AcfVZcgvIvkwns96t4h55IpxFtA/p2p/12D3KooWB64sJqc3T3VCaubQCrfCvvfummrAA9z1vEXHJT77ZNJh/p2p-circuit/webrtc/p2p/12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
 
-    const { baseAddr, peerId } = splitAddr(ma)
+    const { circuitAddress, targetPeer } = splitAddr(ma)
 
-    expect(baseAddr.toString()).to.eq('/ip4/127.0.0.1/udp/9090/webrtc-direct/certhash/uEiBUr89tH2P9paTCPn-AcfVZcgvIvkwns96t4h55IpxFtA/p2p/12D3KooWB64sJqc3T3VCaubQCrfCvvfummrAA9z1vEXHJT77ZNJh/p2p-circuit/p2p/12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
-    expect(peerId.toString()).to.eq('12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
+    expect(circuitAddress.toString()).to.eq('/ip4/127.0.0.1/udp/9090/webrtc-direct/certhash/uEiBUr89tH2P9paTCPn-AcfVZcgvIvkwns96t4h55IpxFtA/p2p/12D3KooWB64sJqc3T3VCaubQCrfCvvfummrAA9z1vEXHJT77ZNJh/p2p-circuit/p2p/12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
+    expect(targetPeer.toString()).to.eq('12D3KooWFNBgv86tcpcYUHQz9FWGTrTmpMgr8feZwQXQySVTo3A7')
   })
 })

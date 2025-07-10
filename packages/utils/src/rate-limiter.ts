@@ -38,7 +38,7 @@ export interface RateLimiterInit {
   execEvenlyMinDelayMs?: number
 
   /**
-   * @default rlflx
+   * @default "rlflx"
    */
   keyPrefix?: string
 }

@@ -1,22 +1,19 @@
-/* eslint-disable import/export */
-/* eslint-disable complexity */
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-unnecessary-boolean-literal-compare */
-/* eslint-disable @typescript-eslint/no-empty-interface */
-
-import { type Codec, decodeMessage, type DecodeOptions, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
-  secp256k1 = 'secp256k1'
+  secp256k1 = 'secp256k1',
+  ECDSA = 'ECDSA'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
-  secp256k1 = 2
+  secp256k1 = 2,
+  ECDSA = 3
 }
 
 export namespace KeyType {

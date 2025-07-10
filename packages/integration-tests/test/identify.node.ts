@@ -217,7 +217,7 @@ describe('identify', () => {
     const peer = await libp2p.peerStore.get(libp2p.peerId)
     const storedAgentVersion = peer.metadata.get('AgentVersion')
 
-    expect(uint8ArrayToString(storedAgentVersion ?? new Uint8Array())).to.include(`${AGENT_VERSION} UserAgent=`)
+    expect(uint8ArrayToString(storedAgentVersion ?? new Uint8Array())).to.include(`${AGENT_VERSION} node/`)
   })
 
   it('should store host data and protocol version into peer store', async () => {

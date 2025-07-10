@@ -1,7 +1,8 @@
-import { setMaxListeners } from '@libp2p/interface'
-import { PeerSet } from '@libp2p/peer-collections'
+import { createScalableCuckooFilter } from '@libp2p/utils/filters'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
+import { setMaxListeners } from 'main-event'
+import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
@@ -12,19 +13,21 @@ import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { ComponentLogger, Counter, Metric, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
 export interface CleanUpEvents {
-  'cleanup': CustomEvent
+  cleanup: CustomEvent
 }
 
 export interface QueryManagerInit {
   logPrefix: string
+  metricsPrefix: string
   disjointPaths?: number
   alpha?: number
   initialQuerySelfHasRun: DeferredPromise<void>
+  allowQueryWithZeroPeers?: boolean
   routingTable: RoutingTable
 }
 
@@ -36,11 +39,6 @@ export interface QueryManagerComponents {
 }
 
 export interface QueryOptions extends RoutingOptions {
-  /**
-   * A timeout for subqueries executed as part of the main query
-   */
-  queryFuncTimeout?: number
-
   isSelfQuery?: boolean
 }
 
@@ -58,35 +56,25 @@ export class QueryManager implements Startable {
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
-  private readonly metrics: {
-    queries?: Counter
-    errors?: Counter
-    queryTime?: Metric
-  }
+  private readonly allowQueryWithZeroPeers: boolean
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
-    const { disjointPaths = K, alpha = ALPHA, logPrefix } = init
-
-    this.logPrefix = logPrefix
-    this.disjointPaths = disjointPaths ?? K
-    this.running = false
-    this.alpha = alpha ?? ALPHA
+    this.logPrefix = init.logPrefix
+    this.disjointPaths = init.disjointPaths ?? K
+    this.alpha = init.alpha ?? ALPHA
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
     this.routingTable = init.routingTable
     this.logger = components.logger
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
-
-    this.metrics = {
-      queries: components.metrics?.registerCounter(`${logPrefix.replaceAll(':', '_')}_queries_total`),
-      errors: components.metrics?.registerCounter(`${logPrefix.replaceAll(':', '_')}_query_errors_total`),
-      queryTime: components.metrics?.registerMetric(`${logPrefix.replaceAll(':', '_')}_query_time_seconds`)
-    }
+    this.allowQueryWithZeroPeers = init.allowQueryWithZeroPeers ?? false
 
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
     // make sure we don't make a lot of noise in the logs
     setMaxListeners(Infinity, this.shutDownController.signal)
+
+    this.running = false
   }
 
   isStarted (): boolean {
@@ -97,6 +85,10 @@ export class QueryManager implements Startable {
    * Starts the query manager
    */
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
     // allow us to stop queries on shut down
@@ -118,8 +110,6 @@ export class QueryManager implements Startable {
     if (!this.running) {
       throw new Error('QueryManager not started')
     }
-
-    const stopQueryTimer = this.metrics.queryTime?.timer()
 
     if (options.signal == null) {
       // don't let queries run forever
@@ -152,12 +142,21 @@ export class QueryManager implements Startable {
     const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 
     // query a subset of peers up to `kBucketSize / 2` in length
-    const startTime = Date.now()
     let queryFinished = false
 
     try {
+      if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
+        log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
+        // wait to discover at least one DHT peer that isn't us
+        await pEvent(this.routingTable, 'peer:add', {
+          signal,
+          filter: (event) => !this.peerId.equals(event.detail)
+        })
+        log('routing table has peers, continuing with%s query', options.isSelfQuery === true ? ' self' : '')
+      }
+
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
-        log('waiting for initial query-self query before continuing')
+        log('waiting for initial self query before continuing')
 
         await raceSignal(this.initialQuerySelfHasRun.promise, signal)
 
@@ -165,32 +164,49 @@ export class QueryManager implements Startable {
       }
 
       log('query:start')
-      this.metrics?.queries?.increment()
 
-      const id = await convertBuffer(key)
-      const peers = this.routingTable.closestPeers(id)
-      const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length))
+      const id = await convertBuffer(key, {
+        signal
+      })
+      const peers = this.routingTable.closestPeers(id, {
+        count: this.routingTable.kBucketSize
+      })
+
+      // split peers into d buckets evenly(ish)
+      const peersToQuery = peers.sort(() => {
+        if (Math.random() > 0.5) {
+          return 1
+        }
+
+        return -1
+      })
+        .reduce((acc: PeerId[][], curr, index) => {
+          acc[index % this.disjointPaths].push(curr)
+
+          return acc
+        }, new Array(this.disjointPaths).fill(0).map(() => []))
+        .filter(peers => peers.length > 0)
 
       if (peers.length === 0) {
-        log.error('Running query with no peers')
+        log.error('running query with no peers')
         return
       }
 
       // make sure we don't get trapped in a loop
-      const peersSeen = new PeerSet()
+      const peersSeen = createScalableCuckooFilter(1024)
 
       // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
         return queryPath({
+          ...options,
           key,
-          startingPeer: peer,
+          startingPeers: peer,
           ourPeerId: this.peerId,
           signal,
           query: queryFunc,
-          pathIndex: index,
+          path: index,
           numPaths: peersToQuery.length,
           alpha: this.alpha,
-          queryFuncTimeout: options.queryFuncTimeout,
           log,
           peersSeen,
           onProgress: options.onProgress,
@@ -207,26 +223,26 @@ export class QueryManager implements Startable {
         if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
             // eslint-disable-next-line max-depth
-            if (!(await this.connectionManager.isDialable(peer.multiaddrs))) {
+            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+              signal
+            }))) {
               continue
             }
 
-            await this.routingTable.add(peer.id)
+            await this.routingTable.add(peer.id, {
+              signal
+            })
           }
         }
 
+        signal.throwIfAborted()
         yield event
       }
 
       queryFinished = true
-    } catch (err: any) {
-      if (!queryFinished) {
-        this.metrics?.errors?.increment()
-      }
-
-      if (!this.running && err.name === 'QueryAbortedError') {
-        // ignore query aborted errors that were thrown during query manager shutdown
-      } else {
+    } catch (err) {
+      if (this.running) {
+        // ignore errors thrown during shut down
         throw err
       }
     } finally {
@@ -237,8 +253,7 @@ export class QueryManager implements Startable {
 
       signal.clear()
 
-      stopQueryTimer?.()
-      log('query:done in %dms', Date.now() - startTime)
+      log('query finished')
     }
   }
 }

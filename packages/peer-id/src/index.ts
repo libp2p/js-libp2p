@@ -7,7 +7,7 @@
  *
  * ```TypeScript
  * import { peerIdFromString } from '@libp2p/peer-id'
- * const peer = peerIdFromString('k51qzi5uqu5dkwkqm42v9j9kqcam2jiuvloi16g72i4i4amoo2m8u3ol3mqu6s')
+ * const peer = peerIdFromString('12D3KooWKnDdG3iXw9eTFijk3EWSunZcFi54Zka4wmtqtt6rPxc8')
  *
  * console.log(peer.toCID()) // CID(bafzaa...)
  * console.log(peer.toString()) // "12D3K..."
@@ -17,13 +17,14 @@
 import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
-import { type CID, type MultibaseDecoder } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { RSAPeerId as RSAPeerIdClass, Ed25519PeerId as Ed25519PeerIdClass, Secp256k1PeerId as Secp256k1PeerIdClass, URLPeerId as URLPeerIdClass } from './peer-id.js'
 import type { Ed25519PeerId, RSAPeerId, URLPeerId, Secp256k1PeerId, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey, Ed25519PrivateKey, Secp256k1PrivateKey, RSAPrivateKey, PrivateKey } from '@libp2p/interface'
+import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 // these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
@@ -37,6 +38,9 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
     // identity hash ed25519/secp256k1 key or sha2-256 hash of
     // rsa public key - base58btc encoded either way
     multihash = Digest.decode(base58btc.decode(`z${str}`))
+  } else if (str.startsWith('k51qzi5uqu5') || str.startsWith('kzwfwjn5ji4') || str.startsWith('k2k4r8') || str.startsWith('bafz')) {
+    // base36 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa) or base32 encoded CIDv1 with libp2p-key and identity hash (for ed25519/secp256k1/rsa)
+    return peerIdFromCID(CID.parse(str))
   } else {
     if (decoder == null) {
       throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"')

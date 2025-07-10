@@ -1,13 +1,11 @@
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
-import { mockConnectionGater } from '@libp2p/interface-compliance-tests/mocks'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
+import { mergeOptions } from '@libp2p/utils/merge-options'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
-import mergeOptions from 'merge-options'
 import { isWebWorker } from 'wherearewe'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
@@ -20,9 +18,7 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
       ]
     },
     transports: [
-      webSockets({
-        filter: filters.all
-      }),
+      webSockets(),
       circuitRelayTransport()
     ],
     streamMuxers: [
@@ -32,7 +28,9 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     connectionEncrypters: [
       plaintext()
     ],
-    connectionGater: mockConnectionGater(),
+    connectionGater: {
+      denyDialMultiaddr: async () => false
+    },
     services: {
       identify: identify()
     }

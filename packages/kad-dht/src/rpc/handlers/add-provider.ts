@@ -4,11 +4,13 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import type { Message } from '../../message/dht.js'
-import type { Providers } from '../../providers'
+import type { Providers } from '../../providers.js'
 import type { DHTMessageHandler } from '../index.js'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
 
 export interface AddProviderComponents {
+  peerId: PeerId
+  peerStore: PeerStore
   logger: ComponentLogger
 }
 
@@ -18,12 +20,16 @@ export interface AddProviderHandlerInit {
 }
 
 export class AddProviderHandler implements DHTMessageHandler {
+  private readonly peerId: PeerId
   private readonly providers: Providers
+  private readonly peerStore: PeerStore
   private readonly log: Logger
 
   constructor (components: AddProviderComponents, init: AddProviderHandlerInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:add-provider`)
+    this.peerId = components.peerId
     this.providers = init.providers
+    this.peerStore = components.peerStore
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
@@ -43,12 +49,16 @@ export class AddProviderHandler implements DHTMessageHandler {
       this.log.error('no providers found in message')
     }
 
-    this.log('%p asked us to store provider record for for %c', peerId, cid)
+    this.log('%p asked us, %p to store provider record for for %c', peerId, this.peerId, cid)
 
     await Promise.all(
       msg.providers.map(async (pi) => {
+        const digest = Digest.decode(pi.id)
+        const providerId = peerIdFromMultihash(digest)
+        const providerMultiaddrs = pi.multiaddrs.map(buf => multiaddr(buf))
+
         // Ignore providers not from the originator
-        if (!peerId.equals(pi.id)) {
+        if (!peerId.equals(providerId)) {
           this.log('invalid provider peer %p from %p', pi.id, peerId)
           return
         }
@@ -58,11 +68,12 @@ export class AddProviderHandler implements DHTMessageHandler {
           return
         }
 
-        this.log.trace('received provider %p for %s (addrs %s)', peerId, cid, pi.multiaddrs.map((m) => multiaddr(m).toString()))
+        this.log.trace('received provider %p for %s (addrs %s)', peerId, cid, providerMultiaddrs)
 
-        const multihash = Digest.decode(pi.id)
-
-        await this.providers.addProvider(cid, peerIdFromMultihash(multihash))
+        await this.providers.addProvider(cid, providerId)
+        await this.peerStore.merge(providerId, {
+          multiaddrs: providerMultiaddrs
+        })
       })
     )
 

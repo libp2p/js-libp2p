@@ -1,7 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { mockConnectionManager, mockRegistrar, mockNetwork } from '../mocks/index.js'

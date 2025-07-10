@@ -18,19 +18,19 @@ const testCases: Array<[string, string, string]> = [
 ]
 
 describe('enable server mode', () => {
-  let tdht: TestDHT
+  let testDHT: TestDHT
 
   beforeEach(() => {
-    tdht = new TestDHT()
+    testDHT = new TestDHT()
   })
 
   afterEach(async () => {
-    await tdht.teardown()
+    await testDHT.teardown()
   })
 
   testCases.forEach(([name, addr, result]) => {
     it(name, async function () {
-      const dht = await tdht.spawn({ clientMode: undefined })
+      const dht = await testDHT.spawn({ clientMode: undefined })
 
       expect(dht.getMode()).to.equal('client')
 

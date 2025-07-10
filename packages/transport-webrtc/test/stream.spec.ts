@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -9,10 +7,12 @@ import { pushable } from 'it-pushable'
 import { bytes } from 'multiformats'
 import pDefer from 'p-defer'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { Message } from '../src/pb/message.js'
-import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD, type WebRTCStream, createStream } from '../src/stream.js'
+import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
+import { Message } from '../src/private-to-public/pb/message.js'
+import { createStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { mockDataChannel, receiveFinAck } from './util.js'
+import type { WebRTCStream } from '../src/stream.js'
 import type { Stream } from '@libp2p/interface'
 
 describe('Max message size', () => {
@@ -37,7 +37,7 @@ describe('Max message size', () => {
       channel,
       direction: 'outbound',
       closeTimeout: 1,
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     p.push(data)
@@ -69,7 +69,7 @@ describe('Max message size', () => {
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     p.push(data)
@@ -84,7 +84,7 @@ describe('Max message size', () => {
     }
   })
 
-  it('closes the stream if bufferamountlow timeout', async () => {
+  it('closes the stream if buffer amount low timeout', async () => {
     const timeout = 100
     const closed = pDefer()
     const channel = mockDataChannel({
@@ -101,7 +101,7 @@ describe('Max message size', () => {
       onEnd: () => {
         closed.resolve()
       },
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     const t0 = Date.now()
@@ -122,7 +122,12 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1, logger: defaultLogger() })
+  const stream = createStream({
+    channel: dataChannel,
+    direction: 'outbound',
+    closeTimeout: 1,
+    log: defaultLogger().forComponent('test')
+  })
 
   return { peerConnection, dataChannel, stream }
 }

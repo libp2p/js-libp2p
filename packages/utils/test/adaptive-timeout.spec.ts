@@ -27,20 +27,20 @@ describe('adaptive-timeout', () => {
     const adaptiveTimeout = new AdaptiveTimeout()
     const signal1 = adaptiveTimeout.getTimeoutSignal()
 
-    clock.tick(2000)
+    clock.tick(5000)
 
     adaptiveTimeout.cleanUp(signal1)
 
     const signal2 = adaptiveTimeout.getTimeoutSignal()
 
-    expect(signal2).to.have.property('timeout', 2000 * DEFAULT_TIMEOUT_MULTIPLIER)
+    expect(signal2).to.have.property('timeout', 5000 * DEFAULT_TIMEOUT_MULTIPLIER)
   })
 
   it('should allow overriding the adapted timeout', () => {
     const adaptiveTimeout = new AdaptiveTimeout()
     const signal1 = adaptiveTimeout.getTimeoutSignal()
 
-    clock.tick(2000)
+    clock.tick(5000)
 
     adaptiveTimeout.cleanUp(signal1)
 
@@ -48,47 +48,47 @@ describe('adaptive-timeout', () => {
       timeoutFactor: 1
     })
 
-    expect(signal2).to.have.property('timeout', 2000)
+    expect(signal2).to.have.property('timeout', 5000)
   })
 
   it('should reduce the timeout', () => {
     const adaptiveTimeout = new AdaptiveTimeout()
 
     const signal1 = adaptiveTimeout.getTimeoutSignal()
-    clock.tick(3000)
+    clock.tick(8000)
     adaptiveTimeout.cleanUp(signal1)
 
     const signal2 = adaptiveTimeout.getTimeoutSignal({
       timeoutFactor: 1
     })
-    expect(signal2).to.have.property('timeout', 3000)
-    clock.tick(2000)
+    expect(signal2).to.have.property('timeout', 8000)
+    clock.tick(6000)
     adaptiveTimeout.cleanUp(signal2)
 
     const signal3 = adaptiveTimeout.getTimeoutSignal({
       timeoutFactor: 1
     })
-    expect(signal3).to.have.property('timeout', 2670)
+    expect(signal3).to.have.property('timeout', 6602)
   })
 
   it('should increase the timeout', () => {
     const adaptiveTimeout = new AdaptiveTimeout()
 
     const signal1 = adaptiveTimeout.getTimeoutSignal()
-    clock.tick(2000)
+    clock.tick(8000)
     adaptiveTimeout.cleanUp(signal1)
 
     const signal2 = adaptiveTimeout.getTimeoutSignal({
       timeoutFactor: 1
     })
-    expect(signal2).to.have.property('timeout', 2000)
-    clock.tick(3000)
+    expect(signal2).to.have.property('timeout', 8000)
+    clock.tick(9000)
     adaptiveTimeout.cleanUp(signal2)
 
     const signal3 = adaptiveTimeout.getTimeoutSignal({
       timeoutFactor: 1
     })
-    expect(signal3).to.have.property('timeout', 2451)
+    expect(signal3).to.have.property('timeout', 8835)
   })
 
   it('should wrap an existing signal', () => {
@@ -106,5 +106,42 @@ describe('adaptive-timeout', () => {
     expect(signal).to.have.property('aborted', true)
 
     adaptiveTimeout.cleanUp(signal)
+  })
+
+  it('should have a minimum timeout', () => {
+    const adaptiveTimeout = new AdaptiveTimeout({
+      minTimeout: 10_000
+    })
+
+    const signal1 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal1)
+
+    const signal2 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal2)
+
+    const signal3 = adaptiveTimeout.getTimeoutSignal()
+    adaptiveTimeout.cleanUp(signal3)
+
+    expect(signal3).to.have.property('timeout', 10_000)
+  })
+
+  it('should have a maximum timeout', () => {
+    const adaptiveTimeout = new AdaptiveTimeout({
+      maxTimeout: 10_000
+    })
+
+    const signal1 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal1)
+
+    const signal2 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal2)
+
+    const signal3 = adaptiveTimeout.getTimeoutSignal()
+    clock.tick(20_000)
+    adaptiveTimeout.cleanUp(signal3)
+
+    expect(signal3).to.have.property('timeout', 10_000)
   })
 })

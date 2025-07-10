@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from 'main-event'
 
 export interface TestSignalEvents {
   abort: CustomEvent

@@ -1,5 +1,5 @@
 import { InvalidMessageError, serviceDependencies } from '@libp2p/interface'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { pbStream } from 'it-protobuf-stream'
@@ -9,6 +9,7 @@ import { multicodec } from './index.js'
 import type { DCUtRServiceComponents, DCUtRServiceInit } from './index.js'
 import type { Logger, Connection, Stream, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#rpc-messages
 const MAX_DCUTR_MESSAGE_SIZE = 1024 * 4
@@ -192,10 +193,13 @@ export class DefaultDCUtRService implements Startable {
         // https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
 
         this.log('B dialing', multiaddrs)
-        // Upon expiry of the timer, B dials the address to A.
+        // Upon expiry of the timer, B dials the address to A and acts as the
+        // multistream-select server
         const conn = await this.connectionManager.openConnection(multiaddrs, {
           signal: options.signal,
-          priority: DCUTR_DIAL_PRIORITY
+          priority: DCUTR_DIAL_PRIORITY,
+          force: true,
+          initiator: false
         })
 
         this.log('DCUtR to %p succeeded to address %a, closing relayed connection', relayedConnection.remotePeer, conn.remoteAddr)

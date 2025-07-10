@@ -1,9 +1,8 @@
 /* eslint-env mocha */
 
-import { plaintext } from '@libp2p/plaintext'
-import { webSockets } from '@libp2p/websockets'
 import { expect } from 'aegir/chai'
-import { createLibp2p, type Libp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.js'
+import type { Libp2p } from '../../src/index.js'
 
 describe('peer-id', () => {
   let libp2p: Libp2p
@@ -15,14 +14,7 @@ describe('peer-id', () => {
   })
 
   it('should create a PeerId if none is passed', async () => {
-    libp2p = await createLibp2p({
-      transports: [
-        webSockets()
-      ],
-      connectionEncrypters: [
-        plaintext()
-      ]
-    })
+    libp2p = await createLibp2p()
 
     expect(libp2p.peerId).to.be.ok()
   })

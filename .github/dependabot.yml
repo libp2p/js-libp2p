@@ -8,10 +8,17 @@ updates:
   open-pull-requests-limit: 20
   commit-message:
     prefix: "deps"
-    prefix-development: "deps(dev)"
+    prefix-development: "chore"
+  groups:
+    libp2p-deps:
+      patterns:
+        - "*libp2p*"
+        - "*multiformats*"
+        - "*blockstore*"
+        - "*datastore*"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: "weekly"
   commit-message:
-    prefix: ci
+    prefix: chore

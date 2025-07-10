@@ -1,20 +1,20 @@
-import { TypedEventEmitter, setMaxListeners, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { anySignal } from 'any-signal'
 import parallel from 'it-parallel'
-import { EventTypes } from '../index.js'
-import { MessageType } from '../message/dht.js'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as utils from '../utils.js'
 import { ClosestPeers } from './closest-peers.js'
 import { KBucket, isLeafBucket } from './k-bucket.js'
-import type { Bucket, LeafBucket, Peer } from './k-bucket.js'
+import type { Bucket, GetClosestPeersOptions, LeafBucket, Peer } from './k-bucket.js'
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
+import type { Ping } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
 
 export const KBUCKET_SIZE = 20
-export const PREFIX_LENGTH = 8
+export const PREFIX_LENGTH = 6
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
@@ -30,6 +30,7 @@ export const POPULATE_FROM_DATASTORE_LIMIT = 1000
 
 export interface RoutingTableInit {
   logPrefix: string
+  metricsPrefix: string
   protocol: string
   prefixLength?: number
   splitThreshold?: number
@@ -58,6 +59,7 @@ export interface RoutingTableComponents {
   peerStore: PeerStore
   metrics?: Metrics
   logger: ComponentLogger
+  ping: Ping
 }
 
 export interface RoutingTableEvents {
@@ -96,6 +98,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     kadBucketEvents: CounterGroup<'ping_old_contact' | 'ping_old_contact_error' | 'ping_new_contact' | 'ping_new_contact_error' | 'peer_added' | 'peer_removed'>
   }
 
+  private shutdownController: AbortController
+
   constructor (components: RoutingTableComponents, init: RoutingTableInit) {
     super()
 
@@ -113,32 +117,33 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.peerRemoved = this.peerRemoved.bind(this)
     this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
+    this.shutdownController = new AbortController()
 
     this.pingOldContactQueue = new PeerQueue({
       concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_ping_old_contact_queue`,
+      metricName: `${init.metricsPrefix}_ping_old_contact_queue`,
       metrics: this.components.metrics,
       maxSize: init.pingOldContactMaxQueueSize ?? PING_OLD_CONTACT_MAX_QUEUE_SIZE
     })
     this.pingOldContactTimeout = new AdaptiveTimeout({
       ...(init.pingOldContactTimeout ?? {}),
       metrics: this.components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_old_contact_time_milliseconds`
+      metricName: `${init.metricsPrefix}_routing_table_ping_old_contact_time_milliseconds`
     })
 
     this.pingNewContactQueue = new PeerQueue({
       concurrency: init.pingNewContactConcurrency ?? PING_NEW_CONTACT_CONCURRENCY,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_ping_new_contact_queue`,
+      metricName: `${init.metricsPrefix}_ping_new_contact_queue`,
       metrics: this.components.metrics,
       maxSize: init.pingNewContactMaxQueueSize ?? PING_NEW_CONTACT_MAX_QUEUE_SIZE
     })
     this.pingNewContactTimeout = new AdaptiveTimeout({
       ...(init.pingNewContactTimeout ?? {}),
       metrics: this.components.metrics,
-      metricName: `${init.logPrefix.replaceAll(':', '_')}_routing_table_ping_new_contact_time_milliseconds`
+      metricName: `${init.metricsPrefix}_routing_table_ping_new_contact_time_milliseconds`
     })
 
-    this.kb = new KBucket({
+    this.kb = new KBucket(components, {
       kBucketSize: init.kBucketSize,
       prefixLength: init.prefixLength,
       splitThreshold: init.splitThreshold,
@@ -147,7 +152,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       ping: this.pingOldContacts,
       verify: this.verifyNewContact,
       onAdd: this.peerAdded,
-      onRemove: this.peerRemoved
+      onRemove: this.peerRemoved,
+      metricsPrefix: init.metricsPrefix
     })
 
     this.closestPeerTagger = new ClosestPeers(this.components, {
@@ -161,13 +167,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     if (this.components.metrics != null) {
       this.metrics = {
-        routingTableSize: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_size`),
-        routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_total`),
-        routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_average_occupancy`),
-        routingTableKadBucketMinOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_min_occupancy`),
-        routingTableKadBucketMaxOccupancy: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_occupancy`),
-        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.logPrefix.replaceAll(':', '_')}_routing_table_kad_bucket_max_depth`),
-        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.logPrefix.replaceAll(':', '_')}_kad_bucket_events_total`)
+        routingTableSize: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_size`),
+        routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_total`),
+        routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_average_occupancy`),
+        routingTableKadBucketMinOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_min_occupancy`),
+        routingTableKadBucketMaxOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_occupancy`),
+        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_depth`),
+        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.metricsPrefix}_kad_bucket_events_total`)
       }
     }
   }
@@ -177,13 +183,19 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   }
 
   async start (): Promise<void> {
+    if (this.running) {
+      return
+    }
+
     this.running = true
 
-    await start(this.closestPeerTagger)
-    await this.kb.addSelfPeer(this.components.peerId)
+    this.shutdownController = new AbortController()
+    await start(this.closestPeerTagger, this.kb)
   }
 
   async afterStart (): Promise<void> {
+    let peerStorePeers = 0
+
     // do this async to not block startup but iterate serially to not overwhelm
     // the ping queue
     Promise.resolve().then(async () => {
@@ -191,48 +203,60 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
         return
       }
 
-      let peerStorePeers = 0
+      const signal = anySignal([
+        this.shutdownController.signal,
+        AbortSignal.timeout(20_000)
+      ])
+      setMaxListeners(Infinity, signal)
 
-      // add existing peers from the peer store to routing table
-      for (const peer of await this.components.peerStore.all({
-        filters: [(peer) => {
-          return peer.protocols.includes(this.protocol) && peer.tags.has(KAD_PEER_TAG_NAME)
-        }],
-        limit: this.populateFromDatastoreLimit
-      })) {
-        if (!this.running) {
-          // bail if we've been shut down
-          return
-        }
+      try {
+        // add existing peers from the peer store to routing table
+        for (const peer of await this.components.peerStore.all({
+          filters: [(peer) => {
+            return peer.protocols.includes(this.protocol) && peer.tags.has(KAD_PEER_TAG_NAME)
+          }],
+          limit: this.populateFromDatastoreLimit,
+          signal
+        })) {
+          if (!this.running) {
+            // bail if we've been shut down
+            return
+          }
 
-        try {
-          await this.add(peer.id)
-          peerStorePeers++
-        } catch (err) {
-          this.log('failed to add peer %p to routing table, removing kad-dht peer tags - %e')
-          await this.components.peerStore.merge(peer.id, {
-            tags: {
-              [this.peerTagName]: undefined
-            }
-          })
+          try {
+            await this.add(peer.id, {
+              signal
+            })
+            peerStorePeers++
+          } catch (err) {
+            this.log('failed to add peer %p to routing table, removing kad-dht peer tags - %e')
+            await this.components.peerStore.merge(peer.id, {
+              tags: {
+                [this.peerTagName]: undefined
+              }
+            })
+          }
         }
+      } finally {
+        signal.clear()
       }
 
       this.log('added %d peer store peers to the routing table', peerStorePeers)
     })
       .catch(err => {
-        this.log.error('error adding peer store peers to the routing table %e', err)
+        this.log.error('error adding %d, peer store peers to the routing table - %e', peerStorePeers, err)
       })
   }
 
   async stop (): Promise<void> {
     this.running = false
-    await stop(this.closestPeerTagger)
+    await stop(this.closestPeerTagger, this.kb)
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
+    this.shutdownController.abort()
   }
 
-  private async peerAdded (peer: Peer, bucket: LeafBucket): Promise<void> {
+  private async peerAdded (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
     if (!this.components.peerId.equals(peer.peerId)) {
       await this.components.peerStore.merge(peer.peerId, {
         tags: {
@@ -240,7 +264,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
             value: this.peerTagValue
           }
         }
-      })
+      }, options)
     }
 
     this.updateMetrics()
@@ -248,13 +272,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.safeDispatchEvent('peer:add', { detail: peer.peerId })
   }
 
-  private async peerRemoved (peer: Peer, bucket: LeafBucket): Promise<void> {
+  private async peerRemoved (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
     if (!this.components.peerId.equals(peer.peerId)) {
       await this.components.peerStore.merge(peer.peerId, {
         tags: {
           [this.peerTagName]: undefined
         }
-      })
+      }, options)
     }
 
     this.updateMetrics()
@@ -304,7 +328,11 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
         const result = await this.pingOldContactQueue.add(async (options) => {
           const signal = this.pingOldContactTimeout.getTimeoutSignal()
-          const signals = anySignal([signal, options?.signal])
+          const signals = anySignal([
+            signal,
+            this.shutdownController.signal,
+            options?.signal
+          ])
           setMaxListeners(Infinity, signal, signals)
 
           try {
@@ -336,7 +364,11 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
   async verifyNewContact (contact: Peer, options?: AbortOptions): Promise<boolean> {
     const signal = this.pingNewContactTimeout.getTimeoutSignal()
-    const signals = anySignal([signal, options?.signal])
+    const signals = anySignal([
+      signal,
+      this.shutdownController.signal,
+      options?.signal
+    ])
     setMaxListeners(Infinity, signal, signals)
 
     try {
@@ -374,24 +406,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     try {
       this.log('pinging contact %p', contact.peerId)
+      await this.components.ping.ping(contact.peerId, options)
+      this.log('contact %p ping ok', contact.peerId)
 
-      for await (const event of this.network.sendRequest(contact.peerId, { type: MessageType.PING }, options)) {
-        if (event.type === EventTypes.PEER_RESPONSE) {
-          if (event.messageType === MessageType.PING) {
-            this.log('contact %p ping ok', contact.peerId)
+      this.safeDispatchEvent('peer:ping', {
+        detail: contact.peerId
+      })
 
-            this.safeDispatchEvent('peer:ping', {
-              detail: contact.peerId
-            })
-
-            return true
-          }
-
-          return false
-        }
-      }
-
-      return false
+      return true
     } catch (err: any) {
       this.log('error pinging old contact %p - %e', contact.peerId, err)
       stream?.abort(err)
@@ -413,8 +435,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Find a specific peer by id
    */
-  async find (peer: PeerId): Promise<PeerId | undefined> {
-    const kadId = await utils.convertPeerId(peer)
+  async find (peer: PeerId, options?: AbortOptions): Promise<PeerId | undefined> {
+    const kadId = await utils.convertPeerId(peer, options)
     return this.kb.get(kadId)?.peerId
   }
 
@@ -422,7 +444,9 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
    * Retrieve the closest peers to the given kadId
    */
   closestPeer (kadId: Uint8Array): PeerId | undefined {
-    const res = this.closestPeers(kadId, 1)
+    const res = this.closestPeers(kadId, {
+      count: 1
+    })
 
     if (res.length > 0) {
       return res[0]
@@ -434,12 +458,12 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Retrieve the `count`-closest peers to the given kadId
    */
-  closestPeers (kadId: Uint8Array, count = this.kBucketSize): PeerId[] {
+  closestPeers (kadId: Uint8Array, options?: GetClosestPeersOptions): PeerId[] {
     if (this.kb == null) {
       return []
     }
 
-    return [...this.kb.closest(kadId, count)]
+    return [...this.kb.closest(kadId, options)]
   }
 
   /**
@@ -456,14 +480,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   /**
    * Remove a given peer from the table
    */
-  async remove (peer: PeerId): Promise<void> {
+  async remove (peer: PeerId, options?: AbortOptions): Promise<void> {
     if (this.kb == null) {
       throw new Error('RoutingTable is not started')
     }
 
-    const kadId = await utils.convertPeerId(peer)
+    const kadId = await utils.convertPeerId(peer, options)
 
-    await this.kb.remove(kadId)
+    await this.kb.remove(kadId, options)
   }
 
   private updateMetrics (): void {

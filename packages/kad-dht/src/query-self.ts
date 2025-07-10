@@ -1,30 +1,32 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
 import { pipe } from 'it-pipe'
 import take from 'it-take'
+import { setMaxListeners } from 'main-event'
 import pDefer from 'p-defer'
-import { pEvent } from 'p-event'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
+import { timeOperationMethod } from './utils.js'
+import type { OperationMetrics } from './kad-dht.js'
 import type { PeerRouting } from './peer-routing/index.js'
-import type { RoutingTable } from './routing-table/index.js'
-import type { ComponentLogger, Logger, PeerId, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, PeerId, Startable } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
 
 export interface QuerySelfInit {
   logPrefix: string
   peerRouting: PeerRouting
-  routingTable: RoutingTable
   count?: number
   interval?: number
   initialInterval?: number
   queryTimeout?: number
   initialQuerySelfHasRun: DeferredPromise<void>
+  operationMetrics: OperationMetrics
 }
 
 export interface QuerySelfComponents {
   peerId: PeerId
   logger: ComponentLogger
+  metrics?: Metrics
+  events: EventTarget
 }
 
 /**
@@ -34,42 +36,42 @@ export class QuerySelf implements Startable {
   private readonly log: Logger
   private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
-  private readonly routingTable: RoutingTable
+  private readonly events: EventTarget
   private readonly count: number
   private readonly interval: number
   private readonly initialInterval: number
   private readonly queryTimeout: number
-  private started: boolean
+  private running: boolean
   private timeoutId?: ReturnType<typeof setTimeout>
   private controller?: AbortController
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private querySelfPromise?: DeferredPromise<void>
 
   constructor (components: QuerySelfComponents, init: QuerySelfInit) {
-    const { peerRouting, logPrefix, count, interval, queryTimeout, routingTable } = init
-
     this.peerId = components.peerId
-    this.log = components.logger.forComponent(`${logPrefix}:query-self`)
-    this.started = false
-    this.peerRouting = peerRouting
-    this.routingTable = routingTable
-    this.count = count ?? K
-    this.interval = interval ?? QUERY_SELF_INTERVAL
+    this.log = components.logger.forComponent(`${init.logPrefix}:query-self`)
+    this.events = components.events
+    this.running = false
+    this.peerRouting = init.peerRouting
+    this.count = init.count ?? K
+    this.interval = init.interval ?? QUERY_SELF_INTERVAL
     this.initialInterval = init.initialInterval ?? QUERY_SELF_INITIAL_INTERVAL
-    this.queryTimeout = queryTimeout ?? QUERY_SELF_TIMEOUT
+    this.queryTimeout = init.queryTimeout ?? QUERY_SELF_TIMEOUT
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
+
+    this.querySelf = timeOperationMethod(this.querySelf.bind(this), init.operationMetrics, 'SELF_QUERY')
   }
 
   isStarted (): boolean {
-    return this.started
+    return this.running
   }
 
   start (): void {
-    if (this.started) {
+    if (this.running) {
       return
     }
 
-    this.started = true
+    this.running = true
     clearTimeout(this.timeoutId)
     this.timeoutId = setTimeout(() => {
       this.querySelf()
@@ -80,7 +82,7 @@ export class QuerySelf implements Startable {
   }
 
   stop (): void {
-    this.started = false
+    this.running = false
 
     if (this.timeoutId != null) {
       clearTimeout(this.timeoutId)
@@ -92,7 +94,7 @@ export class QuerySelf implements Startable {
   }
 
   async querySelf (): Promise<void> {
-    if (!this.started) {
+    if (!this.running) {
       this.log('skip self-query because we are not started')
       return
     }
@@ -104,7 +106,7 @@ export class QuerySelf implements Startable {
 
     this.querySelfPromise = pDefer()
 
-    if (this.started) {
+    if (this.running) {
       this.controller = new AbortController()
       const signals = [this.controller.signal]
 
@@ -119,20 +121,10 @@ export class QuerySelf implements Startable {
       setMaxListeners(Infinity, signal, this.controller.signal)
 
       try {
-        if (this.routingTable.size === 0) {
-          this.log('routing table was empty, waiting for some peers before running query')
-          // wait to discover at least one DHT peer that isn't us
-          await pEvent(this.routingTable, 'peer:add', {
-            signal,
-            filter: (event) => !this.peerId.equals(event.detail)
-          })
-          this.log('routing table has peers, continuing with query')
-        }
-
         this.log('run self-query, look for %d peers timing out after %dms', this.count, this.queryTimeout)
         const start = Date.now()
 
-        const found = await pipe(
+        const peers = await pipe(
           this.peerRouting.getClosestPeers(this.peerId.toMultihash().bytes, {
             signal,
             isSelfQuery: true
@@ -141,7 +133,18 @@ export class QuerySelf implements Startable {
           async (source) => length(source)
         )
 
-        this.log('self-query found %d peers in %dms', found, Date.now() - start)
+        signal?.throwIfAborted()
+
+        const duration = Date.now() - start
+
+        this.log('self-query found %d peers in %dms', peers, duration)
+
+        this.events.dispatchEvent(new CustomEvent('kad-dht:query:self', {
+          detail: {
+            peers,
+            duration
+          }
+        }))
       } catch (err: any) {
         this.log.error('self-query error', err)
       } finally {
@@ -157,7 +160,7 @@ export class QuerySelf implements Startable {
     this.querySelfPromise.resolve()
     this.querySelfPromise = undefined
 
-    if (!this.started) {
+    if (!this.running) {
       return
     }
 

@@ -26,7 +26,7 @@ repo and examine the changes made.
 
 The `libp2p-crypto` library depends on the [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) in the browser. Web Crypto is available in all modern browsers, however browsers restrict its usage to [Secure Contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).
 
-*This means you will not be able to use some `@libp2p/crypto` functions in the browser when the page is served over HTTP.*
+This means you will not be able to use some `@libp2p/crypto` functions in the browser when the page is served over HTTP.\*
 
 To enable the Web Crypto API and allow `@libp2p/crypto` to work fully, please serve your page over HTTPS.
 
@@ -38,7 +38,7 @@ $ npm i @libp2p/crypto
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pCrypto` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pCrypto` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/crypto/dist/index.min.js"></script>

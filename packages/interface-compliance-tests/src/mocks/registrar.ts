@@ -1,6 +1,6 @@
-import merge from 'merge-options'
-import type { Connection, PeerId, Topology } from '@libp2p/interface'
-import type { IncomingStreamData, Registrar, StreamHandler, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface-internal'
+import { mergeOptions } from '@libp2p/utils/merge-options'
+import type { Connection, PeerId, Topology, IncomingStreamData, StreamHandler, StreamHandlerOptions, StreamHandlerRecord } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
 
 export class MockRegistrar implements Registrar {
   private readonly topologies = new Map<string, Array<{ id: string, topology: Topology }>>()
@@ -11,7 +11,7 @@ export class MockRegistrar implements Registrar {
   }
 
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
-    const options = merge.bind({ ignoreUndefined: true })({
+    const options = mergeOptions.bind({ ignoreUndefined: true })({
       maxInboundStreams: 1,
       maxOutboundStreams: 1
     }, opts)

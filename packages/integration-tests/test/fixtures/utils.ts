@@ -1,5 +1,6 @@
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr } from '@multiformats/multiaddr'
 import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -63,13 +64,28 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
 
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+    const relayHosts = new Set<string>()
+
+    const relayAddrs = node.getMultiaddrs().filter(addr => {
+      if (!addr.protoNames().includes('p2p-circuit')) {
+        return false
+      }
+
+      const ma = multiaddr(addr.toString().split('/p2p-circuit')[0])
+      const relayPeer = ma.getPeerId()
+
+      if (relayPeer != null) {
+        relayHosts.add(relayPeer)
+      }
+
+      return true
+    })
 
     if (relayAddrs.length === 0) {
       return false
     }
 
-    if (relayAddrs.length !== 1) {
+    if (relayHosts.size !== 1) {
       throw new Error(`node listening on too many relays - ${relayAddrs.length}`)
     }
 
@@ -164,6 +180,10 @@ export class MockContentRouting implements ContentRouting {
     })
 
     MockContentRouting.providers.set(cid.toString(), providers)
+  }
+
+  async cancelReprovide (): Promise<void> {
+
   }
 
   async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<PeerInfo, void, undefined> {

@@ -9,7 +9,6 @@ import { stop } from '@libp2p/interface'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
-import * as filters from '@libp2p/websockets/filters'
 import { webTransport } from '@libp2p/webtransport'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebTransport } from '@multiformats/multiaddr-matcher'
@@ -22,13 +21,14 @@ describe('circuit-relay discovery', () => {
 
   beforeEach(async () => {
     node = await createLibp2p({
+      addresses: {
+        listen: [
+          '/p2p-circuit'
+        ]
+      },
       transports: [
-        webSockets({
-          filter: filters.all
-        }),
-        circuitRelayTransport({
-          discoverRelays: 1
-        }),
+        webSockets(),
+        circuitRelayTransport(),
         webTransport()
       ],
       streamMuxers: [

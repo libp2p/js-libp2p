@@ -10,6 +10,9 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
       "path": "../interface"
     },
     {
@@ -19,19 +22,13 @@
       "path": "../interface-internal"
     },
     {
-      "path": "../libp2p"
+      "path": "../keychain"
     },
     {
       "path": "../logger"
     },
     {
       "path": "../peer-id"
-    },
-    {
-      "path": "../transport-circuit-relay-v2"
-    },
-    {
-      "path": "../transport-websockets"
     },
     {
       "path": "../utils"

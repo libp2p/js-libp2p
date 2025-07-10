@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A logger for libp2p based on the venerable [debug](https://www.npmjs.com/package/debug) module.
+A logger for libp2p based on [weald](https://www.npmjs.com/package/weald), a TypeScript port of the venerable [debug](https://www.npmjs.com/package/debug) module.
 
 ## Example
 
@@ -62,7 +62,7 @@ $ npm i @libp2p/logger
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pLogger` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pLogger` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/logger/dist/index.min.js"></script>

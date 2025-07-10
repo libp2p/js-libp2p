@@ -6,7 +6,7 @@
  * to being behind NATed connections or firewalls.
  *
  * The protocol involves making a relayed connection between the two peers and
- * using the relay to synchronise connection timings so that they dial each other
+ * using the relay to synchronize connection timings so that they dial each other
  * at precisely the same moment.
  *
  * @example

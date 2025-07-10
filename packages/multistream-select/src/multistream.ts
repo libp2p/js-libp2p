@@ -1,10 +1,10 @@
 import { InvalidMessageError } from '@libp2p/interface'
-import { type Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
 import type { LengthPrefixedStream } from 'it-length-prefixed-stream'
 import type { Duplex, Source } from 'it-stream-types'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const NewLine = uint8ArrayFromString('\n')
 

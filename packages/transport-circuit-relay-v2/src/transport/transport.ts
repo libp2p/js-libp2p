@@ -5,19 +5,20 @@ import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
-import { CircuitListen, LimitTracker } from '../utils.js'
+import { CircuitListen, CircuitSearch, LimitTracker } from '../utils.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, IncomingStreamData, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
+import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProgressEvent, ProgressOptions } from 'progress-events'
+import type { ProgressEvent } from 'progress-events'
 
 const isValidStop = (request: StopMessage): request is Required<StopMessage> => {
   if (request.peer == null) {
@@ -31,16 +32,6 @@ const isValidStop = (request: StopMessage): request is Required<StopMessage> => 
   }
 
   return true
-}
-
-interface ConnectOptions extends ProgressOptions<CircuitRelayDialEvents> {
-  stream: Stream
-  connection: Connection
-  destinationPeer: PeerId
-  destinationAddr: Multiaddr
-  relayAddr: Multiaddr
-  ma: Multiaddr
-  disconnectOnFailure: boolean
 }
 
 const defaults = {
@@ -72,11 +63,11 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   private readonly logger: ComponentLogger
   private readonly maxInboundStopStreams: number
   private readonly maxOutboundStopStreams?: number
-  private readonly stopTimeout: number
   private started: boolean
   private readonly log: Logger
+  private shutdownController: AbortController
 
-  constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit) {
+  constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit = {}) {
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport')
     this.registrar = components.registrar
     this.peerStore = components.peerStore
@@ -89,30 +80,25 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     this.connectionGater = components.connectionGater
     this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
-    this.stopTimeout = init.stopTimeout ?? defaults.stopTimeout
+    this.shutdownController = new AbortController()
 
-    const discoverRelays = init.discoverRelays ?? 0
-
-    if (discoverRelays > 0) {
-      this.discovery = new RelayDiscovery(components, {
-        filter: init.discoveryFilter ?? peerFilter(DEFAULT_DISCOVERY_FILTER_SIZE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE)
-      })
-      this.discovery.addEventListener('relay:discover', (evt) => {
-        this.reservationStore.addRelay(evt.detail, 'discovered')
-          .catch(err => {
+    this.discovery = new RelayDiscovery(components, {
+      filter: init.discoveryFilter ?? peerFilter(DEFAULT_DISCOVERY_FILTER_SIZE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE)
+    })
+    this.discovery.addEventListener('relay:discover', (evt) => {
+      this.reservationStore.addRelay(evt.detail, 'discovered')
+        .catch(err => {
+          if (err.name !== 'HadEnoughRelaysError' && err.name !== 'RelayQueueFullError') {
             this.log.error('could not add discovered relay %p', evt.detail, err)
-          })
-      })
-    }
-
+          }
+        })
+    })
     this.reservationStore = new ReservationStore(components, init)
     this.reservationStore.addEventListener('relay:not-enough-relays', () => {
       this.discovery?.startDiscovery()
     })
-    this.reservationStore.addEventListener('relay:created-reservation', () => {
-      if (this.reservationStore.reservationCount() >= discoverRelays) {
-        this.discovery?.stopDiscovery()
-      }
+    this.reservationStore.addEventListener('relay:found-enough-relays', () => {
+      this.discovery?.stopDiscovery()
     })
 
     this.started = false
@@ -143,11 +129,20 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   }
 
   async start (): Promise<void> {
+    this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
+
     await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
-      void this.onStop(data).catch(err => {
-        this.log.error('error while handling STOP protocol', err)
-        data.stream.abort(err)
-      })
+      const signal = this.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+
+      void this.onStop(data, signal)
+        .catch(err => {
+          this.log.error('error while handling STOP protocol', err)
+          data.stream.abort(err)
+        })
+        .finally(() => {
+          signal.clear()
+        })
     }, {
       maxInboundStreams: this.maxInboundStopStreams,
       maxOutboundStreams: this.maxOutboundStopStreams,
@@ -160,6 +155,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   }
 
   async stop (): Promise<void> {
+    this.shutdownController.abort()
     await stop(this.discovery, this.reservationStore)
     await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
 
@@ -192,7 +188,6 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const relayPeer = peerIdFromString(relayId)
     const destinationPeer = peerIdFromString(destinationId)
 
-    let disconnectOnFailure = false
     const relayConnections = this.connectionManager.getConnections(relayPeer)
     let relayConnection = relayConnections[0]
 
@@ -203,7 +198,6 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       options.onProgress?.(new CustomProgressEvent('circuit-relay:open-connection'))
       relayConnection = await this.connectionManager.openConnection(relayPeer, options)
-      disconnectOnFailure = true
     } else {
       options.onProgress?.(new CustomProgressEvent('circuit-relay:reuse-connection'))
     }
@@ -212,52 +206,22 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
     try {
       options.onProgress?.(new CustomProgressEvent('circuit-relay:open-hop-stream'))
-      stream = await relayConnection.newStream(RELAY_V2_HOP_CODEC)
+      stream = await relayConnection.newStream(RELAY_V2_HOP_CODEC, options)
 
-      return await this.connectV2({
-        stream,
-        connection: relayConnection,
-        destinationPeer,
-        destinationAddr,
-        relayAddr,
-        ma,
-        disconnectOnFailure,
-        onProgress: options.onProgress
-      })
-    } catch (err: any) {
-      this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
-
-      if (stream != null) {
-        stream.abort(err)
-      }
-      disconnectOnFailure && await relayConnection.close()
-      throw err
-    }
-  }
-
-  async connectV2 (
-    {
-      stream, connection, destinationPeer,
-      destinationAddr, relayAddr, ma,
-      disconnectOnFailure,
-      onProgress
-    }: ConnectOptions
-  ): Promise<Connection> {
-    try {
       const pbstr = pbStream(stream)
       const hopstr = pbstr.pb(HopMessage)
 
-      onProgress?.(new CustomProgressEvent('circuit-relay:write-connect-message'))
+      options.onProgress?.(new CustomProgressEvent('circuit-relay:write-connect-message'))
       await hopstr.write({
         type: HopMessage.Type.CONNECT,
         peer: {
           id: destinationPeer.toMultihash().bytes,
           addrs: [multiaddr(destinationAddr).bytes]
         }
-      })
+      }, options)
 
-      onProgress?.(new CustomProgressEvent('circuit-relay:read-connect-response'))
-      const status = await hopstr.read()
+      options.onProgress?.(new CustomProgressEvent('circuit-relay:read-connect-response'))
+      const status = await hopstr.read(options)
 
       if (status.status !== Status.OK) {
         throw new InvalidMessageError(`failed to connect via relay with status ${status?.status?.toString() ?? 'undefined'}`)
@@ -269,20 +233,23 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
-        logger: this.logger,
+        log: this.log,
         onDataRead: limits.onData,
         onDataWrite: limits.onData
       })
 
-      this.log('new outbound relayed connection %a', maConn.remoteAddr)
-
-      return await this.upgrader.upgradeOutbound(maConn, {
-        limits: limits.getLimits(),
-        onProgress
+      const conn = await this.upgrader.upgradeOutbound(maConn, {
+        ...options,
+        limits: limits.getLimits()
       })
+
+      conn.log('outbound relayed connection established to %p with limits %o, over connection %s', conn.remotePeer, status.limit ?? 'none', relayConnection.id)
+
+      return conn
     } catch (err: any) {
-      this.log.error(`circuit relay dial to destination ${destinationPeer.toString()} via relay ${connection.remotePeer.toString()} failed`, err)
-      disconnectOnFailure && await connection.close()
+      this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
+      stream?.abort(err)
+
       throw err
     }
   }
@@ -292,8 +259,10 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
+      peerId: this.peerId,
       connectionManager: this.connectionManager,
-      relayStore: this.reservationStore,
+      addressManager: this.addressManager,
+      reservationStore: this.reservationStore,
       logger: this.logger
     })
   }
@@ -305,7 +274,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
 
     return multiaddrs.filter((ma) => {
-      return CircuitListen.exactMatch(ma)
+      return CircuitListen.exactMatch(ma) || CircuitSearch.exactMatch(ma)
     })
   }
 
@@ -323,7 +292,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   /**
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
-  async onStop ({ connection, stream }: IncomingStreamData): Promise<void> {
+  async onStop ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
     if (!this.reservationStore.hasReservation(connection.remotePeer)) {
       try {
         this.log('dialed via relay we did not have a reservation on, start listening on that relay address')
@@ -334,7 +303,6 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       }
     }
 
-    const signal = AbortSignal.timeout(this.stopTimeout)
     const pbstr = pbStream(stream).pb(StopMessage)
     const request = await pbstr.read({
       signal
@@ -366,7 +334,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
-      await stream.close()
+      await stream.close({
+        signal
+      })
       return
     }
 
@@ -377,7 +347,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
       })
-      await stream.close()
+      await stream.close({
+        signal
+      })
       return
     }
 
@@ -393,15 +365,16 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
-      logger: this.logger,
+      log: this.log,
       onDataRead: limits.onData,
       onDataWrite: limits.onData
     })
 
-    this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
-      limits: limits.getLimits()
+      limits: limits.getLimits(),
+      signal
     })
-    this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
+
+    maConn.log('inbound relayed connection established to %p with limits %o, over connection %s', remotePeerId, request.limit ?? 'none', connection.id)
   }
 }

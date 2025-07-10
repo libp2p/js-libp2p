@@ -1,11 +1,11 @@
 /* eslint-disable max-depth */
-import { TimeoutError, DialError, setMaxListeners, AbortError } from '@libp2p/interface'
+import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { PriorityQueue, type PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
-import { type Multiaddr, type Resolver, resolvers, multiaddr } from '@multiformats/multiaddr'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { PriorityQueue } from '@libp2p/utils/priority-queue'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
-import { type ClearableSignal, anySignal } from 'any-signal'
+import { anySignal } from 'any-signal'
+import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
@@ -19,11 +19,13 @@ import {
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
-import { resolveMultiaddrs } from './utils.js'
+import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
+import type { PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
 import type { DNS } from '@multiformats/dns'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PendingDialTarget {
@@ -42,7 +44,7 @@ interface DialerInit {
   maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
-  resolvers?: Record<string, Resolver>
+  resolvers?: Record<string, MultiaddrResolver>
   connections?: PeerMap<Connection[]>
 }
 
@@ -77,6 +79,7 @@ export class DialQueue {
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
+  private readonly resolvers: Record<string, MultiaddrResolver>
 
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter
@@ -86,13 +89,10 @@ export class DialQueue {
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
     this.components = components
+    this.resolvers = init.resolvers ?? defaultOptions.resolvers
 
     this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
-
-    for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      resolvers.set(key, value)
-    }
 
     // controls dial concurrency
     this.queue = new PriorityQueue({
@@ -102,7 +102,7 @@ export class DialQueue {
     })
     // a started job errored
     this.queue.addEventListener('error', (event) => {
-      if (event.detail.name !== AbortError.name) {
+      if (event.detail?.name !== AbortError.name) {
         this.log.error('error in dial queue - %e', event.detail)
       }
     })
@@ -136,10 +136,14 @@ export class DialQueue {
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    // make sure we don't have an existing connection to any of the addresses we
-    // are about to dial
+    // make sure we don't have an existing non-limited connection to any of the
+    // addresses we are about to dial
     const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
       if (options.force === true) {
+        return false
+      }
+
+      if (conn.limits != null) {
         return false
       }
 
@@ -201,96 +205,17 @@ export class DialQueue {
 
     options.onProgress?.(new CustomProgressEvent('dial-queue:add-to-dial-queue'))
     return this.queue.add(async (options) => {
-      options?.onProgress?.(new CustomProgressEvent('dial-queue:start-dial'))
+      options.onProgress?.(new CustomProgressEvent('dial-queue:start-dial'))
       // create abort conditions - need to do this before `calculateMultiaddrs` as
       // we may be about to resolve a dns addr which can time out
-      const signal = this.createDialAbortController(options?.signal)
-      let addrsToDial: Address[]
+      const signal = anySignal([
+        this.shutDownController.signal,
+        options.signal
+      ])
+      setMaxListeners(Infinity, signal)
 
       try {
-        // load addresses from address book, resolve and dnsaddrs, filter
-        // undiallables, add peer IDs, etc
-        addrsToDial = await this.calculateMultiaddrs(peerId, options?.multiaddrs, {
-          ...options,
-          signal
-        })
-
-        options?.onProgress?.(new CustomProgressEvent<Address[]>('dial-queue:calculated-addresses', addrsToDial))
-
-        addrsToDial.map(({ multiaddr }) => multiaddr.toString()).forEach(addr => {
-          options?.multiaddrs.add(addr)
-        })
-      } catch (err) {
-        signal.clear()
-        throw err
-      }
-
-      try {
-        let dialed = 0
-        const errors: Error[] = []
-
-        for (const address of addrsToDial) {
-          if (dialed === this.maxPeerAddrsToDial) {
-            this.log('dialed maxPeerAddrsToDial (%d) addresses for %p, not trying any others', dialed, peerId)
-
-            throw new DialError('Peer had more than maxPeerAddrsToDial')
-          }
-
-          dialed++
-
-          try {
-            const conn = await this.components.transportManager.dial(address.multiaddr, {
-              ...options,
-              signal
-            })
-
-            this.log('dial to %a succeeded', address.multiaddr)
-
-            // record the successful dial and the address
-            try {
-              await this.components.peerStore.merge(conn.remotePeer, {
-                multiaddrs: [
-                  conn.remoteAddr
-                ],
-                metadata: {
-                  [LAST_DIAL_SUCCESS_KEY]: uint8ArrayFromString(Date.now().toString())
-                }
-              })
-            } catch (err: any) {
-              this.log.error('could not update last dial failure key for %p', peerId, err)
-            }
-
-            return conn
-          } catch (err: any) {
-            this.log.error('dial failed to %a', address.multiaddr, err)
-
-            if (peerId != null) {
-              // record the failed dial
-              try {
-                await this.components.peerStore.merge(peerId, {
-                  metadata: {
-                    [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
-                  }
-                })
-              } catch (err: any) {
-                this.log.error('could not update last dial failure key for %p', peerId, err)
-              }
-            }
-
-            // the user/dial timeout/shutdown controller signal aborted
-            if (signal.aborted) {
-              throw new TimeoutError(err.message)
-            }
-
-            errors.push(err)
-          }
-        }
-
-        if (errors.length === 1) {
-          throw errors[0]
-        }
-
-        throw new AggregateError(errors, 'All multiaddr dials failed')
+        return await this.dialPeer(options, signal)
       } finally {
         // clean up abort signals/controllers
         signal.clear()
@@ -299,23 +224,135 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
-      signal: options.signal,
+      signal: options.signal ?? AbortSignal.timeout(this.dialTimeout),
       onProgress: options.onProgress
     })
   }
 
-  private createDialAbortController (userSignal?: AbortSignal): ClearableSignal {
-    // let any signal abort the dial
-    const signal = anySignal([
-      AbortSignal.timeout(this.dialTimeout),
-      this.shutDownController.signal,
-      userSignal
-    ])
+  private async dialPeer (options: DialQueueJobOptions, signal: AbortSignal): Promise<Connection> {
+    const peerId = options.peerId
+    const multiaddrs = options.multiaddrs
+    const failedMultiaddrs = new Set<string>()
 
-    // This emitter gets listened to a lot
-    setMaxListeners(Infinity, signal)
+    // if we have no multiaddrs, only a peer id, set a flag so we will look the
+    // peer up in the peer routing to obtain multiaddrs
+    let forcePeerLookup = options.multiaddrs.size === 0
 
-    return signal
+    let dialed = 0
+    let dialIteration = 0
+    const errors: Error[] = []
+
+    this.log('starting dial to %p', peerId)
+
+    // repeat this operation in case addresses are added to the dial while we
+    // resolve multiaddrs, etc
+    while (forcePeerLookup || multiaddrs.size > 0) {
+      dialIteration++
+
+      // only perform peer lookup once
+      forcePeerLookup = false
+
+      // the addresses we will dial
+      const addrsToDial: Address[] = []
+
+      // copy the addresses into a new set
+      const addrs = new Set(options.multiaddrs)
+
+      // empty the old set - subsequent dial attempts for the same peer id may
+      // add more addresses to try
+      multiaddrs.clear()
+
+      this.log('calculating addrs to dial %p from %s', peerId, [...addrs])
+
+      // load addresses from address book, resolve and dnsaddrs, filter
+      // undialables, add peer IDs, etc
+      const calculatedAddrs = await this.calculateMultiaddrs(peerId, addrs, {
+        ...options,
+        signal
+      })
+
+      for (const addr of calculatedAddrs) {
+        // skip any addresses we have previously failed to dial
+        if (failedMultiaddrs.has(addr.multiaddr.toString())) {
+          this.log.trace('skipping previously failed multiaddr %a while dialing %p', addr.multiaddr, peerId)
+          continue
+        }
+
+        addrsToDial.push(addr)
+      }
+
+      this.log('%s dial to %p with %s', dialIteration === 1 ? 'starting' : 'continuing', peerId, addrsToDial.map(ma => ma.multiaddr.toString()))
+
+      options?.onProgress?.(new CustomProgressEvent<Address[]>('dial-queue:calculated-addresses', addrsToDial))
+
+      for (const address of addrsToDial) {
+        if (dialed === this.maxPeerAddrsToDial) {
+          this.log('dialed maxPeerAddrsToDial (%d) addresses for %p, not trying any others', dialed, options.peerId)
+
+          throw new DialError('Peer had more than maxPeerAddrsToDial')
+        }
+
+        dialed++
+
+        try {
+          // try to dial the address
+          const conn = await this.components.transportManager.dial(address.multiaddr, {
+            ...options,
+            signal
+          })
+
+          this.log('dial to %a succeeded', address.multiaddr)
+
+          // record the successful dial and the address
+          try {
+            await this.components.peerStore.merge(conn.remotePeer, {
+              multiaddrs: [
+                conn.remoteAddr
+              ],
+              metadata: {
+                [LAST_DIAL_SUCCESS_KEY]: uint8ArrayFromString(Date.now().toString())
+              }
+            })
+          } catch (err: any) {
+            this.log.error('could not update last dial failure key for %p', peerId, err)
+          }
+
+          // dial successful, return the connection
+          return conn
+        } catch (err: any) {
+          this.log.error('dial failed to %a', address.multiaddr, err)
+
+          // ensure we don't dial it again in this attempt
+          failedMultiaddrs.add(address.multiaddr.toString())
+
+          if (peerId != null) {
+            // record the failed dial
+            try {
+              await this.components.peerStore.merge(peerId, {
+                metadata: {
+                  [LAST_DIAL_FAILURE_KEY]: uint8ArrayFromString(Date.now().toString())
+                }
+              })
+            } catch (err: any) {
+              this.log.error('could not update last dial failure key for %p', peerId, err)
+            }
+          }
+
+          // the user/dial timeout/shutdown controller signal aborted
+          if (signal.aborted) {
+            throw new TimeoutError(err.message)
+          }
+
+          errors.push(err)
+        }
+      }
+    }
+
+    if (errors.length === 1) {
+      throw errors[0]
+    }
+
+    throw new AggregateError(errors, 'All multiaddr dials failed')
   }
 
   // eslint-disable-next-line complexity
@@ -350,13 +387,14 @@ export class DialQueue {
         }
       }
 
-      // if we still don't have any addresses for this peer, try a lookup
-      // using the peer routing
+      // if we still don't have any addresses for this peer, or the only
+      // addresses we have are without any routing information (e.g.
+      // `/p2p/Qmfoo`), try a lookup using the peer routing
       if (addrs.length === 0) {
         this.log('looking up multiaddrs for %p in the peer routing', peerId)
 
         try {
-          const peerInfo = await this.components.peerRouting.findPeer(peerId)
+          const peerInfo = await this.components.peerRouting.findPeer(peerId, options)
 
           this.log('found multiaddrs for %p in the peer routing', peerId, addrs.map(({ multiaddr }) => multiaddr.toString()))
 
@@ -365,8 +403,10 @@ export class DialQueue {
             isCertified: false
           })))
         } catch (err: any) {
-          if (err.name !== 'NoPeerRoutersError') {
-            this.log.error('looking up multiaddrs for %p in the peer routing failed', peerId, err)
+          if (err.name === 'NoPeerRoutersError') {
+            this.log('no peer routers configured', peerId)
+          } else {
+            this.log.error('looking up multiaddrs for %p in the peer routing failed - %e', peerId, err)
           }
         }
       }
@@ -376,10 +416,10 @@ export class DialQueue {
     // dnsaddrs are resolved
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
-        const result = await resolveMultiaddrs(addr.multiaddr, {
+        const result = await resolveMultiaddr(addr.multiaddr, this.resolvers, {
           dns: this.components.dns,
-          ...options,
-          log: this.log
+          log: this.log,
+          ...options
         })
 
         if (result.length === 1 && result[0].equals(addr.multiaddr)) {
@@ -398,15 +438,10 @@ export class DialQueue {
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       resolvedAddresses = resolvedAddresses.map(addr => {
-        const lastProto = addr.multiaddr.protos().pop()
-
-        // do not append peer id to path multiaddrs
-        if (lastProto?.path === true) {
-          return addr
-        }
+        const lastComponent = addr.multiaddr.getComponents().pop()
 
         // append peer id to multiaddr if it is not already present
-        if (addr.multiaddr.getPeerId() == null) {
+        if (lastComponent?.name !== 'p2p') {
           return {
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified
@@ -456,17 +491,17 @@ export class DialQueue {
       throw new NoValidAddressesError('The dial request has no valid addresses')
     }
 
-    const gatedAdrs: Address[] = []
+    const gatedAddrs: Address[] = []
 
     for (const addr of dedupedMultiaddrs) {
       if (this.components.connectionGater.denyDialMultiaddr != null && await this.components.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
         continue
       }
 
-      gatedAdrs.push(addr)
+      gatedAddrs.push(addr)
     }
 
-    const sortedGatedAddrs = this.addressSorter == null ? defaultAddressSorter(gatedAdrs) : gatedAdrs.sort(this.addressSorter)
+    const sortedGatedAddrs = this.addressSorter == null ? defaultAddressSorter(gatedAddrs) : gatedAddrs.sort(this.addressSorter)
 
     // make sure we actually have some addresses to dial
     if (sortedGatedAddrs.length === 0) {

@@ -1,14 +1,16 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, start } from '@libp2p/interface'
+import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
-import { KEEP_ALIVE_TAG, RELAY_TAG } from '../../src/constants.js'
+import { KEEP_ALIVE_TAG } from '../../src/constants.js'
 import { ReservationStore } from '../../src/transport/reservation-store.js'
-import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PeerStore, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Peer, PeerId, PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 export interface StubbedReservationStoreComponents {
@@ -44,7 +46,7 @@ describe('transport reservation-store', () => {
       id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       addresses: [],
       metadata: new Map(),
-      tags: new Map([[RELAY_TAG, { value: 1 }]]),
+      tags: new Map([[KEEP_ALIVE_TAG, { value: 1 }]]),
       protocols: []
     }
 
@@ -56,7 +58,6 @@ describe('transport reservation-store', () => {
 
     expect(components.peerStore.merge.calledWith(peer.id, {
       tags: {
-        [RELAY_TAG]: undefined,
         [KEEP_ALIVE_TAG]: undefined
       }
     })).to.be.true()

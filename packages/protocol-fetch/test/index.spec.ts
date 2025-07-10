@@ -8,23 +8,24 @@ import { expect } from 'aegir/chai'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
 import sinon from 'sinon'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
+import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { Fetch } from '../src/fetch.js'
 import { FetchRequest, FetchResponse } from '../src/pb/proto.js'
-import type { ComponentLogger, Connection, Stream, PeerId } from '@libp2p/interface'
+import type { Connection, Stream, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedFetchComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
-  logger: ComponentLogger
 }
 
 async function createComponents (): Promise<StubbedFetchComponents> {
   return {
     registrar: stubInterface<Registrar>(),
-    connectionManager: stubInterface<ConnectionManager>(),
-    logger: defaultLogger()
+    connectionManager: stubInterface<ConnectionManager>()
   }
 }
 
@@ -38,7 +39,9 @@ function createStreams (components: StubbedFetchComponents, remotePeer?: PeerId)
   incomingStream.source = duplex[1].source
   incomingStream.sink.callsFake(async source => duplex[1].sink(source))
 
-  const connection = stubInterface<Connection>()
+  const connection = stubInterface<Connection>({
+    log: defaultLogger().forComponent('connection')
+  })
 
   if (remotePeer != null) {
     connection.newStream.withArgs('/libp2p/fetch/0.0.1').resolves(outgoingStream)
@@ -89,7 +92,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.OK,
@@ -112,7 +115,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.NOT_FOUND
@@ -134,7 +137,7 @@ describe('fetch', () => {
       const pb = pbStream(incomingStream)
       const request = await pb.read(FetchRequest)
 
-      expect(request.identifier).to.equal(key)
+      expect(uint8arrayToString(request.identifier)).to.equal(key)
 
       await pb.write({
         status: FetchResponse.StatusCode.ERROR
@@ -177,7 +180,7 @@ describe('fetch', () => {
       } = createStreams(components)
 
       fetch.registerLookupFunction('/test', async (k) => {
-        expect(k).to.equal(key)
+        expect(k).to.equalBytes(uint8arrayFromString(key))
         return value
       })
 
@@ -189,7 +192,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -218,7 +221,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
@@ -242,7 +245,7 @@ describe('fetch', () => {
       const pb = pbStream(outgoingStream)
 
       await pb.write({
-        identifier: key
+        identifier: uint8arrayFromString(key)
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)

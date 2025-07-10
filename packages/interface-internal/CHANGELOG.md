@@ -32,6 +32,325 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [2.3.18](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.17...interface-internal-v2.3.18) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+
+## [2.3.17](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.16...interface-internal-v2.3.17) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+
+## [2.3.16](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.15...interface-internal-v2.3.16) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+
+## [2.3.15](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.14...interface-internal-v2.3.15) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/peer-collections bumped from ^6.0.30 to ^6.0.31
+
+## [2.3.14](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.13...interface-internal-v2.3.14) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/peer-collections bumped from ^6.0.29 to ^6.0.30
+
+## [2.3.13](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.12...interface-internal-v2.3.13) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/peer-collections bumped from ^6.0.28 to ^6.0.29
+
+## [2.3.12](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.11...interface-internal-v2.3.12) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/peer-collections bumped from ^6.0.27 to ^6.0.28
+
+## [2.3.11](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.10...interface-internal-v2.3.11) (2025-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.8.0 to ^2.9.0
+    * @libp2p/peer-collections bumped from ^6.0.26 to ^6.0.27
+
+## [2.3.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.9...interface-internal-v2.3.10) (2025-04-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.7.0 to ^2.8.0
+    * @libp2p/peer-collections bumped from ^6.0.25 to ^6.0.26
+
+## [2.3.9](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.8...interface-internal-v2.3.9) (2025-03-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.24 to ^6.0.25
+
+## [2.3.8](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.7...interface-internal-v2.3.8) (2025-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.23 to ^6.0.24
+
+## [2.3.7](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.6...interface-internal-v2.3.7) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.1 to ^2.7.0
+    * @libp2p/peer-collections bumped from ^6.0.22 to ^6.0.23
+
+## [2.3.6](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.5...interface-internal-v2.3.6) (2025-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.21 to ^6.0.22
+
+## [2.3.5](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.4...interface-internal-v2.3.5) (2025-02-25)
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.6.0 to ^2.6.1
+    * @libp2p/peer-collections bumped from ^6.0.20 to ^6.0.21
+
+## [2.3.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.3...interface-internal-v2.3.4) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.19 to ^6.0.20
+
+## [2.3.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.2...interface-internal-v2.3.3) (2025-02-21)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.18 to ^6.0.19
+
+## [2.3.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.1...interface-internal-v2.3.2) (2025-02-20)
+
+
+### Documentation
+
+* update interface-internal readme ([#2972](https://github.com/libp2p/js-libp2p/issues/2972)) ([754fe84](https://github.com/libp2p/js-libp2p/commit/754fe84db8f5f075c4fb23f1c2b9539b71ab3b66))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.5.0 to ^2.6.0
+    * @libp2p/peer-collections bumped from ^6.0.17 to ^6.0.18
+
+## [2.3.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.3.0...interface-internal-v2.3.1) (2025-02-18)
+
+
+### Documentation
+
+* add TSDoc comments interface-internal module ([#2949](https://github.com/libp2p/js-libp2p/issues/2949)) ([d222968](https://github.com/libp2p/js-libp2p/commit/d2229682c16e07ce67276127da9ee96fe5197c59))
+
+## [2.3.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.4...interface-internal-v2.3.0) (2025-02-10)
+
+
+### Features
+
+* allow overriding stream handlers ([#2945](https://github.com/libp2p/js-libp2p/issues/2945)) ([21088c5](https://github.com/libp2p/js-libp2p/commit/21088c5195df2c3c371fc28bb824f5f84760bf12)), closes [#2928](https://github.com/libp2p/js-libp2p/issues/2928)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.1 to ^2.5.0
+    * @libp2p/peer-collections bumped from ^6.0.16 to ^6.0.17
+
+## [2.2.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.3...interface-internal-v2.2.4) (2025-02-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.15 to ^6.0.16
+
+## [2.2.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.2...interface-internal-v2.2.3) (2025-02-03)
+
+
+### Bug Fixes
+
+* allow overriding mss mode ([#2924](https://github.com/libp2p/js-libp2p/issues/2924)) ([4bbcfa7](https://github.com/libp2p/js-libp2p/commit/4bbcfa707bba45a028429061ce44dec3dd7add34))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.4.0 to ^2.4.1
+    * @libp2p/peer-collections bumped from ^6.0.14 to ^6.0.15
+
+## [2.2.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.1...interface-internal-v2.2.2) (2025-01-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.3.0 to ^2.4.0
+    * @libp2p/peer-collections bumped from ^6.0.13 to ^6.0.14
+
+## [2.2.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.2.0...interface-internal-v2.2.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* auto-confirm relay addresses ([#2886](https://github.com/libp2p/js-libp2p/issues/2886)) ([5c4a79e](https://github.com/libp2p/js-libp2p/commit/5c4a79e5a6e8d0db1ef6464075841a0b9de507ef)), closes [#2883](https://github.com/libp2p/js-libp2p/issues/2883)
+
+## [2.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.1.1...interface-internal-v2.2.0) (2024-12-09)
+
+
+### Features
+
+* add getMaxConnections method to connection manager ([#2877](https://github.com/libp2p/js-libp2p/issues/2877)) ([1729fca](https://github.com/libp2p/js-libp2p/commit/1729fcaebc78307ff06783d5a2201ad83f92c109))
+* allow adding external ip/port mapping ([#2836](https://github.com/libp2p/js-libp2p/issues/2836)) ([6ddc1b8](https://github.com/libp2p/js-libp2p/commit/6ddc1b80ebe396afee58082865ae6cae2bb39fb1))
+
+
+### Bug Fixes
+
+* require confirmation of global unicast addresses ([#2876](https://github.com/libp2p/js-libp2p/issues/2876)) ([92cc740](https://github.com/libp2p/js-libp2p/commit/92cc740828963a4786ea83befe606dac4ba25e45))
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.1 to ^2.3.0
+    * @libp2p/peer-collections bumped from ^6.0.12 to ^6.0.13
+
+## [2.1.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.1.0...interface-internal-v2.1.1) (2024-11-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.2.0 to ^2.2.1
+    * @libp2p/peer-collections bumped from ^6.0.11 to ^6.0.12
+
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.10...interface-internal-v2.1.0) (2024-11-16)
+
+
+### Features
+
+* add dns mappings to address manager ([#2818](https://github.com/libp2p/js-libp2p/issues/2818)) ([7dcabb8](https://github.com/libp2p/js-libp2p/commit/7dcabb884c37dfba69e3ce427544ab05209d137b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.10 to ^6.0.11
+
+## [2.0.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.9...interface-internal-v2.0.10) (2024-10-28)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.1.3 to ^2.2.0
+    * @libp2p/peer-collections bumped from ^6.0.9 to ^6.0.10
+
+## [2.0.9](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.8...interface-internal-v2.0.9) (2024-10-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^6.0.8 to ^6.0.9
+
 ## [2.0.8](https://github.com/libp2p/js-libp2p/compare/interface-internal-v2.0.7...interface-internal-v2.0.8) (2024-10-09)
 
 

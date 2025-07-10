@@ -1,62 +1,41 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import Sinon from 'sinon'
-import { createConnection } from '../../src/connection/index.js'
-
-function defaultConnectionInit (): any {
-  return {
-    timeline: {
-      open: Date.now() - 10,
-      upgraded: Date.now()
-    },
-    direction: 'outbound',
-    encryption: '/secio/1.0.0',
-    multiplexer: '/mplex/6.7.0',
-    status: 'open',
-    newStream: Sinon.stub(),
-    close: Sinon.stub(),
-    abort: Sinon.stub(),
-    getStreams: Sinon.stub(),
-    logger: defaultLogger()
-  }
-}
+import { createConnection } from '../../src/connection.js'
+import { defaultConnectionComponents, defaultConnectionInit } from './utils.ts'
+import type { ConnectionComponents, ConnectionInit } from '../../src/connection.js'
 
 describe('connection', () => {
-  it('should not require local or remote addrs', async () => {
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+  let components: ConnectionComponents
+  let init: ConnectionInit
 
-    return createConnection({
-      remotePeer,
-      remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      ...defaultConnectionInit()
-    })
+  beforeEach(async () => {
+    components = defaultConnectionComponents()
+    init = await defaultConnectionInit()
+  })
+
+  it('should not require local or remote addrs', async () => {
+    const conn = createConnection(components, init)
+
+    expect(conn).to.be.ok()
   })
 
   it('should append remote peer id to address if not already present', async () => {
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const conn = createConnection(components, await defaultConnectionInit({
+      remoteAddr: multiaddr('/ip4/123.123.123.123/tcp/1234')
+    }))
 
-    const conn = createConnection({
-      remotePeer,
-      remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4002'),
-      ...defaultConnectionInit()
-    })
-
-    expect(conn.remoteAddr.getPeerId()).to.equal(remotePeer.toString())
+    expect(conn.remoteAddr.getComponents().filter(component => component.name === 'p2p')).to.have.lengthOf(1)
   })
 
   it('should not append remote peer id to address if present', async () => {
-    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remotePeer = peerIdFromString('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
 
-    const conn = createConnection({
+    const conn = createConnection(components, await defaultConnectionInit({
       remotePeer,
-      remoteAddr: multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${otherPeer}`),
-      ...defaultConnectionInit()
-    })
+      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
+    }))
 
-    expect(conn.remoteAddr.getPeerId()).to.equal(otherPeer.toString())
+    expect(conn.remoteAddr.getComponents().filter(component => component.name === 'p2p')).to.have.lengthOf(1)
   })
 })

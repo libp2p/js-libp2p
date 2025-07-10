@@ -2,7 +2,7 @@
 
 In order to prevent excessive resource consumption by a libp2p node it's important to understand limits are applied and how to tune them to the needs of your application.
 
-This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) attack mitgation - there is a more holistic discussion and general advice on that topic at [the main libp2p docs website](https://docs.libp2p.io/reference/dos-mitigation/).
+This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) attack mitigation - there is a more holistic discussion and general advice on that topic at [the main libp2p docs website](https://docs.libp2p.io/reference/dos-mitigation/).
 
 ## Table of contents <!-- omit in toc -->
 
@@ -19,7 +19,7 @@ This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_atta
 
 ## Connection limits
 
-It's possible to limit the total amount of connections a node is able to make (combining incoming and outgoing). When this limit is reached and an attempt to open a new connection is made, existing connections may be closed to make room for the new connection (see [Closing connections][#closing-connections]).
+It's possible to limit the total amount of connections a node is able to make (combining incoming and outgoing). When this limit is reached and an attempt to open a new connection is made, existing connections may be closed to make room for the new connection (see [Closing connections](#closing-connections)).
 
 - Note: there currently isn't a way to specify different limits for incoming vs. outgoing. Connection limits are applied across both incoming and outgoing connections combined. There is a backlog item for this [here](https://github.com/libp2p/js-libp2p/issues/1508).
 

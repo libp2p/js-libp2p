@@ -24,9 +24,10 @@ repo and examine the changes made.
 
 -->
 
-A connection encrypter that does no connection encryption.
+A connection encrypter that does no connection encryption and trusts the
+remote peer to provide the correct PeerId.
 
-This should not be used in production should be used for research purposes only.
+This should not be used in production and is for research purposes only.
 
 ## Example
 
@@ -50,7 +51,7 @@ $ npm i @libp2p/plaintext
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make it's exports available as `Libp2pPlaintext` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pPlaintext` in the global namespace.
 
 ```html
 <script src="https://unpkg.com/@libp2p/plaintext/dist/index.min.js"></script>

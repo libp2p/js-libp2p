@@ -1,11 +1,14 @@
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { Identify as IdentifyMessage } from '../../src/pb/message.js'
-import type { ComponentLogger, Libp2pEvents, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, Stream, PrivateKey } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId, PeerStore, Connection, Stream, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 export interface StubbedIdentifyComponents {
   peerId: PeerId
@@ -21,7 +24,8 @@ export interface StubbedIdentifyComponents {
 
 export function connectionStream (remotePeer: PeerId, protocol: string): { connection: StubbedInstance<Connection>, stream: StubbedInstance<Stream> } {
   const connection = stubInterface<Connection>({
-    remotePeer
+    remotePeer,
+    log: defaultLogger().forComponent('connection')
   })
   const stream = stubInterface<Stream>()
   connection.newStream.withArgs(protocol).resolves(stream)

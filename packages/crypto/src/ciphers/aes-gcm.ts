@@ -1,11 +1,13 @@
 import crypto from 'crypto'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { CreateOptions, AESCipher } from './interface.js'
+import type { CreateAESCipherOptions, AESCipher } from './interface.js'
+
+export type { AESCipher, CreateAESCipherOptions }
 
 // Based off of code from https://github.com/luke-park/SecureCompatibleEncryptionExamples
 
-export function create (opts?: CreateOptions): AESCipher {
+export function create (opts?: CreateAESCipherOptions): AESCipher {
   const algorithm = opts?.algorithm ?? 'aes-128-gcm'
   const keyLength = opts?.keyLength ?? 16
   const nonceLength = opts?.nonceLength ?? 12
@@ -32,7 +34,7 @@ export function create (opts?: CreateOptions): AESCipher {
    * will then be used to encrypt the data.
    */
   async function encrypt (data: Uint8Array, password: string | Uint8Array): Promise<Uint8Array> {
-    // Generate a 128-bit salt using a CSPRNG.
+    // Generate a 128-bit salt
     const salt = crypto.randomBytes(saltLength)
 
     if (typeof password === 'string') {

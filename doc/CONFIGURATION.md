@@ -17,10 +17,10 @@
     - [Customizing Peer Discovery](#customizing-peer-discovery)
     - [Customizing Pubsub](#customizing-pubsub)
     - [Customizing DHT](#customizing-dht)
-    - [Setup with Content and Peer Routing](#setup-with-content-and-peer-routing)
+    - [Setup with Delegated Content and Peer Routing](#setup-with-delegated-content-and-peer-routing)
     - [Setup with Relay](#setup-with-relay)
     - [Setup with Automatic Reservations](#setup-with-automatic-reservations)
-    - [Setup with Preconfigured Reservations](#setup-with-preconfigured-reservations)
+    - [Setup with Pre-configured Reservations](#setup-with-pre-configured-reservations)
     - [Setup with Keychain](#setup-with-keychain)
     - [Configuring Connection Manager](#configuring-connection-manager)
     - [Configuring Connection Gater](#configuring-connection-gater)
@@ -127,16 +127,12 @@ If you want to know more about libp2p connection encryption, you should read the
 
 Some available peer discovery modules are:
 
-- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns)
-- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap)
-- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
-- [@chainsafe/discv5](https://github.com/chainsafe/discv5)
+- [@libp2p/mdns](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns) ([spec](https://github.com/libp2p/specs/blob/master/discovery/mdns.md))
+- [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht) ([spec](https://github.com/libp2p/specs/blob/master/kad-dht/README.md))
+- [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) (typically used together with @libp2p/kad-dht)
+- [@chainsafe/discv5](https://github.com/chainsafe/discv5) ([spec](https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md))
 
 If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
-
-If you want to know more about libp2p peer discovery, you should read the following content:
-
-- https://github.com/libp2p/specs/blob/master/discovery/mdns.md
 
 ### Content Routing
 
@@ -145,14 +141,15 @@ If you want to know more about libp2p peer discovery, you should read the follow
 Some available content routing modules are:
 
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
+- [@helia/delegated-routing-v1-http-api-client](https://github.com/ipfs/helia-delegated-routing-v1-http-api)
 - [@libp2p/delegated-content-routing](https://github.com/libp2p/js-libp2p-delegated-content-routing)
-- [@libp2p/ipni-content-routing](https://github.com/libp2p/js-ipni-content-routing)
 
-If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/content-routing).
+> [!NOTE]
+> The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
+> For most purposes, `@helia/delegated-routing-v1-http-api-client` should be favoured over `@libp2p/delegated-content-routing` for delegated routing, as it is more broadly adopted by the ecosystem and doesn't rely on Kubo specific APIs.
 
-If you want to know more about libp2p content routing, you should read the following content:
+If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/content-routing/index.ts).
 
-- https://docs.libp2p.io/concepts/content-routing
 
 ### Peer Routing
 
@@ -161,19 +158,20 @@ If you want to know more about libp2p content routing, you should read the follo
 Some available peer routing modules are:
 
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
+- [@helia/delegated-routing-v1-http-api-client](https://github.com/ipfs/helia-delegated-routing-v1-http-api)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
+If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/peer-routing/index.ts).
 
-If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/peer-routing). **(WIP: This module is not yet implemented)**
+> [!NOTE]
+> The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
+> For most purposes, `@helia/delegated-routing-v1-http-api-client` should be favoured over `@libp2p/delegated-content-routing` for delegated routing, as it is more broadly adopted by the ecosystem and doesn't rely on Kubo specific APIs.
 
-If you want to know more about libp2p peer routing, you should read the following content:
-
-- https://docs.libp2p.io/concepts/peer-routing
 
 ### DHT
 
 > A DHT can provide content and peer routing capabilities in a p2p system, as well as peer discovery capabilities.
 
-The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia whitepaper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
+The DHT implementation currently available is [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht). This implementation is largely based on the Kademlia white paper, augmented with notions from S/Kademlia, Coral and mainlineDHT.
 
 If this DHT implementation does not fulfill your needs and you want to create or use your own implementation, please get in touch with us through a github issue. We plan to work on improving the ability to bring your own DHT in a future release.
 
@@ -219,7 +217,7 @@ const modules = {
 Moreover, the majority of the modules can be customized via option parameters. This way, it is also possible to provide this options through a `config` object. This config object should have the property name of each building block to configure, the same way as the modules specification.
 
 Besides the `modules` and `config`, libp2p allows other internal options and configurations:
-- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/js-ipfs-interfaces/tree/master/packages/interface-datastore) modules.
+- `datastore`: an instance of [ipfs/interface-datastore](https://github.com/ipfs/js-stores/tree/main/packages/interface-datastore) modules.
   - This is used in modules such as the DHT. If it is not provided, `js-libp2p` will use an in memory datastore.
 - `peerId`: the identity of the node, an instance of [libp2p/js-peer-id](https://github.com/libp2p/js-peer-id).
   - This is particularly useful if you want to reuse the same `peer-id`, as well as for modules like `libp2p-delegated-content-routing`, which need a `peer-id` in their instantiation.
@@ -266,7 +264,7 @@ const node = await createLibp2p({
   ],
   streamMuxers: [yamux()],
   connectionEncrypters: [noise()],
-  peerDiscovery: [MulticastDNS],
+  peerDiscovery: [mdns()],
   services: {
     dht: kadDHT(),
     pubsub: gossipsub()
@@ -292,16 +290,25 @@ const node = await createLibp2p({
     mdns({
       interval: 1000
     }),
-    bootstrap(
+    bootstrap({
       list: [ // A list of bootstrap peers to connect to starting up the node
         "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
         "/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
       ]
-    )
+    })
   ]
 })
+
+node.addEventListener('peer:discovery', (event) => {
+  console.log('Discovered new peer:', event.detail.id.toString())
+  node.dial(event.detail.multiaddrs)
+})
 ```
+
+Note the `bootstrap` peer discovery module will automatically dial the bootstrap peers when the node starts up, while `mdns` will only trigger the `peer:discovery` event when a new peer is discovered.
+
+
 
 #### Customizing Pubsub
 
@@ -314,7 +321,8 @@ Potential methods for discovering peers include:
 - [Distributed hash tables](#dht)
 - [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
 - [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
-- [Lists of bootstrap peers](https://github.com/libp2p/js-libp2p-bootstrap)
+- [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/bootstrappers.ts)
+
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
@@ -379,32 +387,14 @@ const node = await createLibp2p({
 })
 ```
 
-#### Setup with Content and Peer Routing
+#### Setup with Delegated Content and Peer Routing
 
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { DelegatedPeerRouting } from '@libp2p/delegated-peer-routing'
-import { DelegatedContentRouting} from '@libp2p/delegated-content-routing'
-
-// create a peerId
-const peerId = await PeerId.create()
-
-const delegatedPeerRouting = new DelegatedPeerRouting(ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
-
-const delegatedContentRouting = new DelegatedContentRouting(peerId, ipfsHttpClient.create({
-  host: 'node0.delegate.ipfs.io', // In production you should setup your own delegates
-  protocol: 'https',
-  port: 443
-}))
-
+import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 const node = await createLibp2p({
   transports: [
     tcp()
@@ -415,13 +405,9 @@ const node = await createLibp2p({
   connectionEncrypters: [
     noise()
   ],
-  contentRouting: [
-    delegatedContentRouting
-  ],
-  peerRouting: [
-    delegatedPeerRouting
-  ],
-  peerId
+  services: {
+    delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
+  }
 })
 ```
 
@@ -445,12 +431,15 @@ import { identify } from '@libp2p/identify'
 
 
 const node = await createLibp2p({
+  addresses: {
+    listen: {
+      // discover a relay using the routing
+      '/p2p-circuit'
+    }
+  },
   transports: [
     tcp(),
-    circuitRelayTransport({ // allows the current node to make and accept relayed connections
-      discoverRelays: 0, // how many network relays to find
-      reservationConcurrency: 1 // how many relays to attempt to reserve slots on at once
-    })
+    circuitRelayTransport()
   ],
   streamMuxers: [
     yamux()
@@ -499,11 +488,14 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
+  addresses: {
+    listen: [
+      '/p2p-circuit'
+    ]
+  },
   transports: [
     tcp(),
-    circuitRelayTransport({
-      discoverRelays: 1
-    })
+    circuitRelayTransport()
   ],
   streamMuxers: [
     yamux()
@@ -514,7 +506,7 @@ const node = await createLibp2p({
 })
 ```
 
-#### Setup with Preconfigured Reservations
+#### Setup with Pre-configured Reservations
 
 In this configuration the libp2p node is a circuit relay client which connects to a relay, `/ip4/123.123.123.123/p2p/QmRelay` which has been configured to have slots available.
 
@@ -576,7 +568,7 @@ const node = await createLibp2p({
     noise()
   ],
   keychain: {
-    pass: 'notsafepassword123456789',
+    pass: 'not-safe-password-123456789',
   },
   datastore
 })
@@ -653,7 +645,7 @@ const node = await createLibp2p({
      * multiaddr for the given peer.
      *
      * This is called by the dialer.connectToPeer implementation after it has
-     * resolved the peer's addrs, and prior to dialling each.
+     * resolved the peer's addresses, and prior to dialling each.
      *
      * Return true to prevent dialing the passed peer on the passed multiaddr.
      */
@@ -808,7 +800,7 @@ const node = await createLibp2p({
 
 PeerStore persistence is disabled in libp2p by default. You can enable and configure it as follows. Aside from enabled being `false` by default, it will need an implementation of a [datastore](https://github.com/ipfs/interface-datastore). Take into consideration that using the memory datastore will be ineffective for persistence.
 
-The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with unflushed records when the window is closed.
+The threshold number represents the maximum number of "dirty peers" allowed in the PeerStore, i.e. peers that are not updated in the datastore. In this context, browser nodes should use a threshold of 1, since they might not "stop" properly in several scenarios and the PeerStore might end up with un-flushed records when the window is closed.
 
 | Name        | Type      | Description                    |
 | ----------- | --------- | ------------------------------ |
@@ -993,8 +985,8 @@ protocols: [
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-- [libp2p-ipfs-nodejs](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.js) - libp2p configuration used by js-ipfs when running in Node.js
-- [libp2p-ipfs-browser](https://github.com/ipfs/js-ipfs/blob/master/packages/ipfs-core-config/src/libp2p.browser.js) - libp2p configuration used by js-ipfs when running in a Browser (that supports WebRTC)
+- [libp2p-Helia-nodejs](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.ts) - libp2p configuration used by Helia when running in Node.js
+- [libp2p-Helia-browser](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.browser.ts) - libp2p configuration used by Helia when running in a Browser
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 

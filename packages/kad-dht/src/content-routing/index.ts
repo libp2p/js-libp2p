@@ -1,7 +1,6 @@
 import { PeerSet } from '@libp2p/peer-collections'
-import map from 'it-map'
-import parallel from 'it-parallel'
-import { pipe } from 'it-pipe'
+import { Queue } from '@libp2p/utils/queue'
+import { pushable } from 'it-pushable'
 import { ALPHA } from '../constants.js'
 import { MessageType } from '../message/dht.js'
 import { toPbPeerInfo } from '../message/utils.js'
@@ -10,7 +9,7 @@ import {
   peerResponseEvent,
   providerEvent
 } from '../query/events.js'
-import type { KadDHTComponents, PeerResponseEvent, ProviderEvent, QueryEvent } from '../index.js'
+import type { FinalPeerEvent, KadDHTComponents, PeerResponseEvent, ProviderEvent, QueryEvent } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
@@ -50,6 +49,29 @@ export class ContentRouting {
     this.queryManager = queryManager
     this.routingTable = routingTable
     this.providers = providers
+
+    this.findProviders = components.metrics?.traceFunction('libp2p.kadDHT.findProviders', this.findProviders.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: (event, attrs: { providers?: string[] }) => {
+        if (event.name === 'PROVIDER') {
+          attrs.providers ??= []
+          attrs.providers.push(...event.providers.map(info => info.id.toString()))
+        }
+
+        return attrs
+      }
+    }) ?? this.findProviders
+    this.provide = components.metrics?.traceFunction('libp2p.kadDHT.provide', this.provide.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: (event, attrs: { providers?: string[] }) => {
+        if (event.name === 'PEER_RESPONSE' && event.messageName === 'ADD_PROVIDER') {
+          attrs.providers ??= []
+          attrs.providers.push(event.from.toString())
+        }
+
+        return attrs
+      }
+    }) ?? this.provide
   }
 
   /**
@@ -61,7 +83,7 @@ export class ContentRouting {
     const target = key.multihash.bytes
 
     // Add peer as provider
-    await this.providers.addProvider(key, this.components.peerId)
+    await this.providers.addProvider(key, this.components.peerId, options)
 
     const msg: Partial<Message> = {
       type: MessageType.ADD_PROVIDER,
@@ -75,51 +97,76 @@ export class ContentRouting {
     }
 
     let sent = 0
+    const self = this
 
-    const maybeNotifyPeer = (event: QueryEvent) => {
-      return async () => {
-        if (event.name !== 'FINAL_PEER') {
-          return [event]
-        }
+    async function * publishProviderRecord (event: FinalPeerEvent): AsyncGenerator<QueryEvent, void, undefined> {
+      try {
+        self.log('sending provider record for %s to %p', key, event.peer.id)
 
-        const events = []
-
-        this.log('putProvider %s to %p', key, event.peer.id)
-
-        try {
-          this.log('sending provider record for %s to %p', key, event.peer.id)
-
-          for await (const sendEvent of this.network.sendMessage(event.peer.id, msg, options)) {
-            if (sendEvent.name === 'PEER_RESPONSE') {
-              this.log('sent provider record for %s to %p', key, event.peer.id)
-              sent++
-            }
-
-            events.push(sendEvent)
+        for await (const addProviderEvent of self.network.sendMessage(event.peer.id, msg, {
+          ...options,
+          path: event.path
+        })) {
+          if (addProviderEvent.name === 'PEER_RESPONSE') {
+            self.log('sent provider record for %s to %p', key, event.peer.id)
+            sent++
           }
-        } catch (err: any) {
-          this.log.error('error sending provide record to peer %p', event.peer.id, err)
-          events.push(queryErrorEvent({ from: event.peer.id, error: err }, options))
-        }
 
-        return events
+          yield addProviderEvent
+        }
+      } catch (err: any) {
+        self.log.error('error sending provide record to peer %p', event.peer.id, err)
+        yield queryErrorEvent({
+          from: event.peer.id,
+          error: err,
+          path: event.path
+        }, options)
       }
     }
 
-    // Notify closest peers
-    yield * pipe(
-      this.peerRouting.getClosestPeers(target, options),
-      (source) => map(source, (event) => maybeNotifyPeer(event)),
-      (source) => parallel(source, {
-        ordered: false,
-        concurrency: ALPHA
-      }),
-      async function * (source) {
-        for await (const events of source) {
-          yield * events
+    const events = pushable<QueryEvent>({
+      objectMode: true
+    })
+
+    const queue = new Queue({
+      concurrency: ALPHA
+    })
+    queue.addEventListener('idle', () => {
+      events.end()
+    })
+    queue.addEventListener('error', (err) => {
+      this.log.error('error publishing provider record to peer - %e', err)
+    })
+
+    queue.add(async () => {
+      const finalPeerEvents: FinalPeerEvent[] = []
+
+      for await (const event of this.peerRouting.getClosestPeers(target, options)) {
+        events.push(event)
+
+        if (event.name !== 'FINAL_PEER') {
+          continue
         }
+
+        finalPeerEvents.push(event)
       }
-    )
+
+      finalPeerEvents.forEach(event => {
+        queue.add(async () => {
+          for await (const notifyEvent of publishProviderRecord(event)) {
+            events.push(notifyEvent)
+          }
+        })
+          .catch(err => {
+            this.log.error('error publishing provider record to peer - %e', err)
+          })
+      })
+    })
+      .catch(err => {
+        events.end(err)
+      })
+
+    yield * events
 
     this.log('sent provider records to %d peers', sent)
   }
@@ -131,11 +178,11 @@ export class ContentRouting {
     const toFind = this.routingTable.kBucketSize
     let found = 0
     const target = key.multihash.bytes
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+    const self = this
 
     this.log('findProviders %c', key)
 
-    const provs = await this.providers.getProviders(key)
+    const provs = await this.providers.getProviders(key, options)
 
     // yield values if we have some, also slice because maybe we got lucky and already have too many?
     if (provs.length > 0) {
@@ -143,7 +190,7 @@ export class ContentRouting {
 
       for (const peerId of provs.slice(0, toFind)) {
         try {
-          const peer = await this.components.peerStore.get(peerId)
+          const peer = await this.components.peerStore.get(peerId, options)
 
           providers.push({
             id: peerId,
@@ -158,8 +205,27 @@ export class ContentRouting {
         }
       }
 
-      yield peerResponseEvent({ from: this.components.peerId, messageType: MessageType.GET_PROVIDERS, providers }, options)
-      yield providerEvent({ from: this.components.peerId, providers }, options)
+      yield peerResponseEvent({
+        from: this.components.peerId,
+        messageType: MessageType.GET_PROVIDERS,
+        providers,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options)
+      yield providerEvent({
+        from: this.components.peerId,
+        providers,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options)
 
       found += providers.length
 
@@ -171,15 +237,16 @@ export class ContentRouting {
     /**
      * The query function to use on this particular disjoint path
      */
-    const findProvidersQuery: QueryFunc = async function * ({ peer, signal }) {
+    const findProvidersQuery: QueryFunc = async function * ({ peer, signal, path }) {
       const request = {
         type: MessageType.GET_PROVIDERS,
         key: target
       }
 
-      yield * self.network.sendRequest(peer, request, {
+      yield * self.network.sendRequest(peer.id, request, {
         ...options,
-        signal
+        signal,
+        path
       })
     }
 
@@ -203,7 +270,11 @@ export class ContentRouting {
         }
 
         if (newProviders.length > 0) {
-          yield providerEvent({ from: event.from, providers: newProviders }, options)
+          yield providerEvent({
+            from: event.from,
+            providers: newProviders,
+            path: event.path
+          }, options)
 
           found += newProviders.length
 

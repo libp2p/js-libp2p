@@ -3,10 +3,6 @@
   "containerImageID": "firefox-js-libp2p-head",
   "transports": [
     {
-      "name": "webtransport",
-      "onlyDial": true
-    },
-    {
       "name": "webrtc-direct",
       "onlyDial": true
     },
@@ -17,5 +13,5 @@
     }
   ],
   "secureChannels": ["noise"],
-  "muxers": ["mplex", "yamux"]
+  "muxers": ["yamux", "mplex"]
 }
