@@ -101,6 +101,8 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
 
   /**
    * A job has failed
+   *
+   * @deprecated Listen for the 'failure' event instead - it gives more context and is generally more useful, this event will be removed in a future release
    */
   error: CustomEvent<Error>
 
