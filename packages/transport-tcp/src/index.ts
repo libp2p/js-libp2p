@@ -62,7 +62,7 @@ export interface TCPOptions {
   /**
    * When closing a socket, wait this long for it to close gracefully before it is closed more forcibly
    */
-  socketCloseTimeout?: number
+  closeTimeout?: number
 
   /**
    * Set this property to reject connections when the server's connection count gets high.

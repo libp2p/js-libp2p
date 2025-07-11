@@ -82,13 +82,13 @@ export class TCP implements Transport<TCPDialEvents> {
     let maConn: MultiaddrConnection
 
     try {
-      maConn = toMultiaddrConnection(socket, {
-        remoteAddr: ma,
-        socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
-        socketCloseTimeout: this.opts.socketCloseTimeout,
+      maConn = toMultiaddrConnection(this.components, {
+        socket,
+        inactivityTimeout: this.opts.outboundSocketInactivityTimeout,
+        closeTimeout: this.opts.closeTimeout,
         metrics: this.metrics?.events,
-        logger: this.components.logger,
-        direction: 'outbound'
+        direction: 'outbound',
+        remoteAddr: ma
       })
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_to_connection: true })
@@ -192,8 +192,8 @@ export class TCP implements Transport<TCPDialEvents> {
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
       closeServerOnMaxConnections: this.opts.closeServerOnMaxConnections,
-      socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
-      socketCloseTimeout: this.opts.socketCloseTimeout,
+      inactivityTimeout: this.opts.inboundSocketInactivityTimeout,
+      closeTimeout: this.opts.closeTimeout,
       metrics: this.components.metrics,
       logger: this.components.logger
     })

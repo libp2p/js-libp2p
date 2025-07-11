@@ -1,8 +1,8 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { raceEvent } from 'race-event'
 import { WebRTCTransportError } from '../../error.js'
-import { WebRTCMultiaddrConnection } from '../../maconn.js'
 import { DataChannelMuxerFactory } from '../../muxer.js'
+import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
 import { createStream } from '../../stream.js'
 import { isFirefox } from '../../util.js'
 import { generateNoisePrologue } from './generate-noise-prologue.js'
@@ -123,13 +123,12 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
-    const maConn = new WebRTCMultiaddrConnection(options, {
+    const maConn = toMultiaddrConnection(options, {
       peerConnection,
       remoteAddr: options.remoteAddr,
-      timeline: {
-        open: Date.now()
-      },
-      metrics: options.events
+      metrics: options.events,
+      name: 'webrtc-direct',
+      direction: options.role === 'client' ? 'outbound' : 'inbound'
     })
 
     peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {

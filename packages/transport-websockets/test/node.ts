@@ -13,10 +13,18 @@ import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { setGlobalDispatcher, Agent } from 'undici'
 import * as filters from '../src/filters.js'
 import { webSockets } from '../src/index.js'
 import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
+
+// allow connecting to self-signed certificates
+setGlobalDispatcher(new Agent({
+  connect: {
+    rejectUnauthorized: false
+  }
+}))
 
 describe('instantiate the transport', () => {
   it('create', () => {
@@ -357,9 +365,6 @@ describe('dial', () => {
 
     beforeEach(async () => {
       ws = webSockets({
-        websocket: {
-          rejectUnauthorized: false
-        },
         https: {
           cert: fs.readFileSync('./test/fixtures/certificate.pem'),
           key: fs.readFileSync('./test/fixtures/key.pem')
@@ -657,11 +662,7 @@ describe('auto-tls (IPv4)', () => {
       }
     })
 
-    ws = webSockets({
-      websocket: {
-        rejectUnauthorized: false
-      }
-    })({
+    ws = webSockets()({
       events,
       logger: defaultLogger()
     })
@@ -723,11 +724,7 @@ describe('auto-tls (IPv6)', () => {
       }
     })
 
-    ws = webSockets({
-      websocket: {
-        rejectUnauthorized: false
-      }
-    })({
+    ws = webSockets()({
       events,
       logger: defaultLogger()
     })
