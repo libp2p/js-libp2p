@@ -5,7 +5,7 @@ import all from 'it-all'
 import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { createMaConnPair } from './utils/index.js'
+import { mockMultiaddrConnPair } from '../mocks/multiaddr-connection.ts'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 
@@ -47,7 +47,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('it wraps the provided duplex connection', async () => {
-      const [localConn, remoteConn] = createMaConnPair()
+      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
 
       const [
         inboundResult,
@@ -79,7 +79,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('should return the remote peer id', async () => {
-      const [localConn, remoteConn] = createMaConnPair()
+      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
 
       const [
         inboundResult,
@@ -98,7 +98,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('inbound connections should verify peer integrity if known', async () => {
-      const [localConn, remoteConn] = createMaConnPair()
+      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
 
       await Promise.all([
         cryptoRemote.secureInbound(localConn, {

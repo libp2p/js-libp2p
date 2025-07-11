@@ -4,15 +4,15 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface ConnectionTimeline {
+export interface MultiaddrConnectionTimeline {
   /**
    * When the connection was opened
    */
   open: number
 
   /**
-   * When the MultiaddrConnection was upgraded to a Connection - e.g. the type
-   * of connection encryption and multiplexing was negotiated.
+   * When the MultiaddrConnection was upgraded to a Connection - the type of
+   * connection encryption and multiplexing was negotiated.
    */
   upgraded?: number
 
@@ -20,12 +20,190 @@ export interface ConnectionTimeline {
    * When the connection was closed.
    */
   close?: number
+
+  /**
+   * When the connection was aborted
+   */
+  abort?: number
 }
+
+/**
+ * The status of the connection
+ */
+export type MultiaddrConnectionStatus = StreamStatus
+export type ConnectionStatus = StreamStatus
 
 /**
  * Outbound connections are opened by the local node, inbound streams are opened by the remote
  */
 export type Direction = 'inbound' | 'outbound'
+
+/**
+ * A MultiaddrConnection is returned by transports after dialing a peer. It is a
+ * low-level primitive and is the raw connection without encryption or stream
+ * multiplexing.
+ */
+export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+  /**
+   * Gracefully close the connection. All queued data will be written to the
+   * underlying transport.
+   */
+  close(options?: AbortOptions): Promise<void>
+
+  /**
+   * Immediately close the connection, any queued data will be discarded
+   */
+  abort(err: Error): void
+
+  /**
+   * The address of the remote end of the connection
+   */
+  remoteAddr: Multiaddr
+
+  /**
+   * When connection life cycle events occurred
+   */
+  timeline: MultiaddrConnectionTimeline
+
+  /**
+   * The multiaddr connection logger
+   */
+  log: Logger
+
+  /**
+   * The current status of the connection
+   */
+  status: MultiaddrConnectionStatus
+
+  /**
+   * Whether this connection is inbound or outbound
+   */
+  direction: Direction
+}
+
+export type ConnectionTimeline = MultiaddrConnectionTimeline
+
+/**
+ * Connection limits are present on connections that are only allowed to
+ * transfer a certain amount of bytes or be open for a certain number
+ * of seconds.
+ *
+ * These limits are applied by Circuit Relay v2 servers, for example and
+ * the connection will normally be closed abruptly if the limits are
+ * exceeded.
+ */
+export interface ConnectionLimits {
+  /**
+   * If present this is the number of bytes remaining that may be
+   * transferred over this connection
+   */
+  bytes?: bigint
+
+  /**
+   * If present this is the number of seconds that this connection will
+   * remain open for
+   */
+  seconds?: number
+}
+
+/**
+ * A Connection is a high-level representation of a connection
+ * to a remote peer that may have been secured by encryption and
+ * multiplexed, depending on the configuration of the nodes
+ * between which the connection is made.
+ */
+export interface Connection {
+  /**
+   * The unique identifier for this connection
+   */
+  id: string
+
+  /**
+   * The address of the remote end of the connection
+   */
+  remoteAddr: Multiaddr
+
+  /**
+   * The id of the peer at the remote end of the connection
+   */
+  remotePeer: PeerId
+
+  /**
+   * A list of tags applied to this connection
+   */
+  tags: string[]
+
+  /**
+   * A list of open streams on this connection
+   */
+  streams: Stream[]
+
+  /**
+   * Outbound connections are opened by the local node, inbound streams are opened by the remote
+   */
+  direction: Direction
+
+  /**
+   * Lifecycle times for the connection
+   */
+  timeline: ConnectionTimeline
+
+  /**
+   * The multiplexer negotiated for this connection
+   */
+  multiplexer?: string
+
+  /**
+   * The encryption protocol negotiated for this connection
+   */
+  encryption?: string
+
+  /**
+   * The current status of the connection
+   */
+  status: ConnectionStatus
+
+  /**
+   * If present, this connection has limits applied to it, perhaps by an
+   * intermediate relay. Once the limits have been reached the connection will
+   * be closed by the relay.
+   */
+  limits?: ConnectionLimits
+
+  /**
+   * The time in milliseconds it takes to make a round trip to the remote peer.
+   *
+   * This is updated periodically by the connection monitor.
+   */
+  rtt?: number
+
+  /**
+   * Create a new stream on this connection and negotiate one of the passed protocols
+   */
+  newStream(protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
+
+  /**
+   * Gracefully close the connection. All queued data will be written to the
+   * underlying transport.
+   */
+  close(options?: AbortOptions): Promise<void>
+
+  /**
+   * Immediately close the connection, any queued data will be discarded
+   */
+  abort(err: Error): void
+
+  /**
+   * The connection logger
+   */
+  log: Logger
+}
+
+export const connectionSymbol = Symbol.for('@libp2p/connection')
+
+export function isConnection (other: any): other is Connection {
+  return other != null && Boolean(other[connectionSymbol])
+}
 
 export interface StreamTimeline {
   /**
@@ -224,130 +402,6 @@ export interface NewStreamOptions extends AbortOptions {
   negotiateFully?: boolean
 }
 
-export type ConnectionStatus = 'open' | 'closing' | 'closed'
-
-/**
- * Connection limits are present on connections that are only allowed to
- * transfer a certain amount of bytes or be open for a certain number
- * of seconds.
- *
- * These limits are applied by Circuit Relay v2 servers, for example and
- * the connection will normally be closed abruptly if the limits are
- * exceeded.
- */
-export interface ConnectionLimits {
-  /**
-   * If present this is the number of bytes remaining that may be
-   * transferred over this connection
-   */
-  bytes?: bigint
-
-  /**
-   * If present this is the number of seconds that this connection will
-   * remain open for
-   */
-  seconds?: number
-}
-
-/**
- * A Connection is a high-level representation of a connection
- * to a remote peer that may have been secured by encryption and
- * multiplexed, depending on the configuration of the nodes
- * between which the connection is made.
- */
-export interface Connection {
-  /**
-   * The unique identifier for this connection
-   */
-  id: string
-
-  /**
-   * The address of the remote end of the connection
-   */
-  remoteAddr: Multiaddr
-
-  /**
-   * The id of the peer at the remote end of the connection
-   */
-  remotePeer: PeerId
-
-  /**
-   * A list of tags applied to this connection
-   */
-  tags: string[]
-
-  /**
-   * A list of open streams on this connection
-   */
-  streams: Stream[]
-
-  /**
-   * Outbound connections are opened by the local node, inbound streams are opened by the remote
-   */
-  direction: Direction
-
-  /**
-   * Lifecycle times for the connection
-   */
-  timeline: ConnectionTimeline
-
-  /**
-   * The multiplexer negotiated for this connection
-   */
-  multiplexer?: string
-
-  /**
-   * The encryption protocol negotiated for this connection
-   */
-  encryption?: string
-
-  /**
-   * The current status of the connection
-   */
-  status: ConnectionStatus
-
-  /**
-   * If present, this connection has limits applied to it, perhaps by an
-   * intermediate relay. Once the limits have been reached the connection will
-   * be closed by the relay.
-   */
-  limits?: ConnectionLimits
-
-  /**
-   * The time in milliseconds it takes to make a round trip to the remote peer.
-   *
-   * This is updated periodically by the connection monitor.
-   */
-  rtt?: number
-
-  /**
-   * Create a new stream on this connection and negotiate one of the passed protocols
-   */
-  newStream(protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
-
-  /**
-   * Gracefully close the connection. All queued data will be written to the
-   * underlying transport.
-   */
-  close(options?: AbortOptions): Promise<void>
-
-  /**
-   * Immediately close the connection, any queued data will be discarded
-   */
-  abort(err: Error): void
-
-  /**
-   * The connection logger
-   */
-  log: Logger
-}
-
-export const connectionSymbol = Symbol.for('@libp2p/connection')
-
-export function isConnection (other: any): other is Connection {
-  return other != null && Boolean(other[connectionSymbol])
-}
-
 export interface ConnectionProtector {
   /**
    * Takes a given Connection and creates a private encryption stream
@@ -355,55 +409,4 @@ export interface ConnectionProtector {
    * created with.
    */
   protect(connection: MultiaddrConnection, options?: AbortOptions): Promise<MultiaddrConnection>
-}
-
-export interface MultiaddrConnectionTimeline {
-  /**
-   * When the connection was opened
-   */
-  open: number
-
-  /**
-   * When the MultiaddrConnection was upgraded to a Connection - the type of
-   * connection encryption and multiplexing was negotiated.
-   */
-  upgraded?: number
-
-  /**
-   * When the connection was closed.
-   */
-  close?: number
-}
-
-/**
- * A MultiaddrConnection is returned by transports after dialing
- * a peer. It is a low-level primitive and is the raw connection
- * without encryption or stream multiplexing.
- */
-export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  /**
-   * Gracefully close the connection. All queued data will be written to the
-   * underlying transport.
-   */
-  close(options?: AbortOptions): Promise<void>
-
-  /**
-   * Immediately close the connection, any queued data will be discarded
-   */
-  abort(err: Error): void
-
-  /**
-   * The address of the remote end of the connection
-   */
-  remoteAddr: Multiaddr
-
-  /**
-   * When connection life cycle events occurred
-   */
-  timeline: MultiaddrConnectionTimeline
-
-  /**
-   * The multiaddr connection logger
-   */
-  log: Logger
 }

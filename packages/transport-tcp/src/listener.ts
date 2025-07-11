@@ -13,8 +13,8 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
-  socketInactivityTimeout?: number
-  socketCloseTimeout?: number
+  inactivityTimeout?: number
+  closeTimeout?: number
   maxConnections?: number
   backlog?: number
   metrics?: Metrics
@@ -161,14 +161,14 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     let maConn: MultiaddrConnection
     try {
-      maConn = toMultiaddrConnection(socket, {
-        listeningAddr: this.status.listeningAddr,
-        socketInactivityTimeout: this.context.socketInactivityTimeout,
-        socketCloseTimeout: this.context.socketCloseTimeout,
+      maConn = toMultiaddrConnection(this.context, {
+        socket,
+        inactivityTimeout: this.context.inactivityTimeout,
+        closeTimeout: this.context.closeTimeout,
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
-        logger: this.context.logger,
-        direction: 'inbound'
+        direction: 'inbound',
+        localAddr: this.status.listeningAddr
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)

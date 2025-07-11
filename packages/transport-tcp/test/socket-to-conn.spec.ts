@@ -1,9 +1,11 @@
 import { createServer, Socket } from 'net'
 import { defaultLogger } from '@libp2p/logger'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import defer from 'p-defer'
 import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
+import type { TCPSocketMultiaddrConnectionComponents } from '../src/socket-to-conn.js'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'net'
 
 async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
@@ -43,9 +45,16 @@ async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOp
 }
 
 describe('socket-to-conn', () => {
+  let components: TCPSocketMultiaddrConnectionComponents
   let server: Server
   let clientSocket: Socket
   let serverSocket: Socket
+
+  beforeEach(() => {
+    components = {
+      logger: defaultLogger()
+    }
+  })
 
   afterEach(async () => {
     if (serverSocket != null) {
@@ -76,10 +85,11 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket errors
     const serverErrored = defer<Error>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      remoteAddr: multiaddr('/ip4/123.123.123.123/tcp/1234')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -124,9 +134,9 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket errors
     const serverErrored = defer<any>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -178,9 +188,9 @@ describe('socket-to-conn', () => {
     // promise that is resolved when the incoming socket is closed
     const clientClosed = defer<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -225,9 +235,9 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -261,10 +271,10 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 10,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      closeTimeout: 10,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -306,12 +316,12 @@ describe('socket-to-conn', () => {
 
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
-    const socketCloseTimeout = 10
+    const closeTimeout = 10
 
-    const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: proxyServerSocket,
+      inactivityTimeout: 100,
+      closeTimeout,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -327,7 +337,7 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    const signal = AbortSignal.timeout(socketCloseTimeout)
+    const signal = AbortSignal.timeout(closeTimeout)
     const addEventListenerSpy = Sinon.spy(signal, 'addEventListener')
 
     // the 2nd and 3rd call should return immediately
@@ -360,10 +370,10 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 10,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      closeTimeout: 10,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -401,10 +411,10 @@ describe('socket-to-conn', () => {
     // promise that is resolved when our outgoing socket is closed
     const serverClosed = defer<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 500,
-      socketCloseTimeout: 100,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 500,
+      closeTimeout: 100,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
@@ -447,10 +457,10 @@ describe('socket-to-conn', () => {
 
     const clientError = defer<any>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 100,
-      logger: defaultLogger(),
+    const inboundMaConn = toMultiaddrConnection(components, {
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      closeTimeout: 100,
       direction: 'inbound'
     })
     expect(inboundMaConn.timeline.open).to.be.ok()

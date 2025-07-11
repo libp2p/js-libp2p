@@ -5,14 +5,13 @@ import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
-import duplex from 'it-ws/duplex'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import * as ws from 'ws'
-import { socketToMaConn } from './socket-to-conn.js'
+import { toWebSocket } from './utils.ts'
+import { socketToMaConn } from './websocket-to-conn.js'
 import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { DuplexWebSocket } from 'it-ws/duplex'
 import type { TypedEventTarget } from 'main-event'
 import type { EventEmitter } from 'node:events'
 import type { Server } from 'node:http'
@@ -40,8 +39,8 @@ export interface WebSocketListenerMetrics {
 }
 
 export class WebSocketListener extends TypedEventEmitter<ListenerEvents> implements Listener {
+  private components: WebSocketListenerComponents
   private readonly log: Logger
-  private readonly logger: ComponentLogger
   private readonly server: net.Server
   private readonly wsServer: ws.WebSocketServer
   private readonly metrics: WebSocketListenerMetrics
@@ -58,8 +57,8 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
 
+    this.components = components
     this.log = components.logger.forComponent('libp2p:websockets:listener')
-    this.logger = components.logger
     this.upgrader = init.upgrader
     this.httpOptions = init.http
     this.httpsOptions = init.https ?? init.http
@@ -189,22 +188,15 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       return
     }
 
-    const stream: DuplexWebSocket = {
-      ...duplex(socket, {
-        remoteAddress: req.socket.remoteAddress ?? '0.0.0.0',
-        remotePort: req.socket.remotePort ?? 0
-      }),
-      localAddress: addr.address,
-      localPort: addr.port
-    }
-
     let maConn: MultiaddrConnection
 
     try {
-      maConn = socketToMaConn(stream, toMultiaddr(stream.remoteAddress ?? '', stream.remotePort ?? 0), {
-        logger: this.logger,
+      maConn = socketToMaConn(this.components, {
+        websocket: toWebSocket(socket),
+        remoteAddr: toMultiaddr(req.socket.remoteAddress ?? '0.0.0.0', req.socket.remotePort ?? 0),
         metrics: this.metrics?.events,
-        metricPrefix: `${this.addr} `
+        metricPrefix: `${this.addr} `,
+        direction: 'inbound'
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)

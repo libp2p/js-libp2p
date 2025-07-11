@@ -4,7 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubObject } from 'sinon-ts'
-import { WebRTCMultiaddrConnection } from '../src/maconn.js'
+import { toMultiaddrConnection } from '../src/rtcpeerconnection-to-conn.ts'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import type { CounterGroup } from '@libp2p/interface'
 
@@ -17,15 +17,14 @@ describe('Multiaddr Connection', () => {
       increment: () => {},
       reset: () => {}
     })
-    const maConn = new WebRTCMultiaddrConnection({
+    const maConn = toMultiaddrConnection({
       logger: defaultLogger()
     }, {
       peerConnection,
       remoteAddr,
-      timeline: {
-        open: (new Date()).getTime()
-      },
-      metrics
+      metrics,
+      name: 'webrtc',
+      direction: 'outbound'
     })
 
     expect(maConn.timeline.close).to.be.undefined
