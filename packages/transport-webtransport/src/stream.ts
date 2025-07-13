@@ -29,7 +29,7 @@ class WebTransportStream extends AbstractStream {
           }
 
           if (result.value != null) {
-            this.sourcePush(new Uint8ArrayList(result.value))
+            this.sourcePush(result.value)
           }
         }
       })

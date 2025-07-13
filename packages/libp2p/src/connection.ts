@@ -87,8 +87,8 @@ export class Connection implements ConnectionInterface {
 
       // Pipe all data through the muxer
       void Promise.all([
-        this.muxer.sink(this.maConn.source),
-        this.maConn.sink(this.muxer.source)
+        this.muxer.sink(init.maConn.source),
+        init.maConn.sink(this.muxer.source)
       ]).catch(err => {
         this.log.error('error piping data through muxer - %e', err)
       })
@@ -333,8 +333,6 @@ export class Connection implements ConnectionInterface {
       return
     }
 
-    this.log.error('aborting connection to %a due to error', this.remoteAddr, err)
-
     this.status = 'closing'
 
     // ensure remaining streams are aborted
@@ -344,7 +342,6 @@ export class Connection implements ConnectionInterface {
     this.maConn.abort(err)
 
     this.status = 'closed'
-    this.timeline.close = Date.now()
   }
 }
 
