@@ -165,10 +165,7 @@ describe('peer queue', () => {
       peerId: peerIdA
     }).catch(() => {})
 
-    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure', AbortSignal.timeout(10_000), {
-      // TODO: remove this option when queues no longer emit an error event
-      errorEvent: 'ignore'
-    })
+    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure', AbortSignal.timeout(10_000))
 
     expect(event.detail.job.options.peerId).to.equal(peerIdA)
     expect(event.detail.error).to.equal(err)
