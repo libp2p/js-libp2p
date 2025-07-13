@@ -101,6 +101,8 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
 
   /**
    * A job has failed
+   *
+   * @deprecated Listen for the 'failure' event instead - it gives more context and is generally more useful, this event will be removed in a future release
    */
   error: CustomEvent<Error>
 
@@ -263,7 +265,6 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
           }
         }
 
-        this.safeDispatchEvent('error', { detail: err })
         this.safeDispatchEvent('failure', { detail: { job, error: err } })
 
         throw err
@@ -395,8 +396,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       }
     }
 
-    const onQueueError = (evt: CustomEvent<Error>): void => {
-      cleanup(evt.detail)
+    const onQueueFailure = (evt: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>): void => {
+      cleanup(evt.detail.error)
     }
 
     const onQueueIdle = (): void => {
@@ -410,7 +411,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     // add listeners
     this.addEventListener('completed', onQueueJobComplete)
-    this.addEventListener('error', onQueueError)
+    this.addEventListener('failure', onQueueFailure)
     this.addEventListener('idle', onQueueIdle)
     options?.signal?.addEventListener('abort', onSignalAbort)
 
@@ -419,7 +420,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     } finally {
       // remove listeners
       this.removeEventListener('completed', onQueueJobComplete)
-      this.removeEventListener('error', onQueueError)
+      this.removeEventListener('failure', onQueueFailure)
       this.removeEventListener('idle', onQueueIdle)
       options?.signal?.removeEventListener('abort', onSignalAbort)
 

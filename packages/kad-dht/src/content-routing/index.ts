@@ -134,8 +134,8 @@ export class ContentRouting {
     queue.addEventListener('idle', () => {
       events.end()
     })
-    queue.addEventListener('error', (err) => {
-      this.log.error('error publishing provider record to peer - %e', err)
+    queue.addEventListener('failure', (event) => {
+      this.log.error('error publishing provider record to peer - %e', event.detail.error)
     })
 
     queue.add(async () => {
