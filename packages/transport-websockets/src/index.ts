@@ -139,37 +139,83 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     const cOpts = ma.toOptions()
     this.log('dialing %s:%s', cOpts.host, cOpts.port)
 
-    const errorPromise = pDefer()
-    const rawSocket = connect(toUri(ma), this.init)
-    rawSocket.socket.addEventListener('error', () => {
-      // the WebSocket.ErrorEvent type doesn't actually give us any useful
-      // information about what happened
-      // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
-      const err = new ConnectionFailedError(`Could not connect to ${ma.toString()}`)
-      this.log.error('connection error:', err)
-      this.metrics?.dialerEvents.increment({ error: true })
-      errorPromise.reject(err)
-    })
+    const MAX_RETRIES = 3
+    const RETRY_DELAY_MS = 1000
+    let lastError: Error | undefined
 
-    try {
-      options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
-      await raceSignal(Promise.race([rawSocket.connected(), errorPromise.promise]), options.signal)
-    } catch (err: any) {
-      if (options.signal?.aborted) {
-        this.metrics?.dialerEvents.increment({ abort: true })
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const errorPromise = pDefer<Error>()
+      const connectPromise = pDefer<void>()
+      const rawSocket = connect(toUri(ma), this.init)
+
+      // Track connection state
+      let isConnecting = true
+      
+      // Handle WebSocket errors
+      rawSocket.socket.addEventListener('error', (event) => {
+        const err = new ConnectionFailedError(`WebSocket connection failed to ${ma.toString()}: ${(event as any).message ?? 'Unknown error'}`)
+        this.log.error('connection error (attempt %d/%d):', attempt, MAX_RETRIES, err)
+        this.metrics?.dialerEvents.increment({ error: true })
+        errorPromise.reject(err)
+      })
+
+      // Handle successful connection
+      rawSocket.socket.addEventListener('open', () => {
+        this.log('connection successful on attempt %d', attempt)
+        connectPromise.resolve()
+      })
+
+      try {
+        options.onProgress?.(new CustomProgressEvent('websockets:open-connection', { attempt }))
+
+        // Race between connection, error, and timeout
+        await raceSignal(
+          Promise.race([
+            connectPromise.promise,
+            errorPromise.promise,
+            // Add explicit connection timeout
+            new Promise((_, reject) => setTimeout(() => {
+              if (isConnecting) {
+                reject(new ConnectionFailedError(`Connection timeout after ${this.init.timeout ?? 30000}ms`))
+              }
+            }, this.init.timeout ?? 30000))
+          ]),
+          options.signal
+        )
+
+        isConnecting = false
+        this.log('connected %s on attempt %d', ma, attempt)
+        this.metrics?.dialerEvents.increment({ connect: true })
+        return rawSocket
+      } catch (err: any) {
+        isConnecting = false
+        lastError = err
+
+        if (options.signal?.aborted) {
+          this.metrics?.dialerEvents.increment({ abort: true })
+          throw err
+        }
+
+        // Close the failed socket
+        rawSocket.close()
+          .catch(err => {
+            this.log.error('error closing raw socket after failure', err)
+          })
+
+        // If we have retries left, wait and try again
+        if (attempt < MAX_RETRIES) {
+          this.log('retrying connection after %dms...', RETRY_DELAY_MS)
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
+          continue
+        }
+
+        // No more retries, throw the last error
+        throw new ConnectionFailedError(`Failed to connect after ${MAX_RETRIES} attempts: ${lastError.message}`)
       }
-
-      rawSocket.close()
-        .catch(err => {
-          this.log.error('error closing raw socket', err)
-        })
-
-      throw err
     }
 
-    this.log('connected %s', ma)
-    this.metrics?.dialerEvents.increment({ connect: true })
-    return rawSocket
+    // This should never be reached due to the throw above
+    throw new ConnectionFailedError('Unexpected connection failure')
   }
 
   /**

@@ -34,6 +34,8 @@ export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDia
 
 export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { circuitAddress, targetPeer } = splitAddr(ma)
+  const ICE_GATHERING_TIMEOUT = 30000 // 30 seconds
+  const CONNECTION_TIMEOUT = 60000 // 60 seconds
 
   metrics?.dialerEvents.increment({ open: true })
 
@@ -54,7 +56,6 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     })
   } else {
     onProgress?.(new CustomProgressEvent('webrtc:reuse-relay-connection'))
-
     connection = connections[0]
   }
 
@@ -74,7 +75,59 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     dataChannelOptions: dataChannel
   })
 
+  // Track connection state
+  let isConnecting = true
+  let iceGatheringComplete = false
+  let connectionStateTimeout: NodeJS.Timeout
+  let iceGatheringTimeout: NodeJS.Timeout
+
   try {
+    // Monitor ICE gathering state
+    peerConnection.onicegatheringstatechange = () => {
+      if (peerConnection.iceGatheringState === 'complete') {
+        iceGatheringComplete = true
+        clearTimeout(iceGatheringTimeout)
+      }
+    }
+
+    // Monitor connection state changes
+    peerConnection.onconnectionstatechange = () => {
+      log.trace('connection state changed to: %s', peerConnection.connectionState)
+      
+      switch (peerConnection.connectionState) {
+        case 'connected':
+          isConnecting = false
+          clearTimeout(connectionStateTimeout)
+          break
+        case 'failed':
+        case 'disconnected':
+        case 'closed':
+          isConnecting = false
+          clearTimeout(connectionStateTimeout)
+          if (!iceGatheringComplete) {
+            log.error('connection failed before ICE gathering completed')
+          }
+          break
+      }
+    }
+
+    // Set timeouts
+    iceGatheringTimeout = setTimeout(() => {
+      if (!iceGatheringComplete) {
+        log.error('ICE gathering timed out after %d ms', ICE_GATHERING_TIMEOUT)
+        peerConnection.close()
+        throw new Error('ICE gathering timeout')
+      }
+    }, ICE_GATHERING_TIMEOUT)
+
+    connectionStateTimeout = setTimeout(() => {
+      if (isConnecting) {
+        log.error('connection establishment timed out after %d ms', CONNECTION_TIMEOUT)
+        peerConnection.close()
+        throw new Error('Connection timeout')
+      }
+    }, CONNECTION_TIMEOUT)
+
     // we create the channel so that the RTCPeerConnection has a component for
     // which to collect candidates. The label is not relevant to connection
     // initiation but can be useful for debugging
@@ -100,14 +153,17 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
           log.error('error sending ICE candidate', err)
         })
     }
+
     peerConnection.onicecandidateerror = (event) => {
       log.error('initiator ICE candidate error', event)
+      metrics?.dialerEvents.increment({ ice_error: true })
     }
 
     // create an offer
     const offerSdp = await peerConnection.createOffer().catch(err => {
       log.error('could not execute createOffer', err)
-      throw new SDPHandshakeFailedError('Failed to set createOffer')
+      metrics?.dialerEvents.increment({ offer_error: true })
+      throw new SDPHandshakeFailedError('Failed to create offer')
     })
 
     log.trace('initiator send SDP offer %s', offerSdp.sdp)
@@ -122,19 +178,22 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     // set offer as local description
     await peerConnection.setLocalDescription(offerSdp).catch(err => {
       log.error('could not execute setLocalDescription', err)
-      throw new SDPHandshakeFailedError('Failed to set localDescription')
+      metrics?.dialerEvents.increment({ local_description_error: true })
+      throw new SDPHandshakeFailedError('Failed to set local description')
     })
 
     onProgress?.(new CustomProgressEvent('webrtc:read-sdp-answer'))
 
     log.trace('initiator read SDP answer')
 
-    // read answer
-    const answerMessage = await messageStream.read({
-      signal
-    })
+    // read answer with timeout
+    const answerMessage = await Promise.race([
+      messageStream.read({ signal }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SDP answer timeout')), 30000))
+    ])
 
     if (answerMessage.type !== Message.Type.SDP_ANSWER) {
+      metrics?.dialerEvents.increment({ answer_error: true })
       throw new SDPHandshakeFailedError('Remote should send an SDP answer')
     }
 
@@ -143,7 +202,8 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
     await peerConnection.setRemoteDescription(answerSdp).catch(err => {
       log.error('could not execute setRemoteDescription', err)
-      throw new SDPHandshakeFailedError('Failed to set remoteDescription')
+      metrics?.dialerEvents.increment({ remote_description_error: true })
+      throw new SDPHandshakeFailedError('Failed to set remote description')
     })
 
     log.trace('initiator read candidates until connected')
@@ -168,6 +228,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     })
 
     log.trace('initiator connected to remote address %s', ma)
+    metrics?.dialerEvents.increment({ success: true })
 
     return {
       remoteAddress: ma,
@@ -176,12 +237,17 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     }
   } catch (err: any) {
     log.error('outgoing signaling error', err)
+    metrics?.dialerEvents.increment({ error: true })
 
+    clearTimeout(iceGatheringTimeout)
+    clearTimeout(connectionStateTimeout)
     peerConnection.close()
     stream.abort(err)
     throw err
   } finally {
     peerConnection.onicecandidate = null
     peerConnection.onicecandidateerror = null
+    peerConnection.onicegatheringstatechange = null
+    peerConnection.onconnectionstatechange = null
   }
 }
