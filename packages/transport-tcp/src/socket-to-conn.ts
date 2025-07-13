@@ -3,6 +3,7 @@ import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-co
 import { ipPortToMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { Unix } from '@multiformats/multiaddr-matcher'
 import { raceEvent } from 'race-event'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
@@ -66,13 +67,13 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     })
 
     this.socket.once('close', () => {
-      if (this.status === 'open') {
+      if (this.socket.readable === false) {
         this.remoteCloseRead()
       }
 
-      // In instances where `close` was not explicitly called, such as an
-      // iterable stream ending, ensure we have set the close timeline
-      this.socket.destroy()
+      if (this.socket.writable === false) {
+        this.remoteCloseWrite()
+      }
     })
 
     this.socket.once('end', () => {
@@ -84,11 +85,16 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
   async sendData (data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
     for (const buf of data) {
-      const sent = this.socket.write(buf)
+      await new Promise<void>((resolve, reject) => {
+        this.socket.write(buf, (err) => {
+          if (err != null) {
+            reject(err)
+            return
+          }
 
-      if (sent === false) {
-        await raceEvent(this.socket, 'drain', options?.signal)
-      }
+          resolve()
+        })
+      })
     }
   }
 
@@ -96,8 +102,32 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.socket.resetAndDestroy()
   }
 
-  sendClose (): void {
+  async sendClose (options?: AbortOptions): Promise<void> {
+
+  }
+
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    if (this.socket.destroyed === true) {
+      return
+    }
+
     this.socket.destroySoon()
+    await raceEvent(this.socket, 'close', options?.signal)
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    if (this.socket.readable === false) {
+      return
+    }
+
+    await raceSignal(
+      new Promise<void>(resolve => {
+        this.socket.end(() => {
+          resolve()
+        })
+      }),
+      options?.signal
+    )
   }
 }
 

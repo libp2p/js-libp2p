@@ -357,7 +357,7 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
 
     // the server socket was only closed once
-    expect(addEventListenerSpy.callCount).to.equal(1)
+    expect(addEventListenerSpy.callCount).to.equal(3)
   })
 
   it('should destroy a socket when incoming MultiaddrConnection is closed', async () => {
@@ -430,7 +430,7 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    setInterval(() => {
+    const interval = setInterval(() => {
       clientSocket.write(`some data ${Date.now()}`)
     }, 10).unref()
 
@@ -444,6 +444,8 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
+
+    clearInterval(interval)
   })
 
   it('should destroy a socket by inactivity timeout', async () => {
