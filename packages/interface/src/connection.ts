@@ -1,4 +1,4 @@
-import type { AbortOptions, Logger, TypedEventEmitter } from './index.js'
+import type { AbortOptions, Logger, TypedEventTarget } from './index.js'
 import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
@@ -60,7 +60,7 @@ export type Direction = 'inbound' | 'outbound'
  * low-level primitive and is the raw connection without encryption or stream
  * multiplexing.
  */
-export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, TypedEventEmitter<DuplexEvents> {
+export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, TypedEventTarget<DuplexEvents> {
   /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
@@ -129,7 +129,7 @@ export interface ConnectionLimits {
  * multiplexed, depending on the configuration of the nodes
  * between which the connection is made.
  */
-export interface Connection extends TypedEventEmitter<DuplexEvents> {
+export interface Connection extends TypedEventTarget<DuplexEvents> {
   /**
    * The unique identifier for this connection
    */
@@ -286,7 +286,7 @@ export type WriteStatus = 'ready' | 'writing' | 'done' | 'closing' | 'closed'
  * It may be encrypted and multiplexed depending on the
  * configuration of the nodes.
  */
-export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, TypedEventEmitter<DuplexEvents> {
+export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, TypedEventTarget<DuplexEvents> {
   /**
    * Closes the stream for **reading** *and* **writing**.
    *
