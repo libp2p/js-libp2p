@@ -7,6 +7,7 @@ import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
 import type { TCPSocketMultiaddrConnectionComponents } from '../src/socket-to-conn.js'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'net'
+import delay from 'delay'
 
 async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
   const serverListening = defer()
@@ -432,7 +433,10 @@ describe('socket-to-conn', () => {
 
     const interval = setInterval(() => {
       clientSocket.write(`some data ${Date.now()}`)
-    }, 10).unref()
+    }, 10)
+
+    // ensure the sockets are open fully
+    await delay(1_000)
 
     await inboundMaConn.close()
 

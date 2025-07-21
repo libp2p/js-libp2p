@@ -59,8 +59,12 @@ describe('circuit-relay utils', () => {
     }
 
     const controller = new AbortController()
-    const localStream = mockStream(local)
-    const remoteStream = mockStream(remote)
+    const localStream = mockStream(local, {
+      direction: 'outbound'
+    })
+    const remoteStream = mockStream(remote, {
+      direction: 'inbound'
+    })
 
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')

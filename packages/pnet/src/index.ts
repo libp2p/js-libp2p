@@ -158,10 +158,10 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       external
     ).catch(this.log.error)
 
-    return {
-      ...connection,
-      ...internal
-    }
+    connection.sink = internal.sink
+    connection.source = internal.source
+
+    return connection
   }
 }
 

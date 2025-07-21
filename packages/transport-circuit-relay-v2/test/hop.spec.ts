@@ -63,7 +63,9 @@ describe('circuit-relay hop protocol', function () {
     addressManager.getAddresses.returns([
       ma
     ])
-    const peerStore = stubInterface<PeerStore>()
+    const peerStore = stubInterface<PeerStore>({
+      all: async () => []
+    })
 
     const events = new TypedEventEmitter()
     events.addEventListener('connection:open', (evt) => {
@@ -206,14 +208,18 @@ describe('circuit-relay hop protocol', function () {
 
   describe('reserve', function () {
     it('error on unknown message type', async () => {
+      console.info('opening stream')
+
       const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
 
+      console.info('send message')
       // wrong initial message
       await clientPbStream.write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
       })
 
+      console.info('read response')
       const msg = await clientPbStream.read()
       expect(msg).to.have.property('type', HopMessage.Type.STATUS)
       expect(msg).to.have.property('status', Status.UNEXPECTED_MESSAGE)

@@ -13,6 +13,7 @@ import type { Connection, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { stubInterface } from 'sinon-ts'
 
 describe('Network', () => {
   let dht: KadDHT
@@ -65,8 +66,7 @@ describe('Network', () => {
 
       // mock it
       dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
-        // @ts-expect-error incomplete implementation
-        const connection: Connection = {
+        const connection: Connection = stubInterface<Connection>({
           newStream: async (protocols: string | string[]) => {
             const protocol = Array.isArray(protocols) ? protocols[0] : protocols
             const msg: Partial<Message> = {
@@ -85,14 +85,9 @@ describe('Network', () => {
               }
             }
 
-            const stream = mockStream({ source, sink })
-
-            return {
-              ...stream,
-              protocol
-            }
+            return mockStream({ source, sink }, { protocol })
           }
-        }
+        })
 
         return connection
       }

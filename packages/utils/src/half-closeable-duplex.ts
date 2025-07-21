@@ -1,11 +1,11 @@
-import { StreamResetError, StreamStateError } from '@libp2p/interface'
+import { StreamResetError, StreamStateError, TypedEventEmitter } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import defer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { closeSource } from './close-source.js'
 import { isPromise } from './is-promise.ts'
-import type { AbortOptions, ReadStatus, StreamStatus, StreamTimeline, WriteStatus } from '@libp2p/interface'
+import type { AbortOptions, DuplexEvents, ReadStatus, StreamStatus, StreamTimeline, TypedEventTarget, WriteStatus } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 import type { Pushable } from 'it-pushable'
 import type { Duplex, Source } from 'it-stream-types'
@@ -75,7 +75,7 @@ export interface HalfCloseableDuplexInit {
   sendCloseWriteTimeout?: number
 }
 
-export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
+export abstract class HalfCloseableDuplex extends TypedEventEmitter<DuplexEvents> implements Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, TypedEventTarget<DuplexEvents> {
   public timeline: StreamTimeline
   public source: AsyncGenerator<Uint8ArrayList>
   public status: StreamStatus
@@ -98,6 +98,8 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
   private sendingData?: DeferredPromise<void>
 
   constructor (init: HalfCloseableDuplexInit) {
+    super()
+
     this.sinkController = new AbortController()
     this.sinkEnd = defer()
     this.closed = defer()
@@ -118,6 +120,7 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
     this.onCloseWrite = init.onCloseWrite
     this.onReset = init.onReset
     this.onAbort = init.onAbort
+    this.onSink = init.onSink
 
     this.source = this.streamSource = pushable<Uint8ArrayList>({
       onEnd: (err) => {
@@ -230,6 +233,7 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
       }
 
       this.closed.resolve()
+      this.safeDispatchEvent('close')
     } else {
       this.log.trace('source ended, waiting for sink to end')
     }
@@ -262,6 +266,7 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
       }
 
       this.closed.resolve()
+      this.safeDispatchEvent('close')
     } else {
       this.log.trace('sink ended, waiting for source to end')
     }
@@ -367,6 +372,10 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
     this.timeline.abort = Date.now()
     this._closeSinkAndSource(err)
     this.onAbort?.(err)
+
+    this.safeDispatchEvent('abort', {
+      detail: err
+    })
   }
 
   /**
@@ -384,6 +393,10 @@ export abstract class HalfCloseableDuplex implements Duplex<AsyncGenerator<Uint8
     this.timeline.reset = Date.now()
     this._closeSinkAndSource(err)
     this.onReset?.()
+
+    this.safeDispatchEvent('reset', {
+      detail: err
+    })
   }
 
   _closeSinkAndSource (err?: Error): void {

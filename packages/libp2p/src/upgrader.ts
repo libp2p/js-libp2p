@@ -18,7 +18,6 @@ interface CreateConnectionOptions {
   cryptoProtocol: string
   direction: 'inbound' | 'outbound'
   maConn: MultiaddrConnection
-  upgradedConn: MultiaddrConnection
   remotePeer: PeerId
   muxerFactory?: StreamMuxerFactory
   limits?: ConnectionLimits
@@ -241,20 +240,20 @@ export class Upgrader implements UpgraderInterface {
     maConn.log.trace('starting the %s connection upgrade', direction)
 
     // Protect
-    let protectedConn = maConn
-
     if (opts?.skipProtection !== true) {
       const protector = this.components.connectionProtector
 
       if (protector != null) {
         maConn.log('protecting the %s connection', direction)
-        protectedConn = await protector.protect(maConn, opts)
+        const protectedConn = await protector.protect(maConn, opts)
+
+        maConn.source = protectedConn.source
+        maConn.sink = protectedConn.sink
       }
     }
 
     try {
       // Encrypt the connection
-      encryptedConn = protectedConn
       if (opts?.skipEncryption !== true) {
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:encrypt-${direction}-connection`));
 
@@ -264,14 +263,12 @@ export class Upgrader implements UpgraderInterface {
           protocol: cryptoProtocol,
           streamMuxer: muxerFactory
         } = await (direction === 'inbound'
-          ? this._encryptInbound(protectedConn, opts)
-          : this._encryptOutbound(protectedConn, opts)
+          ? this._encryptInbound(maConn, opts)
+          : this._encryptOutbound(maConn, opts)
         ))
 
-        const maConn: MultiaddrConnection = {
-          ...protectedConn,
-          ...encryptedConn
-        }
+        maConn.source = encryptedConn.source
+        maConn.sink = encryptedConn.sink
 
         await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundEncryptedConnection' : 'denyOutboundEncryptedConnection', remotePeer, maConn)
       } else {
@@ -295,7 +292,6 @@ export class Upgrader implements UpgraderInterface {
         throw err
       }
 
-      upgradedConn = encryptedConn
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
       } else if (muxerFactory == null && this.streamMuxers.size > 0) {
@@ -303,14 +299,8 @@ export class Upgrader implements UpgraderInterface {
 
         // Multiplex the connection
         const multiplexed = await (direction === 'inbound'
-          ? this._multiplexInbound({
-            ...protectedConn,
-            ...encryptedConn
-          }, this.streamMuxers, opts)
-          : this._multiplexOutbound({
-            ...protectedConn,
-            ...encryptedConn
-          }, this.streamMuxers, opts))
+          ? this._multiplexInbound(maConn, this.streamMuxers, opts)
+          : this._multiplexOutbound(maConn, this.streamMuxers, opts))
         muxerFactory = multiplexed.muxerFactory
         upgradedConn = multiplexed.stream
       }
@@ -326,7 +316,6 @@ export class Upgrader implements UpgraderInterface {
       cryptoProtocol,
       direction,
       maConn,
-      upgradedConn,
       muxerFactory,
       remotePeer,
       limits: opts?.limits
@@ -346,7 +335,6 @@ export class Upgrader implements UpgraderInterface {
       cryptoProtocol,
       direction,
       maConn,
-      upgradedConn,
       remotePeer,
       muxerFactory,
       limits
@@ -354,37 +342,10 @@ export class Upgrader implements UpgraderInterface {
 
     let connection: Connection // eslint-disable-line prefer-const
 
-    const _timeline = maConn.timeline
-    maConn.timeline = new Proxy(_timeline, {
-      set: (...args) => {
-        if (args[1] === 'close' && args[2] != null && _timeline.close == null) {
-          // Wait for close to finish before notifying of the closure
-          (async () => {
-            try {
-              if (connection.status === 'open') {
-                await connection.close()
-              }
-            } catch (err: any) {
-              connection.log.error('error closing connection after timeline close %e', err)
-            } finally {
-              this.events.safeDispatchEvent('connection:close', {
-                detail: connection
-              })
-            }
-          })().catch(err => {
-            connection.log.error('error thrown while dispatching connection:close event %e', err)
-          })
-        }
-
-        return Reflect.set(...args)
-      }
-    })
-    maConn.timeline.upgraded = Date.now()
-
     // Create the connection
     connection = createConnection(this.components, {
       id,
-      maConn: upgradedConn,
+      maConn,
       remotePeer,
       direction,
       muxerFactory,
@@ -394,9 +355,29 @@ export class Upgrader implements UpgraderInterface {
       inboundStreamProtocolNegotiationTimeout: this.inboundStreamProtocolNegotiationTimeout
     })
 
+    connection.addEventListener('close', () => {
+      this.events.safeDispatchEvent('connection:close', {
+        detail: connection
+      })
+    })
+
+    connection.addEventListener('abort', () => {
+      this.events.safeDispatchEvent('connection:close', {
+        detail: connection
+      })
+    })
+
+    connection.addEventListener('reset', () => {
+      this.events.safeDispatchEvent('connection:close', {
+        detail: connection
+      })
+    })
+
     this.events.safeDispatchEvent('connection:open', {
       detail: connection
     })
+
+    maConn.timeline.upgraded = Date.now()
 
     return connection
   }

@@ -85,20 +85,27 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
   async sendData (data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
     for (const buf of data) {
-      await new Promise<void>((resolve, reject) => {
-        this.socket.write(buf, (err) => {
-          if (err != null) {
-            reject(err)
-            return
-          }
+      await raceSignal(
+        new Promise<void>((resolve, reject) => {
+          this.socket.write(buf, (err) => {
+            if (err != null) {
+              reject(err)
+              return
+            }
 
-          resolve()
-        })
-      })
+            resolve()
+          })
+        }),
+        options?.signal
+      )
     }
   }
 
   sendReset (): void {
+    if (this.socket.destroyed) {
+      return
+    }
+
     this.socket.resetAndDestroy()
   }
 

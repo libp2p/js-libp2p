@@ -1,12 +1,12 @@
 import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
-import { setMaxListeners } from 'main-event'
+import { setMaxListeners, TypedEventEmitter } from 'main-event'
 import { PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, Direction, Connection as ConnectionInterface, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxerFactory, StreamMuxer, Metrics, PeerStore, MultiaddrConnection } from '@libp2p/interface'
+import type { AbortOptions, Logger, Direction, Connection as ConnectionInterface, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxerFactory, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, DuplexEvents } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, type Multiaddr } from '@multiformats/multiaddr'
 
 const CLOSE_TIMEOUT = 500
 
@@ -32,7 +32,7 @@ export interface ConnectionInit {
  * An implementation of the js-libp2p connection.
  * Any libp2p transport should use an upgrader to return this connection.
  */
-export class Connection implements ConnectionInterface {
+export class Connection extends TypedEventEmitter<DuplexEvents> implements ConnectionInterface {
   public readonly id: string
   public readonly remoteAddr: Multiaddr
   public readonly remotePeer: PeerId
@@ -52,6 +52,8 @@ export class Connection implements ConnectionInterface {
   private readonly inboundStreamProtocolNegotiationTimeout: number
 
   constructor (components: ConnectionComponents, init: ConnectionInit) {
+    super()
+
     this.components = components
 
     this.id = init.id
@@ -67,7 +69,7 @@ export class Connection implements ConnectionInterface {
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
 
-    if (this.remoteAddr.getPeerId() == null) {
+    if (this.remoteAddr.getComponents().find(component => component.code === CODE_P2P) == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
     }
 
@@ -93,6 +95,22 @@ export class Connection implements ConnectionInterface {
         this.log.error('error piping data through muxer - %e', err)
       })
     }
+
+    this.maConn.addEventListener('abort', (evt) => {
+      this.safeDispatchEvent('abort', {
+        detail: evt.detail
+      })
+    })
+
+    this.maConn.addEventListener('reset', (evt) => {
+      this.safeDispatchEvent('reset', {
+        detail: evt.detail
+      })
+    })
+
+    this.maConn.addEventListener('close', () => {
+      this.safeDispatchEvent('close')
+    })
   }
 
   readonly [Symbol.toStringTag] = 'Connection'

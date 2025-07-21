@@ -64,6 +64,8 @@ class MuxedStream extends AbstractStream {
   }
 
   sendNewStream (): void {
+    this.log('send new stream')
+
     // If initiator, open a new stream
     const createMsg: CreateMessage = {
       id: this.id,
@@ -180,11 +182,14 @@ class MockMuxer implements StreamMuxer {
 
     const registry = message.direction === 'outbound' ? this.registryRecipientStreams : this.registryInitiatorStreams
 
+    this.log('incoming message %o', message)
+
     if (message.type === 'create') {
       if (registry.has(message.id)) {
         throw new Error(`Already had stream for ${message.id}`)
       }
 
+      this.log('create stream inbound %s', message.id)
       muxedStream = this.createStream(message.id, 'inbound')
       registry.set(muxedStream.id, muxedStream)
 

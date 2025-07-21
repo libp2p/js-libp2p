@@ -41,6 +41,7 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
           })
 
           if (buf == null) {
+            this.remoteCloseWrite()
             break
           }
 
@@ -56,8 +57,8 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
     this.onClose?.()
   }
 
-  sendData (data: Uint8ArrayList, options?: AbortOptions): void | Promise<void> {
-    this.stream.write(data, options)
+  async sendData (data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
+    await this.stream.write(data, options)
   }
 
   sendReset (options?: AbortOptions): void | Promise<void> {

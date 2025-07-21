@@ -88,8 +88,7 @@ describe('autonat v2 - server', () => {
       const remoteAddr = opts.remoteAddr ?? observedAddress.encapsulate(`/p2p/${remotePeer.toString()}`)
       const source = pushable<Uint8ArrayList>()
       const sink = pushable<Uint8ArrayList>()
-      const stream: Stream = {
-        ...stubInterface<Stream>(),
+      const stream: Stream = stubInterface<Stream>({
         source,
         sink: async (stream) => {
           for await (const buf of stream) {
@@ -103,12 +102,11 @@ describe('autonat v2 - server', () => {
         close: async () => {
           sink.end()
         }
-      }
-      const connection = {
-        ...stubInterface<Connection>(),
+      })
+      const connection = stubInterface<Connection>({
         remotePeer,
         remoteAddr
-      }
+      })
 
       const nonce = 12345n
 

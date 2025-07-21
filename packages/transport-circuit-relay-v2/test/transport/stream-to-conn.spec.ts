@@ -12,9 +12,10 @@ import { streamToMaConnection } from '../../src/transport/stream-to-conn.js'
 import type { StreamMultiaddrConnectionComponents } from '../../src/transport/stream-to-conn.js'
 import type { Stream } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
+import { stubInterface } from 'sinon-ts'
 
 function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>): Stream {
-  const muxedStream: Stream = {
+  const muxedStream: Stream = stubInterface<Stream>({
     ...stream,
     close: async () => {},
     closeRead: async () => {},
@@ -30,7 +31,7 @@ function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Ui
     readStatus: 'ready',
     writeStatus: 'ready',
     log: logger('muxed-stream')
-  }
+  })
 
   return muxedStream
 }

@@ -1,8 +1,25 @@
-import type { AbortOptions, Logger } from './index.js'
+import type { AbortOptions, Logger, TypedEventEmitter } from './index.js'
 import type { PeerId } from './peer-id.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
+
+export interface DuplexEvents {
+  /**
+   * The duplex closed gracefully, all data was written/read successfully
+   */
+  close: CustomEvent
+
+  /**
+   * A local error prevented the duplex from closing gracefully
+   */
+  abort: CustomEvent<Error>
+
+  /**
+   * A remote error prevented the duplex from closing gracefully
+   */
+  reset: CustomEvent<Error>
+}
 
 export interface MultiaddrConnectionTimeline {
   /**
@@ -43,7 +60,7 @@ export type Direction = 'inbound' | 'outbound'
  * low-level primitive and is the raw connection without encryption or stream
  * multiplexing.
  */
-export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+export interface MultiaddrConnection extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, TypedEventEmitter<DuplexEvents> {
   /**
    * Gracefully close the connection. All queued data will be written to the
    * underlying transport.
@@ -112,7 +129,7 @@ export interface ConnectionLimits {
  * multiplexed, depending on the configuration of the nodes
  * between which the connection is made.
  */
-export interface Connection {
+export interface Connection extends TypedEventEmitter<DuplexEvents> {
   /**
    * The unique identifier for this connection
    */
@@ -269,7 +286,7 @@ export type WriteStatus = 'ready' | 'writing' | 'done' | 'closing' | 'closed'
  * It may be encrypted and multiplexed depending on the
  * configuration of the nodes.
  */
-export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> {
+export interface Stream extends Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, TypedEventEmitter<DuplexEvents> {
   /**
    * Closes the stream for **reading** *and* **writing**.
    *

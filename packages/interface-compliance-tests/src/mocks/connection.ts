@@ -1,18 +1,19 @@
-import { ConnectionClosedError } from '@libp2p/interface'
+import { ConnectionClosedError, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger, logger } from '@libp2p/logger'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { closeSource } from '@libp2p/utils/close-source'
 import { duplexPair } from 'it-pair/duplex'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { mockMultiaddrConnection } from './multiaddr-connection.js'
 import { mockMuxer } from './muxer.js'
 import { mockRegistrar } from './registrar.js'
-import type { AbortOptions, ComponentLogger, Logger, MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus, PeerId, StreamMuxer, StreamMuxerFactory, NewStreamOptions, ConnectionLimits } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, Logger, MultiaddrConnection, Connection, Stream, Direction, ConnectionTimeline, ConnectionStatus, PeerId, StreamMuxer, StreamMuxerFactory, NewStreamOptions, ConnectionLimits, DuplexEvents } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Duplex, Source } from 'it-stream-types'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
+import { byteStream, type ByteStream } from 'it-byte-stream'
 
 export interface MockConnectionOptions {
   direction?: Direction
@@ -30,7 +31,7 @@ interface MockConnectionInit {
   logger: ComponentLogger
 }
 
-class MockConnection implements Connection {
+class MockConnection extends TypedEventEmitter<DuplexEvents> implements Connection {
   public id: string
   public remoteAddr: Multiaddr
   public remotePeer: PeerId
@@ -49,6 +50,8 @@ class MockConnection implements Connection {
   private readonly logger: ComponentLogger
 
   constructor (init: MockConnectionInit) {
+    super()
+
     const { remoteAddr, remotePeer, direction, maConn, muxer, logger } = init
 
     this.id = `mock-connection-${Math.random()}`
@@ -189,76 +192,67 @@ export interface StreamInit {
   id?: string
 }
 
-export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
-  const id = `stream-${Date.now()}`
-  const log = logger(`libp2p:mock-stream:${id}`)
+let mockStreamId = 0
 
-  // ensure stream output is `Uint8ArrayList` as it would be from an actual
-  // Stream where everything is length-varint encoded
-  const originalSource = stream.source
-  stream.source = (async function * (): AsyncGenerator<Uint8ArrayList, any, unknown> {
-    for await (const buf of originalSource) {
-      if (buf instanceof Uint8Array) {
-        yield new Uint8ArrayList(buf)
-      } else {
-        yield buf
-      }
-    }
-  })()
+class MockStream extends AbstractStream {
+  private stream: ByteStream<Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>>
 
-  const abortSinkController = new AbortController()
-  const originalSink = stream.sink.bind(stream)
-  stream.sink = async (source) => {
-    abortSinkController.signal.addEventListener('abort', () => {
-      closeSource(source, log)
+  constructor(stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}) {
+    const id = `stream-${mockStreamId++}`
+
+    super({
+      id,
+      log: logger(`libp2p:mock-stream:${init.direction ?? 'outbound'}:${id}`),
+      direction: init.direction ?? 'outbound',
     })
 
-    await originalSink(source)
+    this.protocol = init.protocol
+    this.stream = byteStream(stream)
+
+    Promise.resolve()
+      .then(async () => {
+        while (true) {
+          const buf = await this.stream.read({
+            signal: AbortSignal.timeout(5_000)
+          })
+
+          if (buf == null) {
+            break
+          }
+
+          this.sourcePush(buf)
+        }
+
+        this.remoteCloseWrite()
+      })
+      .catch(err => {
+        this.abort(err)
+      })
   }
 
-  const mockStream: Stream = {
-    ...stream,
-    close: async (options) => {
-      await mockStream.closeRead(options)
-      await mockStream.closeWrite(options)
-    },
-    closeRead: async () => {
-      closeSource(originalSource, log)
-      mockStream.timeline.closeRead = Date.now()
+  sendNewStream(options?: AbortOptions): void | Promise<void> {
 
-      if (mockStream.timeline.closeWrite != null) {
-        mockStream.timeline.close = Date.now()
-      }
-    },
-    closeWrite: async () => {
-      abortSinkController.abort()
-      mockStream.timeline.closeWrite = Date.now()
-
-      if (mockStream.timeline.closeRead != null) {
-        mockStream.timeline.close = Date.now()
-      }
-    },
-    abort: () => {
-      closeSource(originalSource, log)
-      mockStream.timeline.closeWrite = Date.now()
-      mockStream.timeline.closeRead = Date.now()
-      mockStream.timeline.close = Date.now()
-    },
-    direction: 'outbound',
-    protocol: '/foo/1.0.0',
-    timeline: {
-      open: Date.now()
-    },
-    metadata: {},
-    id: `stream-${Date.now()}`,
-    status: 'open',
-    readStatus: 'ready',
-    writeStatus: 'ready',
-    log: logger('mock-stream'),
-    ...init
   }
 
-  return mockStream
+  async sendData(data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
+    await this.stream.write(data, options)
+  }
+
+  sendReset(options?: AbortOptions): void | Promise<void> {
+
+  }
+
+  sendCloseWrite(options?: AbortOptions): void | Promise<void> {
+
+  }
+
+  sendCloseRead(options?: AbortOptions): void | Promise<void> {
+
+  }
+}
+
+export function mockStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>, init: StreamInit = {}): Stream {
+  return new MockStream(stream, init)
 }
 
 export interface StreamPairInit {
