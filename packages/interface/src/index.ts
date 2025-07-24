@@ -127,10 +127,46 @@ export interface IdentifyResult {
  * Logger component for libp2p
  */
 export interface Logger {
+  /**
+   * Log a message
+   */
   (formatter: any, ...args: any[]): void
+
+  /**
+   * Log an error message
+   */
   error(formatter: any, ...args: any[]): void
+
+  /**
+   * Log a trace message
+   */
   trace(formatter: any, ...args: any[]): void
+
+  /**
+   * `true` if this logger is enabled
+   */
   enabled: boolean
+
+  /**
+   * Create a logger scoped below this one
+   *
+   * @example
+   *
+   * ```ts
+   * import { defaultLogger } from '@libp2p/logger'
+   *
+   * const log = defaultLogger().forComponent('foo')
+   *
+   * log('hello')
+   * // foo hello
+   *
+   * const subLog = log.newScope('bar')
+   *
+   * subLog('hello')
+   * // foo:bar hello
+   * ```
+   */
+  newScope(name: string): Logger
 }
 
 /**

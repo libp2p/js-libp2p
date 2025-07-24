@@ -79,6 +79,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       async function * pushToConnections (): AsyncGenerator<() => Promise<void>> {
         for (const connection of self.connectionManager.getConnections()) {
           const peer = await self.peerStore.get(connection.remotePeer)
+          const log = connection.log.newScope('identify-push')
 
           if (!peer.protocols.includes(self.protocol)) {
             continue
@@ -115,7 +116,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
               })
             } catch (err: any) {
               // Just log errors
-              self.log.error('could not push identify update to peer', err)
+              log.error('could not push identify update to peer', err)
               stream?.abort(err)
             }
           }
@@ -135,6 +136,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
    */
   async handleProtocol (data: IncomingStreamData): Promise<void> {
     const { connection, stream } = data
+    const log = connection.log.newScope('identify-push')
 
     try {
       if (this.peerId.equals(connection.remotePeer)) {
@@ -152,13 +154,13 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       const message = await pb.read(options)
       await stream.close(options)
 
-      await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+      await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
     } catch (err: any) {
-      this.log.error('received invalid message', err)
+      log.error('received invalid message', err)
       stream.abort(err)
       return
     }
 
-    this.log.trace('handled push from %p', connection.remotePeer)
+    log.trace('handled push from %p', connection.remotePeer)
   }
 }

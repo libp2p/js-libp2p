@@ -1,5 +1,5 @@
 import type { Direction, Stream } from './connection.js'
-import type { AbortOptions } from './index.js'
+import type { AbortOptions, Logger } from './index.js'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -60,4 +60,9 @@ export interface StreamMuxerInit {
    * Outbound stream muxers are opened by the local node, inbound stream muxers are opened by the remote
    */
   direction?: Direction
+
+  /**
+   * The logger used by the connection
+   */
+  log?: Logger
 }

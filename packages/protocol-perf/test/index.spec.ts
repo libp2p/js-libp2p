@@ -60,14 +60,18 @@ describe('perf', () => {
     const duplexes = duplexPair<any>()
     const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
 
-    const aToB = stubInterface<Connection>()
+    const aToB = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     aToB.newStream.resolves(streams[0])
     localComponents.connectionManager.openConnection.withArgs(ma, {
       force: true
     }).resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>()
+    const bToA = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     void server.handleMessage({ stream: streams[1], connection: bToA })
 
     // Run Perf
@@ -91,12 +95,16 @@ describe('perf', () => {
     const duplexes = duplexPair<any>()
     const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
 
-    const aToB = stubInterface<Connection>()
+    const aToB = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     aToB.newStream.resolves(streams[0])
     localComponents.connectionManager.openConnection.resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>()
+    const bToA = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     void server.handleMessage({ stream: streams[1], connection: bToA })
 
     // Run Perf

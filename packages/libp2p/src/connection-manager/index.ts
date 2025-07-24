@@ -500,7 +500,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     if (filteredPeerConns.length === 0) {
       // trigger disconnect event if no connections remain
-      this.log('onDisconnect remove all connections for peer %p', peerId)
+      this.log.trace('peer %p disconnected, removing connection map entry', peerId)
       this.connections.delete(peerId)
 
       // broadcast disconnect event
@@ -548,7 +548,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           .find(conn => conn.limits == null)
 
         if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p', peerId)
+          this.log('had an existing non-limited connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
           return existingConnection

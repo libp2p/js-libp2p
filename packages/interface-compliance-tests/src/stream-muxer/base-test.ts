@@ -22,7 +22,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const onStreamEndPromise: DeferredPromise<Stream> = defer()
 
       const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+      const dialer = dialerFactory.createStreamMuxer({
+        direction: 'outbound'
+      })
 
       const listenerFactory = await common.setup()
       const listener = listenerFactory.createStreamMuxer({
@@ -88,7 +90,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
 
       const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({ direction: 'inbound' })
+      const listener = listenerFactory.createStreamMuxer({
+        direction: 'inbound'
+      })
 
       void pipe(p[0], dialer, p[0])
       void pipe(p[1], listener, p[1])

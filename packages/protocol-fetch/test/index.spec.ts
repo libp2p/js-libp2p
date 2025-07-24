@@ -13,21 +13,19 @@ import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { Fetch } from '../src/fetch.js'
 import { FetchRequest, FetchResponse } from '../src/pb/proto.js'
-import type { ComponentLogger, Connection, Stream, PeerId } from '@libp2p/interface'
+import type { Connection, Stream, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedFetchComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
-  logger: ComponentLogger
 }
 
 async function createComponents (): Promise<StubbedFetchComponents> {
   return {
     registrar: stubInterface<Registrar>(),
-    connectionManager: stubInterface<ConnectionManager>(),
-    logger: defaultLogger()
+    connectionManager: stubInterface<ConnectionManager>()
   }
 }
 
@@ -41,7 +39,9 @@ function createStreams (components: StubbedFetchComponents, remotePeer?: PeerId)
   incomingStream.source = duplex[1].source
   incomingStream.sink.callsFake(async source => duplex[1].sink(source))
 
-  const connection = stubInterface<Connection>()
+  const connection = stubInterface<Connection>({
+    log: defaultLogger().forComponent('connection')
+  })
 
   if (remotePeer != null) {
     connection.newStream.withArgs('/libp2p/fetch/0.0.1').resolves(outgoingStream)

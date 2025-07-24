@@ -1,3 +1,4 @@
+import { defaultLogger } from '@libp2p/logger'
 import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
@@ -23,7 +24,8 @@ export interface StubbedIdentifyComponents {
 
 export function connectionStream (remotePeer: PeerId, protocol: string): { connection: StubbedInstance<Connection>, stream: StubbedInstance<Stream> } {
   const connection = stubInterface<Connection>({
-    remotePeer
+    remotePeer,
+    log: defaultLogger().forComponent('connection')
   })
   const stream = stubInterface<Stream>()
   connection.newStream.withArgs(protocol).resolves(stream)

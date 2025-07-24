@@ -137,6 +137,7 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
   const log = logger.forComponent('libp2p:mock-muxer')
 
   const muxer = muxerFactory.createStreamMuxer({
+    log,
     direction,
     onIncomingStream: (muxedStream) => {
       try {

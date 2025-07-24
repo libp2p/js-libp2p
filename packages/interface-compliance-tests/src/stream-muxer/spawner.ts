@@ -25,7 +25,9 @@ export default async (createMuxer: (init?: StreamMuxerInit) => Promise<StreamMux
         .catch(err => { stream.abort(err) })
     }
   })
-  const dialer = await createMuxer({ direction: 'outbound' })
+  const dialer = await createMuxer({
+    direction: 'outbound'
+  })
 
   void pipe(listenerSocket, listener, listenerSocket)
   void pipe(dialerSocket, dialer, dialerSocket)

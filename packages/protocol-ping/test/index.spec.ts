@@ -12,14 +12,13 @@ import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { PING_PROTOCOL } from '../src/constants.js'
 import { Ping } from '../src/ping.js'
-import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
+import type { Stream, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPingServiceComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
-  logger: ComponentLogger
 }
 
 function echoStream (): StubbedInstance<Stream> {
@@ -40,8 +39,7 @@ describe('ping', () => {
   beforeEach(async () => {
     components = {
       registrar: stubInterface<Registrar>(),
-      connectionManager: stubInterface<ConnectionManager>(),
-      logger: defaultLogger()
+      connectionManager: stubInterface<ConnectionManager>()
     }
 
     ping = new Ping(components, {
@@ -54,7 +52,9 @@ describe('ping', () => {
   it('should be able to ping another peer', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
@@ -68,7 +68,9 @@ describe('ping', () => {
     const timeout = 10
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const connection = stubInterface<Connection>()
+    const connection = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
     const stream = echoStream()
@@ -105,7 +107,9 @@ describe('ping', () => {
     // handle incoming ping stream
     handler({
       stream: incomingStream,
-      connection: stubInterface<Connection>()
+      connection: stubInterface<Connection>({
+        log: defaultLogger().forComponent('connection')
+      })
     })
 
     const b = byteStream(outgoingStream)
@@ -138,7 +142,9 @@ describe('ping', () => {
     // handle incoming ping stream
     handler({
       stream: incomingStream,
-      connection: stubInterface<Connection>()
+      connection: stubInterface<Connection>({
+        log: defaultLogger().forComponent('connection')
+      })
     })
 
     const b = byteStream(outgoingStream)
