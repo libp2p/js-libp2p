@@ -273,17 +273,12 @@ export class Connection implements ConnectionInterface {
           throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
         }
 
-        handler({ connection: this, stream: muxedStream })
+        await handler({ connection: this, stream: muxedStream })
       })
       .catch(async err => {
         this.log.error('error handling incoming stream id %s - %e', muxedStream.id, err)
 
-        if (muxedStream.timeline.close == null) {
-          await muxedStream.close({
-            signal
-          })
-            .catch(err => muxedStream.abort(err))
-        }
+        muxedStream.abort(err)
       })
   }
 
