@@ -1,7 +1,6 @@
 import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
-import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
@@ -14,9 +13,9 @@ import { CircuitListen, CircuitSearch, LimitTracker } from '../utils.js'
 import { RelayDiscovery } from './discovery.js'
 import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
+import { streamToMaConnection } from './stream-to-conn.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Upgrader, ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
+import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
@@ -50,17 +49,9 @@ export type CircuitRelayDialEvents =
   ProgressEvent<'circuit-relay:read-connect-response'>
 
 export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> {
+  private readonly components: CircuitRelayTransportComponents
   private readonly discovery?: RelayDiscovery
-  private readonly registrar: Registrar
-  private readonly peerStore: PeerStore
-  private readonly connectionManager: ConnectionManager
-  private readonly transportManager: TransportManager
-  private readonly peerId: PeerId
-  private readonly upgrader: Upgrader
-  private readonly addressManager: AddressManager
-  private readonly connectionGater: ConnectionGater
   public readonly reservationStore: ReservationStore
-  private readonly logger: ComponentLogger
   private readonly maxInboundStopStreams: number
   private readonly maxOutboundStopStreams?: number
   private started: boolean
@@ -68,16 +59,8 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   private shutdownController: AbortController
 
   constructor (components: CircuitRelayTransportComponents, init: CircuitRelayTransportInit = {}) {
+    this.components = components
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport')
-    this.registrar = components.registrar
-    this.peerStore = components.peerStore
-    this.connectionManager = components.connectionManager
-    this.transportManager = components.transportManager
-    this.logger = components.logger
-    this.peerId = components.peerId
-    this.upgrader = components.upgrader
-    this.addressManager = components.addressManager
-    this.connectionGater = components.connectionGater
     this.maxInboundStopStreams = init.maxInboundStopStreams ?? defaults.maxInboundStopStreams
     this.maxOutboundStopStreams = init.maxOutboundStopStreams ?? defaults.maxOutboundStopStreams
     this.shutdownController = new AbortController()
@@ -132,8 +115,8 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
 
-    await this.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
-      const signal = this.upgrader.createInboundAbortSignal(this.shutdownController.signal)
+    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
+      const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
       void this.onStop(data, signal)
         .catch(err => {
@@ -157,7 +140,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   async stop (): Promise<void> {
     this.shutdownController.abort()
     await stop(this.discovery, this.reservationStore)
-    await this.registrar.unhandle(RELAY_V2_STOP_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_STOP_CODEC)
 
     this.started = false
   }
@@ -188,16 +171,16 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const relayPeer = peerIdFromString(relayId)
     const destinationPeer = peerIdFromString(destinationId)
 
-    const relayConnections = this.connectionManager.getConnections(relayPeer)
+    const relayConnections = this.components.connectionManager.getConnections(relayPeer)
     let relayConnection = relayConnections[0]
 
     if (relayConnection == null) {
-      await this.peerStore.merge(relayPeer, {
+      await this.components.peerStore.merge(relayPeer, {
         multiaddrs: [relayAddr]
       })
 
       options.onProgress?.(new CustomProgressEvent('circuit-relay:open-connection'))
-      relayConnection = await this.connectionManager.openConnection(relayPeer, options)
+      relayConnection = await this.components.connectionManager.openConnection(relayPeer, options)
     } else {
       options.onProgress?.(new CustomProgressEvent('circuit-relay:reuse-connection'))
     }
@@ -229,16 +212,16 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       const limits = new LimitTracker(status.limit)
 
-      const maConn = streamToMaConnection({
+      const maConn = streamToMaConnection(this.components, {
         stream: pbstr.unwrap(),
         remoteAddr: ma,
-        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
-        log: this.log,
+        localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`),
         onDataRead: limits.onData,
-        onDataWrite: limits.onData
+        onDataWrite: limits.onData,
+        name: 'circuit-relay:relayed'
       })
 
-      const conn = await this.upgrader.upgradeOutbound(maConn, {
+      const conn = await this.components.upgrader.upgradeOutbound(maConn, {
         ...options,
         limits: limits.getLimits()
       })
@@ -259,11 +242,11 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
    */
   createListener (options: CreateListenerOptions): Listener {
     return createListener({
-      peerId: this.peerId,
-      connectionManager: this.connectionManager,
-      addressManager: this.addressManager,
+      peerId: this.components.peerId,
+      connectionManager: this.components.connectionManager,
+      addressManager: this.components.addressManager,
       reservationStore: this.reservationStore,
-      logger: this.logger
+      logger: this.components.logger
     })
   }
 
@@ -296,7 +279,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     if (!this.reservationStore.hasReservation(connection.remotePeer)) {
       try {
         this.log('dialed via relay we did not have a reservation on, start listening on that relay address')
-        await this.transportManager.listen([connection.remoteAddr.encapsulate('/p2p-circuit')])
+        await this.components.transportManager.listen([connection.remoteAddr.encapsulate('/p2p-circuit')])
       } catch (err: any) {
         // failed to refresh our hitherto unknown relay reservation but allow the connection attempt anyway
         this.log.error('failed to listen on a relay peer we were dialed via but did not have a reservation on', err)
@@ -342,7 +325,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
     const remotePeerId = peerIdFromMultihash(Digest.decode(request.peer.id))
 
-    if ((await this.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
+    if ((await this.components.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
       this.log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
@@ -360,17 +343,17 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
     const limits = new LimitTracker(request.limit)
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
-    const localAddr = this.addressManager.getAddresses()[0]
-    const maConn = streamToMaConnection({
+    const localAddr = this.components.addressManager.getAddresses()[0]
+    const maConn = streamToMaConnection(this.components, {
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
-      log: this.log,
       onDataRead: limits.onData,
-      onDataWrite: limits.onData
+      onDataWrite: limits.onData,
+      name: 'circuit-relay:relayed'
     })
 
-    await this.upgrader.upgradeInbound(maConn, {
+    await this.components.upgrader.upgradeInbound(maConn, {
       limits: limits.getLimits(),
       signal
     })

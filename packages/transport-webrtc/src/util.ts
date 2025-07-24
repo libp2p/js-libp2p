@@ -4,6 +4,7 @@ import pTimeout from 'p-timeout'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
 import type { PeerConnection } from '@ipshipyard/node-datachannel'
 import type { LoggerOptions } from '@libp2p/interface'
+import type { Duplex, Source } from 'it-stream-types'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')
@@ -11,6 +12,26 @@ export const isFirefox = ((browser != null) && browser.name === 'firefox')
 export const nopSource = async function * nop (): AsyncGenerator<Uint8Array, any, unknown> {}
 
 export const nopSink = async (_: any): Promise<void> => {}
+
+// Duplex that does nothing. Needed to fulfill the interface
+export function inertDuplex (): Duplex<any, any, any> {
+  return {
+    source: {
+      [Symbol.asyncIterator] () {
+        return {
+          async next () {
+            // This will never resolve
+            return new Promise(() => { })
+          }
+        }
+      }
+    },
+    sink: async (source: Source<any>) => {
+      // This will never resolve
+      return new Promise(() => { })
+    }
+  }
+}
 
 export function drainAndClose (channel: RTCDataChannel, direction: string, drainTimeout: number = DATA_CHANNEL_DRAIN_TIMEOUT, options: LoggerOptions): void {
   if (channel.readyState !== 'open') {

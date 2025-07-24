@@ -4,15 +4,15 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
 import { SIGNALING_PROTOCOL } from '../constants.js'
-import { WebRTCMultiaddrConnection } from '../maconn.js'
 import { DataChannelMuxerFactory } from '../muxer.js'
+import { toMultiaddrConnection } from '../rtcpeerconnection-to-conn.ts'
 import { getRtcConfiguration } from '../util.js'
 import { RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
 import type { DataChannelOptions } from '../index.js'
-import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData, Libp2pEvents } from '@libp2p/interface'
+import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData, Libp2pEvents, MultiaddrConnection } from '@libp2p/interface'
 import type { Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -180,11 +180,12 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       onProgress: options.onProgress
     })
 
-    const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
+    const webRTCConn = toMultiaddrConnection(this.components, {
       peerConnection,
-      timeline: { open: Date.now() },
       remoteAddr: remoteAddress,
-      metrics: this.metrics?.dialerEvents
+      metrics: this.metrics?.dialerEvents,
+      name: 'webrtc',
+      direction: 'outbound'
     })
 
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
@@ -222,11 +223,12 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
         signal
       })
 
-      const webRTCConn = new WebRTCMultiaddrConnection(this.components, {
+      const webRTCConn = toMultiaddrConnection(this.components, {
         peerConnection,
-        timeline: { open: (new Date()).getTime() },
         remoteAddr: remoteAddress,
-        metrics: this.metrics?.listenerEvents
+        metrics: this.metrics?.listenerEvents,
+        name: 'webrtc',
+        direction: 'inbound'
       })
 
       await this.components.upgrader.upgradeInbound(webRTCConn, {
@@ -247,7 +249,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     }
   }
 
-  private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: WebRTCMultiaddrConnection): void {
+  private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
     // close the connection on shut down
     const shutDownListener = (): void => {
       webRTCConn.close()

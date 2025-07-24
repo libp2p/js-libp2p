@@ -3,13 +3,11 @@
  *
  * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
  *
- * >
  * > ⚠️ **Note**
  * >
  * > This WebTransport implementation currently only allows dialing to other nodes. It does not yet allow listening for incoming dials. This feature requires QUIC support to land in Node JS first.
  * >
  * > QUIC support in Node JS is actively being worked on. You can keep an eye on the progress by watching the [related issues on the Node JS issue tracker](https://github.com/nodejs/node/labels/quic)
- * >
  *
  * @example
  *
@@ -37,7 +35,7 @@ import { raceSignal } from 'race-signal'
 import { MAX_INBOUND_STREAMS } from './constants.js'
 import createListener from './listener.js'
 import { webtransportMuxer } from './muxer.js'
-import { inertDuplex } from './utils/inert-duplex.js'
+import { toMultiaddrConnection } from './session-to-conn.ts'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
 import WebTransport from './webtransport.js'
@@ -210,23 +208,11 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
       this.metrics?.dialerEvents.increment({ open: true })
 
-      maConn = {
-        close: async () => {
-          this.log('closing webtransport')
-          cleanUpWTSession('close')
-        },
-        abort: (err: Error) => {
-          this.log('aborting webtransport due to passed err', err)
-          cleanUpWTSession('abort')
-        },
+      maConn = toMultiaddrConnection(this.components, {
         remoteAddr: ma,
-        timeline: {
-          open: Date.now()
-        },
-        log: this.components.logger.forComponent('libp2p:webtransport:maconn'),
-        // This connection is never used directly since webtransport supports native streams.
-        ...inertDuplex()
-      }
+        cleanUpWTSession,
+        direction: 'outbound'
+      })
 
       return await options.upgrader.upgradeOutbound(maConn, {
         ...options,
