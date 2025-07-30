@@ -118,6 +118,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.pingOldContactQueue = new PeerQueue({
       concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
@@ -190,6 +191,8 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.running = true
 
     this.shutdownController = new AbortController()
+    setMaxListeners(Infinity, this.shutdownController.signal)
+
     await start(this.closestPeerTagger, this.kb)
   }
 
