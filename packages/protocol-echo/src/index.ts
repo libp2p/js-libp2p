@@ -52,6 +52,7 @@ export interface EchoInit {
   maxInboundStreams?: number
   maxOutboundStreams?: number
   runOnLimitedConnection?: boolean
+  timeout?: number
 }
 
 export interface EchoComponents {

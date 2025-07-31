@@ -11,8 +11,9 @@ import { RTCPeerConnection } from '../webrtc/index.js'
 import { initiateConnection } from './initiate-connection.js'
 import { WebRTCPeerListener } from './listener.js'
 import { handleIncomingStream } from './signaling-stream-handler.js'
+import { getRemotePeer } from './util.ts'
 import type { DataChannelOptions } from '../index.js'
-import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, IncomingStreamData, Libp2pEvents, MultiaddrConnection } from '@libp2p/interface'
+import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, Libp2pEvents, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -115,13 +116,13 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   }
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(SIGNALING_PROTOCOL, (data: IncomingStreamData) => {
+    await this.components.registrar.handle(SIGNALING_PROTOCOL, (stream: Stream, connection: Connection) => {
       // ensure we don't try to upgrade forever
       const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
-      this._onProtocol(data, signal)
+      this._onProtocol(stream, connection, signal)
         .catch(err => {
-          this.log.error('failed to handle incoming connect from %p', data.connection.remotePeer, err)
+          this.log.error('failed to handle incoming connect from %p', connection.remotePeer, err)
         })
         .finally(() => {
           signal.clear()
@@ -180,17 +181,18 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       onProgress: options.onProgress
     })
 
-    const webRTCConn = toMultiaddrConnection(this.components, {
+    const webRTCConn = toMultiaddrConnection({
       peerConnection,
       remoteAddr: remoteAddress,
       metrics: this.metrics?.dialerEvents,
-      name: 'webrtc',
-      direction: 'outbound'
+      direction: 'outbound',
+      log: this.components.logger.forComponent('libp2p:webrtc:connection:outbound')
     })
 
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
       skipProtection: true,
       skipEncryption: true,
+      remotePeer: getRemotePeer(ma),
       muxerFactory,
       onProgress: options.onProgress,
       signal: options.signal
@@ -202,18 +204,16 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     return connection
   }
 
-  async _onProtocol ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
+  async _onProtocol (stream: Stream, connection: Connection, signal: AbortSignal): Promise<void> {
     const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
-    const muxerFactory = new DataChannelMuxerFactory(this.components, {
+    const muxerFactory = new DataChannelMuxerFactory({
       peerConnection,
       dataChannelOptions: this.init.dataChannel
     })
 
     try {
-      const { remoteAddress } = await handleIncomingStream({
+      const { remoteAddress, remotePeer } = await handleIncomingStream(stream, connection, {
         peerConnection,
-        connection,
-        stream,
         signal,
         log: this.log
       })
@@ -223,17 +223,18 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
         signal
       })
 
-      const webRTCConn = toMultiaddrConnection(this.components, {
+      const webRTCConn = toMultiaddrConnection({
         peerConnection,
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
-        name: 'webrtc',
-        direction: 'inbound'
+        direction: 'inbound',
+        log: this.components.logger.forComponent('libp2p:webrtc:connection:inbound')
       })
 
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
+        remotePeer,
         muxerFactory,
         signal
       })

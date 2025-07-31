@@ -1,16 +1,13 @@
-import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-connection'
+import { StreamResetError } from '@libp2p/interface'
+import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import delay from 'delay'
 import map from 'it-map'
+import { Uint8ArrayList } from 'uint8arraylist'
 import type { MemoryConnection } from './connections.ts'
-import type { AbortOptions, Direction, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
+import type { StreamDirection, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
+import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Pushable } from 'it-pushable'
-import type { Uint8ArrayList } from 'uint8arraylist'
-
-export interface MemoryMultiaddrConnectionComponents extends AbstractMultiaddrConnectionComponents {
-
-}
 
 export interface MemoryMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream'> {
   localPushable: Pushable<Uint8Array | Uint8ArrayList>
@@ -19,17 +16,14 @@ export interface MemoryMultiaddrConnectionInit extends Omit<AbstractMultiaddrCon
   closeTimeout?: number
   listeningAddr?: Multiaddr
   connection: MemoryConnection
-  direction: Direction
+  direction: StreamDirection
 }
 
 class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
   private localPushable: Pushable<Uint8Array | Uint8ArrayList>
 
-  constructor (components: MemoryMultiaddrConnectionComponents, init: MemoryMultiaddrConnectionInit) {
-    super(components, {
-      ...init,
-      name: 'memory'
-    })
+  constructor (init: MemoryMultiaddrConnectionInit) {
+    super(init)
 
     this.localPushable = init.localPushable
 
@@ -42,7 +36,7 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
 
           return buf
         })) {
-          this.sourcePush(buf)
+          this.onData(buf)
         }
       })
       .catch(err => {
@@ -50,23 +44,38 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
       })
   }
 
-  async closeStream (options?: AbortOptions): Promise<void> {
+  sendReset (): void {
+    this.localPushable.end(new StreamResetError())
+  }
+
+  sendData (data: Uint8Array): boolean {
+    this.localPushable.push(data)
+    return true
+  }
+
+  sendDataV (data: Uint8Array[]): boolean {
+    this.localPushable.push(Uint8ArrayList.fromUint8Arrays(data))
+    return true
+  }
+
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    this.localPushable.end()
     options?.signal?.throwIfAborted()
   }
 
-  sendData (data: Uint8ArrayList, options?: AbortOptions): void | Promise<void> {
-    this.localPushable.push(data)
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    options?.signal?.throwIfAborted()
   }
 
-  sendReset (): void | Promise<void> {
-    this.localPushable.end(new Error('An error occurred'))
+  sendPause (): void {
+    // read backpressure is not supported
   }
 
-  sendClose (): void {
-    this.localPushable.end()
+  sendResume (): void {
+    // read backpressure is not supported
   }
 }
 
-export function pushableToMaConn (components: MemoryMultiaddrConnectionComponents, init: MemoryMultiaddrConnectionInit): MultiaddrConnection {
-  return new MemoryMultiaddrConnection(components, init)
+export function pushableToMaConn (init: MemoryMultiaddrConnectionInit): MultiaddrConnection {
+  return new MemoryMultiaddrConnection(init)
 }

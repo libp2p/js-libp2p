@@ -49,7 +49,7 @@ import { pushable } from 'it-pushable'
 import { raceSignal } from 'race-signal'
 import { pushableToMaConn } from './pushable-to-conn.ts'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
-import type { MultiaddrConnection, PeerId } from '@libp2p/interface'
+import type { Logger, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const connections = new Map<string, MemoryConnection>()
@@ -63,18 +63,22 @@ interface MemoryConnectionInit extends MemoryTransportInit {
   address: string
 }
 
+let connectionId = 0
+
 export class MemoryConnection {
   public readonly latency: number
 
   private readonly components: MemoryTransportComponents
   private readonly init: MemoryConnectionInit
   private readonly connections: Set<MultiaddrConnection>
+  private readonly log: Logger
 
   constructor (components: MemoryTransportComponents, init: MemoryConnectionInit) {
     this.components = components
     this.init = init
     this.connections = new Set()
     this.latency = init.latency ?? 0
+    this.log = components.logger.forComponent('libp2p:memory')
   }
 
   async dial (dialingPeerId: PeerId, signal: AbortSignal): Promise<MultiaddrConnection> {
@@ -104,24 +108,27 @@ export class MemoryConnection {
       }
     })
 
-    const dialer = pushableToMaConn(this.components, {
+    const dialer = pushableToMaConn({
       connection: this,
       remoteAddr: multiaddr(`${this.init.address}/p2p/${this.components.peerId}`),
       direction: 'outbound',
       localPushable: dialerPushable,
-      remotePushable: listenerPushable
+      remotePushable: listenerPushable,
+      log: this.log.newScope(`${connectionId}:outbound`)
     })
 
-    const listener = pushableToMaConn(this.components, {
+    const listener = pushableToMaConn({
       connection: this,
       remoteAddr: multiaddr(`${this.init.address}-outgoing/p2p/${dialingPeerId}`),
       direction: 'inbound',
       localPushable: listenerPushable,
-      remotePushable: dialerPushable
+      remotePushable: dialerPushable,
+      log: this.log.newScope(`${connectionId}:inbound`)
     })
 
     this.connections.add(dialer)
     this.connections.add(listener)
+    connectionId++
 
     await raceSignal(delay(this.latency), signal)
 

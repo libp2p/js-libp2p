@@ -22,7 +22,7 @@ export interface ConnectOptions {
   dataChannel?: DataChannelOptions
   upgrader: Upgrader
   peerId: PeerId
-  remotePeerId?: PeerId
+  remotePeer?: PeerId
   signal: AbortSignal
   privateKey: PrivateKey
 }
@@ -116,19 +116,19 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     const handshakeStream = createStream({
       channel: handshakeDataChannel,
       direction: 'outbound',
-      handshake: true,
+      isHandshake: true,
       log: options.log,
       ...(options.dataChannel ?? {})
     })
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
-    const maConn = toMultiaddrConnection(options, {
+    const maConn = toMultiaddrConnection({
       peerConnection,
       remoteAddr: options.remoteAddr,
       metrics: options.events,
-      name: 'webrtc-direct',
-      direction: options.role === 'client' ? 'outbound' : 'inbound'
+      direction: options.role === 'client' ? 'outbound' : 'inbound',
+      log: options.logger.forComponent(`libp2p:webrtc-direct:connection:${options.role === 'client' ? 'outbound' : 'inbound'}`)
     })
 
     peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {
@@ -149,7 +149,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // Track opened peer connection
     options.events?.increment({ peer_connection: true })
 
-    const muxerFactory = new DataChannelMuxerFactory(options, {
+    const muxerFactory = new DataChannelMuxerFactory({
       peerConnection,
       metrics: options.events,
       dataChannelOptions: options.dataChannel
@@ -160,8 +160,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       // handshake. Therefore, we need to secure an inbound noise connection
       // from the server.
       options.log.trace('%s secure inbound', options.role)
-      await connectionEncrypter.secureInbound(handshakeStream, {
-        remotePeer: options.remotePeerId,
+      const result = await connectionEncrypter.secureInbound(handshakeStream, {
+        remotePeer: options.remotePeer,
         signal: options.signal,
         skipStreamMuxerNegotiation: true
       })
@@ -170,6 +170,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       return await options.upgrader.upgradeOutbound(maConn, {
         skipProtection: true,
         skipEncryption: true,
+        remotePeer: result.remotePeer,
         muxerFactory,
         signal: options.signal
       })
@@ -180,7 +181,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // the client.
     options.log.trace('%s secure outbound', options.role)
     const result = await connectionEncrypter.secureOutbound(handshakeStream, {
-      remotePeer: options.remotePeerId,
+      remotePeer: options.remotePeer,
       signal: options.signal,
       skipStreamMuxerNegotiation: true
     })
@@ -192,6 +193,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     await options.upgrader.upgradeInbound(maConn, {
       skipProtection: true,
       skipEncryption: true,
+      remotePeer: result.remotePeer,
       muxerFactory,
       signal: options.signal
     })

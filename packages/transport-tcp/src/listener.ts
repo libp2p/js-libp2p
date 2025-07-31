@@ -1,6 +1,6 @@
 import net from 'net'
 import { AlreadyStartedError, InvalidParametersError, NotStartedError } from '@libp2p/interface'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { getThinWaistAddresses } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
@@ -14,7 +14,6 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
   inactivityTimeout?: number
-  closeTimeout?: number
   maxConnections?: number
   backlog?: number
   metrics?: Metrics
@@ -161,14 +160,14 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     let maConn: MultiaddrConnection
     try {
-      maConn = toMultiaddrConnection(this.context, {
+      maConn = toMultiaddrConnection({
         socket,
         inactivityTimeout: this.context.inactivityTimeout,
-        closeTimeout: this.context.closeTimeout,
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
         direction: 'inbound',
-        localAddr: this.status.listeningAddr
+        localAddr: this.status.listeningAddr,
+        log: this.context.logger.forComponent('libp2p:tcp:connection:inbound')
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)

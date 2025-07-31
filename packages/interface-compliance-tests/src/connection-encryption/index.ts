@@ -1,13 +1,13 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { multiaddrConnectionPair } from '@libp2p/test-utils'
+import { echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
 import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { mockMultiaddrConnPair } from '../mocks/multiaddr-connection.ts'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface ConnectionEncrypterSetupArgs {
   privateKey: PrivateKey
@@ -47,7 +47,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('it wraps the provided duplex connection', async () => {
-      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
+      const [remoteConn, localConn] = multiaddrConnectionPair()
 
       const [
         inboundResult,
@@ -60,26 +60,29 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       ])
 
       // Echo server
-      void pipe(inboundResult.conn, inboundResult.conn)
-
-      const input = new Array(10_000).fill(0).map((val, index) => {
-        return uint8ArrayFromString(`data to encrypt, chunk ${index}`)
-      })
+      echo(inboundResult.conn)
 
       // Send some data and collect the result
-      const result = await pipe(
-        async function * () {
-          yield * input
-        },
-        outboundResult.conn,
-        async (source) => all(source)
-      )
+      const output: Array<Uint8Array | Uint8ArrayList> = []
 
-      expect(toBuffer(result.map(b => b.subarray()))).to.equalBytes(toBuffer(input))
+      outboundResult.conn.addEventListener('message', (evt) => {
+        output.push(evt.data)
+      })
+
+      const input = new Array(10_000).fill(0).map((val, index) => {
+        const buf = uint8ArrayFromString(`data to encrypt, chunk ${index}`)
+        outboundResult.conn.send(buf)
+
+        return buf
+      })
+
+      await outboundResult.conn.close()
+
+      expect(toBuffer(output.map(b => b.subarray()))).to.equalBytes(toBuffer(input))
     })
 
     it('should return the remote peer id', async () => {
-      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
+      const [remoteConn, localConn] = multiaddrConnectionPair()
 
       const [
         inboundResult,
@@ -98,7 +101,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('inbound connections should verify peer integrity if known', async () => {
-      const { inbound: remoteConn, outbound: localConn } = mockMultiaddrConnPair()
+      const [remoteConn, localConn] = multiaddrConnectionPair()
 
       await Promise.all([
         cryptoRemote.secureInbound(localConn, {

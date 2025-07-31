@@ -1,15 +1,7 @@
-import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-connection'
-import { byteStream } from 'it-byte-stream'
-import forEach from 'it-foreach'
-import { pipe } from 'it-pipe'
+import { AbstractMultiaddrConnection } from '@libp2p/utils'
+import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, MultiaddrConnection, Stream } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
-import type { ByteStream } from 'it-byte-stream'
-import type { Uint8ArrayList } from 'uint8arraylist'
-
-export interface StreamMultiaddrConnectionComponents extends AbstractMultiaddrConnectionComponents {
-
-}
+import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
 
 export interface StreamMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'direction'> {
   stream: Stream
@@ -26,58 +18,48 @@ export interface StreamMultiaddrConnectionInit extends Omit<AbstractMultiaddrCon
 }
 
 class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
-  private stream: ByteStream<Stream>
+  private stream: Stream
+  private init: StreamMultiaddrConnectionInit
 
-  constructor (components: StreamMultiaddrConnectionComponents, init: StreamMultiaddrConnectionInit) {
+  constructor (init: StreamMultiaddrConnectionInit) {
     let closedRead = false
     let closedWrite = false
 
-    super(components, {
+    super({
       ...init,
-      name: 'stream-to-maconn',
-      direction: init.stream.direction
+      direction: init.stream.direction,
+      log: init.log.newScope('stream-to-maconn')
     })
 
-    this.stream = byteStream(init.stream)
+    this.init = init
+    this.stream = init.stream
 
-    // piggyback on `stream.close` invocations to close multiaddr connection
-    const streamClose = init.stream.close.bind(init.stream)
-    init.stream.close = async (options): Promise<void> => {
-      await streamClose(options)
-      close(true)
-    }
-
-    // piggyback on `stream.abort` invocations to close multiaddr connection
-    const streamAbort = init.stream.abort.bind(init.stream)
-    init.stream.abort = (err): void => {
-      streamAbort(err)
-      close(true)
-    }
-
-    // piggyback on `stream.sink` invocations to close multiaddr connection
-    const streamSink = init.stream.sink.bind(init.stream)
-    init.stream.sink = async (source): Promise<void> => {
-      try {
-        await streamSink(
-          pipe(
-            source,
-            (source) => forEach(source, buf => init.onDataWrite?.(buf))
-          )
-        )
-      } catch (err: any) {
-        this.log.error('errored - %e', err)
-
-        // If aborted we can safely ignore
-        if (err.type !== 'aborted') {
-          // If the source errored the socket will already have been destroyed by
-          // toIterable.duplex(). If the socket errored it will already be
-          // destroyed. There's nothing to do here except log the error & return.
-          this.log.error('error in sink - %e', err)
-        }
-      } finally {
-        closedWrite = true
+    this.stream.addEventListener('close', (evt) => {
+      if (evt.error) {
+        close(true)
+      } else {
         close()
       }
+    })
+
+    // count incoming bytes
+    this.stream.addEventListener('message', (evt) => {
+      init.onDataRead?.(evt.data)
+      this.onData(evt.data)
+    })
+
+    this.stream.addEventListener('closeRead', () => {
+      closedRead = true
+    })
+
+    this.stream.addEventListener('closeWrite', () => {
+      closedWrite = true
+    })
+
+    // piggyback on data send to count outgoing bytes
+    const send = this.stream.send.bind(this.stream)
+    this.stream.send = (buf: Uint8Array): boolean => {
+      return send(buf)
     }
 
     const self = this
@@ -95,41 +77,41 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
           })
       }
     }
-
-    Promise.resolve()
-      .then(async () => {
-        while (true) {
-          const buf = await this.stream.read({
-            signal: AbortSignal.timeout(init.inactivityTimeout ?? 5_000)
-          })
-
-          if (buf == null) {
-            break
-          }
-
-          init.onDataRead?.(buf)
-          this.sourcePush(buf)
-        }
-      })
-      .catch(err => {
-        this.abort(err)
-      })
-      .finally(() => {
-        closedRead = true
-        close()
-      })
   }
 
   async sendClose (options?: AbortOptions): Promise<void> {
-    await this.stream.unwrap().close(options)
+    await this.stream.close(options)
   }
 
-  async sendData (data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
-    await this.stream.write(data, options)
+  sendData (data: Uint8Array): boolean {
+    this.init.onDataWrite?.(data)
+    return this.stream.send(data)
+  }
+
+  sendDataV (data: Uint8Array[]): boolean {
+    const list = Uint8ArrayList.fromUint8Arrays(data)
+    this.init.onDataWrite?.(list)
+    return this.stream.send(list)
   }
 
   sendReset (): void {
-    this.stream.unwrap().abort(new Error('An error occurred'))
+    this.stream.abort(new Error('An error occurred'))
+  }
+
+  sendCloseWrite (options?: AbortOptions): Promise<void> {
+    return this.stream.closeWrite(options)
+  }
+
+  sendCloseRead (options?: AbortOptions): Promise<void> {
+    return this.stream.closeRead(options)
+  }
+
+  sendPause (): void {
+    this.stream.pause()
+  }
+
+  sendResume (): void {
+    this.stream.resume()
   }
 }
 
@@ -137,6 +119,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
  * Convert a duplex iterable into a MultiaddrConnection.
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export function streamToMaConnection (components: StreamMultiaddrConnectionComponents, init: StreamMultiaddrConnectionInit): MultiaddrConnection {
-  return new StreamMultiaddrConnection(components, init)
+export function streamToMaConnection (init: StreamMultiaddrConnectionInit): MultiaddrConnection {
+  return new StreamMultiaddrConnection(init)
 }

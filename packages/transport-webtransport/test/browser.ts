@@ -113,8 +113,12 @@ describe('libp2p-webtransport', () => {
 
     // send and receive data
     const [, output] = await Promise.all([
-      stream.sink(gen()),
-      toBuffer(map(stream.source, buf => buf.subarray()))
+      Promise.resolve().then(async () => {
+        for await (const buf of gen()) {
+          stream.send(buf)
+        }
+      }),
+      toBuffer(map(stream, buf => buf.subarray()))
     ])
 
     // closing takes a little bit of time

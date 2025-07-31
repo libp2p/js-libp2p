@@ -1,4 +1,4 @@
-import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'

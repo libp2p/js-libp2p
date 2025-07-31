@@ -120,11 +120,12 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
-    const maConn = socketToMaConn(this.components, {
+    const maConn = socketToMaConn({
       websocket: await this._connect(ma, options),
       remoteAddr: ma,
       metrics: this.metrics?.dialerEvents,
-      direction: 'outbound'
+      direction: 'outbound',
+      log: this.components.logger.forComponent('libp2p:websockets:connection:outbound')
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 

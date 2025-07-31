@@ -1,5 +1,5 @@
 import { TimeoutError } from '@libp2p/interface'
-import { pbStream } from 'it-protobuf-stream'
+import { pbStream } from '@libp2p/utils'
 import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
 import { FindNodeHandler } from './handlers/find-node.js'
@@ -15,7 +15,7 @@ import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
 import type { GetValueHandlerComponents } from './handlers/get-value.js'
 import type { PutValueHandlerComponents } from './handlers/put-value.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData, MetricGroup } from '@libp2p/interface'
+import type { CounterGroup, Logger, Metrics, PeerId, MetricGroup, Connection, Stream } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -95,12 +95,10 @@ export class RPC {
   /**
    * Handle incoming streams on the dht protocol
    */
-  onIncomingStream (data: IncomingStreamData): void {
+  onIncomingStream (stream: Stream, connection: Connection): void {
     const message = 'unknown'
 
     Promise.resolve().then(async () => {
-      const { stream, connection } = data
-
       const abortListener = (): void => {
         stream.abort(new TimeoutError())
       }
@@ -153,7 +151,7 @@ export class RPC {
       }
     })
       .catch(err => {
-        this.log.error('error handling %s RPC message from %p - %e', message, data.connection.remotePeer, err)
+        this.log.error('error handling %s RPC message from %p - %e', message, connection.remotePeer, err)
       })
   }
 }

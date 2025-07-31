@@ -1,5 +1,5 @@
 import { PeerSet } from '@libp2p/peer-collections'
-import { Queue } from '@libp2p/utils/queue'
+import { Queue } from '@libp2p/utils'
 import { pushable } from 'it-pushable'
 import { ALPHA } from '../constants.js'
 import { MessageType } from '../message/dht.js'

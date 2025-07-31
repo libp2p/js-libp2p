@@ -133,6 +133,18 @@ export class MuxerClosedError extends Error {
 }
 
 /**
+ * Thrown when a protocol stream is closed during an operation
+ */
+export class StreamClosedError extends Error {
+  static name = 'StreamClosedError'
+
+  constructor (message = 'The stream has been closed') {
+    super(message)
+    this.name = 'StreamClosedError'
+  }
+}
+
+/**
  * Thrown when a protocol stream is reset by the remote muxer
  */
 export class StreamResetError extends Error {
@@ -153,6 +165,18 @@ export class StreamStateError extends Error {
   constructor (message = 'The stream is in an invalid state') {
     super(message)
     this.name = 'StreamStateError'
+  }
+}
+
+/**
+ * Thrown when a stream buffer is full
+ */
+export class StreamBufferError extends Error {
+  static name = 'StreamBufferError'
+
+  constructor (message = 'The stream buffer was full') {
+    super(message)
+    this.name = 'StreamBufferError'
   }
 }
 

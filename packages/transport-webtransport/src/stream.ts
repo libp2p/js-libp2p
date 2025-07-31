@@ -1,8 +1,7 @@
-import { AbstractStream } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
-import { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions, Direction, Logger, Stream } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { AbortOptions, StreamDirection, Logger, Stream } from '@libp2p/interface'
+import type { AbstractStreamInit } from '@libp2p/utils'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
   bidiStream: WebTransportBidirectionalStream
@@ -18,63 +17,77 @@ class WebTransportStream extends AbstractStream {
     this.writer = init.bidiStream.writable.getWriter()
     this.reader = init.bidiStream.readable.getReader()
 
+    void this.writer.closed
+      .then(() => {
+        this.log('writer closed')
+      })
+      .catch((err) => {
+        this.log('writer close promise rejected - %e', err)
+      })
+      .finally(() => {
+        this.onRemoteClosedRead()
+      })
+
+    this.readData()
+  }
+
+  private readData (): void {
     Promise.resolve()
       .then(async () => {
         while (true) {
           const result = await this.reader.read()
 
           if (result.done) {
-            init.log('remote closed write')
+            this.log('remote closed write')
+            this.onRemoteClosedWrite()
             return
           }
 
           if (result.value != null) {
-            this.sourcePush(result.value)
+            this.onData(result.value)
+          }
+
+          if (this.readStatus === 'paused') {
+            break
           }
         }
       })
       .catch(err => {
-        init.log.error('error reading from stream', err)
         this.abort(err)
       })
       .finally(() => {
-        this.remoteCloseWrite()
-      })
-
-    void this.writer.closed
-      .then(() => {
-        init.log('writer closed')
-      })
-      .catch((err) => {
-        init.log('writer close promise rejected', err)
-      })
-      .finally(() => {
-        this.remoteCloseRead()
+        this.reader.releaseLock()
       })
   }
 
-  sendNewStream (options?: AbortOptions | undefined): void {
-    // this is a no-op
-  }
+  sendData (buf: Uint8Array): boolean {
+    // the streams spec recommends not waiting for data to be sent
+    // https://streams.spec.whatwg.org/#example-manual-write-dont-await
+    this.writer.ready
+      .then(() => this.writer.write(buf))
+      .catch(err => {
+        this.log.error('error sending stream data - %e', err)
+      })
 
-  async sendData (buf: Uint8ArrayList, options?: AbortOptions): Promise<void> {
-    for (const chunk of buf) {
-      this.log('sendData waiting for writer to be ready')
-      await raceSignal(this.writer.ready, options?.signal)
-
-      // the streams spec recommends not waiting for data to be sent
-      // https://streams.spec.whatwg.org/#example-manual-write-dont-await
-      this.writer.write(chunk)
-        .catch(err => {
-          this.log.error('error sending stream data', err)
-        })
+    // The desiredSize read-only property of the WritableStreamDefaultWriter
+    // interface returns the desired size required to fill the stream's internal
+    // queue.
+    //
+    // the value will be null if the stream cannot be successfully written to
+    // (due to either being errored, or having an abort queued up), and zero if
+    // the stream is closed. It can be negative if the queue is over-full
+    if (this.writer.desiredSize == null) {
+      return false
     }
+
+    return this.writer.desiredSize > 0
   }
 
-  async sendReset (options?: AbortOptions): Promise<void> {
-    this.log('sendReset aborting writer')
-    await raceSignal(this.writer.abort(), options?.signal)
-    this.log('sendReset aborted writer')
+  sendReset (err: Error): void {
+    this.writer.abort(err)
+      .catch(err => {
+        this.log.error('error aborting writer - %e', err)
+      })
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
@@ -88,23 +101,21 @@ class WebTransportStream extends AbstractStream {
     await raceSignal(this.reader.cancel(), options?.signal)
     this.log('sendCloseRead cancelled reader')
   }
+
+  sendPause (): void {
+
+  }
+
+  sendResume (): void {
+    this.readData()
+  }
 }
 
-export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), log: Logger): Promise<Stream> {
-  const stream = new WebTransportStream({
+export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: StreamDirection, log: Logger): Stream {
+  return new WebTransportStream({
     bidiStream,
     id: streamId,
     direction,
-    log: log.newScope(`${direction}:${streamId}`),
-    onEnd: () => {
-      const index = activeStreams.findIndex(s => s === stream)
-      if (index !== -1) {
-        activeStreams.splice(index, 1)
-      }
-
-      onStreamEnd?.(stream)
-    }
+    log: log.newScope(`${direction}:${streamId}`)
   })
-
-  return stream
 }

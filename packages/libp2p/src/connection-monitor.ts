@@ -1,11 +1,10 @@
 import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
-import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
-import { byteStream } from 'it-byte-stream'
+import { AdaptiveTimeout, byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
 import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
 const DEFAULT_PING_INTERVAL_MS = 10000
 const PROTOCOL_VERSION = '1.0.0'

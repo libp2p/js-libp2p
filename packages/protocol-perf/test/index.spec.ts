@@ -1,12 +1,11 @@
 /* eslint-env mocha */
 
 import { start, stop } from '@libp2p/interface'
-import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
+import { streamPair } from '@libp2p/test-utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
-import { duplexPair } from 'it-pair/duplex'
 import { stubInterface } from 'sinon-ts'
 import { Perf } from '../src/perf-service.js'
 import type { ComponentLogger, Connection } from '@libp2p/interface'
@@ -57,8 +56,7 @@ describe('perf', () => {
 
     // simulate connection between nodes
     const ma = multiaddr('/ip4/0.0.0.0')
-    const duplexes = duplexPair<any>()
-    const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
+    const streams = await streamPair()
 
     const aToB = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
@@ -72,7 +70,7 @@ describe('perf', () => {
     const bToA = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
-    void server.handleMessage({ stream: streams[1], connection: bToA })
+    void server.handleMessage(streams[1], bToA)
 
     // Run Perf
     const finalResult = await last(client.measurePerformance(ma, 1024, 1024))
@@ -92,8 +90,7 @@ describe('perf', () => {
 
     // simulate connection between nodes
     const ma = multiaddr('/ip4/0.0.0.0')
-    const duplexes = duplexPair<any>()
-    const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
+    const streams = await streamPair()
 
     const aToB = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
@@ -105,7 +102,7 @@ describe('perf', () => {
     const bToA = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
-    void server.handleMessage({ stream: streams[1], connection: bToA })
+    void server.handleMessage(streams[1], bToA)
 
     // Run Perf
     const finalResult = await last(client.measurePerformance(ma, 1024, 1024, {

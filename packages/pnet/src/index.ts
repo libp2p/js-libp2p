@@ -58,18 +58,10 @@
 
 import { randomBytes } from '@libp2p/crypto'
 import { InvalidParametersError } from '@libp2p/interface'
-import { byteStream } from 'it-byte-stream'
-import map from 'it-map'
-import { duplexPair } from 'it-pair/duplex'
-import { pipe } from 'it-pipe'
-import {
-  createBoxStream,
-  createUnboxStream,
-  decodeV1PSK
-} from './crypto.js'
+import { byteStream } from '@libp2p/utils'
+import { BoxMessageStream, decodeV1PSK } from './crypto.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection } from '@libp2p/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection, MessageStream } from '@libp2p/interface'
 
 export { generateKey } from './key-generator.js'
 
@@ -117,13 +109,14 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    */
-  async protect (connection: MultiaddrConnection): Promise<MultiaddrConnection> {
+  async protect (connection: MultiaddrConnection): Promise<MessageStream> {
     if (connection == null) {
       throw new InvalidParametersError('No connection for the handshake provided')
     }
 
     // Exchange nonces
-    this.log('protecting the connection')
+    const log = connection.log.newScope('pnet')
+    log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
     const signal = AbortSignal.timeout(this.timeout)
@@ -145,23 +138,15 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     const remoteNonce = result.subarray()
 
     // Create the boxing/unboxing pipe
-    this.log('exchanged nonces')
-    const [internal, external] = duplexPair<Uint8Array | Uint8ArrayList>()
-    pipe(
-      external,
-      // Encrypt all outbound traffic
-      createBoxStream(localNonce, this.psk),
-      bytes.unwrap(),
-      (source) => map(source, (buf) => buf.subarray()),
-      // Decrypt all inbound traffic
-      createUnboxStream(remoteNonce, this.psk),
-      external
-    ).catch(this.log.error)
+    log('exchanged nonces')
 
-    connection.sink = internal.sink
-    connection.source = internal.source
-
-    return connection
+    return new BoxMessageStream({
+      localNonce,
+      remoteNonce,
+      psk: this.psk,
+      maConn: connection,
+      log
+    })
   }
 }
 

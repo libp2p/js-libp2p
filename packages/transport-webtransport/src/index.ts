@@ -31,20 +31,17 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import { raceSignal } from 'race-signal'
-import { MAX_INBOUND_STREAMS } from './constants.js'
 import createListener from './listener.js'
 import { webtransportMuxer } from './muxer.js'
 import { toMultiaddrConnection } from './session-to-conn.ts'
 import { isSubset } from './utils/is-subset.js'
 import { parseMultiaddr } from './utils/parse-multiaddr.js'
+import { WebTransportMessageStream } from './utils/webtransport-message-stream.ts'
 import WebTransport from './webtransport.js'
 import type { Upgrader, Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Source } from 'it-stream-types'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { ProgressEvent } from 'progress-events'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
  * PEM format server certificate and private key
@@ -61,7 +58,6 @@ interface WebTransportSessionCleanup {
 }
 
 export interface WebTransportInit {
-  maxInboundStreams?: number
   certificates?: WebTransportCertificate[]
 }
 
@@ -86,6 +82,7 @@ export type WebTransportDialEvents =
 
 interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransportDialEvents> {
   wt: WebTransport
+  maConn: MultiaddrConnection
   remotePeer?: PeerId
   certhashes: Array<MultihashDigest<number>>
 }
@@ -101,7 +98,6 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     this.components = components
     this.config = {
       ...init,
-      maxInboundStreams: init.maxInboundStreams ?? MAX_INBOUND_STREAMS,
       certificates: init.certificates ?? []
     }
 
@@ -200,24 +196,32 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           cleanUpWTSession('remote_close')
         })
 
-      authenticated = await raceSignal(this.authenticateWebTransport({ wt, remotePeer, certhashes, ...options }), options.signal)
+      this.metrics?.dialerEvents.increment({ open: true })
+
+      maConn = toMultiaddrConnection({
+        remoteAddr: ma,
+        cleanUpWTSession,
+        direction: 'outbound',
+        log: this.components.logger.forComponent('libp2p:webtransport:connection:outbound')
+      })
+
+      authenticated = await this.authenticateWebTransport({
+        wt,
+        maConn,
+        remotePeer,
+        certhashes,
+        ...options
+      })
 
       if (!authenticated) {
         throw new InvalidCryptoExchangeError('Failed to authenticate webtransport')
       }
 
-      this.metrics?.dialerEvents.increment({ open: true })
-
-      maConn = toMultiaddrConnection(this.components, {
-        remoteAddr: ma,
-        cleanUpWTSession,
-        direction: 'outbound'
-      })
-
       return await options.upgrader.upgradeOutbound(maConn, {
         ...options,
         skipEncryption: true,
-        muxerFactory: webtransportMuxer(wt, wt.incomingBidirectionalStreams.getReader(), this.log, this.config),
+        remotePeer,
+        muxerFactory: webtransportMuxer(wt),
         skipProtection: true
       })
     } catch (err: any) {
@@ -239,58 +243,30 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     }
   }
 
-  async authenticateWebTransport ({ wt, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
-    signal?.throwIfAborted()
-
+  async authenticateWebTransport ({ wt, maConn, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
     onProgress?.(new CustomProgressEvent('webtransport:open-authentication-stream'))
     const stream = await wt.createBidirectionalStream()
-    const writer = stream.writable.getWriter()
-    const reader = stream.readable.getReader()
+    signal?.throwIfAborted()
 
-    const duplex = {
-      source: (async function * () {
-        while (true) {
-          const val = await reader.read()
-
-          if (val.value != null) {
-            yield val.value
-          }
-
-          if (val.done) {
-            break
-          }
-        }
-      })(),
-      sink: async (source: Source<Uint8Array | Uint8ArrayList>) => {
-        for await (const chunk of source) {
-          await raceSignal(writer.ready, signal)
-
-          const buf = chunk instanceof Uint8Array ? chunk : chunk.subarray()
-
-          writer.write(buf).catch(err => {
-            this.log.error('could not write chunk during authentication of WebTransport stream', err)
-          })
-        }
-      }
-    }
+    const messages = new WebTransportMessageStream({
+      stream,
+      log: maConn.log.newScope('muxer')
+    })
 
     const n = noise()(this.components)
 
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
-    const { remoteExtensions } = await n.secureOutbound(duplex, {
+    const { remoteExtensions } = await n.secureOutbound(messages, {
       signal,
       remotePeer,
       skipStreamMuxerNegotiation: true
     })
 
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))
-    // We're done with this authentication stream
-    writer.close().catch((err: Error) => {
-      this.log.error(`Failed to close authentication stream writer: ${err.message}`)
-    })
 
-    reader.cancel().catch((err: Error) => {
-      this.log.error(`Failed to close authentication stream reader: ${err.message}`)
+    // We're done with this authentication stream
+    await messages.close({
+      signal
     })
 
     // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
@@ -304,8 +280,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
   createListener (options: CreateListenerOptions): Listener {
     return createListener(this.components, {
       ...options,
-      certificates: this.config.certificates,
-      maxInboundStreams: this.config.maxInboundStreams
+      certificates: this.config.certificates
     })
   }
 

@@ -1,8 +1,7 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
-import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { getThinWaistAddresses, ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
@@ -191,12 +190,13 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     let maConn: MultiaddrConnection
 
     try {
-      maConn = socketToMaConn(this.components, {
+      maConn = socketToMaConn({
         websocket: toWebSocket(socket),
         remoteAddr: toMultiaddr(req.socket.remoteAddress ?? '0.0.0.0', req.socket.remotePort ?? 0),
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
-        direction: 'inbound'
+        direction: 'inbound',
+        log: this.components.logger.forComponent('libp2p:websockets:connection:inbound')
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)
@@ -214,11 +214,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         this.log.error('inbound connection failed to upgrade - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-        await maConn.close()
-          .catch(err => {
-            this.log.error('inbound connection failed to close after upgrade failed', err)
-            this.metrics.errors?.increment({ [`${this.addr} inbound_closing_failed`]: true })
-          })
+        maConn.close()
       })
   }
 

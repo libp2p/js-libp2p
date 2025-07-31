@@ -1,8 +1,6 @@
 import { serviceCapabilities } from '@libp2p/interface'
 import { PROTOCOL } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, SecureConnectionOptions } from '@libp2p/interface'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 export class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
@@ -17,11 +15,11 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureInbound <Stream extends MessageStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     throw new Error('TLS encryption is not possible in browsers')
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureOutbound <Stream extends MessageStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     throw new Error('TLS encryption is not possible in browsers')
   }
 }

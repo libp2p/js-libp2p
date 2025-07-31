@@ -18,13 +18,11 @@ describe('Multiaddr Connection', () => {
       reset: () => {}
     })
     const maConn = toMultiaddrConnection({
-      logger: defaultLogger()
-    }, {
       peerConnection,
       remoteAddr,
       metrics,
-      name: 'webrtc',
-      direction: 'outbound'
+      direction: 'outbound',
+      log: defaultLogger().forComponent('libp2p:webrtc:connection')
     })
 
     expect(maConn.timeline.close).to.be.undefined

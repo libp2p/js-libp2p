@@ -1,13 +1,12 @@
 import { ProtocolError } from '@libp2p/interface'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { isPrivateIp, pbStream } from '@libp2p/utils'
 import { CODE_IP4, CODE_IP6, multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import { MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } from './constants.ts'
 import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from './pb/index.ts'
 import { randomNumber } from './utils.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
-import type { Logger, Connection, Startable, AbortOptions, IncomingStreamData, Stream } from '@libp2p/interface'
+import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MessageStream } from 'it-protobuf-stream'
 
@@ -37,6 +36,8 @@ export class AutoNATv2Server implements Startable {
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.maxMessageSize = init.maxMessageSize ?? MAX_MESSAGE_SIZE
+
+    this.handleDialRequestStream = this.handleDialRequestStream.bind(this)
   }
 
   async start (): Promise<void> {
@@ -45,12 +46,7 @@ export class AutoNATv2Server implements Startable {
     }
 
     // AutoNat server
-    await this.components.registrar.handle(this.dialRequestProtocol, (data) => {
-      void this.handleDialRequestStream(data)
-        .catch(err => {
-          this.log.error('error handling incoming autonat stream - %e', err)
-        })
-    }, {
+    await this.components.registrar.handle(this.dialRequestProtocol, this.handleDialRequestStream, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams
     })
@@ -67,97 +63,92 @@ export class AutoNATv2Server implements Startable {
   /**
    * Handle an incoming AutoNAT request
    */
-  async handleDialRequestStream (data: IncomingStreamData): Promise<void> {
+  async handleDialRequestStream (stream: Stream, connection: Connection): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const messages = pbStream(data.stream, {
+    const messages = pbStream(stream, {
       maxDataLength: this.maxMessageSize
     }).pb(Message)
 
-    try {
-      const connectionIp = getIpAddress(data.connection.remoteAddr)
+    const connectionIp = getIpAddress(connection.remoteAddr)
 
-      if (connectionIp == null) {
-        throw new ProtocolError(`Could not find IP address in connection address "${data.connection.remoteAddr}"`)
-      }
+    if (connectionIp == null) {
+      throw new ProtocolError(`Could not find IP address in connection address "${connection.remoteAddr}"`)
+    }
 
-      const { dialRequest } = await messages.read({
-        signal
-      })
+    const { dialRequest } = await messages.read({
+      signal
+    })
 
-      if (dialRequest == null) {
-        throw new ProtocolError('Did not receive DialRequest message on incoming dial request stream')
-      }
+    if (dialRequest == null) {
+      throw new ProtocolError('Did not receive DialRequest message on incoming dial request stream')
+    }
 
-      if (dialRequest.addrs.length === 0) {
-        throw new ProtocolError('Did not receive any addresses to dial')
-      }
+    if (dialRequest.addrs.length === 0) {
+      throw new ProtocolError('Did not receive any addresses to dial')
+    }
 
-      for (let i = 0; i < dialRequest.addrs.length; i++) {
-        try {
-          const ma = multiaddr(dialRequest.addrs[i])
-          const isDialable = await this.components.connectionManager.isDialable(ma, {
-            signal
-          })
+    for (let i = 0; i < dialRequest.addrs.length; i++) {
+      try {
+        const ma = multiaddr(dialRequest.addrs[i])
+        const isDialable = await this.components.connectionManager.isDialable(ma, {
+          signal
+        })
 
-          if (!isDialable) {
-            await messages.write({
-              dialResponse: {
-                addrIdx: i,
-                status: DialResponse.ResponseStatus.E_DIAL_REFUSED,
-                dialStatus: DialStatus.UNUSED
-              }
-            }, {
-              signal
-            })
-
-            continue
-          }
-
-          const ip = getIpAddress(ma)
-
-          if (ip == null) {
-            throw new ProtocolError(`Could not find IP address in requested address "${ma}"`)
-          }
-
-          if (isPrivateIp(ip)) {
-            throw new ProtocolError(`Requested address had private IP "${ma}"`)
-          }
-
-          if (ip !== connectionIp) {
-            // amplification attack protection - request the client sends us a
-            // random number of bytes before we'll dial the address
-            await this.preventAmplificationAttack(messages, i, {
-              signal
-            })
-          }
-
-          const dialStatus = await this.dialClientBack(ma, dialRequest.nonce, {
-            signal
-          })
-
+        if (!isDialable) {
           await messages.write({
             dialResponse: {
               addrIdx: i,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus
+              status: DialResponse.ResponseStatus.E_DIAL_REFUSED,
+              dialStatus: DialStatus.UNUSED
             }
           }, {
             signal
           })
-        } catch (err) {
-          this.log.error('could not parse multiaddr - %e', err)
-        }
-      }
 
-      await data.stream.close({
-        signal
-      })
-    } catch (err: any) {
-      this.log.error('error handling incoming autonat stream - %e', err)
-      data.stream.abort(err)
+          continue
+        }
+
+        const ip = getIpAddress(ma)
+
+        if (ip == null) {
+          throw new ProtocolError(`Could not find IP address in requested address "${ma}"`)
+        }
+
+        if (isPrivateIp(ip)) {
+          throw new ProtocolError(`Requested address had private IP "${ma}"`)
+        }
+
+        if (ip !== connectionIp) {
+          // amplification attack protection - request the client sends us a
+          // random number of bytes before we'll dial the address
+          await this.preventAmplificationAttack(messages, i, {
+            signal
+          })
+        }
+
+        const dialStatus = await this.dialClientBack(ma, dialRequest.nonce, {
+          signal
+        })
+
+        await messages.write({
+          dialResponse: {
+            addrIdx: i,
+            status: DialResponse.ResponseStatus.OK,
+            dialStatus
+          }
+        }, {
+          signal
+        })
+      } catch (err) {
+        this.log.error('error handling incoming dialback request - %e', err)
+      }
     }
+
+    await stream.close({
+      signal
+    })
   }
 
   private async preventAmplificationAttack (messages: MessageStream<Message, Stream>, index: number, options: AbortOptions): Promise<void> {
@@ -207,7 +198,7 @@ export class AutoNATv2Server implements Startable {
         nonce
       }, DialBack, options)
 
-      const response = await dialBackMessages.read(DialBackResponse)
+      const response = await dialBackMessages.read(DialBackResponse, options)
 
       if (response.status !== DialBackResponse.DialBackStatus.OK) {
         throw new ProtocolError('DialBackResponse status was not OK')

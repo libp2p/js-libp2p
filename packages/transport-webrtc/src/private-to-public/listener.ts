@@ -1,6 +1,6 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { InvalidParametersError } from '@libp2p/interface'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { getThinWaistAddresses } from '@libp2p/utils'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import getPort from 'get-port'

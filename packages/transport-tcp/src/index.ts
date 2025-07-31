@@ -60,11 +60,6 @@ export interface TCPOptions {
   outboundSocketInactivityTimeout?: number
 
   /**
-   * When closing a socket, wait this long for it to close gracefully before it is closed more forcibly
-   */
-  closeTimeout?: number
-
-  /**
    * Set this property to reject connections when the server's connection count gets high.
    * https://nodejs.org/api/net.html#servermaxconnections
    */

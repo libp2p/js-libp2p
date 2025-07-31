@@ -1,7 +1,7 @@
 import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, IncomingStreamData, StreamHandler, StreamHandlerRecord } from '@libp2p/interface'
+import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
@@ -139,14 +139,4 @@ export const ConnectionPair = (): [Connection, Connection] => {
       streams: []
     }
   ]
-}
-
-export async function mockIncomingStreamEvent (protocol: string, conn: Connection, remotePeer: PeerId): Promise<IncomingStreamData> {
-  return {
-    stream: await conn.newStream([protocol]),
-    // @ts-expect-error incomplete implementation
-    connection: {
-      remotePeer
-    }
-  }
 }

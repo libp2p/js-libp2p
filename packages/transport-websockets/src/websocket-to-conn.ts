@@ -1,12 +1,8 @@
-import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-connection'
+import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
-
-export interface WebSocketMultiaddrConnectionComponents extends AbstractMultiaddrConnectionComponents {
-
-}
+import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
+import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
 
 export interface WebSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name'> {
   websocket: WebSocket
@@ -15,45 +11,33 @@ export interface WebSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddr
 class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   private websocket: WebSocket
 
-  constructor (components: WebSocketMultiaddrConnectionComponents, init: WebSocketMultiaddrConnectionInit) {
-    super(components, {
-      ...init,
-      name: 'websockets'
-    })
+  constructor (init: WebSocketMultiaddrConnectionInit) {
+    super(init)
 
     this.websocket = init.websocket
 
-    // track local vs remote closing
-    let closedLocally = false
-    const close = this.websocket.close.bind(init.websocket)
-    this.websocket.close = (...args) => {
-      closedLocally = true
-      return close(...args)
-    }
-
     this.websocket.addEventListener('close', (evt) => {
-      this.log('closed %s, code %d, reason "%s", wasClean %s', closedLocally ? 'locally' : 'by remote', evt.code, evt.reason, evt.wasClean)
+      this.log('closed - code %d, reason "%s", wasClean %s', evt.code, evt.reason, evt.wasClean)
 
       if (!evt.wasClean) {
-        this.reset()
+        this.onRemoteReset()
         return
       }
 
       if (this.status === 'open') {
-        this.remoteCloseRead()
-        this.remoteCloseWrite()
+        this.onRemoteClose()
       }
     }, { once: true })
 
     this.websocket.addEventListener('message', (evt) => {
-      this.onData(evt)
+      this.onMessage(evt)
         .catch(err => {
           this.log.error('error receiving data - %e', err)
         })
     })
   }
 
-  private async onData (evt: MessageEvent<string | Blob | ArrayBuffer>): Promise<void> {
+  private async onMessage (evt: MessageEvent<string | Blob | ArrayBuffer>): Promise<void> {
     let buf: Uint8Array
 
     if (evt.data instanceof Blob) {
@@ -64,26 +48,47 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       buf = new Uint8Array(evt.data, 0, evt.data.byteLength)
     }
 
-    this.sourcePush(buf)
+    this.onData(buf)
   }
 
-  sendData (data: Uint8ArrayList): void {
+  sendData (data: Uint8Array | Uint8ArrayList): boolean {
+    if (data instanceof Uint8Array) {
+      this.websocket.send(data)
+
+      return true
+    }
+
     for (const buf of data) {
       this.websocket.send(buf)
     }
+
+    return true
   }
 
   sendReset (): void {
     this.websocket.close(1006) // abnormal closure
   }
 
-  sendClose (): void {
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this.websocket.close()
+    options?.signal?.throwIfAborted()
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    options?.signal?.throwIfAborted()
+  }
+
+  sendPause (): void {
+    // read backpressure is not supported
+  }
+
+  sendResume (): void {
+    // read backpressure is not supported
   }
 }
 
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
-export function socketToMaConn (components: WebSocketMultiaddrConnectionComponents, init: WebSocketMultiaddrConnectionInit): MultiaddrConnection {
-  return new WebSocketMultiaddrConnection(components, init)
+export function socketToMaConn (init: WebSocketMultiaddrConnectionInit): MultiaddrConnection {
+  return new WebSocketMultiaddrConnection(init)
 }

@@ -1,6 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
-import { mockRegistrar, mockConnectionManager, mockNetwork } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
@@ -17,6 +16,8 @@ import type { KadDHT, KadDHTComponents, KadDHTInit } from '../../src/index.js'
 import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
+
+let memoryIndex = 0
 
 export class TestDHT {
   private readonly peers: Map<string, { dht: KadDHT, registrar: Registrar }>
@@ -35,7 +36,7 @@ export class TestDHT {
       peerId,
       privateKey,
       datastore: new MemoryDatastore(),
-      registrar: mockRegistrar(),
+      registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
       connectionManager: stubInterface<ConnectionManager>(),
@@ -43,10 +44,7 @@ export class TestDHT {
       logger: defaultLogger(),
       ping: stubInterface<Ping>()
     }
-    components.connectionManager = mockConnectionManager({
-      ...components,
-      events
-    })
+    components.connectionManager = stubInterface<ConnectionManager>()
     components.peerStore = persistentPeerStore({
       ...components,
       events
@@ -54,16 +52,9 @@ export class TestDHT {
 
     await start(...Object.values(components))
 
-    mockNetwork.addNode({
-      ...components,
-      events
-    })
-
     const addressManager = stubInterface<AddressManager>()
     addressManager.getAddresses.returns([
-      multiaddr(`/ip4/127.0.0.1/tcp/4002/p2p/${components.peerId.toString()}`),
-      multiaddr(`/ip4/192.168.1.1/tcp/4002/p2p/${components.peerId.toString()}`),
-      multiaddr(`/ip4/85.3.31.0/tcp/4002/p2p/${components.peerId.toString()}`)
+      multiaddr(`/memory/${memoryIndex++}/p2p/${components.peerId.toString()}`)
     ])
 
     components.addressManager = addressManager

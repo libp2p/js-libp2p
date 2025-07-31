@@ -1,6 +1,6 @@
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { isPrivateIp } from '@libp2p/utils'
 import { Key } from 'interface-datastore/key'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -158,15 +158,6 @@ export function createPutRecord (key: Uint8Array, value: Uint8Array): Uint8Array
   const rec = new Libp2pRecord(key, value, timeReceived)
 
   return rec.serialize()
-}
-
-export function debounce (callback: () => void, wait: number = 100): () => void {
-  let timeout: ReturnType<typeof setTimeout>
-
-  return (): void => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => { callback() }, wait)
-  }
 }
 
 // see https://github.com/multiformats/multiaddr/blob/master/protocols.csv

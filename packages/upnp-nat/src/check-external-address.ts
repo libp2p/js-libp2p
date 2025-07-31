@@ -1,11 +1,11 @@
 import { NotStartedError, start, stop } from '@libp2p/interface'
-import { repeatingTask } from '@libp2p/utils/repeating-task'
+import { repeatingTask } from '@libp2p/utils'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
 import type { Gateway } from '@achingbrain/nat-port-mapper'
 import type { AbortOptions, ComponentLogger, Logger, Startable } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
-import type { RepeatingTask } from '@libp2p/utils/repeating-task'
+import type { RepeatingTask } from '@libp2p/utils'
 import type { DeferredPromise } from 'p-defer'
 
 export interface ExternalAddressCheckerComponents {

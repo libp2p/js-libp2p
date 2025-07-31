@@ -1,12 +1,8 @@
 /* eslint-env mocha */
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { mockMultiaddrConnPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddrConnectionPair } from '@libp2p/test-utils'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
+import { raceEvent } from 'race-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { INVALID_PSK } from '../src/errors.js'
 import { preSharedKey, generateKey } from '../src/index.js'
@@ -30,13 +26,8 @@ describe('private network', () => {
   })
 
   it('should protect a simple connection', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ],
-      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    })
+    const [inbound, outbound] = multiaddrConnectionPair()
+
     const protector = preSharedKey({
       psk: swarmKeyBuffer
     })({
@@ -48,35 +39,23 @@ describe('private network', () => {
       protector.protect(outbound)
     ])
 
-    void pipe(
-      async function * () {
-        yield uint8ArrayFromString('hello world')
-        yield uint8ArrayFromString('doo dah')
-      },
-      aToB
-    )
+    const output: Uint8Array[] = []
 
-    const output = await pipe(
-      bToA,
-      async function * (source) {
-        for await (const chunk of source) {
-          yield chunk.slice()
-        }
-      },
-      async (source) => all(source)
-    )
+    bToA.addEventListener('message', (evt) => {
+      output.push(evt.data.subarray())
+    })
 
-    expect(output).to.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
+    aToB.send(uint8ArrayFromString('hello world'))
+    aToB.send(uint8ArrayFromString('doo dah'))
+    await aToB.close()
+
+    await raceEvent(bToA, 'close')
+
+    expect(output).to.deep.equal([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
   it('should not be able to share correct data with different keys', async () => {
-    const { inbound, outbound } = mockMultiaddrConnPair({
-      addrs: [
-        multiaddr('/ip4/127.0.0.1/tcp/1234'),
-        multiaddr('/ip4/127.0.0.1/tcp/1235')
-      ],
-      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    })
+    const [inbound, outbound] = multiaddrConnectionPair()
     const protector = preSharedKey({
       psk: swarmKeyBuffer
     })({
@@ -93,18 +72,22 @@ describe('private network', () => {
       protectorB.protect(outbound)
     ])
 
-    void pipe(
-      async function * () {
-        yield uint8ArrayFromString('hello world')
-        yield uint8ArrayFromString('doo dah')
-      },
-      aToB
-    )
+    aToB.send(uint8ArrayFromString('hello world'))
+    aToB.send(uint8ArrayFromString('doo dah'))
 
-    const output = await pipe(
-      bToA,
-      async (source) => all(source)
-    )
+    const output: Uint8Array[] = []
+
+    bToA.addEventListener('message', (evt) => {
+      output.push(evt.data.subarray())
+    })
+
+    aToB.send(uint8ArrayFromString('hello world'))
+    aToB.send(uint8ArrayFromString('doo dah'))
+
+    await Promise.all([
+      aToB.close(),
+      bToA.close()
+    ])
 
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })

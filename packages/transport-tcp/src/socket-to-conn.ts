@@ -1,18 +1,11 @@
 import { InvalidParametersError, TimeoutError } from '@libp2p/interface'
-import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-connection'
-import { ipPortToMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { AbstractMultiaddrConnection, socketWriter, ipPortToMultiaddr } from '@libp2p/utils'
 import { Unix } from '@multiformats/multiaddr-matcher'
 import { raceEvent } from 'race-event'
-import { raceSignal } from 'race-signal'
-import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
+import type { AbstractMultiaddrConnectionInit, SocketWriter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
-
-export interface TCPSocketMultiaddrConnectionComponents extends AbstractMultiaddrConnectionComponents {
-
-}
 
 export interface TCPSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream' | 'remoteAddr'> {
   socket: Socket
@@ -21,8 +14,9 @@ export interface TCPSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddr
 
 class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   private socket: Socket
+  private writer: SocketWriter
 
-  constructor (components: TCPSocketMultiaddrConnectionComponents, init: TCPSocketMultiaddrConnectionInit) {
+  constructor (init: TCPSocketMultiaddrConnectionInit) {
     let remoteAddr = init.remoteAddr
 
     // check if we are connected on a unix path
@@ -38,9 +32,8 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       remoteAddr = ipPortToMultiaddr(init.socket.remoteAddress, init.socket.remotePort)
     }
 
-    super(components, {
+    super({
       ...init,
-      name: 'tcp',
       remoteAddr
     })
 
@@ -48,7 +41,7 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
     // handle incoming data
     this.socket.on('data', buf => {
-      this.sourcePush(buf)
+      this.onData(buf)
     })
 
     // handle socket errors
@@ -66,75 +59,51 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       this.abort(new TimeoutError())
     })
 
-    this.socket.once('close', () => {
-      if (this.socket.readable === false) {
-        this.remoteCloseRead()
-      }
-
-      if (this.socket.writable === false) {
-        this.remoteCloseWrite()
-      }
-    })
-
     this.socket.once('end', () => {
       // the remote sent a FIN packet which means no more data will be sent
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-      this.remoteCloseWrite()
+      this.onRemoteClose()
     })
+
+    this.writer = socketWriter(this.socket)
   }
 
-  async sendData (data: Uint8ArrayList, options?: AbortOptions): Promise<void> {
-    for (const buf of data) {
-      await raceSignal(
-        new Promise<void>((resolve, reject) => {
-          this.socket.write(buf, (err) => {
-            if (err != null) {
-              reject(err)
-              return
-            }
-
-            resolve()
-          })
-        }),
-        options?.signal
-      )
-    }
+  sendData (data: Uint8Array): boolean {
+    return this.writer.write(data)
   }
 
-  sendReset (): void {
-    if (this.socket.destroyed) {
-      return
-    }
-
-    this.socket.resetAndDestroy()
+  sendDataV (data: Uint8Array[]): boolean {
+    return this.writer.write(data)
   }
 
-  async sendClose (options?: AbortOptions): Promise<void> {
+  async onClose (options?: AbortOptions): Promise<void> {
 
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    if (this.socket.destroyed === true) {
+    if (this.socket.destroyed) {
       return
     }
 
     this.socket.destroySoon()
+
     await raceEvent(this.socket, 'close', options?.signal)
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
-    if (this.socket.readable === false) {
-      return
-    }
+    options?.signal?.throwIfAborted()
+  }
 
-    await raceSignal(
-      new Promise<void>(resolve => {
-        this.socket.end(() => {
-          resolve()
-        })
-      }),
-      options?.signal
-    )
+  sendReset (): void {
+    this.socket.resetAndDestroy()
+  }
+
+  sendPause (): void {
+    this.socket.pause()
+  }
+
+  sendResume (): void {
+    this.socket.resume()
   }
 }
 
@@ -142,6 +111,6 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export const toMultiaddrConnection = (components: TCPSocketMultiaddrConnectionComponents, init: TCPSocketMultiaddrConnectionInit): MultiaddrConnection => {
-  return new TCPSocketMultiaddrConnection(components, init)
+export const toMultiaddrConnection = (init: TCPSocketMultiaddrConnectionInit): MultiaddrConnection => {
+  return new TCPSocketMultiaddrConnection(init)
 }

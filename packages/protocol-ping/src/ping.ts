@@ -1,11 +1,11 @@
 import { randomBytes } from '@libp2p/crypto'
-import { ProtocolError, TimeoutError, serviceCapabilities } from '@libp2p/interface'
-import { byteStream } from 'it-byte-stream'
+import { ProtocolError, serviceCapabilities } from '@libp2p/interface'
+import { byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'
-import type { AbortOptions, Stream, PeerId, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { AbortOptions, Stream, PeerId, Startable, Connection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Ping implements Startable, PingInterface {
@@ -26,7 +26,7 @@ export class Ping implements Startable, PingInterface {
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.runOnLimitedConnection = init.runOnLimitedConnection ?? true
 
-    this.handleMessage = this.handleMessage.bind(this)
+    this.handlePing = this.handlePing.bind(this)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/ping'
@@ -36,7 +36,7 @@ export class Ping implements Startable, PingInterface {
   ]
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(this.protocol, this.handleMessage, {
+    await this.components.registrar.handle(this.protocol, this.handlePing, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
       runOnLimitedConnection: this.runOnLimitedConnection
@@ -56,60 +56,31 @@ export class Ping implements Startable, PingInterface {
   /**
    * A handler to register with Libp2p to process ping messages
    */
-  handleMessage (data: IncomingStreamData): void {
-    const log = data.connection.log.newScope('ping')
+  async handlePing (stream: Stream, connection: Connection): Promise<void> {
+    const log = stream.log.newScope('ping')
+    log.trace('ping from %p', connection.remotePeer)
 
-    log.trace('ping from %p', data.connection.remotePeer)
+    const signal = AbortSignal.timeout(this.timeout)
+    setMaxListeners(Infinity, signal)
 
-    const { stream } = data
     const start = Date.now()
     const bytes = byteStream(stream)
-    let pinged = false
 
-    Promise.resolve().then(async () => {
-      while (true) {
-        const signal = AbortSignal.timeout(this.timeout)
-        setMaxListeners(Infinity, signal)
-        signal.addEventListener('abort', () => {
-          stream?.abort(new TimeoutError('ping timeout'))
-        })
+    while (stream.readStatus === 'readable') {
+      const buf = await bytes.read({
+        bytes: PING_LENGTH,
+        signal
+      })
+      await bytes.write(buf, {
+        signal
+      })
 
-        const buf = await bytes.read({
-          bytes: PING_LENGTH,
-          signal
-        })
-        await bytes.write(buf, {
-          signal
-        })
+      log('ping from %p complete in %dms', connection.remotePeer, Date.now() - start)
+    }
 
-        pinged = true
-      }
+    await stream.closeWrite({
+      signal
     })
-      .catch(err => {
-        // ignore the error if we've processed at least one ping, the remote
-        // closed the stream and we handled or are handling the close cleanly
-        if (pinged && err.name === 'UnexpectedEOFError' && stream.readStatus !== 'ready') {
-          return
-        }
-
-        log.error('ping from %p failed with error - %e', data.connection.remotePeer, err)
-        stream?.abort(err)
-      })
-      .finally(() => {
-        const ms = Date.now() - start
-        log('ping from %p complete in %dms', data.connection.remotePeer, ms)
-
-        const signal = AbortSignal.timeout(this.timeout)
-        setMaxListeners(Infinity, signal)
-
-        stream.close({
-          signal
-        })
-          .catch(err => {
-            log.error('error closing ping stream from %p - %e', data.connection.remotePeer, err)
-            stream?.abort(err)
-          })
-      })
   }
 
   /**
@@ -149,6 +120,8 @@ export class Ping implements Startable, PingInterface {
 
       const ms = Date.now() - start
 
+      stream.close()
+
       if (!uint8ArrayEquals(data, result.subarray())) {
         throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
       }
@@ -163,9 +136,7 @@ export class Ping implements Startable, PingInterface {
 
       throw err
     } finally {
-      if (stream != null) {
-        await stream.close(options)
-      }
+      stream?.close()
     }
   }
 }

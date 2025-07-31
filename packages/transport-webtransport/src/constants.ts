@@ -1,1 +1,0 @@
-export const MAX_INBOUND_STREAMS = 1_000

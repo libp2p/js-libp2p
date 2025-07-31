@@ -1,12 +1,12 @@
 import { contentRoutingSymbol, start, stop, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { streamPair } from '@libp2p/test-utils'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
 import map from 'it-map'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
@@ -40,22 +40,11 @@ interface StubbedKadDHTComponents {
 
 const PROTOCOL = '/test/dht/1.0.0'
 
-function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): { connection: Connection, incomingStream: Stream } {
-  const duplex = duplexPair<any>()
-  const outgoingStream = stubInterface<Stream>({
-    close: async () => {}
-  })
-  outgoingStream.source = duplex[0].source
-  outgoingStream.sink.callsFake(async source => duplex[0].sink(source))
-
-  const incomingStream = stubInterface<Stream>({
-    close: async () => {}
-  })
-  incomingStream.source = duplex[1].source
-  incomingStream.sink.callsFake(async source => duplex[1].sink(source))
+async function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): Promise<{ connection: Connection, incomingStream: Stream }> {
+  const [outboundStream, incomingStream] = await streamPair()
 
   const connection = stubInterface<Connection>()
-  connection.newStream.withArgs(PROTOCOL).resolves(outgoingStream)
+  connection.newStream.withArgs(PROTOCOL).resolves(outboundStream)
   components.connectionManager.openConnection.withArgs(peerId).resolves(connection)
 
   return {
@@ -151,7 +140,7 @@ describe('content routing', () => {
     const {
       connection,
       incomingStream
-    } = createStreams(remotePeer.id, components)
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
@@ -193,7 +182,7 @@ describe('content routing', () => {
     const {
       connection,
       incomingStream
-    } = createStreams(remotePeer.id, components)
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
@@ -292,7 +281,7 @@ describe('peer routing', () => {
     const {
       connection,
       incomingStream
-    } = createStreams(remotePeer.id, components)
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
@@ -348,11 +337,11 @@ describe('peer routing', () => {
     const {
       connection,
       incomingStream
-    } = createStreams(remotePeer.id, components)
+    } = await createStreams(remotePeer.id, components)
 
     const {
       incomingStream: closestPeerIncomingStream
-    } = createStreams(closestPeer.id, components)
+    } = await createStreams(closestPeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]

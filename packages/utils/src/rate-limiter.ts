@@ -1,4 +1,3 @@
-import delay from 'delay'
 import { RateLimitError } from './errors.js'
 
 export interface RateLimiterInit {
@@ -22,20 +21,6 @@ export interface RateLimiterInit {
    * @default 0
    */
   blockDuration?: number
-
-  /**
-   * Execute allowed actions evenly over duration
-   *
-   * @default false
-   */
-  execEvenly?: boolean
-
-  /**
-   * ms, works with execEvenly=true option
-   *
-   * @default duration * 1000 / points
-   */
-  execEvenlyMinDelayMs?: number
 
   /**
    * @default "rlflx"
@@ -65,21 +50,17 @@ export class RateLimiter {
   protected points: number
   protected duration: number
   protected blockDuration: number
-  protected execEvenly: boolean
-  protected execEvenlyMinDelayMs: number
   protected keyPrefix: string
 
   constructor (opts: RateLimiterInit = {}) {
     this.points = opts.points ?? 4
     this.duration = opts.duration ?? 1
     this.blockDuration = opts.blockDuration ?? 0
-    this.execEvenly = opts.execEvenly ?? false
-    this.execEvenlyMinDelayMs = opts.execEvenlyMinDelayMs ?? (this.duration * 1000 / this.points)
     this.keyPrefix = opts.keyPrefix ?? 'rlflx'
     this.memoryStorage = new MemoryStorage()
   }
 
-  async consume (key: string, pointsToConsume: number = 1, options: GetKeySecDurationOptions = {}): Promise<RateLimiterResult> {
+  consume (key: string, pointsToConsume: number = 1, options: GetKeySecDurationOptions = {}): RateLimiterResult {
     const rlKey = this.getKey(key)
     const secDuration = this._getKeySecDuration(options)
     let res = this.memoryStorage.incrby(rlKey, pointsToConsume, secDuration)
@@ -93,14 +74,6 @@ export class RateLimiter {
       }
 
       throw new RateLimitError('Rate limit exceeded', res)
-    } else if (this.execEvenly && res.msBeforeNext > 0 && !res.isFirstInDuration) {
-      // Execute evenly
-      let delayMs = Math.ceil(res.msBeforeNext / (res.remainingPoints + 2))
-      if (delayMs < this.execEvenlyMinDelayMs) {
-        delayMs = res.consumedPoints * this.execEvenlyMinDelayMs
-      }
-
-      await delay(delayMs)
     }
 
     return res

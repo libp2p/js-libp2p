@@ -43,6 +43,7 @@
     "packages/pubsub-floodsub": {},
     "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
+    "packages/test-utils": {},
     "packages/transport-circuit-relay-v2": {},
     "packages/transport-memory": {},
     "packages/transport-tcp": {},

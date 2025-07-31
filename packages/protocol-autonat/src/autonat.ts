@@ -1,25 +1,18 @@
 import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
-import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
-import { repeatingTask } from '@libp2p/utils/repeating-task'
-import { trackedMap } from '@libp2p/utils/tracked-map'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_CONNECTION_THRESHOLD, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
-import type { Logger, Connection, PeerId, Startable, AbortOptions, IncomingStreamData } from '@libp2p/interface'
+import type { Logger, Connection, PeerId, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { AddressType } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
-import type { Filter } from '@libp2p/utils/filters'
-import type { RepeatingTask } from '@libp2p/utils/repeating-task'
+import type { Filter, RepeatingTask } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
@@ -136,8 +129,8 @@ export class AutoNATService implements Startable {
       return
     }
 
-    await this.components.registrar.handle(this.protocol, (data) => {
-      void this.handleIncomingAutonatStream(data)
+    await this.components.registrar.handle(this.protocol, (stream, connection) => {
+      void this.handleIncomingAutonatStream(stream, connection)
         .catch(err => {
           this.log.error('error handling incoming autonat stream - %e', err)
         })
@@ -229,30 +222,30 @@ export class AutoNATService implements Startable {
   /**
    * Handle an incoming AutoNAT request
    */
-  async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
+  async handleIncomingAutonatStream (stream: Stream, connection: Connection): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const messages = pbStream(data.stream, {
-      maxDataLength: this.maxMessageSize
-    }).pb(Message)
-
     try {
+      const messages = pbStream(stream, {
+        maxDataLength: this.maxMessageSize
+      }).pb(Message)
+
       const request = await messages.read({
         signal
       })
-      const response = await this.handleAutonatMessage(request, data.connection, {
+      const response = await this.handleAutonatMessage(request, connection, {
         signal
       })
       await messages.write(response, {
         signal
       })
-      await messages.unwrap().unwrap().close({
+      await stream.close({
         signal
       })
     } catch (err: any) {
       this.log.error('error handling incoming autonat stream - %e', err)
-      data.stream.abort(err)
+      stream.abort(err)
     }
   }
 
@@ -400,7 +393,7 @@ export class AutoNATService implements Startable {
           type: Message.MessageType.DIAL_RESPONSE,
           dialResponse: {
             status: Message.ResponseStatus.OK,
-            addr: connection.remoteAddr.decapsulateCode(protocols('p2p').code).bytes
+            addr: connection.remoteAddr.decapsulateCode(CODE_P2P).bytes
           }
         }
       } catch (err: any) {
@@ -629,7 +622,7 @@ export class AutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    this.log.trace('asking %p to verify multiaddr %s', connection.remotePeer, options.multiaddr)
+    this.log.trace('asking %a to verify multiaddr %s', connection.remoteAddr, options.multiaddr)
 
     const stream = await connection.newStream(this.protocol, {
       signal

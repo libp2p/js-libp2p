@@ -1,9 +1,9 @@
 import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
@@ -15,7 +15,7 @@ import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import { streamToMaConnection } from './stream-to-conn.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from './index.js'
-import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents, IncomingStreamData } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
@@ -115,13 +115,13 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
 
-    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (data) => {
+    await this.components.registrar.handle(RELAY_V2_STOP_CODEC, (stream, connection) => {
       const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
-      void this.onStop(data, signal)
+      void this.onStop(stream, connection, signal)
         .catch(err => {
           this.log.error('error while handling STOP protocol', err)
-          data.stream.abort(err)
+          stream.abort(err)
         })
         .finally(() => {
           signal.clear()
@@ -212,13 +212,13 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       const limits = new LimitTracker(status.limit)
 
-      const maConn = streamToMaConnection(this.components, {
+      const maConn = streamToMaConnection({
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`),
         onDataRead: limits.onData,
         onDataWrite: limits.onData,
-        name: 'circuit-relay:relayed'
+        log: stream.log.newScope('circuit-relay:relayed')
       })
 
       const conn = await this.components.upgrader.upgradeOutbound(maConn, {
@@ -275,7 +275,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   /**
    * An incoming STOP request means a remote peer wants to dial us via a relay
    */
-  async onStop ({ connection, stream }: IncomingStreamData, signal: AbortSignal): Promise<void> {
+  async onStop (stream: Stream, connection: Connection, signal: AbortSignal): Promise<void> {
     if (!this.reservationStore.hasReservation(connection.remotePeer)) {
       try {
         this.log('dialed via relay we did not have a reservation on, start listening on that relay address')
@@ -344,13 +344,13 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const limits = new LimitTracker(request.limit)
     const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
     const localAddr = this.components.addressManager.getAddresses()[0]
-    const maConn = streamToMaConnection(this.components, {
+    const maConn = streamToMaConnection({
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
       onDataRead: limits.onData,
       onDataWrite: limits.onData,
-      name: 'circuit-relay:relayed'
+      log: stream.log.newScope('circuit-relay:relayed')
     })
 
     await this.components.upgrader.upgradeInbound(maConn, {

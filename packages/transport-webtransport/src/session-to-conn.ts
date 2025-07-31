@@ -1,10 +1,6 @@
-import { AbstractMultiaddrConnection } from '@libp2p/utils/abstract-multiaddr-connection'
-import type { MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionComponents, AbstractMultiaddrConnectionInit } from '@libp2p/utils/abstract-multiaddr-connection'
-
-export interface WebTransportSessionMultiaddrConnectionComponents extends AbstractMultiaddrConnectionComponents {
-
-}
+import { AbstractMultiaddrConnection } from '@libp2p/utils'
+import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
+import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
 
 export interface WebTransportSessionMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream'> {
   cleanUpWTSession(metric: string): void
@@ -13,25 +9,35 @@ export interface WebTransportSessionMultiaddrConnectionInit extends Omit<Abstrac
 class WebTransportSessionMultiaddrConnection extends AbstractMultiaddrConnection {
   private cleanUpWTSession: (metric: string) => void
 
-  constructor (components: WebTransportSessionMultiaddrConnectionComponents, init: WebTransportSessionMultiaddrConnectionInit) {
-    super(components, {
-      ...init,
-      name: 'webtransport'
-    })
+  constructor (init: WebTransportSessionMultiaddrConnectionInit) {
+    super(init)
 
     this.cleanUpWTSession = init.cleanUpWTSession
   }
 
-  sendData (): void {
-
+  sendData (): boolean {
+    return true
   }
 
   sendReset (): void {
     this.cleanUpWTSession('abort')
   }
 
-  sendClose (): void {
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this.cleanUpWTSession('close')
+    options?.signal?.throwIfAborted()
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    options?.signal?.throwIfAborted()
+  }
+
+  sendPause (): void {
+    // TODO: backpressure?
+  }
+
+  sendResume (): void {
+    // TODO: backpressure?
   }
 }
 
@@ -39,6 +45,6 @@ class WebTransportSessionMultiaddrConnection extends AbstractMultiaddrConnection
  * Convert a socket into a MultiaddrConnection
  * https://github.com/libp2p/interface-transport#multiaddrconnection
  */
-export const toMultiaddrConnection = (components: WebTransportSessionMultiaddrConnectionComponents, init: WebTransportSessionMultiaddrConnectionInit): MultiaddrConnection => {
-  return new WebTransportSessionMultiaddrConnection(components, init)
+export const toMultiaddrConnection = (init: WebTransportSessionMultiaddrConnectionInit): MultiaddrConnection => {
+  return new WebTransportSessionMultiaddrConnection(init)
 }

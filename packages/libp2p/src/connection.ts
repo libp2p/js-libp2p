@@ -1,12 +1,13 @@
-import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError } from '@libp2p/interface'
+import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
 import { PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, Direction, Connection as ConnectionInterface, Stream, ConnectionTimeline, ConnectionStatus, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxerFactory, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, DuplexEvents } from '@libp2p/interface'
+import type { AbortOptions, Logger, StreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
-import { CODE_P2P, type Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const CLOSE_TIMEOUT = 500
 
@@ -19,10 +20,11 @@ export interface ConnectionComponents {
 export interface ConnectionInit {
   id: string
   maConn: MultiaddrConnection
+  stream: MessageStream
   remotePeer: PeerId
-  direction?: Direction
-  muxerFactory?: StreamMuxerFactory
-  encryption?: string
+  direction?: StreamDirection
+  muxer?: StreamMuxer
+  cryptoProtocol?: string
   limits?: ConnectionLimits
   outboundStreamProtocolNegotiationTimeout?: number
   inboundStreamProtocolNegotiationTimeout?: number
@@ -32,18 +34,17 @@ export interface ConnectionInit {
  * An implementation of the js-libp2p connection.
  * Any libp2p transport should use an upgrader to return this connection.
  */
-export class Connection extends TypedEventEmitter<DuplexEvents> implements ConnectionInterface {
+export class Connection extends TypedEventEmitter<MessageStreamEvents> implements ConnectionInterface {
   public readonly id: string
   public readonly remoteAddr: Multiaddr
   public readonly remotePeer: PeerId
-  public direction: Direction
-  public timeline: ConnectionTimeline
+  public direction: StreamDirection
+  public timeline: MultiaddrConnectionTimeline
   public multiplexer?: string
   public encryption?: string
   public status: ConnectionStatus
   public limits?: ConnectionLimits
   public readonly log: Logger
-  public tags: string[]
 
   private readonly maConn: MultiaddrConnection
   private readonly muxer?: StreamMuxer
@@ -62,54 +63,27 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
     this.direction = init.direction ?? 'outbound'
     this.status = 'open'
     this.timeline = init.maConn.timeline
-    this.encryption = init.encryption
+    this.encryption = init.cryptoProtocol
     this.limits = init.limits
     this.maConn = init.maConn
     this.log = init.maConn.log
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
 
+    this.onIncomingStream = this.onIncomingStream.bind(this)
+
     if (this.remoteAddr.getComponents().find(component => component.code === CODE_P2P) == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`)
     }
 
-    this.tags = []
-
-    if (init.muxerFactory != null) {
-      this.multiplexer = init.muxerFactory.protocol
-
-      this.muxer = init.muxerFactory.createStreamMuxer({
-        direction: this.direction,
-        log: this.log,
-        // Run anytime a remote stream is created
-        onIncomingStream: (stream) => {
-          this.onIncomingStream(stream)
-        }
-      })
-
-      // Pipe all data through the muxer
-      void Promise.all([
-        this.muxer.sink(init.maConn.source),
-        init.maConn.sink(this.muxer.source)
-      ]).catch(err => {
-        this.log.error('error piping data through muxer - %e', err)
-      })
+    if (init.muxer != null) {
+      this.multiplexer = init.muxer.protocol
+      this.muxer = init.muxer
+      this.muxer.addEventListener('stream', this.onIncomingStream)
     }
 
-    this.maConn.addEventListener('abort', (evt) => {
-      this.safeDispatchEvent('abort', {
-        detail: evt.detail
-      })
-    })
-
-    this.maConn.addEventListener('reset', (evt) => {
-      this.safeDispatchEvent('reset', {
-        detail: evt.detail
-      })
-    })
-
-    this.maConn.addEventListener('close', () => {
-      this.safeDispatchEvent('close')
+    this.maConn.addEventListener('close', (evt) => {
+      this.dispatchEvent(new StreamCloseEvent(evt.local, evt.error))
     })
   }
 
@@ -146,7 +120,14 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
     }
 
     this.log.trace('starting new stream for protocols %s', protocols)
-    const muxedStream = await this.muxer.newStream()
+    const muxedStream = await this.muxer.createStream({
+      ...options,
+
+      // most underlying transports only support negotiating a single protocol
+      // so only pass the early protocol if a single protocol has been requested
+      // otherwise fall back to mss
+      protocol: protocols.length === 1 ? protocols[0] : undefined
+    })
     this.log.trace('started new stream %s for protocols %s', muxedStream.id, protocols)
 
     try {
@@ -162,24 +143,21 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
         }
       }
 
-      muxedStream.log.trace('selecting protocol from protocols %s', protocols)
+      if (muxedStream.protocol === '') {
+        muxedStream.log.trace('selecting protocol from protocols %s', protocols)
 
-      const {
-        stream,
-        protocol
-      } = await mss.select(muxedStream, protocols, {
-        ...options,
-        log: muxedStream.log,
-        yieldBytes: true
-      })
+        muxedStream.protocol = await mss.select(muxedStream, protocols, options)
 
-      muxedStream.log('selected protocol %s', protocol)
+        muxedStream.log('negotiated protocol %s', muxedStream.protocol)
+      } else {
+        muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
+      }
 
-      const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options)
-      const streamCount = countStreams(protocol, 'outbound', this)
+      const outgoingLimit = findOutgoingStreamLimit(muxedStream.protocol, this.components.registrar, options)
+      const streamCount = countStreams(muxedStream.protocol, 'outbound', this)
 
-      if (streamCount >= outgoingLimit) {
-        const err = new TooManyOutboundProtocolStreamsError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`)
+      if (streamCount > outgoingLimit) {
+        const err = new TooManyOutboundProtocolStreamsError(`Too many outbound protocol streams for protocol "${muxedStream.protocol}" - ${streamCount}/${outgoingLimit}`)
         muxedStream.abort(err)
 
         throw err
@@ -188,114 +166,71 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
       // If a protocol stream has been successfully negotiated and is to be passed to the application,
       // the peer store should ensure that the peer is registered with that protocol
       await this.components.peerStore.merge(this.remotePeer, {
-        protocols: [protocol]
+        protocols: [muxedStream.protocol]
       })
 
-      // after the handshake the returned stream can have early data so override
-      // the source/sink
-      muxedStream.source = stream.source
-      muxedStream.sink = stream.sink
-      muxedStream.protocol = protocol
-
-      // allow closing the write end of a not-yet-negotiated stream
-      if (stream.closeWrite != null) {
-        muxedStream.closeWrite = stream.closeWrite
-      }
-
-      // allow closing the read end of a not-yet-negotiated stream
-      if (stream.closeRead != null) {
-        muxedStream.closeRead = stream.closeRead
-      }
-
-      // make sure we don't try to negotiate a stream we are closing
-      if (stream.close != null) {
-        muxedStream.close = stream.close
-      }
-
-      this.components.metrics?.trackProtocolStream(muxedStream, this)
-
-      muxedStream.direction = 'outbound'
+      this.components.metrics?.trackProtocolStream(muxedStream)
 
       return muxedStream
     } catch (err: any) {
-      this.log.error('could not create new outbound stream on connection %s %a for protocols %s - %e', this.direction === 'inbound' ? 'from' : 'to', this.remoteAddr, protocols, err)
-
-      if (muxedStream.timeline.close == null) {
+      if (muxedStream.status === 'open') {
         muxedStream.abort(err)
+      } else {
+        this.log.error('could not create new outbound stream on connection %s %a for protocols %s - %e', this.direction === 'inbound' ? 'from' : 'to', this.remoteAddr, protocols, err)
       }
 
       throw err
     }
   }
 
-  private onIncomingStream (muxedStream: Stream): void {
+  private onIncomingStream (evt: CustomEvent<Stream>): void {
+    const muxedStream = evt.detail
+
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)
 
     void Promise.resolve()
       .then(async () => {
-        const protocols = this.components.registrar.getProtocols()
+        if (muxedStream.protocol === '') {
+          const protocols = this.components.registrar.getProtocols()
 
-        const { stream, protocol } = await mss.handle(muxedStream, protocols, {
-          signal,
-          log: muxedStream.log,
-          yieldBytes: false
-        })
+          muxedStream.log.trace('selecting protocol from protocols %s', protocols)
 
-        this.log('incoming %s stream opened', protocol)
+          muxedStream.protocol = await mss.handle(muxedStream, protocols, {
+            signal
+          })
 
-        const incomingLimit = findIncomingStreamLimit(protocol, this.components.registrar)
-        const streamCount = countStreams(protocol, 'inbound', this)
-
-        if (streamCount === incomingLimit) {
-          const err = new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`)
-          muxedStream.abort(err)
-
-          throw err
+          muxedStream.log('negotiated protocol %s', muxedStream.protocol)
+        } else {
+          muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
         }
 
-        // after the handshake the returned stream can have early data so override
-        // the source/sink
-        muxedStream.source = stream.source
-        muxedStream.sink = stream.sink
-        muxedStream.protocol = protocol
+        const incomingLimit = findIncomingStreamLimit(muxedStream.protocol, this.components.registrar)
+        const streamCount = countStreams(muxedStream.protocol, 'inbound', this)
 
-        // allow closing the write end of a not-yet-negotiated stream
-        if (stream.closeWrite != null) {
-          muxedStream.closeWrite = stream.closeWrite
-        }
-
-        // allow closing the read end of a not-yet-negotiated stream
-        if (stream.closeRead != null) {
-          muxedStream.closeRead = stream.closeRead
-        }
-
-        // make sure we don't try to negotiate a stream we are closing
-        if (stream.close != null) {
-          muxedStream.close = stream.close
+        if (streamCount > incomingLimit) {
+          throw new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${muxedStream.protocol}" - limit ${incomingLimit}`)
         }
 
         // If a protocol stream has been successfully negotiated and is to be passed to the application,
         // the peer store should ensure that the peer is registered with that protocol
         await this.components.peerStore.merge(this.remotePeer, {
-          protocols: [protocol]
+          protocols: [muxedStream.protocol]
         }, {
           signal
         })
 
-        this.components.metrics?.trackProtocolStream(muxedStream, this)
+        this.components.metrics?.trackProtocolStream(muxedStream)
 
-        const { handler, options } = this.components.registrar.getHandler(protocol)
+        const { handler, options } = this.components.registrar.getHandler(muxedStream.protocol)
 
         if (this.limits != null && options.runOnLimitedConnection !== true) {
           throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
         }
 
-        await handler({ connection: this, stream: muxedStream })
+        await handler(muxedStream, this)
       })
       .catch(async err => {
-        this.log.error('error handling incoming stream id %s - %e', muxedStream.id, err)
-
         muxedStream.abort(err)
       })
   }
@@ -325,9 +260,6 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
     try {
       this.log.trace('closing underlying transport')
 
-      // ensure remaining streams are closed gracefully
-      await this.muxer?.close(options)
-
       // close the underlying transport
       await this.maConn.close(options)
 
@@ -348,9 +280,6 @@ export class Connection extends TypedEventEmitter<DuplexEvents> implements Conne
 
     this.status = 'closing'
 
-    // ensure remaining streams are aborted
-    this.muxer?.abort(err)
-
     // abort the underlying transport
     this.maConn.abort(err)
 
@@ -362,11 +291,13 @@ export function createConnection (components: ConnectionComponents, init: Connec
   return new Connection(components, init)
 }
 
-function findIncomingStreamLimit (protocol: string, registrar: Registrar): number | undefined {
+function findIncomingStreamLimit (protocol: string, registrar: Registrar): number {
   try {
     const { options } = registrar.getHandler(protocol)
 
-    return options.maxInboundStreams
+    if (options.maxInboundStreams != null) {
+      return options.maxInboundStreams
+    }
   } catch (err: any) {
     if (err.name !== 'UnhandledProtocolError') {
       throw err

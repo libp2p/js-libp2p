@@ -81,6 +81,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -111,6 +112,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -212,6 +214,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -242,6 +245,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)

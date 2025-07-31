@@ -4,6 +4,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
+import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PeerStreams } from '../src/peer-streams.js'
 import { ConnectionPair } from './utils/index.js'
@@ -41,7 +42,15 @@ describe('peer-streams', () => {
     await pipe(
       [largeMessage],
       (source) => lp.encode(source, { maxDataLength: messageSize }),
-      outboundStream.sink
+      async (source) => {
+        for (const buf of source) {
+          const sendMore = outboundStream.send(buf)
+
+          if (sendMore === false) {
+            await raceEvent(outboundStream, 'drain')
+          }
+        }
+      }
     )
 
     // Close the outbound writer so the reader knows no more data is coming
