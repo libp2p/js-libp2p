@@ -1,6 +1,4 @@
-import { isNetworkAddress } from '@libp2p/utils/multiaddr/is-network-address'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { isNetworkAddress, isPrivate, trackedMap } from '@libp2p/utils'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'

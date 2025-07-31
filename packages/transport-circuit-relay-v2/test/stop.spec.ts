@@ -2,15 +2,14 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { isStartable } from '@libp2p/interface'
-import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/test-utils'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
 import delay from 'delay'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -81,15 +80,9 @@ describe('circuit-relay stop protocol', function () {
 
     handler = components.registrar.handle.getCall(0).args[1]
 
-    const [localDuplex, remoteDuplex] = duplexPair<any>()
+    ;[localStream, remoteStream] = await streamPair()
 
-    localStream = mockStream(localDuplex)
-    remoteStream = mockStream(remoteDuplex)
-
-    handler({
-      stream: remoteStream,
-      connection: stubInterface<Connection>()
-    })
+    handler(remoteStream, stubInterface<Connection>())
 
     pbStr = pbStream(localStream).pb(StopMessage)
   })
@@ -187,10 +180,7 @@ describe('circuit-relay stop protocol', function () {
 
     components.transportManager.listen.returns(Promise.resolve())
 
-    void transport.onStop({
-      connection,
-      stream: remoteStream
-    }, AbortSignal.timeout(5_000))
+    void transport.onStop(remoteStream, connection, AbortSignal.timeout(5_000))
 
     await pbStr.write({
       type: StopMessage.Type.CONNECT,

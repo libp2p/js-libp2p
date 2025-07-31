@@ -1,7 +1,6 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
-import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
-import { pbStream } from 'it-protobuf-stream'
+import { AdaptiveTimeout, pbStream } from '@libp2p/utils'
 import { TypedEventEmitter } from 'main-event'
 import { Message } from './message/dht.js'
 import { fromPbPeerInfo } from './message/utils.js'
@@ -13,7 +12,7 @@ import {
 } from './query/events.js'
 import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.js'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
 export interface NetworkInit {
   protocol: string

@@ -11,7 +11,6 @@ export interface WebTransportListenerInit extends CreateListenerOptions {
   handler?(conn: Connection): void
   upgrader: Upgrader
   certificates?: WebTransportCertificate[]
-  maxInboundStreams?: number
 }
 
 export default function createListener (components: WebTransportListenerComponents, options: WebTransportListenerInit): Listener {

@@ -1,5 +1,5 @@
 import { AbortError } from '@libp2p/interface'
-import { Queue } from '@libp2p/utils/queue'
+import { Queue } from '@libp2p/utils'
 import { pushable } from 'it-pushable'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
@@ -9,7 +9,7 @@ import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
 import type { Logger, PeerId, RoutingOptions, AbortOptions, PeerInfo } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 
 export interface QueryPathOptions extends RoutingOptions {
   /**

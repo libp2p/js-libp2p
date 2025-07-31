@@ -2,9 +2,9 @@
 
 import { ConnectionClosedError, UnsupportedProtocolError, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { echoStream } from '@libp2p/test-utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { pair } from 'it-pair'
 import { stubInterface } from 'sinon-ts'
 import { ConnectionMonitor } from '../../src/connection-monitor.js'
 import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
@@ -39,9 +39,7 @@ describe('connection monitor', () => {
     await start(monitor)
 
     const connection = stubInterface<Connection>()
-    const stream = stubInterface<Stream>({
-      ...pair<any>()
-    })
+    const stream = await echoStream()
     connection.newStream.withArgs('/ipfs/ping/1.0.0').resolves(stream)
 
     components.connectionManager.getConnections.returns([connection])
@@ -60,9 +58,7 @@ describe('connection monitor', () => {
     await start(monitor)
 
     const connection = stubInterface<Connection>()
-    const stream = stubInterface<Stream>({
-      ...pair<any>()
-    })
+    const stream = await echoStream()
     connection.newStream.withArgs('/foobar/ping/1.0.0').resolves(stream)
 
     components.connectionManager.getConnections.returns([connection])

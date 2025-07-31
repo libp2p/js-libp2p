@@ -1,5 +1,5 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { trackedMap } from '@libp2p/utils'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'

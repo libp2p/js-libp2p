@@ -1,7 +1,12 @@
-import type { Direction, Stream } from './connection.js'
-import type { AbortOptions, Logger } from './index.js'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Stream, MultiaddrConnection, TypedEventTarget } from './index.js'
+import type { AbortOptions } from '@multiformats/multiaddr'
+
+export interface StreamMuxerInit {
+  /**
+   * The underlying multiaddr connection
+   */
+  maConn: MultiaddrConnection
+}
 
 export interface StreamMuxerFactory {
   /**
@@ -12,57 +17,62 @@ export interface StreamMuxerFactory {
   /**
    * Creates a new stream muxer to be used with a new connection
    */
-  createStreamMuxer(init?: StreamMuxerInit): StreamMuxer
+  createStreamMuxer(init: StreamMuxerInit): StreamMuxer
 }
+
+export interface StreamMuxerEvents {
+  /**
+   * An incoming stream was created
+   */
+  stream: CustomEvent<Stream>
+}
+
+export interface CreateStreamOptions extends AbortOptions {
+  /**
+   * If a single protocol was requested and the muxer has support for this,
+   * pre-negotiate the protocol using this value, otherwise multistream-select
+   * will be run over the stream after opening.
+   */
+  protocol?: string
+}
+
+export type StreamMuxerStatus = 'open' | 'closing' | 'closed'
 
 /**
  * A libp2p stream muxer
  */
-export interface StreamMuxer extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+export interface StreamMuxer extends TypedEventTarget<StreamMuxerEvents> {
   /**
    * The protocol used to select this muxer during connection opening
    */
   protocol: string
 
   /**
-   * A list of streams that are currently open. Closed streams will not be returned.
+   * A list of streams that are currently open
    */
-  readonly streams: Stream[]
-  /**
-   * Initiate a new stream with the given name. If no name is
-   * provided, the id of the stream will be used.
-   */
-  newStream(name?: string): Stream | Promise<Stream>
+  streams: Stream[]
 
   /**
-   * Close or abort all tracked streams and stop the muxer
+   * The status of the muxer
    */
-  close(options?: AbortOptions): Promise<void>
+  status: StreamMuxerStatus
 
   /**
-   * Close or abort all tracked streams and stop the muxer
+   * Create a new stream
    */
-  abort(err: Error): void
-}
-
-export interface StreamMuxerInit {
-  /**
-   * A callback function invoked every time an incoming stream is opened
-   */
-  onIncomingStream?(stream: Stream): void
+  createStream(options?: CreateStreamOptions): Stream | Promise<Stream>
 
   /**
-   * A callback function invoke every time a stream ends
+   * Immediately close the muxer, abort every open stream and discard any
+   * unsent/unread data.
    */
-  onStreamEnd?(stream: Stream): void
+  abort (err: Error): void
 
   /**
-   * Outbound stream muxers are opened by the local node, inbound stream muxers are opened by the remote
+   * Gracefully close the muxer. All open streams will be gracefully closed, and
+   * the returned promise will either resolve when any/all unsent data has been
+   * sent, or it will reject if the passed abort signal fires before this
+   * happens.
    */
-  direction?: Direction
-
-  /**
-   * The logger used by the connection
-   */
-  log?: Logger
+  close (options?: AbortOptions): Promise<void>
 }

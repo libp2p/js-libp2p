@@ -4,32 +4,21 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/test-utils'
+import { byteStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { byteStream } from 'it-byte-stream'
-import { pair } from 'it-pair'
-import { duplexPair } from 'it-pair/duplex'
-import pDefer from 'p-defer'
+import delay from 'delay'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { PING_PROTOCOL } from '../src/constants.js'
+import { PING_LENGTH, PING_PROTOCOL } from '../src/constants.js'
 import { Ping } from '../src/ping.js'
-import type { Stream, Connection } from '@libp2p/interface'
+import type { Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPingServiceComponents {
   registrar: StubbedInstance<Registrar>
   connectionManager: StubbedInstance<ConnectionManager>
-}
-
-function echoStream (): StubbedInstance<Stream> {
-  const stream = stubInterface<Stream>()
-
-  // make stream input echo to stream output
-  const duplex: any = pair()
-  stream.source = duplex.source
-  stream.sink = duplex.sink
-
-  return stream
 }
 
 describe('ping', () => {
@@ -51,14 +40,23 @@ describe('ping', () => {
 
   it('should be able to ping another peer', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outgoingStream, incomingStream] = await streamPair()
+
+    void Promise.resolve()
+      .then(async () => {
+        for await (const buf of incomingStream) {
+          incomingStream.send(buf)
+        }
+
+        incomingStream.closeWrite()
+      })
 
     const connection = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
-    const stream = echoStream()
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
+    connection.newStream.withArgs(PING_PROTOCOL).resolves(outgoingStream)
 
     // Run ping
     await expect(ping.ping(remotePeer)).to.eventually.be.gte(0)
@@ -68,24 +66,29 @@ describe('ping', () => {
     const timeout = 10
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
+    const [outgoingStream, incomingStream] = await streamPair({
+      delay: 1_000
+    })
+
+    void Promise.resolve()
+      .then(async () => {
+        for await (const buf of incomingStream) {
+          incomingStream.send(buf)
+        }
+
+        incomingStream.closeWrite()
+      })
+
     const connection = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
     components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
 
-    const stream = echoStream()
-    const deferred = pDefer()
-    // eslint-disable-next-line require-yield
-    stream.source = (async function * () {
-      await deferred.promise
-    })()
-    stream.abort.callsFake((err) => {
-      deferred.reject(err)
-    })
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(stream)
+    connection.newStream.withArgs(PING_PROTOCOL).resolves(outgoingStream)
 
     // 10 ms timeout
     const signal = AbortSignal.timeout(timeout)
+    const outgoingStreamAbortSpy = Sinon.spy(outgoingStream, 'abort')
 
     // Run ping, should time out
     await expect(ping.ping(remotePeer, {
@@ -94,69 +97,64 @@ describe('ping', () => {
       .with.property('name', 'AbortError')
 
     // should have aborted stream
-    expect(stream.abort).to.have.property('called', true)
+    expect(outgoingStreamAbortSpy).to.have.property('called', true)
   })
 
   it('should handle incoming ping', async () => {
-    const duplex = duplexPair<any>()
-    const incomingStream = stubInterface<Stream>(duplex[0])
-    const outgoingStream = stubInterface<Stream>(duplex[1])
-
+    const [outgoingStream, incomingStream] = await streamPair()
     const handler = components.registrar.handle.getCall(0).args[1]
 
     // handle incoming ping stream
-    handler({
-      stream: incomingStream,
-      connection: stubInterface<Connection>({
-        log: defaultLogger().forComponent('connection')
-      })
-    })
+    handler(incomingStream, stubInterface<Connection>())
+      ?.catch(() => {})
 
     const b = byteStream(outgoingStream)
 
-    const input = new Uint8Array(32).fill(1)
-    void b.write(input)
-    const output = await b.read()
-    expect(output).to.equalBytes(input)
+    const input = new Uint8Array(PING_LENGTH).fill(1)
+    outgoingStream.log('write ping 1')
+    await b.write(input)
+    const output = await b.read({
+      bytes: PING_LENGTH
+    })
+    expect(output?.subarray()).to.equalBytes(input)
 
-    const input2 = new Uint8Array(32).fill(2)
-    void b.write(input2)
-    const output2 = await b.read()
-    expect(output2).to.equalBytes(input2)
+    // the spec allows sending more than one ping on a stream
+    const input2 = new Uint8Array(PING_LENGTH).fill(2)
+    outgoingStream.log('write ping 2')
+    await b.write(input2)
+    const output2 = await b.read({
+      bytes: PING_LENGTH
+    })
+    expect(output2.subarray()).to.equalBytes(input2)
+
+    b.unwrap().close()
   })
 
-  it('should abort stream if sending stalls', async () => {
-    const deferred = pDefer<Error>()
-
-    const duplex = duplexPair<any>()
-    const incomingStream = stubInterface<Stream>({
-      ...duplex[0],
-      abort: (err) => {
-        deferred.resolve(err)
-      }
-    })
-    const outgoingStream = stubInterface<Stream>(duplex[1])
-
+  it('should throw if sending stalls', async () => {
+    const [outgoingStream, incomingStream] = await streamPair()
     const handler = components.registrar.handle.getCall(0).args[1]
+    const errorPromise = Promise.withResolvers<Error>()
 
     // handle incoming ping stream
-    handler({
-      stream: incomingStream,
-      connection: stubInterface<Connection>({
-        log: defaultLogger().forComponent('connection')
+    handler(incomingStream, stubInterface<Connection>())
+      ?.catch((err) => {
+        errorPromise.resolve(err)
       })
-    })
 
     const b = byteStream(outgoingStream)
 
     // send a ping message plus a few extra bytes
-    void b.write(new Uint8Array(35))
+    await b.write(new Uint8Array(35))
 
-    const pong = await b.read()
-    expect(pong).to.have.lengthOf(32)
+    const pong = await b.read({
+      bytes: PING_LENGTH
+    })
+    expect(pong).to.have.lengthOf(PING_LENGTH)
 
-    // never send the remaining 29 bytes (e.g. 64 - 35)
-    const err = await deferred.promise
-    expect(err).to.have.property('name', 'TimeoutError')
+    // ping messages have to be 32 bytes - we've sent 35 and will not send the
+    // remaining 29 bytes
+    await delay(200)
+
+    await expect(errorPromise.promise).to.eventually.have.property('name', 'AbortError')
   })
 })

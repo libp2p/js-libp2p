@@ -1,9 +1,15 @@
+import { EventEmitter } from 'node:events'
+import net from 'node:net'
 import { logger } from '@libp2p/logger'
+import { streamPair } from '@libp2p/test-utils'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { expect } from 'aegir/chai'
-import { verifyPeerCertificate } from '../src/utils.js'
+import { raceEvent } from 'race-event'
+import { stubInterface } from 'sinon-ts'
+import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
 import * as testVectors from './fixtures/test-vectors.js'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -73,5 +79,63 @@ describe('utils', () => {
 
     await expect(verifyPeerCertificate(new Uint8Array(cert.rawData), undefined, logger('libp2p'))).to.eventually.be.rejected
       .with.property('name', 'InvalidCryptoExchangeError')
+  })
+
+  it('should pipe stream messages to socket', async () => {
+    const [outboundStream, inboundStream] = await streamPair()
+    const [outboundSocket, inboundSocket] = [toNodeDuplex(outboundStream), toNodeDuplex(inboundStream)]
+
+    const sent = new Array(1_000).fill(0).map(() => {
+      return Uint8Array.from(new Array(1_000).fill(0))
+    })
+
+    const received: Uint8Array[] = []
+
+    inboundSocket.addListener('data', (buf) => {
+      received.push(buf)
+    })
+
+    for (const buf of sent) {
+      const sendMore = outboundSocket.write(buf)
+
+      if (sendMore === false) {
+        await raceEvent(outboundSocket, 'drain')
+      }
+    }
+
+    outboundStream.close()
+
+    await raceEvent(outboundStream, 'close')
+
+    expect(received).to.deep.equal(sent)
+  })
+
+  it('should pipe socket messages to stream', async () => {
+    const [outboundStream] = await streamPair()
+    const emitter = new EventEmitter()
+
+    // @ts-expect-error return types of emitter methods are incompatible
+    const socket = stubInterface<net.Socket>(emitter)
+    const stream = toMessageStream(outboundStream, socket)
+
+    const sent = new Array(1_000).fill(0).map(() => {
+      return Uint8Array.from(new Array(1_000).fill(0))
+    })
+
+    const received: Array<Uint8Array | Uint8ArrayList> = []
+
+    stream.addEventListener('message', (evt) => {
+      received.push(evt.data)
+    })
+
+    for (const buf of sent) {
+      emitter.emit('data', buf)
+    }
+
+    emitter.emit('close')
+
+    await raceEvent(outboundStream, 'close')
+
+    expect(received).to.deep.equal(sent)
   })
 })

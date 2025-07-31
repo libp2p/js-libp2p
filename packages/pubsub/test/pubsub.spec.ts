@@ -14,8 +14,7 @@ import { noSignMsgId } from '../src/utils.js'
 import {
   MockRegistrar,
   ConnectionPair,
-  PubsubImplementation,
-  mockIncomingStreamEvent
+  PubsubImplementation
 } from './utils/index.js'
 import type { PeerId, Message, PubSubRPC } from '@libp2p/interface'
 
@@ -180,7 +179,7 @@ describe('pubsub base implementation', () => {
         const [c0, c1] = ConnectionPair()
 
         topologyA.onConnect?.(peerIdB, c0)
-        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        handlerB.handler(await c1.newStream(protocol), c1)
       })
 
       afterEach(async () => {
@@ -298,7 +297,7 @@ describe('pubsub base implementation', () => {
         const [c0, c1] = ConnectionPair()
 
         topologyA.onConnect?.(peerIdB, c0)
-        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        handlerB.handler(await c1.newStream(protocol), c1)
       })
 
       afterEach(async () => {

@@ -25,10 +25,8 @@
 
 import { serviceCapabilities } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
-import each from 'it-foreach'
 import { TDigest } from 'tdigest'
-import type { Startable, MultiaddrConnection, Stream, Connection, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, ComponentLogger, Logger } from '@libp2p/interface'
-import type { Duplex } from 'it-stream-types'
+import type { Startable, MultiaddrConnection, Stream, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, ComponentLogger, Logger, MessageStream } from '@libp2p/interface'
 
 const log = logger('libp2p:simple-metrics')
 
@@ -417,27 +415,24 @@ class SimpleMetrics implements Metrics, Startable {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<AsyncGenerator<any>>, name: string): void {
-    const self = this
-
-    const sink = stream.sink
-    stream.sink = async function trackedSink (source) {
-      await sink(each(source, buf => {
-        self._incrementValue(`${name} sent`, buf.byteLength)
-      }))
-    }
-
-    const source = stream.source
-    stream.source = each(source, buf => {
-      self._incrementValue(`${name} received`, buf.byteLength)
+  _track (stream: MessageStream, name: string): void {
+    stream.addEventListener('message', (evt) => {
+      this._incrementValue(`${name} received`, evt.data.byteLength)
     })
+
+    const send = stream.send.bind(stream)
+    stream.send = (buf) => {
+      this._incrementValue(`${name} sent`, buf.byteLength)
+
+      return send(buf)
+    }
   }
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
     this._track(maConn, 'global')
   }
 
-  trackProtocolStream (stream: Stream, connection: Connection): void {
+  trackProtocolStream (stream: Stream): void {
     if (stream.protocol == null) {
       // protocol not negotiated yet, should not happen as the upgrader
       // calls this handler after protocol negotiation

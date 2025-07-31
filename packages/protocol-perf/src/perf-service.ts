@@ -1,7 +1,9 @@
 import { pushable } from 'it-pushable'
+import { raceEvent } from 'race-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_LIMITED_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
-import type { Logger, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { Connection, Logger, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Perf implements Startable, PerfInterface {
@@ -30,10 +32,11 @@ export class Perf implements Startable, PerfInterface {
   readonly [Symbol.toStringTag] = '@libp2p/perf'
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
-      void this.handleMessage(data).catch((err) => {
-        this.log.error('error handling perf protocol message - %e', err)
-      })
+    await this.components.registrar.handle(this.protocol, (stream: Stream, connection: Connection) => {
+      this.handleMessage(stream, connection)
+        .catch((err) => {
+          this.log.error('error handling perf protocol message - %e', err)
+        })
     }, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
@@ -51,18 +54,17 @@ export class Perf implements Startable, PerfInterface {
     return this.started
   }
 
-  async handleMessage (data: IncomingStreamData): Promise<void> {
-    const { stream } = data
-
+  async handleMessage (stream: Stream, connection: Connection): Promise<void> {
     try {
       const writeBlockSize = this.writeBlockSize
 
       let bytesToSendBack: number | undefined
 
-      for await (const buf of stream.source) {
+      for await (const buf of stream) {
         if (bytesToSendBack == null) {
+          const list = new Uint8ArrayList(buf)
           // downcast 64 to 52 bits to avoid bigint arithmetic performance penalty
-          bytesToSendBack = Number(buf.getBigUint64(0, false))
+          bytesToSendBack = Number(list.getBigUint64(0, false))
         }
 
         // Ingest all the data and wait for the read side to close
@@ -74,17 +76,21 @@ export class Perf implements Startable, PerfInterface {
 
       const uint8Buf = new Uint8Array(this.buf, 0, this.buf.byteLength)
 
-      await stream.sink(async function * () {
-        while (bytesToSendBack > 0) {
-          let toSend: number = writeBlockSize
-          if (toSend > bytesToSendBack) {
-            toSend = bytesToSendBack
-          }
-
-          bytesToSendBack = bytesToSendBack - toSend
-          yield uint8Buf.subarray(0, toSend)
+      while (bytesToSendBack > 0) {
+        let toSend: number = writeBlockSize
+        if (toSend > bytesToSendBack) {
+          toSend = bytesToSendBack
         }
-      }())
+
+        bytesToSendBack = bytesToSendBack - toSend
+        const buf = uint8Buf.subarray(0, toSend)
+
+        const sendMore = stream.send(buf)
+
+        if (!sendMore) {
+          await raceEvent(stream, 'drain')
+        }
+      }
     } catch (err: any) {
       stream.abort(err)
     }
@@ -127,8 +133,12 @@ export class Perf implements Startable, PerfInterface {
         objectMode: true
       })
 
-      stream.sink(async function * () {
-        yield uint8Buf.subarray(0, 8)
+      Promise.resolve().then(async () => {
+        const sendMore = stream.send(uint8Buf.subarray(0, 8))
+
+        if (!sendMore) {
+          await raceEvent(stream, 'drain')
+        }
 
         while (sendBytes > 0) {
           let toSend: number = writeBlockSize
@@ -137,7 +147,11 @@ export class Perf implements Startable, PerfInterface {
             toSend = sendBytes
           }
 
-          yield uint8Buf.subarray(0, toSend)
+          const sendMore = stream.send(uint8Buf.subarray(0, toSend))
+
+          if (!sendMore) {
+            await raceEvent(stream, 'drain')
+          }
 
           sendBytes -= toSend
 
@@ -160,7 +174,7 @@ export class Perf implements Startable, PerfInterface {
         }
 
         output.end()
-      }())
+      })
         .catch(err => {
           output.end(err)
         })
@@ -175,7 +189,7 @@ export class Perf implements Startable, PerfInterface {
       let totalBytesReceived = 0
       const downloadStart = Date.now()
 
-      for await (const buf of stream.source) {
+      for await (const buf of stream) {
         if (Date.now() - lastReportedTime > 1000) {
           yield {
             type: 'intermediary',

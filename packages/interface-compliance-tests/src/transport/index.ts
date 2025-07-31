@@ -3,10 +3,10 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import drain from 'it-drain'
 import { pushable } from 'it-pushable'
-import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
+import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader } from './utils.js'
@@ -16,7 +16,6 @@ import type { Connection, Libp2p, Stream, StreamHandler } from '@libp2p/interfac
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrMatcher } from '@multiformats/multiaddr-matcher'
 import type { Libp2pInit } from 'libp2p'
-import type { DeferredPromise } from 'p-defer'
 
 export interface TransportTestFixtures {
   /**
@@ -133,10 +132,10 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     it('should close all streams when the connection closes', async () => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
-      let incomingConnectionPromise: DeferredPromise<Connection> | undefined
+      let incomingConnectionPromise: PromiseWithResolvers<Connection> | undefined
 
       if (listener != null) {
-        incomingConnectionPromise = pDefer<Connection>()
+        incomingConnectionPromise = Promise.withResolvers<Connection>()
 
         listener.addEventListener('connection:open', (event) => {
           const conn = event.detail
@@ -267,13 +266,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const protocol = '/send-data/1.0.0'
       const chunkSize = 1024
       const bytes = chunkSize * 1024 * 10
-      const deferred = pDefer()
+      const deferred = Promise.withResolvers<void>()
 
-      await listener.handle(protocol, ({ stream }) => {
+      await listener.handle(protocol, (stream) => {
         Promise.resolve().then(async () => {
           let read = 0
 
-          for await (const buf of stream.source) {
+          for await (const buf of stream) {
             read += buf.byteLength
 
             if (read === bytes) {
@@ -292,11 +291,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       await stream.closeRead()
 
-      await stream.sink((async function * () {
-        for (let i = 0; i < bytes; i += chunkSize) {
-          yield new Uint8Array(chunkSize)
+      for (let i = 0; i < bytes; i += chunkSize) {
+        const sendMore = stream.send(new Uint8Array(chunkSize))
+
+        if (!sendMore) {
+          await raceEvent(stream, 'drain')
         }
-      })())
+      }
 
       await stream.close()
 
@@ -315,22 +316,15 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const protocol = '/receive-data/1.0.0'
       const chunkSize = 1024
       const bytes = chunkSize * 1024 * 10
-      const deferred = pDefer()
 
-      await listener.handle(protocol, ({ stream }) => {
-        Promise.resolve().then(async () => {
-          await stream.sink((async function * () {
-            for (let i = 0; i < bytes; i += chunkSize) {
-              yield new Uint8Array(chunkSize)
-            }
-          })())
+      await listener.handle(protocol, async (stream) => {
+        for (let i = 0; i < bytes; i += chunkSize) {
+          const sendMore = stream.send(new Uint8Array(chunkSize))
 
-          await stream.close()
-        })
-          .catch(err => {
-            deferred.reject(err)
-            stream.abort(err)
-          })
+          if (!sendMore) {
+            await raceEvent(stream, 'drain')
+          }
+        }
       })
 
       const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
@@ -339,7 +333,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       let read = 0
 
-      for await (const buf of stream.source) {
+      for await (const buf of stream) {
         read += buf.byteLength
       }
 
@@ -362,18 +356,14 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
        * |        <--- FIN_ACK |
        */
 
-      const getRemoteStream = pDefer<Stream>()
+      const getRemoteStream = Promise.withResolvers<Stream>()
       const protocol = '/close-local-while-remote-writes/1.0.0'
 
-      const streamHandler: StreamHandler = ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          getRemoteStream.resolve(stream)
-        })
+      const streamHandler: StreamHandler = (stream) => {
+        getRemoteStream.resolve(stream)
       }
 
-      await listener.handle(protocol, (info) => {
-        streamHandler(info)
-      }, {
+      await listener.handle(protocol, streamHandler, {
         runOnLimitedConnection: true
       })
 
@@ -393,7 +383,15 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
       const remoteInputStream = pushable<Uint8Array>()
-      void remoteStream.sink(remoteInputStream)
+      Promise.resolve().then(async () => {
+        for await (const buf of remoteInputStream) {
+          const sendMore = remoteStream.send(buf)
+
+          if (sendMore === false) {
+            await raceEvent(stream, 'drain')
+          }
+        }
+      })
 
       // wait for remote to receive local close-write
       await pRetry(() => {
@@ -436,18 +434,14 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
        * |        <--- FIN_ACK |
        */
 
-      const getRemoteStream = pDefer<Stream>()
+      const getRemoteStream = Promise.withResolvers<Stream>()
       const protocol = '/close-local-while-remote-reads/1.0.0'
 
-      const streamHandler: StreamHandler = ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          getRemoteStream.resolve(stream)
-        })
+      const streamHandler: StreamHandler = (stream) => {
+        getRemoteStream.resolve(stream)
       }
 
-      await listener.handle(protocol, (info) => {
-        streamHandler(info)
-      }, {
+      await listener.handle(protocol, streamHandler, {
         runOnLimitedConnection: true
       })
 
@@ -459,13 +453,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-      const p = stream.sink([])
+      const p = stream.closeWrite()
 
       const remoteStream = await getRemoteStream.promise
       // close the readable end of the remote stream
       await remoteStream.closeRead()
       // readable end should finish
-      await drain(remoteStream.source)
+      await drain(remoteStream)
 
       // wait for remote to receive local close-write
       await pRetry(() => {
@@ -477,7 +471,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // remote closes write
-      await remoteStream.sink([])
+      await remoteStream.closeWrite()
 
       // wait to receive FIN_ACK
       await p
@@ -485,7 +479,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       // close read end of stream
       await stream.closeRead()
       // readable end should finish
-      await drain(stream.source)
+      await drain(stream)
 
       // wait for remote to notice closure
       await pRetry(() => {
@@ -518,7 +512,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       await listener.stop()
 
-      const transportListeningPromise = pDefer()
+      const transportListeningPromise = Promise.withResolvers<void>()
 
       listener.addEventListener('transport:listening', (event) => {
         const transportListener = event.detail

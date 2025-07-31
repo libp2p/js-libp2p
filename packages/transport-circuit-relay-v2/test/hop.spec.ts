@@ -1,14 +1,11 @@
-/* eslint-disable max-nested-callbacks */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { isStartable } from '@libp2p/interface'
-import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -52,7 +49,7 @@ describe('circuit-relay hop protocol', function () {
 
     const privateKey = await generateKeyPair('Ed25519')
     const peerId = peerIdFromPrivateKey(privateKey)
-    const registrar = mockRegistrar()
+    const registrar = stubInterface<Registrar>()
     const connections = new PeerMap<Connection>()
 
     const octet = peerIndex + 100
@@ -63,7 +60,9 @@ describe('circuit-relay hop protocol', function () {
     addressManager.getAddresses.returns([
       ma
     ])
-    const peerStore = stubInterface<PeerStore>()
+    const peerStore = stubInterface<PeerStore>({
+      all: async () => []
+    })
 
     const events = new TypedEventEmitter()
     events.addEventListener('connection:open', (evt) => {
@@ -75,16 +74,9 @@ describe('circuit-relay hop protocol', function () {
       connections.delete(conn.remotePeer)
     })
 
-    const connectionManager = mockConnectionManager({
-      peerId,
-      registrar,
-      events
-    })
+    const connectionManager = stubInterface<ConnectionManager>()
 
-    const upgrader = mockUpgrader({
-      registrar,
-      events
-    })
+    const upgrader = stubInterface<Upgrader>()
 
     const connectionGater = {}
 
@@ -136,7 +128,6 @@ describe('circuit-relay hop protocol', function () {
       logger: defaultLogger()
     }
 
-    mockNetwork.addNode(node)
     nodes.push(node)
 
     return node
@@ -200,8 +191,6 @@ describe('circuit-relay hop protocol', function () {
         await node.circuitRelayTransport.stop()
       }
     }
-
-    mockNetwork.reset()
   })
 
   describe('reserve', function () {

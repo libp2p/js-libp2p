@@ -1,4 +1,4 @@
-import { pbStream } from 'it-protobuf-stream'
+import { pbStream } from '@libp2p/utils'
 import { CustomProgressEvent } from 'progress-events'
 import { SIGNALING_PROTOCOL } from '../constants.js'
 import { SDPHandshakeFailedError } from '../error.js'
@@ -9,15 +9,14 @@ import { splitAddr } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
 import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
 import type { DataChannelOptions } from '../index.js'
-import type { LoggerOptions, Connection, ComponentLogger, IncomingStreamData } from '@libp2p/interface'
+import type { LoggerOptions, Connection, ComponentLogger } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
-export interface IncomingStreamOpts extends IncomingStreamData {
+export interface IncomingStreamOptions extends AbortOptions {
   rtcConfiguration?: RTCConfiguration
   dataChannelOptions?: Partial<DataChannelOptions>
-  signal: AbortSignal
 }
 
 export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDialEvents> {
@@ -68,8 +67,6 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const messageStream = pbStream(stream).pb(Message)
   const peerConnection = new RTCPeerConnection(rtcConfiguration)
   const muxerFactory = new DataChannelMuxerFactory({
-    logger
-  }, {
     peerConnection,
     dataChannelOptions: dataChannel
   })

@@ -1,5 +1,4 @@
-import { isPrivateIp } from '@libp2p/utils/private-ip'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { isPrivateIp, trackedMap } from '@libp2p/utils'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'

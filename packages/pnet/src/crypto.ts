@@ -1,35 +1,85 @@
+import { StreamMessageEvent } from '@libp2p/interface'
+import { AbstractMessageStream } from '@libp2p/utils'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import xsalsa20 from 'xsalsa20'
 import * as Errors from './errors.js'
 import { KEY_LENGTH } from './key-generator.js'
-import type { Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
+import type { MessageStreamInit } from '@libp2p/utils'
 
-/**
- * Creates a stream iterable to encrypt messages in a private network
- */
-export function createBoxStream (nonce: Uint8Array, psk: Uint8Array): (source: Source<Uint8Array | Uint8ArrayList>) => AsyncGenerator<Uint8Array | Uint8ArrayList> {
-  const xor = xsalsa20(nonce, psk)
-
-  return (source: Source<Uint8Array | Uint8ArrayList>) => (async function * () {
-    for await (const chunk of source) {
-      yield Uint8Array.from(xor.update(chunk.subarray()))
-    }
-  })()
+export interface BoxMessageStreamInit extends MessageStreamInit {
+  maConn: MultiaddrConnection
+  localNonce: Uint8Array
+  remoteNonce: Uint8Array
+  psk: Uint8Array
 }
 
-/**
- * Creates a stream iterable to decrypt messages in a private network
- */
-export function createUnboxStream (nonce: Uint8Array, psk: Uint8Array) {
-  return (source: Source<Uint8Array>) => (async function * () {
-    const xor = xsalsa20(nonce, psk)
+export class BoxMessageStream extends AbstractMessageStream {
+  private maConn: MultiaddrConnection
+  private inboundXor: xsalsa20.Xor
+  private outboundXor: xsalsa20.Xor
 
-    for await (const chunk of source) {
-      yield Uint8Array.from(xor.update(chunk.subarray()))
-    }
-  })()
+  constructor (init: BoxMessageStreamInit) {
+    super(init)
+
+    this.inboundXor = xsalsa20(init.remoteNonce, init.psk)
+    this.outboundXor = xsalsa20(init.localNonce, init.psk)
+    this.maConn = init.maConn
+
+    this.maConn.addEventListener('message', (evt) => {
+      const data = evt.data
+
+      if (data instanceof Uint8Array) {
+        this.dispatchEvent(new StreamMessageEvent(this.inboundXor.update(data)))
+      } else {
+        for (const buf of data) {
+          this.dispatchEvent(new StreamMessageEvent(this.inboundXor.update(buf)))
+        }
+      }
+    })
+
+    this.maConn.addEventListener('close', (evt) => {
+      if (evt.local) {
+        if (evt.error != null) {
+          this.abort(evt.error)
+        } else {
+          this.close()
+            .catch(() => {})
+        }
+      } else {
+        if (evt.error != null) {
+          this.onRemoteReset()
+        } else {
+          this.onRemoteClose()
+        }
+      }
+    })
+  }
+
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    await this.maConn.closeWrite(options)
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    await this.maConn.closeRead(options)
+  }
+
+  sendData (data: Uint8Array): boolean {
+    return this.maConn.send(this.outboundXor.update(data))
+  }
+
+  sendReset (err: Error): void {
+    this.maConn.abort(err)
+  }
+
+  sendPause (): void {
+    this.maConn.pause()
+  }
+
+  sendResume (): void {
+    this.maConn.resume()
+  }
 }
 
 /**

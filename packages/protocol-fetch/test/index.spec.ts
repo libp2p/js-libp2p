@@ -2,11 +2,10 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/test-utils'
+import { pbStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
@@ -29,19 +28,10 @@ async function createComponents (): Promise<StubbedFetchComponents> {
   }
 }
 
-function createStreams (components: StubbedFetchComponents, remotePeer?: PeerId): { incomingStream: StubbedInstance<Stream>, outgoingStream: StubbedInstance<Stream>, connection: StubbedInstance<Connection> } {
-  const duplex = duplexPair<any>()
-  const outgoingStream = stubInterface<Stream>()
-  outgoingStream.source = duplex[0].source
-  outgoingStream.sink.callsFake(async source => duplex[0].sink(source))
+async function createStreams (components: StubbedFetchComponents, remotePeer?: PeerId): Promise<{ incomingStream: Stream, outgoingStream: Stream, connection: StubbedInstance<Connection> }> {
+  const [outgoingStream, incomingStream] = await streamPair()
 
-  const incomingStream = stubInterface<Stream>()
-  incomingStream.source = duplex[1].source
-  incomingStream.sink.callsFake(async source => duplex[1].sink(source))
-
-  const connection = stubInterface<Connection>({
-    log: defaultLogger().forComponent('connection')
-  })
+  const connection = stubInterface<Connection>()
 
   if (remotePeer != null) {
     connection.newStream.withArgs('/libp2p/fetch/0.0.1').resolves(outgoingStream)
@@ -85,7 +75,7 @@ describe('fetch', () => {
 
       const {
         incomingStream
-      } = createStreams(components, remotePeer)
+      } = await createStreams(components, remotePeer)
 
       const result = fetch.fetch(remotePeer, key)
 
@@ -108,7 +98,7 @@ describe('fetch', () => {
 
       const {
         incomingStream
-      } = createStreams(components, remotePeer)
+      } = await createStreams(components, remotePeer)
 
       const result = fetch.fetch(remotePeer, key)
 
@@ -130,7 +120,7 @@ describe('fetch', () => {
 
       const {
         incomingStream
-      } = createStreams(components, remotePeer)
+      } = await createStreams(components, remotePeer)
 
       const result = fetch.fetch(remotePeer, key)
 
@@ -153,18 +143,14 @@ describe('fetch', () => {
 
       const {
         outgoingStream
-      } = createStreams(components, remotePeer)
-
-      outgoingStream.abort.callsFake((err) => {
-        void outgoingStream.source.throw(err)
-      })
+      } = await createStreams(components, remotePeer)
 
       await expect(fetch.fetch(remotePeer, key, {
         signal: AbortSignal.timeout(10)
       })).to.eventually.be.rejected
         .with.property('name', 'AbortError')
 
-      expect(outgoingStream.abort.called).to.be.true()
+      expect(outgoingStream).to.have.property('status', 'aborted')
     })
   })
 
@@ -175,19 +161,16 @@ describe('fetch', () => {
 
       const {
         incomingStream,
-        outgoingStream,
-        connection
-      } = createStreams(components)
+        outgoingStream
+      } = await createStreams(components)
 
       fetch.registerLookupFunction('/test', async (k) => {
         expect(k).to.equalBytes(uint8arrayFromString(key))
         return value
       })
 
-      void fetch.handleMessage({
-        stream: incomingStream,
-        connection
-      })
+      fetch.handleMessage(incomingStream)
+        ?.catch(() => {})
 
       const pb = pbStream(outgoingStream)
 
@@ -196,7 +179,7 @@ describe('fetch', () => {
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
-      expect(response.status).to.equal(FetchResponse.StatusCode.OK)
+      expect(response).to.have.property('status', FetchResponse.StatusCode.OK)
       expect(response.data).to.equalBytes(value)
     })
 
@@ -205,18 +188,15 @@ describe('fetch', () => {
 
       const {
         incomingStream,
-        outgoingStream,
-        connection
-      } = createStreams(components)
+        outgoingStream
+      } = await createStreams(components)
 
       fetch.registerLookupFunction('/test', async (k) => {
         return undefined
       })
 
-      void fetch.handleMessage({
-        stream: incomingStream,
-        connection
-      })
+      fetch.handleMessage(incomingStream)
+        ?.catch(() => {})
 
       const pb = pbStream(outgoingStream)
 
@@ -225,7 +205,7 @@ describe('fetch', () => {
       }, FetchRequest)
 
       const response = await pb.read(FetchResponse)
-      expect(response.status).to.equal(FetchResponse.StatusCode.NOT_FOUND)
+      expect(response).to.have.property('status', FetchResponse.StatusCode.NOT_FOUND)
     })
 
     it('should handle not having a handler for the key', async () => {
@@ -233,14 +213,11 @@ describe('fetch', () => {
 
       const {
         incomingStream,
-        outgoingStream,
-        connection
-      } = createStreams(components)
+        outgoingStream
+      } = await createStreams(components)
 
-      void fetch.handleMessage({
-        stream: incomingStream,
-        connection
-      })
+      fetch.handleMessage(incomingStream)
+        ?.catch(() => {})
 
       const pb = pbStream(outgoingStream)
 
@@ -252,23 +229,23 @@ describe('fetch', () => {
       expect(response.status).to.equal(FetchResponse.StatusCode.ERROR)
     })
 
-    it('should time out sending data to another peer waiting for the request', async () => {
+    it('should throw when timing out sending data to another peer waiting for the request', async () => {
       fetch = new Fetch(components, {
         timeout: 10
       })
 
       const {
-        incomingStream,
-        connection
-      } = createStreams(components)
+        incomingStream
+      } = await createStreams(components)
 
-      await fetch.handleMessage({
-        stream: incomingStream,
-        connection
-      })
+      const errorPromise = Promise.withResolvers<Error>()
 
-      expect(incomingStream.abort.called).to.be.true()
-      expect(incomingStream.abort.getCall(0).args[0]).to.have.property('name', 'AbortError')
+      fetch.handleMessage(incomingStream)
+        ?.catch((err) => {
+          errorPromise.resolve(err)
+        })
+
+      await expect(errorPromise.promise).to.eventually.have.property('name', 'AbortError')
     })
   })
 })

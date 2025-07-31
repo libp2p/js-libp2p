@@ -1,8 +1,8 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
@@ -21,7 +21,7 @@ import { ReservationVoucherRecord } from './reservation-voucher.js'
 import type { ReservationStoreInit } from './reservation-store.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
 import type { Reservation } from '../pb/index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions, IncomingStreamData } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -135,6 +135,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
+
+    this.onHop = this.onHop.bind(this)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/circuit-relay-v2-server'
@@ -151,11 +153,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    await this.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
-      void this.onHop(data).catch(err => {
-        this.log.error(err)
-      })
-    }, {
+    await this.registrar.handle(RELAY_V2_HOP_CODEC, this.onHop, {
       maxInboundStreams: this.maxInboundHopStreams,
       maxOutboundStreams: this.maxOutboundHopStreams,
       runOnLimitedConnection: true
@@ -175,11 +173,14 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     this.started = false
   }
 
-  async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
+  async onHop (stream: Stream, connection: Connection): Promise<void> {
     this.log('received circuit v2 hop protocol stream from %p', connection.remotePeer)
 
+    const signal = AbortSignal.timeout(this.hopTimeout)
+    setMaxListeners(Infinity, signal)
+
     const options = {
-      signal: AbortSignal.timeout(this.hopTimeout)
+      signal
     }
     const pbstr = pbStream(stream)
 
