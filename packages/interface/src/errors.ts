@@ -229,6 +229,18 @@ export class UnsupportedProtocolError extends Error {
 }
 
 /**
+ * Thrown when a protocol is not negotiated properly
+ */
+export class ProtocolNegotiationError extends Error {
+  static name = 'ProtocolNegotiationError'
+
+  constructor (message = 'Protocol negotiation error', options?: ErrorOptions) {
+    super(message, options)
+    this.name = 'ProtocolNegotiationError'
+  }
+}
+
+/**
  * An invalid or malformed message was encountered during a protocol exchange
  */
 export class InvalidMessageError extends Error {
