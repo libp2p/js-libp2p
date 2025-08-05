@@ -114,8 +114,8 @@ export async function select <Stream extends SelectStream> (stream: Stream, prot
       }
     }
   } catch (err) {
-    options.log.error('select: error negotiating protocol', err);
-    throw new ProtocolNegotiationError('protocol negotiation failed', {cause: err})
+    options.log.error('select: error negotiating protocol', err)
+    throw new ProtocolNegotiationError('protocol negotiation failed', { cause: err })
   }
 
   throw new UnsupportedProtocolError('protocol selection failed')
