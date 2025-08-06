@@ -127,7 +127,31 @@ describe('reprovider', () => {
     expect(provsAfter).to.have.length(0)
   })
 
-  describe.only('shouldReprovide', () => {
+  it('should delete expired records from other peers but preserve own expired records', async () => {
+    const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+
+    // Add provider records - one from us, one from another peer
+    await providers.addProvider(cid, components.peerId)
+    await providers.addProvider(cid, peers[0].peerId)
+
+    const provsBefore = await providers.getProviders(cid)
+    expect(provsBefore).to.have.length(2)
+
+    // Wait for records to expire (validity is 200ms)
+    await delay(250)
+
+    // Trigger reprovide cycle to process expired records
+    await pEvent(reprovider, 'reprovide:start')
+    await pEvent(reprovider, 'reprovide:end')
+
+    const provsAfter = await providers.getProviders(cid)
+
+    // Only our own record should remain, other peer's expired record should be deleted
+    expect(provsAfter).to.have.length(1)
+    expect(provsAfter[0].toString()).to.equal(components.peerId.toString())
+  })
+
+  describe('shouldReprovide', () => {
     it('should return false for non-self providers', () => {
       const expires = Date.now() + 50
       const result = (reprovider as any).shouldReprovide(false, expires)
