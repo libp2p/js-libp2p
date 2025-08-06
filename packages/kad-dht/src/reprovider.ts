@@ -99,7 +99,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.timeout = setTimeout(() => {
-      this.cleanUp({
+      this.processRecords({
         signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
       }).catch(err => {
         this.log.error('error running process to reprovide/cleanup - %e', err)
@@ -118,10 +118,10 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
    * Check all provider records. Delete them if they have expired, reprovide
    * them if the provider is us and the expiry is within the reprovide window.
    */
-  private async cleanUp (options?: AbortOptions): Promise<void> {
+  private async processRecords (options?: AbortOptions): Promise<void> {
     try {
       this.safeDispatchEvent('reprovide:start')
-
+      this.log('Starting reprovide/cleanup')
       // Get all provider entries from the datastore
       for await (const entry of this.datastore.query({
         prefix: this.datastorePrefix
@@ -146,7 +146,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           // if the provider is us and we are within the reprovide threshold,
           // reprovide the record
           if (this.shouldReprovide(isSelf, expires)) {
-            this.log.trace('reproviding %c as it is within the reprovide threshold (%d)', cid, this.reprovideThreshold)
+            this.log('reproviding %c as it is within the reprovide threshold (%d)', cid, this.reprovideThreshold)
             this.queueReprovide(cid)
               .catch(err => {
                 this.log.error('could not reprovide %c - %e', cid, err)
@@ -162,8 +162,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       this.safeDispatchEvent('reprovide:end')
 
       if (this.running) {
+        this.log('queuing next re-provide/cleanup run in %d ms', this.interval)
         this.timeout = setTimeout(() => {
-          this.cleanUp({
+          this.processRecords({
             signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
           }).catch(err => {
             this.log.error('error running re-provide - %e', err)
