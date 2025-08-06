@@ -174,9 +174,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   }
 
   /**
-   * Determines if a record should be reprovided based on its expiration time.
-   * Records are reprovided when they are within the reprovide threshold of
-   * expiration (either approaching expiration or recently expired).
+   * Determines if a record should be reprovided
    */
   private shouldReprovide (isSelf: boolean, expires: number): boolean {
     if (!isSelf) {
