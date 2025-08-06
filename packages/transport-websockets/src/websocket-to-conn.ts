@@ -2,7 +2,7 @@ import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 
 export interface WebSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name'> {
   websocket: WebSocket
@@ -51,18 +51,19 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.onData(buf)
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): boolean {
+  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
     if (data instanceof Uint8Array) {
       this.websocket.send(data)
-
-      return true
+    } else {
+      for (const buf of data) {
+        this.websocket.send(buf)
+      }
     }
 
-    for (const buf of data) {
-      this.websocket.send(buf)
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: true
     }
-
-    return true
   }
 
   sendReset (): void {

@@ -1,9 +1,9 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
 import { raceEvent } from 'race-event'
 import { MUXER_PROTOCOL } from './constants.js'
-import { createStream } from './stream.js'
+import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
-import type { ComponentLogger, Stream, CounterGroup, StreamMuxer, StreamMuxerFactory, StreamMuxerInit, CreateStreamOptions } from '@libp2p/interface'
+import type { ComponentLogger, CounterGroup, StreamMuxer, StreamMuxerFactory, CreateStreamOptions, MultiaddrConnection } from '@libp2p/interface'
 
 export interface DataChannelMuxerFactoryInit {
   /**
@@ -48,9 +48,8 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     this.dataChannelOptions = init.dataChannelOptions ?? {}
   }
 
-  createStreamMuxer (init: StreamMuxerInit): StreamMuxer {
-    return new DataChannelMuxer({
-      ...init,
+  createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
+    return new DataChannelMuxer(maConn, {
       peerConnection: this.peerConnection,
       dataChannelOptions: this.dataChannelOptions,
       metrics: this.metrics,
@@ -59,7 +58,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   }
 }
 
-export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit, StreamMuxerInit {
+export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit {
   protocol: string
 }
 
@@ -70,15 +69,15 @@ export interface DataChannelMuxerComponents {
 /**
  * A libp2p data channel stream muxer
  */
-export class DataChannelMuxer extends AbstractStreamMuxer implements StreamMuxer {
+export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implements StreamMuxer<WebRTCStream> {
   private readonly peerConnection: RTCPeerConnection
   private readonly dataChannelOptions: DataChannelOptions
   private readonly metrics?: CounterGroup
 
-  constructor (init: DataChannelMuxerInit) {
-    super({
+  constructor (maConn: MultiaddrConnection, init: DataChannelMuxerInit) {
+    super(maConn, {
       ...init,
-      log: init.maConn.log.newScope('muxer')
+      name: 'muxer'
     })
 
     this.peerConnection = init.peerConnection
@@ -114,7 +113,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer implements StreamMuxer
     }
   }
 
-  async onCreateStream (options?: CreateStreamOptions): Promise<Stream> {
+  async onCreateStream (options?: CreateStreamOptions): Promise<WebRTCStream> {
     // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('', {
       // TODO: pre-negotiate stream protocol

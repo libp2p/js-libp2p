@@ -6,7 +6,7 @@ import { encode } from './encode.ts'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import type { MplexStreamMuxer } from './mplex.ts'
 import type { Logger, StreamDirection } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { AbortOptions } from 'it-pushable'
 
 export interface Options {
@@ -48,8 +48,9 @@ export class MplexStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): boolean {
+  sendData (data: Uint8Array): SendResult {
     const list = new Uint8ArrayList()
+    const sentBytes = data.byteLength
 
     while (data.byteLength > 0) {
       const toSend = Math.min(data.byteLength, this.maxDataSize)
@@ -65,7 +66,10 @@ export class MplexStream extends AbstractStream {
       )
     }
 
-    return this.muxer.send(list)
+    return {
+      sentBytes,
+      canSendMore: this.muxer.send(list)
+    }
   }
 
   sendReset (): boolean {

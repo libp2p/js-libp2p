@@ -62,7 +62,6 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.21",
-    "@libp2p/test-utils": "^0.0.0",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
     "it-length-prefixed": "^10.0.1",

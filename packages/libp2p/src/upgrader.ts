@@ -315,9 +315,7 @@ export class Upgrader implements UpgraderInterface {
 
     // create the connection muxer if one is configured
     if (muxerFactory != null) {
-      muxer = muxerFactory.createStreamMuxer({
-        maConn
-      })
+      muxer = muxerFactory.createStreamMuxer(maConn)
     }
 
     const conn = this._createConnection({

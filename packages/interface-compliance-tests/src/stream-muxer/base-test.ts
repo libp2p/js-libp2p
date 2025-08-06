@@ -1,5 +1,4 @@
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
-import { byteStream } from '@libp2p/utils'
+import { multiaddrConnectionPair, byteStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -15,14 +14,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
 
       const dialerFactory = await common.setup()
-      dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
+      dialer = dialerFactory.createStreamMuxer(outboundConnection)
 
       const listenerFactory = await common.setup()
-      listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
+      listener = listenerFactory.createStreamMuxer(inboundConnection)
     })
 
     afterEach(async () => {
@@ -53,11 +48,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('should open a stream', async () => {
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       const dialerBytes = byteStream(dialerStream)
@@ -75,17 +70,17 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('should open a stream on both sides', async () => {
       const [
-        dialerOutboundStream,
         listenerInboundStream,
+        dialerOutboundStream,
 
-        listenerOutboundStream,
-        dialerInboundStream
+        dialerInboundStream,
+        listenerOutboundStream
       ] = await Promise.all([
-        dialer.createStream(),
         raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream(),
 
-        listener.createStream(),
-        raceEvent<CustomEvent<Stream>>(dialer, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(dialer, 'stream').then(evt => evt.detail),
+        listener.createStream()
       ])
 
       const dialerOutboundBytes = byteStream(dialerOutboundStream)
@@ -110,24 +105,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('should store a stream in the streams list', async () => {
-      const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
-
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
-
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')

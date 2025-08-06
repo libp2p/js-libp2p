@@ -7,7 +7,7 @@ import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './cons
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
 import type { AbortOptions, StreamDirection, Logger } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Pushable } from 'it-pushable'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
@@ -171,12 +171,15 @@ export class WebRTCStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): boolean {
+  sendData (data: Uint8Array): SendResult {
     const messageBuf = Message.encode({ message: data })
     const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
     this._sendMessage(prefixedBuf)
 
-    return this.channel.bufferedAmount > this.maxBufferedAmount
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: this.channel.bufferedAmount > this.maxBufferedAmount
+    }
   }
 
   sendReset (): void {

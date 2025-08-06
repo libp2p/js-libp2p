@@ -1,11 +1,14 @@
-import { AbstractStream, AbstractStreamMuxer, Queue } from '@libp2p/utils'
 import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { AbortOptions, StreamDirection, StreamMuxerInit, CreateStreamOptions, StreamMuxerFactory, StreamMuxer } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils'
+import { AbstractStreamMuxer } from './abstract-stream-muxer.ts'
+import { AbstractStream } from './abstract-stream.ts'
+import { Queue } from './queue/index.js'
+import type { SendResult } from './abstract-message-stream.ts'
+import type { AbstractStreamInit } from './abstract-stream.ts'
+import type { AbortOptions, StreamDirection, CreateStreamOptions, StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
 import type { Pushable } from 'it-pushable'
 import type { SupportedEncodings } from 'uint8arrays/from-string'
 
@@ -78,12 +81,17 @@ class MockMuxedStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): boolean {
-    return this.sendMessage({
+  sendData (data: Uint8Array): SendResult {
+    const canSendMore = this.sendMessage({
       id: this.id,
       type: 'data',
       chunk: uint8ArrayToString(data.subarray(), this.encoding)
     })
+
+    return {
+      sentBytes: data.byteLength,
+      canSendMore
+    }
   }
 
   sendReset (): void {
@@ -155,11 +163,11 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   private maxInputQueueSize: number
   private encoding: SupportedEncodings
 
-  constructor (init: MockMuxerInit & StreamMuxerInit) {
-    super({
+  constructor (maConn: MultiaddrConnection, init: MockMuxerInit) {
+    super(maConn, {
       ...init,
       protocol: '/mock-muxer/1.0.0',
-      log: init.maConn.log.newScope('mock-muxer')
+      name: 'mock-muxer'
     })
 
     this.maxInputQueueSize = init.maxInputQueueSize ?? 1024 * 1024 * 10
@@ -260,9 +268,8 @@ class MockMuxerFactory implements StreamMuxerFactory {
     this.init = init
   }
 
-  createStreamMuxer (init: StreamMuxerInit): StreamMuxer {
-    return new MockMuxer({
-      ...init,
+  createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
+    return new MockMuxer(maConn, {
       ...this.init
     })
   }

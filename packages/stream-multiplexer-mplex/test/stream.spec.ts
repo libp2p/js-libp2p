@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { StreamCloseEvent } from '@libp2p/interface'
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
+import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import { pushable } from 'it-pushable'
@@ -9,6 +9,7 @@ import { raceEvent } from 'race-event'
 import randomInt from 'random-int'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
+import { MAX_MSG_SIZE } from '../src/decode.ts'
 import { mplex } from '../src/index.ts'
 import { MessageTypes, MessageTypeNames } from '../src/message-types.js'
 import { decode } from './fixtures/decode.ts'
@@ -36,12 +37,8 @@ async function streamPair (): Promise<StreamPair> {
   const [outbound, inbound] = multiaddrConnectionPair()
   const factory = mplex()()
 
-  const outboundMuxer = factory.createStreamMuxer({
-    maConn: outbound
-  })
-  const inboundMuxer = factory.createStreamMuxer({
-    maConn: inbound
-  })
+  const outboundMuxer = factory.createStreamMuxer(outbound)
+  const inboundMuxer = factory.createStreamMuxer(inbound)
 
   const initiatorMessages = observeIncomingMessages(inbound)
   const receiverMessages = observeIncomingMessages(outbound)
@@ -90,8 +87,11 @@ describe('stream', () => {
     const pair = await streamPair()
 
     pair.initiatorStream.send(Uint8Array.from([0, 1, 2, 3, 4]))
-    await pair.initiatorStream.close()
-    await raceEvent(pair.receiverStream, 'close')
+
+    await Promise.all([
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite()
+    ])
 
     const msgs = await pair.initiatorMessages()
     expect(msgs[0].id).to.equal(pair.initiatorStream.streamId)
@@ -103,8 +103,11 @@ describe('stream', () => {
     const error = new Error('boom')
 
     const pair = await streamPair()
-    pair.initiatorStream.abort(error)
-    const evt = await raceEvent<StreamCloseEvent>(pair.initiatorStream, 'close')
+
+    const [evt] = await Promise.all([
+      raceEvent<StreamCloseEvent>(pair.initiatorStream, 'close'),
+      pair.initiatorStream.abort(error)
+    ])
 
     expect(evt.error).to.equal(error)
   })
@@ -129,8 +132,12 @@ describe('stream', () => {
       }
     }
 
-    await pair.initiatorStream.close()
-    await raceEvent(pair.receiverStream, 'close')
+    await Promise.all([
+      raceEvent(pair.receiverStream, 'close'),
+      raceEvent(pair.initiatorStream, 'close'),
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite()
+    ])
 
     // First and last should be NEW_STREAM and CLOSE
     const msgs = await pair.initiatorMessages()
@@ -156,8 +163,11 @@ describe('stream', () => {
       }
     }
 
-    await pair.receiverStream.close()
-    await raceEvent(pair.initiatorStream, 'close')
+    await Promise.all([
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite(),
+      raceEvent(pair.initiatorStream, 'close')
+    ])
 
     // Last should be CLOSE
     const msgs = await pair.receiverMessages()
@@ -183,8 +193,10 @@ describe('stream', () => {
       }
     }
 
-    await pair.initiatorStream.close()
-    await raceEvent(pair.receiverStream, 'close')
+    await Promise.all([
+      raceEvent(pair.receiverStream, 'remoteClosedWrite'),
+      pair.initiatorStream.closeWrite()
+    ])
 
     const msgs = await pair.initiatorMessages()
     const closeMsg = msgs[msgs.length - 1]
@@ -205,8 +217,10 @@ describe('stream', () => {
       }
     }
 
-    await pair.receiverStream.close()
-    await raceEvent(pair.initiatorStream, 'close')
+    await Promise.all([
+      raceEvent(pair.initiatorStream, 'remoteClosedWrite'),
+      pair.receiverStream.closeWrite()
+    ])
 
     const msgs = await pair.receiverMessages()
     const closeMsg = msgs[msgs.length - 1]
@@ -227,8 +241,11 @@ describe('stream', () => {
     }
 
     const error = new Error(`Boom ${Date.now()}`)
-    pair.initiatorStream.abort(error)
-    await raceEvent(pair.receiverStream, 'close')
+
+    await Promise.all([
+      raceEvent(pair.receiverStream, 'close'),
+      pair.initiatorStream.abort(error)
+    ])
 
     const msgs = await pair.initiatorMessages()
     const resetMsg = msgs[msgs.length - 1]
@@ -249,8 +266,11 @@ describe('stream', () => {
     }
 
     const error = new Error(`Boom ${Date.now()}`)
-    pair.receiverStream.abort(error)
-    await raceEvent(pair.initiatorStream, 'close')
+
+    await Promise.all([
+      raceEvent(pair.initiatorStream, 'close'),
+      pair.receiverStream.abort(error)
+    ])
 
     const msgs = await pair.receiverMessages()
     const resetMsg = msgs[msgs.length - 1]
@@ -259,7 +279,7 @@ describe('stream', () => {
     expect(resetMsg).to.not.have.property('data')
   })
 
-  it.skip('should echo messages', async () => {
+  it('should echo messages', async () => {
     const dataLength = 1
     const pair = await streamPair()
 
@@ -275,9 +295,11 @@ describe('stream', () => {
       }
     }
 
-    await pair.initiatorStream.closeWrite()
-    await pair.receiverStream.closeWrite()
-    await raceEvent(pair.initiatorStream, 'close')
+    await Promise.all([
+      raceEvent(pair.initiatorStream, 'close'),
+      pair.initiatorStream.closeWrite(),
+      pair.receiverStream.closeWrite()
+    ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
     const receiverSentMessages = await pair.receiverMessages()
@@ -289,7 +311,8 @@ describe('stream', () => {
     ])
 
     expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
-      ...new Array(dataLength).fill(0).map(() => MessageTypes.MESSAGE_RECEIVER)
+      ...new Array(dataLength).fill(0).map(() => MessageTypes.MESSAGE_RECEIVER),
+      MessageTypes.CLOSE_RECEIVER
     ])
   })
 
@@ -311,8 +334,10 @@ describe('stream', () => {
       }
     }
 
-    await pair.receiverStream.close()
-    await raceEvent(pair.initiatorStream, 'close')
+    await Promise.all([
+      raceEvent(pair.initiatorStream, 'remoteClosedWrite'),
+      pair.receiverStream.closeWrite()
+    ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
     const receiverSentMessages = await pair.receiverMessages()
@@ -356,8 +381,10 @@ describe('stream', () => {
       }
     }
 
-    pair.initiatorStream.abort(new Error('wat'))
-    await raceEvent(pair.receiverStream, 'close')
+    await Promise.all([
+      raceEvent(pair.receiverStream, 'close'),
+      pair.initiatorStream.abort(new Error('wat'))
+    ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
     const receiverSentMessages = await pair.receiverMessages()
@@ -393,8 +420,10 @@ describe('stream', () => {
       }
     }
 
-    pair.receiverStream.abort(new Error('wat'))
-    await raceEvent(pair.initiatorStream, 'close')
+    await Promise.all([
+      raceEvent(pair.initiatorStream, 'close'),
+      pair.receiverStream.abort(new Error('wat'))
+    ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
     const receiverSentMessages = await pair.receiverMessages()
@@ -412,14 +441,19 @@ describe('stream', () => {
     ])
   })
 
-  it.skip('should split writes larger than max message size', async () => {
+  it('should split writes larger than max message size', async () => {
     const pair = await streamPair()
 
-    const buf = new Uint8Array(1024 * 1024 * 10)
-    pair.initiatorStream.send(buf)
+    const buf = new Uint8Array(MAX_MSG_SIZE * 2)
 
-    await pair.initiatorStream.close()
-    await raceEvent(pair.receiverStream, 'close')
+    if (!pair.initiatorStream.send(buf)) {
+      await raceEvent(pair.initiatorStream, 'drain')
+    }
+
+    await Promise.all([
+      pair.initiatorStream.close(),
+      pair.receiverStream.close()
+    ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
     const receiverSentMessages = await pair.receiverMessages()
@@ -431,6 +465,8 @@ describe('stream', () => {
       MessageTypes.CLOSE_INITIATOR
     ])
 
-    expect(receiverSentMessages.map(m => m.type)).to.deep.equal([])
+    expect(receiverSentMessages.map(m => m.type)).to.deep.equal([
+      MessageTypes.CLOSE_RECEIVER
+    ])
   })
 })

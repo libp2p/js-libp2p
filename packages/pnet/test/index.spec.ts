@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import { defaultLogger } from '@libp2p/logger'
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
+import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

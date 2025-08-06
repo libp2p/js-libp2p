@@ -3,7 +3,7 @@ import { AbstractMultiaddrConnection, socketWriter, ipPortToMultiaddr } from '@l
 import { Unix } from '@multiformats/multiaddr-matcher'
 import { raceEvent } from 'race-event'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit, SocketWriter } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult, SocketWriter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 
@@ -68,8 +68,11 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.writer = socketWriter(this.socket)
   }
 
-  sendData (data: Uint8Array): boolean {
-    return this.writer.write(data)
+  sendData (data: Uint8Array): SendResult {
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: this.writer.write(data)
+    }
   }
 
   sendDataV (data: Uint8Array[]): boolean {

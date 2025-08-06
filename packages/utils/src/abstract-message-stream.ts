@@ -1,4 +1,4 @@
-import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamLocalCloseEvent, StreamRemoteCloseEvent } from '@libp2p/interface'
+import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamLocalCloseEvent, StreamRemoteCloseEvent, StreamCloseEvent } from '@libp2p/interface'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamReadStatus, MessageStreamWriteStatus } from '@libp2p/interface'
@@ -26,6 +26,19 @@ export interface MessageStreamInit {
    * value the stream will be reset and an 'error' event emitted.
    */
   maxPauseBufferLength?: number
+}
+
+export interface SendResult {
+  /**
+   * The number of bytes from the passed buffer that were sent
+   */
+  sentBytes: number
+
+  /**
+   * If the underlying resource can accept more data immediately. If `true`,
+   * `sent` must equal the `.byteLength` of the buffer passed to `sendData`.
+   */
+  canSendMore: boolean
 }
 
 export abstract class AbstractMessageStream<Events extends MessageStreamEvents = MessageStreamEvents> extends TypedEventEmitter<Events> implements MessageStream<Events> {
@@ -88,29 +101,37 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   private processSendQueue (): boolean {
     // don't send data if the underlying send buffer is full
     if (this.writeStatus === 'paused') {
+      this.log('pause sending because local write status was "paused"')
       return false
     }
 
     // don't send data if the remote has asked us to pause
     if (this.remoteReadStatus !== 'readable') {
+      this.log('pause sending because remote read status not "readable"')
       return false
     }
 
     if (this.sendQueue.byteLength === 0) {
+      this.log('not sending because send queue was empty')
       return true
     }
 
     const toSend = this.sendQueue.sublist()
-    this.sendQueue.consume(this.sendQueue.byteLength)
+    const totalBytes = toSend.byteLength
+    const { sentBytes, canSendMore } = this.sendData(toSend)
+    this.sendQueue.consume(sentBytes)
 
-    const sendMore = this.sendData(toSend)
-
-    if (sendMore === false) {
+    if (!canSendMore) {
       this.log('pausing sending because underlying stream is full')
       this.writeStatus = 'paused'
+      return canSendMore
     }
 
-    return sendMore
+    if (sentBytes !== totalBytes) {
+      this.abort(new Error(`All bytes from current chunk must be sent before continuing - sent ${sentBytes}/${totalBytes}`))
+    }
+
+    return canSendMore
   }
 
   pause (): void {
@@ -144,7 +165,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
 
     if (this.remoteReadStatus === 'closed') {
       this.readStatus = 'closing'
-      this.onReadClosed()
+      this.onReadClosed(true)
     }
   }
 
@@ -200,8 +221,6 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
    * call this method to allow the stream consumer to read the data.
    */
   onData (data: Uint8Array | Uint8ArrayList): void {
-    this.log.trace('on data')
-
     if (this.readStatus === 'readable') {
       this.dispatchEvent(new StreamMessageEvent(data))
     } else if (this.readStatus === 'paused') {
@@ -282,7 +301,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
       return
     }
 
-    this.log.trace('closing readable end of stream with starting read status "%s"', this.readStatus)
+    this.log.trace('closing readable end of stream with starting read status "%s" and remote read status "%s"', this.readStatus, this.remoteWriteStatus)
 
     this.readStatus = 'closing'
 
@@ -290,7 +309,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
       await this.sendCloseRead(options)
     }
 
-    this.onReadClosed()
+    this.onReadClosed(true)
   }
 
   /**
@@ -316,7 +335,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
 
         this.writeStatus = 'closing'
         this.timeline.remoteCloseRead = Date.now()
-        this.onWriteClosed()
+        this.onWriteClosed(false)
         break
       default:
         this.log.error('unknown write status %s', this.writeStatus)
@@ -325,11 +344,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     this.safeDispatchEvent('remoteClosedRead')
   }
 
-  /**
-   * Called by extending classes after sendCloseRead has been called and any
-   * queued messages have been sent to the remote
-   */
-  private onReadClosed (): void {
+  private onReadClosed (local: boolean): void {
     if (this.readStatus !== 'closing') {
       return
     }
@@ -344,7 +359,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     })
 
     if (this.writeStatus === 'closed') {
-      this.onClosed()
+      this.onClosed(local)
     }
   }
 
@@ -358,7 +373,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
       await raceEvent(this, 'drain', options?.signal)
     }
 
-    this.log.trace('closing writable end of stream with starting write status "%s"', this.writeStatus)
+    this.log.trace('closing writable end of stream with starting write status "%s" and %d outstanding bytes and remote read status "%s"', this.writeStatus, this.sendQueue.byteLength, this.remoteReadStatus)
 
     this.writeStatus = 'closing'
 
@@ -366,14 +381,14 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
       await this.sendCloseWrite(options)
     }
 
-    this.onWriteClosed()
+    this.onWriteClosed(true)
   }
 
   /**
    * Called by extending classes when the remote closed its writable end
    */
   onRemoteClosedWrite (): void {
-    this.log.trace('remote close write')
+    this.log.trace('on remote close write - this.readStatus %s', this.readStatus)
 
     this.remoteWriteStatus = 'closed'
     this.timeline.remoteCloseWrite = Date.now()
@@ -390,7 +405,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
         return
       case 'readable':
         this.readStatus = 'closing'
-        this.onReadClosed()
+        this.onReadClosed(false)
         break
       default:
         this.log.error('unknown read status %s', this.readStatus)
@@ -399,7 +414,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     this.safeDispatchEvent('remoteClosedWrite')
   }
 
-  private onWriteClosed (): void {
+  private onWriteClosed (local: boolean): void {
     if (this.writeStatus !== 'closing') {
       return
     }
@@ -414,11 +429,11 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     })
 
     if (this.readStatus === 'closed') {
-      this.onClosed()
+      this.onClosed(local)
     }
   }
 
-  private onClosed (): void {
+  private onClosed (local: boolean): void {
     if (this.status === 'closed') {
       return
     }
@@ -428,7 +443,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     this.timeline.close = Date.now()
 
     queueMicrotask(() => {
-      this.safeDispatchEvent('close')
+      this.dispatchEvent(new StreamCloseEvent(local))
     })
   }
 
@@ -451,9 +466,17 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   }
 
   /**
-   * Send a data message to the remote end of the stream
+   * Send a data message to the remote end of the stream. Implementations of
+   * this method should return the number of bytes from the passed buffer that
+   * were sent successfully and if the underlying resource can accept more data.
+   *
+   * The implementation should always attempt to send the maximum amount of data
+   * possible.
+   *
+   * Returning a result that means the data was only partially sent but that the
+   * underlying resource can accept more data is invalid.
    */
-  abstract sendData (data: Uint8Array | Uint8ArrayList): boolean
+  abstract sendData (data: Uint8Array | Uint8ArrayList): SendResult
 
   /**
    * Send a reset message to the remote end of the stream
@@ -481,8 +504,8 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   abstract sendCloseWrite (options?: AbortOptions): Promise<void>
 
   /**
-   * Send a message to the remote end of the stream, gracefully informing them
-   * that we will read no more data messages.
+   * If supported, send a message to the remote end of the stream, gracefully
+   * informing them that we will read no more data messages.
    *
    * Invoke the callback after the message has been sent.
    */

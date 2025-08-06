@@ -25,11 +25,9 @@ describe('muxer', () => {
     }
     peerConnection.ondatachannel?.(event)
 
-    const muxer = muxerFactory.createStreamMuxer({
-      maConn: stubInterface<MultiaddrConnection>({
-        log: defaultLogger().forComponent('libp2p:maconn')
-      })
-    })
+    const muxer = muxerFactory.createStreamMuxer(stubInterface<MultiaddrConnection>({
+      log: defaultLogger().forComponent('libp2p:maconn')
+    }))
 
     muxer.addEventListener('stream', () => {
       onIncomingStreamInvoked = true

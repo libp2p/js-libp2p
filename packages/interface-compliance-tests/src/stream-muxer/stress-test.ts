@@ -1,24 +1,19 @@
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
-import { echo } from '@libp2p/utils'
+import { multiaddrConnectionPair, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
-import type { StreamMuxerFactory, StreamMuxerInit, StreamMuxer } from '@libp2p/interface'
+import type { StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
 
-async function spawn (createMuxer: (init: StreamMuxerInit) => Promise<StreamMuxer>, nStreams: number, nMsg: number): Promise<void> {
+async function spawn (createMuxer: (maConn: MultiaddrConnection) => Promise<StreamMuxer>, nStreams: number, nMsg: number): Promise<void> {
   const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
 
-  const listener = await createMuxer({
-    maConn: inboundConnection
-  })
+  const listener = await createMuxer(inboundConnection)
   listener.addEventListener('stream', (evt) => {
     echo(evt.detail)
   })
 
-  const dialer = await createMuxer({
-    maConn: outboundConnection
-  })
+  const dialer = await createMuxer(outboundConnection)
 
   const spawnStream = async (): Promise<void> => {
     let sentBytes = 0
@@ -68,12 +63,15 @@ async function spawn (createMuxer: (init: StreamMuxerInit) => Promise<StreamMuxe
       await spawnStream()
     })
   )
+
+  await listener.close()
+  await dialer.close()
 }
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
-  const createMuxer = async (init: StreamMuxerInit): Promise<StreamMuxer> => {
+  const createMuxer = async (maConn: MultiaddrConnection): Promise<StreamMuxer> => {
     const factory = await common.setup()
-    return factory.createStreamMuxer(init)
+    return factory.createStreamMuxer(maConn)
   }
 
   const streams = [1, 10, 100, 1000]

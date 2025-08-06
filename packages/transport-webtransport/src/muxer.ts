@@ -1,23 +1,20 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
 import { webtransportBiDiStreamToStream } from './stream.js'
+import type { WebTransportStream } from './stream.ts'
 import type WebTransport from './webtransport.js'
-import type { CreateStreamOptions, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
-import type { AbstractStreamMuxerInit } from '@libp2p/utils'
+import type { CreateStreamOptions, MultiaddrConnection, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
-export interface WebTransportMuxerInit extends Omit<AbstractStreamMuxerInit, 'maconn' | 'log'> {
+const PROTOCOL = '/webtransport'
 
-}
-
-class WebTransportStreamMuxer extends AbstractStreamMuxer {
+class WebTransportStreamMuxer extends AbstractStreamMuxer<WebTransportStream> {
   private webTransport: WebTransport
   private streamIDCounter: number
   private reader: ReadableStreamDefaultReader<WebTransportBidirectionalStream>
 
-  constructor (webTransport: WebTransport, init: WebTransportMuxerInit) {
-    super({
-      ...init,
-      protocol: 'webtransport',
-      log: init.maConn.log.newScope('muxer')
+  constructor (webTransport: WebTransport, maConn: MultiaddrConnection) {
+    super(maConn, {
+      protocol: PROTOCOL,
+      name: 'muxer'
     })
 
     this.webTransport = webTransport
@@ -49,7 +46,7 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer {
       })
   }
 
-  async onCreateStream (options: CreateStreamOptions): Promise<Stream> {
+  async onCreateStream (options: CreateStreamOptions): Promise<WebTransportStream> {
     const wtStream = await this.webTransport.createBidirectionalStream()
     options?.signal?.throwIfAborted()
 
@@ -66,15 +63,10 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer {
 }
 
 export function webtransportMuxer (webTransport: WebTransport): StreamMuxerFactory {
-  const protocol = 'webtransport'
-
   return {
-    protocol,
-    createStreamMuxer (init: StreamMuxerInit): StreamMuxer {
-      return new WebTransportStreamMuxer(webTransport, {
-        ...init,
-        protocol
-      })
+    protocol: PROTOCOL,
+    createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
+      return new WebTransportStreamMuxer(webTransport, maConn)
     }
   }
 }

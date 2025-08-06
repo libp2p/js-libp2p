@@ -1,6 +1,6 @@
-import { Queue } from '@libp2p/utils'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
+import { Queue } from './queue/index.js'
 
 export interface MessageQueueMessages {
   /**
@@ -34,18 +34,23 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
   private queue: Queue
   private capacity: number
   private delay: number
+  private needsDrain: boolean
 
   constructor (init: MessageQueueInit = {}) {
     super()
 
+    this.needsDrain = false
     this.queue = new Queue({
       concurrency: 1
     })
-    this.capacity = init.capacity ?? 10
+    this.capacity = init.capacity ?? 5
     this.delay = init.delay ?? 0
 
     this.queue.addEventListener('idle', () => {
-      this.safeDispatchEvent('drain')
+      if (this.needsDrain) {
+        this.safeDispatchEvent('drain')
+        this.needsDrain = false
+      }
     })
   }
 
@@ -59,6 +64,7 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
     })
 
     if (this.queue.size >= this.capacity) {
+      this.needsDrain = true
       return false
     }
 

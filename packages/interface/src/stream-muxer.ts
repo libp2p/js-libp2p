@@ -1,14 +1,7 @@
 import type { Stream, MultiaddrConnection, TypedEventTarget } from './index.js'
 import type { AbortOptions } from '@multiformats/multiaddr'
 
-export interface StreamMuxerInit {
-  /**
-   * The underlying multiaddr connection
-   */
-  maConn: MultiaddrConnection
-}
-
-export interface StreamMuxerFactory {
+export interface StreamMuxerFactory<Muxer extends StreamMuxer = StreamMuxer> {
   /**
    * The protocol used to select this muxer during connection opening
    */
@@ -17,14 +10,14 @@ export interface StreamMuxerFactory {
   /**
    * Creates a new stream muxer to be used with a new connection
    */
-  createStreamMuxer(init: StreamMuxerInit): StreamMuxer
+  createStreamMuxer(maConn: MultiaddrConnection): Muxer
 }
 
-export interface StreamMuxerEvents {
+export interface StreamMuxerEvents<MuxedStream extends Stream = Stream> {
   /**
    * An incoming stream was created
    */
-  stream: CustomEvent<Stream>
+  stream: CustomEvent<MuxedStream>
 }
 
 export interface CreateStreamOptions extends AbortOptions {
@@ -41,7 +34,7 @@ export type StreamMuxerStatus = 'open' | 'closing' | 'closed'
 /**
  * A libp2p stream muxer
  */
-export interface StreamMuxer extends TypedEventTarget<StreamMuxerEvents> {
+export interface StreamMuxer<MuxedStream extends Stream = Stream> extends TypedEventTarget<StreamMuxerEvents<MuxedStream>> {
   /**
    * The protocol used to select this muxer during connection opening
    */
@@ -50,7 +43,7 @@ export interface StreamMuxer extends TypedEventTarget<StreamMuxerEvents> {
   /**
    * A list of streams that are currently open
    */
-  streams: Stream[]
+  streams: MuxedStream[]
 
   /**
    * The status of the muxer
@@ -60,7 +53,7 @@ export interface StreamMuxer extends TypedEventTarget<StreamMuxerEvents> {
   /**
    * Create a new stream
    */
-  createStream(options?: CreateStreamOptions): Stream | Promise<Stream>
+  createStream(options?: CreateStreamOptions): MuxedStream | Promise<MuxedStream>
 
   /**
    * Immediately close the muxer, abort every open stream and discard any

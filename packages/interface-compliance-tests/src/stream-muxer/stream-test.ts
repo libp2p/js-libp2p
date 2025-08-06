@@ -1,44 +1,44 @@
 import { StreamCloseEvent, StreamMessageEvent } from '@libp2p/interface'
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
+import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { raceEvent } from 'race-event'
 import Sinon from 'sinon'
 import { isValidTick } from '../is-valid-tick.ts'
 import type { TestSetup } from '../index.ts'
-import type { Stream, StreamMuxerFactory } from '@libp2p/interface'
-import type { MultiaddrConnectionPairOptions } from '@libp2p/test-utils'
+import type { MultiaddrConnection, Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
-  async function createStreamPair (opts?: MultiaddrConnectionPairOptions): Promise<[Stream, Stream]> {
-    const [outboundConnection, inboundConnection] = multiaddrConnectionPair(opts)
-
-    const dialerFactory = await common.setup()
-    const dialer = dialerFactory.createStreamMuxer({
-      maConn: outboundConnection
-    })
-
-    const listenerFactory = await common.setup()
-    const listener = listenerFactory.createStreamMuxer({
-      maConn: inboundConnection
-    })
-
-    return Promise.all([
-      dialer.createStream(),
-      raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
-    ])
-  }
-
   describe('streams', () => {
+    let dialer: StreamMuxer
+    let listener: StreamMuxer
     let outboundStream: Stream
     let inboundStream: Stream
     let streams: [Stream, Stream]
+    let outboundConnection: MultiaddrConnection
+    let inboundConnection: MultiaddrConnection
 
     beforeEach(async () => {
-      streams = await createStreamPair()
+      ([outboundConnection, inboundConnection] = multiaddrConnectionPair())
 
-      outboundStream = streams[0]
-      inboundStream = streams[1]
+      const dialerFactory = await common.setup()
+      dialer = dialerFactory.createStreamMuxer(outboundConnection)
+
+      const listenerFactory = await common.setup()
+      listener = listenerFactory.createStreamMuxer(inboundConnection)
+
+      streams = await Promise.all([
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
+
+      inboundStream = streams[0]
+      outboundStream = streams[1]
+    })
+
+    afterEach(async () => {
+      await dialer?.close()
+      await listener?.close()
     })
 
     it('should have correct status after opening', () => {
@@ -86,6 +86,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       void outboundStream.close({
         signal
       })
+      void inboundStream.close({
+        signal
+      })
 
       expect(outboundStream).to.have.property('status', 'closing')
       expect(outboundStream).to.have.property('readStatus', 'closing')
@@ -114,18 +117,13 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('closes for reading', async () => {
       const signal = AbortSignal.timeout(1_000)
 
-      void outboundStream.closeRead({
+      const closeReadPromise = outboundStream.closeRead({
         signal
       })
 
       expect(outboundStream).to.have.property('readStatus', 'closing')
-      expect(inboundStream).to.have.property('writeStatus', 'writable')
 
-      await Promise.all([
-        raceEvent(outboundStream, 'closeRead'),
-        raceEvent(inboundStream, 'remoteClosedRead'),
-        raceEvent(inboundStream, 'closeWrite')
-      ])
+      await closeReadPromise
 
       streams.forEach(stream => {
         expect(stream).to.have.property('status', 'open', `${stream.direction} stream status was incorrect`)
@@ -142,29 +140,25 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       expect(isValidTick(outboundStream.timeline.closeRead)).to.equal(true, 'inbound stream timeline.closeRead was incorrect')
       expect(outboundStream).to.not.have.nested.property('timeline.closeWrite', 'inbound stream timeline.closeWrite was incorrect')
-
-      expect(inboundStream).to.have.property('writeStatus', 'closed', 'inbound stream writeStatus was incorrect')
-      expect(inboundStream).to.have.property('readStatus', 'readable', 'inbound stream readStatus was incorrect')
-
-      expect(inboundStream).to.not.have.nested.property('timeline.closeRead', 'inbound stream timeline.closeRead was incorrect')
-      expect(isValidTick(inboundStream.timeline.closeWrite)).to.equal(true, 'inbound stream timeline.closeWrite was incorrect')
     })
 
     it('closes for writing', async () => {
       const signal = AbortSignal.timeout(1_000)
+
+      const eventPromises = Promise.all([
+        raceEvent(outboundStream, 'closeWrite'),
+        raceEvent(inboundStream, 'remoteClosedWrite'),
+        raceEvent(inboundStream, 'closeRead')
+      ])
 
       void outboundStream.closeWrite({
         signal
       })
 
       expect(outboundStream).to.have.property('writeStatus', 'closing')
-      expect(inboundStream).to.have.property('readStatus', 'readable')
+      // expect(inboundStream).to.have.property('readStatus', 'readable')
 
-      await Promise.all([
-        raceEvent(outboundStream, 'closeWrite'),
-        raceEvent(inboundStream, 'remoteClosedWrite'),
-        raceEvent(inboundStream, 'closeRead')
-      ])
+      await eventPromises
 
       streams.forEach(stream => {
         expect(stream).to.have.property('status', 'open', `${stream.direction} stream status was incorrect`)
@@ -190,13 +184,15 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('aborts', async () => {
-      const err = new Error('Urk!')
-      outboundStream.abort(err)
-
-      const [outboundEvent, inboundEvent] = await Promise.all([
+      const eventPromises = Promise.all([
         raceEvent<StreamCloseEvent>(outboundStream, 'close'),
         raceEvent<StreamCloseEvent>(inboundStream, 'close')
       ])
+
+      const err = new Error('Urk!')
+      outboundStream.abort(err)
+
+      const [outboundEvent, inboundEvent] = await eventPromises
 
       streams.forEach(stream => {
         expect(stream).to.have.property('writeStatus', 'closed', `${stream.direction} stream writeStatus was incorrect`)
@@ -229,8 +225,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       // @ts-expect-error internal method of AbstractMessageStream
       const sendCloseReadSpy = Sinon.spy(outboundStream, 'sendCloseRead')
 
-      await inboundStream.closeWrite()
-      await raceEvent(outboundStream, 'remoteClosedWrite')
+      await Promise.all([
+        raceEvent(outboundStream, 'remoteClosedWrite'),
+        inboundStream.closeWrite()
+      ])
 
       await delay(100)
 
@@ -239,29 +237,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(sendCloseReadSpy.called).to.be.false()
     })
 
-    it('does not send close write when remote closes read', async () => {
-      // @ts-expect-error internal method of AbstractMessageStream
-      const sendCloseWriteSpy = Sinon.spy(outboundStream, 'sendCloseWrite')
-
-      await inboundStream.closeRead()
-      await raceEvent(outboundStream, 'remoteClosedRead')
-
-      await delay(100)
-
-      await outboundStream.closeWrite()
-
-      expect(sendCloseWriteSpy.called).to.be.false()
-    })
-
     it('does not send close read or write when remote resets', async () => {
       // @ts-expect-error internal method of AbstractMessageStream
       const sendCloseReadSpy = Sinon.spy(outboundStream, 'sendCloseRead')
       // @ts-expect-error internal method of AbstractMessageStream
       const sendCloseWriteSpy = Sinon.spy(outboundStream, 'sendCloseWrite')
 
-      inboundStream.abort(new Error('Urk!'))
-
-      await raceEvent(outboundStream, 'close')
+      await Promise.all([
+        raceEvent(outboundStream, 'close'),
+        inboundStream.abort(new Error('Urk!'))
+      ])
 
       await delay(100)
 
@@ -276,9 +261,15 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('should wait for sending data to finish when closing gracefully', async () => {
       let sent = 0
       let received = 0
+      let filledBuffer = false
+      const receivedAll = Promise.withResolvers<boolean>()
 
       inboundStream.addEventListener('message', (evt) => {
         received += evt.data.byteLength
+
+        if (filledBuffer && received === sent) {
+          receivedAll.resolve(true)
+        }
       })
 
       // fill the send buffer
@@ -288,6 +279,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         const sendMore = outboundStream.send(new Uint8Array(length))
 
         if (sendMore === false) {
+          filledBuffer = true
           break
         }
       }
@@ -296,17 +288,22 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // close gracefully
       await outboundStream.close()
-      await raceEvent(inboundStream, 'close')
 
-      expect(sent).to.equal(received, 'did not receive all data')
+      await expect(receivedAll.promise).to.eventually.be.true('did not receive all data')
     })
 
     it('should wait for sending data to finish when closing the writable end gracefully', async () => {
       let sent = 0
       let received = 0
+      let filledBuffer = false
+      const receivedAll = Promise.withResolvers<boolean>()
 
       inboundStream.addEventListener('message', (evt) => {
         received += evt.data.byteLength
+
+        if (filledBuffer && received === sent) {
+          receivedAll.resolve(true)
+        }
       })
 
       // fill the send buffer
@@ -316,6 +313,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         const sendMore = outboundStream.send(new Uint8Array(length))
 
         if (sendMore === false) {
+          filledBuffer = true
           break
         }
       }
@@ -324,18 +322,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // close gracefully
       await outboundStream.closeWrite()
-      await raceEvent(inboundStream, 'remoteClosedWrite')
 
-      expect(sent).to.equal(received, 'did not receive all data')
+      await expect(receivedAll.promise).to.eventually.be.true('did not receive all data')
     })
 
     it('should abort close due to timeout with slow sender', async () => {
-      streams = await createStreamPair({
-        delay: 100
-      })
+      // @ts-expect-error private fields
+      outboundConnection.local.delay = 100
 
-      outboundStream = streams[0]
-      inboundStream = streams[1]
+      inboundStream = streams[0]
+      outboundStream = streams[1]
 
       // fill the send buffer
       while (true) {

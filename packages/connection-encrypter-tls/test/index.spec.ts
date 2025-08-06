@@ -3,7 +3,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'

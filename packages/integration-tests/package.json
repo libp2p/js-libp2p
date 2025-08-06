@@ -52,7 +52,6 @@
     "@libp2p/ping": "^2.0.32",
     "@libp2p/plaintext": "^2.0.25",
     "@libp2p/tcp": "^10.1.13",
-    "@libp2p/test-utils": "^0.0.0",
     "@libp2p/tls": "^2.2.3",
     "@libp2p/utils": "^6.6.5",
     "@libp2p/webrtc": "^5.2.15",

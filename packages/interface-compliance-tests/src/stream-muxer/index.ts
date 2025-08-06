@@ -9,7 +9,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
   describe('interface-stream-muxer', () => {
     baseTest(common)
     closeTest(common)
-    stressTest(common)
     steamTest(common)
+    stressTest(common)
   })
 }

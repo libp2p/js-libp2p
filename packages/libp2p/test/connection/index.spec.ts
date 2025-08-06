@@ -1,7 +1,7 @@
 import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { echoStream, streamPair } from '@libp2p/test-utils'
+import { echoStream, streamPair, echo } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -11,7 +11,6 @@ import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createConnection } from '../../src/connection.js'
 import { UnhandledProtocolError } from '../../src/errors.ts'
-import { redirect } from '../../src/utils.ts'
 import type { ConnectionComponents, ConnectionInit } from '../../src/connection.js'
 import type { MultiaddrConnection, PeerStore, StreamMuxer, StreamMuxerEvents } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
@@ -40,7 +39,7 @@ describe('connection', () => {
 
     registrar.getHandler.withArgs(ECHO_PROTOCOL).returns({
       handler (stream): void {
-        redirect(stream, stream)
+        echo(stream)
       },
       options: {}
     })
@@ -153,7 +152,7 @@ describe('connection', () => {
     muxer.createStream.resolves(echoStream())
     registrar.getHandler.withArgs(ECHO_PROTOCOL).returns({
       handler (stream): void {
-        redirect(stream, stream)
+        echo(stream)
       },
       options: {}
     })

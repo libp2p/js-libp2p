@@ -1,5 +1,5 @@
 import { defaultLogger } from '@libp2p/logger'
-import { multiaddrConnectionPair, streamPair } from '@libp2p/test-utils'
+import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
 import { raceEvent } from 'race-event'

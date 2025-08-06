@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'

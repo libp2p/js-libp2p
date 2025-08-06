@@ -7,7 +7,7 @@ import { createStream } from './stream.js'
 import type { MplexInit } from './index.js'
 import type { Message } from './message-types.js'
 import type { MplexStream } from './stream.js'
-import type { CreateStreamOptions, StreamDirection, StreamMuxerInit } from '@libp2p/interface'
+import type { CreateStreamOptions, MultiaddrConnection, StreamDirection } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const DISCONNECT_THRESHOLD = 5
@@ -29,10 +29,6 @@ function printMessage (msg: Message): any {
   return output
 }
 
-interface MplexStreamMuxerInit extends MplexInit, StreamMuxerInit {
-
-}
-
 export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
   private _streamId: number
   private readonly rateLimiter: RateLimiter
@@ -40,11 +36,11 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
   private readonly maxUnprocessedMessageQueueSize: number
   private readonly decoder: Decoder
 
-  constructor (init: MplexStreamMuxerInit) {
-    super({
+  constructor (maConn: MultiaddrConnection, init: MplexInit) {
+    super(maConn, {
       ...init,
       protocol: '/mplex/6.7.0',
-      log: init.maConn.log.newScope('mplex')
+      name: 'mplex'
     })
 
     this._streamId = 0

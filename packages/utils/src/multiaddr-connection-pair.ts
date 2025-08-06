@@ -1,9 +1,10 @@
 import { StreamMessageEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { raceSignal } from 'race-signal'
+import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
+import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueueInit } from './message-queue.ts'
 import type { AbortOptions, MultiaddrConnection, StreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -71,8 +72,13 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
     })
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): boolean {
-    return this.local.send(new StreamMessageEvent(data))
+  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
+    const canSendMore = this.local.send(new StreamMessageEvent(data))
+
+    return {
+      sentBytes: data.byteLength,
+      canSendMore
+    }
   }
 
   sendReset (): void {

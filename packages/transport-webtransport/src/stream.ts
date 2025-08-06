@@ -1,13 +1,13 @@
 import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
-import type { AbortOptions, StreamDirection, Logger, Stream } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils'
+import type { AbortOptions, StreamDirection, Logger } from '@libp2p/interface'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
   bidiStream: WebTransportBidirectionalStream
 }
 
-class WebTransportStream extends AbstractStream {
+export class WebTransportStream extends AbstractStream {
   private readonly writer: WritableStreamDefaultWriter<Uint8Array>
   private readonly reader: ReadableStreamDefaultReader<Uint8Array>
 
@@ -60,7 +60,7 @@ class WebTransportStream extends AbstractStream {
       })
   }
 
-  sendData (buf: Uint8Array): boolean {
+  sendData (buf: Uint8Array): SendResult {
     // the streams spec recommends not waiting for data to be sent
     // https://streams.spec.whatwg.org/#example-manual-write-dont-await
     this.writer.ready
@@ -77,10 +77,16 @@ class WebTransportStream extends AbstractStream {
     // (due to either being errored, or having an abort queued up), and zero if
     // the stream is closed. It can be negative if the queue is over-full
     if (this.writer.desiredSize == null) {
-      return false
+      return {
+        sentBytes: buf.byteLength,
+        canSendMore: false
+      }
     }
 
-    return this.writer.desiredSize > 0
+    return {
+      sentBytes: buf.byteLength,
+      canSendMore: this.writer.desiredSize > 0
+    }
   }
 
   sendReset (err: Error): void {
@@ -111,7 +117,7 @@ class WebTransportStream extends AbstractStream {
   }
 }
 
-export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: StreamDirection, log: Logger): Stream {
+export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: StreamDirection, log: Logger): WebTransportStream {
   return new WebTransportStream({
     bidiStream,
     id: streamId,

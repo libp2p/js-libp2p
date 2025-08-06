@@ -2,7 +2,7 @@
 
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import last from 'it-last'

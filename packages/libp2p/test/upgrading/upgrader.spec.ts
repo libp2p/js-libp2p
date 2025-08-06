@@ -2,7 +2,7 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddrConnectionPair, streamPair } from '@libp2p/test-utils'
+import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { encode } from 'it-length-prefixed'

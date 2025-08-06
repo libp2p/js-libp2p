@@ -1,7 +1,7 @@
 import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, MultiaddrConnection, Stream } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 
 export interface StreamMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'direction'> {
   stream: Stream
@@ -83,9 +83,13 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     await this.stream.close(options)
   }
 
-  sendData (data: Uint8Array): boolean {
+  sendData (data: Uint8Array): SendResult {
     this.init.onDataWrite?.(data)
-    return this.stream.send(data)
+
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: this.stream.send(data)
+    }
   }
 
   sendDataV (data: Uint8Array[]): boolean {

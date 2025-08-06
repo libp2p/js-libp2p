@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.21",
-    "@libp2p/test-utils": "^0.0.0",
+    "@libp2p/utils": "^6.7.1",
     "aegir": "^47.0.14",
     "race-event": "^1.6.1"
   },

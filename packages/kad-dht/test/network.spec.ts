@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'

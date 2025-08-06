@@ -1,7 +1,6 @@
 import { contentRoutingSymbol, start, stop, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { streamPair } from '@libp2p/test-utils'
-import { pbStream } from '@libp2p/utils'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'

@@ -1,11 +1,15 @@
-import { StreamMessageEvent } from '@libp2p/interface'
+import { StreamMessageEvent, StreamCloseEvent } from '@libp2p/interface'
+import { pipe as itPipe } from 'it-pipe'
+import { pushable } from 'it-pushable'
+import { pEvent } from 'p-event'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { UnexpectedEOFError } from './errors.js'
-import type { MessageStream, StreamCloseEvent } from '@libp2p/interface'
+import type { MessageStream } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
+import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
 
 const DEFAULT_MAX_BUFFER_SIZE = 4_194_304
 
@@ -440,81 +444,349 @@ export function pbStream <Stream extends MessageStream = MessageStream> (stream:
   return pbStream
 }
 
-export function redirect (channelA: MessageStream, channelB: MessageStream): void {
-  channelA.addEventListener('message', (evt) => {
-    if (channelB.writeStatus === 'closing' || channelB.writeStatus === 'closed') {
-      return
-    }
-
-    const sendMore = channelB.send(evt.data)
-
-    if (sendMore === false) {
-      channelA.pause()
-
-      channelB.addEventListener('drain', () => {
-        channelA.resume()
-      }, {
-        once: true
-      })
-    }
+export function echo (channel: MessageStream): ReturnType<typeof itPipe> {
+  channel.addEventListener('remoteClosedWrite', () => {
+    channel.closeWrite()
   })
 
-  channelA.addEventListener('remoteClosedWrite', (evt) => {
-    channelA.closeWrite()
-      .catch(err => {
-        channelA.abort(err)
-      })
-  })
-
-  channelB.addEventListener('message', (evt) => {
-    if (channelA.writeStatus === 'closing' || channelA.writeStatus === 'closed') {
-      return
-    }
-
-    const sendMore = channelA.send(evt.data)
-
-    if (sendMore === false) {
-      channelB.pause()
-
-      channelA.addEventListener('drain', () => {
-        channelB.resume()
-      }, {
-        once: true
-      })
-    }
-  })
-
-  channelB.addEventListener('remoteClosedWrite', (evt) => {
-    channelB.closeWrite()
-      .catch(err => {
-        channelB.abort(err)
-      })
-  })
+  return pipe(channel, channel)
 }
 
-export function echo (channel: MessageStream): void {
-  channel.addEventListener('message', (evt) => {
-    if (channel.writeStatus === 'closing' || channel.writeStatus === 'closed') {
-      return
+export type PipeInput = Iterable<Uint8Array | Uint8ArrayList> | AsyncIterable<Uint8Array | Uint8ArrayList> | MessageStream
+
+function isMessageStream (obj?: any): obj is MessageStream {
+  return obj?.addEventListener != null
+}
+
+export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>> {
+  const source = pushable<Uint8ArrayList | Uint8Array>()
+  const onError = Promise.withResolvers<IteratorResult<Uint8ArrayList | Uint8Array>>()
+
+  const onMessage = (evt: StreamMessageEvent): void => {
+    source.push(evt.data)
+  }
+
+  const onRemoteClosedWrite = (): void => {
+    source.end()
+    stream.removeEventListener('message', onMessage)
+    stream.removeEventListener('close', onClose)
+  }
+
+  const onClose = (evt: StreamCloseEvent): void => {
+    if (evt.error) {
+      source.end(evt.error)
+      onError.reject(evt.error)
     }
 
-    const sendMore = channel.send(evt.data)
+    stream.removeEventListener('message', onMessage)
+    stream.removeEventListener('remoteClosedWrite', onRemoteClosedWrite)
+  }
 
-    if (sendMore === false) {
-      channel.pause()
+  stream.addEventListener('message', onMessage)
+  stream.addEventListener('remoteClosedWrite', onRemoteClosedWrite, {
+    once: true
+  })
+  stream.addEventListener('close', onClose, {
+    once: true
+  })
 
-      channel.addEventListener('drain', () => {
-        channel.resume()
-      }, {
-        once: true
-      })
+  return {
+    source,
+    async sink (source: Source<Uint8Array | Uint8ArrayList>) {
+      async function * toGenerator (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
+        yield * source
+      }
+
+      const gen = toGenerator()
+
+      while (true) {
+        const { done, value } = await Promise.race([
+          gen.next(),
+          onError.promise
+        ])
+
+        if (value != null) {
+          if (!stream.send(value)) {
+            await Promise.race([
+              pEvent(stream, 'drain'),
+              onError.promise
+            ])
+          }
+        }
+
+        if (done === true) {
+          break
+        }
+      }
+
+      await stream.closeWrite()
     }
+  }
+}
+
+interface SourceFn<A = any> { (): A }
+
+type PipeSource<A = any> =
+  Iterable<A> |
+  AsyncIterable<A> |
+  SourceFn<A> |
+  Duplex<A, any, any> |
+  MessageStream
+
+type PipeTransform<A = any, B = any> =
+  Transform<A, B> |
+  Duplex<B, A> |
+  MessageStream
+
+type PipeSink<A = any, B = any> =
+  Sink<A, B> |
+  Duplex<any, A, B> |
+  MessageStream
+
+type PipeOutput<A> =
+  A extends Sink<any> ? ReturnType<A> :
+    A extends Duplex<any, any, any> ? ReturnType<A['sink']> :
+      A extends MessageStream ? AsyncGenerator<Uint8Array | Uint8ArrayList> :
+        never
+
+// single item pipe output includes pipe source types
+type SingleItemPipeOutput<A> =
+  A extends Iterable<any> ? A :
+    A extends AsyncIterable<any> ? A :
+      A extends SourceFn ? ReturnType<A> :
+        A extends Duplex<any, any, any> ? A['source'] :
+          PipeOutput<A>
+
+type PipeFnInput<A> =
+  A extends Iterable<any> ? A :
+    A extends AsyncIterable<any> ? A :
+      A extends SourceFn ? ReturnType<A> :
+        A extends Transform<any, any> ? ReturnType<A> :
+          A extends Duplex<any, any, any> ? A['source'] :
+            never
+
+export function pipe<
+  A extends PipeSource
+> (
+  source: A
+): SingleItemPipeOutput<A>
+// two items, source to sink
+export function pipe<
+  A extends PipeSource,
+  B extends PipeSink<PipeFnInput<A>>
+> (
+  source: A,
+  sink: B
+): PipeOutput<B>
+
+// three items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeSink<PipeFnInput<B>>
+> (
+  source: A,
+  transform1: B,
+  sink: C
+): PipeOutput<C>
+
+// many items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeSink<PipeFnInput<C>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  sink: D
+): PipeOutput<D>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeSink<PipeFnInput<D>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  sink: E
+): PipeOutput<E>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeSink<PipeFnInput<E>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  sink: F
+): PipeOutput<F>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeSink<PipeFnInput<F>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  sink: G
+): PipeOutput<G>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeTransform<PipeFnInput<F>>,
+  H extends PipeSink<PipeFnInput<G>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  transform6: G,
+  sink: H
+): PipeOutput<H>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeTransform<PipeFnInput<F>>,
+  H extends PipeTransform<PipeFnInput<G>>,
+  I extends PipeSink<PipeFnInput<H>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  transform6: G,
+  transform7: H,
+  sink: I
+): PipeOutput<I>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeTransform<PipeFnInput<F>>,
+  H extends PipeTransform<PipeFnInput<G>>,
+  I extends PipeTransform<PipeFnInput<H>>,
+  J extends PipeSink<PipeFnInput<I>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  transform6: G,
+  transform7: H,
+  transform8: I,
+  sink: J
+): PipeOutput<J>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeTransform<PipeFnInput<F>>,
+  H extends PipeTransform<PipeFnInput<G>>,
+  I extends PipeTransform<PipeFnInput<H>>,
+  J extends PipeTransform<PipeFnInput<I>>,
+  K extends PipeSink<PipeFnInput<J>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  transform6: G,
+  transform7: H,
+  transform8: I,
+  transform9: J,
+  sink: K
+): PipeOutput<K>
+
+// lots of items, source to sink with transform(s) in between
+export function pipe<
+  A extends PipeSource,
+  B extends PipeTransform<PipeFnInput<A>>,
+  C extends PipeTransform<PipeFnInput<B>>,
+  D extends PipeTransform<PipeFnInput<C>>,
+  E extends PipeTransform<PipeFnInput<D>>,
+  F extends PipeTransform<PipeFnInput<E>>,
+  G extends PipeTransform<PipeFnInput<F>>,
+  H extends PipeTransform<PipeFnInput<G>>,
+  I extends PipeTransform<PipeFnInput<H>>,
+  J extends PipeTransform<PipeFnInput<I>>,
+  K extends PipeTransform<PipeFnInput<J>>,
+  L extends PipeSink<PipeFnInput<K>>
+> (
+  source: A,
+  transform1: B,
+  transform2: C,
+  transform3: D,
+  transform4: E,
+  transform5: F,
+  transform6: G,
+  transform7: H,
+  transform8: I,
+  transform9: J,
+  transform10: K,
+  sink: L
+): PipeOutput<L>
+export function pipe (...input: any[]): any {
+  const sources = input.map(source => {
+    if (isMessageStream(source)) {
+      return messageStreamToDuplex(source)
+    }
+
+    return source
   })
 
-  channel.addEventListener('remoteClosedWrite', (evt) => {
-    channel.closeWrite()
-      .catch(err => {
-        channel.abort(err)
-      })
-  })
+  // @ts-expect-error it-pipe types say args cannot be spread like this
+  return itPipe(...sources)
 }

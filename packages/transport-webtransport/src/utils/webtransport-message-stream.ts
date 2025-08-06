@@ -2,7 +2,7 @@ import { StreamMessageEvent } from '@libp2p/interface'
 import { AbstractMessageStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions } from '@libp2p/interface'
-import type { MessageStreamInit } from '@libp2p/utils'
+import type { MessageStreamInit, SendResult } from '@libp2p/utils'
 
 export interface WebTransportMessageStreamInit extends MessageStreamInit {
   stream: WebTransportBidirectionalStream
@@ -44,13 +44,16 @@ export class WebTransportMessageStream extends AbstractMessageStream {
     options?.signal?.throwIfAborted()
   }
 
-  sendData (data: Uint8Array): boolean {
+  sendData (data: Uint8Array): SendResult {
     this.writer.write(data)
       .catch(err => {
         this.abort(err)
       })
 
-    return true
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: true
+    }
   }
 
   sendReset (err: Error): void {

@@ -6,7 +6,7 @@ import xsalsa20 from 'xsalsa20'
 import * as Errors from './errors.js'
 import { KEY_LENGTH } from './key-generator.js'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { MessageStreamInit } from '@libp2p/utils'
+import type { MessageStreamInit, SendResult } from '@libp2p/utils'
 
 export interface BoxMessageStreamInit extends MessageStreamInit {
   maConn: MultiaddrConnection
@@ -65,8 +65,11 @@ export class BoxMessageStream extends AbstractMessageStream {
     await this.maConn.closeRead(options)
   }
 
-  sendData (data: Uint8Array): boolean {
-    return this.maConn.send(this.outboundXor.update(data))
+  sendData (data: Uint8Array): SendResult {
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: this.maConn.send(this.outboundXor.update(data))
+    }
   }
 
   sendReset (err: Error): void {

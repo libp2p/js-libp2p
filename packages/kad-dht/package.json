@@ -81,7 +81,6 @@
   "devDependencies": {
     "@libp2p/logger": "^5.1.21",
     "@libp2p/peer-store": "^11.2.6",
-    "@libp2p/test-utils": "^0.0.0",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/sinon": "^17.0.4",

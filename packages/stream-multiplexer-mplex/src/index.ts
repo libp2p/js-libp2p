@@ -33,7 +33,7 @@
 
 import { serviceCapabilities } from '@libp2p/interface'
 import { MplexStreamMuxer } from './mplex.js'
-import type { StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
+import type { MultiaddrConnection, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 export interface MplexInit {
   /**
@@ -55,15 +55,6 @@ export interface MplexInit {
    * @default 4_194_304
    */
   maxUnprocessedMessageQueueSize?: number
-
-  /**
-   * Incoming stream messages are buffered until processed by the stream
-   * handler. If the buffer reaches this size in bytes the stream will
-   * be reset
-   *
-   * @default 4_194_304
-   */
-  maxStreamBufferSize?: number
 
   /**
    * When `maxInboundStreams` is hit, if the remote continues try to open
@@ -89,9 +80,8 @@ class Mplex implements StreamMuxerFactory {
     '@libp2p/stream-multiplexing'
   ]
 
-  createStreamMuxer (init: StreamMuxerInit): StreamMuxer {
-    return new MplexStreamMuxer({
-      ...init,
+  createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
+    return new MplexStreamMuxer(maConn, {
       ...this._init
     })
   }

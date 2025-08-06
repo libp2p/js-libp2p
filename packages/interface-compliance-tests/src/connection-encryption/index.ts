@@ -1,7 +1,6 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
-import { echo } from '@libp2p/utils'
+import { multiaddrConnectionPair, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

@@ -19,7 +19,7 @@ export default {
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
       const { echo } = await import('@libp2p/echo')
-      const { mockMuxer } = await import('@libp2p/interface-compliance-tests/mocks')
+      const { mockMuxer } = await import('@libp2p/utils')
       const { ping } = await import('@libp2p/ping')
       const { prefixLogger } = await import('@libp2p/logger')
       const { webRTCDirect } = await import('@libp2p/webrtc')

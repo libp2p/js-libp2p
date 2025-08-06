@@ -1,7 +1,8 @@
 import { StreamMessageEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
+import { AbstractStream } from './abstract-stream.ts'
+import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueue } from './message-queue.ts'
 import type { AbortOptions, StreamDirection, TypedEventTarget } from '@libp2p/interface'
 
@@ -71,8 +72,13 @@ export class MockStream extends AbstractStream {
     })
   }
 
-  sendData (data: Uint8Array): boolean {
-    return this.local.send(new StreamMessageEvent(data))
+  sendData (data: Uint8Array): SendResult {
+    const canSendMore = this.local.send(new StreamMessageEvent(data))
+
+    return {
+      sentBytes: data.byteLength,
+      canSendMore
+    }
   }
 
   sendReset (): void {

@@ -2,7 +2,7 @@
 
 import { ConnectionClosedError, UnsupportedProtocolError, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { echoStream } from '@libp2p/test-utils'
+import { echoStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { stubInterface } from 'sinon-ts'

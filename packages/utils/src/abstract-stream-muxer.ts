@@ -1,57 +1,59 @@
-import { MuxerClosedError, StreamStateError, TypedEventEmitter } from '@libp2p/interface'
+import { MuxerClosedError, TypedEventEmitter } from '@libp2p/interface'
 import { raceSignal } from 'race-signal'
-import type { AbortOptions, CreateStreamOptions, Logger, MultiaddrConnection, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerInit, StreamMuxerStatus } from '@libp2p/interface'
+import type { AbstractStream } from './abstract-stream.ts'
+import type { AbortOptions, CreateStreamOptions, Logger, MultiaddrConnection, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerStatus } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface AbstractStreamMuxerInit extends StreamMuxerInit {
+export interface AbstractStreamMuxerInit {
   /**
    * The protocol name for the muxer
    */
   protocol: string
 
   /**
-   * A logger
+   * The name of the muxer, used to create a new logging scope from the passed
+   * connection's logger
    */
-  log: Logger
+  name: string
 }
 
-export abstract class AbstractStreamMuxer <MuxedStream extends Stream = Stream> extends TypedEventEmitter<StreamMuxerEvents> implements StreamMuxer {
+export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = AbstractStream> extends TypedEventEmitter<StreamMuxerEvents<MuxedStream>> implements StreamMuxer<MuxedStream> {
   public streams: MuxedStream[]
   public protocol: string
   public status: StreamMuxerStatus
 
   protected log: Logger
+  protected maConn: MultiaddrConnection
 
-  private readonly maConn: MultiaddrConnection
-
-  constructor (init: AbstractStreamMuxerInit) {
+  constructor (maConn: MultiaddrConnection, init: AbstractStreamMuxerInit) {
     super()
 
-    this.maConn = init.maConn
+    this.maConn = maConn
     this.protocol = init.protocol
     this.streams = []
     this.status = 'open'
-    this.log = init.log
+    this.log = maConn.log.newScope(init.name)
 
     // read/write all data from/to underlying maConn
     this.maConn.addEventListener('message', (evt) => {
-      this.onData(evt.data)
+      try {
+        this.onData(evt.data)
+      } catch (err: any) {
+        this.abort(err)
+        this.maConn.abort(err)
+      }
     })
 
     // close muxer when underlying maConn closes
-    this.maConn.addEventListener('close', () => {
-      // we are already closed, nothing to do
-      if (this.status === 'closed') {
-        return
+    this.maConn.addEventListener('close', (evt) => {
+      if (this.status === 'open') {
+        this.onRemoteClose()
       }
-
-      // can't send any more data so all we can do is abort
-      this.abort(new StreamStateError('The underlying MultiAddrConnection closed'))
     })
 
     // signal stream writers when the underlying connection can accept more data
     this.maConn.addEventListener('drain', () => {
-      this.log('underlying stream drained, signal to streams to continue writing')
+      this.log('underlying stream drained, signal %d streams to continue writing', this.streams.length)
 
       this.streams.forEach(stream => {
         stream.safeDispatchEvent('drain')
@@ -71,7 +73,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends Stream = Stream> 
     this.status = 'closing'
 
     await raceSignal(Promise.all(
-      this.streams.map(async s => {
+      [...this.streams].map(async s => {
         await s.close(options)
       })
     ), options?.signal)
@@ -86,14 +88,28 @@ export abstract class AbstractStreamMuxer <MuxedStream extends Stream = Stream> 
 
     this.status = 'closing'
 
-    this.streams.forEach(s => {
+    ;[...this.streams].forEach(s => {
       s.abort(err)
     })
 
     this.status = 'closed'
   }
 
-  async createStream (options?: CreateStreamOptions): Promise<Stream> {
+  onRemoteClose (): void {
+    this.status = 'closing'
+
+    try {
+      [...this.streams].forEach(stream => {
+        stream.onRemoteClose()
+      })
+    } catch (err: any) {
+      this.abort(err)
+    }
+
+    this.status = 'closed'
+  }
+
+  async createStream (options?: CreateStreamOptions): Promise<MuxedStream> {
     if (this.status !== 'open') {
       throw new MuxerClosedError()
     }

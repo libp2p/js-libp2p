@@ -1,7 +1,8 @@
 import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import type { RTCPeerConnection } from './webrtc/index.js'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface RTCPeerConnectionMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'stream'> {
   peerConnection: RTCPeerConnection
@@ -27,8 +28,11 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
     }
   }
 
-  sendData (): boolean {
-    return true
+  sendData (data: Uint8ArrayList): SendResult {
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: true
+    }
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {

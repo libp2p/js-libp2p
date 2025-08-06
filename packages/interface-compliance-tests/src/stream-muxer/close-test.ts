@@ -1,7 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { multiaddrConnectionPair } from '@libp2p/test-utils'
-import { echo, pbStream } from '@libp2p/utils'
-import { abortableSource } from 'abortable-iterator'
+import { multiaddrConnectionPair, echo, pbStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -36,14 +34,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       [outboundConnection, inboundConnection] = multiaddrConnectionPair()
 
       const dialerFactory = await common.setup()
-      dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
+      dialer = dialerFactory.createStreamMuxer(outboundConnection)
 
       const listenerFactory = await common.setup()
-      listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
+      listener = listenerFactory.createStreamMuxer(inboundConnection)
     })
 
     afterEach(async () => {
@@ -199,81 +193,85 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('closing one of the muxed streams doesn\'t close others', async () => {
+      const streamCount = 5
+      const allStreamsOpen = Promise.withResolvers<void>()
+
       listener.addEventListener('stream', (evt) => {
-        echo(evt.detail)
-      })
+        echo(evt.detail).catch(() => {})
 
-      const stream = await dialer.createStream()
-      const streams = await Promise.all(Array.from(Array(5), async () => dialer.createStream()))
-      let closed = false
-      const controllers: AbortController[] = []
-
-      const streamResults = streams.map(async stream => {
-        const controller = new AbortController()
-        controllers.push(controller)
-
-        try {
-          const abortableRand = abortableSource(infiniteRandom(), controller.signal, {
-            abortName: 'TestAbortError'
-          })
-
-          for await (const buf of abortableRand) {
-            const sendMore = stream.send(buf)
-
-            if (!sendMore) {
-              await raceEvent(stream, 'drain', controller.signal)
-            }
-          }
-        } catch (err: any) {
-          if (err.name !== 'TestAbortError') { throw err }
+        if (listener.streams.length === streamCount) {
+          allStreamsOpen.resolve()
         }
-
-        if (!closed) { throw new Error('stream should not have ended yet!') }
       })
 
-      // Pause, and then send some data and close the first stream
-      await delay(50)
-      stream.send(randomBuffer())
-      await stream.close()
-      closed = true
+      const streams = await Promise.all(
+        Array.from(Array(streamCount), async () => dialer.createStream())
+      )
+      await allStreamsOpen.promise
 
-      // Abort all the other streams later
-      await delay(50)
-      controllers.forEach(c => { c.abort() })
+      expect(dialer.streams).to.have.lengthOf(streamCount)
+      expect(listener.streams).to.have.lengthOf(streamCount)
 
-      // These should now all resolve without error
-      await Promise.all(streamResults)
+      expect(dialer.streams.map(s => s.status)).to.deep.equal(new Array(streamCount).fill('open'))
+      expect(listener.streams.map(s => s.status)).to.deep.equal(new Array(streamCount).fill('open'))
+
+      const localStream = streams[0]
+      const remoteStream = listener.streams[0]
+
+      await Promise.all([
+        raceEvent(remoteStream, 'close'),
+        localStream.close()
+      ])
+
+      expect(dialer.streams).to.have.lengthOf(streamCount - 1)
+      expect(listener.streams).to.have.lengthOf(streamCount - 1)
+
+      expect(dialer.streams.map(s => s.status)).to.deep.equal(new Array(streamCount - 1).fill('open'))
+      expect(listener.streams.map(s => s.status)).to.deep.equal(new Array(streamCount - 1).fill('open'))
     })
 
     it('can close a stream for writing', async () => {
       const deferred = Promise.withResolvers<Error>()
-      const data = [randomBuffer(), randomBuffer()]
+      const data = [Uint8Array.from([0, 1, 2, 3, 4]), Uint8Array.from([5, 6, 7, 8, 9])]
 
       listener.addEventListener('stream', (evt) => {
         void Promise.resolve().then(async () => {
-          // Immediate close for write
-          await evt.detail.closeWrite()
-
-          const results = await all(map(evt.detail, (buf) => {
-            return buf.subarray()
-          }))
-          expect(results).to.deep.equal(data)
-
           try {
-            evt.detail.send(randomBuffer())
-          } catch (err: any) {
-            deferred.resolve(err)
-          }
+            // Immediate close for write
+            await evt.detail.closeWrite({
+              signal: AbortSignal.timeout(1_000)
+            })
 
-          deferred.reject(new Error('should not support writing to closed writer'))
+            const results = await all(map(evt.detail, (buf) => {
+              return buf.subarray()
+            }))
+
+            expect(results).to.deep.equal(data)
+
+            try {
+              evt.detail.send(randomBuffer())
+            } catch (err: any) {
+              deferred.resolve(err)
+            }
+
+            throw new Error('should not support writing to closed writer')
+          } catch (err) {
+            deferred.reject(err)
+          }
         })
       })
 
       const stream = await dialer.createStream()
-      data.forEach(buf => {
-        stream.send(buf)
+
+      for (const buf of data) {
+        if (!stream.send(buf)) {
+          await raceEvent(stream, 'drain')
+        }
+      }
+
+      await stream.closeWrite({
+        signal: AbortSignal.timeout(1_000)
       })
-      await stream.closeWrite()
 
       const err = await deferred.promise
       expect(err).to.have.property('name', 'StreamStateError')
@@ -360,63 +358,55 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       await expect(deferred.promise).to.eventually.deep.equal(message)
     })
 
-    it('should remove a stream in the streams list after closing from outbound', async () => {
+    it('should remove a stream in the streams list after aborting', async () => {
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
-      await dialerStream.close()
-      await raceEvent(listenerStream, 'close')
+      await Promise.all([
+        raceEvent(listenerStream, 'close'),
+        dialerStream.abort(new Error('Urk!'))
+      ])
 
       expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
       expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
     })
 
-    it('should remove a stream in the streams list after closing from inbound', async () => {
+    it('should remove a stream in the streams list after closing', async () => {
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
-      await listenerStream.close()
-      await raceEvent(dialerStream, 'close')
+      await Promise.all([
+        dialerStream.close(),
+        listenerStream.close()
+      ])
 
       expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
       expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
     })
 
     it('should not remove a half-closed outbound stream', async () => {
-      const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
-
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
-
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       await dialerStream.closeWrite()
@@ -426,24 +416,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('should not remove a half-closed inbound stream', async () => {
-      const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
-
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
-
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       await listenerStream.closeWrite()
@@ -453,24 +431,12 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('should remove a stream half closed from both ends', async () => {
-      const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
-
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        maConn: outboundConnection
-      })
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        maConn: inboundConnection
-      })
-
       const [
-        dialerStream,
-        listenerStream
+        listenerStream,
+        dialerStream
       ] = await Promise.all([
-        dialer.createStream(),
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail)
+        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
       ])
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
@@ -481,8 +447,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(dialer.streams).to.include(dialerStream, 'dialer removed outbound stream before fully closing')
       expect(listener.streams).to.include(listenerStream, 'listener removed inbound stream before fully closing')
 
-      await dialerStream.closeWrite()
-      await raceEvent(listenerStream, 'close')
+      await Promise.all([
+        raceEvent(listenerStream, 'close'),
+        dialerStream.closeWrite()
+      ])
 
       expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
       expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')

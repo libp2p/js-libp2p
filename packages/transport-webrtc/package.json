@@ -79,7 +79,6 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^5.1.21",
-    "@libp2p/test-utils": "^0.0.0",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "any-signal": "^4.1.1",

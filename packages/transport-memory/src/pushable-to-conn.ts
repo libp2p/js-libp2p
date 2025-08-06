@@ -5,7 +5,7 @@ import map from 'it-map'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { MemoryConnection } from './connections.ts'
 import type { StreamDirection, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Pushable } from 'it-pushable'
 
@@ -48,14 +48,12 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
     this.localPushable.end(new StreamResetError())
   }
 
-  sendData (data: Uint8Array): boolean {
+  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
     this.localPushable.push(data)
-    return true
-  }
-
-  sendDataV (data: Uint8Array[]): boolean {
-    this.localPushable.push(Uint8ArrayList.fromUint8Arrays(data))
-    return true
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: true
+    }
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {

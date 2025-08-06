@@ -16,7 +16,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
-import type { SocketWriter } from '@libp2p/utils'
+import type { SendResult, SocketWriter } from '@libp2p/utils'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -305,8 +305,11 @@ class EncryptedMessageStream extends AbstractMessageStream {
     this.socket.resetAndDestroy()
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): boolean {
-    return this.writer.write(data)
+  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
+    return {
+      sentBytes: data.byteLength,
+      canSendMore: this.writer.write(data)
+    }
   }
 }
 

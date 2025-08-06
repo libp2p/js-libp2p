@@ -3,7 +3,7 @@
 import { echo } from '@libp2p/echo'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'
-import { mockMuxer } from '@libp2p/test-utils'
+import { mockMuxer } from '@libp2p/utils'
 import { createLibp2p } from 'libp2p'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p, Upgrader } from '@libp2p/interface'

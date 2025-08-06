@@ -1,7 +1,7 @@
-import { echo } from '@libp2p/utils'
 import { raceEvent } from 'race-event'
+import { mockMuxer } from './mock-muxer.ts'
 import { multiaddrConnectionPair } from './multiaddr-connection-pair.ts'
-import { mockMuxer } from './muxer.ts'
+import { echo } from './stream-utils.ts'
 import type { Stream } from '@libp2p/interface'
 
 export interface StreamPairOptions {
@@ -31,12 +31,8 @@ export interface StreamPairOptions {
 export async function streamPair (opts: StreamPairOptions = {}): Promise<[Stream, Stream]> {
   const [outboundConnection, inboundConnection] = multiaddrConnectionPair(opts)
 
-  const localMuxer = mockMuxer().createStreamMuxer({
-    maConn: outboundConnection
-  })
-  const remoteMuxer = mockMuxer().createStreamMuxer({
-    maConn: inboundConnection
-  })
+  const localMuxer = mockMuxer().createStreamMuxer(outboundConnection)
+  const remoteMuxer = mockMuxer().createStreamMuxer(inboundConnection)
 
   const [
     outboundStream,

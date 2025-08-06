@@ -3,7 +3,7 @@
 import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import * as lp from 'it-length-prefixed'

@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 import net from 'node:net'
 import { logger } from '@libp2p/logger'
-import { streamPair } from '@libp2p/test-utils'
+import { streamPair } from '@libp2p/utils'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { expect } from 'aegir/chai'
