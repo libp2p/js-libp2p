@@ -21,10 +21,10 @@
 import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
-import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
+import { generateCertificate, verifyPeerCertificate, toNodeDuplex, toMessageStream } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, SecurableStream } from '@libp2p/interface'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, MessageStream } from '@libp2p/interface'
 import type { TLSSocketOptions } from 'node:tls'
 
 export class TLS implements ConnectionEncrypter {
@@ -75,18 +75,18 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureInbound <Stream extends MessageStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(conn, true, options)
   }
 
-  async secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureOutbound <Stream extends MessageStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(conn, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async _encrypt <Stream extends MessageStream = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     const log = conn.log?.newScope('tls') ?? this.log
     let streamMuxer: StreamMuxerFactory | undefined
 
@@ -134,14 +134,14 @@ export class TLS implements ConnectionEncrypter {
     let socket: TLSSocket
 
     if (isServer) {
-      socket = new TLSSocket(itToStream(conn), {
+      socket = new TLSSocket(toNodeDuplex(conn), {
         ...opts,
         // require clients to send certificates
         requestCert: true
       })
     } else {
       socket = connect({
-        socket: itToStream(conn),
+        socket: toNodeDuplex(conn),
         ...opts
       })
     }
@@ -185,10 +185,7 @@ export class TLS implements ConnectionEncrypter {
 
             resolve({
               remotePeer,
-              conn: {
-                ...conn,
-                ...streamToIt(socket)
-              },
+              conn: toMessageStream(conn, socket),
               streamMuxer
             })
           })

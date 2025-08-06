@@ -1,6 +1,6 @@
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import type { PeerId } from '@libp2p/interface'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 
 /**
  * Uses a Cuckoo filter to implement a mechanism for deduplicating PeerIds in a

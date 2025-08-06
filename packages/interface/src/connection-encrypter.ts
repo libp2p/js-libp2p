@@ -1,8 +1,4 @@
-import type { MultiaddrConnection } from './connection.js'
-import type { AbortOptions, Logger, StreamMuxerFactory } from './index.js'
-import type { PeerId } from './peer-id.js'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { AbortOptions, StreamMuxerFactory, MultiaddrConnection, PeerId, MessageStream } from './index.js'
 
 /**
  * If the remote PeerId is known and passed as an option, the securing operation
@@ -22,13 +18,6 @@ export interface SecureConnectionOptions extends AbortOptions {
 }
 
 /**
- * A stream with an optional logger
- */
-export interface SecurableStream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  log?: Logger
-}
-
-/**
  * A libp2p connection encrypter module must be compliant to this interface
  * to ensure all exchanged data between two peers is encrypted.
  */
@@ -40,18 +29,18 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureOutbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureInbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 }
 
-export interface SecuredConnection<Stream = any, Extension = unknown> {
-  conn: Stream
+export interface SecuredConnection<Extension = unknown> {
+  conn: MessageStream
   remoteExtensions?: Extension
   remotePeer: PeerId
 

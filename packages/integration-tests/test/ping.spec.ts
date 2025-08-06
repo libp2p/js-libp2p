@@ -3,9 +3,7 @@
 import { ping, PING_PROTOCOL } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pipe } from 'it-pipe'
 import { createLibp2p } from 'libp2p'
-import pDefer from 'p-defer'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { PingService } from '@libp2p/ping'
@@ -60,22 +58,11 @@ describe('ping', () => {
   })
 
   it('only waits for the first response to arrive', async () => {
-    const defer = pDefer()
-
     await nodes[1].unhandle(PING_PROTOCOL)
-    await nodes[1].handle(PING_PROTOCOL, ({ stream }) => {
-      void pipe(
-        stream,
-        async function * (stream) {
-          for await (const data of stream) {
-            yield data
-
-            // something longer than the test timeout
-            await defer.promise
-          }
-        },
-        stream
-      )
+    await nodes[1].handle(PING_PROTOCOL, (stream) => {
+      stream.addEventListener('message', (evt) => {
+        stream.send(evt.data)
+      })
     }, {
       runOnLimitedConnection: true
     })
@@ -83,8 +70,6 @@ describe('ping', () => {
     const latency = await nodes[0].services.ping.ping(nodes[1].getMultiaddrs())
 
     expect(latency).to.be.a('Number')
-
-    defer.resolve()
   })
 
   it('allows two incoming streams from the same peer', async () => {

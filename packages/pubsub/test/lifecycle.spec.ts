@@ -8,8 +8,7 @@ import { PubSubBaseProtocol } from '../src/index.js'
 import {
   PubsubImplementation,
   ConnectionPair,
-  MockRegistrar,
-  mockIncomingStreamEvent
+  MockRegistrar
 } from './utils/index.js'
 import type { PeerId, PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
@@ -168,7 +167,7 @@ describe('pubsub base life cycle', () => {
 
       // Notify peers of connection
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream([protocol]), c1)
 
       expect(pubsubA.peers.size).to.be.eql(1)
       expect(pubsubB.peers.size).to.be.eql(1)
@@ -189,7 +188,7 @@ describe('pubsub base life cycle', () => {
       sinon.spy(c0, 'newStream')
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream(protocol), c1)
       expect(c0.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -231,7 +230,7 @@ describe('pubsub base life cycle', () => {
       sinon.stub(c0, 'newStream').throws(error)
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream(protocol), c1)
 
       expect(c0.newStream).to.have.property('callCount', 1)
     })
@@ -249,7 +248,7 @@ describe('pubsub base life cycle', () => {
       const [c0, c1] = ConnectionPair()
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream(protocol), c1)
 
       // Notice peers of disconnect
       topologyA?.onDisconnect?.(peerIdB)

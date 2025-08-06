@@ -1,23 +1,16 @@
 import { ProtocolError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
-import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
-import { repeatingTask } from '@libp2p/utils/repeating-task'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import { DEFAULT_CONNECTION_THRESHOLD, DIAL_DATA_CHUNK_SIZE, MAX_DIAL_DATA_BYTES, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } from './constants.ts'
 import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from './pb/index.ts'
 import { randomNumber } from './utils.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
-import type { Logger, Connection, Startable, AbortOptions, IncomingStreamData } from '@libp2p/interface'
+import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { AddressType } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
-import type { Filter } from '@libp2p/utils/filters'
-import type { RepeatingTask } from '@libp2p/utils/repeating-task'
+import type { Filter, RepeatingTask } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
@@ -154,8 +147,8 @@ export class AutoNATv2Client implements Startable {
       }
     })
 
-    await this.components.registrar.handle(this.dialBackProtocol, (data) => {
-      void this.handleDialBackStream(data)
+    await this.components.registrar.handle(this.dialBackProtocol, (stream, connection) => {
+      void this.handleDialBackStream(stream, connection)
         .catch(err => {
           this.log.error('error handling incoming autonat stream - %e', err)
         })
@@ -239,11 +232,11 @@ export class AutoNATv2Client implements Startable {
   /**
    * Handle an incoming AutoNAT request
    */
-  async handleDialBackStream (data: IncomingStreamData): Promise<void> {
+  async handleDialBackStream (stream: Stream, connection: Connection): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const messages = pbStream(data.stream, {
+    const messages = pbStream(stream, {
       maxDataLength: this.maxMessageSize
     })
 
@@ -264,12 +257,12 @@ export class AutoNATv2Client implements Startable {
         status: DialBackResponse.DialBackStatus.OK
       }, DialBackResponse)
 
-      await data.stream.close({
+      await stream.close({
         signal
       })
     } catch (err: any) {
       this.log.error('error handling incoming dial back stream - %e', err)
-      data.stream.abort(err)
+      stream.abort(err)
     }
   }
 
@@ -465,7 +458,7 @@ export class AutoNATv2Client implements Startable {
       return
     }
 
-    this.log.trace('asking %p to verify multiaddrs %s', connection.remotePeer, unverifiedAddresses)
+    this.log.trace('asking %a to verify multiaddrs %s', connection.remoteAddr, unverifiedAddresses)
 
     const stream = await connection.newStream(this.dialRequestProtocol, options)
 

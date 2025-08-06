@@ -51,7 +51,6 @@
     "@multiformats/multiaddr": "^12.4.4",
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "delay": "^6.0.0",
-    "it-protobuf-stream": "^2.0.2",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },

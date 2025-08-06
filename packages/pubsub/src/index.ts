@@ -41,7 +41,7 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, IncomingStreamData } from '@libp2p/interface'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -207,8 +207,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   /**
    * On an inbound stream opened
    */
-  protected _onIncomingStream (data: IncomingStreamData): void {
-    const { stream, connection } = data
+  protected _onIncomingStream (stream: Stream, connection: Connection): void {
     const peerId = connection.remotePeer
 
     if (stream.protocol == null) {

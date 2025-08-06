@@ -98,9 +98,9 @@ export interface ConnectionManager {
    * otherwise it will return false.
    *
    * @param maConn - The multiaddr connection to evaluate.
-   * @returns A promise that resolves to `true` if the connection can be accepted, `false` otherwise.
+   * @returns `true` if the connection can be accepted, `false` otherwise.
    */
-  acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
+  acceptIncomingConnection(maConn: MultiaddrConnection): boolean
 
   /**
    * Invoked after upgrading an inbound multiaddr connection has finished

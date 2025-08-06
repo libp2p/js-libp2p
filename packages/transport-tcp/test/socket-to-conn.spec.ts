@@ -1,44 +1,47 @@
 import { createServer, Socket } from 'net'
 import { defaultLogger } from '@libp2p/logger'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import defer from 'p-defer'
-import Sinon from 'sinon'
+import delay from 'delay'
+import { pEvent } from 'p-event'
 import { toMultiaddrConnection } from '../src/socket-to-conn.js'
-import type { Server, ServerOpts, SocketConstructorOpts } from 'net'
+import type { Server, ServerOpts, SocketConstructorOpts } from 'node:net'
 
-async function setup (opts?: { server?: ServerOpts, client?: SocketConstructorOpts }): Promise<{ server: Server, serverSocket: Socket, clientSocket: Socket }> {
-  const serverListening = defer()
+interface TestOptions {
+  server?: ServerOpts
+  client?: SocketConstructorOpts
+}
 
+interface TestFixture {
+  server: Server
+  serverSocket: Socket
+  clientSocket: Socket
+}
+
+async function setup (opts?: TestOptions): Promise<TestFixture> {
   const server = createServer(opts?.server)
-  server.listen(0, () => {
-    serverListening.resolve()
-  })
-
-  await serverListening.promise
-
-  const serverSocket = defer<Socket>()
-  const clientSocket = defer<Socket>()
-
-  server.once('connection', (socket) => {
-    serverSocket.resolve(socket)
-  })
+  server.listen(0)
+  await pEvent(server, 'listening')
 
   const address = server.address()
-
   if (address == null || typeof address === 'string') {
     throw new Error('Wrong socket type')
   }
 
   const client = new Socket(opts?.client)
-  client.once('connect', () => {
-    clientSocket.resolve(client)
-  })
   client.connect(address.port, address.address)
+
+  const [
+    serverSocket
+  ] = await Promise.all([
+    pEvent(server, 'connection'),
+    pEvent(client, 'connect')
+  ])
 
   return {
     server,
-    serverSocket: await serverSocket.promise,
-    clientSocket: await clientSocket.promise
+    serverSocket,
+    clientSocket: client
   }
 }
 
@@ -65,21 +68,23 @@ describe('socket-to-conn', () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when client socket is closed
-    const clientClosed = defer<boolean>()
+    const clientClosed = Promise.withResolvers<boolean>()
 
     // promise that is resolved when client socket errors
-    const clientErrored = defer<Error>()
+    const clientErrored = Promise.withResolvers<Error>()
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
     // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<Error>()
+    const serverErrored = Promise.withResolvers<Error>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      remoteAddr: multiaddr('/ip4/123.123.123.123/tcp/1234'),
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -119,21 +124,26 @@ describe('socket-to-conn', () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
     // promise that is resolved when our outgoing socket errors
-    const serverErrored = defer<any>()
+    const serverErrored = Promise.withResolvers<any | undefined>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
+
+      // it's possible for the server socket to close cleanly in response to the
+      // client destroy if no data was being sent/read at the time
+      serverErrored.resolve(undefined)
     })
     serverSocket.once('error', err => {
       serverErrored.resolve(err)
@@ -148,16 +158,20 @@ describe('socket-to-conn', () => {
 
     const error = await serverErrored.promise
 
-    // the error can be of either type
-    if (error.name !== 'TimeoutError' && error.code !== 'ECONNRESET') {
-      expect.fail('promise rejected with unknown error type')
+    // if the error occurred, it can be of either type
+    if (error != null && (error.name !== 'TimeoutError' && error.code !== 'ECONNRESET')) {
+      expect.fail(`Promise rejected with unknown error type - ${error}`)
     }
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
 
-    // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    // the connection closing or aborting was recorded
+    if (error == null) {
+      expect(inboundMaConn.timeline.close).to.be.a('number')
+    } else {
+      expect(inboundMaConn.timeline.abort).to.be.a('number')
+    }
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -173,15 +187,16 @@ describe('socket-to-conn', () => {
     clientSocket.setTimeout(100)
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
     // promise that is resolved when the incoming socket is closed
-    const clientClosed = defer<boolean>()
+    const clientClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn:inbound')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -219,16 +234,17 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
   })
 
-  it('should destroy a socket after sinking', async () => {
+  it('should destroy a socket after closing', async () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn:inbound')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -238,9 +254,8 @@ describe('socket-to-conn', () => {
     })
 
     // send some data between the client and server
-    await inboundMaConn.sink(async function * () {
-      yield Uint8Array.from([0, 1, 2, 3])
-    }())
+    inboundMaConn.send(Uint8Array.from([0, 1, 2, 3]))
+    await inboundMaConn.close()
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
@@ -259,13 +274,13 @@ describe('socket-to-conn', () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 10,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -305,14 +320,13 @@ describe('socket-to-conn', () => {
     })
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
-    const socketCloseTimeout = 10
+    const serverClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(proxyServerSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: proxyServerSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -327,15 +341,10 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    const signal = AbortSignal.timeout(socketCloseTimeout)
-    const addEventListenerSpy = Sinon.spy(signal, 'addEventListener')
-
     // the 2nd and 3rd call should return immediately
-    await Promise.all([
-      inboundMaConn.close({ signal }),
-      inboundMaConn.close({ signal }),
-      inboundMaConn.close({ signal })
-    ])
+    inboundMaConn.close()
+    inboundMaConn.close()
+    inboundMaConn.close()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -345,9 +354,6 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
-
-    // the server socket was only closed once
-    expect(addEventListenerSpy.callCount).to.equal(1)
   })
 
   it('should destroy a socket when incoming MultiaddrConnection is closed', async () => {
@@ -358,13 +364,13 @@ describe('socket-to-conn', () => {
     }))
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 10,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -399,13 +405,13 @@ describe('socket-to-conn', () => {
     }))
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 500,
-      socketCloseTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 500,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()
@@ -420,9 +426,12 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    setInterval(() => {
+    const interval = setInterval(() => {
       clientSocket.write(`some data ${Date.now()}`)
-    }, 10).unref()
+    }, 10)
+
+    // ensure the sockets are open fully
+    await delay(1_000)
 
     await inboundMaConn.close()
 
@@ -434,24 +443,26 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
+
+    clearInterval(interval)
   })
 
   it('should destroy a socket by inactivity timeout', async () => {
     ({ server, clientSocket, serverSocket } = await setup())
 
     // promise that is resolved when our outgoing socket is closed
-    const serverClosed = defer<boolean>()
+    const serverClosed = Promise.withResolvers<boolean>()
 
     // promise that resolves when reading from the outgoing socket times out
-    const serverTimedOut = defer<boolean>()
+    const serverTimedOut = Promise.withResolvers<boolean>()
 
-    const clientError = defer<any>()
+    const clientError = Promise.withResolvers<any>()
 
-    const inboundMaConn = toMultiaddrConnection(serverSocket, {
-      socketInactivityTimeout: 100,
-      socketCloseTimeout: 100,
-      logger: defaultLogger(),
-      direction: 'inbound'
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      inactivityTimeout: 100,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
     })
     expect(inboundMaConn.timeline.open).to.be.ok()
     expect(inboundMaConn.timeline.close).to.not.be.ok()

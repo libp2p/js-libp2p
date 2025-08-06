@@ -1,11 +1,11 @@
+import { lpStream } from '@libp2p/utils'
 import { encode } from 'it-length-prefixed'
-import { lpStream } from 'it-length-prefixed-stream'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_PROTOCOL_LENGTH, PROTOCOL_ID } from './constants.js'
-import * as multistream from './multistream.js'
-import type { MultistreamSelectInit, ProtocolStream } from './index.js'
-import type { Duplex } from 'it-stream-types'
+import { readString } from './multistream.js'
+import type { MultistreamSelectInit } from './index.js'
+import type { MultiaddrConnection, MessageStream } from '@libp2p/interface'
 
 /**
  * Handle multistream protocol selections for the given list of protocols.
@@ -53,34 +53,39 @@ import type { Duplex } from 'it-stream-types'
  * })
  * ```
  */
-export async function handle <Stream extends Duplex<any, any, any>> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit): Promise<ProtocolStream<Stream>> {
+export async function handle <Stream extends MessageStream = MultiaddrConnection> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit = {}): Promise<string> {
   protocols = Array.isArray(protocols) ? protocols : [protocols]
-  options.log.trace('handle: available protocols %s', protocols)
+
+  const log = stream.log.newScope('mss:handle')
+  log.trace('available protocols %s', protocols)
 
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
-    maxLengthLength: 2 // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
+    maxLengthLength: 2, // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
+    stopPropagation: true
   })
 
   while (true) {
-    options.log.trace('handle: reading incoming string')
-    const protocol = await multistream.readString(lp, options)
-    options.log.trace('handle: read "%s"', protocol)
+    log.trace('reading incoming string')
+    const protocol = await readString(lp, options)
+    log.trace('read "%s"', protocol)
 
     if (protocol === PROTOCOL_ID) {
-      options.log.trace('handle: respond with "%s" for "%s"', PROTOCOL_ID, protocol)
-      await multistream.write(lp, uint8ArrayFromString(`${PROTOCOL_ID}\n`), options)
-      options.log.trace('handle: responded with "%s" for "%s"', PROTOCOL_ID, protocol)
+      log.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol)
+      await lp.write(uint8ArrayFromString(`${PROTOCOL_ID}\n`), options)
+      log.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol)
       continue
     }
 
     if (protocols.includes(protocol)) {
-      options.log.trace('handle: respond with "%s" for "%s"', protocol, protocol)
-      await multistream.write(lp, uint8ArrayFromString(`${protocol}\n`), options)
-      options.log.trace('handle: responded with "%s" for "%s"', protocol, protocol)
+      log.trace('respond with "%s" for "%s"', protocol, protocol)
+      await lp.write(uint8ArrayFromString(`${protocol}\n`), options)
+      log.trace('responded with "%s" for "%s"', protocol, protocol)
 
-      return { stream: lp.unwrap(), protocol }
+      lp.unwrap()
+
+      return protocol
     }
 
     if (protocol === 'ls') {
@@ -90,14 +95,14 @@ export async function handle <Stream extends Duplex<any, any, any>> (stream: Str
         uint8ArrayFromString('\n')
       )
 
-      options.log.trace('handle: respond with "%s" for %s', protocols, protocol)
-      await multistream.write(lp, protos, options)
-      options.log.trace('handle: responded with "%s" for %s', protocols, protocol)
+      log.trace('respond with "%s" for %s', protocols, protocol)
+      await lp.write(protos, options)
+      log.trace('responded with "%s" for %s', protocols, protocol)
       continue
     }
 
-    options.log.trace('handle: respond with "na" for "%s"', protocol)
-    await multistream.write(lp, uint8ArrayFromString('na\n'), options)
-    options.log('handle: responded with "na" for "%s"', protocol)
+    log.trace('respond with "na" for "%s"', protocol)
+    await lp.write(uint8ArrayFromString('na\n'), options)
+    log('responded with "na" for "%s"', protocol)
   }
 }

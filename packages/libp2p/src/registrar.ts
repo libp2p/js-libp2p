@@ -1,7 +1,6 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { mergeOptions } from '@libp2p/utils/merge-options'
-import { trackedMap } from '@libp2p/utils/tracked-map'
-import * as errorsJs from './errors.js'
+import { mergeOptions, trackedMap } from '@libp2p/utils'
+import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
@@ -68,7 +67,7 @@ export class Registrar implements RegistrarInterface {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw new errorsJs.UnhandledProtocolError(`No handler registered for protocol ${protocol}`)
+      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol}`)
     }
 
     return handler
@@ -91,7 +90,7 @@ export class Registrar implements RegistrarInterface {
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
     if (this.handlers.has(protocol) && opts?.force !== true) {
-      throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
+      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
     const options = mergeOptions.bind({ ignoreUndefined: true })({

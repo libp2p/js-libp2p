@@ -1,4 +1,4 @@
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { isPrivateIp } from '@libp2p/utils'
 import { WebSockets } from '@multiformats/multiaddr-matcher'
 import type { ConnectionGater } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
