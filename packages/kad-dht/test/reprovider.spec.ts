@@ -126,4 +126,36 @@ describe('reprovider', () => {
     const provsAfter = await providers.getProviders(cid)
     expect(provsAfter).to.have.length(0)
   })
+
+  describe.only('shouldReprovide', () => {
+    it('should return false for non-self providers', () => {
+      const expires = Date.now() + 50
+      const result = (reprovider as any).shouldReprovide(false, expires)
+      expect(result).to.be.false()
+    })
+
+    it('should return true when within reprovide threshold before expiration', () => {
+      const expires = Date.now() + 50
+      const result = (reprovider as any).shouldReprovide(true, expires)
+      expect(result).to.be.true()
+    })
+
+    it('should return true when within reprovide threshold after expiration', () => {
+      const expires = Date.now() - 50
+      const result = (reprovider as any).shouldReprovide(true, expires)
+      expect(result).to.be.true()
+    })
+
+    it('should return false when outside reprovide threshold before expiration', () => {
+      const expires = Date.now() + 150
+      const result = (reprovider as any).shouldReprovide(true, expires)
+      expect(result).to.be.false()
+    })
+
+    it('should return true when outside reprovide threshold after expiration', () => {
+      const expires = Date.now() - 150
+      const result = (reprovider as any).shouldReprovide(true, expires)
+      expect(result).to.be.true()
+    })
+  })
 })

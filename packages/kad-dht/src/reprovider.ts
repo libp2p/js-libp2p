@@ -133,8 +133,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           const expires = created + this.validity
           const now = Date.now()
           const expired = now > expires
+          const isSelf = this.peerId.equals(peerId)
 
-          this.log.trace('comparing: %d < %d = %s %s', created, now - this.validity, expired, expired ? '(expired)' : '')
+          this.log.trace('comparing: %d (now) < %d (expires) = %s %s', now, expires, expired, expired ? '(expired)' : '(valid)')
 
           // delete the record if it has expired
           if (expired) {
@@ -143,7 +144,8 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
           // if the provider is us and we are within the reprovide threshold,
           // reprovide the record
-          if (this.peerId.equals(peerId) && (now - expires) < this.reprovideThreshold) {
+          if (this.shouldReprovide(isSelf, expires)) {
+            this.log.trace('reproviding %c as it is within the reprovide threshold (%d)', cid, this.reprovideThreshold)
             this.queueReprovide(cid)
               .catch(err => {
                 this.log.error('could not reprovide %c - %e', cid, err)
@@ -169,6 +171,27 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       }
     }
   }
+
+  /**
+   * Determines if a record should be reprovided based on its expiration time.
+   * Records are reprovided when they are within the reprovide threshold of
+   * expiration (either approaching expiration or recently expired).
+   */
+  private shouldReprovide (isSelf: boolean, expires: number): boolean {
+    if (!isSelf) {
+      return false
+    }
+    const now = Date.now()
+
+    if (expires < now) {
+      // If the record has already expired, reprovide irrespective of the threshold
+      return true
+    }
+
+    // if the record is approaching expiration within the reprovide threshold
+    return expires - now < this.reprovideThreshold
+  }
+
 
   private async queueReprovide (cid: CID, options?: AbortOptions): Promise<void> {
     if (!this.running) {
