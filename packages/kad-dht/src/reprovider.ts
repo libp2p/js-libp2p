@@ -102,7 +102,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       this.cleanUp({
         signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
       }).catch(err => {
-        this.log.error('error running reprovide/cleanup - %e', err)
+        this.log.error('error running process to reprovide/cleanup - %e', err)
       })
     }, this.interval)
   }
@@ -137,8 +137,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
           this.log.trace('comparing: %d (now) < %d (expires) = %s %s', now, expires, expired, expired ? '(expired)' : '(valid)')
 
-          // delete the record if it has expired
-          if (expired) {
+          // delete the record if it has expired and isn't us
+          // so that if user node is down for a while, we still persist provide intent
+          if (expired && !isSelf) {
             await this.datastore.delete(entry.key, options)
           }
 
