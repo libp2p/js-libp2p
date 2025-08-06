@@ -192,7 +192,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     return expires - now < this.reprovideThreshold
   }
 
-
   private async queueReprovide (cid: CID, options?: AbortOptions): Promise<void> {
     if (!this.running) {
       return
