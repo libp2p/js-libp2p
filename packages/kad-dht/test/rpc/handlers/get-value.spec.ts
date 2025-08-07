@@ -9,6 +9,7 @@ import { MemoryDatastore } from 'datastore-core'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { PROVIDERS_VALIDITY } from '../../../src/constants.js'
 import { MessageType } from '../../../src/message/dht.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { GetValueHandler } from '../../../src/rpc/handlers/get-value.js'
@@ -184,6 +185,68 @@ describe('rpc - handlers - GetValue', () => {
       }
 
       expect(response.record).to.not.be.ok()
+    })
+  })
+
+  describe('record expiration', () => {
+    it('should return valid record within PROVIDERS_VALIDITY period', async () => {
+      const key = uint8ArrayFromString('hello')
+      const value = uint8ArrayFromString('world')
+      const record = new Libp2pRecord(key, value, new Date())
+
+      await datastore.put(utils.bufferToRecordKey('/dht/record', key), record.serialize())
+
+      const msg: Message = {
+        type: T,
+        key,
+        closer: [],
+        providers: []
+      }
+
+      peerRouting.getClosestPeersOffline.withArgs(msg.key).resolves([])
+
+      const response = await handler.handle(sourcePeer.peerId, msg)
+
+      expect(response).to.not.be.undefined()
+      expect(response.record).to.not.be.undefined()
+
+      if (response.record != null) {
+        const responseRecord = Libp2pRecord.deserialize(response.record)
+        expect(responseRecord.value).to.equalBytes(value)
+      }
+    })
+
+    it('should delete and return no record when expired beyond PROVIDERS_VALIDITY', async () => {
+      const key = uint8ArrayFromString('hello')
+      const value = uint8ArrayFromString('world')
+      // Create record with old timestamp (beyond PROVIDERS_VALIDITY)
+      const oldTimestamp = new Date(Date.now() - PROVIDERS_VALIDITY - 1000)
+      const record = new Libp2pRecord(key, value, oldTimestamp)
+
+      const dsKey = utils.bufferToRecordKey('/dht/record', key)
+      await datastore.put(dsKey, record.serialize())
+
+      // Verify record exists before the test
+      const existsBefore = await datastore.has(dsKey)
+      expect(existsBefore).to.be.true()
+
+      const msg: Message = {
+        type: T,
+        key,
+        closer: [],
+        providers: []
+      }
+
+      peerRouting.getClosestPeersOffline.withArgs(msg.key).resolves([])
+
+      const response = await handler.handle(sourcePeer.peerId, msg)
+
+      expect(response).to.not.be.undefined()
+      expect(response.record).to.be.undefined()
+
+      // Verify the expired record was deleted from datastore
+      const existsAfter = await datastore.has(dsKey)
+      expect(existsAfter).to.be.false()
     })
   })
 })
