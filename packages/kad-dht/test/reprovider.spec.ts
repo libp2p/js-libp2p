@@ -60,11 +60,9 @@ describe('reprovider', () => {
       contentRouting,
       threshold: 100,
       validity: 200,
-      interval: 100,
+      interval: 200,
       operationMetrics: {}
     })
-
-    await start(reprovider)
   })
 
   afterEach(async () => {
@@ -73,6 +71,8 @@ describe('reprovider', () => {
 
   it('should reprovide', async () => {
     const cid = CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
+
+    await start(reprovider)
 
     await providers.addProvider(cid, components.peerId)
 
@@ -87,6 +87,8 @@ describe('reprovider', () => {
 
   it('should cancel reprovide', async () => {
     const cid = CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb')
+
+    await start(reprovider)
 
     await providers.addProvider(cid, components.peerId)
 
@@ -110,6 +112,9 @@ describe('reprovider', () => {
 
   it('should remove expired provider records', async () => {
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+
+    await start(reprovider)
+
     await Promise.all([
       providers.addProvider(cid, peers[0].peerId),
       providers.addProvider(cid, peers[1].peerId)
@@ -129,6 +134,8 @@ describe('reprovider', () => {
 
   it('should delete expired records from other peers but preserve own expired records', async () => {
     const cid = CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n')
+
+    await start(reprovider)
 
     // Add provider records - one from us, one from another peer
     await providers.addProvider(cid, components.peerId)
