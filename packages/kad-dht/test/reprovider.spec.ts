@@ -126,7 +126,7 @@ describe('reprovider', () => {
     expect(provs[0].toString()).to.be.equal(peers[0].peerId.toString())
     expect(provs[1].toString()).to.be.deep.equal(peers[1].peerId.toString())
 
-    await delay(400)
+    await delay(450)
 
     const provsAfter = await providers.getProviders(cid)
     expect(provsAfter).to.have.length(0)
