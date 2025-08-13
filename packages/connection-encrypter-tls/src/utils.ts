@@ -192,7 +192,10 @@ function formatAsPem (str: string): string {
 }
 
 export function toNodeDuplex (stream: MessageStream): Duplex {
+  let sent = 0
+
   function sendAndCallback (chunk: Uint8Array | Uint8ArrayList, callback: (err?: Error | null) => void): void {
+    sent += chunk.byteLength
     const sendMore = stream.send(chunk)
 
     if (sendMore) {
@@ -205,6 +208,7 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
     const cleanUp = (): void => {
       stream.removeEventListener('drain', onDrain)
       stream.removeEventListener('close', onClose)
+      stream.removeEventListener('message', onMessage)
     }
 
     const onDrain = (): void => {
@@ -213,6 +217,7 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
       socket.resume()
     }
     const onClose = (evt: StreamCloseEvent): void => {
+      console.info('wat sent', sent)
       cleanUp()
 
       if (evt.error != null) {
@@ -241,19 +246,32 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
       sendAndCallback(new Uint8ArrayList(...chunks.map(({ chunk }) => chunk)), callback)
     },
     read () {
-      writer.pull()
+      stream.resume()
     },
-    final () {
-      stream.removeEventListener('message', onMessage)
+    final (cb) {
+      stream.closeWrite()
+        .then(() => cb(), (err) => cb(err))
     }
   })
 
-  const writer = socketWriter(socket)
+  // const writer = socketWriter(socket)
 
   const onMessage = (evt: StreamMessageEvent): void => {
-    writer.write(evt.data)
-  }
+    const buf = evt.data
+    let sendMore = true
 
+    if (buf instanceof Uint8Array) {
+      sendMore = socket.push(buf)
+    } else {
+      for (const chunk of buf) {
+        sendMore = socket.push(chunk)
+      }
+    }
+
+    if (!sendMore) {
+      stream.pause()
+    }
+  }
   stream.addEventListener('message', onMessage)
 
   return socket
@@ -285,6 +303,9 @@ class EncryptedMessageStream extends AbstractMessageStream {
         .catch(err => {
           stream.abort(err)
         })
+    })
+    this.socket.on('drain', () => {
+      this.safeDispatchEvent('drain')
     })
   }
 

@@ -9,7 +9,7 @@ import { raceEvent } from 'race-event'
 import { stubInterface } from 'sinon-ts'
 import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
 import * as testVectors from './fixtures/test-vectors.js'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -85,34 +85,44 @@ describe('utils', () => {
     const [outboundStream, inboundStream] = await streamPair()
     const [outboundSocket, inboundSocket] = [toNodeDuplex(outboundStream), toNodeDuplex(inboundStream)]
 
-    const sent = new Array(1_000).fill(0).map(() => {
+    const toSend = new Array(1_000).fill(0).map(() => {
       return Uint8Array.from(new Array(1_000).fill(0))
     })
 
-    const received: Uint8Array[] = []
+    let received = 0
 
     inboundSocket.addListener('data', (buf) => {
-      received.push(buf)
+      received += buf.byteLength
     })
 
-    for (const buf of sent) {
+    let sent = 0
+
+    for (const buf of toSend) {
       const sendMore = outboundSocket.write(buf)
+      sent += buf.byteLength
 
       if (sendMore === false) {
         await raceEvent(outboundSocket, 'drain')
       }
     }
 
-    outboundStream.closeWrite()
+    outboundSocket.end()
+    inboundSocket.end()
 
-    await raceEvent(outboundStream, 'close')
+    await Promise.all([
+      raceEvent(outboundStream, 'close'),
+      raceEvent(inboundStream, 'close')
+    ])
 
     expect(received).to.deep.equal(sent)
   })
 
   it('should pipe socket messages to stream', async () => {
-    const [outboundStream] = await streamPair()
+    const [outboundStream, inboundStream] = await streamPair()
     const emitter = new EventEmitter()
+
+    // close writable end of inbound stream
+    await inboundStream.closeWrite()
 
     // @ts-expect-error return types of emitter methods are incompatible
     const socket = stubInterface<net.Socket>(emitter)

@@ -29,8 +29,8 @@ export function socketWriter (socket: stream.Duplex): SocketWriter {
 
         if (!socket.write(buf)) {
           // continue writing after drain event. this is a synchronous operation
-          // so it will not interleave with the `this.writeToSocket()` invocation
-          // in this.sendData so all data will be sent in-order
+          // so it will not interleave with the `this.writeToSocket()`
+          // invocation in this.sendData so all data will be sent in-order
           if (queue.byteLength > 0) {
             socket.once('drain', () => {
               this.pull()
