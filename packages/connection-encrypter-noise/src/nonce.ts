@@ -9,7 +9,7 @@ export const MIN_NONCE = 0
 // this MAX_NONCE is still a large number of messages, so the practical effect of this is negligible.
 export const MAX_NONCE = 0xffffffff
 
-const ERR_MAX_NONCE = 'Cipherstate has reached maximum n, a new handshake must be performed'
+const ERR_MAX_NONCE = 'Cipher state has reached maximum n, a new handshake must be performed'
 
 /**
  * The nonce is an uint that's increased over time.

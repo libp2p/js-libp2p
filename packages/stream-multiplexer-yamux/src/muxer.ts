@@ -5,7 +5,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { defaultConfig, verifyConfig } from './config.js'
 import { Decoder } from './decode.js'
 import { encodeHeader } from './encode.js'
-import { InvalidFrameError, isProtocolError, NotMatchingPingError, UnrequestedPingError } from './errors.js'
+import { InvalidFrameError, isProtocolError, NotMatchingPingError, UnRequestedPingError } from './errors.js'
 import { Flag, FrameType, GoAwayCode } from './frame.js'
 import { StreamState, YamuxStream } from './stream.js'
 import type { Config } from './config.js'
@@ -362,7 +362,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
   private handlePingResponse (pingId: number): void {
     if (this.activePing === undefined) {
       // this ping was not requested
-      throw new UnrequestedPingError('ping not requested')
+      throw new UnRequestedPingError('ping not requested')
     }
     if (this.activePing.id !== pingId) {
       // this ping doesn't match our active ping request

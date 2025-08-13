@@ -148,12 +148,12 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
         this.streams.splice(index, 1)
       }
 
-      // TODO: standardise metrics
+      // TODO: standardize metrics
       // this.metrics?.increment({ [`${stream.direction}_stream_end`]: true })
       // this.metrics?.increment({ [`${stream.direction}_stream_error`]: true })
     }
 
-    // TODO: standardise metrics
+    // TODO: standardize metrics
     // this.metrics?.increment({ [`${stream.direction}_stream`]: true })
 
     stream.addEventListener('close', onEnd)

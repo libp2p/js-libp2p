@@ -1,7 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { INITIAL_STREAM_WINDOW, MAX_STREAM_WINDOW } from './constants.js'
 
-// TOOD use config items or delete them
+// TODO use config items or delete them
 export interface Config {
   /**
    * Used to do periodic keep alive messages using a ping.

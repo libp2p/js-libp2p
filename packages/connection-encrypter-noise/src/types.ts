@@ -4,7 +4,10 @@ import type { ConnectionEncrypter, Logger, PrivateKey, PublicKey } from '@libp2p
 import type { LengthPrefixedStream } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-/** Crypto functions defined by the noise protocol, abstracted from the underlying implementations */
+/**
+ * Crypto functions defined by the noise protocol, abstracted from the
+ * underlying implementations
+ */
 export interface ICrypto {
   generateKeypair(): KeyPair
   dh(keypair: KeyPair, publicKey: Uint8Array | Uint8ArrayList): Uint8Array
@@ -33,24 +36,34 @@ export interface HandshakeResult {
 }
 
 /**
- * A CipherState object contains k and n variables, which it uses to encrypt and decrypt ciphertexts.
- * During the handshake phase each party has a single CipherState, but during the transport phase each party has two CipherState objects: one for sending, and one for receiving.
+ * A CipherState object contains k and n variables, which it uses to encrypt and
+ * decrypt ciphertext.
+ *
+ * During the handshake phase each party has a single CipherState, but during
+ * the transport phase each party has two CipherState objects: one for sending,
+ * and one for receiving.
  */
 export interface ICipherState {
-  /** A cipher key of 32 bytes (which may be empty). Empty is a special value which indicates k has not yet been initialized. */
+  /**
+   * A cipher key of 32 bytes (which may be empty). Empty is a special value
+   * which indicates k has not yet been initialized. */
   k?: Uint8Array
   /**
    * An 8-byte (64-bit) unsigned integer nonce.
    *
    * For performance reasons, the nonce is represented as a Nonce object
-   * The nonce is treated as a uint64, even though the underlying `number` only has 52 safely-available bits.
+   * The nonce is treated as a uint64, even though the underlying `number` only
+   * has 52 safely-available bits.
    */
   n: Nonce
 }
 
 /**
- * A SymmetricState object contains a CipherState plus ck and h variables. It is so-named because it encapsulates all the "symmetric crypto" used by Noise.
- * During the handshake phase each party has a single SymmetricState, which can be deleted once the handshake is finished.
+ * A SymmetricState object contains a CipherState plus ck and h variables. It is
+ * so-named because it encapsulates all the "symmetric crypto" used by Noise.
+ *
+ * During the handshake phase each party has a single SymmetricState, which can
+ * be deleted once the handshake is finished.
  */
 export interface ISymmetricState {
   cs: ICipherState
@@ -61,8 +74,11 @@ export interface ISymmetricState {
 }
 
 /**
- * A HandshakeState object contains a SymmetricState plus DH variables (s, e, rs, re) and a variable representing the handshake pattern.
- * During the handshake phase each party has a single HandshakeState, which can be deleted once the handshake is finished.
+ * A HandshakeState object contains a SymmetricState plus DH variables (s, e,
+ * rs, re) and a variable representing the handshake pattern.
+ *
+ * During the handshake phase each party has a single HandshakeState, which can
+ * be deleted once the handshake is finished.
  */
 export interface IHandshakeState {
   ss: ISymmetricState

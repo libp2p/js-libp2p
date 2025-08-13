@@ -10,7 +10,7 @@ import type { AbortOptions, Logger, MultiaddrConnection, MessageStreamDirection,
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-interface MockMulitaddrConnectionMessages {
+interface MockMultiaddrConnectionMessages {
   message: MessageEvent
   reset: Event
   close: Event
@@ -18,22 +18,22 @@ interface MockMulitaddrConnectionMessages {
   resume: Event
 }
 
-interface MockMulitaddrConnectionInit {
+interface MockMultiaddrConnectionInit {
   id: string,
   log: Logger,
   direction: MessageStreamDirection
-  local: MessageQueue<MockMulitaddrConnectionMessages>
-  remote: TypedEventTarget<MockMulitaddrConnectionMessages>
+  local: MessageQueue<MockMultiaddrConnectionMessages>
+  remote: TypedEventTarget<MockMultiaddrConnectionMessages>
   remoteAddr?: Multiaddr
 }
 
 let multiaddrConnectionId = 0
 
 class MockMultiaddrConnection extends AbstractMultiaddrConnection {
-  private local: MessageQueue<MockMulitaddrConnectionMessages>
-  private remote: TypedEventTarget<MockMulitaddrConnectionMessages>
+  private local: MessageQueue<MockMultiaddrConnectionMessages>
+  private remote: TypedEventTarget<MockMultiaddrConnectionMessages>
 
-  constructor (init: MockMulitaddrConnectionInit) {
+  constructor (init: MockMultiaddrConnectionInit) {
     super({
       ...init,
       remoteAddr: init.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${init.id}`)
@@ -116,11 +116,11 @@ export function multiaddrConnectionPair (opts: MultiaddrConnectionPairOptions = 
   const outboundLog = defaultLogger().forComponent(`libp2p:mock-maconn:outbound:${inboundId}`)
   const inboundLog = defaultLogger().forComponent(`libp2p:mock-maconn:inbound:${outboundId}`)
 
-  const targetA = new MessageQueue<MockMulitaddrConnectionMessages>({
+  const targetA = new MessageQueue<MockMultiaddrConnectionMessages>({
     ...opts,
     log: outboundLog
   })
-  const targetB = new MessageQueue<MockMulitaddrConnectionMessages>({
+  const targetB = new MessageQueue<MockMultiaddrConnectionMessages>({
     ...opts,
     log: inboundLog
   })

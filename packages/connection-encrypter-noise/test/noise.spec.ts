@@ -168,7 +168,7 @@ describe('Noise', () => {
         })
       }, { staticNoiseKey: staticKeysInitiator.privateKey, extensions: { webtransportCerthashes: [certhashInit] } })
       const staticKeysResponder = pureJsCrypto.generateX25519KeyPair()
-      const certhashResp = Buffer.from('certhash data from respon')
+      const certhashResp = Buffer.from('certhash data from response')
       const noiseResp = new Noise({
         ...remotePeer,
         logger: defaultLogger(),

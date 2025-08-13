@@ -190,7 +190,7 @@ describe('Decoder', () => {
       expectEqualDataFrames(actual, expected)
     })
 
-    it('should emit frames from source chunked chaoticly', async () => {
+    it('should emit frames from source chunked chaotically', async () => {
       const input = new Uint8ArrayList()
       const expected = []
       const encodedFrames = []
@@ -208,7 +208,7 @@ describe('Decoder', () => {
       }
 
       // create a single byte array of all frames to send
-      // so that we can chunk them chaoticly
+      // so that we can chunk them chaotically
       const encoded = new Uint8Array(encodedFrames.reduce((a, b) => a + b.length, 0))
       let i = 0
       for (const e of encodedFrames) {

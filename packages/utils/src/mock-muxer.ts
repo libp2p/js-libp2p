@@ -134,12 +134,10 @@ class MockMuxedStream extends AbstractStream {
   }
 
   onRemotePaused (): void {
-    // console.info('remote pasued')
     this.dataQueue.pause()
   }
 
   onRemoteResumed (): void {
-    // console.info('remote resumved')
     this.dataQueue.resume()
   }
 }

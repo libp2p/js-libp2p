@@ -50,9 +50,9 @@ describe('performHandshake', () => {
     ])
 
     // Test encryption and decryption
-    const encrypted = initiator.encrypt(Buffer.from('encryptthis'))
+    const encrypted = initiator.encrypt(Buffer.from('encrypt this'))
     const decrypted = responder.decrypt(encrypted)
-    assert(uint8ArrayEquals(decrypted.subarray(), Buffer.from('encryptthis')))
+    assert(uint8ArrayEquals(decrypted.subarray(), Buffer.from('encrypt this')))
   })
 
   it('Initiator should fail to exchange handshake if given wrong public key in payload', async () => {

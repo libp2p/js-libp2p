@@ -17,8 +17,9 @@ export function isDataFrame (frame: Frame): frame is DataFrame {
   return frame.header.type === FrameType.Data && frame.data !== null
 }
 
-// used to bitshift in decoding
-// native bitshift can overflow into a negative number, so we bitshift by multiplying by a power of 2
+// used to bit shift in decoding
+// native bit shift can overflow into a negative number, so we bit shift by
+// multiplying by a power of 2
 const twoPow24 = 2 ** 24
 
 /**

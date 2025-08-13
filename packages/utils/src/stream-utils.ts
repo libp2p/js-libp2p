@@ -89,8 +89,8 @@ export interface ByteStream<Stream extends MessageStream = MessageStream> {
   write(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<void>
 
   /**
-   * After calling this method the bytestream can no longer be used. Any unread
-   * data will be emitted as a message event during the microtask queue of the
+   * After calling this method the stream can no longer be used. Any unread data
+   * will be emitted as a message event during the microtask queue of the
    * current event loop tick.
    */
   unwrap(): Stream

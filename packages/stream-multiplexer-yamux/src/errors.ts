@@ -25,19 +25,19 @@ export class InvalidFrameError extends ProtocolError {
   }
 }
 
-export class UnrequestedPingError extends ProtocolError {
-  static name = 'UnrequestedPingError'
+export class UnRequestedPingError extends ProtocolError {
+  static name = 'UnRequestedPingError'
 
-  constructor (message = 'Unrequested ping error') {
+  constructor (message = 'Un-requested ping error') {
     super(message, GoAwayCode.ProtocolError)
-    this.name = 'UnrequestedPingError'
+    this.name = 'UnRequestedPingError'
   }
 }
 
 export class NotMatchingPingError extends ProtocolError {
   static name = 'NotMatchingPingError'
 
-  constructor (message = 'Unrequested ping error') {
+  constructor (message = 'Not matching ping error') {
     super(message, GoAwayCode.ProtocolError)
     this.name = 'NotMatchingPingError'
   }

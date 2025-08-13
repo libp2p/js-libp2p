@@ -3,7 +3,7 @@ export enum FrameType {
   Data = 0x0,
   /** Used to updated the senders receive window size. This is used to implement per-session flow control. */
   WindowUpdate = 0x1,
-  /** Used to measure RTT. It can also be used to heart-beat and do keep-alives over TCP. */
+  /** Used to measure RTT. It can also be used to heart-beat and do keep-alive over TCP. */
   Ping = 0x2,
   /** Used to close a session. */
   GoAway = 0x3
