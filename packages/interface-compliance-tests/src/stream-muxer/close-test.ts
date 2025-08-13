@@ -79,7 +79,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // Pause, and then close the dialer
       await delay(50)
-      await outboundConnection.close()
+      await inboundConnection.closeWrite()
+      await outboundConnection.closeWrite()
+      await delay(50)
 
       expect(openedStreams).to.have.equal(expectedStreams)
       expect(dialer.streams).to.have.lengthOf(0)
@@ -122,6 +124,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       await delay(50)
 
       await dialer.close()
+
+      await delay(50)
 
       expect(openedStreams, 'listener - number of opened streams should match number of calls to newStream').to.have.equal(expectedStreams)
       expect(dialer.streams, 'all tracked streams should be deleted after the muxer has called close').to.have.lengthOf(0)
@@ -220,7 +224,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       await Promise.all([
         raceEvent(remoteStream, 'close'),
-        localStream.close()
+        localStream.closeWrite()
       ])
 
       expect(dialer.streams).to.have.lengthOf(streamCount - 1)
@@ -277,45 +281,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(err).to.have.property('name', 'StreamStateError')
     })
 
-    it('can close a stream for reading', async () => {
-      const deferred = Promise.withResolvers<Array<Uint8Array | Uint8ArrayList>>()
-      const data = [randomBuffer(), randomBuffer()].map(d => new Uint8ArrayList(d))
-      const expected = toBuffer(data.map(d => d.subarray()))
-
-      listener.addEventListener('stream', (evt) => {
-        all(evt.detail).then(deferred.resolve, deferred.reject)
-      })
-
-      const stream = await dialer.createStream()
-      await stream.closeRead()
-
-      expect(stream.readStatus).to.equal('closed')
-
-      // Source should be done
-      void Promise.resolve().then(async () => {
-        for (const buf of data) {
-          stream.send(buf)
-        }
-
-        await stream.closeWrite()
-      })
-
-      const results = await deferred.promise
-      expect(toBuffer(results.map(b => b.subarray()))).to.equalBytes(expected)
-    })
-
     it('should emit a close event for closed streams not previously written', async () => {
-      const deferred = Promise.withResolvers<void>()
-      const stream = await dialer.createStream()
-      stream.addEventListener('close', () => {
-        deferred.resolve()
+      listener.addEventListener('stream', async (evt) => {
+        void evt.detail.closeWrite()
       })
 
-      await stream.close()
-      await deferred.promise
-    })
-
-    it('should emit a close event for read and write closed streams not previously written', async () => {
       const deferred = Promise.withResolvers<void>()
       const stream = await dialer.createStream()
       stream.addEventListener('close', () => {
@@ -323,7 +293,17 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
 
       await stream.closeWrite()
-      await stream.closeRead()
+      await deferred.promise
+    })
+
+    it('should emit a close event for aborted streams not previously written', async () => {
+      const deferred = Promise.withResolvers<void>()
+      const stream = await dialer.createStream()
+      stream.addEventListener('close', () => {
+        deferred.resolve()
+      })
+
+      await stream.abort(new Error('Urk!'))
       await deferred.promise
     })
 
@@ -336,7 +316,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         void pb.read(Message)
           .then(async message => {
             deferred.resolve(message)
-            await pb.unwrap().close()
+            await evt.detail.closeWrite()
           })
           .catch(err => {
             deferred.reject(err)
@@ -353,7 +333,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const pb = pbStream(stream)
       await pb.write(message, Message)
-      await pb.unwrap().close()
+      await stream.closeWrite()
 
       await expect(deferred.promise).to.eventually.deep.equal(message)
     })
@@ -392,9 +372,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
       await Promise.all([
-        dialerStream.close(),
-        listenerStream.close()
+        dialerStream.closeWrite(),
+        listenerStream.closeWrite()
       ])
+
+      await delay(10)
 
       expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
       expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
@@ -451,6 +433,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         raceEvent(listenerStream, 'close'),
         dialerStream.closeWrite()
       ])
+
+      await delay(10)
 
       expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
       expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')

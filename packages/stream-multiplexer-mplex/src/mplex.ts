@@ -141,8 +141,8 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
           break
         case MessageTypes.CLOSE_INITIATOR:
         case MessageTypes.CLOSE_RECEIVER:
-          // The remote has stopped writing, so we can stop reading
-          stream.onRemoteClosedWrite()
+          // The remote has stopped writing
+          stream.onRemoteCloseWrite()
           break
         case MessageTypes.RESET_INITIATOR:
         case MessageTypes.RESET_RECEIVER:

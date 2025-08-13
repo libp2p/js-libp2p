@@ -25,7 +25,7 @@ import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, Peer
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProtobufStream } from 'it-protobuf-stream'
+import type { ProtobufMessageStream, ProtobufStream } from '@libp2p/utils'
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
@@ -423,7 +423,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
     if (response == null) {
       this.log.error('could not read response from %p', connection.remotePeer)
-      await stream.close(options)
+      await stream.closeWrite(options)
       return
     }
 
@@ -433,7 +433,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     }
 
     this.log('stop request failed with code %d', response.status)
-    await stream.close(options)
+    await stream.closeWrite(options)
   }
 
   get reservations (): PeerMap<RelayReservation> {

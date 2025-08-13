@@ -298,7 +298,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
-      await stream.close()
+      await stream.closeWrite()
       return
     }
 
@@ -308,7 +308,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
         signal
       })
-      await stream.close()
+      await stream.closeWrite()
       return
     }
 
@@ -317,7 +317,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
         signal
       })
-      await stream.close({
+      await stream.closeWrite({
         signal
       })
       return
@@ -330,7 +330,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
         signal
       })
-      await stream.close({
+      await stream.closeWrite({
         signal
       })
       return

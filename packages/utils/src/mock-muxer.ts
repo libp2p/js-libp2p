@@ -81,7 +81,7 @@ class MockMuxedStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     const canSendMore = this.sendMessage({
       id: this.id,
       type: 'data',
@@ -232,9 +232,9 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     } else if (message.type === 'reset') {
       stream.onRemoteReset()
     } else if (message.type === 'closeWrite') {
-      stream.onRemoteClosedWrite()
+      stream.onRemoteCloseWrite()
     } else if (message.type === 'closeRead') {
-      stream.onRemoteClosedRead()
+      stream.onRemoteCloseRead()
     } else if (message.type === 'pause') {
       stream.onRemotePaused()
     } else if (message.type === 'resume') {

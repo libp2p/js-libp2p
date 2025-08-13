@@ -28,7 +28,7 @@ export async function createPeer (config: Partial<Libp2pOptions> = {}): Promise<
     services: {
       ...config.services,
       echo: echo({
-        maxInboundStreams: 5
+        maxInboundStreams: 5_000
       })
     }
   })

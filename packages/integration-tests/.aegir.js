@@ -113,7 +113,6 @@ export default {
         }
       })
 
-
       const goLibp2pRelay = await createGoLibp2pRelay()
       const wsAddresses = libp2p.getMultiaddrs().filter(ma => WebSockets.exactMatch(ma))
       const webRTCDirectPorts = new Set()
@@ -153,9 +152,9 @@ export default {
       }
     },
     after: async (_, before) => {
-      await before.libp2p.stop()
-      await before.goLibp2pRelay.proc.kill()
-      await before.libp2pLimitedRelay.stop()
+      await before.libp2p?.stop()
+      await before.goLibp2pRelay?.proc.kill()
+      await before.libp2pLimitedRelay?.stop()
     }
   }
 }

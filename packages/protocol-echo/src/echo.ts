@@ -64,7 +64,9 @@ export class Echo implements Startable, EchoInterface {
       ...this.init,
       ...options
     })
-    const bytes = byteStream(stream)
+    const bytes = byteStream(stream, {
+      maxBufferSize: buf.byteLength
+    })
 
     const [, output] = await Promise.all([
       bytes.write(buf, options),
@@ -74,7 +76,7 @@ export class Echo implements Startable, EchoInterface {
       })
     ])
 
-    await stream.close(options)
+    await stream.closeWrite(options)
 
     return output.subarray()
   }

@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { streamPair, lpStream } from '@libp2p/utils'
+import { lpStream, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import drain from 'it-drain'
@@ -16,7 +16,6 @@ describe('Listener', () => {
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)
-      void drain(incomingStream)
 
       void outputStream.writeV([
         uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),
@@ -64,7 +63,6 @@ describe('Listener', () => {
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)
-      void drain(incomingStream)
 
       void outputStream.writeV([
         uint8ArrayFromString(mss.PROTOCOL_ID + '\n'),

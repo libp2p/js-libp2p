@@ -34,30 +34,27 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
     this.direction = init.direction
   }
 
-  async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
-    const output = pushable<Uint8Array | Uint8ArrayList>()
-
-    const onMessage = (evt: StreamMessageEvent): void => {
-      output.push(evt.data)
+  /**
+   * The muxer this stream was created by has closed - this stream should exit
+   * without sending any further messages. Any unread data can still be read but
+   * otherwise this stream is now closed.
+   */
+  onMuxerClosed () {
+    if (this.remoteReadStatus !== 'closed') {
+      this.remoteReadStatus = 'closed'
+      this.timeline.remoteCloseRead = Date.now()
     }
-    this.addEventListener('message', onMessage)
 
-    const onClose = (evt: StreamCloseEvent): void => {
-      output.end(evt.error)
+    if (this.remoteWriteStatus !== 'closed') {
+      this.remoteWriteStatus = 'closed'
+      this.timeline.remoteCloseWrite = Date.now()
     }
-    this.addEventListener('close', onClose)
 
-    const onRemoteClosedWrite = (evt: StreamCloseEvent): void => {
-      output.end(evt.error)
+    if (this.writeStatus !== 'closed') {
+      this.writeStatus = 'closed'
+      this.timeline.closeWrite = Date.now()
     }
-    this.addEventListener('remoteClosedWrite', onRemoteClosedWrite)
 
-    try {
-      yield * output
-    } finally {
-      this.removeEventListener('message', onMessage)
-      this.removeEventListener('close', onClose)
-      this.removeEventListener('remoteClosedWrite', onRemoteClosedWrite)
-    }
+    this.onClosed()
   }
 }

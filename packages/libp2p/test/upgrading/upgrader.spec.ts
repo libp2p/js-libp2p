@@ -45,11 +45,11 @@ describe('upgrader', () => {
         stubInterface<ConnectionEncrypter>({
           protocol: encrypterProtocol,
           secureOutbound: async (connection) => ({
-            conn: connection,
+            connection,
             remotePeer
           }),
           secureInbound: async (connection) => ({
-            conn: connection,
+            connection,
             remotePeer
           })
         })
@@ -112,13 +112,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      outbound.send(buf)
-    })
+    await Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    await upgrader.upgradeInbound(inbound, {
-      signal: AbortSignal.timeout(5_000)
-    })
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -134,13 +139,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      inbound.send(buf)
-    })
+    await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    await upgrader.upgradeOutbound(outbound, {
-      signal: AbortSignal.timeout(5_000)
-    })
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -155,13 +165,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      outbound.send(buf)
-    })
+    await expect(Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    await expect(upgrader.upgradeInbound(inbound, {
-      signal: AbortSignal.timeout(5_000)
-    })).to.eventually.be.rejected
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -179,9 +194,18 @@ describe('upgrader', () => {
       inbound.send(buf)
     })
 
-    await expect(upgrader.upgradeOutbound(outbound, {
-      signal: AbortSignal.timeout(5_000)
-    })).to.eventually.be.rejected
+    await expect(Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -215,13 +239,18 @@ describe('upgrader', () => {
       delay: 2_000
     })
 
-    handshake.forEach(buf => {
-      inbound.send(buf)
-    })
+    await expect(Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    await expect(upgrader.upgradeOutbound(outbound, {
-      signal: AbortSignal.timeout(100)
-    })).to.eventually.be.rejected
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
       .with.property('message').that.include('aborted')
   })
 
@@ -236,13 +265,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      outbound.send(buf)
-    })
+    await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    await upgrader.upgradeInbound(inbound, {
-      signal: AbortSignal.timeout(5_000)
-    })
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     const event = await connectionPromise
 
@@ -260,13 +294,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      inbound.send(buf)
-    })
+    const [conn] = await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    const conn = await upgrader.upgradeOutbound(outbound, {
-      signal: AbortSignal.timeout(5_000)
-    })
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     await delay(1000)
 
@@ -284,14 +323,18 @@ describe('upgrader', () => {
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
     const [outbound, inbound] = multiaddrConnectionPair()
+     await Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    handshake.forEach(buf => {
-      outbound.send(buf)
-    })
-
-    await upgrader.upgradeInbound(inbound, {
-      signal: AbortSignal.timeout(100)
-    })
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])
 
     const event = await connectionPromise
 
@@ -309,13 +352,18 @@ describe('upgrader', () => {
 
     const [outbound, inbound] = multiaddrConnectionPair()
 
-    handshake.forEach(buf => {
-      inbound.send(buf)
-    })
+    const [conn] = await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
 
-    const conn = await upgrader.upgradeOutbound(outbound, {
-      signal: AbortSignal.timeout(100)
-    })
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     await delay(1000)
 
@@ -513,12 +561,12 @@ describe('upgrader', () => {
           stubInterface<ConnectionEncrypter>({
             protocol: encrypterProtocol,
             secureOutbound: async (connection) => ({
-              conn: connection,
+              connection,
               remotePeer,
               streamMuxer: streamMuxerFactory
             }),
             secureInbound: async (connection) => ({
-              conn: connection,
+              connection,
               remotePeer,
               streamMuxer: streamMuxerFactory
             })
@@ -537,14 +585,19 @@ describe('upgrader', () => {
 
     it('should allow early muxer selection on inbound connection', async () => {
       const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
-
       const [outbound, inbound] = multiaddrConnectionPair()
-      outbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
-      outbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
 
-      await upgrader.upgradeInbound(inbound, {
-        signal: AbortSignal.timeout(5_000)
-      })
+      await Promise.all([
+        upgrader.upgradeInbound(inbound, {
+          signal: AbortSignal.timeout(5_000)
+        }),
+        (async () => {
+          await delay(10)
+
+          outbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+          outbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
+        })()
+      ])
 
       const event = await connectionPromise
       const conn = event.detail
@@ -554,12 +607,18 @@ describe('upgrader', () => {
 
     it('should allow early muxer selection on outbound connection', async () => {
       const [outbound, inbound] = multiaddrConnectionPair()
-      inbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
-      inbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
 
-      const conn = await upgrader.upgradeOutbound(outbound, {
-        signal: AbortSignal.timeout(5_000)
-      })
+      const [conn] = await Promise.all([
+        upgrader.upgradeOutbound(outbound, {
+          signal: AbortSignal.timeout(5_000)
+        }),
+        (async () => {
+          await delay(10)
+
+          inbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+          inbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
+        })()
+      ])
 
       expect(conn.multiplexer).to.equal(earlyMuxerProtocol)
     })

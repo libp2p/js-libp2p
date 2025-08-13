@@ -257,7 +257,7 @@ export class AutoNATv2Client implements Startable {
         status: DialBackResponse.DialBackStatus.OK
       }, DialBackResponse)
 
-      await stream.close({
+      await stream.closeWrite({
         signal
       })
     } catch (err: any) {
@@ -571,7 +571,7 @@ export class AutoNATv2Client implements Startable {
       }
     } finally {
       try {
-        await stream.close(options)
+        await stream.closeWrite(options)
       } catch (err: any) {
         stream.abort(err)
       }

@@ -1,5 +1,5 @@
 import { InvalidParametersError, MuxerClosedError, TooManyOutboundProtocolStreamsError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
-import { AbstractStreamMuxer } from '@libp2p/utils'
+import { AbstractStreamMuxer, repeatingTask, type RepeatingTask } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { defaultConfig, verifyConfig } from './config.js'
@@ -65,9 +65,6 @@ export interface ActivePing extends PromiseWithResolvers<number> {
 export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
   private readonly config: Config
 
-  /** Used to close the muxer from either the sink or source */
-  private readonly closeController: AbortController
-
   /** The next stream id to be used when initiating a new stream */
   private nextStreamID: number
 
@@ -90,6 +87,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
   private numOutboundStreams: number
 
   private decoder: Decoder
+  private keepAlive?: RepeatingTask
 
   constructor (maConn: MultiaddrConnection, init: YamuxMuxerInit = {}) {
     super(maConn, {
@@ -100,9 +98,6 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.client = maConn.direction === 'outbound'
     this.config = { ...defaultConfig, ...init }
     verifyConfig(this.config)
-
-    this.closeController = new AbortController()
-    setMaxListeners(Infinity, this.closeController.signal)
 
     this.decoder = new Decoder()
 
@@ -117,21 +112,24 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
 
     this.log.trace('muxer created')
 
-    queueMicrotask(() => {
-      if (this.status !== 'open') {
-        return
-      }
-
-      if (this.config.enableKeepAlive) {
-        this.keepAliveLoop().catch(e => this.log.error('keepalive error: %s', e))
-      }
-
-      // send an initial ping to establish RTT
-      this.ping().catch(e => this.log.error('ping error: %s', e))
-    })
+    if (this.config.enableKeepAlive) {
+      this.log.trace('muxer keepalive enabled interval=%s', this.config.keepAliveInterval)
+      this.keepAlive = repeatingTask(async (options) => {
+        try {
+          await this.ping(options)
+        } catch (err: any) {
+          // TODO: should abort here?
+          this.log.error('ping error: %s', err)
+        }
+      }, this.config.keepAliveInterval, {
+        // send an initial ping to establish RTT
+        runImmediately: true
+      })
+      this.keepAlive.start()
+    }
   }
 
-  onData (buf: Uint8Array): void {
+  onData (buf: Uint8Array | Uint8ArrayList): void {
     for (const frame of this.decoder.emitFrames(buf)) {
       this.handleFrame(frame)
     }
@@ -159,8 +157,14 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
 
     this.numOutboundStreams++
 
-    // send a window update to open the stream on the receiver end
-    stream.sendWindowUpdate()
+    // send a window update to open the stream on the receiver end. do this in a
+    // microtask so the stream gets added to the streams array by the superclass
+    // before we send the SYN flag, otherwise we create a race condition whereby
+    // we can receive the ACK before the stream is added to the streams list
+    queueMicrotask(() => {
+
+      stream.sendWindowUpdate()
+    })
 
     return stream
   }
@@ -173,7 +177,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
    *
    * @returns the round-trip-time in milliseconds
    */
-  async ping (): Promise<number> {
+  async ping (options?: AbortOptions): Promise<number> {
     if (this.remoteGoAway !== undefined) {
       throw new MuxerClosedError('Muxer closed remotely')
     }
@@ -183,7 +187,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
 
     if (this.activePing != null) {
       // an active ping is already in progress, piggyback off that
-      return raceSignal(this.activePing.promise, this.closeController.signal)
+      return raceSignal(this.activePing.promise, options?.signal)
     }
 
     // An active ping does not yet exist, handle the process here
@@ -196,7 +200,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.sendPing(this.activePing.id)
     // await pong
     try {
-      this.rtt = await raceSignal(this.activePing.promise, this.closeController.signal)
+      this.rtt = await raceSignal(this.activePing.promise, options?.signal)
     } finally {
       // clean-up active ping
       this.activePing = undefined
@@ -225,16 +229,18 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       return
     }
 
-    const reason = options?.reason ?? GoAwayCode.NormalTermination
+    try {
+      const reason = options?.reason ?? GoAwayCode.NormalTermination
 
-    this.log.trace('muxer close reason=%s', GoAwayCode[reason])
+      this.log.trace('muxer close reason=%s', GoAwayCode[reason])
 
-    await super.close(options)
+      await super.close(options)
 
-    // send reason to the other side, allow the other side to close gracefully
-    this.sendGoAway(reason)
-
-    this.closeController.abort()
+      // send reason to the other side, allow the other side to close gracefully
+      this.sendGoAway(reason)
+    } finally {
+      this.keepAlive?.stop()
+    }
   }
 
   abort (err: Error): void {
@@ -243,27 +249,31 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       return
     }
 
-    super.abort(err)
+    try {
+      super.abort(err)
 
-    let reason = GoAwayCode.InternalError
+      let reason = GoAwayCode.InternalError
 
-    if (isProtocolError(err)) {
-      reason = err.reason
+      if (isProtocolError(err)) {
+        reason = err.reason
+      }
+
+      // If reason was provided, use that, otherwise use the presence of `err` to determine the reason
+      this.log.error('muxer abort reason=%s error=%s', reason, err)
+
+      // send reason to the other side, allow the other side to close gracefully
+      this.sendGoAway(reason)
+    } finally {
+      this.keepAlive?.stop()
     }
-
-    // If reason was provided, use that, otherwise use the presence of `err` to determine the reason
-    this.log.error('muxer abort reason=%s error=%s', reason, err)
-
-    // send reason to the other side, allow the other side to close gracefully
-    this.sendGoAway(reason)
-
-    this.closeController.abort()
   }
 
-  onRemoteClose (): void {
-    super.onRemoteClose()
-
-    this.closeController.abort()
+  onTransportClosed (): void {
+    try {
+      super.onTransportClosed()
+    } finally {
+      this.keepAlive?.stop()
+    }
   }
 
   /** Create a new stream */
@@ -301,26 +311,6 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       this.numInboundStreams--
     } else {
       this.numOutboundStreams--
-    }
-  }
-
-  private async keepAliveLoop (): Promise<void> {
-    this.log.trace('muxer keepalive enabled interval=%s', this.config.keepAliveInterval)
-    while (true) {
-      let timeoutId
-      try {
-        await raceSignal(
-          new Promise((resolve) => {
-            timeoutId = setTimeout(resolve, this.config.keepAliveInterval)
-          }),
-          this.closeController.signal
-        )
-        this.ping().catch(e => this.log.error('ping error: %s', e))
-      } catch (e) {
-        // closed
-        clearInterval(timeoutId)
-        return
-      }
     }
   }
 
@@ -387,15 +377,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.log.trace('received GoAway reason=%s', GoAwayCode[reason] ?? 'unknown')
     this.remoteGoAway = reason
 
-    // If the other side is friendly, they would have already closed all streams
-    // before sending a GoAway
-    if (this.streams.length === 0) {
-      this.onRemoteClose()
-
-      return
-    }
-
-    // In case they weren't, reset all streams
+    // reset any streams that are still open and close the muxer
     this.abort(new Error('Remote sent GoAway'))
   }
 

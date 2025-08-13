@@ -14,8 +14,6 @@ import type { Duplex, Source } from 'it-stream-types'
 function toMuxedStream (stream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>>): Stream {
   const muxedStream: Stream = stubInterface<Stream>({
     ...stream,
-    close: async () => {},
-    closeRead: async () => {},
     closeWrite: async () => {},
     abort: () => {},
     direction: 'outbound',
@@ -53,7 +51,7 @@ describe('Convert stream into a multiaddr connection', () => {
     expect(maConn.timeline.open).to.exist()
     expect(maConn.timeline.close).to.not.exist()
 
-    await maConn.close()
+    await maConn.closeWrite()
     expect(maConn.timeline.close).to.exist()
   })
 

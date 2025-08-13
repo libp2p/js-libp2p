@@ -3,6 +3,7 @@ import { AbstractMessageStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions } from '@libp2p/interface'
 import type { MessageStreamInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface WebTransportMessageStreamInit extends MessageStreamInit {
   stream: WebTransportBidirectionalStream
@@ -44,7 +45,7 @@ export class WebTransportMessageStream extends AbstractMessageStream {
     options?.signal?.throwIfAborted()
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     this.writer.write(data)
       .catch(err => {
         this.abort(err)

@@ -9,9 +9,10 @@ import { raceSignal } from 'race-signal'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { createConnection } from './connection.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions, SecureConnectionOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 interface CreateConnectionOptions {
   id: string
@@ -75,6 +76,11 @@ export interface UpgraderComponents {
 
 interface EncryptedConnection extends SecuredConnection {
   protocol: string
+  earlyData?: Uint8ArrayList
+}
+
+interface StreamMuxerNegotiationOptions extends AbortOptions {
+  earlyData?: Uint8ArrayList
 }
 
 type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection' | 'denyInboundEncryptedConnection' | 'denyOutboundEncryptedConnection' | 'denyInboundUpgradedConnection' | 'denyOutboundUpgradedConnection'>
@@ -245,6 +251,7 @@ export class Upgrader implements UpgraderInterface {
     let muxerFactory: StreamMuxerFactory | undefined
     let muxer: StreamMuxer | undefined
     let cryptoProtocol
+    let earlyData: Uint8ArrayList | undefined
 
     const id = `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`
     maConn.log = maConn.log.newScope(`${direction}:${id}`)
@@ -276,10 +283,11 @@ export class Upgrader implements UpgraderInterface {
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:encrypt-${direction}-connection`));
 
         ({
-          conn: stream,
+          connection: stream,
           remotePeer,
           protocol: cryptoProtocol,
-          streamMuxer: muxerFactory
+          streamMuxer: muxerFactory,
+          earlyData
         } = await (direction === 'inbound'
           ? this._encryptInbound(stream, opts)
           : this._encryptOutbound(stream, opts)
@@ -363,25 +371,24 @@ export class Upgrader implements UpgraderInterface {
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (plainTextStream: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
+  async _encryptInbound (connection: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
     const protocols = Array.from(this.connectionEncrypters.keys())
 
     try {
-      const protocol = await mss.handle(plainTextStream, protocols, options)
+      const protocol = await mss.handle(connection, protocols, options)
       const encrypter = this.connectionEncrypters.get(protocol)
 
       if (encrypter == null) {
         throw new EncryptionFailedError(`no crypto module found for ${protocol}`)
       }
 
-      plainTextStream.log('encrypting inbound connection using %s', protocol)
+      connection.log('encrypting inbound connection using %s', protocol)
 
       return {
-        ...await encrypter.secureInbound(plainTextStream, options),
+        ...await encrypter.secureInbound(connection, options),
         protocol
       }
     } catch (err: any) {
-      plainTextStream.log.error('encrypting inbound connection failed - %e', err)
       throw new EncryptionFailedError(err.message)
     }
   }
@@ -390,27 +397,26 @@ export class Upgrader implements UpgraderInterface {
    * Attempts to encrypt the given `connection` with the provided connection encrypters.
    * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound (plainTextStream: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
+  async _encryptOutbound (connection: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
     const protocols = Array.from(this.connectionEncrypters.keys())
 
     try {
-      plainTextStream.log.trace('selecting encrypter from %s', protocols)
+      connection.log.trace('selecting encrypter from %s', protocols)
 
-      const protocol = await mss.select(plainTextStream, protocols, options)
+      const protocol = await mss.select(connection, protocols, options)
       const encrypter = this.connectionEncrypters.get(protocol)
 
       if (encrypter == null) {
         throw new EncryptionFailedError(`no crypto module found for ${protocol}`)
       }
 
-      plainTextStream.log('encrypting outbound connection using %s', protocol)
+      connection.log('encrypting outbound connection using %s', protocol)
 
       return {
-        ...await encrypter.secureOutbound(plainTextStream, options),
+        ...await encrypter.secureOutbound(connection, options),
         protocol
       }
     } catch (err: any) {
-      plainTextStream.log.error('encrypting outbound connection failed - %e', err)
       throw new EncryptionFailedError(err.message)
     }
   }
@@ -419,23 +425,23 @@ export class Upgrader implements UpgraderInterface {
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
    */
-  async _multiplexOutbound (stream: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: AbortOptions): Promise<StreamMuxerFactory> {
+  async _multiplexOutbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: StreamMuxerNegotiationOptions): Promise<StreamMuxerFactory> {
     const protocols = Array.from(muxers.keys())
-    stream.log('outbound selecting muxer %s', protocols)
+    maConn.log('outbound selecting muxer %s', protocols)
 
     try {
-      stream.log.trace('selecting stream muxer from %s', protocols)
-      const protocol = await mss.select(stream, protocols, options)
+      maConn.log.trace('selecting stream muxer from %s', protocols)
+      const protocol = await mss.select(maConn, protocols, options)
       const muxerFactory = muxers.get(protocol)
 
       if (muxerFactory == null) {
         throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`)
       }
 
-      stream.log('selected %s as muxer protocol', protocol)
+      maConn.log('selected %s as muxer protocol', protocol)
       return muxerFactory
     } catch (err: any) {
-      stream.log.error('error multiplexing outbound connection', err)
+      maConn.log.error('error multiplexing outbound connection', err)
       throw new MuxerUnavailableError(String(err))
     }
   }
@@ -444,22 +450,22 @@ export class Upgrader implements UpgraderInterface {
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
    */
-  async _multiplexInbound (stream: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: AbortOptions): Promise<StreamMuxerFactory> {
+  async _multiplexInbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: StreamMuxerNegotiationOptions): Promise<StreamMuxerFactory> {
     const protocols = Array.from(muxers.keys())
-    stream.log('inbound handling muxers %s', protocols)
+    maConn.log('inbound handling muxers %s', protocols)
     try {
-      stream.log.trace('selecting stream muxer from %s', protocols)
-      const protocol = await mss.handle(stream, protocols, options)
+      maConn.log.trace('selecting stream muxer from %s', protocols)
+      const protocol = await mss.handle(maConn, protocols, options)
       const muxerFactory = muxers.get(protocol)
 
       if (muxerFactory == null) {
         throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`)
       }
 
-      stream.log('selected %s as muxer protocol', protocol)
+      maConn.log('selected %s as muxer protocol', protocol)
       return muxerFactory
     } catch (err: any) {
-      stream.log.error('error multiplexing inbound connection', err)
+      maConn.log.error('error multiplexing inbound connection', err)
       throw err
     }
   }

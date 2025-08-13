@@ -4,6 +4,7 @@ import { multiaddrConnectionPair } from '@libp2p/utils'
 import { pEvent } from 'p-event'
 import { yamux } from '../../src/index.ts'
 import type { StreamMuxer } from '@libp2p/interface'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 interface Fixture {
   client: StreamMuxer
@@ -46,7 +47,7 @@ describe('comparison benchmark', () => {
             }
           }
 
-          await stream.close()
+          await stream.closeWrite()
         }
       })
     }

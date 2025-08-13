@@ -103,7 +103,7 @@ describe('utils', () => {
       }
     }
 
-    outboundStream.close()
+    outboundStream.closeWrite()
 
     await raceEvent(outboundStream, 'close')
 

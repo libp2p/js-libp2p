@@ -7,6 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { pEvent } from 'p-event'
 
 export interface ConnectionEncrypterSetupArgs {
   privateKey: PrivateKey
@@ -46,36 +47,41 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     it('it wraps the provided duplex connection', async () => {
-      const [remoteConn, localConn] = multiaddrConnectionPair()
+      const [localConn, remoteConn] = multiaddrConnectionPair()
 
       const [
         inboundResult,
         outboundResult
       ] = await Promise.all([
-        cryptoRemote.secureInbound(localConn),
-        crypto.secureOutbound(remoteConn, {
+        cryptoRemote.secureInbound(remoteConn),
+        crypto.secureOutbound(localConn, {
           remotePeer
         })
       ])
 
       // Echo server
-      echo(inboundResult.conn)
+      echo(inboundResult.connection).catch(() => {})
 
       // Send some data and collect the result
       const output: Array<Uint8Array | Uint8ArrayList> = []
 
-      outboundResult.conn.addEventListener('message', (evt) => {
+      outboundResult.connection.addEventListener('message', (evt) => {
         output.push(evt.data)
       })
 
-      const input = new Array(10_000).fill(0).map((val, index) => {
-        const buf = uint8ArrayFromString(`data to encrypt, chunk ${index}`)
-        outboundResult.conn.send(buf)
+      const input: Uint8Array[] = []
 
-        return buf
-      })
+      for (let i = 0; i < 10_000; i++) {
+        const buf = uint8ArrayFromString(`data to encrypt, chunk ${i}`)
 
-      await outboundResult.conn.close()
+        if (!outboundResult.connection.send(buf)) {
+          await pEvent(outboundResult.connection, 'drain')
+        }
+
+        input.push(buf)
+      }
+
+      await outboundResult.connection.closeWrite()
 
       expect(toBuffer(output.map(b => b.subarray()))).to.equalBytes(toBuffer(input))
     })

@@ -3,6 +3,7 @@ import { mockMuxer } from './mock-muxer.ts'
 import { multiaddrConnectionPair } from './multiaddr-connection-pair.ts'
 import { echo } from './stream-utils.ts'
 import type { Stream } from '@libp2p/interface'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 export interface StreamPairOptions {
   /**

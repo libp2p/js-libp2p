@@ -23,7 +23,7 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
 
       if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
-        this.onRemoteClose()
+        this.onRemoteCloseWrite()
       }
     }
   }

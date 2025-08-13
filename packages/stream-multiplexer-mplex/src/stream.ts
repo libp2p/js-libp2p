@@ -48,20 +48,20 @@ export class MplexStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     const list = new Uint8ArrayList()
     const sentBytes = data.byteLength
 
     while (data.byteLength > 0) {
       const toSend = Math.min(data.byteLength, this.maxDataSize)
-      const slice = data.subarray(0, toSend)
-      data = data.subarray(toSend)
+      const slice = data.sublist(0, toSend)
+      data = data.sublist(toSend)
 
       list.append(
         encode({
           id: this.streamId,
           type: this.types.MESSAGE,
-          data: new Uint8ArrayList(slice)
+          data: slice
         })
       )
     }

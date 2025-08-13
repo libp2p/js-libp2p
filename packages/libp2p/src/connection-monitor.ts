@@ -119,7 +119,7 @@ export class ConnectionMonitor implements Startable {
 
             conn.rtt = Date.now() - start
 
-            await bs.unwrap().close({
+            await stream.closeWrite({
               signal
             })
           } catch (err: any) {

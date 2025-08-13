@@ -1,3 +1,4 @@
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { Stream, MultiaddrConnection, TypedEventTarget } from './index.js'
 import type { AbortOptions } from '@multiformats/multiaddr'
 

@@ -1,6 +1,7 @@
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
 import { Queue } from './queue/index.js'
+import type { Logger } from '@libp2p/interface'
 
 export interface MessageQueueMessages {
   /**
@@ -35,8 +36,9 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
   private capacity: number
   private delay: number
   private needsDrain: boolean
+  private log: Logger
 
-  constructor (init: MessageQueueInit = {}) {
+  constructor (init: MessageQueueInit & { log: Logger }) {
     super()
 
     this.needsDrain = false
@@ -45,9 +47,11 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
     })
     this.capacity = init.capacity ?? 5
     this.delay = init.delay ?? 0
+    this.log = init.log
 
     this.queue.addEventListener('idle', () => {
       if (this.needsDrain) {
+        this.log('network send queue drained')
         this.safeDispatchEvent('drain')
         this.needsDrain = false
       }
@@ -64,6 +68,7 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
     })
 
     if (this.queue.size >= this.capacity) {
+      this.log('network send queue full')
       this.needsDrain = true
       return false
     }
@@ -81,5 +86,9 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
 
   onIdle (): Promise<void> {
     return this.queue.onIdle()
+  }
+
+  size (): number {
+    return this.queue.size
   }
 }

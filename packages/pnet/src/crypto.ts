@@ -7,6 +7,7 @@ import * as Errors from './errors.js'
 import { KEY_LENGTH } from './key-generator.js'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { MessageStreamInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface BoxMessageStreamInit extends MessageStreamInit {
   maConn: MultiaddrConnection
@@ -51,9 +52,22 @@ export class BoxMessageStream extends AbstractMessageStream {
         if (evt.error != null) {
           this.onRemoteReset()
         } else {
-          this.onRemoteClose()
+          this.onRemoteCloseWrite()
         }
       }
+    })
+
+    this.maConn.addEventListener('remoteCloseWrite', () => {
+      this.safeDispatchEvent('remoteCloseWrite')
+    })
+    this.maConn.addEventListener('remoteCloseRead', () => {
+      this.safeDispatchEvent('remoteCloseRead')
+    })
+    this.maConn.addEventListener('closeWrite', () => {
+      this.safeDispatchEvent('closeWrite')
+    })
+    this.maConn.addEventListener('closeRead', () => {
+      this.safeDispatchEvent('closeRead')
     })
   }
 
@@ -62,13 +76,13 @@ export class BoxMessageStream extends AbstractMessageStream {
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
-    await this.maConn.closeRead(options)
+    options?.signal?.throwIfAborted()
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     return {
       sentBytes: data.byteLength,
-      canSendMore: this.maConn.send(this.outboundXor.update(data))
+      canSendMore: this.maConn.send(this.outboundXor.update(data.subarray()))
     }
   }
 

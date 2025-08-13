@@ -56,7 +56,7 @@ export class Decoder {
    * Note: If `readData` is emitted, it _must_ be called before the next iteration
    * Otherwise an error is thrown
    */
-  * emitFrames (buf: Uint8Array): Generator<Frame> {
+  * emitFrames (buf: Uint8Array | Uint8ArrayList): Generator<Frame> {
     this.buffer.append(buf)
 
     // Loop to consume as many bytes from the buffer as possible

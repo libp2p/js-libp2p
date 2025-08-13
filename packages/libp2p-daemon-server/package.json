@@ -1,0 +1,161 @@
+{
+  "name": "@libp2p/daemon-server",
+  "version": "8.0.6",
+  "description": "API server for libp2p-daemon instances",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-daemon/tree/main/packages/libp2p-daemon-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-daemon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-daemon/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "libp2p"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "pretest": "npm run build",
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^14.1.1",
+    "@libp2p/crypto": "^5.1.7",
+    "@libp2p/daemon-protocol": "^7.0.0",
+    "@libp2p/interface": "^2.10.5",
+    "@libp2p/kad-dht": "^15.1.10",
+    "@libp2p/logger": "^5.1.21",
+    "@libp2p/peer-id": "^5.1.8",
+    "@libp2p/tcp": "^10.1.18",
+    "@multiformats/multiaddr": "^12.5.1",
+    "it-drain": "^3.0.10",
+    "it-length-prefixed": "^10.0.1",
+    "it-length-prefixed-stream": "^2.0.3",
+    "it-pipe": "^3.0.1",
+    "it-protobuf-stream": "^2.0.3",
+    "it-pushable": "^3.2.3",
+    "multiformats": "^13.4.0",
+    "uint8arrays": "^5.1.0"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.21",
+    "sinon-ts": "^2.0.0"
+  }
+}

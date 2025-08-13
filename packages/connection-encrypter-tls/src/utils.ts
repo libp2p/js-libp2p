@@ -280,7 +280,10 @@ class EncryptedMessageStream extends AbstractMessageStream {
       stream.abort(err)
     })
     this.socket.on('close', () => {
-      stream.close()
+      stream.closeWrite()
+        .catch(err => {
+          stream.abort(err)
+        })
     })
   }
 
@@ -305,7 +308,7 @@ class EncryptedMessageStream extends AbstractMessageStream {
     this.socket.resetAndDestroy()
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     return {
       sentBytes: data.byteLength,
       canSendMore: this.writer.write(data)

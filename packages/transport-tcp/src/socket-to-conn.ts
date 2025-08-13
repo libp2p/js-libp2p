@@ -6,6 +6,7 @@ import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, SendResult, SocketWriter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface TCPSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream' | 'remoteAddr'> {
   socket: Socket
@@ -62,25 +63,44 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.socket.once('end', () => {
       // the remote sent a FIN packet which means no more data will be sent
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-      this.onRemoteClose()
+      this.onRemoteCloseWrite()
+    })
+
+    this.socket.once('close', hadError => {
+      if (hadError) {
+        this.abort(new Error('TCP transmission error'))
+        return
+      }
+
+      this.onRemoteCloseWrite()
+      this.onClosed()
+    })
+
+    // the socket can accept more data
+    this.socket.on('drain', () => {
+      this.safeDispatchEvent('drain')
     })
 
     this.writer = socketWriter(this.socket)
   }
 
-  sendData (data: Uint8Array): SendResult {
-    return {
-      sentBytes: data.byteLength,
-      canSendMore: this.writer.write(data)
+  sendData (data: Uint8ArrayList): SendResult {
+    let sentBytes = 0
+    let canSendMore = true
+
+    for (const buf of data) {
+      sentBytes += buf.byteLength
+      canSendMore = this.writer.write(buf)
+
+      if (!canSendMore) {
+         break
+      }
     }
-  }
 
-  sendDataV (data: Uint8Array[]): boolean {
-    return this.writer.write(data)
-  }
-
-  async onClose (options?: AbortOptions): Promise<void> {
-
+    return {
+      sentBytes,
+      canSendMore
+    }
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
@@ -88,7 +108,7 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       return
     }
 
-    this.socket.destroySoon()
+    this.socket.end()
 
     await raceEvent(this.socket, 'close', options?.signal)
   }

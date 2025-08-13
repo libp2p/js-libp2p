@@ -120,7 +120,7 @@ export class Ping implements Startable, PingInterface {
 
       const ms = Date.now() - start
 
-      stream.close()
+      stream.closeWrite()
 
       if (!uint8ArrayEquals(data, result.subarray())) {
         throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
@@ -136,7 +136,7 @@ export class Ping implements Startable, PingInterface {
 
       throw err
     } finally {
-      stream?.close()
+      stream?.closeWrite()
     }
   }
 }

@@ -110,8 +110,9 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {
+      const readBufferSize = readBuffer.byteLength
       readBuffer.consume(readBuffer.byteLength)
-      hasBytes.reject(new Error('Read buffer overflow'))
+      hasBytes.reject(new Error(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`))
     }
 
     hasBytes.resolve()
@@ -126,10 +127,14 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
     }
   }
   stream.addEventListener('close', onClose)
-  stream.addEventListener('closeRead', onClose)
+
+  const onRemoteCloseWrite = (): void => {
+    hasBytes.resolve()
+  }
+  stream.addEventListener('remoteCloseWrite', onRemoteCloseWrite)
 
   const byteStream: ByteStream<Stream> = {
-    // @ts-expect-error argument type prevents types inferring
+    // @ts-expect-error options type prevents type inference
     async read (options?: ReadBytesOptions) {
       if (unwrapped === true) {
         throw new UnwrappedError('Stream was unwrapped')
@@ -172,7 +177,7 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
 
       if (readBuffer.byteLength < toRead) {
         if (stream.readStatus !== 'readable') {
-          throw new UnexpectedEOFError('Unexpected EOF - stream was not readable')
+          throw new UnexpectedEOFError(`Unexpected EOF - stream status was "${stream.readStatus}" and not "readable"`)
         }
 
         return byteStream.read(options)
@@ -195,17 +200,20 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
       }
     },
     unwrap () {
+      // already unwrapped, just return the original stream
+      if (unwrapped) {
+        return stream
+      }
+
+      // only unwrap once
       unwrapped = true
       stream.removeEventListener('message', onMessage)
       stream.removeEventListener('close', onClose)
-      stream.removeEventListener('closeRead', onClose)
+      stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
 
       // emit any unread data
       if (readBuffer.byteLength > 0) {
-        setTimeout(() => {
-          stream.dispatchEvent(new StreamMessageEvent(readBuffer))
-          readBuffer.consume(readBuffer.byteLength)
-        }, 0)
+        stream.push(readBuffer)
       }
 
       return stream
@@ -219,7 +227,7 @@ export interface LengthPrefixedStream<Stream extends MessageStream = MessageStre
   /**
    * Read the next length-prefixed number of bytes from the stream
    */
-  read(options?: AbortOptions): Promise<Uint8Array | Uint8ArrayList>
+  read(options?: AbortOptions): Promise<Uint8ArrayList>
 
   /**
    * Write the passed bytes to the stream prefixed by their length
@@ -445,7 +453,7 @@ export function pbStream <Stream extends MessageStream = MessageStream> (stream:
 }
 
 export function echo (channel: MessageStream): ReturnType<typeof itPipe> {
-  channel.addEventListener('remoteClosedWrite', () => {
+  channel.addEventListener('remoteCloseWrite', () => {
     channel.closeWrite()
   })
 
@@ -466,27 +474,31 @@ export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGener
     source.push(evt.data)
   }
 
-  const onRemoteClosedWrite = (): void => {
+  const onRemoteCloseWrite = (): void => {
     source.end()
+
     stream.removeEventListener('message', onMessage)
     stream.removeEventListener('close', onClose)
+    stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
   }
 
   const onClose = (evt: StreamCloseEvent): void => {
-    if (evt.error) {
-      source.end(evt.error)
+    source.end(evt.error)
+
+    if (evt.error != null) {
       onError.reject(evt.error)
     }
 
     stream.removeEventListener('message', onMessage)
-    stream.removeEventListener('remoteClosedWrite', onRemoteClosedWrite)
+    stream.removeEventListener('close', onClose)
+    stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
   }
 
   stream.addEventListener('message', onMessage)
-  stream.addEventListener('remoteClosedWrite', onRemoteClosedWrite, {
+  stream.addEventListener('close', onClose, {
     once: true
   })
-  stream.addEventListener('close', onClose, {
+  stream.addEventListener('remoteCloseWrite', onRemoteCloseWrite, {
     once: true
   })
 
@@ -508,8 +520,11 @@ export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGener
         if (value != null) {
           if (!stream.send(value)) {
             await Promise.race([
-              pEvent(stream, 'drain'),
-              onError.promise
+              pEvent(stream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
             ])
           }
         }

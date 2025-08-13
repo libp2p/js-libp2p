@@ -6,7 +6,7 @@ import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueueInit } from './message-queue.ts'
-import type { AbortOptions, MultiaddrConnection, StreamDirection, TypedEventTarget } from '@libp2p/interface'
+import type { AbortOptions, Logger, MultiaddrConnection, StreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -19,6 +19,8 @@ interface MockMulitaddrConnectionMessages {
 }
 
 interface MockMulitaddrConnectionInit {
+  id: string,
+  log: Logger,
   direction: StreamDirection
   local: MessageQueue<MockMulitaddrConnectionMessages>
   remote: TypedEventTarget<MockMulitaddrConnectionMessages>
@@ -32,12 +34,9 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
   private remote: TypedEventTarget<MockMulitaddrConnectionMessages>
 
   constructor (init: MockMulitaddrConnectionInit) {
-    const id = `${multiaddrConnectionId++}`
-
     super({
       ...init,
-      remoteAddr: init.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${id}`),
-      log: defaultLogger().forComponent(`libp2p:mock-maconn:${init.direction}:${id}`)
+      remoteAddr: init.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${init.id}`)
     })
 
     this.local = init.local
@@ -62,7 +61,7 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
       this.onRemoteReset()
     })
     this.remote.addEventListener('close', (evt) => {
-      this.onRemoteClose()
+      this.onRemoteCloseWrite()
     })
     this.remote.addEventListener('pause', (evt) => {
       this.local.pause()
@@ -72,7 +71,7 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
     })
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     const canSendMore = this.local.send(new StreamMessageEvent(data))
 
     return {
@@ -111,21 +110,37 @@ export interface MultiaddrConnectionPairOptions extends MessageQueueInit {
 }
 
 export function multiaddrConnectionPair (opts: MultiaddrConnectionPairOptions = {}): [MultiaddrConnection, MultiaddrConnection] {
-  const targetA = new MessageQueue<MockMulitaddrConnectionMessages>(opts)
-  const targetB = new MessageQueue<MockMulitaddrConnectionMessages>(opts)
+  const inboundId = `${multiaddrConnectionId++}`
+  const outboundId = `${multiaddrConnectionId++}`
+
+  const outboundLog = defaultLogger().forComponent(`libp2p:mock-maconn:outbound:${inboundId}`)
+  const inboundLog = defaultLogger().forComponent(`libp2p:mock-maconn:inbound:${outboundId}`)
+
+  const targetA = new MessageQueue<MockMulitaddrConnectionMessages>({
+    ...opts,
+    log: outboundLog
+  })
+  const targetB = new MessageQueue<MockMulitaddrConnectionMessages>({
+    ...opts,
+    log: inboundLog
+  })
 
   return [
     new MockMultiaddrConnection({
+      id: inboundId,
       direction: 'outbound',
       local: targetA,
       remote: targetB,
-      remoteAddr: opts?.outboundRemoteAddr
+      remoteAddr: opts?.outboundRemoteAddr,
+      log: outboundLog
     }),
     new MockMultiaddrConnection({
+      id: outboundId,
       direction: 'inbound',
       local: targetB,
       remote: targetA,
-      remoteAddr: opts?.inboundRemoteAddr
+      remoteAddr: opts?.inboundRemoteAddr,
+      log: inboundLog
     })
   ]
 }

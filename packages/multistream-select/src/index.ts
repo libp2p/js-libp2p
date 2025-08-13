@@ -21,15 +21,11 @@
  */
 
 import { PROTOCOL_ID } from './constants.js'
-import type { AbortOptions, MessageStream, MultiaddrConnection } from '@libp2p/interface'
+import type { AbortOptions } from '@libp2p/interface'
 import type { LengthPrefixedStreamOpts } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { PROTOCOL_ID }
-
-export interface ProtocolStream<Stream extends MessageStream = MultiaddrConnection> {
-  stream: Stream
-  protocol: string
-}
 
 export interface MultistreamSelectInit extends AbortOptions, Partial<LengthPrefixedStreamOpts> {
   /**

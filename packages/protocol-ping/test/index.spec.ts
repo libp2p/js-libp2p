@@ -126,7 +126,7 @@ describe('ping', () => {
     })
     expect(output2.subarray()).to.equalBytes(input2)
 
-    b.unwrap().close()
+    await outgoingStream.closeWrite()
   })
 
   it('should throw if sending stalls', async () => {

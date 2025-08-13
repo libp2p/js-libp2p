@@ -447,7 +447,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       throw err
     } finally {
       if (stream.status !== 'closed') {
-        await stream.close(options)
+        await stream.closeWrite(options)
       }
     }
 

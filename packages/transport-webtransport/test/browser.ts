@@ -108,7 +108,6 @@ describe('libp2p-webtransport', () => {
     const stream = await node.dialProtocol(ma, '/echo/1.0.0')
 
     expect(stream.timeline.closeWrite).to.be.undefined()
-    expect(stream.timeline.closeRead).to.be.undefined()
     expect(stream.timeline.close).to.be.undefined()
 
     // send and receive data
@@ -136,7 +135,6 @@ describe('libp2p-webtransport', () => {
 
     // should have set timeline events
     expect(stream.timeline.closeWrite).to.be.greaterThan(0)
-    expect(stream.timeline.closeRead).to.be.greaterThan(0)
     expect(stream.timeline.close).to.be.greaterThan(0)
   })
 })

@@ -110,8 +110,7 @@ export class WebRTCStream extends AbstractStream {
     this.channel.onclose = (_evt) => {
       this.log.trace('received onclose event')
 
-      this.onRemoteClosedRead()
-      this.onRemoteClosedWrite()
+      this.onRemoteCloseWrite()
     }
 
     this.channel.onerror = (evt) => {
@@ -171,8 +170,10 @@ export class WebRTCStream extends AbstractStream {
     }
   }
 
-  sendData (data: Uint8Array): SendResult {
-    const messageBuf = Message.encode({ message: data })
+  sendData (data: Uint8ArrayList): SendResult {
+    const messageBuf = Message.encode({
+      message: data.subarray()
+    })
     const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
     this._sendMessage(prefixedBuf)
 
@@ -219,7 +220,7 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.FIN) {
         // We should expect no more data from the remote, stop reading
-        this.onRemoteClosedWrite()
+        this.onRemoteCloseWrite()
       }
 
       if (message.flag === Message.Flag.RESET) {
@@ -229,7 +230,7 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
-        this.onRemoteClosedRead()
+        this.onRemoteCloseRead()
       }
     }
 

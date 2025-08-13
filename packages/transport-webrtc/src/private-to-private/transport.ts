@@ -219,7 +219,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the stream if SDP messages have been exchanged successfully
-      await stream.close({
+      await stream.closeWrite({
         signal
       })
 
@@ -253,7 +253,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
     // close the connection on shut down
     const shutDownListener = (): void => {
-      webRTCConn.close()
+      webRTCConn.closeWrite()
         .catch(err => {
           this.log.error('could not close WebRTCMultiaddrConnection', err)
         })

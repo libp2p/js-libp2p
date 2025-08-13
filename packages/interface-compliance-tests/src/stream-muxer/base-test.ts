@@ -4,6 +4,7 @@ import { raceEvent } from 'race-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
   describe('base', () => {

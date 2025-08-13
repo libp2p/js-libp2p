@@ -8,6 +8,7 @@ import type { Config } from './config.js'
 import type { Frame } from './decode.ts'
 import type { FrameHeader } from './frame.js'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
+import type { AbortOptions } from '@libp2p/interface'
 
 export enum StreamState {
   Init,
@@ -73,22 +74,9 @@ export class YamuxStream extends AbstractStream {
   }
 
   /**
-   * Send a message to the remote muxer informing them a new stream is being
-   * opened.
-   *
-   * This is a noop for Yamux because the first window update is sent when
-   * .newStream is called on the muxer which opens the stream on the remote.
-   */
-  async sendNewStream (): Promise<void> {
-
-  }
-
-  /**
    * Send a data message to the remote muxer
    */
-  sendData (buf: Uint8Array | Uint8ArrayList): SendResult {
-    buf = new Uint8ArrayList(buf)
-
+  sendData (buf: Uint8ArrayList): SendResult {
     const totalBytes = buf.byteLength
     let sentBytes = 0
     let canSendMore = true
@@ -158,10 +146,10 @@ export class YamuxStream extends AbstractStream {
 
   /**
    * Send a message to the remote muxer, informing them no more data messages
-   * will be read by this end of the stream
+   * will be read by this end of the stream - this is a no-op on Yamux streams
    */
-  async sendCloseRead (): Promise<void> {
-
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    options?.signal?.throwIfAborted()
   }
 
   /**
@@ -229,7 +217,7 @@ export class YamuxStream extends AbstractStream {
     }
 
     if ((flags & Flag.FIN) === Flag.FIN) {
-      this.onRemoteClosedWrite()
+      this.onRemoteCloseWrite()
     }
 
     if ((flags & Flag.RST) === Flag.RST) {

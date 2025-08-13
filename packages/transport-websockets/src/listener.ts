@@ -214,7 +214,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         this.log.error('inbound connection failed to upgrade - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-        maConn.close()
+        maConn.closeWrite()
       })
   }
 

@@ -48,7 +48,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -80,7 +80,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -112,7 +112,7 @@ describe('stream', () => {
             await pEvent(c1, 'drain')
           }
         }
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -185,10 +185,10 @@ describe('stream', () => {
 
   it('test stream close write', async () => {
     const c1 = await client.createStream()
-    await c1.closeWrite()
+    await c1.close()
     await sleep(5)
 
-    expect(c1.readStatus).to.equal('readable')
+    expect(c1.readStatus).to.equal('closed')
     expect(c1.writeStatus).to.equal('closed')
 
     const s1 = server.streams[0]
@@ -220,7 +220,7 @@ describe('stream', () => {
             }
           }
 
-          await c1.closeWrite()
+          await c1.close()
         })(),
         drain(s1)
       ])

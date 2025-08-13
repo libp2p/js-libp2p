@@ -5,6 +5,7 @@ import { expect } from 'aegir/chai'
 import { YamuxMuxer } from '../src/muxer.ts'
 import { sleep } from './util.js'
 import type { MultiaddrConnection } from '@libp2p/interface'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('muxer', () => {
   let client: YamuxMuxer
@@ -101,13 +102,11 @@ describe('muxer', () => {
   })
 
   it('test keep alive', async () => {
-    client['config']['keepAliveInterval'] = 10
+    client['keepAlive']?.setInterval(10)
 
     await sleep(1000)
 
     expect(client['nextPingID']).to.be.gt(2)
-    await client.close()
-    await server.close()
   })
 
   it('test max inbound streams', async () => {

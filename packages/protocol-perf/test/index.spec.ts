@@ -56,21 +56,18 @@ describe('perf', () => {
 
     // simulate connection between nodes
     const ma = multiaddr('/ip4/0.0.0.0')
-    const streams = await streamPair()
+    const [outboundStream, inboundStream] = await streamPair()
 
     const aToB = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
-    aToB.newStream.resolves(streams[0])
+    aToB.newStream.resolves(outboundStream)
     localComponents.connectionManager.openConnection.withArgs(ma, {
       force: true
     }).resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>({
-      log: defaultLogger().forComponent('connection')
-    })
-    void server.handleMessage(streams[1], bToA)
+    void server.handleMessage(inboundStream)
 
     // Run Perf
     const finalResult = await last(client.measurePerformance(ma, 1024, 1024))
@@ -102,7 +99,7 @@ describe('perf', () => {
     const bToA = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
     })
-    void server.handleMessage(streams[1], bToA)
+    void server.handleMessage(streams[1])
 
     // Run Perf
     const finalResult = await last(client.measurePerformance(ma, 1024, 1024, {

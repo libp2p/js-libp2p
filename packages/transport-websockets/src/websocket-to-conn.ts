@@ -25,7 +25,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       }
 
       if (this.status === 'open') {
-        this.onRemoteClose()
+        this.onRemoteCloseWrite()
       }
     }, { once: true })
 
@@ -51,13 +51,9 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.onData(buf)
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
-    if (data instanceof Uint8Array) {
-      this.websocket.send(data)
-    } else {
-      for (const buf of data) {
-        this.websocket.send(buf)
-      }
+  sendData (data: Uint8ArrayList): SendResult {
+    for (const buf of data) {
+      this.websocket.send(buf)
     }
 
     return {

@@ -113,7 +113,11 @@ describe('socket-to-conn', () => {
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
 
-    // the connection closing was recorded
+    // the remote writable end closing was recorded
+    expect(inboundMaConn.timeline.remoteCloseWrite).to.be.a('number')
+
+    // by default our tcp connections are not allowed to be half-open so we
+    // should have closed
     expect(inboundMaConn.timeline.close).to.be.a('number')
 
     // server socket is destroyed
@@ -242,7 +246,6 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection({
       socket: serverSocket,
-      inactivityTimeout: 100,
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn:inbound')
     })
@@ -253,9 +256,12 @@ describe('socket-to-conn', () => {
       serverClosed.resolve(true)
     })
 
+    // close the client writable end
+    clientSocket.end()
+
     // send some data between the client and server
     inboundMaConn.send(Uint8Array.from([0, 1, 2, 3]))
-    await inboundMaConn.close()
+    await inboundMaConn.closeWrite()
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
@@ -278,7 +284,6 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection({
       socket: serverSocket,
-      inactivityTimeout: 100,
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
@@ -295,7 +300,10 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    await inboundMaConn.close()
+    // close the client writable end
+    clientSocket.end()
+
+    await inboundMaConn.closeWrite()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -324,7 +332,6 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection({
       socket: proxyServerSocket,
-      inactivityTimeout: 100,
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
@@ -341,10 +348,13 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
+    // close the client writable end
+    clientSocket.end()
+
     // the 2nd and 3rd call should return immediately
-    inboundMaConn.close()
-    inboundMaConn.close()
-    inboundMaConn.close()
+    inboundMaConn.closeWrite()
+    inboundMaConn.closeWrite()
+    inboundMaConn.closeWrite()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -368,7 +378,6 @@ describe('socket-to-conn', () => {
 
     const inboundMaConn = toMultiaddrConnection({
       socket: serverSocket,
-      inactivityTimeout: 100,
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
@@ -385,7 +394,10 @@ describe('socket-to-conn', () => {
     clientSocket.write('hello')
     serverSocket.write('goodbye')
 
-    await inboundMaConn.close()
+    // close the client writable end
+    clientSocket.end()
+
+    await inboundMaConn.closeWrite()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -397,7 +409,7 @@ describe('socket-to-conn', () => {
     expect(serverSocket.destroyed).to.be.true()
   })
 
-  it('should destroy a socket when incoming MultiaddrConnection is closed but remote keeps sending data', async () => {
+  it('should destroy a socket when incoming MultiaddrConnection is aborted but remote keeps sending data', async () => {
     ({ server, clientSocket, serverSocket } = await setup({
       server: {
         allowHalfOpen: true
@@ -433,13 +445,13 @@ describe('socket-to-conn', () => {
     // ensure the sockets are open fully
     await delay(1_000)
 
-    await inboundMaConn.close()
+    inboundMaConn.abort(new Error('Not interested'))
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn.timeline.abort).to.be.a('number')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()

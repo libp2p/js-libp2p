@@ -27,7 +27,7 @@ describe('Multiaddr Connection', () => {
 
     expect(maConn.timeline.close).to.be.undefined
 
-    await maConn.close()
+    await maConn.closeWrite()
 
     expect(maConn.timeline.close).to.not.be.undefined
     expect(metrics.increment.calledWith({ close: true })).to.be.true

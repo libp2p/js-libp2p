@@ -1,4 +1,4 @@
-import type { Logger, StreamCloseEvent, StreamHalfCloseEvent, StreamMessageEvent, TypedEventTarget } from './index.js'
+import type { Logger, StreamCloseEvent, StreamMessageEvent, TypedEventTarget } from './index.js'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -27,7 +27,8 @@ export interface MessageStreamTimeline {
   open: number
 
   /**
-   * A timestamp of when the message stream was closed for both reading and writing
+   * A timestamp of when the message stream was closed for both reading and
+   * writing by both ends of the stream
    */
   close?: number
 
@@ -74,7 +75,7 @@ export interface MessageStreamEvents {
   drain: Event
 
   /**
-   * The message stream closed.
+   * Both ends of the closed their writable ends.
    *
    * The `local` property of the `StreamCloseEvent` can be used to detect
    * whether the close event was initiated locally or remotely, and the `error`
@@ -88,25 +89,25 @@ export interface MessageStreamEvents {
   /**
    * The readable end of the stream closed gracefully
    */
-  closeRead: StreamHalfCloseEvent
+  closeRead: Event
 
   /**
    * The writable end of the stream closed gracefully
    */
-  closeWrite: StreamHalfCloseEvent
+  closeWrite: Event
 
   /**
    * The remote closed it's readable end of the stream
    */
-  remoteClosedRead: StreamHalfCloseEvent
+  remoteCloseRead: Event
 
   /**
    * The remote closed it's writable end of the stream
    */
-  remoteClosedWrite: StreamHalfCloseEvent
+  remoteCloseWrite: Event
 }
 
-export interface MessageStream<Events extends MessageStreamEvents = MessageStreamEvents> extends TypedEventTarget<Events> {
+export interface MessageStream<Events extends MessageStreamEvents = MessageStreamEvents> extends TypedEventTarget<Events>, AsyncIterable<Uint8Array | Uint8ArrayList> {
   /**
    * Timestamps of when stream events occurred
    */
@@ -173,15 +174,18 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
   abort (err: Error): void
 
   /**
-   * Gracefully close the stream.
+   * Gracefully close the stream for reading and writing - any further calls to
+   * `.send` will throw.
    *
-   * A StreamCloseEvent will be emitted on the channel once all outstanding data
-   * has been sent to the remote or a StreamAbortEvent event if sending the data
-   * fails.
+   * The returned promise will resolve when any outstanding data has been
+   * written out into the underlying resource.
    *
-   * This is a no-op if the stream is already closed.
-   */
+   * A 'close' event will be emitted on the stream once any buffered data has
+   * been sent and the remote end has also closed for writing.
+   *
+   * To close the stream immediately call `.abort` instead.
   close (options?: AbortOptions): Promise<void>
+   */
 
   /**
    * Sends a message to the remote informing them we will not read any more data
@@ -218,4 +222,10 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
    * that it is ok to start sending data again.
    */
   resume (): void
+
+  /**
+   * Queue the passed data to be emitted as a 'message' event either during the
+   * next tick or sooner if data is received from the underlying resource.
+   */
+  push (buf: Uint8Array | Uint8ArrayList): void
 }

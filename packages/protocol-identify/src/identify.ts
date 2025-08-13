@@ -69,7 +69,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       const message = await pb.read(options)
 
-      await stream.close(options)
+      await stream.closeWrite(options)
 
       return message
     } catch (err: any) {
@@ -184,7 +184,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       signal
     })
 
-    await stream.close({
+    await stream.closeWrite({
       signal
     })
   }

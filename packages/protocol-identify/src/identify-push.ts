@@ -109,7 +109,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
                 signal
               })
 
-              await stream.close({
+              await stream.closeWrite({
                 signal
               })
             } catch (err: any) {
@@ -149,7 +149,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }).pb(IdentifyMessage)
 
     const message = await pb.read(options)
-    await stream.close(options)
+    await stream.closeWrite(options)
 
     await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
 

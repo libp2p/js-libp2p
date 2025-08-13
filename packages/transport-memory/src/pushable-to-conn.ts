@@ -48,8 +48,9 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
     this.localPushable.end(new StreamResetError())
   }
 
-  sendData (data: Uint8Array | Uint8ArrayList): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     this.localPushable.push(data)
+
     return {
       sentBytes: data.byteLength,
       canSendMore: true

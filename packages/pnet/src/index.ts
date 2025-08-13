@@ -61,7 +61,7 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { byteStream } from '@libp2p/utils'
 import { BoxMessageStream, decodeV1PSK } from './crypto.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ComponentLogger, Logger, ConnectionProtector, MultiaddrConnection, MessageStream } from '@libp2p/interface'
+import type { ComponentLogger, ConnectionProtector, MultiaddrConnection, MessageStream, AbortOptions } from '@libp2p/interface'
 
 export { generateKey } from './key-generator.js'
 
@@ -85,7 +85,6 @@ export interface ProtectorComponents {
 
 class PreSharedKeyConnectionProtector implements ConnectionProtector {
   public tag: string
-  private readonly log: Logger
   private readonly psk: Uint8Array
   private readonly timeout: number
 
@@ -93,8 +92,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * Takes a Private Shared Key (psk) and provides a `protect` method
    * for wrapping existing connections in a private encryption stream.
    */
-  constructor (components: ProtectorComponents, init: ProtectorInit) {
-    this.log = components.logger.forComponent('libp2p:pnet')
+  constructor (init: ProtectorInit) {
     this.timeout = init.timeout ?? 1000
 
     const decodedPSK = decodeV1PSK(init.psk)
@@ -109,7 +107,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    */
-  async protect (connection: MultiaddrConnection): Promise<MessageStream> {
+  async protect (connection: MultiaddrConnection, options?: AbortOptions): Promise<MessageStream> {
     if (connection == null) {
       throw new InvalidParametersError('No connection for the handshake provided')
     }
@@ -119,20 +117,22 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     log('protecting the connection')
     const localNonce = randomBytes(NONCE_LENGTH)
 
-    const signal = AbortSignal.timeout(this.timeout)
+    if (options == null) {
+      options = {
+        signal: AbortSignal.timeout(this.timeout)
+      }
+    }
 
     const bytes = byteStream(connection)
 
     const [
-      , result
+      result
     ] = await Promise.all([
-      bytes.write(localNonce, {
-        signal
-      }),
       bytes.read({
         bytes: NONCE_LENGTH,
-        signal
-      })
+        ...options
+      }),
+      bytes.write(localNonce, options)
     ])
 
     const remoteNonce = result.subarray()
@@ -150,6 +150,6 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
   }
 }
 
-export function preSharedKey (init: ProtectorInit): (components: ProtectorComponents) => ConnectionProtector {
-  return (components) => new PreSharedKeyConnectionProtector(components, init)
+export function preSharedKey (init: ProtectorInit): () => ConnectionProtector {
+  return () => new PreSharedKeyConnectionProtector(init)
 }

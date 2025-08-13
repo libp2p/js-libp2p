@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { StreamCloseEvent, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { echoStream, streamPair, echo } from '@libp2p/utils'
@@ -176,7 +176,8 @@ describe('connection', () => {
     expect(connection.streams).to.include(stream)
 
     // Close stream
-    await stream.close()
+    await stream.closeWrite()
+    stream.dispatchEvent(new StreamCloseEvent())
 
     expect(connection.streams).to.not.include(stream)
   })

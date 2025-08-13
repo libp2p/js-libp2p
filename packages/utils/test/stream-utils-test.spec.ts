@@ -5,15 +5,15 @@ import all from 'it-all'
 import drain from 'it-drain'
 import { pEvent } from 'p-event'
 import { streamPair } from '../src/stream-pair.ts'
-import { echo, pipe, messageStreamToDuplex } from '../src/stream-utils.js'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {
     const [outgoing, incoming] = await streamPair()
 
     const input = new Array(10).fill(0).map((val, index) => {
-      return new Uint8Array([0, 1, 2, 3, index])
+      return Uint8Array.from([0, 1, 2, 3, index])
     })
 
     const it = messageStreamToDuplex(incoming)
@@ -35,7 +35,7 @@ describe('messageStreamToDuplex', () => {
     const [outgoing, incoming] = await streamPair()
 
     const input = new Array(10).fill(0).map((val, index) => {
-      return new Uint8Array([0, 1, 2, 3, index])
+      return Uint8Array.from([0, 1, 2, 3, index])
     })
 
     const it = messageStreamToDuplex(outgoing)
@@ -50,7 +50,7 @@ describe('messageStreamToDuplex', () => {
       yield * input
     }())
 
-    await pEvent(incoming, 'remoteClosedWrite')
+    await pEvent(incoming, 'remoteCloseWrite')
 
     expect(output).to.deep.equal(input)
   })
@@ -76,7 +76,7 @@ describe('messageStreamToDuplex', () => {
     outgoing.abort(err)
 
     await expect(it.sink([
-      new Uint8Array([0, 1, 2, 3])
+      Uint8Array.from([0, 1, 2, 3])
     ])).to.eventually.be.rejected()
       .with.property('message', err.message)
   })
@@ -89,7 +89,7 @@ describe('echo', () => {
     void echo(incoming)
 
     const input = new Array(10).fill(0).map((val, index) => {
-      return new Uint8Array([0, 1, 2, 3, index])
+      return Uint8Array.from([0, 1, 2, 3, index])
     })
 
     const [, output] = await Promise.all([
@@ -116,9 +116,9 @@ describe('pipe', () => {
     void echo(incoming)
 
     const input = [
-      new Uint8Array([0, 1, 2, 3]),
-      new Uint8Array([4, 5, 6, 7]),
-      new Uint8Array([8, 9, 0, 1])
+      Uint8Array.from([0, 1, 2, 3]),
+      Uint8Array.from([4, 5, 6, 7]),
+      Uint8Array.from([8, 9, 0, 1])
     ]
 
     const vals = await pipe(
@@ -135,9 +135,47 @@ describe('pipe', () => {
     )
 
     expect(vals).to.deep.equal([
-      new Uint8Array([1, 2, 3, 4]),
-      new Uint8Array([5, 6, 7, 8]),
-      new Uint8Array([9, 10, 1, 2])
+      Uint8Array.from([1, 2, 3, 4]),
+      Uint8Array.from([5, 6, 7, 8]),
+      Uint8Array.from([9, 10, 1, 2])
     ])
+  })
+})
+
+describe('byte-stream', () => {
+  it('should read bytes', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const outgoingBytes = byteStream(outgoing)
+    const incomingBytes = byteStream(incoming)
+
+    const written = new Uint8ArrayList(Uint8Array.from([0, 1, 2, 3]))
+
+    const [read] = await Promise.all([
+      incomingBytes.read(),
+      outgoingBytes.write(written)
+    ])
+
+    expect(read).to.deep.equal(written)
+  })
+
+  it('should read and write bytes', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const outgoingBytes = byteStream(outgoing)
+    const incomingBytes = byteStream(incoming)
+
+    const writtenOutgoing = new Uint8ArrayList(Uint8Array.from([0, 1, 2, 3]))
+    const writtenIncoming = new Uint8ArrayList(Uint8Array.from([4, 5, 6, 7]))
+
+    const [readIncoming, , readOutgoing] = await Promise.all([
+      incomingBytes.read(),
+      outgoingBytes.write(writtenOutgoing),
+      outgoingBytes.read(),
+      incomingBytes.write(writtenIncoming)
+    ])
+
+    expect(readIncoming).to.deep.equal(writtenOutgoing)
+    expect(readOutgoing).to.deep.equal(writtenIncoming)
   })
 })

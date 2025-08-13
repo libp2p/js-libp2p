@@ -4,6 +4,7 @@ import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 async function spawn (createMuxer: (maConn: MultiaddrConnection) => Promise<StreamMuxer>, nStreams: number, nMsg: number): Promise<void> {
   const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
@@ -53,7 +54,7 @@ async function spawn (createMuxer: (maConn: MultiaddrConnection) => Promise<Stre
     await receivedAllMessagesPromise.promise
     outboundStream.log('sent and received all messages %d/%d', receivedBytes, sentBytes)
 
-    await outboundStream.close()
+    await outboundStream.closeWrite()
 
     expect(receivedBytes).to.equal(sentBytes)
   }

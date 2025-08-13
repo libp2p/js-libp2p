@@ -240,7 +240,7 @@ export class AutoNATService implements Startable {
       await messages.write(response, {
         signal
       })
-      await stream.close({
+      await stream.closeWrite({
         signal
       })
     } catch (err: any) {
@@ -704,7 +704,7 @@ export class AutoNATService implements Startable {
       }
     } finally {
       try {
-        await stream.close({
+        await stream.closeWrite({
           signal
         })
       } catch (err: any) {

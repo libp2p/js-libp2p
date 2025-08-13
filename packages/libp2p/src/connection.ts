@@ -1,4 +1,4 @@
-import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent } from '@libp2p/interface'
+import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent, StreamMessageEvent } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
@@ -8,6 +8,7 @@ import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './reg
 import type { AbortOptions, Logger, StreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 const CLOSE_TIMEOUT = 500
 
@@ -99,12 +100,8 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
    * Create a new stream over this connection
    */
   newStream = async (protocols: string[], options: NewStreamOptions = {}): Promise<Stream> => {
-    if (this.status === 'closing') {
-      throw new ConnectionClosingError('the connection is being closed')
-    }
-
-    if (this.status === 'closed') {
-      throw new ConnectionClosedError('the connection is closed')
+    if (this.status != 'open') {
+      throw new ConnectionClosedError(`The connection is "${this.status}" and not "open"`)
     }
 
     if (!Array.isArray(protocols)) {
@@ -183,69 +180,70 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
   }
 
-  private onIncomingStream (evt: CustomEvent<Stream>): void {
+  private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
+    this.log('new incoming stream %s', evt.detail.id)
     const muxedStream = evt.detail
 
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)
 
-    void Promise.resolve()
-      .then(async () => {
-        if (muxedStream.protocol === '') {
-          const protocols = this.components.registrar.getProtocols()
+    this.log('start protocol negotiation %s', evt.detail.id)
 
-          muxedStream.log.trace('selecting protocol from protocols %s', protocols)
+    try {
+      if (muxedStream.protocol === '') {
+        const protocols = this.components.registrar.getProtocols()
 
-          muxedStream.protocol = await mss.handle(muxedStream, protocols, {
-            signal
-          })
+        muxedStream.log.trace('selecting protocol from protocols %s', protocols)
 
-          muxedStream.log('negotiated protocol %s', muxedStream.protocol)
-        } else {
-          muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
-        }
-
-        const incomingLimit = findIncomingStreamLimit(muxedStream.protocol, this.components.registrar)
-        const streamCount = countStreams(muxedStream.protocol, 'inbound', this)
-
-        if (streamCount > incomingLimit) {
-          throw new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${muxedStream.protocol}" - limit ${incomingLimit}`)
-        }
-
-        // If a protocol stream has been successfully negotiated and is to be passed to the application,
-        // the peer store should ensure that the peer is registered with that protocol
-        await this.components.peerStore.merge(this.remotePeer, {
-          protocols: [muxedStream.protocol]
-        }, {
+        muxedStream.protocol = await mss.handle(muxedStream, protocols, {
           signal
         })
 
-        this.components.metrics?.trackProtocolStream(muxedStream)
+        muxedStream.log('negotiated protocol %s', muxedStream.protocol)
+      } else {
+        muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
+      }
 
-        const { handler, options } = this.components.registrar.getHandler(muxedStream.protocol)
+      const incomingLimit = findIncomingStreamLimit(muxedStream.protocol, this.components.registrar)
+      const streamCount = countStreams(muxedStream.protocol, 'inbound', this)
 
-        if (this.limits != null && options.runOnLimitedConnection !== true) {
-          throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
-        }
+      if (streamCount > incomingLimit) {
+        throw new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${muxedStream.protocol}" - limit ${incomingLimit}`)
+      }
 
-        await handler(muxedStream, this)
+      // If a protocol stream has been successfully negotiated and is to be passed to the application,
+      // the peer store should ensure that the peer is registered with that protocol
+      await this.components.peerStore.merge(this.remotePeer, {
+        protocols: [muxedStream.protocol]
+      }, {
+        signal
       })
-      .catch(async err => {
-        muxedStream.abort(err)
-      })
+
+      this.components.metrics?.trackProtocolStream(muxedStream)
+
+      const { handler, options } = this.components.registrar.getHandler(muxedStream.protocol)
+
+      if (this.limits != null && options.runOnLimitedConnection !== true) {
+        throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
+      }
+
+      await handler(muxedStream, this)
+    } catch (err: any) {
+      muxedStream.abort(err)
+    }
   }
 
   /**
    * Close the connection
    */
   async close (options: AbortOptions = {}): Promise<void> {
-    if (this.status === 'closed' || this.status === 'closing') {
+    if (this.status !== 'open') {
       return
     }
 
     this.log('closing connection to %a', this.remoteAddr)
 
-    this.status = 'closing'
+    this.status = 'closed'
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(CLOSE_TIMEOUT)
@@ -261,7 +259,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       this.log.trace('closing underlying transport')
 
       // close the underlying transport
-      await this.maConn.close(options)
+      await this.maConn.closeWrite(options)
 
       this.log.trace('updating timeline with close time')
 
@@ -274,16 +272,14 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   }
 
   abort (err: Error): void {
-    if (this.status === 'closed') {
+    if (this.status !== 'open') {
       return
     }
 
-    this.status = 'closing'
+    this.status = 'aborted'
 
     // abort the underlying transport
     this.maConn.abort(err)
-
-    this.status = 'closed'
   }
 }
 

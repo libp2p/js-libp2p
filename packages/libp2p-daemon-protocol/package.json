@@ -1,0 +1,171 @@
+{
+  "name": "@libp2p/daemon-protocol",
+  "version": "7.0.6",
+  "description": "Communication protocol between libp2p daemons and clients",
+  "author": "",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p-daemon/tree/main/packages/libp2p-daemon-protocol#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p-daemon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p-daemon/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./stream-handler": {
+      "types": "./dist/src/stream-handler.d.ts",
+      "import": "./dist/src/stream-handler.js"
+    },
+    "./upgrader": {
+      "types": "./dist/src/upgrader.d.ts",
+      "import": "./dist/src/upgrader.js"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "generate": "protons ./src/index.proto",
+    "build": "aegir build",
+    "dep-check": "aegir dep-check",
+    "release": "aegir release"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^2.10.5",
+    "@libp2p/logger": "^5.1.21",
+    "@libp2p/utils": "^6.7.1",
+    "any-signal": "^4.1.1",
+    "it-length-prefixed-stream": "^2.0.3",
+    "protons-runtime": "^5.6.0",
+    "uint8arraylist": "^2.4.8"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.21",
+    "protons": "^7.7.0"
+  }
+}

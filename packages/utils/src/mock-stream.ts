@@ -5,6 +5,7 @@ import { AbstractStream } from './abstract-stream.ts'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueue } from './message-queue.ts'
 import type { AbortOptions, StreamDirection, TypedEventTarget } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface MockStreamMessages {
   message: MessageEvent
@@ -56,23 +57,16 @@ export class MockStream extends AbstractStream {
 
       this.onRemoteReset()
     })
-    this.remote.addEventListener('closeRead', (evt) => {
-      if (this.status !== 'open' && this.status !== 'closing') {
-        return
-      }
-
-      this.onRemoteClosedRead()
-    })
     this.remote.addEventListener('closeWrite', (evt) => {
-      if (this.status !== 'open' && this.status !== 'closing') {
+      if (this.status !== 'open') {
         return
       }
 
-      this.onRemoteClosedWrite()
+      this.onRemoteCloseWrite()
     })
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     const canSendMore = this.local.send(new StreamMessageEvent(data))
 
     return {
@@ -86,6 +80,8 @@ export class MockStream extends AbstractStream {
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    console.info('closing with', this.local.size(), 'items in queue')
+
     return raceSignal(new Promise<void>((resolve, reject) => {
       this.local.send(new Event('closeWrite'))
       this.local.onIdle().then(resolve, reject)

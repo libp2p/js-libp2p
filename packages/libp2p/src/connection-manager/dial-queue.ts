@@ -103,7 +103,7 @@ export class DialQueue {
     // a started job errored
     this.queue.addEventListener('failure', (event) => {
       if (event.detail?.error.name !== AbortError.name) {
-        this.log.error('error in dial queue - %e', event.detail)
+        this.log.error('error in dial queue - %e', event.detail.error)
       }
     })
   }

@@ -14,6 +14,7 @@ import { createDefaultUpgraderComponents } from '../upgrading/utils.js'
 import { createDefaultConnectionManagerComponents } from './utils.js'
 import type { Transport, MultiaddrConnection, StreamMuxerFactory } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
+import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('connection-gater', () => {
   let connectionManager: DefaultConnectionManager
@@ -135,9 +136,10 @@ describe('connection-gater', () => {
     })
     upgrader._encryptInbound = async (maConn) => {
       return {
-        conn: maConn,
+        connection: maConn,
         remotePeer,
-        protocol: '/test-encrypter'
+        protocol: '/test-encrypter',
+        earlyData: new Uint8ArrayList()
       }
     }
 
@@ -172,7 +174,7 @@ describe('connection-gater', () => {
     })
     upgrader._encryptOutbound = async (maConn) => {
       return {
-        conn: maConn,
+        connection: maConn,
         remotePeer,
         protocol: '/test-encrypter'
       }

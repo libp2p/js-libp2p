@@ -9,6 +9,7 @@ import pTimeout from 'p-timeout'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as mss from '../src/index.js'
+import { pEvent } from 'p-event'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {
@@ -24,10 +25,16 @@ describe('Dialer', () => {
       // Ensure stream is usable after selection - send data outgoing -> incoming
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
 
-      input.forEach(buf => {
-        outgoingStream.send(buf)
-      })
-      outgoingStream.close()
+      for (const buf of input) {
+        if (!outgoingStream.send(buf)) {
+          await pEvent(outgoingStream, 'drain')
+        }
+      }
+
+      await Promise.all([
+        outgoingStream.closeWrite(),
+        incomingStream.closeWrite()
+      ])
 
       const output = all(incomingStream)
 
@@ -38,28 +45,49 @@ describe('Dialer', () => {
     })
 
     it('should select from single protocol on incoming stream', async () => {
-      const protocol = '/echo/1.0.0'
+      const protocol = '/foo/1.0.0'
       const [outgoingStream, incomingStream] = await streamPair()
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = new Uint8ArrayList(
+        randomBytes(10),
+        randomBytes(64),
+        randomBytes(3)
+      )
+      const receivedAllData = Promise.withResolvers<void>()
 
-      void mss.select(outgoingStream, protocol, {
-        negotiateFully: false
-      })
-
-      // have to interact with the stream to start protocol negotiation
-      const outgoingSourceData = all(outgoingStream)
-
-      const selection = await mss.handle(incomingStream, protocol)
+      const [selection] = await Promise.all([
+        mss.handle(incomingStream, protocol),
+        mss.select(outgoingStream, protocol, {
+          negotiateFully: false
+        })
+      ])
       expect(selection).to.equal(protocol)
 
-      // Ensure stream is usable after selection - send data incoming -> outgoing
-      input.forEach(buf => {
-        incomingStream.send(buf)
-      })
-      incomingStream.close()
+      await outgoingStream.closeWrite()
 
-      const output = await outgoingSourceData
-      expect(new Uint8ArrayList(...output).slice()).to.eql(new Uint8ArrayList(...input).slice())
+      const output = new Uint8ArrayList()
+      outgoingStream.addEventListener('message', (evt) => {
+        output.append(evt.data)
+
+        if (output.byteLength === input.byteLength) {
+          receivedAllData.resolve()
+        }
+      })
+
+      // ensure stream is usable after selection
+      // - send data incoming -> outgoing
+      for (const buf of input) {
+        if (!incomingStream.send(buf)) {
+          await pEvent(incomingStream, 'drain')
+        }
+      }
+
+      await Promise.all([
+        pEvent(outgoingStream, 'close'),
+        incomingStream.closeWrite(),
+        receivedAllData.promise
+      ])
+
+      expect(output.subarray()).to.equalBytes(input.subarray())
     })
 
     it('should fail to select twice', async () => {
@@ -89,17 +117,22 @@ describe('Dialer', () => {
       void mss.handle(incomingStream, ['/nope/1.0.0', selectedProtocol])
 
       const selection = await mss.select(outgoingStream, protocols)
-      expect(protocols).to.have.length(2)
       expect(selection).to.equal(selectedProtocol)
 
       const output = all(incomingStream)
 
       // Ensure stream is usable after selection
       const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
-      input.forEach(buf => {
-        outgoingStream.send(buf)
-      })
-      outgoingStream.close()
+      for (const buf of input) {
+        if (!outgoingStream.send(buf)) {
+          await pEvent(outgoingStream, 'drain')
+        }
+      }
+
+      await Promise.all([
+        outgoingStream.closeWrite(),
+        incomingStream.closeWrite()
+      ])
 
       expect(new Uint8ArrayList(...(await output)).slice()).to.deep.equal(new Uint8ArrayList(...input).slice())
     })
@@ -130,9 +163,11 @@ describe('Dialer', () => {
       const output = all(incomingStream)
 
       for (const buf of input) {
-        outgoingStream.send(buf)
+        if (!outgoingStream.send(buf)) {
+          await pEvent(outgoingStream, 'drain')
+        }
       }
-      outgoingStream.close()
+      await outgoingStream.closeWrite()
 
       expect(new Uint8ArrayList(...(await output)).subarray()).to.equalBytes(new Uint8ArrayList(
         Uint8Array.from([19]),
@@ -159,9 +194,11 @@ describe('Dialer', () => {
       const output = all(incomingStream)
 
       for (const buf of input) {
-        outgoingStream.send(buf)
+        if (!outgoingStream.send(buf)) {
+          await pEvent(outgoingStream, 'drain')
+        }
       }
-      outgoingStream.close()
+      await outgoingStream.closeWrite()
 
       expect(new Uint8ArrayList(...(await output)).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })

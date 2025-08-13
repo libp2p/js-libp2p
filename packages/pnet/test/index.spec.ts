@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { defaultLogger } from '@libp2p/logger'
+
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
@@ -18,75 +18,73 @@ describe('private network', () => {
   it('should accept a valid psk buffer', () => {
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })({
-      logger: defaultLogger()
-    })
+    })()
 
     expect(protector).to.have.property('tag', '/key/swarm/psk/1.0.0/')
   })
 
   it('should protect a simple connection', async () => {
-    const [inbound, outbound] = multiaddrConnectionPair()
+    const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
+      delay: 10
+    })
 
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })({
-      logger: defaultLogger()
-    })
+    })()
 
-    const [aToB, bToA] = await Promise.all([
-      protector.protect(inbound),
-      protector.protect(outbound)
+    const [outbound, inbound] = await Promise.all([
+      protector.protect(outboundConnection),
+      protector.protect(inboundConnection)
     ])
 
     const output: Uint8Array[] = []
 
-    bToA.addEventListener('message', (evt) => {
+    inbound.addEventListener('message', (evt) => {
       output.push(evt.data.subarray())
     })
 
-    aToB.send(uint8ArrayFromString('hello world'))
-    aToB.send(uint8ArrayFromString('doo dah'))
-    await aToB.close()
+    outbound.send(uint8ArrayFromString('hello world'))
+    outbound.send(uint8ArrayFromString('doo dah'))
 
-    await raceEvent(bToA, 'close')
+    await Promise.all([
+      raceEvent(inbound, 'remoteCloseWrite'),
+      outbound.closeWrite()
+    ])
 
     expect(output).to.deep.equal([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
   it('should not be able to share correct data with different keys', async () => {
-    const [inbound, outbound] = multiaddrConnectionPair()
+    const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
+      delay: 10
+    })
     const protector = preSharedKey({
       psk: swarmKeyBuffer
-    })({
-      logger: defaultLogger()
-    })
+    })()
     const protectorB = preSharedKey({
       psk: wrongSwarmKeyBuffer
-    })({
-      logger: defaultLogger()
-    })
+    })()
 
-    const [aToB, bToA] = await Promise.all([
-      protector.protect(inbound),
-      protectorB.protect(outbound)
+    const [outbound, inbound] = await Promise.all([
+      protector.protect(outboundConnection),
+      protectorB.protect(inboundConnection)
     ])
 
-    aToB.send(uint8ArrayFromString('hello world'))
-    aToB.send(uint8ArrayFromString('doo dah'))
+    outbound.send(uint8ArrayFromString('hello world'))
+    outbound.send(uint8ArrayFromString('doo dah'))
 
     const output: Uint8Array[] = []
 
-    bToA.addEventListener('message', (evt) => {
+    inbound.addEventListener('message', (evt) => {
       output.push(evt.data.subarray())
     })
 
-    aToB.send(uint8ArrayFromString('hello world'))
-    aToB.send(uint8ArrayFromString('doo dah'))
+    outbound.send(uint8ArrayFromString('hello world'))
+    outbound.send(uint8ArrayFromString('doo dah'))
 
     await Promise.all([
-      aToB.close(),
-      bToA.close()
+      outbound.closeWrite(),
+      inbound.closeWrite()
     ])
 
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
@@ -97,9 +95,7 @@ describe('private network', () => {
       expect(() => {
         return preSharedKey({
           psk: uint8ArrayFromString('not-a-key')
-        })({
-          logger: defaultLogger()
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
 
@@ -107,9 +103,7 @@ describe('private network', () => {
       expect(() => {
         return preSharedKey({
           psk: uint8ArrayFromString('/key/swarm/psk/1.0.0/\n/base16/\ndffb7e')
-        })({
-          logger: defaultLogger()
-        })
+        })()
       }).to.throw(INVALID_PSK)
     })
   })

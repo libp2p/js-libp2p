@@ -27,17 +27,13 @@ export class Perf implements Startable, PerfInterface {
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.runOnLimitedConnection = init.runOnLimitedConnection ?? RUN_ON_LIMITED_CONNECTION
+    this.handleMessage = this.handleMessage.bind(this)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/perf'
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(this.protocol, (stream: Stream, connection: Connection) => {
-      this.handleMessage(stream, connection)
-        .catch((err) => {
-          this.log.error('error handling perf protocol message - %e', err)
-        })
-    }, {
+    await this.components.registrar.handle(this.protocol, this.handleMessage, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
       runOnLimitedConnection: this.runOnLimitedConnection
@@ -54,7 +50,7 @@ export class Perf implements Startable, PerfInterface {
     return this.started
   }
 
-  async handleMessage (stream: Stream, connection: Connection): Promise<void> {
+  async handleMessage (stream: Stream): Promise<void> {
     try {
       const writeBlockSize = this.writeBlockSize
 
@@ -91,6 +87,8 @@ export class Perf implements Startable, PerfInterface {
           await raceEvent(stream, 'drain')
         }
       }
+
+      await stream.closeWrite()
     } catch (err: any) {
       stream.abort(err)
     }
@@ -183,6 +181,8 @@ export class Perf implements Startable, PerfInterface {
 
       log('upload complete after %d ms', Date.now() - uploadStart)
 
+      await stream.closeWrite(options)
+
       // Read the received bytes
       let lastAmountOfBytesReceived = 0
       lastReportedTime = Date.now()
@@ -222,7 +222,6 @@ export class Perf implements Startable, PerfInterface {
       }
 
       log('performed %s to %p', this.protocol, connection.remotePeer)
-      await stream.close()
     } catch (err: any) {
       log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
       stream.abort(err)

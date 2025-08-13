@@ -52,20 +52,20 @@ class Plaintext implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound<Stream extends MessageStream = MultiaddrConnection>(conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
-    return this._encrypt(conn, options)
+  async secureInbound<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    return this._encrypt(connection, options)
   }
 
-  async secureOutbound<Stream extends MessageStream = MultiaddrConnection>(conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
-    return this._encrypt(conn, options)
+  async secureOutbound<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    return this._encrypt(connection, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt<Stream extends MessageStream = MultiaddrConnection>(conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
-    const log = conn.log?.newScope('plaintext') ?? this.log
-    const pb = pbStream(conn).pb(Exchange)
+  async _encrypt<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    const log = connection.log?.newScope('plaintext') ?? this.log
+    const pb = pbStream(connection).pb(Exchange)
 
     log('write pubkey exchange to peer %p', options?.remotePeer)
 
@@ -118,7 +118,7 @@ class Plaintext implements ConnectionEncrypter {
     log('plaintext key exchange completed successfully with peer %p', peerId)
 
     return {
-      conn: pb.unwrap().unwrap(),
+      connection: pb.unwrap().unwrap(),
       remotePeer: peerId
     }
   }

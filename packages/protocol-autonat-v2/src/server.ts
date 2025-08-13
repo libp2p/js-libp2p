@@ -8,7 +8,7 @@ import { randomNumber } from './utils.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
 import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { MessageStream } from 'it-protobuf-stream'
+import type { ProtobufMessageStream } from '@libp2p/utils'
 
 export interface AutoNATv2ServerInit extends AutoNATv2ServiceInit {
   dialRequestProtocol: string
@@ -146,12 +146,12 @@ export class AutoNATv2Server implements Startable {
       }
     }
 
-    await stream.close({
+    await stream.closeWrite({
       signal
     })
   }
 
-  private async preventAmplificationAttack (messages: MessageStream<Message, Stream>, index: number, options: AbortOptions): Promise<void> {
+  private async preventAmplificationAttack (messages: ProtobufMessageStream<Message, Stream>, index: number, options: AbortOptions): Promise<void> {
     const numBytes = randomNumber(30_000, 100_000)
 
     await messages.write({

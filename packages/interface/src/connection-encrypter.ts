@@ -1,3 +1,4 @@
+import type { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, StreamMuxerFactory, MultiaddrConnection, PeerId, MessageStream } from './index.js'
 
 /**
@@ -40,8 +41,19 @@ export interface ConnectionEncrypter<Extension = unknown> {
 }
 
 export interface SecuredConnection<Extension = unknown> {
-  conn: MessageStream
+  /**
+   * The decrypted data stream
+   */
+  connection: MessageStream
+
+  /**
+   * Any extension data transferred as part of the encryption handshake
+   */
   remoteExtensions?: Extension
+
+  /**
+   * The identifier of the remote peer
+   */
   remotePeer: PeerId
 
   /**

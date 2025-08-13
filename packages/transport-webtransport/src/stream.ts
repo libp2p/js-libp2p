@@ -2,6 +2,7 @@ import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions, StreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
   bidiStream: WebTransportBidirectionalStream
@@ -25,7 +26,7 @@ export class WebTransportStream extends AbstractStream {
         this.log('writer close promise rejected - %e', err)
       })
       .finally(() => {
-        this.onRemoteClosedRead()
+        this.onRemoteCloseRead()
       })
 
     this.readData()
@@ -39,7 +40,7 @@ export class WebTransportStream extends AbstractStream {
 
           if (result.done) {
             this.log('remote closed write')
-            this.onRemoteClosedWrite()
+            this.onRemoteCloseWrite()
             return
           }
 
@@ -60,11 +61,15 @@ export class WebTransportStream extends AbstractStream {
       })
   }
 
-  sendData (buf: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     // the streams spec recommends not waiting for data to be sent
     // https://streams.spec.whatwg.org/#example-manual-write-dont-await
     this.writer.ready
-      .then(() => this.writer.write(buf))
+      .then(() => {
+        for (const buf of data) {
+          this.writer.write(buf)
+        }
+      })
       .catch(err => {
         this.log.error('error sending stream data - %e', err)
       })
@@ -78,13 +83,13 @@ export class WebTransportStream extends AbstractStream {
     // the stream is closed. It can be negative if the queue is over-full
     if (this.writer.desiredSize == null) {
       return {
-        sentBytes: buf.byteLength,
+        sentBytes: data.byteLength,
         canSendMore: false
       }
     }
 
     return {
-      sentBytes: buf.byteLength,
+      sentBytes: data.byteLength,
       canSendMore: this.writer.desiredSize > 0
     }
   }

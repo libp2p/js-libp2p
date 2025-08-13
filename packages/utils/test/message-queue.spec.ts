@@ -1,6 +1,7 @@
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
 import { MessageQueue } from '../src/message-queue.ts'
+import { defaultLogger } from '@libp2p/logger'
 
 export interface Events {
   event: Event
@@ -9,7 +10,9 @@ export interface Events {
 describe('message-queue', () => {
   it('should send data', async () => {
     const event = new Event('event')
-    const queue = new MessageQueue()
+    const queue = new MessageQueue({
+      log: defaultLogger().forComponent('message-queue')
+    })
     const eventPromise = raceEvent(queue, 'event')
     queue.send(event)
 
@@ -19,7 +22,8 @@ describe('message-queue', () => {
   it('should send data after a delay', async () => {
     const event = new Event('event')
     const queue = new MessageQueue({
-      delay: 10
+      delay: 10,
+      log: defaultLogger().forComponent('message-queue')
     })
     queue.send(event)
 
@@ -40,7 +44,8 @@ describe('message-queue', () => {
 
     const queue = new MessageQueue<Events>({
       delay: 10,
-      capacity: 5
+      capacity: 5,
+      log: defaultLogger().forComponent('message-queue')
     })
 
     queue.addEventListener('event', evt => {

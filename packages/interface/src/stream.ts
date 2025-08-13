@@ -11,7 +11,7 @@ export type StreamDirection = 'inbound' | 'outbound'
  * It may be encrypted and multiplexed depending on the configuration of the
  * nodes.
  */
-export interface Stream extends MessageStream, AsyncIterable<Uint8Array | Uint8ArrayList> {
+export interface Stream extends MessageStream {
   /**
    * Unique identifier for a stream. Identifiers are not unique across muxers.
    */

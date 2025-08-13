@@ -89,8 +89,8 @@ describe('stream', () => {
     pair.initiatorStream.send(Uint8Array.from([0, 1, 2, 3, 4]))
 
     await Promise.all([
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite()
+      pair.receiverStream.close(),
+      pair.initiatorStream.close()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -135,8 +135,8 @@ describe('stream', () => {
     await Promise.all([
       raceEvent(pair.receiverStream, 'close'),
       raceEvent(pair.initiatorStream, 'close'),
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite()
+      pair.receiverStream.close(),
+      pair.initiatorStream.close()
     ])
 
     // First and last should be NEW_STREAM and CLOSE
@@ -164,8 +164,8 @@ describe('stream', () => {
     }
 
     await Promise.all([
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite(),
+      pair.receiverStream.close(),
+      pair.initiatorStream.close(),
       raceEvent(pair.initiatorStream, 'close')
     ])
 
@@ -194,8 +194,8 @@ describe('stream', () => {
     }
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'remoteClosedWrite'),
-      pair.initiatorStream.closeWrite()
+      raceEvent(pair.receiverStream, 'remoteClose'),
+      pair.initiatorStream.close()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -218,8 +218,8 @@ describe('stream', () => {
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteClosedWrite'),
-      pair.receiverStream.closeWrite()
+      raceEvent(pair.initiatorStream, 'remoteClose'),
+      pair.receiverStream.close()
     ])
 
     const msgs = await pair.receiverMessages()
@@ -297,8 +297,8 @@ describe('stream', () => {
 
     await Promise.all([
       raceEvent(pair.initiatorStream, 'close'),
-      pair.initiatorStream.closeWrite(),
-      pair.receiverStream.closeWrite()
+      pair.initiatorStream.close(),
+      pair.receiverStream.close()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
@@ -335,8 +335,8 @@ describe('stream', () => {
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteClosedWrite'),
-      pair.receiverStream.closeWrite()
+      raceEvent(pair.initiatorStream, 'remoteClose'),
+      pair.receiverStream.close()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()

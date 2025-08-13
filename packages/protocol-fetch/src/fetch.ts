@@ -88,7 +88,7 @@ export class Fetch implements Startable, FetchInterface {
 
       const response = await pb.read(FetchResponse, options)
 
-      await stream.close(options)
+      await stream.closeWrite(options)
 
       switch (response.status) {
         case (FetchResponse.StatusCode.OK): {
@@ -162,7 +162,7 @@ export class Fetch implements Startable, FetchInterface {
       signal
     })
 
-    await stream.close({
+    await stream.closeWrite({
       signal
     })
   }

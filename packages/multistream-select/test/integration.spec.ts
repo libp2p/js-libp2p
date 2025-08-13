@@ -7,6 +7,7 @@ import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
 import * as mss from '../src/index.js'
+import { pEvent } from 'p-event'
 
 describe('Dialer and Listener integration', () => {
   it('should handle and select', async () => {
@@ -27,21 +28,27 @@ describe('Dialer and Listener integration', () => {
     const output = await Promise.all([
       (async function () {
         for (const buf of input) {
-          outgoingStream.send(buf)
+          if (!outgoingStream.send(buf)) {
+            await pEvent(outgoingStream, 'drain')
+          }
         }
 
-        outgoingStream.closeWrite()
+        await outgoingStream.closeWrite()
 
         return all(outgoingStream)
       }()),
       (async function () {
         for await (const buf of incomingStream) {
-          incomingStream.send(buf)
+          console.info('got intput')
+          if (!incomingStream.send(buf)) {
+            await pEvent(incomingStream, 'drain')
+          }
         }
 
-        incomingStream.closeWrite()
+        await incomingStream.closeWrite()
       }())
     ])
+
     expect(new Uint8ArrayList(...output[0]).slice()).to.deep.equal(new Uint8ArrayList(...input).slice())
   })
 
@@ -66,7 +73,7 @@ describe('Dialer and Listener integration', () => {
           outgoingStream.send(buf)
         }
 
-        outgoingStream.closeWrite()
+        await outgoingStream.closeWrite()
 
         return all(outgoingStream)
       }()),

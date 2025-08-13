@@ -3,6 +3,7 @@ import { raceSignal } from 'race-signal'
 import type { AbstractStream } from './abstract-stream.ts'
 import type { AbortOptions, CreateStreamOptions, Logger, MultiaddrConnection, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerStatus } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { isPromise } from './is-promise.ts'
 
 export interface AbstractStreamMuxerInit {
   /**
@@ -47,7 +48,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     // close muxer when underlying maConn closes
     this.maConn.addEventListener('close', (evt) => {
       if (this.status === 'open') {
-        this.onRemoteClose()
+        this.onTransportClosed()
       }
     })
 
@@ -95,12 +96,12 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     this.status = 'closed'
   }
 
-  onRemoteClose (): void {
+  onTransportClosed (): void {
     this.status = 'closing'
 
     try {
       [...this.streams].forEach(stream => {
-        stream.onRemoteClose()
+        stream.onMuxerClosed()
       })
     } catch (err: any) {
       this.abort(err)
@@ -114,7 +115,12 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
       throw new MuxerClosedError()
     }
 
-    const stream = await this.onCreateStream(options ?? {})
+    let stream = this.onCreateStream(options ?? {})
+
+    if (isPromise(stream)) {
+      stream = await stream
+    }
+
     this.streams.push(stream)
     this.cleanUpStream(stream)
 

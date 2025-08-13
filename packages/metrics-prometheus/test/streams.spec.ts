@@ -19,7 +19,7 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     outbound.send(data)
-    await outbound.close()
+    await outbound.closeWrite()
     await raceEvent(inbound, 'close')
 
     const scrapedMetrics = await client.register.metrics()
@@ -39,7 +39,7 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
-    await inbound.close()
+    await inbound.closeWrite()
     await raceEvent(outbound, 'close')
 
     const scrapedMetrics = await client.register.metrics()
@@ -59,7 +59,7 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     outbound.send(data)
-    await outbound.close()
+    await outbound.closeWrite()
     await raceEvent(inbound, 'close')
 
     const scrapedMetrics = await client.register.metrics()
@@ -79,7 +79,7 @@ describe('streams', () => {
     // send data from remote to local
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
-    await inbound.close()
+    await inbound.closeWrite()
     await raceEvent(outbound, 'close')
 
     const scrapedMetrics = await client.register.metrics()

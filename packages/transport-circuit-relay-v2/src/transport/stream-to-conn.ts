@@ -22,7 +22,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
   private init: StreamMultiaddrConnectionInit
 
   constructor (init: StreamMultiaddrConnectionInit) {
-    let closedRead = false
     let closedWrite = false
 
     super({
@@ -48,10 +47,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
       this.onData(evt.data)
     })
 
-    this.stream.addEventListener('closeRead', () => {
-      closedRead = true
-    })
-
     this.stream.addEventListener('closeWrite', () => {
       closedWrite = true
     })
@@ -66,11 +61,10 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
 
     function close (force?: boolean): void {
       if (force === true) {
-        closedRead = true
         closedWrite = true
       }
 
-      if (closedRead && closedWrite && self.timeline.close == null) {
+      if (closedWrite && self.timeline.close == null) {
         self.close()
           .catch(err => {
             self.abort(err)
@@ -80,22 +74,16 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   async sendClose (options?: AbortOptions): Promise<void> {
-    await this.stream.close(options)
+    await this.stream.closeWrite(options)
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     this.init.onDataWrite?.(data)
 
     return {
       sentBytes: data.byteLength,
       canSendMore: this.stream.send(data)
     }
-  }
-
-  sendDataV (data: Uint8Array[]): boolean {
-    const list = Uint8ArrayList.fromUint8Arrays(data)
-    this.init.onDataWrite?.(list)
-    return this.stream.send(list)
   }
 
   sendReset (): void {

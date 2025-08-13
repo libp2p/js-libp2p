@@ -1,6 +1,7 @@
 import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface WebTransportSessionMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream'> {
   cleanUpWTSession(metric: string): void
@@ -15,7 +16,7 @@ class WebTransportSessionMultiaddrConnection extends AbstractMultiaddrConnection
     this.cleanUpWTSession = init.cleanUpWTSession
   }
 
-  sendData (data: Uint8Array): SendResult {
+  sendData (data: Uint8ArrayList): SendResult {
     return {
       sentBytes: data.byteLength,
       canSendMore: true
