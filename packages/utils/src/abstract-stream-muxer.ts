@@ -1,9 +1,9 @@
 import { MuxerClosedError, TypedEventEmitter } from '@libp2p/interface'
 import { raceSignal } from 'race-signal'
-import type { AbstractStream } from './abstract-stream.ts'
-import type { AbortOptions, CreateStreamOptions, Logger, MultiaddrConnection, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerStatus } from '@libp2p/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
 import { isPromise } from './is-promise.ts'
+import type { AbstractStream } from './abstract-stream.ts'
+import type { AbortOptions, CreateStreamOptions, Logger, MessageStream, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerStatus } from '@libp2p/interface'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface AbstractStreamMuxerInit {
   /**
@@ -24,9 +24,9 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
   public status: StreamMuxerStatus
 
   protected log: Logger
-  protected maConn: MultiaddrConnection
+  protected maConn: MessageStream
 
-  constructor (maConn: MultiaddrConnection, init: AbstractStreamMuxerInit) {
+  constructor (maConn: MessageStream, init: AbstractStreamMuxerInit) {
     super()
 
     this.maConn = maConn

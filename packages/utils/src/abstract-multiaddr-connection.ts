@@ -1,11 +1,11 @@
 import { AbstractMessageStream } from './abstract-message-stream.ts'
 import type { MessageStreamInit } from './abstract-message-stream.ts'
-import type { CounterGroup, Logger, MultiaddrConnection, StreamDirection } from '@libp2p/interface'
+import type { CounterGroup, Logger, MultiaddrConnection, MessageStreamDirection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface AbstractMultiaddrConnectionInit extends Omit<MessageStreamInit, 'log'> {
   remoteAddr: Multiaddr
-  direction: StreamDirection
+  direction: MessageStreamDirection
   log: Logger
   inactivityTimeout?: number
   localAddr?: Multiaddr
@@ -15,7 +15,6 @@ export interface AbstractMultiaddrConnectionInit extends Omit<MessageStreamInit,
 
 export abstract class AbstractMultiaddrConnection extends AbstractMessageStream implements MultiaddrConnection {
   public remoteAddr: Multiaddr
-  public direction: StreamDirection
 
   private metricPrefix: string
   private metrics?: CounterGroup
@@ -26,7 +25,6 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
     this.metricPrefix = init.metricPrefix ?? ''
     this.metrics = init.metrics
     this.remoteAddr = init.remoteAddr
-    this.direction = init.direction
 
     this.addEventListener('close', (evt) => {
       this.metrics?.increment({ [`${this.metricPrefix}end`]: true })

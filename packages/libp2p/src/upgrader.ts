@@ -9,10 +9,9 @@ import { raceSignal } from 'race-signal'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
 import { createConnection } from './connection.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions, SecureConnectionOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 interface CreateConnectionOptions {
   id: string
@@ -76,11 +75,6 @@ export interface UpgraderComponents {
 
 interface EncryptedConnection extends SecuredConnection {
   protocol: string
-  earlyData?: Uint8ArrayList
-}
-
-interface StreamMuxerNegotiationOptions extends AbortOptions {
-  earlyData?: Uint8ArrayList
 }
 
 type ConnectionDeniedType = keyof Pick<ConnectionGater, 'denyOutboundConnection' | 'denyInboundEncryptedConnection' | 'denyOutboundEncryptedConnection' | 'denyInboundUpgradedConnection' | 'denyOutboundUpgradedConnection'>
@@ -251,7 +245,6 @@ export class Upgrader implements UpgraderInterface {
     let muxerFactory: StreamMuxerFactory | undefined
     let muxer: StreamMuxer | undefined
     let cryptoProtocol
-    let earlyData: Uint8ArrayList | undefined
 
     const id = `${(parseInt(String(Math.random() * 1e9))).toString(36)}${Date.now()}`
     maConn.log = maConn.log.newScope(`${direction}:${id}`)
@@ -286,8 +279,7 @@ export class Upgrader implements UpgraderInterface {
           connection: stream,
           remotePeer,
           protocol: cryptoProtocol,
-          streamMuxer: muxerFactory,
-          earlyData
+          streamMuxer: muxerFactory
         } = await (direction === 'inbound'
           ? this._encryptInbound(stream, opts)
           : this._encryptOutbound(stream, opts)
@@ -323,7 +315,7 @@ export class Upgrader implements UpgraderInterface {
 
     // create the connection muxer if one is configured
     if (muxerFactory != null) {
-      muxer = muxerFactory.createStreamMuxer(maConn)
+      muxer = muxerFactory.createStreamMuxer(stream)
     }
 
     const conn = this._createConnection({
@@ -425,7 +417,7 @@ export class Upgrader implements UpgraderInterface {
    * Selects one of the given muxers via multistream-select. That
    * muxer will be used for all future streams on the connection.
    */
-  async _multiplexOutbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: StreamMuxerNegotiationOptions): Promise<StreamMuxerFactory> {
+  async _multiplexOutbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: AbortOptions): Promise<StreamMuxerFactory> {
     const protocols = Array.from(muxers.keys())
     maConn.log('outbound selecting muxer %s', protocols)
 
@@ -450,7 +442,7 @@ export class Upgrader implements UpgraderInterface {
    * Registers support for one of the given muxers via multistream-select. The
    * selected muxer will be used for all future streams on the connection.
    */
-  async _multiplexInbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: StreamMuxerNegotiationOptions): Promise<StreamMuxerFactory> {
+  async _multiplexInbound (maConn: MessageStream, muxers: Map<string, StreamMuxerFactory>, options: AbortOptions): Promise<StreamMuxerFactory> {
     const protocols = Array.from(muxers.keys())
     maConn.log('inbound handling muxers %s', protocols)
     try {

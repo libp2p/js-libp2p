@@ -6,7 +6,7 @@ import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueueInit } from './message-queue.ts'
-import type { AbortOptions, Logger, MultiaddrConnection, StreamDirection, TypedEventTarget } from '@libp2p/interface'
+import type { AbortOptions, Logger, MultiaddrConnection, MessageStreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -21,7 +21,7 @@ interface MockMulitaddrConnectionMessages {
 interface MockMulitaddrConnectionInit {
   id: string,
   log: Logger,
-  direction: StreamDirection
+  direction: MessageStreamDirection
   local: MessageQueue<MockMulitaddrConnectionMessages>
   remote: TypedEventTarget<MockMulitaddrConnectionMessages>
   remoteAddr?: Multiaddr

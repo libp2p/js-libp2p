@@ -1,11 +1,11 @@
 import { defaultLogger } from '@libp2p/logger'
+import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { Noise } from '../src/noise.js'
 import { createPeerIdsFromFixtures } from './fixtures/peer.js'
 import type { StreamMuxerFactory, Upgrader, SecureConnectionOptions, SecuredConnection, PeerId, PrivateKey } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
-import { multiaddrConnectionPair } from '@libp2p/utils'
 
 describe('early muxer selection', () => {
   let initUpgrader: StubbedInstance<Upgrader>

@@ -5,7 +5,6 @@ import { expect } from 'aegir/chai'
 import { YamuxMuxer } from '../src/muxer.ts'
 import { sleep } from './util.js'
 import type { MultiaddrConnection } from '@libp2p/interface'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('muxer', () => {
   let client: YamuxMuxer

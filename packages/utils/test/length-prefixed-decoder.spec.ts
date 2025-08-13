@@ -1,8 +1,8 @@
-import { encode } from "uint8-varint"
-import { LengthPrefixedDecoder } from "../src/length-prefixed-decoder.ts"
-import all from "it-all"
-import { Uint8ArrayList } from "uint8arraylist"
-import { expect } from "aegir/chai"
+import { expect } from 'aegir/chai'
+import all from 'it-all'
+import { encode } from 'uint8-varint'
+import { Uint8ArrayList } from 'uint8arraylist'
+import { LengthPrefixedDecoder } from '../src/length-prefixed-decoder.ts'
 
 describe('length-prefixed-decoder', () => {
   it('should decode', () => {

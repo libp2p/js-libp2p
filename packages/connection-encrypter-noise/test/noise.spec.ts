@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer'
 import { defaultLogger } from '@libp2p/logger'
+import { lpStream, byteStream, multiaddrConnectionPair } from '@libp2p/utils'
 import { assert, expect } from 'aegir/chai'
 import { randomBytes } from 'iso-random-stream'
-import { lpStream, byteStream } from '@libp2p/utils'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
@@ -11,7 +11,6 @@ import { pureJsCrypto } from '../src/crypto/js.js'
 import { Noise } from '../src/noise.js'
 import { createPeerIdsFromFixtures } from './fixtures/peer.js'
 import type { StreamMuxerFactory, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
-import { multiaddrConnectionPair } from '@libp2p/utils'
 
 describe('Noise', () => {
   let remotePeer: { peerId: PeerId, privateKey: PrivateKey }

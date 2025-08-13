@@ -118,6 +118,7 @@
     "p-wait-for": "^5.0.2",
     "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0",
+    "uint8arraylist": "^2.4.8",
     "wherearewe": "^2.0.1"
   },
   "browser": {

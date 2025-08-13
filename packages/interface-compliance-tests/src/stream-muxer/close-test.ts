@@ -4,7 +4,6 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import map from 'it-map'
-import toBuffer from 'it-to-buffer'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -303,7 +302,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         deferred.resolve()
       })
 
-      await stream.abort(new Error('Urk!'))
+      stream.abort(new Error('Urk!'))
       await deferred.promise
     })
 

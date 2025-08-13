@@ -3,11 +3,11 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import toBuffer from 'it-to-buffer'
+import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import { pEvent } from 'p-event'
 
 export interface ConnectionEncrypterSetupArgs {
   privateKey: PrivateKey

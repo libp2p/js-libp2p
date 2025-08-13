@@ -1,5 +1,5 @@
-import { InvalidParametersError, MuxerClosedError, TooManyOutboundProtocolStreamsError, serviceCapabilities, setMaxListeners } from '@libp2p/interface'
-import { AbstractStreamMuxer, repeatingTask, type RepeatingTask } from '@libp2p/utils'
+import { InvalidParametersError, MuxerClosedError, TooManyOutboundProtocolStreamsError, serviceCapabilities } from '@libp2p/interface'
+import { AbstractStreamMuxer, repeatingTask } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { defaultConfig, verifyConfig } from './config.js'
@@ -11,7 +11,8 @@ import { StreamState, YamuxStream } from './stream.js'
 import type { Config } from './config.js'
 import type { Frame } from './decode.js'
 import type { FrameHeader } from './frame.js'
-import type { AbortOptions, MultiaddrConnection, StreamMuxerFactory } from '@libp2p/interface'
+import type { AbortOptions, MessageStream, StreamMuxerFactory } from '@libp2p/interface'
+import type { RepeatingTask } from '@libp2p/utils'
 
 function debugFrame (header: FrameHeader): any {
   return {
@@ -46,7 +47,7 @@ export class Yamux implements StreamMuxerFactory {
     '@libp2p/stream-multiplexing'
   ]
 
-  createStreamMuxer (maConn: MultiaddrConnection): YamuxMuxer {
+  createStreamMuxer (maConn: MessageStream): YamuxMuxer {
     return new YamuxMuxer(maConn, {
       ...this._init
     })
@@ -89,7 +90,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
   private decoder: Decoder
   private keepAlive?: RepeatingTask
 
-  constructor (maConn: MultiaddrConnection, init: YamuxMuxerInit = {}) {
+  constructor (maConn: MessageStream, init: YamuxMuxerInit = {}) {
     super(maConn, {
       protocol: YAMUX_PROTOCOL_ID,
       name: 'yamux'
@@ -162,7 +163,6 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     // before we send the SYN flag, otherwise we create a race condition whereby
     // we can receive the ACK before the stream is added to the streams list
     queueMicrotask(() => {
-
       stream.sendWindowUpdate()
     })
 

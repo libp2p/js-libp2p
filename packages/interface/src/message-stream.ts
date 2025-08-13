@@ -3,6 +3,11 @@ import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
+ * The direction of the message stream
+ */
+export type MessageStreamDirection = 'inbound' | 'outbound'
+
+/**
  * The states a message stream can be in
  */
 export type MessageStreamStatus = 'open' | 'closing' | 'closed' | 'aborted' | 'reset'
@@ -117,6 +122,11 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
    * A logging implementation that can be used to log stream-specific messages
    */
   log: Logger
+
+  /**
+   * Whether this stream is inbound or outbound
+   */
+  direction: MessageStreamDirection
 
   /**
    * The current status of the message stream

@@ -4,7 +4,7 @@ import delay from 'delay'
 import map from 'it-map'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { MemoryConnection } from './connections.ts'
-import type { StreamDirection, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
+import type { MessageStreamDirection, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Pushable } from 'it-pushable'
@@ -16,7 +16,7 @@ export interface MemoryMultiaddrConnectionInit extends Omit<AbstractMultiaddrCon
   closeTimeout?: number
   listeningAddr?: Multiaddr
   connection: MemoryConnection
-  direction: StreamDirection
+  direction: MessageStreamDirection
 }
 
 class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {

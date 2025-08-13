@@ -7,8 +7,8 @@ import { Flag, FrameType, HEADER_LENGTH } from './frame.js'
 import type { Config } from './config.js'
 import type { Frame } from './decode.ts'
 import type { FrameHeader } from './frame.js'
-import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { AbortOptions } from '@libp2p/interface'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 
 export enum StreamState {
   Init,

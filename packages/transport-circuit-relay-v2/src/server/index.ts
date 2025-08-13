@@ -24,8 +24,8 @@ import type { Reservation } from '../pb/index.js'
 import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
+import type { ProtobufStream } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProtobufMessageStream, ProtobufStream } from '@libp2p/utils'
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 

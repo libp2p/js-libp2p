@@ -1,15 +1,14 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { lpStream, multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { lpStream } from '@libp2p/utils'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { noise } from '../src/index.js'
 import { Noise } from '../src/noise.js'
 import type { Metrics, Upgrader } from '@libp2p/interface'
-import { multiaddrConnectionPair } from '@libp2p/utils'
 
 function createCounterSpy (): ReturnType<typeof sinon.spy> {
   return sinon.spy({

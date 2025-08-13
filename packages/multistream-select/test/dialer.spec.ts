@@ -5,11 +5,11 @@ import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
+import { pEvent } from 'p-event'
 import pTimeout from 'p-timeout'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as mss from '../src/index.js'
-import { pEvent } from 'p-event'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {

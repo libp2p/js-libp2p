@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import { defaultLogger } from '@libp2p/logger'
+import { multiaddrConnectionPair, lpStream } from '@libp2p/utils'
 import { assert, expect } from 'aegir/chai'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { defaultCrypto } from '../src/crypto/index.js'
@@ -7,7 +8,6 @@ import { wrapCrypto } from '../src/crypto.js'
 import { performHandshakeInitiator, performHandshakeResponder } from '../src/performHandshake.js'
 import { createPeerIdsFromFixtures } from './fixtures/peer.js'
 import type { PrivateKey, PeerId } from '@libp2p/interface'
-import { multiaddrConnectionPair, lpStream } from '@libp2p/utils'
 
 describe('performHandshake', () => {
   let peerA: { peerId: PeerId, privateKey: PrivateKey }

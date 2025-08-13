@@ -63,6 +63,7 @@
     "it-all": "^3.0.8",
     "it-drain": "^3.0.9",
     "it-pipe": "^3.0.1",
+    "p-event": "^6.0.1",
     "p-timeout": "^6.1.4"
   },
   "sideEffects": false

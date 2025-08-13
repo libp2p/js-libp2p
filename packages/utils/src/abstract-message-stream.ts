@@ -1,9 +1,9 @@
 import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamCloseEvent } from '@libp2p/interface'
+import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamReadStatus, MessageStreamWriteStatus } from '@libp2p/interface'
+import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamReadStatus, MessageStreamWriteStatus, MessageStreamDirection } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
-import { pushable } from 'it-pushable'
 
 const DEFAULT_MAX_PAUSE_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
 
@@ -27,6 +27,11 @@ export interface MessageStreamInit {
    * value the stream will be reset and an 'error' event emitted.
    */
   maxPauseBufferLength?: number
+
+  /**
+   * The stream direction
+   */
+  direction?: MessageStreamDirection
 }
 
 export interface SendResult {
@@ -52,6 +57,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   public inactivityTimeout: number
   public maxPauseBufferLength: number
   public readonly log: Logger
+  public direction: MessageStreamDirection
 
   protected readonly pauseBuffer: Uint8ArrayList
   protected readonly sendQueue: Uint8ArrayList
@@ -60,6 +66,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     super()
 
     this.log = init.log
+    this.direction = init.direction ?? 'outbound'
     this.status = 'open'
     this.readStatus = 'readable'
     this.remoteReadStatus = 'readable'
@@ -259,8 +266,8 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
       this.dispatchEvent(new StreamMessageEvent(data))
     }
 
-    if (this.writeStatus === 'closing' || this.writeStatus === 'closed'
-        || this.remoteReadStatus === 'closing' || this.remoteReadStatus === 'closed'
+    if (this.writeStatus === 'closing' || this.writeStatus === 'closed' ||
+        this.remoteReadStatus === 'closing' || this.remoteReadStatus === 'closed'
     ) {
       return
     }

@@ -8,7 +8,7 @@ import { AbstractStream } from './abstract-stream.ts'
 import { Queue } from './queue/index.js'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { AbstractStreamInit } from './abstract-stream.ts'
-import type { AbortOptions, StreamDirection, CreateStreamOptions, StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
+import type { AbortOptions, MessageStreamDirection, CreateStreamOptions, StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
 import type { Pushable } from 'it-pushable'
 import type { SupportedEncodings } from 'uint8arrays/from-string'
 
@@ -246,7 +246,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     return this._createStream(`${streams++}`, 'outbound', options)
   }
 
-  _createStream (id: string, direction: StreamDirection, options: CreateStreamOptions): MockMuxedStream {
+  _createStream (id: string, direction: MessageStreamDirection, options: CreateStreamOptions): MockMuxedStream {
     this.log('createStream %s %s', direction, id)
 
     return new MockMuxedStream({

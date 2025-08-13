@@ -1,7 +1,7 @@
-import { InvalidParametersError } from "@libp2p/interface"
-import { Uint8ArrayList } from "uint8arraylist"
+import { InvalidParametersError } from '@libp2p/interface'
 import * as varint from 'uint8-varint'
-import { InvalidMessageLengthError } from "./stream-utils.ts"
+import { Uint8ArrayList } from 'uint8arraylist'
+import { InvalidMessageLengthError } from './stream-utils.ts'
 
 const DEFAULT_MAX_BUFFER_SIZE = 1024 * 1024 * 4
 const DEFAULT_MAX_DATA_LENGTH = 1024 * 1024 * 4
@@ -22,12 +22,12 @@ export interface LengthPrefixedDecoderInit {
   /**
    * Read a varint from the buffer
    */
-  lengthDecoder?: (data: Uint8ArrayList | Uint8Array) => number
+  lengthDecoder?(data: Uint8ArrayList | Uint8Array): number
 
   /**
    * Return how many bytes it takes to encode the passed value
    */
-  encodingLength?: (length: number) => number
+  encodingLength?(length: number): number
 }
 
 /**

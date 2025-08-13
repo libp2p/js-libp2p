@@ -5,15 +5,15 @@ import { InvalidParametersError, isPeerId } from '@libp2p/interface'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
-import { multiaddr, isMultiaddr } from '@multiformats/multiaddr'
 import { pbStream } from '@libp2p/utils'
+import { multiaddr, isMultiaddr } from '@multiformats/multiaddr'
 import * as Digest from 'multiformats/hashes/digest'
 import { DHT } from './dht.js'
 import { Pubsub } from './pubsub.js'
 import type { PSMessage } from '@libp2p/daemon-protocol'
 import type { Stream, PeerId, MultiaddrConnection, PeerInfo, Transport, Listener } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProtobufStream } from '@libp2p/utils'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID } from 'multiformats/cid'
 
 const log = logger('libp2p:daemon-client')
@@ -183,7 +183,7 @@ class Client implements DaemonClient {
 
     if (response.type !== Response.Type.OK) {
       const err = new OperationFailedError(response.error?.msg ?? 'Open stream failed')
-      await sh.unwrap().abort(err)
+      sh.unwrap().abort(err)
       throw err
     }
 

@@ -96,9 +96,6 @@ describe('perf', () => {
     localComponents.connectionManager.openConnection.resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>({
-      log: defaultLogger().forComponent('connection')
-    })
     void server.handleMessage(streams[1])
 
     // Run Perf

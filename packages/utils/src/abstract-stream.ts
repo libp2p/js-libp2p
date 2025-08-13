@@ -1,19 +1,12 @@
-import { pushable } from 'it-pushable'
 import { AbstractMessageStream } from './abstract-message-stream.js'
 import type { MessageStreamInit } from './abstract-message-stream.js'
-import type { StreamDirection, Stream, StreamMessageEvent, StreamCloseEvent } from '@libp2p/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Stream } from '@libp2p/interface'
 
 export interface AbstractStreamInit extends MessageStreamInit {
   /**
    * A unique identifier for this stream
    */
   id: string
-
-  /**
-   * The stream direction
-   */
-  direction: StreamDirection
 
   /**
    * The protocol name for the stream, if it is known
@@ -24,14 +17,12 @@ export interface AbstractStreamInit extends MessageStreamInit {
 export abstract class AbstractStream extends AbstractMessageStream implements Stream {
   public id: string
   public protocol: string
-  public direction: StreamDirection
 
   constructor (init: AbstractStreamInit) {
     super(init)
 
     this.id = init.id
     this.protocol = init.protocol ?? ''
-    this.direction = init.direction
   }
 
   /**
@@ -39,7 +30,7 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
    * without sending any further messages. Any unread data can still be read but
    * otherwise this stream is now closed.
    */
-  onMuxerClosed () {
+  onMuxerClosed (): void {
     if (this.remoteReadStatus !== 'closed') {
       this.remoteReadStatus = 'closed'
       this.timeline.remoteCloseRead = Date.now()

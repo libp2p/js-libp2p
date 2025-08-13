@@ -4,7 +4,7 @@ import { raceSignal } from 'race-signal'
 import { AbstractStream } from './abstract-stream.ts'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { MessageQueue } from './message-queue.ts'
-import type { AbortOptions, StreamDirection, TypedEventTarget } from '@libp2p/interface'
+import type { AbortOptions, MessageStreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface MockStreamMessages {
@@ -16,7 +16,7 @@ interface MockStreamMessages {
 
 interface MockStreamInit {
   delay?: number
-  direction: StreamDirection
+  direction: MessageStreamDirection
   local: MessageQueue<MockStreamMessages>
   remote: TypedEventTarget<MockStreamMessages>
 }
@@ -80,8 +80,6 @@ export class MockStream extends AbstractStream {
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    console.info('closing with', this.local.size(), 'items in queue')
-
     return raceSignal(new Promise<void>((resolve, reject) => {
       this.local.send(new Event('closeWrite'))
       this.local.onIdle().then(resolve, reject)

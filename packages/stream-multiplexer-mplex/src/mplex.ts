@@ -7,7 +7,7 @@ import { createStream } from './stream.js'
 import type { MplexInit } from './index.js'
 import type { Message } from './message-types.js'
 import type { MplexStream } from './stream.js'
-import type { CreateStreamOptions, MultiaddrConnection, StreamDirection } from '@libp2p/interface'
+import type { CreateStreamOptions, MultiaddrConnection, MessageStreamDirection } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const DISCONNECT_THRESHOLD = 5
@@ -74,7 +74,7 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
     return this._newStream(id, 'outbound')
   }
 
-  _newStream (id: number, direction: StreamDirection): MplexStream {
+  _newStream (id: number, direction: MessageStreamDirection): MplexStream {
     this.log('new %s stream %s', direction, id)
 
     const stream = createStream({

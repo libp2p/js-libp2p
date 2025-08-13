@@ -2,10 +2,11 @@
 
 import { createServer } from '@libp2p/daemon-server'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { echo, streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
-import { echo, pipe, streamPair } from '@libp2p/utils'
+import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -17,7 +18,6 @@ import type { Libp2pServer } from '@libp2p/daemon-server'
 import type { Connection, Libp2p, PeerStore } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { StubbedInstance } from 'sinon-ts'
-import { pEvent } from 'p-event'
 
 const defaultMultiaddr = multiaddr('/ip4/0.0.0.0/tcp/0')
 

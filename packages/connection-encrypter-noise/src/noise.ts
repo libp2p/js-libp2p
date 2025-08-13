@@ -9,13 +9,13 @@ import { wrapCrypto } from './crypto.js'
 import { uint16BEDecode, uint16BEEncode } from './encoder.js'
 import { registerMetrics } from './metrics.js'
 import { performHandshakeInitiator, performHandshakeResponder } from './performHandshake.js'
+import { toMessageStream } from './utils.ts'
 import type { ICryptoInterface } from './crypto.js'
 import type { NoiseComponents } from './index.js'
 import type { MetricsRegistry } from './metrics.js'
 import type { HandshakeResult, ICrypto, INoiseConnection, INoiseExtensions, KeyPair } from './types.js'
 import type { MultiaddrConnection, SecuredConnection, PrivateKey, PublicKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
 import type { LengthPrefixedStream } from '@libp2p/utils'
-import { toMessageStream } from './utils.ts'
 
 export interface NoiseExtensions {
   webtransportCerthashes: Uint8Array[]

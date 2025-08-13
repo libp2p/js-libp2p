@@ -7,8 +7,8 @@ import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from '.
 import { randomNumber } from './utils.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
 import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProtobufMessageStream } from '@libp2p/utils'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface AutoNATv2ServerInit extends AutoNATv2ServiceInit {
   dialRequestProtocol: string

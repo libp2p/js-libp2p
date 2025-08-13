@@ -93,7 +93,7 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       canSendMore = this.writer.write(buf)
 
       if (!canSendMore) {
-         break
+        break
       }
     }
 

@@ -8,13 +8,13 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Upgrader } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from '../upgrading/utils.js'
 import { createDefaultConnectionManagerComponents } from './utils.js'
 import type { Transport, MultiaddrConnection, StreamMuxerFactory } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('connection-gater', () => {
   let connectionManager: DefaultConnectionManager

@@ -347,9 +347,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       // wait for remote to receive local close-write
       await pRetry(() => {
-//        if (remoteStream.readStatus !== 'closed') {
-//          throw new Error('Remote stream read status ' + remoteStream.readStatus)
-//        }
+        //        if (remoteStream.readStatus !== 'closed') {
+        //          throw new Error('Remote stream read status ' + remoteStream.readStatus)
+        //        }
       }, {
         minTimeout: 100
       })
@@ -416,7 +416,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       await pRetry(() => {
         // if (remoteStream.readStatus !== 'closed') {
         //   throw new Error('Remote stream read status ' + remoteStream.readStatus)
-//        }
+        //        }
       }, {
         minTimeout: 100
       })

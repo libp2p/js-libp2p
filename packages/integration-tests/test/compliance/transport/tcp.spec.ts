@@ -1,6 +1,6 @@
+import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
-import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { TCP } from '@multiformats/multiaddr-matcher'
 import { isBrowser, isWebWorker } from 'wherearewe'
@@ -17,7 +17,7 @@ describe('tcp transport interface compliance IPv4', () => {
           tcp()
         ],
         connectionEncrypters: [
-          plaintext()
+          noise()
         ],
         streamMuxers: [
           yamux()
@@ -58,7 +58,7 @@ describe('tcp transport interface compliance IPv6', () => {
           tcp()
         ],
         connectionEncrypters: [
-          plaintext()
+          noise()
         ],
         streamMuxers: [
           yamux()

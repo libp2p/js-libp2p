@@ -4,9 +4,9 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
 import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
 import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {

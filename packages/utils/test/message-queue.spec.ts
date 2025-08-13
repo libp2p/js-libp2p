@@ -1,7 +1,7 @@
+import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
 import { MessageQueue } from '../src/message-queue.ts'
-import { defaultLogger } from '@libp2p/logger'
 
 export interface Events {
   event: Event

@@ -267,7 +267,8 @@ class EncryptedMessageStream extends AbstractMessageStream {
     super({
       log: stream.log,
       inactivityTimeout: stream.inactivityTimeout,
-      maxPauseBufferLength: stream.maxPauseBufferLength
+      maxPauseBufferLength: stream.maxPauseBufferLength,
+      direction: stream.direction
     })
 
     this.socket = socket

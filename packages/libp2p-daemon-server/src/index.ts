@@ -12,9 +12,9 @@ import { PassThroughUpgrader } from '@libp2p/daemon-protocol/upgrader'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
+import { pbStream, lpStream, pipe } from '@libp2p/utils'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import * as lp from 'it-length-prefixed'
-import { pbStream, lpStream, pipe } from '@libp2p/utils'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { DHTOperations } from './dht.js'
@@ -161,6 +161,7 @@ export class Server implements Libp2pServer {
           stream.send(encodedMessage)
 
           // And then begin piping the client and peer connection
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           await pipe(
             stream,
             conn,
@@ -171,7 +172,7 @@ export class Server implements Libp2pServer {
           log.error(err)
 
           if (conn != null) {
-            await conn.abort(err)
+            conn.abort(err)
           }
         })
         .finally(() => {
@@ -447,6 +448,7 @@ export class Server implements Libp2pServer {
             const stream = pb.unwrap()
 
             // then pipe the connection to the client
+            // eslint-disable-next-line @typescript-eslint/await-thenable
             await pipe(
               stream,
               response.connection,

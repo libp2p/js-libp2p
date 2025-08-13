@@ -5,14 +5,14 @@ import { MAX_MSG_SIZE } from './decode.js'
 import { encode } from './encode.ts'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
 import type { MplexStreamMuxer } from './mplex.ts'
-import type { Logger, StreamDirection } from '@libp2p/interface'
+import type { Logger, MessageStreamDirection } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { AbortOptions } from 'it-pushable'
 
 export interface Options {
   id: number
   log: Logger
-  direction: StreamDirection
+  direction: MessageStreamDirection
   maxMsgSize?: number
   muxer: MplexStreamMuxer
 }
@@ -20,7 +20,7 @@ export interface Options {
 interface MplexStreamInit extends AbstractStreamInit {
   maxDataSize: number
   muxer: MplexStreamMuxer
-  direction: StreamDirection
+  direction: MessageStreamDirection
 }
 
 export class MplexStream extends AbstractStream {

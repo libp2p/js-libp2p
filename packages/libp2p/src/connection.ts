@@ -1,14 +1,13 @@
-import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, ConnectionClosingError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent, StreamMessageEvent } from '@libp2p/interface'
+import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
 import { PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, StreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
+import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 const CLOSE_TIMEOUT = 500
 
@@ -23,7 +22,7 @@ export interface ConnectionInit {
   maConn: MultiaddrConnection
   stream: MessageStream
   remotePeer: PeerId
-  direction?: StreamDirection
+  direction?: MessageStreamDirection
   muxer?: StreamMuxer
   cryptoProtocol?: string
   limits?: ConnectionLimits
@@ -39,7 +38,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   public readonly id: string
   public readonly remoteAddr: Multiaddr
   public readonly remotePeer: PeerId
-  public direction: StreamDirection
+  public direction: MessageStreamDirection
   public timeline: MultiaddrConnectionTimeline
   public multiplexer?: string
   public encryption?: string
@@ -100,7 +99,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
    * Create a new stream over this connection
    */
   newStream = async (protocols: string[], options: NewStreamOptions = {}): Promise<Stream> => {
-    if (this.status != 'open') {
+    if (this.status !== 'open') {
       throw new ConnectionClosedError(`The connection is "${this.status}" and not "open"`)
     }
 

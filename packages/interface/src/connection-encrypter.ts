@@ -1,4 +1,3 @@
-import type { Uint8ArrayList } from 'uint8arraylist'
 import type { AbortOptions, StreamMuxerFactory, MultiaddrConnection, PeerId, MessageStream } from './index.js'
 
 /**

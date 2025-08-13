@@ -214,8 +214,8 @@ export class MemoryStorage {
         this.storage.delete(key)
       }, durationMs)
 
-      if (record.timeoutId.unref != null) {
-        record.timeoutId.unref()
+      if ((record.timeoutId as any).unref != null) {
+        (record.timeoutId as any).unref()
       }
     }
 

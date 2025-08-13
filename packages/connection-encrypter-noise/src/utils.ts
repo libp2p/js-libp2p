@@ -1,16 +1,17 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { StreamMessageEvent, UnexpectedPeerError } from '@libp2p/interface'
+import { AbstractMessageStream, LengthPrefixedDecoder } from '@libp2p/utils'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { NoiseHandshakePayload } from './proto/payload.js'
-import type { NoiseExtensions } from './proto/payload.js'
-import type { AbortOptions, MessageStream, PrivateKey, PublicKey } from '@libp2p/interface'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { AbstractMessageStream, LengthPrefixedDecoder, type SendResult } from '@libp2p/utils'
-import type { HandshakeResult } from './types.ts'
 import { CHACHA_TAG_LENGTH, NOISE_MSG_MAX_LENGTH_BYTES, NOISE_MSG_MAX_LENGTH_BYTES_WITHOUT_TAG } from './constants.ts'
-import type { MetricsRegistry } from './metrics.ts'
 import { uint16BEEncode, uint16BEDecode } from './encoder.ts'
+import { NoiseHandshakePayload } from './proto/payload.js'
+import type { MetricsRegistry } from './metrics.ts'
+import type { NoiseExtensions } from './proto/payload.js'
+import type { HandshakeResult } from './types.ts'
+import type { AbortOptions, MessageStream, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { SendResult } from '@libp2p/utils'
 
 export async function createHandshakePayload (
   privateKey: PrivateKey,
@@ -68,19 +69,20 @@ export function getSignaturePayload (publicKey: Uint8Array | Uint8ArrayList): Ui
 }
 
 class EncryptedMessageStream extends AbstractMessageStream {
-  private connection: MessageStream
+  private stream: MessageStream
   private handshake: HandshakeResult
   private metrics?: MetricsRegistry
   private decoder: LengthPrefixedDecoder
 
-  constructor (connection: MessageStream, handshake: HandshakeResult, metrics?: MetricsRegistry) {
+  constructor (stream: MessageStream, handshake: HandshakeResult, metrics?: MetricsRegistry) {
     super({
-      log: connection.log,
-      inactivityTimeout: connection.inactivityTimeout,
-      maxPauseBufferLength: connection.maxPauseBufferLength
+      log: stream.log,
+      inactivityTimeout: stream.inactivityTimeout,
+      maxPauseBufferLength: stream.maxPauseBufferLength,
+      direction: stream.direction
     })
 
-    this.connection = connection
+    this.stream = stream
     this.handshake = handshake
     this.metrics = metrics
     this.decoder = new LengthPrefixedDecoder({
@@ -88,7 +90,7 @@ class EncryptedMessageStream extends AbstractMessageStream {
       encodingLength: () => 2
     })
 
-    this.connection.addEventListener('message', (evt) => {
+    this.stream.addEventListener('message', (evt) => {
       try {
         for (const buf of this.decoder.decode(evt.data)) {
           const decrypted = this.decrypt(buf)
@@ -99,30 +101,38 @@ class EncryptedMessageStream extends AbstractMessageStream {
       }
     })
 
-    this.connection.addEventListener('close', (evt) => {
+    this.stream.addEventListener('close', (evt) => {
       if (evt.error != null) {
-        this.abort(evt.error)
+        if (evt.local === true) {
+          this.abort(evt.error)
+        } else {
+          this.onRemoteReset()
+        }
       } else {
-        this.onRemoteCloseWrite()
+        this.onClosed()
       }
     })
 
-    this.connection.addEventListener('drain', () => {
+    this.stream.addEventListener('drain', () => {
       this.safeDispatchEvent('drain')
     })
 
-    this.connection.addEventListener('remoteCloseWrite', () => {
+    this.stream.addEventListener('remoteCloseWrite', () => {
       this.onRemoteCloseWrite()
+    })
+
+    this.stream.addEventListener('remoteCloseRead', () => {
+      this.onRemoteCloseRead()
     })
   }
 
   encrypt (chunk: Uint8Array | Uint8ArrayList): Uint8ArrayList {
     const output = new Uint8ArrayList()
 
-    for (let i = 0; i < chunk.length; i += NOISE_MSG_MAX_LENGTH_BYTES_WITHOUT_TAG) {
+    for (let i = 0; i < chunk.byteLength; i += NOISE_MSG_MAX_LENGTH_BYTES_WITHOUT_TAG) {
       let end = i + NOISE_MSG_MAX_LENGTH_BYTES_WITHOUT_TAG
-      if (end > chunk.length) {
-        end = chunk.length
+      if (end > chunk.byteLength) {
+        end = chunk.byteLength
       }
 
       let data: Uint8Array | Uint8ArrayList
@@ -145,10 +155,10 @@ class EncryptedMessageStream extends AbstractMessageStream {
   decrypt (chunk: Uint8Array | Uint8ArrayList): Uint8ArrayList {
     const output = new Uint8ArrayList()
 
-    for (let i = 0; i < chunk.length; i += NOISE_MSG_MAX_LENGTH_BYTES) {
+    for (let i = 0; i < chunk.byteLength; i += NOISE_MSG_MAX_LENGTH_BYTES) {
       let end = i + NOISE_MSG_MAX_LENGTH_BYTES
-      if (end > chunk.length) {
-        end = chunk.length
+      if (end > chunk.byteLength) {
+        end = chunk.byteLength
       }
 
       if (end - CHACHA_TAG_LENGTH < i) {
@@ -183,29 +193,29 @@ class EncryptedMessageStream extends AbstractMessageStream {
   }
 
   sendPause (): void {
-    this.connection.pause()
+    this.stream.pause()
   }
 
   sendResume (): void {
-    this.connection.resume()
+    this.stream.resume()
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    return this.connection.closeWrite(options)
+    return this.stream.closeWrite(options)
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
-    return this.connection.closeRead(options)
+    return this.stream.closeRead(options)
   }
 
   sendReset (err: Error): void {
-    this.connection.abort(err)
+    this.stream.abort(err)
   }
 
   sendData (data: Uint8ArrayList): SendResult {
     return {
       sentBytes: data.byteLength,
-      canSendMore: this.connection.send(this.encrypt(data))
+      canSendMore: this.stream.send(this.encrypt(data))
     }
   }
 }

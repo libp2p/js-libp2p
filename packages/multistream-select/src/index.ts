@@ -23,7 +23,6 @@
 import { PROTOCOL_ID } from './constants.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { LengthPrefixedStreamOpts } from '@libp2p/utils'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export { PROTOCOL_ID }
 

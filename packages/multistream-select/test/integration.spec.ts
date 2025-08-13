@@ -5,9 +5,9 @@ import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import * as mss from '../src/index.js'
-import { pEvent } from 'p-event'
 
 describe('Dialer and Listener integration', () => {
   it('should handle and select', async () => {
@@ -39,7 +39,6 @@ describe('Dialer and Listener integration', () => {
       }()),
       (async function () {
         for await (const buf of incomingStream) {
-          console.info('got intput')
           if (!incomingStream.send(buf)) {
             await pEvent(incomingStream, 'drain')
           }

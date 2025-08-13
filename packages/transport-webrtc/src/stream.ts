@@ -6,7 +6,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { AbortOptions, StreamDirection, Logger } from '@libp2p/interface'
+import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Pushable } from 'it-pushable'
 
@@ -285,7 +285,7 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
   /**
    * The stream direction
    */
-  direction: StreamDirection
+  direction: MessageStreamDirection
 
   /**
    * The logger to create a scope from

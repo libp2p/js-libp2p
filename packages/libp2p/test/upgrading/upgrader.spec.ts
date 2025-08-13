@@ -323,7 +323,7 @@ describe('upgrader', () => {
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
     const [outbound, inbound] = multiaddrConnectionPair()
-     await Promise.all([
+    await Promise.all([
       upgrader.upgradeInbound(inbound, {
         signal: AbortSignal.timeout(5_000)
       }),
