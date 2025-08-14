@@ -1,6 +1,37 @@
 import type { Stream, TypedEventTarget, MessageStream } from './index.js'
 import type { AbortOptions } from '@multiformats/multiaddr'
 
+/**
+ * User-facing message stream muxer options
+ */
+export interface StreamMuxerOptions {
+  /**
+   * Configuration options for each outgoing/incoming stream
+   */
+  streamOptions?: StreamOptions
+}
+
+/**
+ * User-facing message stream options
+ */
+export interface StreamOptions {
+  /**
+   * If no data is sent or received in this number of ms the stream will be
+   * reset and an 'error' event emitted.
+   *
+   * @default 120_000
+   */
+  inactivityTimeout?: number
+
+  /**
+   * The maximum number of bytes to store when paused or before a 'message'
+   * event handler is added.
+   *
+   * If the internal buffer overflows this value the stream will be reset.
+   */
+  maxPauseBufferLength?: number
+}
+
 export interface StreamMuxerFactory<Muxer extends StreamMuxer = StreamMuxer> {
   /**
    * The protocol used to select this muxer during connection opening
@@ -20,7 +51,7 @@ export interface StreamMuxerEvents<MuxedStream extends Stream = Stream> {
   stream: CustomEvent<MuxedStream>
 }
 
-export interface CreateStreamOptions extends AbortOptions {
+export interface CreateStreamOptions extends AbortOptions, StreamOptions {
   /**
    * If a single protocol was requested and the muxer has support for this,
    * pre-negotiate the protocol using this value, otherwise multistream-select

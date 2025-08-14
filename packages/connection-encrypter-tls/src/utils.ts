@@ -192,10 +192,7 @@ function formatAsPem (str: string): string {
 }
 
 export function toNodeDuplex (stream: MessageStream): Duplex {
-  let sent = 0
-
   function sendAndCallback (chunk: Uint8Array | Uint8ArrayList, callback: (err?: Error | null) => void): void {
-    sent += chunk.byteLength
     const sendMore = stream.send(chunk)
 
     if (sendMore) {
@@ -217,7 +214,6 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
       socket.resume()
     }
     const onClose = (evt: StreamCloseEvent): void => {
-      console.info('wat sent', sent)
       cleanUp()
 
       if (evt.error != null) {
@@ -306,6 +302,14 @@ class EncryptedMessageStream extends AbstractMessageStream {
     })
     this.socket.on('drain', () => {
       this.safeDispatchEvent('drain')
+    })
+
+    stream.addEventListener('remoteCloseWrite', () => {
+      this.onRemoteCloseWrite()
+    })
+
+    stream.addEventListener('remoteCloseRead', () => {
+      this.onRemoteCloseRead()
     })
   }
 

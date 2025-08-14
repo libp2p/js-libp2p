@@ -7,9 +7,9 @@ import * as x509 from '@peculiar/x509'
 import { expect } from 'aegir/chai'
 import { raceEvent } from 'race-event'
 import { stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
 import * as testVectors from './fixtures/test-vectors.js'
-import { Uint8ArrayList } from 'uint8arraylist'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)

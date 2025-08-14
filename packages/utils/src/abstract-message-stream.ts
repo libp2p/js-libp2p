@@ -2,31 +2,16 @@ import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEve
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamReadStatus, MessageStreamWriteStatus, MessageStreamDirection } from '@libp2p/interface'
+import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamReadStatus, MessageStreamWriteStatus, MessageStreamDirection, EventHandler, StreamOptions } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 
 const DEFAULT_MAX_PAUSE_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
 
-export interface MessageStreamInit {
+export interface MessageStreamInit extends StreamOptions {
   /**
    * A Logger implementation used to log stream-specific information
    */
   log: Logger
-
-  /**
-   * If no data is sent or received in this number of ms the stream will be
-   * reset and an 'error' event emitted.
-   *
-   * @default 120_000
-   */
-  inactivityTimeout?: number
-
-  /**
-   * The maximum number of bytes to store when paused. If receipt of more bytes
-   * from the remote end of the stream causes the buffer size to exceed this
-   * value the stream will be reset and an 'error' event emitted.
-   */
-  maxPauseBufferLength?: number
 
   /**
    * The stream direction
@@ -94,10 +79,18 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   }
 
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
+    if (this.readStatus === 'closed' || this.readStatus === 'closing') {
+      return
+    }
+
     const output = pushable<Uint8Array | Uint8ArrayList>()
 
     const onMessage = (evt: StreamMessageEvent): void => {
       output.push(evt.data)
+
+      if (this.remoteWriteStatus === 'closed' && this.pauseBuffer.byteLength === 0) {
+        output.end()
+      }
     }
     this.addEventListener('message', onMessage)
 
@@ -282,6 +275,12 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
 
     this.pauseBuffer.append(data)
 
+    // abort if the pause buffer is too large
+    if (this.pauseBuffer.byteLength > this.maxPauseBufferLength) {
+      this.abort(new StreamBufferError(`Pause buffer length of ${this.pauseBuffer.byteLength} exceeded limit of ${this.maxPauseBufferLength}`))
+      return
+    }
+
     setTimeout(() => {
       this.dispatchPauseBuffer()
     }, 0)
@@ -305,17 +304,32 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     }
 
     if (this.readStatus === 'readable') {
-      this.dispatchEvent(new StreamMessageEvent(data))
+      // only dispatch the event if we have listeners registered, otherwise data
+      // can be lost
+      if (this.listenerCount('message') > 0) {
+        this.dispatchEvent(new StreamMessageEvent(data))
+      } else {
+        // no listeners, queue the message for later
+        this.push(data)
+      }
     } else if (this.readStatus === 'paused') {
       // queue the message
-      this.pauseBuffer.append(data)
-
-      // abort if the pause buffer is too large
-      if (this.pauseBuffer.byteLength > this.maxPauseBufferLength) {
-        this.abort(new StreamBufferError(`Pause buffer length of ${this.pauseBuffer.byteLength} exceeded limit of ${this.maxPauseBufferLength}`))
-      }
+      this.push(data)
     } else {
       this.abort(new StreamStateError(`Stream readable was "${this.readStatus}" and not "reaable" or "paused"`))
+    }
+  }
+
+  addEventListener<K extends keyof Events>(type: K, listener: EventHandler<Events[K]> | null, options?: boolean | AddEventListenerOptions): void
+  addEventListener (type: string, listener: EventHandler<Event>, options?: boolean | AddEventListenerOptions): void
+  addEventListener (...args: any[]): void {
+    // @ts-expect-error cannot ensure args has enough members
+    super.addEventListener.apply(this, args)
+
+    // if a 'message' listener is being added and we have queued data, dispatch
+    // the data
+    if (args[0] === 'message' && this.pauseBuffer.byteLength > 0) {
+      this.dispatchPauseBuffer()
     }
   }
 
@@ -449,7 +463,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   }
 
   private dispatchPauseBuffer (): void {
-    if (this.pauseBuffer.byteLength === 0) {
+    if (this.pauseBuffer.byteLength === 0 || this.listenerCount('message') === 0) {
       return
     }
 

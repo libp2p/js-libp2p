@@ -1,9 +1,11 @@
 /* eslint-env mocha */
 
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import { pEvent } from 'p-event'
+import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
 import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
@@ -64,7 +66,7 @@ describe('messageStreamToDuplex', () => {
     outgoing.abort(err)
 
     async function * source (): AsyncGenerator<Uint8Array> {
-        yield Uint8Array.from([0, 1, 2, 3])
+      yield Uint8Array.from([0, 1, 2, 3])
     }
 
     const [sinkError, sourceError] = await Promise.all([
@@ -172,5 +174,72 @@ describe('byte-stream', () => {
 
     expect(readIncoming).to.deep.equal(writtenOutgoing)
     expect(readOutgoing).to.deep.equal(writtenIncoming)
+  })
+})
+
+describe('stream-pair', () => {
+  it('should be consumable as async iterable', async () => {
+    const [outgoing, incoming] = await streamPair()
+    const data = Uint8Array.from([0, 1, 2, 3, 4])
+
+    const [received] = await Promise.all([
+      all(incoming),
+      Promise.resolve().then(async () => {
+        outgoing.send(data)
+        await outgoing.closeWrite()
+      })
+    ])
+
+    expect(received).to.have.lengthOf(1)
+    expect(received[0].subarray()).to.equalBytes(data)
+  })
+
+  it('should be consumable as async iterable after closing for reading', async () => {
+    const [, incoming] = await streamPair()
+
+    await incoming.closeRead()
+    await expect(all(incoming)).to.eventually.be.empty()
+  })
+
+  it('should wait for message listeners', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    expect(incoming.listenerCount('message')).to.equal(0, 'had listeners')
+    const dispatchSpy = Sinon.spy(incoming.dispatchEvent)
+    const safeDispatchSpy = Sinon.spy(incoming.safeDispatchEvent)
+
+    const data = Uint8Array.from([0, 1, 2, 3, 4])
+
+    outgoing.send(data)
+    await outgoing.closeWrite()
+
+    await delay(100)
+
+    expect(dispatchSpy.called).to.be.false()
+    expect(safeDispatchSpy.called).to.be.false()
+
+    const bufs = await all(incoming)
+    expect(bufs).to.have.lengthOf(1)
+    expect(bufs[0].subarray()).to.equalBytes(data)
+  })
+
+  it('should reset if no listeners are added and the read buffer fills up', async () => {
+    const [outgoing, incoming] = await streamPair({
+      inbound: {
+        maxPauseBufferLength: 1
+      }
+    })
+
+    expect(incoming.listenerCount('message')).to.equal(0, 'had listeners')
+
+    const data = Uint8Array.from([0, 1, 2, 3, 4])
+
+    outgoing.send(data)
+    await outgoing.closeWrite()
+
+    await delay(100)
+
+    expect(incoming.status).to.equal('aborted')
+    expect(outgoing.status).to.equal('reset')
   })
 })

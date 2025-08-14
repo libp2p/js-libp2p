@@ -109,6 +109,7 @@ export function createStream (options: Options): MplexStream {
   const { id, muxer, direction, maxMsgSize = MAX_MSG_SIZE } = options
 
   return new MplexStream({
+    ...options,
     id: direction === 'outbound' ? (`i${id}`) : `r${id}`,
     direction,
     maxDataSize: maxMsgSize,

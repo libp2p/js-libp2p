@@ -36,7 +36,8 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer<WebTransportStream> {
               value,
               String(this.streamIDCounter++),
               'inbound',
-              this.log
+              this.log,
+              this.streamOptions
             )
           )
         }
@@ -50,7 +51,13 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer<WebTransportStream> {
     const wtStream = await this.webTransport.createBidirectionalStream()
     options?.signal?.throwIfAborted()
 
-    return webtransportBiDiStreamToStream(wtStream, String(this.streamIDCounter++), 'outbound', this.log)
+    return webtransportBiDiStreamToStream(
+      wtStream,
+      String(this.streamIDCounter++),
+      'outbound',
+      this.log,
+      options
+    )
   }
 
   onData (): void {

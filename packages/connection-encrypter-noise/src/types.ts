@@ -46,7 +46,8 @@ export interface HandshakeResult {
 export interface ICipherState {
   /**
    * A cipher key of 32 bytes (which may be empty). Empty is a special value
-   * which indicates k has not yet been initialized. */
+   * which indicates k has not yet been initialized.
+   */
   k?: Uint8Array
   /**
    * An 8-byte (64-bit) unsigned integer nonce.

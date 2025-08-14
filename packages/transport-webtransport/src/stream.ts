@@ -1,6 +1,6 @@
 import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
-import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
+import type { AbortOptions, MessageStreamDirection, Logger, StreamOptions } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -122,8 +122,9 @@ export class WebTransportStream extends AbstractStream {
   }
 }
 
-export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: MessageStreamDirection, log: Logger): WebTransportStream {
+export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: MessageStreamDirection, log: Logger, options?: StreamOptions): WebTransportStream {
   return new WebTransportStream({
+    ...options,
     bidiStream,
     id: streamId,
     direction,

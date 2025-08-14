@@ -78,6 +78,7 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
     this.log('new %s stream %s', direction, id)
 
     const stream = createStream({
+      ...this.streamOptions,
       id,
       direction,
       maxMsgSize: this.maxMessageSize,

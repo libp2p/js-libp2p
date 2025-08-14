@@ -2,12 +2,12 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import all from 'it-all'
 import toBuffer from 'it-to-buffer'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface ConnectionEncrypterSetupArgs {
   privateKey: PrivateKey
@@ -62,26 +62,25 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       // Echo server
       echo(inboundResult.connection).catch(() => {})
 
-      // Send some data and collect the result
-      const output: Array<Uint8Array | Uint8ArrayList> = []
-
-      outboundResult.connection.addEventListener('message', (evt) => {
-        output.push(evt.data)
-      })
-
       const input: Uint8Array[] = []
 
       for (let i = 0; i < 10_000; i++) {
-        const buf = uint8ArrayFromString(`data to encrypt, chunk ${i}`)
-
-        if (!outboundResult.connection.send(buf)) {
-          await pEvent(outboundResult.connection, 'drain')
-        }
-
-        input.push(buf)
+        input.push(uint8ArrayFromString(`data to encrypt, chunk ${i}`))
       }
 
-      await outboundResult.connection.closeWrite()
+      // Send some data and collect the result
+      const [output] = await Promise.all([
+        all(outboundResult.connection),
+        Promise.resolve().then(async () => {
+          for (const buf of input) {
+            if (!outboundResult.connection.send(buf)) {
+              await pEvent(outboundResult.connection, 'drain')
+            }
+          }
+
+          await outboundResult.connection.closeWrite()
+        })
+      ])
 
       expect(toBuffer(output.map(b => b.subarray()))).to.equalBytes(toBuffer(input))
     })

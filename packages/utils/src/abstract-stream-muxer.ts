@@ -2,10 +2,10 @@ import { MuxerClosedError, TypedEventEmitter } from '@libp2p/interface'
 import { raceSignal } from 'race-signal'
 import { isPromise } from './is-promise.ts'
 import type { AbstractStream } from './abstract-stream.ts'
-import type { AbortOptions, CreateStreamOptions, Logger, MessageStream, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerStatus } from '@libp2p/interface'
+import type { AbortOptions, CreateStreamOptions, Logger, MessageStream, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerOptions, StreamMuxerStatus, StreamOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export interface AbstractStreamMuxerInit {
+export interface AbstractStreamMuxerInit extends StreamMuxerOptions {
   /**
    * The protocol name for the muxer
    */
@@ -25,6 +25,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
 
   protected log: Logger
   protected maConn: MessageStream
+  protected streamOptions?: StreamOptions
 
   constructor (maConn: MessageStream, init: AbstractStreamMuxerInit) {
     super()
@@ -34,6 +35,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     this.streams = []
     this.status = 'open'
     this.log = maConn.log.newScope(init.name)
+    this.streamOptions = init.streamOptions
 
     // read/write all data from/to underlying maConn
     this.maConn.addEventListener('message', (evt) => {
@@ -115,7 +117,10 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
       throw new MuxerClosedError()
     }
 
-    let stream = this.onCreateStream(options ?? {})
+    let stream = this.onCreateStream({
+      ...this.streamOptions,
+      ...options
+    })
 
     if (isPromise(stream)) {
       stream = await stream

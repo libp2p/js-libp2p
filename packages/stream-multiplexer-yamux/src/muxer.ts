@@ -283,6 +283,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     }
 
     const stream = new YamuxStream({
+      ...this.streamOptions,
       id: `${streamId}`,
       streamId,
       state,

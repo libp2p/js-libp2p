@@ -103,10 +103,11 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       }
 
       const stream = createStream({
+        ...this.streamOptions,
+        ...this.dataChannelOptions,
         channel,
         direction: 'inbound',
-        log: this.log,
-        ...this.dataChannelOptions
+        log: this.log
       })
 
       this.onRemoteStream(stream)
@@ -128,10 +129,11 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     }
 
     const stream = createStream({
+      ...options,
+      ...this.dataChannelOptions,
       channel,
       direction: 'outbound',
-      log: this.log,
-      ...this.dataChannelOptions
+      log: this.log
     })
     this.streams.push(stream)
     this.metrics?.increment({ outgoing_stream: true })
