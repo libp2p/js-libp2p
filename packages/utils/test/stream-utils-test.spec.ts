@@ -55,7 +55,7 @@ describe('messageStreamToDuplex', () => {
     expect(output).to.deep.equal(input)
   })
 
-  it('should throw from source if stream is reset', async () => {
+  it('should throw from sink and source if stream is reset', async () => {
     const [outgoing] = await streamPair()
 
     const err = new Error('Urk!')
@@ -63,22 +63,17 @@ describe('messageStreamToDuplex', () => {
 
     outgoing.abort(err)
 
-    await expect(drain(it.source)).to.eventually.be.rejected()
-      .with.property('message', err.message)
-  })
+    async function * source (): AsyncGenerator<Uint8Array> {
+        yield Uint8Array.from([0, 1, 2, 3])
+    }
 
-  it('should throw from sink if stream is reset', async () => {
-    const [outgoing] = await streamPair()
+    const [sinkError, sourceError] = await Promise.all([
+      it.sink(source()).catch(err => err),
+      drain(it.source).catch(err => err)
+    ])
 
-    const err = new Error('Urk!')
-    const it = messageStreamToDuplex(outgoing)
-
-    outgoing.abort(err)
-
-    await expect(it.sink([
-      Uint8Array.from([0, 1, 2, 3])
-    ])).to.eventually.be.rejected()
-      .with.property('message', err.message)
+    expect(sinkError).to.equal(err)
+    expect(sourceError).to.equal(err)
   })
 })
 
