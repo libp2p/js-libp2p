@@ -121,7 +121,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   private async processRecords (options?: AbortOptions): Promise<void> {
     try {
       this.safeDispatchEvent('reprovide:start')
-      this.log('Starting reprovide/cleanup')
+      this.log('starting reprovide/cleanup')
       // Get all provider entries from the datastore
       for await (const entry of this.datastore.query({
         prefix: this.datastorePrefix
