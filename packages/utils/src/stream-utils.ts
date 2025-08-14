@@ -466,7 +466,7 @@ function isMessageStream (obj?: any): obj is MessageStream {
   return obj?.addEventListener != null
 }
 
-export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>> {
+export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>, Promise<void>> {
   const source = pushable<Uint8ArrayList | Uint8Array>()
   const onError = Promise.withResolvers<IteratorResult<Uint8ArrayList | Uint8Array>>()
 
