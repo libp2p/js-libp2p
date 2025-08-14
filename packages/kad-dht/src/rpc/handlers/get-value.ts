@@ -2,7 +2,7 @@ import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import {
-  MAX_RECORD_AGE
+  PROVIDERS_VALIDITY
 } from '../../constants.js'
 import { MessageType } from '../../message/dht.js'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
@@ -107,7 +107,7 @@ export class GetValueHandler implements DHTMessageHandler {
    * Try to fetch a given record by from the local datastore.
    * Returns the record if it is still valid, meaning
    * - it was either authored by this node, or
-   * - it was received less than `MAX_RECORD_AGE` ago.
+   * - it was received less than `PROVIDERS_VALIDITY` ago.
    */
   async _checkLocalDatastore (key: Uint8Array): Promise<Libp2pRecord | undefined> {
     this.log('checkLocalDatastore looking for %b', key)
@@ -129,7 +129,7 @@ export class GetValueHandler implements DHTMessageHandler {
 
     // Check validity: compare time received with max record age
     if (record.timeReceived == null ||
-      Date.now() - record.timeReceived.getTime() > MAX_RECORD_AGE) {
+      Date.now() - record.timeReceived.getTime() > PROVIDERS_VALIDITY) {
       // If record is bad delete it and return
       await this.datastore.delete(dsKey)
       return undefined
