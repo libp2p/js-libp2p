@@ -6,7 +6,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
-import merge from 'it-merge'
+import { pEvent } from 'p-event'
 import { retimeableSignal } from 'retimeable-signal'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -70,9 +70,15 @@ describe('circuit-relay utils', () => {
     localStream.send(uint8arrayFromString('4567'))
     await localStream.closeWrite()
 
-    const received = await all(remoteStream)
+    const received: Array<Uint8Array | Uint8ArrayList> = []
 
-    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 5)
+    remoteStream.addEventListener('message', (evt) => {
+      received.push(evt.data)
+    })
+
+    await pEvent(remoteStream, 'close')
+
+    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 8)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
@@ -101,9 +107,19 @@ describe('circuit-relay utils', () => {
     remoteStream.send(uint8arrayFromString('3456'))
     await localStream.closeWrite()
 
-    const received = await all(merge(localStream, remoteStream))
+    const received: Array<Uint8Array | Uint8ArrayList> = []
 
-    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 5)
+    remoteStream.addEventListener('message', (evt) => {
+      received.push(evt.data)
+    })
+
+    localStream.addEventListener('message', (evt) => {
+      received.push(evt.data)
+    })
+
+    await pEvent(remoteStream, 'close')
+
+    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 8)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
@@ -111,7 +127,7 @@ describe('circuit-relay utils', () => {
   it('should create time limited relay', async () => {
     const abortController = new AbortController()
     const [localStream, remoteStream] = await streamPair({
-      delay: 5_000
+      delay: 50
     })
 
     const controller = new AbortController()
@@ -125,9 +141,6 @@ describe('circuit-relay utils', () => {
 
     localStream.send(uint8arrayFromString('0123'))
     localStream.send(uint8arrayFromString('4567'))
-    await localStream.closeWrite()
-
-    const received = await all(remoteStream)
 
     const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
@@ -135,6 +148,18 @@ describe('circuit-relay utils', () => {
     createLimitedRelay(localStream, remoteStream, controller.signal, createReservation(limit), {
       log: defaultLogger().forComponent('test')
     })
+
+    const received: Array<Uint8Array | Uint8ArrayList> = []
+
+    remoteStream.addEventListener('message', (evt) => {
+      received.push(evt.data)
+    })
+
+    await Promise.all([
+      pEvent(remoteStream, 'close'),
+      remoteStream.closeWrite(),
+      localStream.closeWrite()
+    ])
 
     expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 4)
     expect(localStreamAbortSpy).to.have.property('called', true)

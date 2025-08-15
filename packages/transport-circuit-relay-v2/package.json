@@ -69,13 +69,11 @@
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
     "it-all": "^3.0.9",
-    "it-merge": "^3.0.12",
-    "it-pair": "^2.0.6",
     "it-protobuf-stream": "^2.0.2",
-    "it-stream-types": "^2.0.2",
+    "p-event": "^6.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.1",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

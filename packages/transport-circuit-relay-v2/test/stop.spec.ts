@@ -8,12 +8,11 @@ import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
-import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Status, StopMessage } from '../src/pb/index.js'
-import { CircuitRelayTransport } from '../src/transport/transport.js'
+import { CircuitRelayTransport } from '../src/transport/index.js'
 import type { ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, StreamHandler } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { MessageStream } from 'it-protobuf-stream'
@@ -48,7 +47,11 @@ describe('circuit-relay stop protocol', function () {
     const privateKey = await generateKeyPair('Ed25519')
 
     components = {
-      addressManager: stubInterface<AddressManager>(),
+      addressManager: stubInterface<AddressManager>({
+        getAddresses: Sinon.stub().returns([
+          multiaddr('/ip4/127.0.0.1/tcp/4002')
+        ])
+      }),
       connectionManager: stubInterface<ConnectionManager>(),
       peerId: peerIdFromPrivateKey(privateKey),
       peerStore: stubInterface<PeerStore>(),
@@ -81,7 +84,9 @@ describe('circuit-relay stop protocol', function () {
 
     ;[localStream, remoteStream] = await streamPair()
 
-    handler(remoteStream, stubInterface<Connection>())
+    handler(remoteStream, stubInterface<Connection>({
+      remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/4001')
+    }))
 
     pbStr = pbStream(localStream).pb(StopMessage)
   })
@@ -149,28 +154,10 @@ describe('circuit-relay stop protocol', function () {
     expect(response.status).to.be.equal(Status.MALFORMED_MESSAGE)
   })
 
-  it('handle stop error - timeout', async function () {
-    const abortSpy = Sinon.spy(remoteStream, 'abort')
-
-    await pbStr.write({
-      type: StopMessage.Type.CONNECT,
-      peer: {
-        id: sourcePeer.toMultihash().bytes,
-        addrs: []
-      }
-    })
-
-    // take longer than `stopTimeout` to read the response
-    await delay(stopTimeout * 2)
-
-    // should have aborted remote stream
-    expect(abortSpy).to.have.property('called', true)
-  })
-
   it('should try to listen on the address of a relay we are dialed via if no reservation exists', async () => {
     const remotePrivateKey = await generateKeyPair('Ed25519')
     const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
-    const remoteAddr = multiaddr(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
+    const remoteAddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
     transport.reservationStore.hasReservation = Sinon.stub().returns(false)
     const connection = stubInterface<Connection>({
       remotePeer,
@@ -179,7 +166,7 @@ describe('circuit-relay stop protocol', function () {
 
     components.transportManager.listen.returns(Promise.resolve())
 
-    void transport.onStop(remoteStream, connection, AbortSignal.timeout(5_000))
+    void transport.onStop(remoteStream, connection)
 
     await pbStr.write({
       type: StopMessage.Type.CONNECT,

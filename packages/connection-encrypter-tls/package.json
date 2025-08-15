@@ -59,7 +59,7 @@
     "aegir": "^47.0.14",
     "protons": "^7.6.1",
     "race-event": "^1.6.1",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

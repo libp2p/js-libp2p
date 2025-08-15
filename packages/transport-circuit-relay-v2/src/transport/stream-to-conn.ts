@@ -51,6 +51,14 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
       closedWrite = true
     })
 
+    this.stream.addEventListener('remoteCloseWrite', () => {
+      this.onRemoteCloseWrite()
+    })
+
+    this.stream.addEventListener('remoteCloseRead', () => {
+      this.onRemoteCloseRead()
+    })
+
     // piggyback on data send to count outgoing bytes
     const send = this.stream.send.bind(this.stream)
     this.stream.send = (buf: Uint8Array): boolean => {
@@ -108,8 +116,7 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
 }
 
 /**
- * Convert a duplex iterable into a MultiaddrConnection.
- * https://github.com/libp2p/interface-transport#multiaddrconnection
+ * Convert a Stream into a MultiaddrConnection.
  */
 export function streamToMaConnection (init: StreamMultiaddrConnectionInit): MultiaddrConnection {
   return new StreamMultiaddrConnection(init)

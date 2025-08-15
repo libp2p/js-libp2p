@@ -9,8 +9,9 @@ import { DEFAULT_MAX_RESERVATION_QUEUE_LENGTH, DEFAULT_RESERVATION_COMPLETION_TI
 import { DoubleRelayError, HadEnoughRelaysError, RelayQueueFullError } from '../errors.js'
 import { HopMessage, Status } from '../pb/index.js'
 import { getExpirationMilliseconds } from '../utils.js'
+import type { TransportReservationStoreComponents, TransportReservationStoreInit } from '../index.ts'
 import type { Reservation } from '../pb/index.js'
-import type { AbortOptions, Libp2pEvents, ComponentLogger, Logger, PeerId, PeerStore, Startable, Metrics, Peer, Connection } from '@libp2p/interface'
+import type { AbortOptions, Libp2pEvents, Logger, PeerId, PeerStore, Startable, Peer, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils'
 import type { TypedEventTarget } from 'main-event'
@@ -23,43 +24,6 @@ const REFRESH_TIMEOUT = (60 * 1000) * 5
 
 // minimum duration before which a reservation must not be refreshed
 const REFRESH_TIMEOUT_MIN = 30 * 1000
-
-export interface ReservationStoreComponents {
-  peerId: PeerId
-  connectionManager: ConnectionManager
-  peerStore: PeerStore
-  events: TypedEventTarget<Libp2pEvents>
-  logger: ComponentLogger
-  metrics?: Metrics
-}
-
-export interface ReservationStoreInit {
-  /**
-   * Multiple relays may be discovered simultaneously - to prevent listening
-   * on too many relays, this value controls how many to attempt to reserve a
-   * slot on at once. If set to more than one, we may end up listening on
-   * more relays than the `maxReservations` value, but on networks with poor
-   * connectivity the user may wish to attempt to reserve on multiple relays
-   * simultaneously.
-   *
-   * @default 1
-   */
-  reservationConcurrency?: number
-
-  /**
-   * Limit the number of potential relays we will dial
-   *
-   * @default 100
-   */
-  maxReservationQueueLength?: number
-
-  /**
-   * When creating a reservation it must complete within this number of ms
-   *
-   * @default 5000
-   */
-  reservationCompletionTimeout?: number
-}
 
 export type RelayType = 'discovered' | 'configured'
 
@@ -118,7 +82,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly log: Logger
   private relayFilter: Filter
 
-  constructor (components: ReservationStoreComponents, init?: ReservationStoreInit) {
+  constructor (components: TransportReservationStoreComponents, init?: TransportReservationStoreInit) {
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:reservation-store')

@@ -19,8 +19,12 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     outbound.send(data)
-    await outbound.closeWrite()
-    await raceEvent(inbound, 'close')
+
+    await Promise.all([
+      raceEvent(inbound, 'close'),
+      outbound.closeWrite(),
+      inbound.closeWrite()
+    ])
 
     const scrapedMetrics = await client.register.metrics()
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="global sent"} ${data.length}`)
@@ -39,8 +43,12 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
-    await inbound.closeWrite()
-    await raceEvent(outbound, 'close')
+
+    await Promise.all([
+      raceEvent(inbound, 'close'),
+      outbound.closeWrite(),
+      inbound.closeWrite()
+    ])
 
     const scrapedMetrics = await client.register.metrics()
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="global received"} ${data.length}`)
@@ -59,8 +67,12 @@ describe('streams', () => {
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     outbound.send(data)
-    await outbound.closeWrite()
-    await raceEvent(inbound, 'close')
+
+    await Promise.all([
+      raceEvent(inbound, 'close'),
+      outbound.closeWrite(),
+      inbound.closeWrite()
+    ])
 
     const scrapedMetrics = await client.register.metrics()
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${outbound.protocol} sent"} ${data.length}`)
@@ -79,8 +91,12 @@ describe('streams', () => {
     // send data from remote to local
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
-    await inbound.closeWrite()
-    await raceEvent(outbound, 'close')
+
+    await Promise.all([
+      raceEvent(inbound, 'close'),
+      outbound.closeWrite(),
+      inbound.closeWrite()
+    ])
 
     const scrapedMetrics = await client.register.metrics()
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${inbound.protocol} received"} ${data.length}`)

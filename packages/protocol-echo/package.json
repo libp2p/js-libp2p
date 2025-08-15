@@ -52,7 +52,7 @@
   "devDependencies": {
     "aegir": "^47.0.14",
     "it-all": "^3.0.8",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },
