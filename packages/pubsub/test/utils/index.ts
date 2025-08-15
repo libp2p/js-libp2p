@@ -1,8 +1,10 @@
 import { duplexPair } from 'it-pair/duplex'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord } from '@libp2p/interface'
+import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord, PeerId } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
+import { streamPair } from '@libp2p/utils'
+import { stubInterface } from 'sinon-ts'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
   async publishMessage (): Promise<PublishResult> {
@@ -116,27 +118,25 @@ export class MockRegistrar implements Registrar {
   }
 }
 
-export const ConnectionPair = (): [Connection, Connection] => {
-  const [d0, d1] = duplexPair<Uint8Array>()
+/**
+ * Returns two connections:
+ *
+ * 1. peerA -> peerB
+ * 2. peerB -> peerA
+ */
+export const connectionPair = async (peerA: PeerId, peerB: PeerId): Promise<[Connection, Connection]> => {
+  const [d0, d1] = await streamPair()
 
   return [
-    {
-      // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => Promise.resolve({
-        ...d0,
-        protocol: protocol[0],
-        closeWrite: async () => {}
-      }),
-      streams: []
-    },
-    {
-      // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => Promise.resolve({
-        ...d1,
-        protocol: protocol[0],
-        closeWrite: async () => {}
-      }),
-      streams: []
-    }
+    stubInterface<Connection>({
+      newStream: async () => d0,
+      streams: [],
+      remotePeer: peerB
+    }),
+    stubInterface<Connection>({
+      newStream: async () => d1,
+      streams: [],
+      remotePeer: peerA
+    })
   ]
 }

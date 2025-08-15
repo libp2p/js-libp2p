@@ -7,14 +7,16 @@ import { pipe } from 'it-pipe'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PeerStreams } from '../src/peer-streams.js'
-import { ConnectionPair } from './utils/index.js'
+import { connectionPair } from './utils/index.js'
 import type { PeerId } from '@libp2p/interface'
 
 describe('peer-streams', () => {
-  let otherPeerId: PeerId
+  let localPeerId: PeerId
+  let remotePeerId: PeerId
 
   beforeEach(async () => {
-    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    localPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   it('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
@@ -22,7 +24,7 @@ describe('peer-streams', () => {
     const largeMessage = new Uint8ArrayList(new Uint8Array(messageSize).fill(65)) // Fill with "A"
 
     // Get both ends of the duplex stream
-    const [connA, connB] = ConnectionPair()
+    const [connA, connB] = await connectionPair(localPeerId, remotePeerId)
 
     // Use connB as the inbound (reading) side
     const inboundStream = await connB.newStream(['a-protocol'])
@@ -32,7 +34,7 @@ describe('peer-streams', () => {
     // Create PeerStreams with increased maxDataLength
     const peer = new PeerStreams(
       { logger: defaultLogger() },
-      { id: otherPeerId, protocol: 'a-protocol' }
+      { id: remotePeerId, protocol: 'a-protocol' }
     )
 
     // Attach the inbound stream on the reading end

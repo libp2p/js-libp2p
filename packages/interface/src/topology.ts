@@ -40,11 +40,11 @@ export interface Topology {
    * Invoked when a new connection is opened to a peer that supports the
    * registered protocol
    */
-  onConnect?(peerId: PeerId, conn: Connection): void
+  onConnect?(peerId: PeerId, conn: Connection): void | Promise<void>
 
   /**
    * Invoked when the last connection to a peer that supports the registered
    * protocol closes
    */
-  onDisconnect?(peerId: PeerId): void
+  onDisconnect?(peerId: PeerId): void | Promise<void>
 }

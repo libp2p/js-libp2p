@@ -154,12 +154,18 @@ interface MockMuxerInit extends StreamMuxerOptions {
    * @default base64
    */
   encoding?: SupportedEncodings
+
+  /**
+   * How large muxer messages are allowed to be
+   */
+  maxMessageSize?: number
 }
 
 class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   private input: Pushable<Uint8Array | Uint8ArrayList>
   private maxInputQueueSize: number
   private encoding: SupportedEncodings
+  private maxMessageSize: number
 
   constructor (maConn: MultiaddrConnection, init: MockMuxerInit) {
     super(maConn, {
@@ -169,13 +175,16 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     })
 
     this.maxInputQueueSize = init.maxInputQueueSize ?? 1024 * 1024 * 10
+    this.maxMessageSize = init.maxMessageSize ?? 1024 * 1024 * 10
     this.encoding = init.encoding ?? 'base64'
     this.input = pushable()
     this.sendMessage = this.sendMessage.bind(this)
 
     Promise.resolve()
       .then(async () => {
-        for await (const buf of lp.decode(this.input)) {
+        for await (const buf of lp.decode(this.input, {
+          maxDataLength: this.maxMessageSize
+        })) {
           this.onMessage(JSON.parse(uint8ArrayToString(buf.subarray())))
         }
       })
@@ -198,7 +207,9 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
 
     const json = JSON.stringify(message)
     const buf = uint8ArrayFromString(json)
-    const encoded = lp.encode.single(buf)
+    const encoded = lp.encode.single(buf, {
+      maxDataLength: this.maxMessageSize
+    })
 
     return this.send(encoded)
   }
