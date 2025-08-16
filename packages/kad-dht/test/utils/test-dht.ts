@@ -3,6 +3,7 @@ import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
+import { streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
@@ -10,41 +11,77 @@ import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { PROTOCOL } from '../../src/constants.js'
 import { KadDHT as KadDHTClass } from '../../src/kad-dht.js'
-import type { KadDHT, KadDHTComponents, KadDHTInit } from '../../src/index.js'
-import type { Libp2pEvents, PeerId, PeerStore } from '@libp2p/interface'
+import type { KadDHTInit } from '../../src/index.js'
+import type { ComponentLogger, Connection, Libp2pEvents, PeerId, PeerStore, PrivateKey, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
+import type { Datastore } from 'interface-datastore'
+import type { StubbedInstance } from 'sinon-ts'
 
 let memoryIndex = 0
 
+export interface StubbedKadDHTComponents {
+  peerId: PeerId
+  privateKey: PrivateKey
+  registrar: StubbedInstance<Registrar>
+  addressManager: StubbedInstance<AddressManager>
+  peerStore: PeerStore
+  connectionManager: StubbedInstance<ConnectionManager>
+  datastore: Datastore
+  events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
+  ping: Ping
+}
+
+export interface KadDHTPeer {
+  dht: KadDHTClass
+  components: StubbedKadDHTComponents
+}
+
 export class TestDHT {
-  private readonly peers: Map<string, { dht: KadDHT, registrar: Registrar }>
+  private readonly peers: Map<string, KadDHTPeer>
 
   constructor () {
     this.peers = new Map()
   }
 
-  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<KadDHTClass> {
+  async spawn (options: Partial<KadDHTInit> = {}, autoStart = true): Promise<KadDHTPeer> {
     const events = new TypedEventEmitter<Libp2pEvents>()
 
     const privateKey = await generateKeyPair('Ed25519')
     const peerId = peerIdFromPrivateKey(privateKey)
 
-    const components: KadDHTComponents = {
+    const components: StubbedKadDHTComponents = {
       peerId,
       privateKey,
       datastore: new MemoryDatastore(),
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       peerStore: stubInterface<PeerStore>(),
-      connectionManager: stubInterface<ConnectionManager>(),
+      connectionManager: stubInterface<ConnectionManager>({
+        openStream: async (peer, protocol, options) => {
+          const [outbound, inbound] = await streamPair()
+
+          Promise.resolve().then(async () => {
+            const remote = this.peers.get(peer.toString())
+            await remote?.dht['rpc'].onIncomingStream(inbound, stubInterface<Connection>({
+              remotePeer: peerId,
+              remoteAddr: remote.components.addressManager.getAddresses()[0]
+            }))
+          })
+            .catch(err => {
+              inbound.abort(err)
+            })
+
+          return outbound
+        },
+        isDialable: async () => true
+      }),
       events,
       logger: defaultLogger(),
       ping: stubInterface<Ping>()
     }
-    components.connectionManager = stubInterface<ConnectionManager>()
     components.peerStore = persistentPeerStore({
       ...components,
       events
@@ -89,6 +126,7 @@ export class TestDHT {
       initialQuerySelfInterval: 600_000,
       allowQueryWithZeroPeers: true,
       clientMode: false,
+      peerInfoMapper: (peer) => peer,
       ...options
     }
 
@@ -114,15 +152,17 @@ export class TestDHT {
       await start(dht)
     }
 
-    this.peers.set(components.peerId.toString(), {
+    const peer = {
       dht,
-      registrar: components.registrar
-    })
+      components
+    }
 
-    return dht
+    this.peers.set(components.peerId.toString(), peer)
+
+    return peer
   }
 
-  async connect (dhtA: KadDHTClass, dhtB: KadDHTClass): Promise<void> {
+  async connect (dhtA: KadDHTPeer, dhtB: KadDHTPeer): Promise<void> {
     await dhtA.components.peerStore.merge(dhtB.components.peerId, {
       multiaddrs: dhtB.components.addressManager.getAddresses()
     })
@@ -130,26 +170,29 @@ export class TestDHT {
       multiaddrs: dhtA.components.addressManager.getAddresses()
     })
 
-    const connection = await dhtA.components.connectionManager.openConnection(dhtB.components.peerId)
-
     // simulate identify
-    dhtA.components.registrar.getTopologies(PROTOCOL).forEach(topology => {
-      topology.onConnect?.(dhtB.components.peerId, connection)
-    })
-    dhtB.components.registrar.getTopologies(PROTOCOL).forEach(topology => {
-      const conn = dhtB.components.connectionManager.getConnections(dhtA.components.peerId)
-      topology.onConnect?.(dhtA.components.peerId, conn[0])
-    })
+    for (const call of dhtA.components.registrar.register.getCalls()) {
+      await call.args[1].onConnect?.(dhtB.components.peerId, stubInterface<Connection>({
+        remotePeer: dhtB.components.peerId,
+        remoteAddr: dhtB.components.addressManager.getAddresses()[0]
+      }))
+    }
+    for (const call of dhtB.components.registrar.register.getCalls()) {
+      await call.args[1].onConnect?.(dhtA.components.peerId, stubInterface<Connection>({
+        remotePeer: dhtA.components.peerId,
+        remoteAddr: dhtA.components.addressManager.getAddresses()[0]
+      }))
+    }
 
     // wait for peers to appear in each others' routing tables
     await checkConnected(dhtA, dhtB)
 
-    async function checkConnected (a: KadDHTClass, b: KadDHTClass): Promise<PeerId[]> {
+    async function checkConnected (a: KadDHTPeer, b: KadDHTPeer): Promise<PeerId[]> {
       const routingTableChecks: Array<() => Promise<PeerId>> = []
 
-      if (b.getMode() === 'server') {
+      if (b.dht.getMode() === 'server') {
         routingTableChecks.push(async () => {
-          const match = await a.routingTable.find(b.components.peerId)
+          const match = await a.dht.routingTable.find(b.components.peerId)
 
           if (match == null) {
             await delay(100)
@@ -160,9 +203,9 @@ export class TestDHT {
         })
       }
 
-      if (a.getMode() === 'server') {
+      if (a.dht.getMode() === 'server') {
         routingTableChecks.push(async () => {
-          const match = await b.routingTable.find(a.components.peerId)
+          const match = await b.dht.routingTable.find(a.components.peerId)
 
           if (match == null) {
             await delay(100)

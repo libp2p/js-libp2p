@@ -387,7 +387,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log.trace('peer %p connected', peerData.id)
+    this.log.trace('peer %p connected', peerData.id, peerData.multiaddrs)
 
     peerData = this.peerInfoMapper(peerData)
 

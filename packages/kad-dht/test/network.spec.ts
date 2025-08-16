@@ -5,16 +5,15 @@ import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
 import pDefer from 'p-defer'
-import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MessageType } from '../src/message/dht.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { KadDHT } from '../src/kad-dht.js'
-import type { Connection, PeerId } from '@libp2p/interface'
+import type { KadDHTPeer } from './utils/test-dht.js'
+import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 describe('Network', () => {
-  let dht: KadDHT
+  let dht: KadDHTPeer
   let testDHT: TestDHT
 
   before(async function () {
@@ -34,7 +33,7 @@ describe('Network', () => {
         key: uint8ArrayFromString('hello')
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+      const events = await all(dht.dht.network.sendRequest(dht.components.peerId, msg, {
         path: {
           index: -1,
           queued: 0,
@@ -63,7 +62,7 @@ describe('Network', () => {
       }
 
       // mock it
-      dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
+      dht.dht.components.connectionManager.openStream = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
         const [outboundStream, inboundStream] = await streamPair()
 
         inboundStream.addEventListener('message', (evt) => {
@@ -82,16 +81,10 @@ describe('Network', () => {
           inboundStream.send(lp.encode.single(Message.encode(msg)))
         })
 
-        const connection: Connection = stubInterface<Connection>({
-          newStream: async () => {
-            return outboundStream
-          }
-        })
-
-        return connection
+        return outboundStream
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+      const events = await all(dht.dht.network.sendRequest(dht.components.peerId, msg, {
         path: {
           index: -1,
           queued: 0,

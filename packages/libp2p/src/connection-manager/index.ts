@@ -11,7 +11,7 @@ import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -598,6 +598,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     } finally {
       this.outboundPendingConnections--
     }
+  }
+
+  async openStream (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options: OpenConnectionOptions = {}): Promise<Stream> {
+    const connection = await this.openConnection(peerIdOrMultiaddr, options)
+
+    return connection.newStream(protocol, options)
   }
 
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {

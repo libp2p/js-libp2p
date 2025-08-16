@@ -234,7 +234,6 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       return
     }
 
-
     const stream = await conn.newStream(this.multicodecs)
 
     if (stream.protocol == null) {

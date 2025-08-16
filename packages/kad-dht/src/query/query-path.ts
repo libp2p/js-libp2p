@@ -171,7 +171,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
                 // only continue query if closer peer is actually closer
                 if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
-                  log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer)
+                  log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer.id)
                   continue
                 }
 

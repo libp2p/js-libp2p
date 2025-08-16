@@ -1,6 +1,6 @@
 import { AbortError } from '@libp2p/interface'
-import * as lp from 'it-length-prefixed'
 import { pipe } from '@libp2p/utils'
+import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
 import { raceEvent } from 'race-event'

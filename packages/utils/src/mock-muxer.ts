@@ -203,7 +203,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   sendMessage (message: StreamMessage): boolean {
-    this.log('send message %o', message)
+    this.log.trace('send message %o', message)
 
     const json = JSON.stringify(message)
     const buf = uint8ArrayFromString(json)
@@ -215,7 +215,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   onMessage (message: StreamMessage): void {
-    this.log('incoming message %o', message)
+    this.log.trace('incoming message %o', message)
     let stream: MockMuxedStream | undefined = this.streams.find(s => s.id === message.id)
 
     if (message.type === 'create') {
@@ -223,7 +223,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
         throw new Error(`Already had stream for ${message.id}`)
       }
 
-      this.log('create stream inbound %s', message.id)
+      this.log.trace('create stream inbound %s', message.id)
       stream = this._createStream(message.id, 'inbound', {
         protocol: message.protocol
       })
@@ -256,7 +256,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   _createStream (id: string, direction: MessageStreamDirection, options: CreateStreamOptions): MockMuxedStream {
-    this.log('createStream %s %s', direction, id)
+    this.log.trace('createStream %s %s', direction, id)
 
     return new MockMuxedStream({
       ...this.streamOptions,

@@ -1,5 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -16,7 +17,7 @@ import {
   connectionPair,
   PubsubImplementation
 } from './utils/index.js'
-import { type PeerId, type Message, type PubSubRPC, start, stop } from '@libp2p/interface'
+import type { PeerId, Message, PubSubRPC } from '@libp2p/interface'
 
 const protocol = '/pubsub/1.0.0'
 const topic = 'test-topic'

@@ -177,8 +177,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       this.log('dialling %p', to)
       yield dialPeerEvent({ peer: to, path: options.path }, options)
 
-      const connection = await this.components.connectionManager.openConnection(to, options)
-      stream = await connection.newStream(this.protocol, options)
+      stream = await this.components.connectionManager.openStream(to, this.protocol, options)
 
       this.log('sending %s to %p', msg.type, to)
       yield sendQueryEvent({ to, type, path: options.path }, options)
@@ -244,8 +243,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
       this.log('dialling %p', to)
       yield dialPeerEvent({ peer: to, path: options.path }, options)
 
-      const connection = await this.components.connectionManager.openConnection(to, options)
-      stream = await connection.newStream(this.protocol, options)
+      stream = await this.components.connectionManager.openStream(to, this.protocol, options)
 
       this.log('sending %s to %p', msg.type, to)
       yield sendQueryEvent({ to, type, path: options.path }, options)

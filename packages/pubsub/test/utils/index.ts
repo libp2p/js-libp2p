@@ -1,10 +1,9 @@
-import { duplexPair } from 'it-pair/duplex'
+import { streamPair } from '@libp2p/utils'
+import { stubInterface } from 'sinon-ts'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
 import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord, PeerId } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
-import { streamPair } from '@libp2p/utils'
-import { stubInterface } from 'sinon-ts'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
   async publishMessage (): Promise<PublishResult> {

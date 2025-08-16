@@ -304,9 +304,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
-    const connection = await this.dial(peer, options)
-
-    return connection.newStream(protocols, options)
+    return this.components.connectionManager.openStream(peer, protocols, options)
   }
 
   getMultiaddrs (): Multiaddr[] {
