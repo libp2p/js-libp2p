@@ -184,10 +184,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(isValidTick(inboundStream.timeline.reset)).to.equal(true, 'inbound stream timeline.reset was incorrect')
 
       expect(() => outboundStream.send(Uint8Array.from([0, 1, 2, 3]))).to.throw()
-        .with.property('name', 'StreamStateError', 'could still write to aborted stream')
+        .with.property('name', 'StreamAbortedError', 'could still write to aborted stream')
 
       expect(() => inboundStream.send(Uint8Array.from([0, 1, 2, 3]))).to.throw()
-        .with.property('name', 'StreamStateError', 'could still write to reset stream')
+        .with.property('name', 'StreamResetError', 'could still write to reset stream')
 
       expect(outboundEvent).to.have.property('error', err)
       expect(inboundEvent).to.have.nested.property('error.name', 'StreamResetError')

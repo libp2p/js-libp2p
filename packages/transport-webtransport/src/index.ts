@@ -265,11 +265,12 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))
 
     // We're done with this authentication stream
-    await messages.close({
+    await messages.closeWrite({
       signal
     })
 
-    // Verify the certhashes we used when dialing are a subset of the certhashes relayed by the remote peer
+    // Verify the certhashes we used when dialing are a subset of the certhashes
+    // relayed by the remote peer
     if (!isSubset(remoteExtensions?.webtransportCerthashes ?? [], certhashes.map(ch => ch.bytes))) {
       throw new InvalidParametersError("Our certhashes are not a subset of the remote's reported certhashes")
     }

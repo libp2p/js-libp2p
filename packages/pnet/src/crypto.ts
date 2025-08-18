@@ -45,8 +45,7 @@ export class BoxMessageStream extends AbstractMessageStream {
         if (evt.error != null) {
           this.abort(evt.error)
         } else {
-          this.close()
-            .catch(() => {})
+          this.onTransportClosed()
         }
       } else {
         if (evt.error != null) {

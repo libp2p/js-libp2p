@@ -48,7 +48,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.close()
+        await c1.closeWrite()
       }),
       drain(s1)
     ])
@@ -80,7 +80,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.close()
+        await c1.closeWrite()
       }),
       drain(s1)
     ])
@@ -112,7 +112,7 @@ describe('stream', () => {
             await pEvent(c1, 'drain')
           }
         }
-        await c1.close()
+        await c1.closeWrite()
       }),
       drain(s1)
     ])
@@ -161,11 +161,28 @@ describe('stream', () => {
   })
 
   it('test stream close', async () => {
+    server.addEventListener('stream', (evt) => {
+      // close incoming streams
+      evt.detail.closeWrite()
+    })
+
     const c1 = await client.createStream()
-    await c1.close()
-    await sleep(5)
+    await c1.closeWrite()
+    await sleep(100)
 
     expect(c1.state).to.equal(StreamState.Finished)
+
+    expect(client.streams).to.be.empty()
+    expect(server.streams).to.be.empty()
+  })
+
+  it('test stream close write', async () => {
+    const c1 = await client.createStream()
+    await c1.closeWrite()
+    await sleep(100)
+
+    expect(c1.state).to.equal(StreamState.SYNSent)
+    expect(c1.writeStatus).to.equal('closed')
 
     const s1 = server.streams[0]
     expect(s1).to.not.be.undefined()
@@ -185,10 +202,10 @@ describe('stream', () => {
 
   it('test stream close write', async () => {
     const c1 = await client.createStream()
-    await c1.close()
+    await c1.closeWrite()
     await sleep(5)
 
-    expect(c1.readStatus).to.equal('closed')
+    expect(c1.readStatus).to.equal('readable')
     expect(c1.writeStatus).to.equal('closed')
 
     const s1 = server.streams[0]
@@ -220,7 +237,7 @@ describe('stream', () => {
             }
           }
 
-          await c1.close()
+          await c1.closeWrite()
         })(),
         drain(s1)
       ])

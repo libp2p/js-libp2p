@@ -24,28 +24,4 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
     this.id = init.id
     this.protocol = init.protocol ?? ''
   }
-
-  /**
-   * The muxer this stream was created by has closed - this stream should exit
-   * without sending any further messages. Any unread data can still be read but
-   * otherwise this stream is now closed.
-   */
-  onMuxerClosed (): void {
-    if (this.remoteReadStatus !== 'closed') {
-      this.remoteReadStatus = 'closed'
-      this.timeline.remoteCloseRead = Date.now()
-    }
-
-    if (this.remoteWriteStatus !== 'closed') {
-      this.remoteWriteStatus = 'closed'
-      this.timeline.remoteCloseWrite = Date.now()
-    }
-
-    if (this.writeStatus !== 'closed') {
-      this.writeStatus = 'closed'
-      this.timeline.closeWrite = Date.now()
-    }
-
-    this.onClosed()
-  }
 }

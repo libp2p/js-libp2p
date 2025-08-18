@@ -167,6 +167,16 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
   inactivityTimeout: number
 
   /**
+   * If the `send` method has returned false, this is a promise that will
+   * resolve once the underlying resource can accept more data, or reject if the
+   * stream is reset or aborts before that happens.
+   *
+   * If the internal buffer is not full, this is a resolved promise that is safe
+   * to await.
+   */
+  onDrain: Promise<void>
+
+  /**
    * Write data to the stream. If the method returns false it means the
    * internal buffer is now full and the caller should wait for the 'drain'
    * event before sending more data.
@@ -179,27 +189,14 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
 
   /**
    * Immediately close the stream for reading and writing, discard any
-   * unsent/unread data, and emit a StreamAbortEvent event.
+   * unsent/unread data, and emit a 'close' event with the 'error' property set
+   * to the passed error.
    */
   abort (err: Error): void
 
   /**
-   * Gracefully close the stream for reading and writing - any further calls to
-   * `.send` will throw.
-   *
-   * The returned promise will resolve when any outstanding data has been
-   * written out into the underlying resource.
-   *
-   * A 'close' event will be emitted on the stream once any buffered data has
-   * been sent and the remote end has also closed for writing.
-   *
-   * To close the stream immediately call `.abort` instead.
-  close (options?: AbortOptions): Promise<void>
-   */
-
-  /**
-   * Sends a message to the remote informing them we will not read any more data
-   * from the stream.
+   * If this is supported by the underlying resource, send a message to the
+   * remote informing them that we will not read any more data from the stream.
    *
    * If the writable end of the stream is already closed, a 'close' event will
    * be emitted on the stream.

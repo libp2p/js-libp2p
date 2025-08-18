@@ -109,7 +109,7 @@ class EncryptedMessageStream extends AbstractMessageStream {
           this.onRemoteReset()
         }
       } else {
-        this.onClosed()
+        this.onTransportClosed()
       }
     })
 

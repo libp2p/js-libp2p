@@ -1,4 +1,4 @@
-import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamCloseEvent } from '@libp2p/interface'
+import { StreamResetError, StreamStateError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamCloseEvent, StreamClosedError, StreamAbortedError, StreamClosingError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { raceEvent } from 'race-event'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -43,6 +43,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   public maxPauseBufferLength: number
   public readonly log: Logger
   public direction: MessageStreamDirection
+  public onDrain: Promise<void>
 
   protected readonly pauseBuffer: Uint8ArrayList
   protected readonly sendQueue: Uint8ArrayList
@@ -64,6 +65,7 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     this.timeline = {
       open: Date.now()
     }
+    this.onDrain = Promise.resolve()
 
     this.processSendQueue = this.processSendQueue.bind(this)
 
@@ -114,6 +116,24 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
   }
 
   send (data: Uint8Array | Uint8ArrayList): boolean {
+    switch (this.status) {
+      case 'aborted': {
+        throw new StreamAbortedError()
+      }
+      case 'reset': {
+        throw new StreamResetError()
+      }
+      case 'closed': {
+        throw new StreamClosedError()
+      }
+      case 'closing': {
+        throw new StreamClosingError()
+      }
+      default: {
+        break
+      }
+    }
+
     if (this.writeStatus !== 'writable' && this.writeStatus !== 'paused') {
       // return true to make this a no-op otherwise callers might wait for a
       // "drain" event that will never come
@@ -121,7 +141,16 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     }
 
     this.sendQueue.append(data)
-    return this.processSendQueue()
+    const result = this.processSendQueue()
+
+    if (result === false) {
+      this.onDrain = raceEvent(this, 'drain', undefined, {
+        errorEvent: 'close',
+        error: new StreamClosedError()
+      })
+    }
+
+    return result
   }
 
   /**
@@ -162,25 +191,6 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     }
 
     this.dispatchEvent(new StreamAbortEvent(err))
-  }
-
-  async close (options?: AbortOptions): Promise<void> {
-    if (this.status !== 'open') {
-      return
-    }
-
-    this.log.trace('closing gracefully')
-
-    this.status = 'closing'
-
-    await Promise.all([
-      this.closeRead(options),
-      this.closeWrite(options)
-    ])
-
-    this.log.trace('closed gracefully')
-
-    this.onClosed()
   }
 
   async closeWrite (options?: AbortOptions): Promise<void> {
@@ -329,7 +339,12 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     // if a 'message' listener is being added and we have queued data, dispatch
     // the data
     if (args[0] === 'message' && this.pauseBuffer.byteLength > 0) {
-      this.dispatchPauseBuffer()
+      // event listeners can be added in constructors and often use object
+      // properties - if this the case we can access a class member before it
+      // has been initialized so dispatch the message in the microtask queue
+      queueMicrotask(() => {
+        this.dispatchPauseBuffer()
+      })
     }
   }
 
@@ -419,6 +434,27 @@ export abstract class AbstractMessageStream<Events extends MessageStreamEvents =
     setTimeout(() => {
       this.dispatchEvent(new StreamCloseEvent())
     }, 0)
+  }
+
+  /**
+   * The underlying transport this stream uses has closed - any unread data can
+   * still be read but it is not possible to send any further messages so this
+   * stream is now closed.
+   */
+  onTransportClosed (): void {
+    if (this.remoteReadStatus !== 'closed') {
+      this.remoteReadStatus = 'closed'
+    }
+
+    if (this.remoteWriteStatus !== 'closed') {
+      this.remoteWriteStatus = 'closed'
+    }
+
+    if (this.writeStatus !== 'closed') {
+      this.writeStatus = 'closed'
+    }
+
+    this.onClosed()
   }
 
   private maybeCloseRead (): void {

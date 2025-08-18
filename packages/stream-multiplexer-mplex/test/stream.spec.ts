@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 import { StreamCloseEvent } from '@libp2p/interface'
-import { multiaddrConnectionPair } from '@libp2p/utils'
+import { echo, multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import { pushable } from 'it-pushable'
@@ -89,8 +89,8 @@ describe('stream', () => {
     pair.initiatorStream.send(Uint8Array.from([0, 1, 2, 3, 4]))
 
     await Promise.all([
-      pair.receiverStream.close(),
-      pair.initiatorStream.close()
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -128,15 +128,15 @@ describe('stream', () => {
       const sendMore = pair.initiatorStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
     }
 
     await Promise.all([
       raceEvent(pair.receiverStream, 'close'),
       raceEvent(pair.initiatorStream, 'close'),
-      pair.receiverStream.close(),
-      pair.initiatorStream.close()
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite()
     ])
 
     // First and last should be NEW_STREAM and CLOSE
@@ -159,13 +159,13 @@ describe('stream', () => {
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
     await Promise.all([
-      pair.receiverStream.close(),
-      pair.initiatorStream.close(),
+      pair.receiverStream.closeWrite(),
+      pair.initiatorStream.closeWrite(),
       raceEvent(pair.initiatorStream, 'close')
     ])
 
@@ -189,13 +189,13 @@ describe('stream', () => {
       const sendMore = pair.initiatorStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
     }
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'remoteClose'),
-      pair.initiatorStream.close()
+      raceEvent(pair.receiverStream, 'remoteCloseWrite'),
+      pair.initiatorStream.closeWrite()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -213,13 +213,13 @@ describe('stream', () => {
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteClose'),
-      pair.receiverStream.close()
+      raceEvent(pair.initiatorStream, 'remoteCloseWrite'),
+      pair.receiverStream.closeWrite()
     ])
 
     const msgs = await pair.receiverMessages()
@@ -236,7 +236,7 @@ describe('stream', () => {
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
@@ -261,7 +261,7 @@ describe('stream', () => {
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
@@ -283,22 +283,19 @@ describe('stream', () => {
     const dataLength = 1
     const pair = await streamPair()
 
-    pair.receiverStream.addEventListener('message', (evt) => {
-      pair.receiverStream.send(evt.data)
-    })
+    void echo(pair.receiverStream)
 
     for (const buf of randomInput(dataLength, dataLength)) {
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
     }
 
     await Promise.all([
       raceEvent(pair.initiatorStream, 'close'),
-      pair.initiatorStream.close(),
-      pair.receiverStream.close()
+      pair.initiatorStream.closeWrite()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
@@ -324,19 +321,19 @@ describe('stream', () => {
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteClose'),
-      pair.receiverStream.close()
+      raceEvent(pair.initiatorStream, 'remoteCloseWrite'),
+      pair.receiverStream.closeWrite()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
@@ -371,13 +368,13 @@ describe('stream', () => {
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
@@ -410,13 +407,13 @@ describe('stream', () => {
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await raceEvent(pair.initiatorStream, 'drain')
+        await pair.initiatorStream.onDrain
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await raceEvent(pair.receiverStream, 'drain')
+        await pair.receiverStream.onDrain
       }
     }
 
@@ -447,12 +444,14 @@ describe('stream', () => {
     const buf = new Uint8Array(MAX_MSG_SIZE * 2)
 
     if (!pair.initiatorStream.send(buf)) {
-      await raceEvent(pair.initiatorStream, 'drain')
+      await pair.initiatorStream.onDrain
     }
 
     await Promise.all([
-      pair.initiatorStream.close(),
-      pair.receiverStream.close()
+      raceEvent(pair.initiatorStream, 'close'),
+      raceEvent(pair.receiverStream, 'close'),
+      pair.initiatorStream.closeWrite(),
+      pair.receiverStream.closeWrite()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()

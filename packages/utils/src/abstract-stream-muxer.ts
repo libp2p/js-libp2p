@@ -77,7 +77,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
 
     await raceSignal(Promise.all(
       [...this.streams].map(async s => {
-        await s.close(options)
+        await s.closeWrite(options)
       })
     ), options?.signal)
 
@@ -103,7 +103,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
 
     try {
       [...this.streams].forEach(stream => {
-        stream.onMuxerClosed()
+        stream.onTransportClosed()
       })
     } catch (err: any) {
       this.abort(err)

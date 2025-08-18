@@ -6,7 +6,7 @@ import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
 import { raceSignal } from 'race-signal'
-import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT } from './connection-manager/constants.js'
+import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT, CONNECTION_CLOSE_TIMEOUT } from './connection-manager/constants.js'
 import { createConnection } from './connection.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
 import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions } from '@libp2p/interface'
@@ -31,6 +31,7 @@ interface CreateConnectionOptions {
   remotePeer: PeerId
   muxer?: StreamMuxer
   limits?: ConnectionLimits
+  closeTimeout?: number
 }
 
 export interface UpgraderInit {
@@ -59,6 +60,13 @@ export interface UpgraderInit {
    * @default 2000
    */
   outboundStreamProtocolNegotiationTimeout?: number
+
+  /**
+   * How long to wait before closing a connection
+   *
+   * @default 1_000
+   */
+  connectionCloseTimeout?: number
 }
 
 export interface UpgraderComponents {
@@ -94,6 +102,8 @@ export class Upgrader implements UpgraderInterface {
     outboundErrors?: CounterGroup
   }
 
+  private readonly connectionCloseTimeout?: number
+
   constructor (components: UpgraderComponents, init: UpgraderInit) {
     this.components = components
     this.connectionEncrypters = trackedMap({
@@ -117,6 +127,7 @@ export class Upgrader implements UpgraderInterface {
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
+    this.connectionCloseTimeout = init.connectionCloseTimeout ?? CONNECTION_CLOSE_TIMEOUT
     this.events = components.events
     this.metrics = {
       dials: components.metrics?.registerCounterGroup('libp2p_connection_manager_dials_total'),
@@ -326,7 +337,8 @@ export class Upgrader implements UpgraderInterface {
       stream,
       muxer,
       remotePeer,
-      limits: opts?.limits
+      limits: opts?.limits,
+      closeTimeout: this.connectionCloseTimeout
     })
 
     conn.log('successfully upgraded connection')
@@ -354,8 +366,6 @@ export class Upgrader implements UpgraderInterface {
     this.events.safeDispatchEvent('connection:open', {
       detail: connection
     })
-
-    opts.maConn.timeline.upgraded = Date.now()
 
     return connection
   }

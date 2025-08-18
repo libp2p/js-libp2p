@@ -78,6 +78,7 @@
     "@libp2p/interface-internal": "^2.3.18",
     "@libp2p/peer-collections": "^6.0.34",
     "@libp2p/peer-id": "^5.1.8",
+    "@libp2p/utils": "^6.7.1",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
@@ -93,12 +94,12 @@
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
-    "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.1",
     "protons-runtime": "^5.5.0",
-    "sinon": "^21.0.0"
+    "sinon": "^21.0.0",
+    "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
 }

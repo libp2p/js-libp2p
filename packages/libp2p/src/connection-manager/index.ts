@@ -66,6 +66,14 @@ export interface ConnectionManagerInit {
   dialTimeout?: number
 
   /**
+   * How many ms to wait when closing a connection if an abort signal is not
+   * passed
+   *
+   * @default 1_000
+   */
+  connectionCloseTimeout?: number
+
+  /**
    * When a new incoming connection is opened, the upgrade process (e.g.
    * protect, encrypt, multiplex etc) must complete within this number of ms.
    *

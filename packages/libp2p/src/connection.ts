@@ -2,14 +2,12 @@ import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, TooMan
 import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
-import { PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
+import { CONNECTION_CLOSE_TIMEOUT, PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
 import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-
-const CLOSE_TIMEOUT = 500
 
 export interface ConnectionComponents {
   peerStore: PeerStore
@@ -28,6 +26,7 @@ export interface ConnectionInit {
   limits?: ConnectionLimits
   outboundStreamProtocolNegotiationTimeout?: number
   inboundStreamProtocolNegotiationTimeout?: number
+  closeTimeout?: number
 }
 
 /**
@@ -51,6 +50,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   private readonly components: ConnectionComponents
   private readonly outboundStreamProtocolNegotiationTimeout: number
   private readonly inboundStreamProtocolNegotiationTimeout: number
+  private readonly closeTimeout: number
 
   constructor (components: ConnectionComponents, init: ConnectionInit) {
     super()
@@ -69,6 +69,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     this.log = init.maConn.log
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
+    this.closeTimeout = init.closeTimeout ?? CONNECTION_CLOSE_TIMEOUT
 
     this.onIncomingStream = this.onIncomingStream.bind(this)
 
@@ -241,11 +242,10 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
 
     this.log('closing connection to %a', this.remoteAddr)
-
-    this.status = 'closed'
+    this.status = 'closing'
 
     if (options.signal == null) {
-      const signal = AbortSignal.timeout(CLOSE_TIMEOUT)
+      const signal = AbortSignal.timeout(this.closeTimeout)
       setMaxListeners(Infinity, signal)
 
       options = {
@@ -256,14 +256,8 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
     try {
       this.log.trace('closing underlying transport')
-
-      // close the underlying transport
       await this.maConn.closeWrite(options)
-
-      this.log.trace('updating timeline with close time')
-
       this.status = 'closed'
-      this.timeline.close = Date.now()
     } catch (err: any) {
       this.log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
       this.abort(err)

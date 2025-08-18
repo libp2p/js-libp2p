@@ -145,6 +145,18 @@ export class StreamClosedError extends Error {
 }
 
 /**
+ * Thrown when a protocol stream is closing during an operation
+ */
+export class StreamClosingError extends Error {
+  static name = 'StreamClosingError'
+
+  constructor (message = 'The stream is closing') {
+    super(message)
+    this.name = 'StreamClosingError'
+  }
+}
+
+/**
  * Thrown when a protocol stream is reset by the remote muxer
  */
 export class StreamResetError extends Error {
@@ -153,6 +165,18 @@ export class StreamResetError extends Error {
   constructor (message = 'The stream has been reset') {
     super(message)
     this.name = 'StreamResetError'
+  }
+}
+
+/**
+ * Thrown when a protocol stream is aborted locally
+ */
+export class StreamAbortedError extends Error {
+  static name = 'StreamAbortedError'
+
+  constructor (message = 'The stream has been aborted') {
+    super(message)
+    this.name = 'StreamAbortedError'
   }
 }
 

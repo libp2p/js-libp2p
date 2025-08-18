@@ -86,8 +86,7 @@ describe('socket-to-conn', () => {
       remoteAddr: multiaddr('/ip4/123.123.123.123/tcp/1234'),
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn.status).to.equal('open')
 
     clientSocket.once('close', () => {
       clientClosed.resolve(true)
@@ -114,11 +113,11 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the remote writable end closing was recorded
-    expect(inboundMaConn.timeline.remoteCloseWrite).to.be.a('number')
+    expect(inboundMaConn).to.have.property('remoteWriteStatus', 'closed')
 
     // by default our tcp connections are not allowed to be half-open so we
     // should have closed
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -139,8 +138,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
@@ -172,9 +170,9 @@ describe('socket-to-conn', () => {
 
     // the connection closing or aborting was recorded
     if (error == null) {
-      expect(inboundMaConn.timeline.close).to.be.a('number')
+      expect(inboundMaConn).to.have.property('status', 'closed')
     } else {
-      expect(inboundMaConn.timeline.abort).to.be.a('number')
+      expect(inboundMaConn).to.have.property('status', 'aborted')
     }
 
     // server socket is destroyed
@@ -202,8 +200,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn:inbound')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
@@ -232,7 +229,7 @@ describe('socket-to-conn', () => {
     ])
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -249,8 +246,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn:inbound')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     serverSocket.once('close', () => {
       serverClosed.resolve(true)
@@ -270,7 +266,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -287,8 +283,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     clientSocket.once('error', () => {})
 
@@ -309,7 +304,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -335,8 +330,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     clientSocket.once('error', () => {})
 
@@ -360,7 +354,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -381,8 +375,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     clientSocket.once('error', () => {})
 
@@ -403,7 +396,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.close).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'closed')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -425,8 +418,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     clientSocket.once('error', () => {})
 
@@ -451,7 +443,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the connection closing was recorded
-    expect(inboundMaConn.timeline.abort).to.be.a('number')
+    expect(inboundMaConn).to.have.property('status', 'aborted')
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
@@ -476,8 +468,7 @@ describe('socket-to-conn', () => {
       direction: 'inbound',
       log: defaultLogger().forComponent('libp2p:test-maconn')
     })
-    expect(inboundMaConn.timeline.open).to.be.ok()
-    expect(inboundMaConn.timeline.close).to.not.be.ok()
+    expect(inboundMaConn).to.have.property('status', 'open')
 
     clientSocket.once('error', (err) => {
       clientError.resolve(err)

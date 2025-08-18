@@ -140,6 +140,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     if (this.remoteGoAway !== undefined) {
       throw new MuxerClosedError('Muxer closed remotely')
     }
+
     if (this.localGoAway !== undefined) {
       throw new MuxerClosedError('Muxer closed locally')
     }

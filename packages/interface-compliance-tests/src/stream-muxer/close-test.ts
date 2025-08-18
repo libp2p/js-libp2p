@@ -149,9 +149,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
           const sendMore = stream.send(buf)
 
           if (!sendMore) {
-            await raceEvent(stream, 'drain', undefined, {
-              errorEvent: 'close'
-            })
+            await stream.onDrain
           }
         }
       })
@@ -277,7 +275,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
 
       const err = await deferred.promise
-      expect(err).to.have.property('name', 'StreamStateError')
+      expect(err).to.have.property('name', 'StreamClosedError')
     })
 
     it('should emit a close event for closed streams not previously written', async () => {

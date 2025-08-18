@@ -34,7 +34,7 @@ describe('Max message size', () => {
     })
 
     webrtcStream.send(data)
-    await webrtcStream.close()
+    await webrtcStream.closeWrite()
 
     expect(channel.send).to.have.property('callCount', 1)
     expect(channel.send.getCall(0).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE)
@@ -53,7 +53,7 @@ describe('Max message size', () => {
     })
 
     webrtcStream.send(data)
-    await webrtcStream.close()
+    await webrtcStream.closeWrite()
 
     expect(channel.send).to.have.property('callCount').that.is.greaterThan(1)
 
@@ -110,7 +110,7 @@ describe('Stream Stats', () => {
     expect(stream.timeline.close).to.not.exist()
 
     receiveFinAck(dataChannel)
-    await stream.close()
+    await stream.closeWrite()
 
     expect(stream.timeline.close).to.be.a('number')
   })

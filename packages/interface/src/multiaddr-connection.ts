@@ -12,9 +12,9 @@ export interface MultiaddrConnectionTimeline extends MessageStreamTimeline {
 }
 
 /**
- * A MultiaddrConnection is returned by transports after dialing a peer. It is a
- * low-level primitive and is the raw connection without encryption or stream
- * multiplexing.
+ * A MultiaddrConnection is returned by a transport after dialing a peer. It is
+ * a low-level primitive and is the raw connection, typically without encryption
+ * or stream multiplexing.
  */
 export interface MultiaddrConnection extends MessageStream {
   /**

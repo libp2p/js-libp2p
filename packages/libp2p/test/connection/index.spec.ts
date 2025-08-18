@@ -29,9 +29,6 @@ describe('connection', () => {
   beforeEach(async () => {
     maConn = stubInterface<MultiaddrConnection>({
       remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-      timeline: {
-        open: Date.now()
-      },
       log: defaultLogger().forComponent('libp2p:maconn')
     })
     peerStore = stubInterface<PeerStore>()
@@ -67,14 +64,16 @@ describe('connection', () => {
       return stream
     })
 
-    init = stubInterface<ConnectionInit>({
+    init = {
+      id: '',
+      remotePeer: peerIdFromString('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN'),
       maConn,
       stream: maConn,
       muxer,
       limits: undefined,
       outboundStreamProtocolNegotiationTimeout: 5_000,
       inboundStreamProtocolNegotiationTimeout: 5_000
-    })
+    }
   })
 
   it('should not require local or remote addrs', async () => {
@@ -95,7 +94,10 @@ describe('connection', () => {
     const remotePeer = peerIdFromString('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
     maConn.remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
 
-    const conn = createConnection(components, init)
+    const conn = createConnection(components, {
+      ...init,
+      remotePeer
+    })
 
     expect(conn.remoteAddr.getComponents().filter(component => component.name === 'p2p')).to.have.lengthOf(1)
   })
@@ -107,8 +109,7 @@ describe('connection', () => {
     expect(connection.remotePeer).to.exist()
     expect(connection.remoteAddr).to.exist()
     expect(connection.status).to.equal('open')
-    expect(connection.timeline.open).to.exist()
-    expect(connection.timeline.close).to.not.exist()
+    expect(connection).to.have.property('status', 'open')
     expect(connection.direction).to.exist()
     expect(connection.streams).to.eql([])
   })
@@ -118,8 +119,6 @@ describe('connection', () => {
 
     expect(connection.status).to.equal('open')
     expect(connection.direction).to.exist()
-    expect(connection.timeline.open).to.exist()
-    expect(connection.timeline.close).to.not.exist()
   })
 
   it('should return an empty array of streams', () => {
@@ -141,10 +140,9 @@ describe('connection', () => {
 
   it('should be able to close the connection after being created', async () => {
     const connection = createConnection(components, init)
-    expect(connection.timeline.close).to.not.exist()
+    expect(connection).to.have.property('status', 'open')
     await connection.close()
 
-    expect(connection.timeline.close).to.exist()
     expect(connection.status).to.equal('closed')
   })
 
@@ -161,11 +159,10 @@ describe('connection', () => {
     await connection.newStream([ECHO_PROTOCOL])
 
     // Close connection
-    expect(connection.timeline.close).to.not.exist()
+    expect(connection).to.have.property('status', 'open')
     await connection.close()
 
-    expect(connection.timeline.close).to.exist()
-    expect(connection.status).to.equal('closed')
+    expect(connection).to.have.property('status', 'closed')
   })
 
   it('should remove streams that close', async () => {
@@ -198,7 +195,7 @@ describe('connection', () => {
   it('should fail to create a new stream if the connection is closing', async () => {
     const connection = createConnection(components, init)
 
-    expect(connection.timeline.close).to.not.exist()
+    expect(connection).to.have.property('status', 'open')
     const p = connection.close()
 
     try {
@@ -217,7 +214,7 @@ describe('connection', () => {
   it('should fail to create a new stream if the connection is closed', async () => {
     const connection = createConnection(components, init)
 
-    expect(connection.timeline.close).to.not.exist()
+    expect(connection).to.have.property('status', 'open')
     await connection.close()
 
     await expect(connection.newStream(['/echo/0.0.1'])).to.eventually.be.rejected
@@ -273,8 +270,6 @@ describe('connection', () => {
     registrar.getProtocols.returns([protocol])
 
     const connection = createConnection(components, init)
-    expect(connection.streams).to.have.lengthOf(0)
-
     expect(connection.streams).to.have.lengthOf(0)
 
     await connection.newStream(protocol)

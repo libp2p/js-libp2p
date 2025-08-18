@@ -38,13 +38,20 @@ export class MplexStream extends AbstractStream {
     this.streamId = parseInt(this.id.substring(1))
 
     if (init.direction === 'outbound') {
-      this.muxer.send(
-        encode({
-          id: this.streamId,
-          type: InitiatorMessageTypes.NEW_STREAM,
-          data: new Uint8ArrayList(uint8ArrayFromString(this.id))
-        })
-      )
+      // open the stream on the receiver end. do this in a microtask so the
+      // stream gets added to the streams array by the muxer superclass before
+      // we send the NEW_STREAM message, otherwise we create a race condition
+      // whereby we can receive the stream messages before the stream is added
+      // to the streams list
+      queueMicrotask(() => {
+        this.muxer.send(
+          encode({
+            id: this.streamId,
+            type: InitiatorMessageTypes.NEW_STREAM,
+            data: new Uint8ArrayList(uint8ArrayFromString(this.id))
+          })
+        )
+      })
     }
   }
 

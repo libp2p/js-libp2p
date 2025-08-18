@@ -277,6 +277,10 @@ class EncryptedMessageStream extends AbstractMessageStream {
   private socket: net.Socket
   private writer: SocketWriter
 
+  /**
+   * @param stream - The maConn that encrypted data is transferred over
+   * @param socket - Performs encryption/decryption
+   */
   constructor (stream: MessageStream, socket: net.Socket) {
     super({
       log: stream.log,

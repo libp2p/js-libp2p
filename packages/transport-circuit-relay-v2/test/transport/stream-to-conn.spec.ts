@@ -25,9 +25,7 @@ describe('Convert stream into a multiaddr connection', () => {
     expect(maConn).to.exist()
     expect(maConn.send).to.exist()
     expect(maConn.remoteAddr).to.eql(remoteAddr)
-    expect(maConn.timeline).to.exist()
-    expect(maConn.timeline.open).to.exist()
-    expect(maConn.timeline.close).to.not.exist()
+    expect(maConn).to.have.property('status', 'open')
 
     await Promise.all([
       pEvent(maConn, 'close'),
@@ -35,7 +33,7 @@ describe('Convert stream into a multiaddr connection', () => {
       maConn.closeWrite()
     ])
 
-    expect(maConn.timeline.close).to.exist()
+    expect(maConn).to.have.property('status', 'closed')
   })
 
   it('can stream data over the multiaddr connection', async () => {
@@ -61,6 +59,6 @@ describe('Convert stream into a multiaddr connection', () => {
 
     expect(streamData).to.deep.equal([data])
     // underlying stream end closes the connection
-    expect(maConn.timeline.close).to.exist()
+    expect(maConn).to.have.property('status', 'closed')
   })
 })

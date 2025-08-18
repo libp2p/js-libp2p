@@ -22,8 +22,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
   private init: StreamMultiaddrConnectionInit
 
   constructor (init: StreamMultiaddrConnectionInit) {
-    let closedWrite = false
-
     super({
       ...init,
       direction: init.stream.direction,
@@ -35,9 +33,12 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
 
     this.stream.addEventListener('close', (evt) => {
       if (evt.error) {
-        close(true)
+        this.abort(evt.error)
       } else {
-        close()
+        this.closeWrite()
+          .catch(err => {
+            this.abort(err)
+          })
       }
     })
 
@@ -48,7 +49,10 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     })
 
     this.stream.addEventListener('closeWrite', () => {
-      closedWrite = true
+      this.closeWrite()
+        .catch(err => {
+          this.abort(err)
+        })
     })
 
     this.stream.addEventListener('remoteCloseWrite', () => {
@@ -58,27 +62,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     this.stream.addEventListener('remoteCloseRead', () => {
       this.onRemoteCloseRead()
     })
-
-    // piggyback on data send to count outgoing bytes
-    const send = this.stream.send.bind(this.stream)
-    this.stream.send = (buf: Uint8Array): boolean => {
-      return send(buf)
-    }
-
-    const self = this
-
-    function close (force?: boolean): void {
-      if (force === true) {
-        closedWrite = true
-      }
-
-      if (closedWrite && self.timeline.close == null) {
-        self.close()
-          .catch(err => {
-            self.abort(err)
-          })
-      }
-    }
   }
 
   async sendClose (options?: AbortOptions): Promise<void> {
