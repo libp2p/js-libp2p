@@ -54,72 +54,62 @@ describe('KadDHT', () => {
     peerIds = await createPeerIdsWithPrivateKey(3)
   })
 
-  afterEach(() => {
-    sinon.restore()
-  })
-
   describe('start and stop', () => {
     it('default mode', async () => {
       // off by default
       const dht = await testDHT.spawn({ clientMode: undefined }, false)
 
-      const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
-
-      await dht.start()
+      await dht.dht.start()
       // by default we start in client mode
-      expect(registrarHandleSpy).to.have.property('callCount', 0)
+      expect(dht.components.registrar.handle).to.have.property('callCount', 0)
 
-      await dht.setMode('server')
+      await dht.dht.setMode('server')
       // now we should be in server mode
-      expect(registrarHandleSpy).to.have.property('callCount', 1)
+      expect(dht.components.registrar.handle).to.have.property('callCount', 1)
 
-      await dht.stop()
+      await dht.dht.stop()
     })
 
     it('server mode', async () => {
       // turn client mode off explicitly
       const dht = await testDHT.spawn({ clientMode: false }, false)
 
-      const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
-
-      await dht.start()
+      await dht.dht.start()
       // should have started in server mode
-      expect(registrarHandleSpy).to.have.property('callCount', 1)
+      expect(dht.components.registrar.handle).to.have.property('callCount', 1)
 
-      await dht.setMode('server')
+      await dht.dht.setMode('server')
       // we were already in server mode, should have been a no-op
-      expect(registrarHandleSpy).to.have.property('callCount', 1)
+      expect(dht.components.registrar.handle).to.have.property('callCount', 1)
 
-      await dht.stop()
+      await dht.dht.stop()
     })
 
     it('client mode', async () => {
       // turn client mode on explicitly
       const dht = await testDHT.spawn({ clientMode: true }, false)
 
-      const registrarHandleSpy = sinon.spy(dht.components.registrar, 'handle')
-
-      await dht.start()
-      await dht.stop()
+      await dht.dht.start()
+      await dht.dht.stop()
 
       // should not have registered handler in client mode
-      expect(registrarHandleSpy).to.have.property('callCount', 0)
+      expect(dht.components.registrar.handle).to.have.property('callCount', 0)
     })
 
     it('should not fail when already started', async () => {
       const dht = await testDHT.spawn(undefined, false)
 
-      await dht.start()
-      await dht.start()
-      await dht.start()
+      await dht.dht.start()
+      await dht.dht.start()
+      await dht.dht.start()
 
-      await dht.stop()
+      await dht.dht.stop()
     })
 
     it('should not fail to stop when was not started', async () => {
       const dht = await testDHT.spawn(undefined, false)
 
-      await dht.stop()
+      await dht.dht.stop()
     })
   })
 
@@ -133,9 +123,9 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn()
 
       // Exchange data through the dht
-      await drain(dht.put(key, value))
+      await drain(dht.dht.put(key, value))
 
-      const res = await last(dht.get(key))
+      const res = await last(dht.dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -154,9 +144,9 @@ describe('KadDHT', () => {
       await testDHT.connect(dhtA, dhtB)
 
       // Exchange data through the dht
-      await drain(dhtA.put(key, value))
+      await drain(dhtA.dht.put(key, value))
 
-      const res = await findEvent(dhtB.get(key), 'VALUE')
+      const res = await findEvent(dhtB.dht.get(key), 'VALUE')
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -177,7 +167,7 @@ describe('KadDHT', () => {
       const putProgress = sinon.stub()
 
       // Exchange data through the dht
-      await drain(dhtA.put(key, value, {
+      await drain(dhtA.dht.put(key, value, {
         onProgress: putProgress
       }))
 
@@ -185,7 +175,7 @@ describe('KadDHT', () => {
 
       const getProgress = sinon.stub()
 
-      await drain(dhtB.get(key, {
+      await drain(dhtB.dht.get(key, {
         onProgress: getProgress
       }))
 
@@ -218,9 +208,9 @@ describe('KadDHT', () => {
       ])
 
       // DHT operations
-      await drain(dhtA.put(key, value))
+      await drain(dhtA.dht.put(key, value))
 
-      const res = await last(dhtB.get(key))
+      const res = await last(dhtB.dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -238,9 +228,9 @@ describe('KadDHT', () => {
       await testDHT.connect(dhtA, dhtB)
 
       // DHT operations
-      await drain(dhtA.put(key, value))
+      await drain(dhtA.dht.put(key, value))
 
-      const res = await last(dhtB.get(key))
+      const res = await last(dhtB.dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -272,9 +262,9 @@ describe('KadDHT', () => {
       await testDHT.connect(dhtA, dhtB)
 
       // DHT operations
-      await drain(dhtA.put(key, value))
+      await drain(dhtA.dht.put(key, value))
 
-      const res = await last(dhtB.get(key))
+      const res = await last(dhtB.dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -291,9 +281,9 @@ describe('KadDHT', () => {
 
       await testDHT.connect(dhtA, dhtB)
 
-      await drain(dhtA.put(key, value))
+      await drain(dhtA.dht.put(key, value))
 
-      await expect(last(dhtA.get(key))).to.eventually.be.rejected
+      await expect(last(dhtA.dht.get(key))).to.eventually.be.rejected
         .with.property('name', 'MissingSelectorError')
     })
 
@@ -309,18 +299,18 @@ describe('KadDHT', () => {
         testDHT.spawn()
       ])
 
-      const dhtASpy = sinon.spy(dhtA.network, 'sendRequest')
+      const dhtASpy = sinon.spy(dhtA.dht.network, 'sendRequest')
 
       // put before peers connected
-      await drain(dhtA.put(key, valueA))
-      await drain(dhtB.put(key, valueB))
+      await drain(dhtA.dht.put(key, valueA))
+      await drain(dhtB.dht.put(key, valueB))
 
       // connect peers
       await testDHT.connect(dhtA, dhtB)
 
       // get values
-      const resA = await last(dhtA.get(key))
-      const resB = await last(dhtB.get(key))
+      const resA = await last(dhtA.dht.get(key))
+      const resB = await last(dhtB.dht.get(key))
 
       // first is selected because the selector sorts alphabetically and chooses
       // the last value
@@ -367,9 +357,9 @@ describe('KadDHT', () => {
       ])
 
       // DHT operations
-      await drain(dhts[3].put(key, value))
+      await drain(dhts[3].dht.put(key, value))
 
-      const res = await last(dhts[0].get(key))
+      const res = await last(dhts[0].dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
@@ -380,9 +370,9 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn()
 
       // Simulate returning a peer id to query
-      sinon.stub(dht.routingTable, 'closestPeers').returns([peerIds[1].peerId])
+      sinon.stub(dht.dht.routingTable, 'closestPeers').returns([peerIds[1].peerId])
       // Simulate going out to the network and returning the record
-      sinon.stub(dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
+      sinon.stub(dht.dht.peerRouting, 'getValueOrPeers').callsFake(async function * (peer) {
         yield peerResponseEvent({
           messageType: MessageType.GET_VALUE,
           from: peer,
@@ -396,7 +386,7 @@ describe('KadDHT', () => {
         })
       })
 
-      const res = await last(dht.get(key))
+      const res = await last(dht.dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
     })
   })
@@ -420,7 +410,7 @@ describe('KadDHT', () => {
 
       const ids = dhts.map((d) => d.components.peerId)
 
-      const finalPeer = await findEvent(dhts[0].findPeer(ids[ids.length - 1]), 'FINAL_PEER')
+      const finalPeer = await findEvent(dhts[0].dht.findPeer(ids[ids.length - 1]), 'FINAL_PEER')
 
       expect(finalPeer.peer.id.equals(ids[ids.length - 1])).to.eql(true)
     })
@@ -441,7 +431,7 @@ describe('KadDHT', () => {
 
       await Promise.all(connected)
 
-      const res = await all(filter(dhts[1].getClosestPeers(uint8ArrayFromString('foo')), event => event.name === 'FINAL_PEER'))
+      const res = await all(filter(dhts[1].dht.getClosestPeers(uint8ArrayFromString('foo')), event => event.name === 'FINAL_PEER'))
 
       expect(res).to.not.be.empty()
     })
@@ -462,7 +452,7 @@ describe('KadDHT', () => {
 
       await Promise.all(connected)
 
-      const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
+      const res = await all(dhts[1].dht.getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
       expect(res).to.not.be.empty()
 
       // should not include requester in the response, only other peers that it
@@ -491,9 +481,9 @@ describe('KadDHT', () => {
 
       await testDHT.connect(dhtA, dhtB)
 
-      const stub = sinon.stub(dhtA.components.connectionManager, 'openConnection').rejects(error)
+      const stub = sinon.stub(dhtA.components.connectionManager, 'openStream').rejects(error)
 
-      const errors = await all(filter(dhtA.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
+      const errors = await all(filter(dhtA.dht.get(uint8ArrayFromString('/v/hello')), event => event.name === 'QUERY_ERROR'))
 
       expect(errors).to.have.lengthOf(1)
       expect(errors).to.have.nested.property('[0].error', error)

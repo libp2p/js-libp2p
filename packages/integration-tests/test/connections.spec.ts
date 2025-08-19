@@ -375,7 +375,7 @@ describe('connections', () => {
     const protocol = '/test/1.0.0'
     const streamOpen = pDefer<Stream>()
 
-    await listener.handle(protocol, ({ stream }) => {
+    await listener.handle(protocol, (stream) => {
       streamOpen.resolve(stream)
     })
 
@@ -392,7 +392,7 @@ describe('connections', () => {
     const protocol = '/test/1.0.0'
     const streamOpen = pDefer<Stream>()
 
-    await listener.handle(protocol, ({ stream }) => {
+    await listener.handle(protocol, (stream) => {
       streamOpen.resolve(stream)
     })
 

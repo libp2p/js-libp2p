@@ -1,6 +1,6 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { RateLimiter } from '@libp2p/utils/rate-limiter'
+import { RateLimiter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
@@ -11,9 +11,9 @@ import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
 import { multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
-import type { JobStatus } from '@libp2p/utils/queue'
+import type { JobStatus } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -64,6 +64,14 @@ export interface ConnectionManagerInit {
    * @default 10_000
    */
   dialTimeout?: number
+
+  /**
+   * How many ms to wait when closing a connection if an abort signal is not
+   * passed
+   *
+   * @default 1_000
+   */
+  connectionCloseTimeout?: number
 
   /**
    * When a new incoming connection is opened, the upgrade process (e.g.
@@ -600,6 +608,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }
   }
 
+  async openStream (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options: OpenConnectionOptions = {}): Promise<Stream> {
+    const connection = await this.openConnection(peerIdOrMultiaddr, options)
+
+    return connection.newStream(protocol, options)
+  }
+
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
     const connections = this.connections.get(peerId) ?? []
 
@@ -614,7 +628,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     )
   }
 
-  async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
+  acceptIncomingConnection (maConn: MultiaddrConnection): boolean {
     // check deny list
     const denyConnection = this.deny.some(ma => {
       return ma.contains(maConn.remoteAddr.nodeAddress().address)
@@ -646,7 +660,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       const host = maConn.remoteAddr.nodeAddress().address
 
       try {
-        await this.inboundConnectionRateLimiter.consume(host, 1)
+        this.inboundConnectionRateLimiter.consume(host, 1)
       } catch {
         this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
         return false

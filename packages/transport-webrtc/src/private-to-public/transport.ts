@@ -186,7 +186,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
         peerId: this.components.peerId,
-        remotePeerId: theirPeerId,
+        remotePeer: theirPeerId,
         privateKey: this.components.privateKey
       })
     } catch (err) {

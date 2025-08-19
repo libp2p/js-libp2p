@@ -5,10 +5,10 @@ import { RateLimiter } from '../src/rate-limiter.js'
 describe('RateLimiter with fixed window', function () {
   this.timeout(5000)
 
-  it('consume 1 point', async () => {
+  it('consume 1 point', () => {
     const testKey = 'consume1'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
     const res = rateLimiterMemory.memoryStorage.get(rateLimiterMemory.getKey(testKey))
 
     expect(res).to.have.property('consumedPoints', 1)
@@ -18,51 +18,14 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'consume2'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 5 })
 
-    await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected
+    expect(() => rateLimiterMemory.consume(testKey, 2)).to.throw()
       .with.property('msBeforeNext').that.is.gte(0)
-  })
-
-  it('execute evenly over duration with minimum delay 20 ms', async () => {
-    const testKey = 'consumeEvenlyMinDelay'
-    const rateLimiterMemory = new RateLimiter({
-      points: 100, duration: 1, execEvenly: true, execEvenlyMinDelayMs: 20
-    })
-
-    await rateLimiterMemory.consume(testKey)
-
-    const timeFirstConsume = Date.now()
-
-    await rateLimiterMemory.consume(testKey)
-
-    expect(Date.now() - timeFirstConsume >= 20).to.equal(true)
-  })
-
-  it('execute evenly over duration', async () => {
-    const testKey = 'consumeEvenly'
-    const rateLimiterMemory = new RateLimiter({
-      points: 2, duration: 5, execEvenly: true, execEvenlyMinDelayMs: 1
-    })
-    await rateLimiterMemory.consume(testKey)
-
-    const timeFirstConsume = Date.now()
-
-    await rateLimiterMemory.consume(testKey)
-
-    // Second consume should be delayed more than 2 seconds
-    // Explanation:
-    // 1) consume at 0ms, remaining duration = 5000ms
-    // 2) delayed consume for (4999 / (0 + 2)) ~= 2500ms, where 2 is a fixed value
-    // , because it mustn't delay in the beginning and in the end of duration
-    // 3) consume after 2500ms by timeout
-
-    const diff = Date.now() - timeFirstConsume
-    expect(diff > 2400 && diff < 2600).to.equal(true)
   })
 
   it('makes penalty', async () => {
     const testKey = 'penalty1'
     const rateLimiterMemory = new RateLimiter({ points: 3, duration: 5 })
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
 
     rateLimiterMemory.penalty(testKey)
 
@@ -75,7 +38,7 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'reward1'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 5 })
 
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
 
     rateLimiterMemory.reward(testKey)
 
@@ -96,7 +59,7 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'block'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
-    await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected
+    expect(() => rateLimiterMemory.consume(testKey, 2)).throw()
       .with.property('msBeforeNext').that.is.greaterThan(1000)
   })
 
@@ -104,11 +67,11 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'doNotBlockTwice'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
-    await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected()
+    expect(() => rateLimiterMemory.consume(testKey, 2)).to.throw()
 
     await delay(1201)
 
-    await expect(rateLimiterMemory.consume(testKey)).to.eventually.be.rejected()
+    expect(() => rateLimiterMemory.consume(testKey)).to.throw()
       .with.property('msBeforeNext').that.is.lessThan(1000)
   })
 
@@ -116,11 +79,11 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'blockExpires'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1, blockDuration: 2 })
 
-    await expect(rateLimiterMemory.consume(testKey, 2)).to.eventually.be.rejected()
+    expect(() => rateLimiterMemory.consume(testKey, 2)).to.throw()
 
     await delay(2000)
 
-    const res = await rateLimiterMemory.consume(testKey)
+    const res = rateLimiterMemory.consume(testKey)
 
     expect(res).to.have.property('consumedPoints', 1)
   })
@@ -130,7 +93,7 @@ describe('RateLimiter with fixed window', function () {
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 1 })
     rateLimiterMemory.block(testKey, 2)
 
-    await expect(rateLimiterMemory.consume(testKey)).to.eventually.be.rejected()
+    expect(() => rateLimiterMemory.consume(testKey)).to.throw()
       .with.property('msBeforeNext').that.is.within(1000, 2000)
   })
 
@@ -138,7 +101,7 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'get'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
 
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
 
     const res = rateLimiterMemory.get(testKey)
 
@@ -155,7 +118,7 @@ describe('RateLimiter with fixed window', function () {
   it('delete resolves true if key is set', async () => {
     const testKey = 'deleteKey'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5 })
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
 
     rateLimiterMemory.delete(testKey)
 
@@ -174,7 +137,7 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'options.customDuration'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 5 })
 
-    const res = await rateLimiterMemory.consume(testKey, 1, { customDuration: 1 })
+    const res = rateLimiterMemory.consume(testKey, 1, { customDuration: 1 })
     expect(res.msBeforeNext).to.be.lte(1000)
   })
 
@@ -182,7 +145,7 @@ describe('RateLimiter with fixed window', function () {
     const testKey = 'options.customDuration.forever'
     const rateLimiterMemory = new RateLimiter({ points: 1, duration: 5 })
 
-    const res = await rateLimiterMemory.consume(testKey, 1, { customDuration: 0 })
+    const res = rateLimiterMemory.consume(testKey, 1, { customDuration: 0 })
     expect(res).to.have.property('msBeforeNext', -1)
   })
 
@@ -205,8 +168,8 @@ describe('RateLimiter with fixed window', function () {
   it('does not expire key if duration set to 0', async () => {
     const testKey = 'neverExpire'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 0 })
-    await rateLimiterMemory.consume(testKey, 1)
-    await rateLimiterMemory.consume(testKey, 1)
+    rateLimiterMemory.consume(testKey, 1)
+    rateLimiterMemory.consume(testKey, 1)
 
     const res = rateLimiterMemory.get(testKey)
     expect(res).to.have.property('consumedPoints', 2)
@@ -251,7 +214,7 @@ describe('RateLimiter with fixed window', function () {
     const keyPrefix = 'test'
     const testKey = 'consume-negative-before-next'
     const rateLimiterMemory = new RateLimiter({ points: 2, duration: 5, keyPrefix })
-    await rateLimiterMemory.consume(testKey)
+    rateLimiterMemory.consume(testKey)
 
     const rec = rateLimiterMemory.memoryStorage.storage.get(`${keyPrefix}:${testKey}`)
     expect(rec).to.be.ok()
@@ -262,7 +225,7 @@ describe('RateLimiter with fixed window', function () {
 
     rec.expiresAt = new Date(Date.now() - 1000)
 
-    const res = await rateLimiterMemory.consume(testKey)
+    const res = rateLimiterMemory.consume(testKey)
     expect(res).to.have.property('consumedPoints', 1)
     expect(res).to.have.property('remainingPoints', 1)
     expect(res).to.have.property('msBeforeNext', 5000)

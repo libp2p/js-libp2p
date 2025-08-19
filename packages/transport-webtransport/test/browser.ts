@@ -108,13 +108,16 @@ describe('libp2p-webtransport', () => {
     const stream = await node.dialProtocol(ma, '/echo/1.0.0')
 
     expect(stream.timeline.closeWrite).to.be.undefined()
-    expect(stream.timeline.closeRead).to.be.undefined()
     expect(stream.timeline.close).to.be.undefined()
 
     // send and receive data
     const [, output] = await Promise.all([
-      stream.sink(gen()),
-      toBuffer(map(stream.source, buf => buf.subarray()))
+      Promise.resolve().then(async () => {
+        for await (const buf of gen()) {
+          stream.send(buf)
+        }
+      }),
+      toBuffer(map(stream, buf => buf.subarray()))
     ])
 
     // closing takes a little bit of time
@@ -132,7 +135,6 @@ describe('libp2p-webtransport', () => {
 
     // should have set timeline events
     expect(stream.timeline.closeWrite).to.be.greaterThan(0)
-    expect(stream.timeline.closeRead).to.be.greaterThan(0)
     expect(stream.timeline.close).to.be.greaterThan(0)
   })
 })

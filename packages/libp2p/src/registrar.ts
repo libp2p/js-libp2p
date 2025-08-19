@@ -1,7 +1,6 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { mergeOptions } from '@libp2p/utils/merge-options'
-import { trackedMap } from '@libp2p/utils/tracked-map'
-import * as errorsJs from './errors.js'
+import { mergeOptions, trackedMap } from '@libp2p/utils'
+import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
@@ -68,7 +67,7 @@ export class Registrar implements RegistrarInterface {
     const handler = this.handlers.get(protocol)
 
     if (handler == null) {
-      throw new errorsJs.UnhandledProtocolError(`No handler registered for protocol ${protocol}`)
+      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol}`)
     }
 
     return handler
@@ -91,7 +90,7 @@ export class Registrar implements RegistrarInterface {
    */
   async handle (protocol: string, handler: StreamHandler, opts?: StreamHandlerOptions): Promise<void> {
     if (this.handlers.has(protocol) && opts?.force !== true) {
-      throw new errorsJs.DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
+      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
     const options = mergeOptions.bind({ ignoreUndefined: true })({
@@ -168,66 +167,74 @@ export class Registrar implements RegistrarInterface {
   /**
    * Remove a disconnected peer from the record
    */
-  _onDisconnect (evt: CustomEvent<PeerId>): void {
+  async _onDisconnect (evt: CustomEvent<PeerId>): Promise<void> {
     const remotePeer = evt.detail
     const options = {
       signal: AbortSignal.timeout(5_000)
     }
 
-    void this.components.peerStore.get(remotePeer, options)
-      .then(peer => {
-        for (const protocol of peer.protocols) {
-          const topologies = this.topologies.get(protocol)
+    try {
+      const peer = await this.components.peerStore.get(remotePeer, options)
 
-          if (topologies == null) {
-            // no topologies are interested in this protocol
-            continue
-          }
+      for (const protocol of peer.protocols) {
+        const topologies = this.topologies.get(protocol)
 
-          for (const topology of topologies.values()) {
+        if (topologies == null) {
+          // no topologies are interested in this protocol
+          continue
+        }
+
+        await Promise.all(
+          [...topologies.values()].map(async topology => {
             if (topology.filter?.has(remotePeer) === false) {
-              continue
+              return
             }
 
             topology.filter?.remove(remotePeer)
-            topology.onDisconnect?.(remotePeer)
-          }
-        }
-      })
-      .catch(err => {
-        if (err.name === 'NotFoundError') {
-          // peer has not completed identify so they are not in the peer store
-          return
-        }
+            await topology.onDisconnect?.(remotePeer)
+          })
+        )
+      }
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        // peer has not completed identify so they are not in the peer store
+        return
+      }
 
-        this.log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
-      })
+      this.log.error('could not inform topologies of disconnecting peer %p - %e', remotePeer, err)
+    }
   }
 
   /**
    * When a peer is updated, if they have removed supported protocols notify any
    * topologies interested in the removed protocols.
    */
-  _onPeerUpdate (evt: CustomEvent<PeerUpdate>): void {
+  async _onPeerUpdate (evt: CustomEvent<PeerUpdate>): Promise<void> {
     const { peer, previous } = evt.detail
     const removed = (previous?.protocols ?? []).filter(protocol => !peer.protocols.includes(protocol))
 
-    for (const protocol of removed) {
-      const topologies = this.topologies.get(protocol)
+    try {
+      for (const protocol of removed) {
+        const topologies = this.topologies.get(protocol)
 
-      if (topologies == null) {
-        // no topologies are interested in this protocol
-        continue
-      }
-
-      for (const topology of topologies.values()) {
-        if (topology.filter?.has(peer.id) === false) {
+        if (topologies == null) {
+          // no topologies are interested in this protocol
           continue
         }
 
-        topology.filter?.remove(peer.id)
-        topology.onDisconnect?.(peer.id)
+        await Promise.all(
+          [...topologies.values()].map(async topology => {
+            if (topology.filter?.has(peer.id) === false) {
+              return
+            }
+
+            topology.filter?.remove(peer.id)
+            await topology.onDisconnect?.(peer.id)
+          })
+        )
       }
+    } catch (err: any) {
+      this.log.error('could not inform topologies of updated peer %p - %e', peer.id, err)
     }
   }
 
@@ -235,31 +242,37 @@ export class Registrar implements RegistrarInterface {
    * After identify has completed and we have received the list of supported
    * protocols, notify any topologies interested in those protocols.
    */
-  _onPeerIdentify (evt: CustomEvent<IdentifyResult>): void {
+  async _onPeerIdentify (evt: CustomEvent<IdentifyResult>): Promise<void> {
     const protocols = evt.detail.protocols
     const connection = evt.detail.connection
     const peerId = evt.detail.peerId
 
-    for (const protocol of protocols) {
-      const topologies = this.topologies.get(protocol)
+    try {
+      for (const protocol of protocols) {
+        const topologies = this.topologies.get(protocol)
 
-      if (topologies == null) {
-        // no topologies are interested in this protocol
-        continue
-      }
-
-      for (const topology of topologies.values()) {
-        if (connection.limits != null && topology.notifyOnLimitedConnection !== true) {
+        if (topologies == null) {
+          // no topologies are interested in this protocol
           continue
         }
 
-        if (topology.filter?.has(peerId) === true) {
-          continue
-        }
+        await Promise.all(
+          [...topologies.values()].map(async topology => {
+            if (connection.limits != null && topology.notifyOnLimitedConnection !== true) {
+              return
+            }
 
-        topology.filter?.add(peerId)
-        topology.onConnect?.(peerId, connection)
+            if (topology.filter?.has(peerId) === true) {
+              return
+            }
+
+            topology.filter?.add(peerId)
+            await topology.onConnect?.(peerId, connection)
+          })
+        )
       }
+    } catch (err: any) {
+      this.log.error('could not inform topologies of updated peer after identify %p - %e', peerId, err)
     }
   }
 }

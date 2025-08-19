@@ -138,7 +138,7 @@ import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughM
 import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 import type { Datastore } from 'interface-datastore'
 import type { TypedEventTarget } from 'main-event'
 import type { CID } from 'multiformats/cid'

@@ -7,9 +7,9 @@ import drain from 'it-drain'
 import each from 'it-foreach'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { encode } from '../src/encode.js'
 import { MessageTypes } from '../src/message-types.js'
 import { decode } from './fixtures/decode.js'
+import { encode } from './fixtures/encode.js'
 import type { Message } from '../src/message-types.js'
 
 describe('restrict size', () => {
@@ -84,7 +84,7 @@ describe('restrict size', () => {
         encode,
         async function * (source) {
           // make one big buffer
-          yield new Uint8ArrayList(...(await all(source))).subarray()
+          yield new Uint8ArrayList(...(all(source))).subarray()
         },
         decode(maxMessageSize, maxUnprocessedMessageQueueSize),
         (source) => each(source, chunk => {

@@ -2,14 +2,12 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import delay from 'delay'
 import sinon from 'sinon'
 import { PubSubBaseProtocol } from '../src/index.js'
 import {
   PubsubImplementation,
-  ConnectionPair,
-  MockRegistrar,
-  mockIncomingStreamEvent
+  connectionPair,
+  MockRegistrar
 } from './utils/index.js'
 import type { PeerId, PublishResult, PubSubRPC, PubSubRPCMessage } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
@@ -164,14 +162,14 @@ describe('pubsub base life cycle', () => {
         throw new Error(`No handler registered for ${protocol}`)
       }
 
-      const [c0, c1] = ConnectionPair()
+      const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
       // Notify peers of connection
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await c1.newStream([protocol]), c1)
 
-      expect(pubsubA.peers.size).to.be.eql(1)
-      expect(pubsubB.peers.size).to.be.eql(1)
+      expect(pubsubA.peers.size).to.equal(1)
+      expect(pubsubB.peers.size).to.equal(1)
     })
 
     it('should use the latest connection if onConnect is called more than once', async () => {
@@ -183,13 +181,13 @@ describe('pubsub base life cycle', () => {
       }
 
       // Notify peers of connection
-      const [c0, c1] = ConnectionPair()
-      const [c2] = ConnectionPair()
+      const [c0, c1] = await connectionPair(peerIdA, peerIdB)
+      const [c2] = await connectionPair(peerIdA, peerIdB)
 
       sinon.spy(c0, 'newStream')
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream(protocol), c1)
       expect(c0.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -197,9 +195,8 @@ describe('pubsub base life cycle', () => {
 
       sinon.spy(c2, 'newStream')
 
-      topologyA?.onConnect?.(peerIdB, c2)
+      await topologyA?.onConnect?.(peerIdB, c2)
       // newStream invocation takes place in a resolved promise
-      await delay(10)
       expect(c2.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -226,12 +223,12 @@ describe('pubsub base life cycle', () => {
       }
 
       // Notify peers of connection
-      const [c0, c1] = ConnectionPair()
+      const [c0, c1] = await connectionPair(peerIdA, peerIdB)
       const error = new Error('new stream error')
       sinon.stub(c0, 'newStream').throws(error)
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      handlerB.handler(await c1.newStream(protocol), c1)
 
       expect(c0.newStream).to.have.property('callCount', 1)
     })
@@ -246,17 +243,17 @@ describe('pubsub base life cycle', () => {
       }
 
       // Notify peers of connection
-      const [c0, c1] = ConnectionPair()
+      const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+      await handlerB.handler(await c1.newStream(protocol), c1)
 
-      // Notice peers of disconnect
+      // Notify peers of disconnect
       topologyA?.onDisconnect?.(peerIdB)
       topologyB?.onDisconnect?.(peerIdA)
 
-      expect(pubsubA.peers.size).to.be.eql(0)
-      expect(pubsubB.peers.size).to.be.eql(0)
+      expect(pubsubA.peers.size).to.equal(0)
+      expect(pubsubB.peers.size).to.equal(0)
     })
 
     it('should handle onDisconnect for unknown peers', () => {
@@ -267,7 +264,7 @@ describe('pubsub base life cycle', () => {
       // Notice peers of disconnect
       topologyA?.onDisconnect?.(peerIdB)
 
-      expect(pubsubA.peers.size).to.be.eql(0)
+      expect(pubsubA.peers.size).to.equal(0)
     })
   })
 })

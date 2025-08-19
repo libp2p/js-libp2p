@@ -1,59 +1,70 @@
-/* eslint-disable max-nested-callbacks */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { isStartable } from '@libp2p/interface'
-import { mockRegistrar, mockUpgrader, mockNetwork, mockConnectionManager } from '@libp2p/interface-compliance-tests/mocks'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { pbStream, streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DEFAULT_MAX_RESERVATION_STORE_SIZE, KEEP_ALIVE_SOURCE_TAG, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC } from '../src/constants.js'
-import { circuitRelayServer, circuitRelayTransport } from '../src/index.js'
+import { DEFAULT_MAX_RESERVATION_STORE_SIZE, KEEP_ALIVE_SOURCE_TAG, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../src/constants.js'
 import { HopMessage, Status } from '../src/pb/index.js'
-import type { CircuitRelayService } from '../src/index.js'
-import type { CircuitRelayServerInit } from '../src/server/index.js'
-import type { ComponentLogger, Libp2pEvents, Connection, Stream, ConnectionGater, PeerId, PeerStore, Upgrader, Transport, PrivateKey } from '@libp2p/interface'
+import { CircuitRelayServer } from '../src/server/index.js'
+import { CircuitRelayTransport } from '../src/transport/index.ts'
+import type { Connection, Stream, PeerStore, Upgrader, ConnectionGater, TypedEventTarget, Libp2pEvents, PeerId, PrivateKey, ComponentLogger } from '@libp2p/interface'
 import type { RandomWalk, AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MessageStream } from 'it-protobuf-stream'
-import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
-
-interface Node {
-  peerId: PeerId
-  privateKey: PrivateKey
-  multiaddr: Multiaddr
-  registrar: Registrar
-  peerStore: StubbedInstance<PeerStore>
-  circuitRelayService: CircuitRelayService
-  upgrader: Upgrader
-  connectionManager: ConnectionManager
-  circuitRelayTransport: Transport
-  connectionGater: ConnectionGater
-  events: TypedEventTarget<Libp2pEvents>
-  logger: ComponentLogger
-}
 
 let peerIndex = 0
 
-describe('circuit-relay hop protocol', function () {
-  let relayNode: Node
-  let clientNode: Node
-  let targetNode: Node
-  let nodes: Node[]
+interface StubbedCircuitRelayServerComponents {
+  registrar: StubbedInstance<Registrar>
+  peerStore: StubbedInstance<PeerStore>
+  addressManager: StubbedInstance<AddressManager>
+  peerId: PeerId
+  privateKey: PrivateKey
+  connectionManager: StubbedInstance<ConnectionManager>
+  connectionGater: StubbedInstance<ConnectionGater>
+  logger: ComponentLogger
+}
 
-  async function createNode (circuitRelayInit?: CircuitRelayServerInit): Promise<Node> {
+interface StubbedCircuitRelayTransportComponents {
+  peerStore: PeerStore
+  connectionManager: StubbedInstance<ConnectionManager>
+  transportManager: StubbedInstance<TransportManager>
+  registrar: StubbedInstance<Registrar>
+  logger: ComponentLogger
+  randomWalk: StubbedInstance<RandomWalk>
+  events: TypedEventTarget<Libp2pEvents>
+  peerId: PeerId
+  upgrader: StubbedInstance<Upgrader>
+  addressManager: StubbedInstance<AddressManager>
+  connectionGater: StubbedInstance<ConnectionGater>
+}
+
+interface RelayServer {
+  server: CircuitRelayServer
+  components: StubbedCircuitRelayServerComponents
+}
+
+interface Peer {
+  transport: CircuitRelayTransport
+  components: StubbedCircuitRelayTransportComponents
+}
+
+describe('circuit-relay hop protocol', function () {
+  let relayNode: RelayServer
+  let clientNode: Peer
+  let targetNode: Peer
+  let nodes: Peer[]
+
+  async function createNode (): Promise<Peer> {
     peerIndex++
 
     const privateKey = await generateKeyPair('Ed25519')
     const peerId = peerIdFromPrivateKey(privateKey)
-    const registrar = mockRegistrar()
-    const connections = new PeerMap<Connection>()
 
     const octet = peerIndex + 100
     const port = peerIndex + 10000
@@ -63,93 +74,49 @@ describe('circuit-relay hop protocol', function () {
     addressManager.getAddresses.returns([
       ma
     ])
-    const peerStore = stubInterface<PeerStore>()
-
-    const events = new TypedEventEmitter()
-    events.addEventListener('connection:open', (evt) => {
-      const conn = evt.detail
-      connections.set(conn.remotePeer, conn)
-    })
-    events.addEventListener('connection:close', (evt) => {
-      const conn = evt.detail
-      connections.delete(conn.remotePeer)
+    const peerStore = stubInterface<PeerStore>({
+      all: async () => []
     })
 
-    const connectionManager = mockConnectionManager({
+    const components = {
       peerId,
-      registrar,
-      events
-    })
-
-    const upgrader = mockUpgrader({
-      registrar,
-      events
-    })
-
-    const connectionGater = {}
-
-    const service = circuitRelayServer(circuitRelayInit)({
+      registrar: stubInterface<Registrar>(),
+      upgrader: stubInterface<Upgrader>(),
       addressManager,
-      connectionManager,
-      peerId,
-      privateKey,
+      connectionGater: stubInterface<ConnectionGater>(),
+      events: new TypedEventEmitter(),
       peerStore,
-      registrar,
-      connectionGater,
-      logger: defaultLogger()
-    })
-
-    if (isStartable(service)) {
-      await service.start()
-    }
-
-    const transport = circuitRelayTransport({})({
-      addressManager,
-      connectionManager,
-      peerId,
-      peerStore,
-      randomWalk: stubInterface<RandomWalk>(),
-      registrar,
+      connectionManager: stubInterface<ConnectionManager>(),
       transportManager: stubInterface<TransportManager>(),
-      upgrader,
-      connectionGater,
-      events,
-      logger: defaultLogger()
+      logger: defaultLogger(),
+      randomWalk: stubInterface<RandomWalk>()
+    }
+
+    const transport = new CircuitRelayTransport(components)
+
+    await start(transport)
+
+    return {
+      components,
+      transport
+    }
+  }
+
+  async function openHopStream (client: Peer, relay: RelayServer, protocol: string = RELAY_V2_HOP_CODEC): Promise<MessageStream<HopMessage, Stream>> {
+    const [outboundStream, inboundStream] = await streamPair({
+      protocol
     })
 
-    if (isStartable(transport)) {
-      await transport.start()
-    }
+    relay.server.onHop(inboundStream, stubInterface<Connection>({
+      remotePeer: client.components.peerId,
+      remoteAddr: client.components.addressManager.getAddresses()[0]
+    }))
 
-    const node: Node = {
-      peerId,
-      privateKey,
-      multiaddr: ma,
-      registrar,
-      circuitRelayService: service,
-      peerStore,
-      upgrader,
-      connectionManager,
-      circuitRelayTransport: transport,
-      connectionGater,
-      events,
-      logger: defaultLogger()
-    }
-
-    mockNetwork.addNode(node)
-    nodes.push(node)
-
-    return node
+    return pbStream(outboundStream).pb(HopMessage)
   }
 
-  async function openStream (client: Node, relay: Node, protocol: string): Promise<MessageStream<HopMessage, Stream>> {
-    const connection = await client.connectionManager.openConnection(relay.peerId)
-    const clientStream = await connection.newStream(protocol)
-    return pbStream(clientStream).pb(HopMessage)
-  }
-
-  async function makeReservation (client: Node, relay: Node): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage> }> {
-    const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
+  async function makeReservation (client: Peer, relay: RelayServer): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage> }> {
+    const clientPbStream = await openHopStream(client, relay)
 
     // send reserve message
     await clientPbStream.write({
@@ -162,16 +129,16 @@ describe('circuit-relay hop protocol', function () {
     }
   }
 
-  async function sendConnect (client: Node, target: Node, relay: Node): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage, Stream> }> {
-    const clientPbStream = await openStream(client, relay, RELAY_V2_HOP_CODEC)
+  async function sendConnect (client: Peer, target: Peer, relay: RelayServer): Promise<{ response: HopMessage, clientPbStream: MessageStream<HopMessage, Stream> }> {
+    const clientPbStream = await openHopStream(client, relay)
 
     // send reserve message
     await clientPbStream.write({
       type: HopMessage.Type.CONNECT,
       peer: {
-        id: target.peerId.toMultihash().bytes,
+        id: target.components.peerId.toMultihash().bytes,
         addrs: [
-          target.multiaddr.bytes
+          target.components.addressManager.getAddresses()[0].bytes
         ]
       }
     })
@@ -185,28 +152,38 @@ describe('circuit-relay hop protocol', function () {
   beforeEach(async () => {
     nodes = []
 
-    relayNode = await createNode()
+    const addressManager = stubInterface<AddressManager>()
+    addressManager.getAddresses.returns([
+      multiaddr('/ip4/127.0.0.1/tcp/54321')
+    ])
+
+    const relayServerKey = await generateKeyPair('Ed25519')
+    const relayComponents = {
+      registrar: stubInterface<Registrar>(),
+      peerStore: stubInterface<PeerStore>(),
+      addressManager,
+      peerId: peerIdFromPrivateKey(relayServerKey),
+      privateKey: relayServerKey,
+      connectionManager: stubInterface<ConnectionManager>(),
+      connectionGater: stubInterface<ConnectionGater>(),
+      logger: defaultLogger()
+    }
+    relayNode = {
+      server: new CircuitRelayServer(relayComponents),
+      components: relayComponents
+    }
+
     clientNode = await createNode()
     targetNode = await createNode()
   })
 
   afterEach(async () => {
-    for (const node of nodes) {
-      if (isStartable(node.circuitRelayService)) {
-        await node.circuitRelayService.stop()
-      }
-
-      if (isStartable(node.circuitRelayTransport)) {
-        await node.circuitRelayTransport.stop()
-      }
-    }
-
-    mockNetwork.reset()
+    await stop(relayNode, clientNode, targetNode, ...nodes)
   })
 
   describe('reserve', function () {
     it('error on unknown message type', async () => {
-      const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
+      const clientPbStream = await openHopStream(clientNode, relayNode)
 
       // wrong initial message
       await clientPbStream.write({
@@ -220,6 +197,11 @@ describe('circuit-relay hop protocol', function () {
     })
 
     it('should reserve slot', async () => {
+      const relayMultiaddr = multiaddr('/ip4/127.0.0.1/tcp/1234')
+      relayNode.components.addressManager.getAddresses.returns([
+        relayMultiaddr
+      ])
+
       const { response } = await makeReservation(clientNode, relayNode)
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.OK)
@@ -228,24 +210,24 @@ describe('circuit-relay hop protocol', function () {
         return val
           .map(buf => multiaddr(buf))
           .map(ma => ma.toString())
-          .includes(relayNode.multiaddr.toString())
+          .includes(relayMultiaddr.toString())
       })
       expect(response.limit).to.have.property('data').that.is.a('bigint')
       expect(response.limit).to.have.property('duration').that.is.a('number')
 
-      const reservation = relayNode.circuitRelayService.reservations.get(clientNode.peerId)
+      const reservation = relayNode.server.reservations.get(clientNode.components.peerId)
       expect(reservation).to.have.nested.property('limit.data', response.limit?.data)
       expect(reservation).to.have.nested.property('limit.duration', response.limit?.duration)
     })
 
     it('should fail to reserve slot - denied by connection gater', async () => {
-      relayNode.connectionGater.denyInboundRelayReservation = Sinon.stub().returns(true)
+      relayNode.components.connectionGater.denyInboundRelayReservation = Sinon.stub<any>().returns(true)
 
-      const { response } = await makeReservation(clientNode, relayNode)
+      const { response } = await makeReservation(targetNode, relayNode)
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.PERMISSION_DENIED)
 
-      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
+      expect(relayNode.server.reservations.get(clientNode.components.peerId)).to.be.undefined()
     })
 
     it('should fail to reserve slot - resource exceeded', async () => {
@@ -258,15 +240,15 @@ describe('circuit-relay hop protocol', function () {
       }
 
       // next reservation should fail
-      const { response } = await makeReservation(clientNode, relayNode)
+      const { response } = await makeReservation(targetNode, relayNode)
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.RESERVATION_REFUSED)
 
-      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
+      expect(relayNode.server.reservations.get(targetNode.components.peerId)).to.be.undefined()
     })
 
     it('should refresh previous reservation when store is full', async () => {
-      const peers: Node[] = []
+      const peers: Peer[] = []
 
       // fill all the available reservation slots
       for (let i = 0; i < DEFAULT_MAX_RESERVATION_STORE_SIZE; i++) {
@@ -282,13 +264,13 @@ describe('circuit-relay hop protocol', function () {
       const { response: failureResponse } = await makeReservation(clientNode, relayNode)
       expect(failureResponse).to.have.property('type', HopMessage.Type.STATUS)
       expect(failureResponse).to.have.property('status', Status.RESERVATION_REFUSED)
-      expect(relayNode.circuitRelayService.reservations.get(clientNode.peerId)).to.be.undefined()
+      expect(relayNode.server.reservations.get(clientNode.components.peerId)).to.be.undefined()
 
       // should be able to refresh older reservation
       const { response: successResponse } = await makeReservation(peers[0], relayNode)
       expect(successResponse).to.have.property('type', HopMessage.Type.STATUS)
       expect(successResponse).to.have.property('status', Status.OK)
-      expect(relayNode.circuitRelayService.reservations.get(peers[0].peerId)).to.be.ok()
+      expect(relayNode.server.reservations.get(peers[0].components.peerId)).to.be.ok()
     })
 
     it('should tag peer making reservation', async () => {
@@ -296,7 +278,7 @@ describe('circuit-relay hop protocol', function () {
       expect(response).to.have.property('type', HopMessage.Type.STATUS)
       expect(response).to.have.property('status', Status.OK)
 
-      expect(relayNode.peerStore.merge.calledWith(clientNode.peerId, {
+      expect(relayNode.components.peerStore.merge.calledWith(clientNode.components.peerId, {
         tags: {
           [RELAY_SOURCE_TAG]: {
             value: 1,
@@ -313,6 +295,25 @@ describe('circuit-relay hop protocol', function () {
 
   describe('connect', () => {
     it('should connect successfully', async () => {
+      const [stopOutgoing, stopIncoming] = await streamPair({
+        protocol: RELAY_V2_STOP_CODEC
+      })
+
+      // stub server -> target
+      const relayToTargetOutgoing = stubInterface<Connection>({
+        newStream: Sinon.stub().withArgs(RELAY_V2_STOP_CODEC).resolves(stopOutgoing)
+      })
+      relayNode.components.connectionManager.getConnections.withArgs(targetNode.components.peerId).returns([
+        relayToTargetOutgoing
+      ])
+
+      // stub server <- target
+      const relayToTargetIncoming = stubInterface<Connection>({
+        remotePeer: relayNode.components.peerId,
+        remoteAddr: relayNode.components.addressManager.getAddresses()[0]
+      })
+      void targetNode.transport.onStop(stopIncoming, relayToTargetIncoming)
+
       // both peers make a reservation on the relay
       await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
       await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
@@ -328,7 +329,7 @@ describe('circuit-relay hop protocol', function () {
       await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
       await expect(makeReservation(targetNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)
 
-      const clientPbStream = await openStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
+      const clientPbStream = await openHopStream(clientNode, relayNode, RELAY_V2_HOP_CODEC)
       await clientPbStream.write({
         type: HopMessage.Type.CONNECT,
         // @ts-expect-error {} is missing the following properties from peer: id, addrs
@@ -341,7 +342,7 @@ describe('circuit-relay hop protocol', function () {
     })
 
     it('should failed to connect - denied by connection gater', async () => {
-      relayNode.connectionGater.denyOutboundRelayedConnection = Sinon.stub().returns(true)
+      relayNode.components.connectionGater.denyOutboundRelayedConnection = Sinon.stub<any>().returns(true)
 
       // both peers make a reservation on the relay
       await expect(makeReservation(clientNode, relayNode)).to.eventually.have.nested.property('response.status', Status.OK)

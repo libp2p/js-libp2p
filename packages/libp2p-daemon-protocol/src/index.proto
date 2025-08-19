@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+message Request {
+  enum Type {
+    IDENTIFY       = 0;
+    CONNECT        = 1;
+    STREAM_OPEN    = 2;
+    STREAM_HANDLER = 3;
+    DHT            = 4;
+    LIST_PEERS     = 5;
+    CONNMANAGER    = 6;
+    DISCONNECT     = 7;
+    PUBSUB         = 8;
+    PEERSTORE      = 9;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional ConnectRequest connect = 2;
+  optional StreamOpenRequest streamOpen = 3;
+  optional StreamHandlerRequest streamHandler = 4;
+  optional DHTRequest dht = 5;
+  optional ConnManagerRequest connManager = 6;
+  optional DisconnectRequest disconnect = 7;
+  optional PSRequest pubsub = 8;
+  optional PeerstoreRequest peerStore = 9;
+}
+
+message Response {
+  enum Type {
+    OK    = 0;
+    ERROR = 1;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional ErrorResponse error = 2;
+  optional StreamInfo streamInfo = 3;
+  optional IdentifyResponse identify = 4;
+  optional DHTResponse dht = 5;
+  repeated PeerInfo peers = 6;
+  optional PSResponse pubsub = 7;
+  optional PeerstoreResponse peerStore = 8;
+}
+
+message IdentifyResponse {
+  bytes id = 1;
+  repeated bytes addrs = 2;
+}
+
+message ConnectRequest {
+  bytes peer = 1;
+  repeated bytes addrs = 2;
+  optional int64 timeout = 3;
+}
+
+message StreamOpenRequest {
+  bytes peer = 1;
+  repeated string proto = 2;
+  optional int64 timeout = 3;
+}
+
+message StreamHandlerRequest {
+  bytes addr = 1;
+  repeated string proto = 2;
+}
+
+message ErrorResponse {
+  string msg = 1;
+}
+
+message StreamInfo {
+  bytes peer = 1;
+  bytes addr = 2;
+  string proto = 3;
+}
+
+message DHTRequest {
+  enum Type {
+    FIND_PEER                    = 0;
+    FIND_PEERS_CONNECTED_TO_PEER = 1;
+    FIND_PROVIDERS               = 2;
+    GET_CLOSEST_PEERS            = 3;
+    GET_PUBLIC_KEY               = 4;
+    GET_VALUE                    = 5;
+    SEARCH_VALUE                 = 6;
+    PUT_VALUE                    = 7;
+    PROVIDE                      = 8;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional bytes peer = 2;
+  optional bytes cid = 3;
+  optional bytes key = 4;
+  optional bytes value = 5;
+  optional int32 count = 6;
+  optional int64 timeout = 7;
+}
+
+message DHTResponse {
+  enum Type {
+    BEGIN = 0;
+    VALUE = 1;
+    END   = 2;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional PeerInfo peer = 2;
+  optional bytes value = 3;
+}
+
+message PeerInfo {
+  bytes id = 1;
+  repeated bytes addrs = 2;
+}
+
+message ConnManagerRequest {
+  enum Type {
+    TAG_PEER        = 0;
+    UNTAG_PEER      = 1;
+    TRIM            = 2;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional bytes peer = 2;
+  optional string tag = 3;
+  optional int64 weight = 4;
+}
+
+message DisconnectRequest {
+  bytes peer = 1;
+}
+
+message PSRequest {
+  enum Type {
+    GET_TOPICS = 0;
+    LIST_PEERS = 1;
+    PUBLISH    = 2;
+    SUBSCRIBE  = 3;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional string topic = 2;
+  optional bytes data = 3;
+}
+
+message PSMessage {
+  optional bytes from = 1;
+  optional bytes data = 2;
+  optional bytes seqno = 3;
+  repeated string topicIDs = 4;
+  optional bytes signature = 5;
+  optional bytes key = 6;
+}
+
+message PSResponse {
+  repeated string topics = 1;
+  repeated bytes peerIDs = 2;
+}
+
+message PeerstoreRequest {
+  enum Type {
+    UNSPECIFIED = 0;
+    GET_PROTOCOLS = 1;
+    GET_PEER_INFO = 2;
+  }
+
+  // the proto2 version of this field is "required" which means it will have
+  // no default value. the default for proto3 is "singluar" which omits the
+  // value on the wire if it's the default so for proto3 we make it "optional"
+  // to ensure a value is always written on to the wire
+  optional Type type = 1;
+
+  optional bytes id = 2;
+  repeated string protos = 3;
+}
+
+message PeerstoreResponse {
+  optional PeerInfo peer = 1;
+  repeated string protos = 2;
+}

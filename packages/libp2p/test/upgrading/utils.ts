@@ -27,7 +27,7 @@ export async function createDefaultUpgraderComponents (options?: Partial<Upgrade
   return {
     peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
     connectionManager: stubInterface<ConnectionManager>({
-      acceptIncomingConnection: async () => true
+      acceptIncomingConnection: () => true
     }),
     connectionGater: stubInterface<ConnectionGater>(),
     registrar: stubInterface<Registrar>(),

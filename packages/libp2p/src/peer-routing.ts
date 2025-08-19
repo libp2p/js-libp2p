@@ -1,5 +1,5 @@
 import { NotFoundError } from '@libp2p/interface'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import merge from 'it-merge'
 import parallel from 'it-parallel'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'

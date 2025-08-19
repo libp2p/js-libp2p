@@ -1,5 +1,5 @@
 import { FaultTolerance, InvalidParametersError, NotStartedError } from '@libp2p/interface'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { trackedMap } from '@libp2p/utils'
 import { IP4, IP6 } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { TransportUnavailableError, UnsupportedListenAddressError, UnsupportedListenAddressesError } from './errors.js'

@@ -21,10 +21,10 @@
 import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
-import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
+import { generateCertificate, verifyPeerCertificate, toNodeDuplex, toMessageStream } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, SecurableStream } from '@libp2p/interface'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, MessageStream } from '@libp2p/interface'
 import type { TLSSocketOptions } from 'node:tls'
 
 export class TLS implements ConnectionEncrypter {
@@ -75,19 +75,19 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(conn, true, options)
+  async secureInbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    return this._encrypt(connection, true, options)
   }
 
-  async secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    return this._encrypt(conn, false, options)
+  async secureOutbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    return this._encrypt(connection, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
-    const log = conn.log?.newScope('tls') ?? this.log
+  async _encrypt <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+    const log = connection.log?.newScope('tls') ?? this.log
     let streamMuxer: StreamMuxerFactory | undefined
 
     let streamMuxers: string[] = []
@@ -134,14 +134,14 @@ export class TLS implements ConnectionEncrypter {
     let socket: TLSSocket
 
     if (isServer) {
-      socket = new TLSSocket(itToStream(conn), {
+      socket = new TLSSocket(toNodeDuplex(connection), {
         ...opts,
         // require clients to send certificates
         requestCert: true
       })
     } else {
       socket = connect({
-        socket: itToStream(conn),
+        socket: toNodeDuplex(connection),
         ...opts
       })
     }
@@ -176,19 +176,14 @@ export class TLS implements ConnectionEncrypter {
                 const err = new InvalidCryptoExchangeError(`Selected muxer ${socket.alpnProtocol} did not exist`)
                 log.error(`Selected muxer ${socket.alpnProtocol} did not exist - %e`, err)
 
-                if (isAbortable(conn)) {
-                  conn.abort(err)
-                  reject(err)
-                }
+                connection.abort(err)
+                reject(err)
               }
             }
 
             resolve({
               remotePeer,
-              conn: {
-                ...conn,
-                ...streamToIt(socket)
-              },
+              connection: toMessageStream(connection, socket),
               streamMuxer
             })
           })
@@ -210,10 +205,7 @@ export class TLS implements ConnectionEncrypter {
         }
 
         socket.destroy(err)
-
-        if (isAbortable(conn)) {
-          conn.abort(err)
-        }
+        connection.abort(err)
 
         reject(err)
       })
@@ -239,12 +231,4 @@ export class TLS implements ConnectionEncrypter {
         options?.signal?.removeEventListener('abort', onAbort)
       })
   }
-}
-
-interface Abortable {
-  abort (err: Error): void
-}
-
-function isAbortable <T> (obj: T & Partial<Abortable>): obj is T & Abortable {
-  return typeof obj?.abort === 'function'
 }

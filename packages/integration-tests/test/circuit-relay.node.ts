@@ -7,12 +7,12 @@ import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
+import { echo } from '@libp2p/utils'
 import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
-import { pipe } from 'it-pipe'
 import { createLibp2p } from 'libp2p'
 import defer from 'p-defer'
 import pRetry from 'p-retry'
@@ -85,10 +85,8 @@ const ECHO_PROTOCOL = '/test/echo/1.0.0'
 const echoService = (components: EchoServiceComponents): unknown => {
   return {
     async start () {
-      await components.registrar.handle(ECHO_PROTOCOL, ({ stream }) => {
-        void pipe(
-          stream, stream
-        )
+      await components.registrar.handle(ECHO_PROTOCOL, (stream) => {
+        echo(stream)
       }, {
         runOnLimitedConnection: true
       })
@@ -580,8 +578,8 @@ describe('circuit-relay', () => {
       const protocol = '/my-protocol/1.0.0'
 
       // remote registers handler, disallow running over limited connections
-      await remote.handle(protocol, ({ stream }) => {
-        void pipe(stream, stream)
+      await remote.handle(protocol, (stream) => {
+        echo(stream)
       }, {
         runOnLimitedConnection: false
       })
@@ -607,8 +605,8 @@ describe('circuit-relay', () => {
       const protocol = '/my-protocol/1.0.0'
 
       // remote registers handler, allow running over limited streams
-      await remote.handle(protocol, ({ stream }) => {
-        void pipe(stream, stream)
+      await remote.handle(protocol, (stream) => {
+        echo(stream)
       }, {
         runOnLimitedConnection: true
       })
@@ -675,29 +673,24 @@ describe('circuit-relay', () => {
 
       // set up an echo server on the remote
       const protocol = '/test/protocol/1.0.0'
-      await remote.handle(protocol, ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
-          } catch {}
+      await remote.handle(protocol, (stream) => {
+        stream.addEventListener('message', (evt) => {
+          transferred.append(evt.data)
         })
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
+      const stream = await local.dialProtocol(ma, protocol)
 
-      try {
-        const stream = await local.dialProtocol(ma, protocol)
-
-        await stream.sink(async function * () {
-          while (true) {
-            await delay(100)
-            yield new Uint8Array(2048)
-          }
-        }())
-      } catch {}
+      Promise.resolve().then(async () => {
+        while (true) {
+          await delay(100)
+          stream.send(new Uint8Array(2048))
+        }
+      }).catch(() => {
+        // writing to a closed stream will throw so swallow the error
+      })
 
       // we cannot be exact about this figure because mss, encryption and other
       // protocols all send data over connections when they are opened
@@ -749,13 +742,9 @@ describe('circuit-relay', () => {
 
       // set up an echo server on the remote
       const protocol = '/test/protocol/1.0.0'
-      await remote.handle(protocol, ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
-          } catch {}
+      await remote.handle(protocol, (stream) => {
+        stream.addEventListener('message', (evt) => {
+          transferred.append(evt.data)
         })
       }, {
         runOnLimitedConnection: true
@@ -764,19 +753,19 @@ describe('circuit-relay', () => {
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
 
-      try {
-        const stream = await local.dialProtocol(ma, protocol, {
-          runOnLimitedConnection: true
-        })
+      const stream = await local.dialProtocol(ma, protocol, {
+        runOnLimitedConnection: true
+      })
 
-        await stream.sink(async function * () {
-          while (true) {
-            await delay(100)
-            yield new Uint8Array(10)
-            await delay(5000)
-          }
-        }())
-      } catch {}
+      Promise.resolve().then(async () => {
+        while (true) {
+          await delay(100)
+          stream.send(new Uint8Array(10))
+          await delay(5000)
+        }
+      }).catch(() => {
+        // writing to a closed stream will throw so swallow the error
+      })
 
       expect(transferred.byteLength).to.equal(10)
     })
@@ -910,11 +899,10 @@ describe('circuit-relay', () => {
       // write more than the default data limit
       const data = new Uint8Array(Number(DEFAULT_DATA_LIMIT * 2n))
 
-      const result = await pipe(
-        [data],
-        stream,
-        async (source) => new Uint8ArrayList(...(await all(source)))
-      )
+      stream.send(data)
+      await stream.closeWrite()
+
+      const result = new Uint8ArrayList(...(await all(stream)))
 
       expect(result.subarray()).to.equalBytes(data)
     })
@@ -935,20 +923,15 @@ describe('circuit-relay', () => {
       const start = Date.now()
       let finish = 0
 
-      await pipe(
-        async function * () {
-          while (true) {
-            yield new Uint8Array()
-            await delay(10)
+      while (true) {
+        stream.send(new Uint8Array())
+        await delay(10)
 
-            if (finished) {
-              finish = Date.now()
-              break
-            }
-          }
-        },
-        stream
-      )
+        if (finished) {
+          finish = Date.now()
+          break
+        }
+      }
 
       // default time limit is set to 100ms so the stream should have been open
       // for longer than that
