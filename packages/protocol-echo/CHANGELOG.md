@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.1.28](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.27...echo-v2.1.28) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
 ## [2.1.27](https://github.com/libp2p/js-libp2p/compare/echo-v2.1.26...echo-v2.1.27) (2025-06-25)
 
 
