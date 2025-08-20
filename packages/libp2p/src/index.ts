@@ -34,6 +34,8 @@ export type ServiceFactoryMap<T extends ServiceMap = ServiceMap> = {
 
 export type { AddressManagerInit, AddressFilter }
 
+export { dnsaddrResolver } from './connection-manager/resolvers/index.ts'
+
 /**
  * For Libp2p configurations and modules details read the [Configuration Document](https://github.com/libp2p/js-libp2p/tree/main/doc/CONFIGURATION.md).
  */
@@ -209,4 +211,24 @@ export async function createLibp2p <T extends ServiceMap = ServiceMap> (options:
   }
 
   return node
+}
+
+// a non-exhaustive list of methods found on the libp2p object
+const LIBP2P_METHODS = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
+
+/**
+ * Returns true if the passed object is a libp2p node - this can be used for
+ * type guarding in TypeScript.
+ */
+export function isLibp2p <T extends ServiceMap = ServiceMap> (obj?: any): obj is Libp2p<T> {
+  if (obj == null) {
+    return false
+  }
+
+  if (obj instanceof Libp2pClass) {
+    return true
+  }
+
+  // if these are all functions it's probably a libp2p object
+  return LIBP2P_METHODS.every(m => typeof obj[m] === 'function')
 }

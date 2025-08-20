@@ -1,5 +1,104 @@
 # Changelog
 
+## [1.0.21](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.20...opentelemetry-metrics-v1.0.21) (2025-08-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
+## [1.0.20](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.19...opentelemetry-metrics-v1.0.20) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+
+## [1.0.19](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.18...opentelemetry-metrics-v1.0.19) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+
+## [1.0.18](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.17...opentelemetry-metrics-v1.0.18) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
+## [1.0.17](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.16...opentelemetry-metrics-v1.0.17) (2025-06-03)
+
+
+### Bug Fixes
+
+* clear references to metrics on stop ([#3154](https://github.com/libp2p/js-libp2p/issues/3154)) ([01328a0](https://github.com/libp2p/js-libp2p/commit/01328a0b4eab0a66d5805d9ad4b6f25dbbdb4b03))
+* metrics should persist beyond node restarts ([#3159](https://github.com/libp2p/js-libp2p/issues/3159)) ([d91ae66](https://github.com/libp2p/js-libp2p/commit/d91ae66c6c8db5ae0a9cb9d388d67418fe318736))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+    * @libp2p/utils bumped from ^6.6.5 to ^6.6.6
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.18 to ^5.1.19
+
+## [1.0.16](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.15...opentelemetry-metrics-v1.0.16) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+    * @libp2p/utils bumped from ^6.6.4 to ^6.6.5
+
+## [1.0.15](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.14...opentelemetry-metrics-v1.0.15) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+    * @libp2p/utils bumped from ^6.6.3 to ^6.6.4
+
+## [1.0.14](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.13...opentelemetry-metrics-v1.0.14) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+    * @libp2p/utils bumped from ^6.6.2 to ^6.6.3
+
 ## [1.0.13](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v1.0.12...opentelemetry-metrics-v1.0.13) (2025-04-16)
 
 

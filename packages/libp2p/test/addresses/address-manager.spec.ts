@@ -1,16 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, type TypedEventTarget, type Libp2pEvents, type PeerId, type PeerStore, type Peer, type Listener } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
-import { type StubbedInstance, stubInterface } from 'sinon-ts'
-import { type AddressFilter, AddressManager } from '../../src/address-manager/index.js'
+import { stubInterface } from 'sinon-ts'
+import { AddressManager } from '../../src/address-manager/index.js'
+import type { AddressFilter } from '../../src/address-manager/index.js'
+import type { Libp2pEvents, PeerId, PeerStore, Peer, Listener } from '@libp2p/interface'
 import type { NodeAddress, TransportManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 const listenAddresses = ['/ip4/127.0.0.1/tcp/15006/ws', '/ip4/127.0.0.1/tcp/15008/ws']
 const announceAddresses = ['/dns4/peer.io']
@@ -262,8 +266,8 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
-  it('should not add our peer id to path multiaddrs', () => {
-    const ma = '/unix/foo/bar/baz'
+  it('should add our peer id to path multiaddrs', () => {
+    const ma = '/unix/%2Ffoo%2Fbar%2Fbaz'
     const transportManager = stubInterface<TransportManager>()
     const am = new AddressManager({
       peerId,
@@ -280,7 +284,7 @@ describe('Address Manager', () => {
 
     const addrs = am.getAddresses()
     expect(addrs).to.have.lengthOf(1)
-    expect(addrs[0].toString()).to.not.include(`/p2p/${peerId.toString()}`)
+    expect(addrs[0].toString()).to.include(`/p2p/${peerId.toString()}`)
   })
 
   it('should add an IPv4 DNS mapping', () => {

@@ -18,15 +18,14 @@
  * ```
  */
 
-import { TLSSocket, type TLSSocketOptions, connect } from 'node:tls'
+import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
 import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, itToStream, streamToIt } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory } from '@libp2p/interface'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, SecurableStream } from '@libp2p/interface'
+import type { TLSSocketOptions } from 'node:tls'
 
 export class TLS implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
@@ -76,18 +75,19 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureInbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     return this._encrypt(conn, true, options)
   }
 
-  async secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
     return this._encrypt(conn, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+  async _encrypt <Stream extends SecurableStream = MultiaddrConnection> (conn: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream>> {
+    const log = conn.log?.newScope('tls') ?? this.log
     let streamMuxer: StreamMuxerFactory | undefined
 
     let streamMuxers: string[] = []
@@ -97,7 +97,7 @@ export class TLS implements ConnectionEncrypter {
     }
 
     const opts: TLSSocketOptions = {
-      ...await generateCertificate(this.components.privateKey),
+      ...await generateCertificate(this.components.privateKey, options),
       isServer,
       // require TLS 1.3 or later
       minVersion: 'TLSv1.3',
@@ -111,7 +111,7 @@ export class TLS implements ConnectionEncrypter {
         'libp2p'
       ],
       ALPNCallback: ({ protocols }) => {
-        this.log.trace('received protocols %s', protocols)
+        log.trace('received protocols %s', protocols)
         let chosenProtocol: string | undefined
 
         for (const protocol of protocols) {
@@ -146,23 +146,25 @@ export class TLS implements ConnectionEncrypter {
       })
     }
 
-    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
-      options?.signal?.addEventListener('abort', () => {
-        this.metrics[isServer ? 'server' : 'client'].events?.increment({
-          abort: true
-        })
-        this.metrics[isServer ? 'server' : 'client'].errors?.increment({
-          encrypt_abort: true
-        })
-        socket.emit('error', new HandshakeTimeoutError())
+    const onAbort = (): void => {
+      this.metrics[isServer ? 'server' : 'client'].events?.increment({
+        abort: true
       })
+      this.metrics[isServer ? 'server' : 'client'].errors?.increment({
+        encrypt_abort: true
+      })
+      socket.emit('error', new HandshakeTimeoutError())
+    }
 
+    options?.signal?.addEventListener('abort', onAbort)
+
+    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
       const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
         verifyPeerCertificate(remote.raw, options?.remotePeer, this.log)
           .then(remotePeer => {
-            this.log('remote certificate ok, remote peer %p', remotePeer)
+            log('remote certificate ok, remote peer %p', remotePeer)
 
             // 'libp2p' is a special protocol - if it's sent the remote does not
             // support early muxer negotiation
@@ -172,7 +174,7 @@ export class TLS implements ConnectionEncrypter {
 
               if (streamMuxer == null) {
                 const err = new InvalidCryptoExchangeError(`Selected muxer ${socket.alpnProtocol} did not exist`)
-                this.log.error(`Selected muxer ${socket.alpnProtocol} did not exist - %e`, err)
+                log.error(`Selected muxer ${socket.alpnProtocol} did not exist - %e`, err)
 
                 if (isAbortable(conn)) {
                   conn.abort(err)
@@ -233,6 +235,9 @@ export class TLS implements ConnectionEncrypter {
         })
       })
     })
+      .finally(() => {
+        options?.signal?.removeEventListener('abort', onAbort)
+      })
   }
 }
 

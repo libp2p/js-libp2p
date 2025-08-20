@@ -1,5 +1,6 @@
-import { AbortError, TypedEventEmitter } from '@libp2p/interface'
+import { AbortError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
+import { TypedEventEmitter } from 'main-event'
 import { raceEvent } from 'race-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
@@ -71,49 +72,51 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
   /**
    * A job is about to start running
    */
-  'active': CustomEvent
+  active: CustomEvent
 
   /**
    * All jobs have finished and the queue is empty
    */
-  'idle': CustomEvent
+  idle: CustomEvent
 
   /**
    * The queue is empty, jobs may be running
    */
-  'empty': CustomEvent
+  empty: CustomEvent
 
   /**
    * A job was added to the queue
    */
-  'add': CustomEvent
+  add: CustomEvent
 
   /**
    * A job has finished or failed
    */
-  'next': CustomEvent
+  next: CustomEvent
 
   /**
    * A job has finished successfully
    */
-  'completed': CustomEvent<JobReturnType>
+  completed: CustomEvent<JobReturnType>
 
   /**
    * A job has failed
+   *
+   * @deprecated Listen for the 'failure' event instead - it gives more context and is generally more useful, this event will be removed in a future release
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted just after `"completed", a job has finished successfully - this
    * event gives access to the job and it's result
    */
-  'success': CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
+  success: CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
 
   /**
    * Emitted just after `"error", a job has failed - this event gives access to
    * the job and the thrown error
    */
-  'failure': CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
+  failure: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
 
 /**
@@ -262,7 +265,6 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
           }
         }
 
-        this.safeDispatchEvent('error', { detail: err })
         this.safeDispatchEvent('failure', { detail: { job, error: err } })
 
         throw err
@@ -394,8 +396,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       }
     }
 
-    const onQueueError = (evt: CustomEvent<Error>): void => {
-      cleanup(evt.detail)
+    const onQueueFailure = (evt: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>): void => {
+      cleanup(evt.detail.error)
     }
 
     const onQueueIdle = (): void => {
@@ -409,7 +411,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     // add listeners
     this.addEventListener('completed', onQueueJobComplete)
-    this.addEventListener('error', onQueueError)
+    this.addEventListener('failure', onQueueFailure)
     this.addEventListener('idle', onQueueIdle)
     options?.signal?.addEventListener('abort', onSignalAbort)
 
@@ -418,7 +420,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     } finally {
       // remove listeners
       this.removeEventListener('completed', onQueueJobComplete)
-      this.removeEventListener('error', onQueueError)
+      this.removeEventListener('failure', onQueueFailure)
       this.removeEventListener('idle', onQueueIdle)
       options?.signal?.removeEventListener('abort', onSignalAbort)
 

@@ -43,8 +43,9 @@
 
 import { IdentifyPush as IdentifyPushClass } from './identify-push.js'
 import { Identify as IdentifyClass } from './identify.js'
-import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, TypedEventTarget, PeerId, PeerStore, Connection, PrivateKey } from '@libp2p/interface'
+import type { AbortOptions, IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, PeerId, PeerStore, Connection, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 
 export interface IdentifyInit {
   /**
@@ -125,6 +126,15 @@ export interface IdentifyPushInit extends Omit<IdentifyInit, 'runOnConnectionOpe
    * @default 32
    */
   concurrency?: number
+
+  /**
+   * To prevent rapid flurries of network activity when addresses/protocols
+   * change rapidly in succession, debounce the sending of push message by this
+   * amount in ms
+   *
+   * @default 1_000
+   */
+  debounce?: number
 }
 
 export interface IdentifyComponents {

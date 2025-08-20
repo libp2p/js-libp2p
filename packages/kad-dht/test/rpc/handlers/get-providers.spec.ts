@@ -1,23 +1,28 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
+import { TypedEventEmitter } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
-import Sinon, { type SinonStubbedInstance } from 'sinon'
+import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { PeerRouting } from '../../../src/peer-routing/index.js'
 import { Providers } from '../../../src/providers.js'
-import { GetProvidersHandler, type GetProvidersHandlerComponents } from '../../../src/rpc/handlers/get-providers.js'
+import { GetProvidersHandler } from '../../../src/rpc/handlers/get-providers.js'
 import { passthroughMapper } from '../../../src/utils.js'
-import { createPeerIdWithPrivateKey, type PeerAndKey } from '../../utils/create-peer-id.js'
-import { createValues, type Value } from '../../utils/create-values.js'
+import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
+import { createValues } from '../../utils/create-values.js'
+import type { Message } from '../../../src/message/dht.js'
+import type { GetProvidersHandlerComponents } from '../../../src/rpc/handlers/get-providers.js'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
+import type { Value } from '../../utils/create-values.js'
 import type { Libp2pEvents, PeerInfo, PeerStore } from '@libp2p/interface'
+import type { SinonStubbedInstance } from 'sinon'
 
 const T = MessageType.GET_PROVIDERS
 
@@ -102,7 +107,7 @@ describe('rpc - handlers - GetProviders', () => {
     }]
 
     providers.getProviders.withArgs(v.cid).resolves([providerPeer.peerId])
-    peerRouting.getCloserPeersOffline.withArgs(msg.key, peerId.peerId).resolves(closer)
+    peerRouting.getClosestPeersOffline.withArgs(msg.key).resolves(closer)
 
     await peerStore.merge(providerPeer.peerId, {
       multiaddrs: provider[0].multiaddrs

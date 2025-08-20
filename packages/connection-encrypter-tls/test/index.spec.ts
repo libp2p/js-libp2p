@@ -47,12 +47,14 @@ describe('tls', () => {
 
     await Promise.all([
       encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
       }), {
         remotePeer
       }),
       encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
       }), {
         remotePeer: wrongPeer
       })
@@ -81,12 +83,14 @@ describe('tls', () => {
 
     await expect(Promise.all([
       encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
       }), {
         remotePeer
       }),
       encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
       }), {
         remotePeer: localPeer
       })
@@ -99,12 +103,14 @@ describe('tls', () => {
 
     const result = await Promise.all([
       encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
       }), {
         remotePeer: localPeer
       }),
       encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
       }), {
         remotePeer: localPeer
       })
@@ -119,13 +125,15 @@ describe('tls', () => {
 
     const result = await Promise.all([
       encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound
+        ...inbound,
+        log: defaultLogger().forComponent('inbound')
       }), {
         remotePeer: localPeer,
         skipStreamMuxerNegotiation: true
       }),
       encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound
+        ...outbound,
+        log: defaultLogger().forComponent('outbound')
       }), {
         remotePeer: localPeer,
         skipStreamMuxerNegotiation: true

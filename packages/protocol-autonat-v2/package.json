@@ -1,0 +1,75 @@
+{
+  "name": "@libp2p/autonat-v2",
+  "version": "1.0.1",
+  "description": "Implementation of the AutoNAT Protocol v2",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-autonat-v2#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "start": "node dist/src/main.js",
+    "build": "aegir build",
+    "test": "aegir test",
+    "clean": "aegir clean",
+    "generate": "protons ./src/pb/index.proto",
+    "lint": "aegir lint",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/interface-internal": "^2.3.19",
+    "@libp2p/peer-collections": "^6.0.35",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^12.4.4",
+    "any-signal": "^4.1.1",
+    "it-protobuf-stream": "^2.0.2",
+    "main-event": "^1.0.1",
+    "protons-runtime": "^5.5.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
+  },
+  "devDependencies": {
+    "@libp2p/crypto": "^5.1.8",
+    "@libp2p/logger": "^5.2.0",
+    "@libp2p/peer-id": "^5.1.9",
+    "aegir": "^47.0.14",
+    "it-all": "^3.0.8",
+    "it-length-prefixed": "^10.0.1",
+    "it-pipe": "^3.0.1",
+    "it-pushable": "^3.2.3",
+    "p-retry": "^6.2.1",
+    "protons": "^7.6.1",
+    "sinon": "^20.0.0",
+    "sinon-ts": "^2.0.0"
+  },
+  "sideEffects": false
+}

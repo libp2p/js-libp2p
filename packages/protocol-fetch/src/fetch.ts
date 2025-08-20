@@ -1,13 +1,14 @@
-import { AbortError, InvalidMessageError, InvalidParametersError, ProtocolError, setMaxListeners } from '@libp2p/interface'
+import { AbortError, InvalidMessageError, InvalidParametersError, ProtocolError } from '@libp2p/interface'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { AbortOptions, Logger, Stream, PeerId, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { AbortOptions, Stream, PeerId, Startable, IncomingStreamData } from '@libp2p/interface'
 
-const DEFAULT_TIMEOUT = 10000
+const DEFAULT_TIMEOUT = 10_000
 
 /**
  * A simple libp2p protocol for requesting a value corresponding to a key from a peer.
@@ -21,10 +22,8 @@ export class Fetch implements Startable, FetchInterface {
   private readonly lookupFunctions: Map<string, LookupFunction>
   private started: boolean
   private readonly init: FetchInit
-  private readonly log: Logger
 
   constructor (components: FetchComponents, init: FetchInit = {}) {
-    this.log = components.logger.forComponent('libp2p:fetch')
     this.started = false
     this.components = components
     this.protocol = `/${init.protocolPrefix ?? 'libp2p'}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`
@@ -37,12 +36,14 @@ export class Fetch implements Startable, FetchInterface {
 
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data) => {
+      const log = data.connection.log.newScope('fetch')
+
       void this.handleMessage(data)
         .then(async () => {
           await data.stream.close()
         })
         .catch(err => {
-          this.log.error('error handling message - %e', err)
+          log.error('error handling message - %e', err)
         })
     }, {
       maxInboundStreams: this.init.maxInboundStreams,
@@ -68,9 +69,8 @@ export class Fetch implements Startable, FetchInterface {
       key = uint8arrayFromString(key)
     }
 
-    this.log.trace('dialing %s to %p', this.protocol, peer)
-
     const connection = await this.components.connectionManager.openConnection(peer, options)
+    const log = connection.log.newScope('fetch')
     let signal = options.signal
     let stream: Stream | undefined
     let onAbort = (): void => {}
@@ -78,7 +78,7 @@ export class Fetch implements Startable, FetchInterface {
     // create a timeout if no abort signal passed
     if (signal == null) {
       const timeout = this.init.timeout ?? DEFAULT_TIMEOUT
-      this.log.trace('using default timeout of %d ms', timeout)
+      log.trace('using default timeout of %d ms', timeout)
       signal = AbortSignal.timeout(timeout)
 
       setMaxListeners(Infinity, signal)
@@ -96,7 +96,7 @@ export class Fetch implements Startable, FetchInterface {
       // make stream abortable
       signal.addEventListener('abort', onAbort, { once: true })
 
-      this.log.trace('fetch %m', key)
+      log.trace('fetch %m', key)
 
       const pb = pbStream(stream)
       await pb.write({
@@ -108,20 +108,20 @@ export class Fetch implements Startable, FetchInterface {
 
       switch (response.status) {
         case (FetchResponse.StatusCode.OK): {
-          this.log.trace('received status OK for %m', key)
+          log.trace('received status OK for %m', key)
           return response.data
         }
         case (FetchResponse.StatusCode.NOT_FOUND): {
-          this.log('received status NOT_FOUND for %m', key)
+          log('received status NOT_FOUND for %m', key)
           return
         }
         case (FetchResponse.StatusCode.ERROR): {
-          this.log('received status ERROR for %m', key)
+          log('received status ERROR for %m', key)
           const errMsg = uint8arrayToString(response.data)
           throw new ProtocolError('Error in fetch protocol response: ' + errMsg)
         }
         default: {
-          this.log('received status unknown for %m', key)
+          log('received status unknown for %m', key)
           throw new InvalidMessageError('Unknown response status')
         }
       }
@@ -142,7 +142,8 @@ export class Fetch implements Startable, FetchInterface {
    * to the key's prefix.
    */
   async handleMessage (data: IncomingStreamData): Promise<void> {
-    const { stream } = data
+    const { stream, connection } = data
+    const log = connection.log.newScope('fetch')
     const signal = AbortSignal.timeout(this.init.timeout ?? DEFAULT_TIMEOUT)
 
     try {
@@ -157,24 +158,24 @@ export class Fetch implements Startable, FetchInterface {
       const lookup = this._getLookupFunction(key)
 
       if (lookup == null) {
-        this.log.trace('sending status ERROR for %m', request.identifier)
+        log.trace('sending status ERROR for %m', request.identifier)
         const errMsg = uint8arrayFromString('No lookup function registered for key')
         response = { status: FetchResponse.StatusCode.ERROR, data: errMsg }
       } else {
-        this.log.trace('lookup data with identifier %s', lookup.prefix)
+        log.trace('lookup data with identifier %s', lookup.prefix)
 
         try {
           const data = await lookup.fn(request.identifier)
 
           if (data == null) {
-            this.log.trace('sending status NOT_FOUND for %m', request.identifier)
+            log.trace('sending status NOT_FOUND for %m', request.identifier)
             response = { status: FetchResponse.StatusCode.NOT_FOUND, data: new Uint8Array(0) }
           } else {
-            this.log.trace('sending status OK for %m', request.identifier)
+            log.trace('sending status OK for %m', request.identifier)
             response = { status: FetchResponse.StatusCode.OK, data }
           }
         } catch (err: any) {
-          this.log.error('error during lookup of %m - %e', request.identifier, err)
+          log.error('error during lookup of %m - %e', request.identifier, err)
           const errMsg = uint8arrayFromString(err.message)
           response = { status: FetchResponse.StatusCode.ERROR, data: errMsg }
         }
@@ -188,7 +189,7 @@ export class Fetch implements Startable, FetchInterface {
         signal
       })
     } catch (err: any) {
-      this.log.error('error answering fetch request - %e', err)
+      log.error('error answering fetch request - %e', err)
       stream.abort(err)
     }
   }

@@ -22,7 +22,7 @@ import type { Network, SendMessageOptions } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { QueryManager } from '../query/manager.js'
 import type { QueryFunc } from '../query/types.js'
-import type { Logger, RoutingOptions } from '@libp2p/interface'
+import type { AbortOptions, Logger, RoutingOptions } from '@libp2p/interface'
 
 export interface ContentFetchingInit {
   validators: Validators
@@ -68,19 +68,19 @@ export class ContentFetching {
    * Attempt to retrieve the value for the given key from
    * the local datastore
    */
-  async getLocal (key: Uint8Array): Promise<Libp2pRecord> {
+  async getLocal (key: Uint8Array, options?: AbortOptions): Promise<Libp2pRecord> {
     this.log('getLocal %b', key)
 
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
     this.log('fetching record for key %k', dsKey)
 
-    const raw = await this.components.datastore.get(dsKey)
+    const raw = await this.components.datastore.get(dsKey, options)
     this.log('found %k in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
 
-    await verifyRecord(this.validators, rec)
+    await verifyRecord(this.validators, rec, options)
 
     return rec
   }
@@ -104,7 +104,7 @@ export class ContentFetching {
         try {
           const dsKey = bufferToRecordKey(this.datastorePrefix, key)
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
-          await this.components.datastore.put(dsKey, fixupRec.subarray())
+          await this.components.datastore.put(dsKey, fixupRec.subarray(), options)
         } catch (err: any) {
           this.log.error('Failed error correcting self', err)
         }
@@ -129,7 +129,7 @@ export class ContentFetching {
       }
 
       if (!sentCorrection) {
-        yield queryErrorEvent({ from, error: new QueryError('Value not put correctly') }, options)
+        throw new QueryError('Could not send correction')
       }
 
       this.log.error('Failed error correcting entry')
@@ -148,7 +148,7 @@ export class ContentFetching {
     // store the record locally
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
     this.log(`storing record for key ${dsKey.toString()}`)
-    await this.components.datastore.put(dsKey, record.subarray())
+    await this.components.datastore.put(dsKey, record.subarray(), options)
 
     // put record to the closest peers
     yield * pipe(
@@ -182,7 +182,11 @@ export class ContentFetching {
             }
 
             if (!(putEvent.record != null && uint8ArrayEquals(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
-              events.push(queryErrorEvent({ from: event.peer.id, error: new QueryError('Value not put correctly') }, options))
+              events.push(queryErrorEvent({
+                from: event.peer.id,
+                error: new QueryError('Value not put correctly'),
+                path: putEvent.path
+              }, options))
             }
           }
 
@@ -212,6 +216,7 @@ export class ContentFetching {
     for await (const event of this.getMany(key, options)) {
       if (event.name === 'VALUE') {
         vals.push(event)
+        continue
       }
 
       yield event
@@ -242,7 +247,12 @@ export class ContentFetching {
 
     yield * this.sendCorrectionRecord(key, vals, best, {
       ...options,
-      path: -1
+      path: {
+        index: -1,
+        queued: 0,
+        running: 0,
+        total: 0
+      }
     })
 
     yield vals[i]
@@ -255,20 +265,26 @@ export class ContentFetching {
     this.log('getMany values for %b', key)
 
     try {
-      const localRec = await this.getLocal(key)
+      const localRec = await this.getLocal(key, options)
 
       yield valueEvent({
         value: localRec.value,
-        from: this.components.peerId
+        from: this.components.peerId,
+        path: {
+          index: -1,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
       }, options)
     } catch (err: any) {
       this.log('error getting local value for %b', key, err)
     }
 
-    const self = this // eslint-disable-line @typescript-eslint/no-this-alias
+    const self = this
 
     const getValueQuery: QueryFunc = async function * ({ peer, signal, path }) {
-      for await (const event of self.peerRouting.getValueOrPeers(peer, key, {
+      for await (const event of self.peerRouting.getValueOrPeers(peer.id, key, {
         ...options,
         signal,
         path
@@ -276,7 +292,11 @@ export class ContentFetching {
         yield event
 
         if (event.name === 'PEER_RESPONSE' && (event.record != null)) {
-          yield valueEvent({ from: peer, value: event.record.value }, options)
+          yield valueEvent({
+            from: peer.id,
+            value: event.record.value,
+            path
+          }, options)
         }
       }
     }

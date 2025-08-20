@@ -1,16 +1,18 @@
 import { upnpNat } from '@achingbrain/nat-port-mapper'
-import { serviceCapabilities, serviceDependencies, setMaxListeners, start, stop } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
 import { debounce } from '@libp2p/utils/debounce'
+import { setMaxListeners } from 'main-event'
 import { SearchGatewayFinder } from './search-gateway-finder.js'
 import { StaticGatewayFinder } from './static-gateway-finder.js'
 import { UPnPPortMapper } from './upnp-port-mapper.js'
 import type { UPnPNATComponents, UPnPNATInit, UPnPNAT as UPnPNATInterface } from './index.js'
 import type { Gateway, UPnPNAT as UPnPNATClient } from '@achingbrain/nat-port-mapper'
-import type { Logger, Startable, TypedEventTarget } from '@libp2p/interface'
+import type { Logger, Startable } from '@libp2p/interface'
 import type { DebouncedFunction } from '@libp2p/utils/debounce'
+import type { TypedEventTarget } from 'main-event'
 
 export interface GatewayFinderEvents {
-  'gateway': CustomEvent<Gateway>
+  gateway: CustomEvent<Gateway>
 }
 
 export interface GatewayFinder extends TypedEventTarget<GatewayFinderEvents> {

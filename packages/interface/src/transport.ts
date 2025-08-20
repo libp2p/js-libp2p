@@ -1,8 +1,8 @@
 import type { Connection, ConnectionLimits, MultiaddrConnection } from './connection.js'
-import type { TypedEventTarget } from './event-target.js'
 import type { AbortOptions, ClearableSignal, ConnectionEncrypter } from './index.js'
 import type { StreamMuxerFactory } from './stream-muxer.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
 
 export interface ListenerEvents {
@@ -10,18 +10,18 @@ export interface ListenerEvents {
    * This event signals to the transport manager that the listening addresses
    * have changed and may be emitted at any point and/or multiple times
    */
-  'listening': CustomEvent
+  listening: CustomEvent
 
   /**
    * Emitted if listening on an address failed
    */
-  'error': CustomEvent<Error>
+  error: CustomEvent<Error>
 
   /**
    * Emitted when the listener has been shut down, has no open connections and
    * will no longer accept new connections
    */
-  'close': CustomEvent
+  close: CustomEvent
 }
 
 export interface Listener extends TypedEventTarget<ListenerEvents> {

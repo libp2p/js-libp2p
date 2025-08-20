@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pubsub",
-  "version": "10.1.10",
+  "version": "10.1.18",
   "description": "libp2p pubsub base class",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub#readme",
@@ -57,13 +57,6 @@
       "import": "./dist/src/utils.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -80,31 +73,32 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.1",
-    "@libp2p/interface": "^2.9.0",
-    "@libp2p/interface-internal": "^2.3.11",
-    "@libp2p/peer-collections": "^6.0.27",
-    "@libp2p/peer-id": "^5.1.2",
-    "@libp2p/utils": "^6.6.2",
+    "@libp2p/crypto": "^5.1.8",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/interface-internal": "^2.3.19",
+    "@libp2p/peer-collections": "^6.0.35",
+    "@libp2p/peer-id": "^5.1.9",
+    "@libp2p/utils": "^6.7.2",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "multiformats": "^13.3.1",
-    "p-queue": "^8.0.1",
+    "main-event": "^1.0.1",
+    "multiformats": "^13.3.6",
+    "p-queue": "^8.1.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.15",
-    "@types/sinon": "^17.0.3",
-    "aegir": "^45.1.1",
+    "@libp2p/logger": "^5.2.0",
+    "@types/sinon": "^17.0.4",
+    "aegir": "^47.0.14",
     "delay": "^6.0.0",
     "it-pair": "^2.0.6",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
-    "protons": "^7.6.0",
+    "protons": "^7.6.1",
     "protons-runtime": "^5.5.0",
-    "sinon": "^19.0.2"
+    "sinon": "^20.0.0"
   },
   "sideEffects": false
 }

@@ -1,14 +1,17 @@
-import { type Logger, logger } from '@libp2p/logger'
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { defaultLogger, logger } from '@libp2p/logger'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { abortableSource } from 'abortable-iterator'
 import map from 'it-map'
 import * as ndjson from 'it-ndjson'
 import { pipe } from 'it-pipe'
-import { type Pushable, pushable } from 'it-pushable'
+import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { AbortOptions, Direction, Stream, StreamMuxer, StreamMuxerFactory, StreamMuxerInit } from '@libp2p/interface'
+import type { Logger } from '@libp2p/logger'
+import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { Pushable } from 'it-pushable'
 import type { Source } from 'it-stream-types'
 
 let muxers = 0
@@ -128,7 +131,7 @@ class MockMuxer implements StreamMuxer {
     this.registryInitiatorStreams = new Map()
     this.registryRecipientStreams = new Map()
     this.log('create muxer')
-    this.options = init ?? { direction: 'inbound' }
+    this.options = init ?? { direction: 'inbound', log: defaultLogger().forComponent('mock-muxer') }
     this.closeController = new AbortController()
     // receives data from the muxer at the other end of the stream
     this.source = this.input = pushable({

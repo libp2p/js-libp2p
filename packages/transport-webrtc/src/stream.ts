@@ -1,8 +1,8 @@
 import { StreamStateError, TimeoutError } from '@libp2p/interface'
-import { AbstractStream, type AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils/abstract-stream'
 import { anySignal } from 'any-signal'
 import * as lengthPrefixed from 'it-length-prefixed'
-import { type Pushable, pushable } from 'it-pushable'
+import { pushable } from 'it-pushable'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import { raceEvent } from 'race-event'
@@ -11,7 +11,9 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { BUFFERED_AMOUNT_LOW_TIMEOUT, FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, OPEN_TIMEOUT, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
 import type { DataChannelOptions } from './index.js'
-import type { AbortOptions, ComponentLogger, Direction } from '@libp2p/interface'
+import type { AbortOptions, Direction, Logger } from '@libp2p/interface'
+import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { Pushable } from 'it-pushable'
 import type { DeferredPromise } from 'p-defer'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
@@ -23,7 +25,7 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
    */
   channel: RTCDataChannel
 
-  logger: ComponentLogger
+  log: Logger
 }
 
 export class WebRTCStream extends AbstractStream {
@@ -388,7 +390,10 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    */
   onEnd?(err?: Error | undefined): void
 
-  logger: ComponentLogger
+  /**
+   * The logger to create a scope from
+   */
+  log: Logger
 
   /**
    * If true the underlying datachannel is being used to perform the noise
@@ -401,8 +406,8 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
   const { channel, direction, handshake } = options
 
   return new WebRTCStream({
+    ...options,
     id: `${channel.id}`,
-    log: options.logger.forComponent(`libp2p:webrtc:stream:${handshake === true ? 'handshake' : direction}:${channel.id}`),
-    ...options
+    log: options.log.newScope(`${handshake === true ? 'handshake' : direction}:${channel.id}`)
   })
 }

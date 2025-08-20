@@ -43,7 +43,7 @@
  */
 
 import { Echo as EchoClass } from './echo.js'
-import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -57,7 +57,6 @@ export interface EchoInit {
 export interface EchoComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
-  logger: ComponentLogger
 }
 
 export interface Echo {

@@ -17,6 +17,86 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.8](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.7...crypto-v5.1.8) (2025-08-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+
+## [5.1.7](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.6...crypto-v5.1.7) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+
+## [5.1.6](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.5...crypto-v5.1.6) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+
+## [5.1.5](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.4...crypto-v5.1.5) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+* detect Ed25519 support in WebCrypto ([#3100](https://github.com/libp2p/js-libp2p/issues/3100)) ([8e87be9](https://github.com/libp2p/js-libp2p/commit/8e87be9e6854b4508b2682535c7c9a4013bb5537))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+
+## [5.1.4](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.3...crypto-v5.1.4) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+
+## [5.1.3](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.2...crypto-v5.1.3) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+
+## [5.1.2](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.1...crypto-v5.1.2) (2025-05-19)
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+
 ## [5.1.1](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.0...crypto-v5.1.1) (2025-04-16)
 
 

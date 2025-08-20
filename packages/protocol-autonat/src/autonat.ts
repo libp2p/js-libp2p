@@ -1,4 +1,4 @@
-import { serviceCapabilities, serviceDependencies, setMaxListeners } from '@libp2p/interface'
+import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { createScalableCuckooFilter } from '@libp2p/utils/filters'
@@ -6,9 +6,11 @@ import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
 import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
 import { PeerQueue } from '@libp2p/utils/peer-queue'
 import { repeatingTask } from '@libp2p/utils/repeating-task'
+import { trackedMap } from '@libp2p/utils/tracked-map'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_CONNECTION_THRESHOLD, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { Message } from './pb/index.js'
@@ -105,7 +107,10 @@ export class AutoNATService implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS
     this.connectionThreshold = init.connectionThreshold ?? DEFAULT_CONNECTION_THRESHOLD
     this.maxMessageSize = init.maxMessageSize ?? MAX_MESSAGE_SIZE
-    this.dialResults = new Map()
+    this.dialResults = trackedMap({
+      name: 'libp2p_autonat_dial_results',
+      metrics: components.metrics
+    })
     this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
     this.addressFilter = createScalableCuckooFilter(1024)
   }
@@ -318,31 +323,37 @@ export class AutoNATService implements Startable {
     const multiaddrs = peer.addrs
       .map(buf => multiaddr(buf))
       .filter(ma => {
-        const options = ma.toOptions()
+        try {
+          const options = ma.toOptions()
 
-        if (isPrivate(ma)) {
-          // don't try to dial private addresses
+          if (isPrivate(ma)) {
+            // don't try to dial private addresses
+            return false
+          }
+
+          if (options.host !== connection.remoteAddr.toOptions().host) {
+            // skip any Multiaddrs where the target node's IP does not match the sending node's IP
+            this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
+            return false
+          }
+
+          if (ourHosts.includes(options.host)) {
+            // don't try to dial nodes on the same host as us
+            return false
+          }
+
+          if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
+            // skip any Multiaddrs that have transports we do not support
+            this.log.trace('not dialing %a - transport unsupported', ma)
+            return false
+          }
+
+          return true
+        } catch {
+          // skip any addresses that cannot be parsed (memory, webrtc incoming,
+          // etc)
           return false
         }
-
-        if (options.host !== connection.remoteAddr.toOptions().host) {
-          // skip any Multiaddrs where the target node's IP does not match the sending node's IP
-          this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
-          return false
-        }
-
-        if (ourHosts.includes(options.host)) {
-          // don't try to dial nodes on the same host as us
-          return false
-        }
-
-        if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
-          // skip any Multiaddrs that have transports we do not support
-          this.log.trace('not dialing %a - transport unsupported', ma)
-          return false
-        }
-
-        return true
       })
       .map(ma => {
         if (ma.getPeerId() == null) {
@@ -371,7 +382,7 @@ export class AutoNATService implements Startable {
     let errorMessage = ''
     let lastMultiaddr = multiaddrs[0]
 
-    for await (const multiaddr of multiaddrs) {
+    for (const multiaddr of multiaddrs) {
       let connection: Connection | undefined
       lastMultiaddr = multiaddr
 

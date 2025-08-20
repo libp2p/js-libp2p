@@ -1,5 +1,5 @@
 import type { MultiaddrConnection } from './connection.js'
-import type { AbortOptions, StreamMuxerFactory } from './index.js'
+import type { AbortOptions, Logger, StreamMuxerFactory } from './index.js'
 import type { PeerId } from './peer-id.js'
 import type { Duplex } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -22,6 +22,13 @@ export interface SecureConnectionOptions extends AbortOptions {
 }
 
 /**
+ * A stream with an optional logger
+ */
+export interface SecurableStream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
+  log?: Logger
+}
+
+/**
  * A libp2p connection encrypter module must be compliant to this interface
  * to ensure all exchanged data between two peers is encrypted.
  */
@@ -33,14 +40,14 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound <Stream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureInbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
 }
 
 export interface SecuredConnection<Stream = any, Extension = unknown> {

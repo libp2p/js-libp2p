@@ -11,7 +11,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Operation, OperationMetrics } from './kad-dht.js'
-import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
@@ -90,8 +90,9 @@ export function passthroughMapper (info: PeerInfo): PeerInfo {
 /**
  * Creates a DHT ID by hashing a given Uint8Array
  */
-export async function convertBuffer (buf: Uint8Array): Promise<Uint8Array> {
+export async function convertBuffer (buf: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
   const multihash = await sha256.digest(buf)
+  options?.signal?.throwIfAborted()
 
   return multihash.digest
 }
@@ -99,8 +100,8 @@ export async function convertBuffer (buf: Uint8Array): Promise<Uint8Array> {
 /**
  * Creates a DHT ID by hashing a Peer ID
  */
-export async function convertPeerId (peerId: PeerId): Promise<Uint8Array> {
-  return convertBuffer(peerId.toMultihash().bytes)
+export async function convertPeerId (peerId: PeerId, options?: AbortOptions): Promise<Uint8Array> {
+  return convertBuffer(peerId.toMultihash().bytes, options)
 }
 
 /**
@@ -138,6 +139,15 @@ export function isIPNSKey (key: Uint8Array): boolean {
 export function fromPublicKeyKey (key: Uint8Array): PeerId {
   const multihash = Digest.decode(key.subarray(4))
   return peerIdFromMultihash(multihash)
+}
+
+export function uint8ArrayToBigInt (buf: Uint8Array): bigint {
+  return BigInt(
+    `0x${
+      Array.from(buf)
+        .map(val => val.toString(16).padStart(2, '0')).join('')
+    }`
+  )
 }
 
 /**

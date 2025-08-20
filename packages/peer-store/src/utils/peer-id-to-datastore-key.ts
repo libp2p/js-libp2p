@@ -1,6 +1,6 @@
-import { InvalidParametersError } from '@libp2p/interface'
-import { isPeerId, type PeerId } from '@libp2p/interface'
+import { InvalidParametersError, isPeerId } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
+import type { PeerId } from '@libp2p/interface'
 
 export const NAMESPACE_COMMON = '/peers/'
 

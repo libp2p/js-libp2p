@@ -1,4 +1,4 @@
-import { PeerMap } from '@libp2p/peer-collections'
+import { PeerMap, trackedPeerMap } from '@libp2p/peer-collections'
 import map from 'it-map'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -6,7 +6,7 @@ import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
 import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.js'
-import type { PeerId, AbortOptions } from '@libp2p/interface'
+import type { PeerId, AbortOptions, Metrics } from '@libp2p/interface'
 
 export interface PingFunction {
   /**
@@ -28,21 +28,26 @@ export interface OnAddCallback {
   /**
    * Invoked when a new peer is added to the routing tables
    */
-  (peer: Peer, bucket: LeafBucket): Promise<void>
+  (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void>
 }
 
 export interface OnRemoveCallback {
   /**
    * Invoked when a peer is evicted from the routing tables
    */
-  (peer: Peer, bucket: LeafBucket): Promise<void>
+  (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void>
 }
 
 export interface OnMoveCallback {
   /**
    * Invoked when a peer is moved between buckets in the routing tables
    */
-  (peer: Peer, oldBucket: LeafBucket, newBucket: LeafBucket): Promise<void>
+  (peer: Peer, oldBucket: LeafBucket, newBucket: LeafBucket, options?: AbortOptions): Promise<void>
+}
+
+export interface KBucketComponents {
+  peerId: PeerId
+  metrics?: Metrics
 }
 
 export interface KBucketOptions {
@@ -97,6 +102,7 @@ export interface KBucketOptions {
   verify: VerifyFunction
   onAdd?: OnAddCallback
   onRemove?: OnRemoveCallback
+  metricsPrefix?: string
 }
 
 export interface Peer {
@@ -124,11 +130,17 @@ export function isLeafBucket (obj: any): obj is LeafBucket {
   return Array.isArray(obj?.peers)
 }
 
+export interface GetClosestPeersOptions extends AbortOptions {
+  count?: number
+  exclude?: PeerId[]
+}
+
 /**
  * Implementation of a Kademlia DHT routing table as a prefix binary trie with
  * configurable prefix length, bucket split threshold and size.
  */
 export class KBucket {
+  private readonly peerId: PeerId
   public root: Bucket
   public localPeer?: Peer
   private readonly prefixLength: number
@@ -143,7 +155,8 @@ export class KBucket {
   private readonly onMove?: OnMoveCallback
   private readonly addingPeerMap: PeerMap<Promise<void>>
 
-  constructor (options: KBucketOptions) {
+  constructor (components: KBucketComponents, options: KBucketOptions) {
+    this.peerId = components.peerId
     this.prefixLength = options.prefixLength ?? PREFIX_LENGTH
     this.kBucketSize = options.kBucketSize ?? KBUCKET_SIZE
     this.splitThreshold = options.splitThreshold ?? this.kBucketSize
@@ -153,7 +166,10 @@ export class KBucket {
     this.verify = options.verify
     this.onAdd = options.onAdd
     this.onRemove = options.onRemove
-    this.addingPeerMap = new PeerMap()
+    this.addingPeerMap = trackedPeerMap({
+      name: `${options.metricsPrefix}_adding_peer_map`,
+      metrics: components.metrics
+    })
 
     this.root = {
       prefix: '',
@@ -162,10 +178,24 @@ export class KBucket {
     }
   }
 
-  async addSelfPeer (peerId: PeerId): Promise<void> {
+  async start (): Promise<void> {
+    await this.addSelfPeer(this.peerId)
+  }
+
+  stop (): void {
+    this.addingPeerMap.clear()
+
+    this.root = {
+      prefix: '',
+      depth: 0,
+      peers: []
+    }
+  }
+
+  async addSelfPeer (peerId: PeerId, options?: AbortOptions): Promise<void> {
     this.localPeer = {
       peerId,
-      kadId: await convertPeerId(peerId),
+      kadId: await convertPeerId(peerId, options),
       lastPing: Date.now()
     }
   }
@@ -176,7 +206,7 @@ export class KBucket {
   async add (peerId: PeerId, options?: AbortOptions): Promise<void> {
     const peer = {
       peerId,
-      kadId: await convertPeerId(peerId),
+      kadId: await convertPeerId(peerId, options),
       lastPing: 0
     }
 
@@ -206,7 +236,7 @@ export class KBucket {
     // are there too many peers in the bucket and can we make the trie deeper?
     if (bucket.peers.length === this.splitThreshold && bucket.depth < this.prefixLength) {
       // split the bucket
-      await this._split(bucket)
+      await this._split(bucket, options)
 
       // try again
       await this._add(peer, options)
@@ -219,7 +249,7 @@ export class KBucket {
       // we've ping this peer previously, just add them to the bucket
       if (!needsPing(peer, this.lastPingThreshold)) {
         bucket.peers.push(peer)
-        await this.onAdd?.(peer, bucket)
+        await this.onAdd?.(peer, bucket, options)
         return
       }
 
@@ -274,7 +304,7 @@ export class KBucket {
 
     for await (const toEvict of this.ping(toPing, options)) {
       evicted = true
-      await this.remove(toEvict.kadId)
+      await this.remove(toEvict.kadId, options)
     }
 
     // did not evict any peers, cannot add new contact
@@ -293,10 +323,14 @@ export class KBucket {
    * @param {Uint8Array} id - Contact node id
    * @returns {Generator<Peer, void, undefined>} Array Maximum of n closest contacts to the node id
    */
-  * closest (id: Uint8Array, n: number = this.kBucketSize): Generator<PeerId, void, undefined> {
-    const list = new PeerDistanceList(id, n)
+  * closest (id: Uint8Array, options?: GetClosestPeersOptions): Generator<PeerId, void, undefined> {
+    const list = new PeerDistanceList(id, options?.count ?? this.kBucketSize)
 
     for (const peer of this.toIterable()) {
+      if (options?.exclude?.some(p => p.equals(peer.peerId)) === true) {
+        continue
+      }
+
       list.addWithKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId)
     }
 
@@ -351,14 +385,14 @@ export class KBucket {
    *
    * @param {Uint8Array} kadId - The ID of the contact to remove
    */
-  async remove (kadId: Uint8Array): Promise<void> {
+  async remove (kadId: Uint8Array, options?: AbortOptions): Promise<void> {
     const bucket = this._determineBucket(kadId)
     const index = this._indexOf(bucket, kadId)
 
     if (index > -1) {
       const peer = bucket.peers.splice(index, 1)[0]
 
-      await this.onRemove?.(peer, bucket)
+      await this.onRemove?.(peer, bucket, options)
     }
   }
 
@@ -439,7 +473,7 @@ export class KBucket {
    *
    * @param {any} bucket - bucket for splitting
    */
-  private async _split (bucket: LeafBucket): Promise<void> {
+  private async _split (bucket: LeafBucket, options?: AbortOptions): Promise<void> {
     // create child buckets
     const left: LeafBucket = {
       prefix: '0',
@@ -458,10 +492,10 @@ export class KBucket {
 
       if (bitString[bucket.depth] === '0') {
         left.peers.push(peer)
-        await this.onMove?.(peer, bucket, left)
+        await this.onMove?.(peer, bucket, left, options)
       } else {
         right.peers.push(peer)
-        await this.onMove?.(peer, bucket, right)
+        await this.onMove?.(peer, bucket, right, options)
       }
     }
 

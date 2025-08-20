@@ -1,11 +1,12 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, TypedEventEmitter, setMaxListeners, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { isMultiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { AddressManager } from './address-manager/index.js'
@@ -24,6 +25,7 @@ import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
@@ -85,15 +87,15 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       dns: init.dns
     })
 
-    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
-      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
-      ...init.peerStore
-    }))
-
     // Create Metrics
     if (init.metrics != null) {
       this.metrics = this.configureComponent('metrics', init.metrics(this.components))
     }
+
+    this.peerStore = this.configureComponent('peerStore', persistentPeerStore(components, {
+      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
+      ...init.peerStore
+    }))
 
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer
@@ -339,7 +341,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     try {
-      const peerInfo = await this.peerStore.get(peer)
+      const peerInfo = await this.peerStore.get(peer, options)
 
       if (peerInfo.id.publicKey != null) {
         return peerInfo.id.publicKey
@@ -363,7 +365,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     await this.peerStore.patch(peer, {
       publicKey
-    })
+    }, options)
 
     return publicKey
   }
@@ -380,20 +382,20 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     )
   }
 
-  async unhandle (protocols: string[] | string): Promise<void> {
+  async unhandle (protocols: string[] | string, options?: AbortOptions): Promise<void> {
     if (!Array.isArray(protocols)) {
       protocols = [protocols]
     }
 
     await Promise.all(
       protocols.map(async protocol => {
-        await this.components.registrar.unhandle(protocol)
+        await this.components.registrar.unhandle(protocol, options)
       })
     )
   }
 
-  async register (protocol: string, topology: Topology): Promise<string> {
-    return this.components.registrar.register(protocol, topology)
+  async register (protocol: string, topology: Topology, options?: AbortOptions): Promise<string> {
+    return this.components.registrar.register(protocol, topology, options)
   }
 
   unregister (id: string): void {

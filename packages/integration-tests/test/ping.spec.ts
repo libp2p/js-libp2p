@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { ping, PING_PROTOCOL, type PingService } from '@libp2p/ping'
+import { ping, PING_PROTOCOL } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { pipe } from 'it-pipe'
@@ -8,6 +8,7 @@ import { createLibp2p } from 'libp2p'
 import pDefer from 'p-defer'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
+import type { PingService } from '@libp2p/ping'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: PingService }>>

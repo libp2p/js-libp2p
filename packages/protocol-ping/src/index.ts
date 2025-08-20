@@ -23,7 +23,7 @@
  */
 
 import { Ping as PingClass } from './ping.js'
-import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -56,7 +56,6 @@ export type PingServiceInit = PingInit
 export interface PingComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
-  logger: ComponentLogger
 }
 
 export function ping (init: PingInit = {}): (components: PingComponents) => Ping {

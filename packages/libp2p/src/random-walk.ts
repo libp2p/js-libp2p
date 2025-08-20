@@ -1,11 +1,12 @@
 import { randomBytes } from '@libp2p/crypto'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
-import pDefer, { type DeferredPromise } from 'p-defer'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
+import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions, ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
 import type { RandomWalk as RandomWalkInterface } from '@libp2p/interface-internal'
+import type { DeferredPromise } from 'p-defer'
 
 export interface RandomWalkComponents {
   peerRouting: PeerRouting

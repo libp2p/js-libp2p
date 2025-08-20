@@ -9,7 +9,7 @@ describe('is-generator', () => {
     const generator = gen()
     expect(isGenerator(generator)).to.be.true()
 
-    const genObj = (function * () {
+    const genObj = (function * (): Generator<number> {
       yield 1
     })()
     expect(isGenerator(genObj)).to.be.true()

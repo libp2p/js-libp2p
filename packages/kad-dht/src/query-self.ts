@@ -1,8 +1,8 @@
-import { setMaxListeners } from '@libp2p/interface'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
 import { pipe } from 'it-pipe'
 import take from 'it-take'
+import { setMaxListeners } from 'main-event'
 import pDefer from 'p-defer'
 import { QUERY_SELF_INTERVAL, QUERY_SELF_TIMEOUT, K, QUERY_SELF_INITIAL_INTERVAL } from './constants.js'
 import { timeOperationMethod } from './utils.js'
@@ -132,6 +132,8 @@ export class QuerySelf implements Startable {
           (source) => take(source, this.count),
           async (source) => length(source)
         )
+
+        signal?.throwIfAborted()
 
         const duration = Date.now() - start
 

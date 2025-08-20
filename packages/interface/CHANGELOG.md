@@ -5,6 +5,72 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [2.11.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.5...interface-v2.11.0) (2025-08-19)
+
+
+### Features
+
+* allow async stream handlers ([#3212](https://github.com/libp2p/js-libp2p/issues/3212)) ([cb1c14e](https://github.com/libp2p/js-libp2p/commit/cb1c14e628d2242988478c3bb856bea20db56bdc))
+* allow creating scoped loggers ([#3214](https://github.com/libp2p/js-libp2p/issues/3214)) ([58abe87](https://github.com/libp2p/js-libp2p/commit/58abe8702f0c28d87b54f29e19155ea5c00c407d))
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+## [2.10.5](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.4...interface-v2.10.5) (2025-06-25)
+
+
+### Bug Fixes
+
+* add multiaddr resolvers ([#3200](https://github.com/libp2p/js-libp2p/issues/3200)) ([1c1c49e](https://github.com/libp2p/js-libp2p/commit/1c1c49ef4f25dcd8925d134f7e185658c10d2d6b))
+
+## [2.10.4](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.3...interface-v2.10.4) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+## [2.10.3](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.2...interface-v2.10.3) (2025-06-03)
+
+
+### Bug Fixes
+
+* abort async operations ([#3152](https://github.com/libp2p/js-libp2p/issues/3152)) ([8efb065](https://github.com/libp2p/js-libp2p/commit/8efb065d216fc587605a01d0b2ff93259c7ff723))
+* deduplicate typed event target ([#3170](https://github.com/libp2p/js-libp2p/issues/3170)) ([cc7b34c](https://github.com/libp2p/js-libp2p/commit/cc7b34c0fe3ac5745fd082ae0198b8742371a412))
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+## [2.10.2](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.1...interface-v2.10.2) (2025-05-22)
+
+
+### Bug Fixes
+
+* make event detail optional ([#3144](https://github.com/libp2p/js-libp2p/issues/3144)) ([ab014c0](https://github.com/libp2p/js-libp2p/commit/ab014c0c0bf0d7a1e3c63001ddbc42b449b41e5b))
+
+## [2.10.1](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.0...interface-v2.10.1) (2025-05-20)
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+
+## [2.10.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.9.0...interface-v2.10.0) (2025-05-19)
+
+
+### Features
+
+* add getInfo function to peerstore ([#3099](https://github.com/libp2p/js-libp2p/issues/3099)) ([a5a33af](https://github.com/libp2p/js-libp2p/commit/a5a33afd9fc7e5cc9060e0ac8d6daa8edb566ea8))
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+
 ## [2.9.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.8.0...interface-v2.9.0) (2025-04-16)
 
 

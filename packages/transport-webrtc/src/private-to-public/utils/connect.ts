@@ -117,7 +117,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       channel: handshakeDataChannel,
       direction: 'outbound',
       handshake: true,
-      logger: options.logger,
+      log: options.log,
       ...(options.dataChannel ?? {})
     })
 

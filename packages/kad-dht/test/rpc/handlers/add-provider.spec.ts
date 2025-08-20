@@ -1,19 +1,20 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import createMortice from 'mortice'
+import { TypedEventEmitter } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { Providers } from '../../../src/providers.js'
 import { AddProviderHandler } from '../../../src/rpc/handlers/add-provider.js'
-import { createPeerIdsWithPrivateKey, type PeerAndKey } from '../../utils/create-peer-id.js'
+import { createPeerIdsWithPrivateKey } from '../../utils/create-peer-id.js'
 import { createValues } from '../../utils/create-values.js'
+import type { Message } from '../../../src/message/dht.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
 import type { CID } from 'multiformats'
 
@@ -45,8 +46,7 @@ describe('rpc - handlers - AddProvider', () => {
       logger: defaultLogger()
     }, {
       logPrefix: '',
-      datastorePrefix: '/dht',
-      lock: createMortice()
+      datastorePrefix: '/dht'
     })
 
     handler = new AddProviderHandler({

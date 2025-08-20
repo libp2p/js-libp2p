@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -39,7 +37,7 @@ describe('Max message size', () => {
       channel,
       direction: 'outbound',
       closeTimeout: 1,
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     p.push(data)
@@ -71,7 +69,7 @@ describe('Max message size', () => {
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     p.push(data)
@@ -103,7 +101,7 @@ describe('Max message size', () => {
       onEnd: () => {
         closed.resolve()
       },
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
     const t0 = Date.now()
@@ -124,7 +122,12 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1, logger: defaultLogger() })
+  const stream = createStream({
+    channel: dataChannel,
+    direction: 'outbound',
+    closeTimeout: 1,
+    log: defaultLogger().forComponent('test')
+  })
 
   return { peerConnection, dataChannel, stream }
 }

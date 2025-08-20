@@ -1,18 +1,19 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
 import { ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import duplex from 'it-ws/duplex'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import * as ws from 'ws'
 import { socketToMaConn } from './socket-to-conn.js'
-import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, TypedEventTarget, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { DuplexWebSocket } from 'it-ws/duplex'
+import type { TypedEventTarget } from 'main-event'
 import type { EventEmitter } from 'node:events'
 import type { Server } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -351,8 +352,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     }
 
     if (typeof address === 'string') {
-      // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
-      return [multiaddr(`/unix/${address}/ws`)]
+      return [multiaddr(`/unix/${encodeURIComponent(address)}/ws`)]
     }
 
     const multiaddrs: Multiaddr[] = getThinWaistAddresses(this.listeningMultiaddr, address.port)

@@ -1,13 +1,15 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { TypedEventEmitter } from 'main-event'
+import { stubInterface } from 'sinon-ts'
 import type { UpgraderComponents } from '../../src/upgrader.js'
-import type { ConnectionGater, PeerId, PeerStore, TypedEventTarget, Libp2pEvents, ComponentLogger, Metrics, ConnectionProtector } from '@libp2p/interface'
+import type { ConnectionGater, PeerId, PeerStore, Libp2pEvents, ComponentLogger, Metrics, ConnectionProtector } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 export interface StubbedUpgraderComponents {
   peerId: PeerId

@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { TypedEventEmitter } from 'main-event'
 import { UnimplementedError } from '../error.js'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'

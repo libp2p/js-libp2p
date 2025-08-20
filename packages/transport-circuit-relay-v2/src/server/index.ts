@@ -1,9 +1,9 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, setMaxListeners } from '@libp2p/interface'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
-import { type Multiaddr, multiaddr } from '@multiformats/multiaddr'
-import { pbStream, type ProtobufStream } from 'it-protobuf-stream'
+import { multiaddr } from '@multiformats/multiaddr'
+import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
   CIRCUIT_PROTO_CODE,
@@ -14,14 +14,18 @@ import {
   RELAY_V2_HOP_CODEC,
   RELAY_V2_STOP_CODEC
 } from '../constants.js'
-import { HopMessage, type Reservation, Status, StopMessage } from '../pb/index.js'
+import { HopMessage, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
-import { ReservationStore, type ReservationStoreInit } from './reservation-store.js'
+import { ReservationStore } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
+import type { ReservationStoreInit } from './reservation-store.js'
 import type { CircuitRelayService, RelayReservation } from '../index.js'
+import type { Reservation } from '../pb/index.js'
 import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions, IncomingStreamData } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
+import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProtobufStream } from 'it-protobuf-stream'
 
 const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 

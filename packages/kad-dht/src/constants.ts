@@ -4,8 +4,6 @@ export const second = 1000
 export const minute = 60 * second
 export const hour = 60 * minute
 
-export const MAX_RECORD_AGE = 36 * hour
-
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
 /**
@@ -27,7 +25,13 @@ export const REPROVIDE_MAX_QUEUE_SIZE = 16_384
 // How often to check if records need re-providing
 export const REPROVIDE_INTERVAL = hour
 
+// How long to reprovide for
+export const REPROVIDE_TIMEOUT = hour
+
 export const READ_MESSAGE_TIMEOUT = 10 * second
+
+// How long to process newly connected peers for
+export const ON_PEER_CONNECT_TIMEOUT = 10 * second
 
 // The number of records that will be retrieved on a call to getMany()
 export const GET_MANY_RECORD_COUNT = 16
@@ -36,7 +40,7 @@ export const GET_MANY_RECORD_COUNT = 16
 export const K = 20
 
 // Alpha is the concurrency for asynchronous requests
-export const ALPHA = 3
+export const ALPHA = 10
 
 // How often we look for our closest DHT neighbors
 export const QUERY_SELF_INTERVAL = 5 * minute

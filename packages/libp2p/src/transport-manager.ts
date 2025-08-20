@@ -3,9 +3,10 @@ import { trackedMap } from '@libp2p/utils/tracked-map'
 import { IP4, IP6 } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { TransportUnavailableError, UnsupportedListenAddressError, UnsupportedListenAddressesError } from './errors.js'
-import type { Libp2pEvents, ComponentLogger, Logger, Connection, TypedEventTarget, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, Logger, Connection, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
 import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventTarget } from 'main-event'
 
 export interface TransportManagerInit {
   faultTolerance?: FaultTolerance
@@ -42,7 +43,10 @@ export class DefaultTransportManager implements TransportManager, Startable {
     this.log = components.logger.forComponent('libp2p:transports')
     this.components = components
     this.started = false
-    this.transports = new Map<string, Transport>()
+    this.transports = trackedMap({
+      name: 'libp2p_transport_manager_transports',
+      metrics: this.components.metrics
+    })
     this.listeners = trackedMap({
       name: 'libp2p_transport_manager_listeners',
       metrics: this.components.metrics

@@ -21,10 +21,13 @@
       "path": "../logger"
     },
     {
-      "path": "../metrics-simple"
+      "path": "../peer-collections"
     },
     {
       "path": "../peer-id"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

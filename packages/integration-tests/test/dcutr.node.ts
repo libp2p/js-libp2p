@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { circuitRelayServer, type CircuitRelayService } from '@libp2p/circuit-relay-v2'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { identify } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -10,6 +10,7 @@ import { createLibp2p } from 'libp2p'
 import pRetry from 'p-retry'
 import { createBaseOptions } from './fixtures/base-options.js'
 import { usingAsRelay } from './fixtures/utils.js'
+import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p } from '@libp2p/interface'
 
 const RELAY_PORT = 47330

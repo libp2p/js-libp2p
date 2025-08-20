@@ -1,4 +1,5 @@
 import type { Connection, Stream } from './connection.js'
+import type { AbortOptions } from './index.ts'
 
 export interface IncomingStreamData {
   /**
@@ -16,10 +17,10 @@ export interface StreamHandler {
   /**
    * A callback function that accepts the incoming stream data
    */
-  (data: IncomingStreamData): void
+  (data: IncomingStreamData): void | Promise<void>
 }
 
-export interface StreamHandlerOptions {
+export interface StreamHandlerOptions extends AbortOptions {
   /**
    * How many incoming streams can be open for this protocol at the same time on each connection
    *

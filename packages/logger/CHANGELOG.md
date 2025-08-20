@@ -21,6 +21,100 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.21...logger-v5.2.0) (2025-08-19)
+
+
+### Features
+
+* allow creating scoped loggers ([#3214](https://github.com/libp2p/js-libp2p/issues/3214)) ([58abe87](https://github.com/libp2p/js-libp2p/commit/58abe8702f0c28d87b54f29e19155ea5c00c407d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+
+## [5.1.21](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.20...logger-v5.1.21) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+
+## [5.1.20](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.19...logger-v5.1.20) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+
+## [5.1.19](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.18...logger-v5.1.19) (2025-06-03)
+
+
+### Documentation
+
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.2 to ^2.10.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.5 to ^5.1.6
+
+## [5.1.18](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.17...logger-v5.1.18) (2025-05-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.1 to ^2.10.2
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.4 to ^5.1.5
+
+## [5.1.17](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.16...logger-v5.1.17) (2025-05-20)
+
+
+### Dependencies
+
+* bump sinon from 19.0.5 to 20.0.0 ([#3112](https://github.com/libp2p/js-libp2p/issues/3112)) ([d1ce677](https://github.com/libp2p/js-libp2p/commit/d1ce6774d8f7c338f15a05f80d09e361d21e7586))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.0 to ^2.10.1
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.3 to ^5.1.4
+
+## [5.1.16](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.15...logger-v5.1.16) (2025-05-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.9.0 to ^2.10.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.2 to ^5.1.3
+
 ## [5.1.15](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.14...logger-v5.1.15) (2025-04-16)
 
 

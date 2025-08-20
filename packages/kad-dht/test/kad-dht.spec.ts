@@ -301,8 +301,8 @@ describe('KadDHT', () => {
       this.timeout(20 * 1000)
 
       const key = uint8ArrayFromString('/v/hello')
-      const valueA = uint8ArrayFromString('worldA')
-      const valueB = uint8ArrayFromString('worldB')
+      const valueA = uint8ArrayFromString('world2')
+      const valueB = uint8ArrayFromString('world1')
 
       const [dhtA, dhtB] = await Promise.all([
         testDHT.spawn(),
@@ -311,18 +311,19 @@ describe('KadDHT', () => {
 
       const dhtASpy = sinon.spy(dhtA.network, 'sendRequest')
 
-      // Put before peers connected
+      // put before peers connected
       await drain(dhtA.put(key, valueA))
       await drain(dhtB.put(key, valueB))
 
-      // Connect peers
+      // connect peers
       await testDHT.connect(dhtA, dhtB)
 
-      // Get values
+      // get values
       const resA = await last(dhtA.get(key))
       const resB = await last(dhtB.get(key))
 
-      // First is selected
+      // first is selected because the selector sorts alphabetically and chooses
+      // the last value
       expect(resA).to.have.property('value').that.equalBytes(valueA)
       expect(resB).to.have.property('value').that.equalBytes(valueA)
 
@@ -386,9 +387,14 @@ describe('KadDHT', () => {
           messageType: MessageType.GET_VALUE,
           from: peer,
           record: rec,
-          path: -1
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
         })
-      }) // eslint-disable-line require-await
+      })
 
       const res = await last(dht.get(key))
       expect(res).to.have.property('value').that.equalBytes(value)
@@ -459,7 +465,7 @@ describe('KadDHT', () => {
       const res = await all(dhts[1].getClosestPeers(dhts[2].components.peerId.toMultihash().bytes))
       expect(res).to.not.be.empty()
 
-      // no peer should include itself in the response, only other peers that it
+      // should not include requester in the response, only other peers that it
       // knows who are closer
       for (const event of res) {
         if (event.name !== 'PEER_RESPONSE') {

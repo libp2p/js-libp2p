@@ -1,34 +1,7 @@
-import { multiaddr, resolvers, type Multiaddr, type ResolveOptions } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { convertToIpNet } from '@multiformats/multiaddr/convert'
 import type { IpNet } from '@chainsafe/netmask'
-import type { LoggerOptions } from '@libp2p/interface'
-
-/**
- * Recursively resolve DNSADDR multiaddrs
- */
-export async function resolveMultiaddrs (ma: Multiaddr, options: ResolveOptions & LoggerOptions): Promise<Multiaddr[]> {
-  // check multiaddr resolvers
-  let resolvable = false
-
-  for (const key of resolvers.keys()) {
-    resolvable = ma.protoNames().includes(key)
-
-    if (resolvable) {
-      break
-    }
-  }
-
-  // return multiaddr if it is not resolvable
-  if (!resolvable) {
-    return [ma]
-  }
-
-  const output = await ma.resolve(options)
-
-  options.log('resolved %s to', ma, output.map(ma => ma.toString()))
-
-  return output
-}
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Converts a multiaddr string or object to an IpNet object.
@@ -49,9 +22,11 @@ export function multiaddrToIpNet (ma: string | Multiaddr): IpNet {
       parsedMa = ma
     }
 
+    const protoNames = new Set([...parsedMa.getComponents().map(component => component.name)])
+
     // Check if /ipcidr is already present
-    if (!parsedMa.protoNames().includes('ipcidr')) {
-      const isIPv6 = parsedMa.protoNames().includes('ip6')
+    if (!protoNames.has('ipcidr')) {
+      const isIPv6 = protoNames.has('ip6')
       const cidr = isIPv6 ? '/ipcidr/128' : '/ipcidr/32'
       parsedMa = parsedMa.encapsulate(cidr)
     }

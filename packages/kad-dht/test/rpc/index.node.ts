@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { TypedEventEmitter, start } from '@libp2p/interface'
+import { start } from '@libp2p/interface'
 import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
@@ -10,8 +10,9 @@ import all from 'it-all'
 import * as lp from 'it-length-prefixed'
 import map from 'it-map'
 import { pipe } from 'it-pipe'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
-import Sinon, { type SinonStubbedInstance } from 'sinon'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -19,14 +20,17 @@ import { Message, MessageType } from '../../src/message/dht.js'
 import { PeerRouting } from '../../src/peer-routing/index.js'
 import { Providers } from '../../src/providers.js'
 import { RoutingTable } from '../../src/routing-table/index.js'
-import { RPC, type RPCComponents } from '../../src/rpc/index.js'
+import { RPC } from '../../src/rpc/index.js'
 import { passthroughMapper } from '../../src/utils.js'
-import { createPeerIdWithPrivateKey, type PeerAndKey } from '../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey } from '../utils/create-peer-id.js'
 import type { Validators } from '../../src/index.js'
+import type { RPCComponents } from '../../src/rpc/index.js'
+import type { PeerAndKey } from '../utils/create-peer-id.js'
 import type { Libp2pEvents, Connection, PeerStore } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
 import type { Duplex, Source } from 'it-stream-types'
+import type { SinonStubbedInstance } from 'sinon'
 
 describe('rpc', () => {
   let peerId: PeerAndKey
@@ -86,7 +90,7 @@ describe('rpc', () => {
       defer.resolve()
     }
 
-    peerRouting.getCloserPeersOffline.resolves([])
+    peerRouting.getClosestPeersOffline.resolves([])
 
     const source = pipe(
       [Message.encode(msg)],

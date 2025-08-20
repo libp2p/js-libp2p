@@ -32,7 +32,7 @@ export class Perf implements Startable, PerfInterface {
   async start (): Promise<void> {
     await this.components.registrar.handle(this.protocol, (data: IncomingStreamData) => {
       void this.handleMessage(data).catch((err) => {
-        this.log.error('error handling perf protocol message', err)
+        this.log.error('error handling perf protocol message - %e', err)
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,
@@ -91,8 +91,6 @@ export class Perf implements Startable, PerfInterface {
   }
 
   async * measurePerformance (ma: Multiaddr, sendBytes: number, receiveBytes: number, options: PerfOptions = {}): AsyncGenerator<PerfOutput> {
-    this.log('opening stream on protocol %s to %a', this.protocol, ma)
-
     const uint8Buf = new Uint8Array(this.buf)
     const writeBlockSize = this.writeBlockSize
 
@@ -103,12 +101,14 @@ export class Perf implements Startable, PerfInterface {
       force: options.reuseExistingConnection !== true
     })
 
-    this.log('opened connection after %d ms', Date.now() - lastReportedTime)
+    const log = connection.log.newScope('perf')
+
+    log('opened connection after %d ms', Date.now() - lastReportedTime)
     lastReportedTime = Date.now()
 
     const stream = await connection.newStream(this.protocol, options)
 
-    this.log('opened stream after %d ms', Date.now() - lastReportedTime)
+    log('opened stream after %d ms', Date.now() - lastReportedTime)
     lastReportedTime = Date.now()
 
     let lastAmountOfBytesSent = 0
@@ -120,7 +120,7 @@ export class Perf implements Startable, PerfInterface {
     const view = new DataView(this.buf)
     view.setBigUint64(0, BigInt(receiveBytes), false)
 
-    this.log('sending %i bytes to %p', sendBytes, connection.remotePeer)
+    log('sending %i bytes to %p', sendBytes, connection.remotePeer)
 
     try {
       const output = pushable<PerfOutput>({
@@ -167,7 +167,7 @@ export class Perf implements Startable, PerfInterface {
 
       yield * output
 
-      this.log('upload complete after %d ms', Date.now() - uploadStart)
+      log('upload complete after %d ms', Date.now() - uploadStart)
 
       // Read the received bytes
       let lastAmountOfBytesReceived = 0
@@ -194,7 +194,7 @@ export class Perf implements Startable, PerfInterface {
         totalBytesReceived += buf.byteLength
       }
 
-      this.log('download complete after %d ms', Date.now() - downloadStart)
+      log('download complete after %d ms', Date.now() - downloadStart)
 
       if (totalBytesReceived !== receiveBytes) {
         throw new Error(`Expected to receive ${receiveBytes} bytes, but received ${totalBytesReceived}`)
@@ -207,10 +207,10 @@ export class Perf implements Startable, PerfInterface {
         downloadBytes: totalBytesReceived
       }
 
-      this.log('performed %s to %p', this.protocol, connection.remotePeer)
+      log('performed %s to %p', this.protocol, connection.remotePeer)
       await stream.close()
     } catch (err: any) {
-      this.log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
+      log('error sending %d/%d bytes to %p: %s', totalBytesSent, sendBytes, connection.remotePeer, err)
       stream.abort(err)
       throw err
     }

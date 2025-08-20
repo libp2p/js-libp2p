@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/echo",
-  "version": "2.1.20",
+  "version": "2.1.28",
   "description": "Implementation of an Echo protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo#readme",
@@ -29,13 +29,6 @@
       "import": "./dist/src/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "start": "node dist/src/main.js",
     "build": "aegir build",
@@ -51,18 +44,18 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.9.0",
-    "@libp2p/interface-internal": "^2.3.11",
-    "@multiformats/multiaddr": "^12.3.3",
-    "it-byte-stream": "^2.0.1",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/interface-internal": "^2.3.19",
+    "@multiformats/multiaddr": "^12.4.4",
+    "it-byte-stream": "^2.0.2",
     "it-pipe": "^3.0.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.15",
-    "aegir": "^45.1.1",
-    "it-all": "^3.0.6",
+    "@libp2p/logger": "^5.2.0",
+    "aegir": "^47.0.14",
+    "it-all": "^3.0.8",
     "it-pair": "^2.0.6",
-    "sinon": "^19.0.2",
+    "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },

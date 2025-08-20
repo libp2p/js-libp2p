@@ -1,19 +1,13 @@
+import { CODE_IP4, CODE_IP6, CODE_IP6ZONE, CODE_DNS, CODE_DNS4, CODE_DNS6, CODE_DNSADDR } from '@multiformats/multiaddr'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-const CODEC_IP4 = 0x04
-const CODEC_IP6 = 0x29
-const CODEC_DNS = 0x35
-const CODEC_DNS4 = 0x36
-const CODEC_DNS6 = 0x37
-const CODEC_DNSADDR = 0x38
-
 const NETWORK_CODECS = [
-  CODEC_IP4,
-  CODEC_IP6,
-  CODEC_DNS,
-  CODEC_DNS4,
-  CODEC_DNS6,
-  CODEC_DNSADDR
+  CODE_IP4,
+  CODE_IP6,
+  CODE_DNS,
+  CODE_DNS4,
+  CODE_DNS6,
+  CODE_DNSADDR
 ]
 
 /**
@@ -21,9 +15,13 @@ const NETWORK_CODECS = [
  */
 export function isNetworkAddress (ma: Multiaddr): boolean {
   try {
-    const [[codec]] = ma.stringTuples()
+    for (const { code } of ma.getComponents()) {
+      if (code === CODE_IP6ZONE) {
+        continue
+      }
 
-    return NETWORK_CODECS.includes(codec)
+      return NETWORK_CODECS.includes(code)
+    }
   } catch {
 
   }

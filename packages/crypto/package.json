@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "5.1.1",
+  "version": "5.1.8",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -68,13 +68,6 @@
       "import": "./dist/src/webcrypto/index.js"
     }
   },
-  "eslintConfig": {
-    "extends": "ipfs",
-    "parserOptions": {
-      "project": true,
-      "sourceType": "module"
-    }
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -92,20 +85,20 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.9.0",
-    "@noble/curves": "^1.7.0",
-    "@noble/hashes": "^1.6.1",
-    "multiformats": "^13.3.1",
+    "@libp2p/interface": "^2.11.0",
+    "@noble/curves": "^1.9.1",
+    "@noble/hashes": "^1.8.0",
+    "multiformats": "^13.3.6",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
-    "aegir": "^45.1.1",
-    "asn1js": "^3.0.5",
+    "aegir": "^47.0.14",
+    "asn1js": "^3.0.6",
     "benchmark": "^2.1.4",
-    "protons": "^7.6.0"
+    "protons": "^7.6.1"
   },
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",

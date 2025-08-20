@@ -6,7 +6,8 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { raceEvent } from 'race-event'
-import { PeerQueue, type PeerQueueJobOptions } from '../src/peer-queue.js'
+import { PeerQueue } from '../src/peer-queue.js'
+import type { PeerQueueJobOptions } from '../src/peer-queue.js'
 import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
 
 describe('peer queue', () => {
@@ -164,7 +165,7 @@ describe('peer queue', () => {
       peerId: peerIdA
     }).catch(() => {})
 
-    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure')
+    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure', AbortSignal.timeout(10_000))
 
     expect(event.detail.job.options.peerId).to.equal(peerIdA)
     expect(event.detail.error).to.equal(err)

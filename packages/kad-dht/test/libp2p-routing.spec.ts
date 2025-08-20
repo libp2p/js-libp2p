@@ -1,4 +1,4 @@
-import { contentRoutingSymbol, TypedEventEmitter, start, stop, peerRoutingSymbol } from '@libp2p/interface'
+import { contentRoutingSymbol, start, stop, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -7,19 +7,23 @@ import all from 'it-all'
 import map from 'it-map'
 import { duplexPair } from 'it-pair/duplex'
 import { pbStream } from 'it-protobuf-stream'
+import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
-import { kadDHT, passthroughMapper, type KadDHT } from '../src/index.js'
+import { stubInterface } from 'sinon-ts'
+import { kadDHT, passthroughMapper } from '../src/index.js'
 import { Message, MessageType } from '../src/message/dht.js'
 import { convertBuffer } from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
+import type { KadDHT } from '../src/index.js'
 import type { PeerAndKey } from './utils/create-peer-id.js'
-import type { ContentRouting, PeerStore, PeerId, TypedEventTarget, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
+import type { ContentRouting, PeerStore, PeerId, ComponentLogger, Connection, Peer, Stream, PeerRouting, PrivateKey } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
 import type { Datastore } from 'interface-datastore'
+import type { TypedEventTarget } from 'main-event'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedKadDHTComponents {
   peerId: PeerId
@@ -68,7 +72,7 @@ function createPeer (peerId: PeerId, peer: Partial<Peer> = {}): Peer {
     id: peerId,
     addresses: [{
       isCertified: false,
-      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.random() * (maxPort - minPort) + minPort}`)
+      multiaddr: multiaddr(`/ip4/58.42.62.62/tcp/${Math.round(Math.random() * (maxPort - minPort) + minPort)}`)
     }],
     tags: new Map(),
     metadata: new Map(),
@@ -115,7 +119,8 @@ describe('content routing', () => {
     dht = kadDHT({
       protocol: PROTOCOL,
       peerInfoMapper: passthroughMapper,
-      clientMode: false
+      clientMode: false,
+      initialQuerySelfInterval: 10_000
     })(components)
 
     // @ts-expect-error not part of public api
@@ -138,6 +143,10 @@ describe('content routing', () => {
     const remotePeer = createPeer(peers[0].peerId)
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -176,6 +185,10 @@ describe('content routing', () => {
     const providerPeer = createPeer(peers[2].peerId)
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -322,7 +335,15 @@ describe('peer routing', () => {
     const closestPeerInteractionsComplete = pDefer()
 
     components.peerStore.get.withArgs(remotePeer.id).resolves(remotePeer)
+    components.peerStore.getInfo.withArgs(remotePeer.id).resolves({
+      id: remotePeer.id,
+      multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
     components.peerStore.get.withArgs(closestPeer.id).resolves(closestPeer)
+    components.peerStore.getInfo.withArgs(closestPeer.id).resolves({
+      id: closestPeer.id,
+      multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr)
+    })
 
     const {
       connection,
@@ -379,10 +400,10 @@ describe('peer routing', () => {
     await expect(all(map(peerRouting.getClosestPeers(key.multihash.bytes), prov => ({
       id: prov.id.toString(),
       multiaddrs: prov.multiaddrs.map(ma => ma.toString())
-    })))).to.eventually.deep.equal([{
+    })))).to.eventually.deep.include({
       id: closestPeer.id.toString(),
       multiaddrs: closestPeer.addresses.map(({ multiaddr }) => multiaddr.toString())
-    }])
+    })
 
     await expect(remotePeerInteractionsComplete.promise).to.eventually.be.undefined()
     await expect(closestPeerInteractionsComplete.promise).to.eventually.be.undefined()

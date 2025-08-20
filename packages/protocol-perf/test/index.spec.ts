@@ -7,10 +7,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import last from 'it-last'
 import { duplexPair } from 'it-pair/duplex'
-import { stubInterface, type StubbedInstance } from 'sinon-ts'
+import { stubInterface } from 'sinon-ts'
 import { Perf } from '../src/perf-service.js'
 import type { ComponentLogger, Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedPerfComponents {
   registrar: StubbedInstance<Registrar>
@@ -59,14 +60,18 @@ describe('perf', () => {
     const duplexes = duplexPair<any>()
     const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
 
-    const aToB = stubInterface<Connection>()
+    const aToB = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     aToB.newStream.resolves(streams[0])
     localComponents.connectionManager.openConnection.withArgs(ma, {
       force: true
     }).resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>()
+    const bToA = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     void server.handleMessage({ stream: streams[1], connection: bToA })
 
     // Run Perf
@@ -90,12 +95,16 @@ describe('perf', () => {
     const duplexes = duplexPair<any>()
     const streams = streamPair({ duplex: duplexes[0] }, { duplex: duplexes[1] })
 
-    const aToB = stubInterface<Connection>()
+    const aToB = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     aToB.newStream.resolves(streams[0])
     localComponents.connectionManager.openConnection.resolves(aToB)
     localComponents.connectionManager.getConnections.returns([])
 
-    const bToA = stubInterface<Connection>()
+    const bToA = stubInterface<Connection>({
+      log: defaultLogger().forComponent('connection')
+    })
     void server.handleMessage({ stream: streams[1], connection: bToA })
 
     // Run Perf

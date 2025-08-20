@@ -2,10 +2,12 @@
 
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { type Message, MessageType } from '../../../src/message/dht.js'
+import { MessageType } from '../../../src/message/dht.js'
 import { PingHandler } from '../../../src/rpc/handlers/ping.js'
-import { createPeerIdWithPrivateKey, type PeerAndKey } from '../../utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
+import type { Message } from '../../../src/message/dht.js'
 import type { DHTMessageHandler } from '../../../src/rpc/index.js'
+import type { PeerAndKey } from '../../utils/create-peer-id.js'
 
 const T = MessageType.PING
 

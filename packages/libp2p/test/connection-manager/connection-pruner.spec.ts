@@ -1,16 +1,18 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { TypedEventEmitter, stop } from '@libp2p/interface'
+import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { ConnectionPruner } from '../../src/connection-manager/connection-pruner.js'
-import type { Libp2pEvents, PeerStore, Stream, TypedEventTarget, Connection, AbortOptions, ComponentLogger, Peer } from '@libp2p/interface'
+import type { Libp2pEvents, PeerStore, Stream, Connection, AbortOptions, ComponentLogger, Peer } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface ConnectionPrunerComponents {
@@ -105,9 +107,8 @@ describe('connection-pruner', () => {
 
   it('should close connections with low tag values first', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []
@@ -159,9 +160,8 @@ describe('connection-pruner', () => {
 
   it('should close shortest-lived connection if the tag values are equal', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []
@@ -253,7 +253,7 @@ describe('connection-pruner', () => {
     ]
 
     // Verify that the allow list in the pruner matches the expected IpNet objects
-    // eslint-disable-next-line @typescript-eslint/dot-notation
+
     expect(pruner['allow']).to.deep.equal(expectedAllowList)
   })
 
@@ -261,8 +261,8 @@ describe('connection-pruner', () => {
     const max = 2
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
 
+    components.connectionManager.getMaxConnections.returns(max)
     pruner = new ConnectionPruner(components, {
-      maxConnections: max,
       allow: [
         multiaddr('/ip4/83.13.55.32')
       ]
@@ -342,9 +342,8 @@ describe('connection-pruner', () => {
 
   it('should close connection when the maximum connections has been reached even without tags', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []

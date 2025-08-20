@@ -1,12 +1,13 @@
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId } from './utils.js'
-import type { PeerId, PeerInfo } from '@libp2p/interface'
+import type { DisjointPath } from './index.js'
+import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
 
 interface PeerDistance {
   peer: PeerInfo
   distance: Uint8Array
-  path: number
+  path: DisjointPath
 }
 
 /**
@@ -48,8 +49,8 @@ export class PeerDistanceList {
   /**
    * Add a peerId to the list.
    */
-  async add (peer: PeerInfo, path: number = -1): Promise<void> {
-    const dhtKey = await convertPeerId(peer.id)
+  async add (peer: PeerInfo, path: DisjointPath = { index: -1, queued: 0, running: 0, total: 0 }, options?: AbortOptions): Promise<void> {
+    const dhtKey = await convertPeerId(peer.id, options)
 
     this.addWithKadId(peer, dhtKey, path)
   }
@@ -57,7 +58,7 @@ export class PeerDistanceList {
   /**
    * Add a peerId to the list.
    */
-  addWithKadId (peer: PeerInfo, kadId: Uint8Array, path: number = -1): void {
+  addWithKadId (peer: PeerInfo, kadId: Uint8Array, path: DisjointPath = { index: -1, queued: 0, running: 0, total: 0 }): void {
     if (this.peerDistances.find(pd => pd.peer.id.equals(peer.id)) != null) {
       return
     }
@@ -66,6 +67,15 @@ export class PeerDistanceList {
       peer,
       distance: uint8ArrayXor(this.originDhtKey, kadId),
       path
+    }
+
+    if (this.peerDistances.length === this.capacity) {
+      const lastPeer = this.peerDistances[this.peerDistances.length - 1]
+
+      // only add if it's closer than our furthest peer
+      if (lastPeer != null && uint8ArrayXorCompare(el.distance, lastPeer.distance) !== -1) {
+        return
+      }
     }
 
     let added = false
@@ -90,12 +100,12 @@ export class PeerDistanceList {
    * Indicates whether any of the peerIds passed as a parameter are closer
    * to the origin key than the furthest peerId in the PeerDistanceList.
    */
-  async isCloser (peerId: PeerId): Promise<boolean> {
+  async isCloser (peerId: PeerId, options?: AbortOptions): Promise<boolean> {
     if (this.length === 0) {
       return true
     }
 
-    const dhtKey = await convertPeerId(peerId)
+    const dhtKey = await convertPeerId(peerId, options)
     const dhtKeyXor = uint8ArrayXor(dhtKey, this.originDhtKey)
     const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance
 
@@ -106,13 +116,13 @@ export class PeerDistanceList {
    * Indicates whether any of the peerIds passed as a parameter are closer
    * to the origin key than the furthest peerId in the PeerDistanceList.
    */
-  async anyCloser (peerIds: PeerId[]): Promise<boolean> {
+  async anyCloser (peerIds: PeerId[], options?: AbortOptions): Promise<boolean> {
     if (peerIds.length === 0) {
       return false
     }
 
     return Promise.any(
-      peerIds.map(async peerId => this.isCloser(peerId))
+      peerIds.map(async peerId => this.isCloser(peerId, options))
     )
   }
 }

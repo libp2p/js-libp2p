@@ -2,15 +2,18 @@ import { TooManyOutboundProtocolStreamsError, MuxerClosedError } from '@libp2p/i
 import { closeSource } from '@libp2p/utils/close-source'
 import { RateLimiter } from '@libp2p/utils/rate-limiter'
 import { pipe } from 'it-pipe'
-import { type Pushable, pushable } from 'it-pushable'
+import { pushable } from 'it-pushable'
 import { toString as uint8ArrayToString } from 'uint8arrays'
 import { Decoder } from './decode.js'
 import { encode } from './encode.js'
 import { StreamInputBufferError } from './errors.js'
-import { MessageTypes, MessageTypeNames, type Message } from './message-types.js'
-import { createStream, type MplexStream } from './stream.js'
+import { MessageTypes, MessageTypeNames } from './message-types.js'
+import { createStream } from './stream.js'
 import type { MplexInit } from './index.js'
+import type { Message } from './message-types.js'
+import type { MplexStream } from './stream.js'
 import type { AbortOptions, ComponentLogger, Logger, Stream, StreamMuxer, StreamMuxerInit } from '@libp2p/interface'
+import type { Pushable } from 'it-pushable'
 import type { Sink, Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -67,7 +70,7 @@ export class MplexStreamMuxer implements StreamMuxer {
   constructor (components: MplexComponents, init?: MplexStreamMuxerInit) {
     init = init ?? {}
 
-    this.log = components.logger.forComponent('libp2p:mplex')
+    this.log = init.log?.newScope('mplex') ?? components.logger.forComponent('libp2p:mplex')
     this.logger = components.logger
     this._streamId = 0
     this._streams = {
@@ -230,7 +233,7 @@ export class MplexStreamMuxer implements StreamMuxer {
       }
     }
 
-    const stream = createStream({ id, name, send, type, onEnd, maxMsgSize: this._init.maxMsgSize, logger: this.logger })
+    const stream = createStream({ id, name, send, type, onEnd, maxMsgSize: this._init.maxMsgSize, log: this.log })
     registry.set(id, stream)
     return stream
   }

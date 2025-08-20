@@ -1,10 +1,11 @@
-import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, setMaxListeners, start, stop, transportSymbol } from '@libp2p/interface'
+import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencies, start, stop, transportSymbol } from '@libp2p/interface'
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { streamToMaConnection } from '@libp2p/utils/stream-to-ma-conn'
 import { multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { pbStream } from 'it-protobuf-stream'
+import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
 import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
@@ -232,17 +233,19 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         stream: pbstr.unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.peerId.toString()}`),
-        logger: this.logger,
+        log: this.log,
         onDataRead: limits.onData,
         onDataWrite: limits.onData
       })
 
-      this.log('new outbound relayed connection %a', maConn.remoteAddr)
-
-      return await this.upgrader.upgradeOutbound(maConn, {
+      const conn = await this.upgrader.upgradeOutbound(maConn, {
         ...options,
         limits: limits.getLimits()
       })
+
+      conn.log('outbound relayed connection established to %p with limits %o, over connection %s', conn.remotePeer, status.limit ?? 'none', relayConnection.id)
+
+      return conn
     } catch (err: any) {
       this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
       stream?.abort(err)
@@ -362,16 +365,16 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       stream: pbstr.unwrap().unwrap(),
       remoteAddr,
       localAddr,
-      logger: this.logger,
+      log: this.log,
       onDataRead: limits.onData,
       onDataWrite: limits.onData
     })
 
-    this.log('new inbound relayed connection %a', maConn.remoteAddr)
     await this.upgrader.upgradeInbound(maConn, {
       limits: limits.getLimits(),
       signal
     })
-    this.log('%s connection %a upgraded', 'inbound', maConn.remoteAddr)
+
+    maConn.log('inbound relayed connection established to %p with limits %o, over connection %s', remotePeerId, request.limit ?? 'none', connection.id)
   }
 }
