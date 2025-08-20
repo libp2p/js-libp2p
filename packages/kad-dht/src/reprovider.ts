@@ -99,10 +99,10 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.timeout = setTimeout(() => {
-      this.cleanUp({
+      this.processRecords({
         signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
       }).catch(err => {
-        this.log.error('error running reprovide/cleanup - %e', err)
+        this.log.error('error running process to reprovide/cleanup - %e', err)
       })
     }, this.interval)
   }
@@ -118,10 +118,10 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
    * Check all provider records. Delete them if they have expired, reprovide
    * them if the provider is us and the expiry is within the reprovide window.
    */
-  private async cleanUp (options?: AbortOptions): Promise<void> {
+  private async processRecords (options?: AbortOptions): Promise<void> {
     try {
       this.safeDispatchEvent('reprovide:start')
-
+      this.log('starting reprovide/cleanup')
       // Get all provider entries from the datastore
       for await (const entry of this.datastore.query({
         prefix: this.datastorePrefix
@@ -133,17 +133,20 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           const expires = created + this.validity
           const now = Date.now()
           const expired = now > expires
+          const isSelf = this.peerId.equals(peerId)
 
-          this.log.trace('comparing: %d < %d = %s %s', created, now - this.validity, expired, expired ? '(expired)' : '')
+          this.log.trace('comparing: %d (now) < %d (expires) = %s %s', now, expires, expired, expired ? '(expired)' : '(valid)')
 
-          // delete the record if it has expired
-          if (expired) {
+          // delete the record if it has expired and isn't us
+          // so that if user node is down for a while, we still persist provide intent
+          if (expired && !isSelf) {
             await this.datastore.delete(entry.key, options)
           }
 
           // if the provider is us and we are within the reprovide threshold,
           // reprovide the record
-          if (this.peerId.equals(peerId) && (now - expires) < this.reprovideThreshold) {
+          if (this.shouldReprovide(isSelf, expires)) {
+            this.log('reproviding %c as it is within the reprovide threshold (%d)', cid, this.reprovideThreshold)
             this.queueReprovide(cid)
               .catch(err => {
                 this.log.error('could not reprovide %c - %e', cid, err)
@@ -159,8 +162,9 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       this.safeDispatchEvent('reprovide:end')
 
       if (this.running) {
+        this.log('queuing next re-provide/cleanup run in %d ms', this.interval)
         this.timeout = setTimeout(() => {
-          this.cleanUp({
+          this.processRecords({
             signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
           }).catch(err => {
             this.log.error('error running re-provide - %e', err)
@@ -168,6 +172,24 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
         }, this.interval)
       }
     }
+  }
+
+  /**
+   * Determines if a record should be reprovided
+   */
+  private shouldReprovide (isSelf: boolean, expires: number): boolean {
+    if (!isSelf) {
+      return false
+    }
+    const now = Date.now()
+
+    if (expires < now) {
+      // If the record has already expired, reprovide irrespective of the threshold
+      return true
+    }
+
+    // if the record is approaching expiration within the reprovide threshold
+    return expires - now < this.reprovideThreshold
   }
 
   private async queueReprovide (cid: CID, options?: AbortOptions): Promise<void> {

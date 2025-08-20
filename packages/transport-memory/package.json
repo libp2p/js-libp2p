@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/memory",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "A memory transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-memory#readme",
@@ -44,7 +44,7 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.5",
+    "@libp2p/interface": "^2.11.0",
     "@multiformats/multiaddr": "^12.4.4",
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "@types/sinon": "^17.0.4",
@@ -57,8 +57,8 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.21",
-    "@libp2p/peer-id": "^5.1.8",
+    "@libp2p/logger": "^5.2.0",
+    "@libp2p/peer-id": "^5.1.9",
     "aegir": "^47.0.14",
     "sinon": "^20.0.0",
     "sinon-ts": "^2.0.0"
