@@ -259,7 +259,7 @@ When running libp2p you may want to see what things are happening behind the sce
 DEBUG="libp2p:*" node my-script.js
 
 # networking debug logs
-DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node my-script.js
+DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:connection-manager:dial-queue" node my-script.js
 ```
 
 ### Browser
@@ -269,8 +269,10 @@ DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:di
 localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
 
 // networking debug logs
-localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
+localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:connection-manager:dial-queue')
 ```
+
+See also: [TROUBLESHOOTING.md](https://github.com/libp2p/js-libp2p/blob/main/doc/TROUBLESHOOTING.md) for common issues and diagnosis steps.
 
 ## React Native
 
