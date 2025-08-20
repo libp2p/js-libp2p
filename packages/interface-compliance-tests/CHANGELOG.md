@@ -75,6 +75,36 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [6.5.0](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.16...interface-compliance-tests-v6.5.0) (2025-08-19)
+
+
+### Features
+
+* allow async stream handlers ([#3212](https://github.com/libp2p/js-libp2p/issues/3212)) ([cb1c14e](https://github.com/libp2p/js-libp2p/commit/cb1c14e628d2242988478c3bb856bea20db56bdc))
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/echo bumped from ^2.1.27 to ^2.1.28
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+    * @libp2p/memory bumped from ^1.1.13 to ^1.1.14
+    * @libp2p/multistream-select bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/peer-collections bumped from ^6.0.34 to ^6.0.35
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/plaintext bumped from ^2.0.28 to ^2.0.29
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+    * libp2p bumped from ^2.9.0 to ^2.10.0
+
 ## [6.4.16](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v6.4.15...interface-compliance-tests-v6.4.16) (2025-07-08)
 
 

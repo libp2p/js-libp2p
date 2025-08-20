@@ -70,6 +70,23 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [9.2.19](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.18...websockets-v9.2.19) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
 ## [9.2.18](https://github.com/libp2p/js-libp2p/compare/websockets-v9.2.17...websockets-v9.2.18) (2025-07-07)
 
 
