@@ -193,7 +193,7 @@ describe('upgrader', () => {
     await expect(upgrader.upgradeOutbound(maConn, {
       signal: AbortSignal.timeout(100)
     })).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
+      .with.property('message').that.include('protocol negotiation failed')
   })
 
   it('should not abort if inbound upgrade is successful', async () => {
