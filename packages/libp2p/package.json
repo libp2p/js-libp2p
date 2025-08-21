@@ -101,7 +101,7 @@
     "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
     "p-defer": "^4.0.1",
-    "p-retry": "^6.2.1",
+    "p-retry": "^7.0.0",
     "progress-events": "^1.0.1",
     "race-event": "^1.3.0",
     "race-signal": "^1.1.3",
