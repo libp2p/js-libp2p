@@ -129,7 +129,7 @@
     "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
-    "p-limit": "^6.2.0",
+    "p-limit": "^7.1.0",
     "p-retry": "^6.2.1",
     "p-wait-for": "^5.0.2",
     "protons-runtime": "^5.5.0",
